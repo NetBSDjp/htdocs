@@ -4,7 +4,7 @@
 <head>
 <!-- Copyright (c) 2000
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD Binary Emulation</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -13,113 +13,116 @@
 
 <LIST>
 
-<SECTION>Binary Emulation
+<SECTION>バイナリーエミュレーション
 
-<ENTRY>what What is Binary Emulation? Why does it exist?
-A large amount of Unix software is distributed in source-code format.
-This means the authors actually provide the C (or other language) program
-code, and the installation process uses a compiler to generate an executable
-to run on the local machine. Carefully written source-code and installation
-utilities can allow the same program to be built on dozens of different
-operating systems.
-<p>Commercial software vendors are not inclined to distribute source code
-since it may contain trade-secrets. Commercial vendors normally deliver
-the executable programs which can be run directly. They perform the compilation
-stage in-house, and delivery binary files from which their secrets are
-less easily discernible.
-<p>The result of this is that the vendor must make a choice to expend man-power
-for each different operating system they support, normally maintaining
-a system to do testing with, and at least one person to do compilation
-and testing.
-<p>This ties together the Operating System and the set of applications
-a consumer may wish to run. One may choose not to run a particular application
-because it is not available on their Operating System of choice, or one
-may be forced to run an Operating System one would rather not, due to the
-availability of some critical application.
-<p>Binary Emulation eliminates this forced linkage.
+<ENTRY>what バイナリーエミュレーションとは何ですか? なぜ存在するのですか?  
+多くの Unix ソフトウェアはソースコード形式で配布されます。これは、作者
+が C (あるいは他の言語)のプログラムコードを提供し、インストール時に、
+ローカルマシンで実行するための実行可能ファイルを生成するためにコンパイ
+ラーを使うことを意味します。ソースコードとインストレーションユーティリ
+ティを注意深く書けば、さまざまな種類のオペレーティングシステム上で、同
+一のプログラムを構築することができます。
+<p>ソースコードは企業秘密を含んでいることがあるため、商用ソフトウェア
+ベンダーはソースコードの配布をおこなわない傾向があります。商用ベンダー
+は、通常、直接実行可能なプログラムを配布します。ベンダー内部でコンパイ
+ルをおこない、機密が簡単に洩れないバイナリーファイルを配布します。
+<p>この結果、ベンダーはサポートするオペレーティングシステムのためにマ
+ンパワーを費やさざるをえません。通常、保守のためのテストをおこない、そ
+して、コンパイルとテストのためにすくなくとも一人の人間が必要です。
+<p>このことは、オペレーティングシステムと消費者が使いたいと思っている
+アプリケーションを結びつけます。ある消費者は、彼らが使っているオペレー
+ティングシステムがサポートされていないので、アプリケーションを使うのを
+あきらめるかもしれません。また、ある消費者は、いくつかの絶対に必要なア
+プリケーションのために、サポート済みのオペレーティングシステムを使わな
+ければならないかもしれません。
+<p>バイナリーエミュレーションは、この強制的な結び付きを取り除きます。
 
-<ENTRY>compat What other binary compatibility is there?
-There is another compatibility feature worth being aware of.  NetBSD uses
-the same binary object file format across NetBSD machines with the same CPU. 
-If you build binaries on your NetBSD sun3, you can run them on your NetBSD
-amiga, NetBSD mac68k, NetBSD mvme68k, NetBSD next68k... however, you couldn't
-run them on Intel processor based machines.
+<ENTRY>compat 他にどのようなバイナリー互換性がありますか?  
+知っておく価値のあるもうひとつの互換性の仕様があります。NetBSD は同じ 
+CPU を使用する NetBSD マシン間で、同一のバイナリーオブジェクトファイル
+フォーマットを使用します。もし、NetBSD sun3 上でバイナリーを作成した場
+合、そのバイナリーを NetBSD amiga、NetBSD mac68k、NetBSD mvme68k、
+NetBSD next68k 等の上で実行することができます。しかしながら、そのバイ
+ナリーを Intel プロセッサー系のマシン上で実行することはできません。
 
-<ENTRY>how How does it work?
-Unix and Unix-like systems consist of two primary parts, the Kernel,
-and everything else. The kernel is the program which controls devices,
-security, and the programs which wish to use the machine's resources.
-Typically, the kernel provides these services to other programs through
-kernel system calls. An example would be a program requesting to OPEN a
-file, the program calls the kernel OPEN function with a set of parameters
-indicating what it wishes to do, and the kernel allows or denies the request,
-and replies with the information the program requires to continue.
-<p>Every Unix and Unix-like system supplies a very similar set of these
-systemcalls. (They all have an OPEN for example)
-<br>From system to system, the primary differences in syscalls will be in
-the format of parameters passed to these calls. (NetBSD's OPEN takes a
-filename, flags, and a mode)&nbsp; The names of the calls may also differ
-from system to system. If a NetBSD system wishes to run a Linux executable,
-each time the program performs a systemcall, the kernel performs a mapping
-function to the corresponding NetBSD systemcall, and re-orders/re-formats
-the parameters as required.
-<p>Another important issue is the format of the executable files.
-About every second operating system uses a different file format in which it
-saves its binaries, using different headers, magic cookies, hunks, whatever.
-The one NetBSD supports natively is a.out or ELF(depending on the architecture,
-and version of NetBSD. NetBSD is migrating to ELF, with each port moving
-according to its own schedule). Some other executable formats include b.out,
-COFF, ECOFF, ieee695, PE, SOM, and XCOFF. NetBSD's emulation knows how to
-handle the executable format for the emulated system. 
-<p>Across different systems syscalls are accessed in different ways, and 
-parameters are passed differently. As an example, under AmigaOS, this is done
-with an index into a table containing pointers to functions pointed to by
-some address register and the data in some data register. Other operating
-systems use other methods, traps, tables, registers, stacks, etc. and this is
-handled by the binary emulation. 
-<p>The final significant requirement is that the CPU the executable was
-compiled for must match the system it will run on. Besides systemcalls,
-executables consist of raw CPU instructions. Therefore, SCO Unix binaries
-(Intel 386 series CPU) will run on NetBSD i386, but can not be run on NetBSD
-Amiga (Motorola 680x0 CPU). Performing that function would require a much
-more complicated translation system, and would have a significant impact
-on application performance.
+<ENTRY>how どのように動作するのですか?
+Unix と Unix 風のシステムは、二つの重要な部分、カーネルとそれ以外で構
+成されています。カーネルは、デバイスやセキュリティ、マシンのリソースを
+使うプログラムを管理します。通常、カーネルはカーネルシステムコールを 
+経由し、他のプログラムへサービスを提供します。例えば、ファイルをOPEN 
+するプログラムの場合、プログラムはカーネルの OPEN 関数をコールします。
+カーネルはその要求を許可あるいは拒否し、プログラムが処理を継続するのに
+必要な情報をかえします。
+<p>すべての Unix と Unix 風のシステムは、よく似たシステムコールの集合
+を提供しています。(例えば、OPEN はすべてのシステムに存在します)
+<br>システム間でのシステムコールの一番の違いはシステムコールにわたされ
+るパラメーターのフォーマットでしょう。(NetBSD の OPEN は、ファイル名、
+フラグ、モードをわたします)&nbsp;システム間で、システムコールの名前
+が異なる場合もあります。NetBSD システム上で Linux の実行可能ファイルを
+実行する場合、プログラムがシステムコールを実行する度に、カーネルは適切
+な NetBSD のシステムコールへのマッピングや、必要なパラメータの並べ変え、
+再フォーマットをおこないます。
+<p>もう一つの重要な問題は、実行可能ファイルのフォーマットが異なる事で
+す。すべての他のオペレーティングシステムは、バイナリーを保存するのに異
+なるヘッダー、マジッククッキー、hunks、その他を使った異なるファイルフォー
+マットを使用しています。NetBSD が、ネイテイブにサポートしているのは 
+a.out か ELF (アーキテクチャーとバージョンに依存します。NetBSD は、ポー
+ト毎のスケジュールに従って ELF に移行中です)です。他に、b.out、COFF、
+ECOFF、ieee695、PE、SOM、XCOFF という実行可能フォーマットをサポートし
+ています。NetBSD のエミュレーションは、これらの実行可能フォーマットを
+エミュレーションされるシステム上でどのように扱えば良いかを知っています。
+<p>異なるシステムでは、システムコールは異なった方法でアクセスされます
+し、パラメーターも異なる方法でわたされます。例えば、AmigaOS では、他の
+アドレスレジスターやデータレジスタ内のデータによって指されている関数へ
+のポインターを含むテーブルのインデックスが使用されます。他のオペレーティ
+ングシステムは他の方法、トラップ、テーブル、レジスター、スタック等を使
+用しています。そして、これはバイナリエミュレーションによって処理されます。
+<p>最後になりますが、実行可能ファイルがコンパイルされた CPU と、実行す
+るシステムの CPU が一致していることは非常に重要です。システムコールと
+比較すると、実行可能ファイルは 低レベルの CPU インストラクションで構成
+されています。したがって、SCO Unix バイナリー(Intel 386 シリーズ CPU) 
+は、NetBSD i386 上で動作します。しかし、NetBSD Amiga (Motorola 680x0 CPU)
+上で動作させる事はできません。これをおこなうためには、もっと複雑な変換
+システムが必要です。そして、これはアプリケーションの性能に大きな影響を
+あたえます。
 
-<ENTRY>which Which systems can I run binaries from?
-Generally speaking, you can run binaries from other unix operating
-systems which run on the same hardware as your NetBSD system. A list of
-supported Binary formats for each port, as well as user's success stories are
-available in the platform specific pages selectable at <a href="#ports">the
-bottom of this page</a>
-<ENTRY>performance How well does it perform?
-Since the only additional overhead is the mapping from emulated systemcalls
-to native NetBSD system calls, and the reformatting of any parameters,
-if needed, the performance is really, really good. A rough estimate would
-be at most a 1-2% performance impact; if you call 2% impact.  This
-varies depending on which system calls a program uses. Most mappings take
-&lt;1% of the time the actual syscall takes to run.
+<ENTRY>which どのシステムのバイナリーを動かす事ができますか?
+一般的には、NetBSD と同じハードウェア上で動作する unix オペレーティン
+グシステム用のバイナリーを動かすことができます。それぞれのポートでサポー
+トされているバイナリーのフォーマットのリストと、成功例が、
+<a href="#ports">このページの一番最後</a>から選択できるプラットフォーム
+固有のページにあります。
+<ENTRY>performance 性能はどうでしょうか?
+余計なオーバーヘッドは、エミュレートされるシステムコールから NetBSD の
+ネイテイブなシステムコールへのマッピングと、必要ならパラメータの再フォー
+マットにかかる時間だけです。したがって、非常に、非常に高性能です。大雑
+把な見積もりでは、最大で 1-2% の性能への大きな影響があります。もし、あ
+なたが 2% を大きな影響と考えるならですが。これは、プログラムが使用して
+いるシステムコールに依存して変化します。ほとんどのマッピングは、実際に
+システムコールが実行される時間の 1% 未満でしょう。
 
-<ENTRY>considerations Any other considerations?
-In addition to the CPU being of the same type, and the mapping of systemcalls,
-there is one other requirement. Many Unix systems support shared libraries.
-This means that a compiled program does not come with all of its functions
-compiled in, (which means it can be smaller) but it requires an external
-set of libraries which must match the ones the program was compiled to
-use (not including minor modifications). If you wish you run a program
-under binary emulation, you can check whether it was statically or dynamically
-linked, by using the 'file' command...
+<ENTRY>considerations 他に注意すべき事がありますか?
+同じタイプの CPU、システムコールのマッピング以外にも考慮しなければな
+らない事があります。多くの Unix システムは共有ライブラリーをサポートし
+ています。これは、コンパイル済みのプログラムには、すべての関数が含まれ
+ていないという事を意味しています。(これはプログラムのサイズを小さくで
+きるという事でもあります)。しかし、このせいで、外部のライブラリーは、
+プログラムがコンパイルされた時に使っていたものと一致していなければなり
+ません(こまかな変更は関係ありません)。バイナリーエミュレーションでプロ
+グラムを実行したい場合、「file」コマンドを使用し、スタティックリンクか
+ダイナミックリンクかを調べる事ができます。
 <p>% file qwsv
 <br>qwsv: BSD/OS i386 compact demand paged executable
 <p>% file arp
 <br>arp: NetBSD/i386 demand paged dynamically linked executable
-<p>The presence of 'dynamically linked' indicates exactly that, its absence
-indicates static linking. Shared object libraries for most freely available
-Unix systems are available from the NetBSD pkgsrc, under the /compat directory.
-Note that these shared library sets are _not required_ if you are only
-going to run statically linked binaries.
-<p>For commercial systems, you may need to supply your own set of libraries.
-See man -k compat&nbsp; for a list, and man compat_os for some installation
-instructions:
+<p>「dynamically linked」と表示された場合、スタティックにリンクされて
+いないという事を意味しています。フリーに配布されている Unix システム
+用の共有オブジェクトのライブラリーは、NetBSD pkgsrc を使い /compat 
+ディレクトリにインストールされます。スタティックにリンクされたバイナリー
+を実行する場合には、共有ライブラリーは必要ありません。
+<p>商用のシステムの場合は、自分自身でライブラリーを用意する必要があり
+ます。一覧を得るためには man -k compat&nbsp; を参照してください。イン
+ストールの手順については、man compat_os を参照してください:
 <p>% man -k compat
 <br>compat_freebsd (8) - setup procedure for running FreeBSD binaries
 <br>compat_linux (8) - setup procedure for running Linux binaries
@@ -128,10 +131,11 @@ instructions:
 <br>compat_ultrix (8) - setup procedure for Ultrix compatibility on mips
 and vax
 
-<ENTRY>ports Which OSs can I emulate on my machine?
-NetBSD runs on many CPUs and hardware platforms, for specific information,
-please find yours in the list below. If you have additional emulations to
-report, please <a href="../Misc/feedback.html">let us know</a>.
+<ENTRY>ports 私のマシンでは、どの OS のエミュレーションが可能ですか?
+NetBSD は、さまざまな CPU とハードウェア上で動作します。機種固有の
+情報については、以下のリストを参照してください。もし。これ以外の
+エミュレーションについての情報を知っていたら、どうか <a 
+href="../Misc/feedback.html">私達に教えてください</a>。
 <p>
 <big><b>alpha</b></big><p>
 	<ul>
@@ -171,9 +175,9 @@ report, please <a href="../Misc/feedback.html">let us know</a>.
 <big><b>hpcmips</b></big><p>
 <big><b>i386</b></big><p>
 	<ul>
-	<li>BSDI (up to BSDI 3.x binaries)</li>
-	<li>FreeBSD(x86) (non-ELF binaries)</li>
-	<li>IBCS2 systems
+	<li>BSDI (BSDI 3.x バイナリーまで)</li>
+	<li>FreeBSD(x86) (非 ELF バイナリー)</li>
+	<li>IBCS2 システム
 	<ul>
 	<li>Interactive Unix</li>
 	<li>SCO Unix</li>
@@ -249,10 +253,11 @@ report, please <a href="../Misc/feedback.html">let us know</a>.
 	<li>SunOS(68k)</li>
 	</ul>
 
-<ENTRY>applications Which applications have been reported to work on my machine?  
-NetBSD runs on many CPUs and hardware platforms, for specific information,
-please find yours in the list below. If you have additional applications to
-report,  please <a href="../Misc/feedback.html">let us know</a>.
+<ENTRY>applications どのようなアプリケーションが動作するのでしょうか?
+NetBSD は、さまざまな CPU とハードウェア上で動作します。機種固有の情報
+については、以下のリストを参照してください。もし。これ以外のアプリケー
+ションについての情報を知っていたら、どうか <a href="../Misc/feedback.html">
+私達に教えてください</a>。
 <p>
 <big><b>alpha</b></big><p>
 <big><b>amiga</b></big><p>
@@ -267,7 +272,7 @@ report,  please <a href="../Misc/feedback.html">let us know</a>.
 <big><b>i386</b></big><p>
 	<ul>
 	<li>Acroread - Linux(x86)</li>
-	<li>Honyaku-no-Ousama POWER+ - Linux(x86)</li>
+	<li>翻訳の王様 POWER+ - Linux(x86)</li>
 	<li>Mozilla - FreeBSD(x86)</li>
 	<li>Mozilla - Linux(x86)</li>
 	<li>Netscape - BSDI(x86)</li>
@@ -275,8 +280,8 @@ report,  please <a href="../Misc/feedback.html">let us know</a>.
 	<li>Netscape - Solaris(x86)</li>
 	<li>Perforce - FreeBSD(x86)</li>
 	<li>Realplayer 5, 7 - Linux(x86)</li>
-	<li>sqlplus Oracle client - Solaris(x86)</li>
-	<li>StarOffice 5.1a - Linux(x86) (requires NetBSD 1.5 or -current)</li>
+	<li>sqlplus Oracle クライアント - Solaris(x86)</li>
+	<li>StarOffice 5.1a - Linux(x86) (NetBSD 1.5 か -current が必要)</li>
 	<li>WordPerfect 8 - Linux(x86)</li>
 	</ul>
 <p>
@@ -304,17 +309,18 @@ report,  please <a href="../Misc/feedback.html">let us know</a>.
 <big><b>vax</b></big><p>
 <big><b>x68k</b></big><p>
 
-<ENTRY>problems Which applications have been reported to <b>not</b> work on my machine?  
-NetBSD runs on many CPUs and hardware platforms, for specific information,
-please find yours in the list below. If you have additional applications to
-report, please <a href="../Misc/feedback.html">let us know</a>.
+<ENTRY>problems どのようなアプリケーションが動作 <b>しない</b>のでしょうか?
+NetBSD は、さまざまな CPU とハードウェア上で動作します。機種固有の情報
+については、以下のリストを参照してください。もし。これ以外のアプリケー
+ションについての情報を知っていたら、どうか <a href="../Misc/feedback.html">
+私達に教えてください</a>。
 <p>
-In some cases, foreign applications require features not available in the
-emulation layer provided by earlier NetBSD releases. This usually happens when
-a foreign OS implements new syscalls and application authors change their 
-applications to require their availability. Where an application is listed
-below with the phrase 'last unsupported version', all later NetBSD
-releases are able to run the application.
+いくつかのケースでは、アプリケーションは、初期の NetBSD のリリースでサ
+ポートされていないエミュレーションレイヤーの機能を必要とします。通常こ
+れは、他の OS が新しいシステムコールを実装し、アプリケーションの作者が
+それを使うようにアプリケーションを変更した時におこります。以下のリスト
+で、「サポートされていないもっとも新しいバージョン」と書かれているアプ
+リケーションは、それ以降の NetBSD のリリースで動作します。
 <p>
 <big><b>alpha</b></big><p>
 <big><b>amiga</b></big><p>
@@ -328,15 +334,15 @@ releases are able to run the application.
 <big><b>hpcmips</b></big><p>
 <big><b>i386</b></big><p>
 <ul>
-<li>eWnn(Japanese/English translator) - Linux(x86) (requires Mule 2.3, SEGVs)</li>
-<li>Honyaku-Damasi (Japanese/English translator) - Linux(x86)</li>
-<li>Ichitaro ARK for Java (Japanese word processor) - Linux(x86) (needs JSDK1.2.2)</li>
-<li>Objectivity - Linux(x86) (coredumps creating database)</li>
-<li>Oracle - Linux(x86) (SEGV in install)</li>
-<li>Shade Preview - Linux(x86) (may need RedHat shared libs)</li>
-<li>StarOffice 5.1a - Linux(x86) (last unsupported version, NetBSD 1.4.x)</li>
+<li>eWnn(日本語/英語 翻訳) - Linux(x86) (Mule 2.3 が必要、SEGV)</li>
+<li>翻訳魂 (日本語/英語 翻訳) - Linux(x86)</li>
+<li>一太郎 ARK for Java (日本語ワードプロセッサー) - Linux(x86) (JSDK1.2.2 が必要)</li>
+<li>Objectivity - Linux(x86) (データベース作成時に coredump)</li>
+<li>Oracle - Linux(x86) (インストール時に SEGV)</li>
+<li>Shade Preview - Linux(x86) (たぶん RedHat の共有ライブラリーが必要)</li>
+<li>StarOffice 5.1a - Linux(x86) (NetBSD 1.4.x では未対応)</li>
 <li>VMWare</li>
-<li>Wnn6 Ver3 - Linux(x86) (can't open a needed symlink)</li>
+<li>Wnn6 Ver3 - Linux(x86) (必要な symlink がオープンできない)</li>
 </ul>
 <p>
 <big><b>luna68k</b></big><p>
