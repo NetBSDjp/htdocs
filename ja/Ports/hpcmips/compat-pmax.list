@@ -1,84 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
 <!-- Copyright (c) 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>NetBSD/hpcmips NetBSD/pmax binary Compatibility</title>
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<title>NetBSD/hpcmips Binary Compatibility</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1 align=center>
-  <big>
-    <font color="#FF0000" face="helvetica, arial">NetBSD/hpcmips</font>
-    <font face="helvetica, arial"> NetBSD/pmax binary Compatibility</font>
-  </big>
-</h1>
+<h1>NetBSD/<font color="#CC0000">hpcmips</font> バイナリー互換性</h1>
 
-<p>
-This page contains information about NetBSD/hpcmips-pmax-arc-cobalt binary compatibility. At the package level, NetBSD/pmax, NetBSD/hpcmips, NetBSD/cobalt and NetBSD/arc are all compatible.
-Binary snapshot of "NetBSD 1.4U" is available. Userland binaries are compiled with "-mhard-float" flag.
+このページは、 NetBSD/hpcmips のバイナリー互換性について書いてあります。
+パッケージレベルでは、 NetBSD/pmax, NetBSD/hpcmips, NetBSD/cobalt と 
+NetBSD/arc の間で全てが互換性があります。
+ NetBSD/hpcmips のユーザーランドのバイナリーは、
+"-mhard-float" フラグ付でコンパイルされています。
 
 <LIST>
-<SECTION>NetBSD/cobalt binary compatibility
 
+<SECTION>他の NetBSD ポートとの互換性
+
+<ENTRY>cobalt NetBSD/cobalt とのバイナリー互換性
+<a href="../cobalt/">NetBSD/cobalt</a> は arc 、 pmax 、 hpcmips とほぼ互換性
+があります。
+
+<ENTRY>arc NetBSD/arc とのバイナリー互換性
+<a href="/Ports/arc/" origlink="../arc/">NetBSD/arc</a> は、 pmax および hpcmips とほぼ互換です;
+唯一の例外がディスクラベル (MAXPARTITIONS==16) です。
+NetBSD/hpcmips の disklabel コマンドは pmax とも非互換で、
+それは、 fdisk (MBR) パーティションテーブルを扱うからです。
+
+<ENTRY>pmax NetBSD/pmax とのバイナリー互換性
+<a href="/Ports/pmax/" origlink="../pmax/">NetBSD/pmax</a> のユーザーランドバイナリーと
+パッケージもリトルエンディアンですが、 
+(エミュレートされることでできる)ハードウェア浮動小数点と、
+非互換のファンクションコール規則
+(これが、 pmax と hpcmips のバイナリーが共通の共有ライブラリーを使うことを妨げます)
+を使います。
 <p>
-<a href="../cobalt/">NetBSD/cobalt</a> is almost compatible with arc and pmax and hpcmips.
 
-<SECTION>NetBSD/arc binary compatibility
-
+<b>ハードウエア浮動小数点演算 'mipsel' ユーザーランド</b>
 <p>
-<a href="../arc/">NetBSD/arc</a> is almost compatible with pmax and hpcmips.
-Only exception is disklabel (MAXPARTITIONS==16).
-Hpcmips's disklabel command is also incompatible with pmax,
-because it handles fdisk (MBR) partition table.
 
-
-<SECTION>NetBSD/pmax binary compatibility
-
+<dl><dd>
+ NetBSD/pmax とユーザーランドおよびパッケージ共に共有することができます。
+これは、保守の手間と配布物を置く空間を節約しますが、
+浮動小数点演算性能を犠牲にします。
+</dd></dl>
 <p>
-<a href="../pmax/">NetBSD/pmax</a> userland
-binaries and packages are also little endian but use hardware floating
-point (which can be emulated) and incompatible function call rules
-(which prevents pmax and hpcmips binaries from using the same shared
-libraries). 
 
-<ENTRY>hardfloat-mipsel  Hardfloat 'mipsel' userland.
-
+<b>ソフトウエア浮動小数点演算 'mipselsf' ユーザーランドおよびパッケージ</b>
 <p>
-Allows sharing of userland and packages with NetBSD/pmax,
-saving maintenance and distribution space, but at the
-cost of slower floating point performance.
 
-<ENTRY>softfloat-mipself Softfloat 'mipselsf' userland and packages.
-
+<dl><dd>
+これは、パフォーマンスが最も良いのですが、
+これによって、 ダイナミックリンクされた NetBSD/pmax バイナリーを走らせること
+ができません。
+</dd></dl>
 <p>
-This gives the best performance, but cannot run dynamic
-NetBSD/pmax binaries.
 
-<ENTRY>mipsel-mipself Softfloat 'mipselsf' userland, extra 'mipsel' libraries.
-
+<b>ソフトウエア浮動小数点演算 'mipselsf' ユーザーランド、 外付けの 'mipsel' 
+ライブラリー</b>
 <p>
-Softfloat 'mipselsf' userland, extra 'mipsel' libraries.<br>
-Two copies of each shared library are produced, one softfloat,
-one hardfloat, and ld.so modified to use correct type.
-This would allow both types of binaries to run, but would be
-a maintenance nightmare.
+
+<dl><dd>
+1つは、ソフトウェア浮動小数点演算、もう1つはハードウェア浮動小数点演算の
+2部の共有化ライブラリーをつくり、 ld.so を、適切な方式を使うように変更しま
+す。
+これは、どちらのタイプのバイナリーも実行できますが、これの保守は悪夢です。
+</dd></dl>
+
+<SECTION>ULTRIX との互換性
+
+<ENTRY>ultrix ULTRIX とのバイナリー互換性
+NetBSD/hpcmips は、スタティックリンクされた ULTRIX バイナリーを実行できます。
+<p>
+
+<ol>
+<li>カーネルコンフィグレーションオプションを追加し
+カーネルを再構築します。
+    <p>
+
+    <tt>options COMPAT_ULTRIX<br>
+    options EXEC_ECOFF</tt>
+    <p>
+
+<li>/usr/share/examples/emul/ultrix/etc/svc.conf を
+    /etc/svc.conf か /emul/ultrix/etc/syc.conf にコピーします。
+    <p>
+
+<li>/etc/hosts にホスト名を追加します。
+</ol>
+<p>
+
+NetBSD/hpcmips は、 <a
+href="http://distributed.net/download/clients.html">distributed.net
+clients</a> のようなスタティックリンクされている ULTRIX バイナリーを実行できます。
+
+<SECTION> Linux の MIPS 移植物との互換性
+
+<ENTRY>linux Linux との互換性
+NetBSD/hpcmips には "COMPAT_LINUX" カーネルオプションがありますが、
+それはまったくテストされていません。
+これに関するもっと多くのテスターや開発者を歓迎します。
 
 </LIST>
 
-<a href="">Up to <em>NetBSD/hpcmips Port Page</em></a>
+<a href=""><em>NetBSD/hpcmips ポートページ</em>に戻る</a>
 <hr>
 
-<HOMELINK>
+<PORTLINK>
 
 <hr>
 <address>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: compat-pmax.list,v 1.3 2000/03/22 05:28:45 jun Exp $<br>
+  <small>
+  www@JP.NetBSD.ORG<br>
+  $NetBSD: compat-pmax.list,v 1.4 2001/03/10 18:53:22 kano Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 2000
     The NetBSD Foundation, Inc. ALL RIGHTS RESERVED.</a> 
+  </small>
 </address>
 
 </body>
 </html>
-
