@@ -31,6 +31,23 @@
 
 <SECTION>General Questions
 
+<ENTRY>ec-nfs NFS client with an 3Com 3c400 (<tt>ec</tt>) card
+The 3Com 3c400 (<tt>ec</tt>) Multibus Ethernet card can only buffer two 
+received Ethernet packets, regardless of their length, before it starts 
+dropping packets.  Unless overridden, an NFS client read requests 8
+kilobytes at a time.  This means six or more packets will be sent by 
+the server, usually quickly enough to fill the card and cause the third 
+packet to get dropped.
+
+<p>
+NFS has an all-or-nothing mentality about it, so the client will throw
+away any packets it did get and just send the request again, making
+for a vicious cycle.  The solution is to tell NFS to only request 1
+kilobyte at a time, done by adding an option to the client's mount command:
+
+<p>
+<tt>mount -t nfs -o -r=1024 <i>server</i>:<i>directory</i> <i>mountpoint</i></tt>
+
 <ENTRY>sunos_compat SunOS Compatibility
 NetBSD/Sun2 will one day feature extensive binary compatibility with
 SunOS 3 and SunOS 4 programs, however this work has not been done yet.
@@ -52,7 +69,7 @@ release and after a few months had it booting multiuser.  In April
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.6 2001/07/11 14:52:27 dent Exp $<br>
+  $NetBSD: faq.list,v 1.8 2001/08/26 15:56:40 fredette Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
