@@ -1,0 +1,378 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 2000
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Binary Emulation</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>Binary Emulation in NetBSD
+
+<LIST>
+
+<SECTION>Binary Emulation
+
+<ENTRY>what What is Binary Emulation? Why does it exist?
+A large amount of Unix software is distributed in source-code format.
+This means the authors actually provide the C (or other language) program
+code, and the installation process uses a compiler to generate an executable
+to run on the local machine. Carefully written source-code and installation
+utilities can allow the same program to be built on dozens of different
+operating systems.
+<p>Commercial software vendors are not inclined to distribute source code
+since it may contain trade-secrets. Commercial vendors normally deliver
+the executable programs which can be run directly. They perform the compilation
+stage in-house, and delivery binary files from which their secrets are
+less easily discernible.
+<p>The result of this is that the vendor must make a choice to expend man-power
+for each different operating system they support, normally maintaining
+a system to do testing with, and at least one person to do compilation
+and testing.
+<p>This ties together the Operating System and the set of applications
+a consumer may wish to run. One may choose not to run a particular application
+because it is not available on their Operating System of choice, or one
+may be forced to run an Operating System one would rather not, due to the
+availability of some critical application.
+<p>Binary Emulation eliminates this forced linkage.
+
+<ENTRY>compat What other binary compatibility is there?
+There is another compatibility feature worth being aware of.  NetBSD uses
+the same binary object file format across NetBSD machines with the same CPU. 
+If you build binaries on your NetBSD sun3, you can run them on your NetBSD
+amiga, NetBSD mac68k, NetBSD mvme68k, NetBSD next68k... however, you couldn't
+run them on Intel processor based machines.
+
+<ENTRY>how How does it work?
+Unix and Unix-like systems consist of two primary parts, the Kernel,
+and everything else. The kernel is the program which controls devices,
+security, and the programs which wish to use the machine's resources.
+Typically, the kernel provides these services to other programs through
+kernel system calls. An example would be a program requesting to OPEN a
+file, the program calls the kernel OPEN function with a set of parameters
+indicating what it wishes to do, and the kernel allows or denies the request,
+and replies with the information the program requires to continue.
+<p>Every Unix and Unix-like system supplies a very similar set of these
+systemcalls. (They all have an OPEN for example)
+<br>From system to system, the primary differences in syscalls will be in
+the format of parameters passed to these calls. (NetBSD's OPEN takes a
+filename, flags, and a mode)&nbsp; The names of the calls may also differ
+from system to system. If a NetBSD system wishes to run a Linux executable,
+each time the program performs a systemcall, the kernel performs a mapping
+function to the corresponding NetBSD systemcall, and re-orders/re-formats
+the parameters as required.
+<p>Another important issue is the format of the executable files.
+About every second operating system uses a different file format in which it
+saves its binaries, using different headers, magic cookies, hunks, whatever.
+The one NetBSD supports natively is a.out or ELF(depending on the architecture,
+and version of NetBSD. NetBSD is migrating to ELF, with each port moving
+according to its own schedule). Some other executable formats include b.out,
+COFF, ECOFF, ieee695, PE, SOM, and XCOFF. NetBSD's emulation knows how to
+handle the executable format for the emulated system. 
+<p>Across different systems syscalls are accessed in different ways, and 
+parameters are passed differently. As an example, under AmigaOS, this is done
+with an index into a table containing pointers to functions pointed to by
+some address register and the data in some data register. Other operating
+systems use other methods, traps, tables, registers, stacks, etc. and this is
+handled by the binary emulation. 
+<p>The final significant requirement is that the CPU the executable was
+compiled for must match the system it will run on. Besides systemcalls,
+executables consist of raw CPU instructions. Therefore, SCO Unix binaries
+(Intel 386 series CPU) will run on NetBSD i386, but can not be run on NetBSD
+Amiga (Motorola 680x0 CPU). Performing that function would require a much
+more complicated translation system, and would have a significant impact
+on application performance.
+
+<ENTRY>which Which systems can I run binaries from?
+Generally speaking, you can run binaries from other unix operating
+systems which run on the same hardware as your NetBSD system. A list of
+supported Binary formats for each port, as well as user's success stories are
+available in the platform specific pages selectable at <a href="#ports">the
+bottom of this page</a>
+<ENTRY>performance How well does it perform?
+Since the only additional overhead is the mapping from emulated systemcalls
+to native NetBSD system calls, and the reformatting of any parameters,
+if needed, the performance is really, really good. A rough estimate would
+be at most a 1-2% performance impact; if you call 2% impact.  This
+varies depending on which system calls a program uses. Most mappings take
+&lt;1% of the time the actual syscall takes to run.
+
+<ENTRY>considerations Any other considerations?
+In addition to the CPU being of the same type, and the mapping of systemcalls,
+there is one other requirement. Many Unix systems support shared libraries.
+This means that a compiled program does not come with all of its functions
+compiled in, (which means it can be smaller) but it requires an external
+set of libraries which must match the ones the program was compiled to
+use (not including minor modifications). If you wish you run a program
+under binary emulation, you can check whether it was statically or dynamically
+linked, by using the 'file' command...
+<p>% file qwsv
+<br>qwsv: BSD/OS i386 compact demand paged executable
+<p>% file arp
+<br>arp: NetBSD/i386 demand paged dynamically linked executable
+<p>The presence of 'dynamically linked' indicates exactly that, its absence
+indicates static linking. Shared object libraries for most freely available
+Unix systems are available from the NetBSD pkgsrc, under the /compat directory.
+Note that these shared library sets are _not required_ if you are only
+going to run statically linked binaries.
+<p>For commercial systems, you may need to supply your own set of libraries.
+See man -k compat&nbsp; for a list, and man compat_os for some installation
+instructions:
+<p>% man -k compat
+<br>compat_freebsd (8) - setup procedure for running FreeBSD binaries
+<br>compat_linux (8) - setup procedure for running Linux binaries
+<br>compat_sunos (8) - setup procedure for m68k and sparc architectures
+<br>compat_svr4 (8) - setup procedure for running SVR4/iBCS2 binaries
+<br>compat_ultrix (8) - setup procedure for Ultrix compatibility on mips
+and vax
+
+<ENTRY>ports Which OSs can I emulate on my machine?
+NetBSD runs on many CPUs and hardware platforms, for specific information,
+please find yours in the list below. If you have additional emulations to
+report, please <a href="../Misc/feedback.html">let us know</a>.
+<p>
+<big><b>alpha</b></big><p>
+	<ul>
+	<li>Linux(Alpha)</li>
+	<li>OSF/1</li>
+	</ul>
+<p>
+<big><b>amiga</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+<p>
+<big><b>arc</b></big><p>
+<big><b>arm26</b></big><p>
+<big><b>arm32</b></big><p>
+<big><b>atari</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+<p>
+<big><b>bebox</b></big><p>
+<big><b>cobalt</b></big><p>
+<big><b>hp300</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+<p>
+<big><b>hpcmips</b></big><p>
+<big><b>i386</b></big><p>
+	<ul>
+	<li>BSDI (up to BSDI 3.x binaries)</li>
+	<li>FreeBSD(x86) (non-ELF binaries)</li>
+	<li>IBCS2 systems
+	<ul>
+	<li>Interactive Unix</li>
+	<li>SCO Unix</li>
+	<li>SCO Xenix</li>
+	</ul></li>
+	<li>Linux(x86)</li>
+	<li>Solaris(x86)</li>
+	</ul>
+<p>
+<big><b>luna68k</b></big><p>
+<big><b>mac68k</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+<p>
+<big><b>macppc</b></big><p>
+<big><b>mipsco</b></big><p>
+<big><b>mvme68k</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+<p>
+<big><b>news68k</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+<p>
+<big><b>newsmips</b></big><p>
+<big><b>next68k</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+<p>
+<big><b>ofppc</b></big><p>
+<big><b>pc532</b></big><p>
+<big><b>pmax</b></big><p>
+<big><b>prep</b></big><p>
+<big><b>sgimips</b></big><p>
+<big><b>sh3</b></big><p>
+<big><b>sparc</b></big><p>
+	<ul>
+	<li>SunOS(sparc)</li>
+	<li>Solaris(sparc)</li>
+	</ul>
+<p>
+<big><b>sparc64</b></big><p>
+<big><b>sun3</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+<p>
+<big><b>vax</b></big><p>
+<big><b>x68k</b></big><p>
+	<ul>
+	<li>Amiga Unix (SVR4)</li>
+	<li>HPUX(68k)</li>
+	<li>Linux(m68k)</li>
+	<li>SunOS(68k)</li>
+	</ul>
+
+<ENTRY>applications Which applications have been reported to work on my machine?  
+NetBSD runs on many CPUs and hardware platforms, for specific information,
+please find yours in the list below. If you have additional applications to
+report,  please <a href="../Misc/feedback.html">let us know</a>.
+<p>
+<big><b>alpha</b></big><p>
+<big><b>amiga</b></big><p>
+<big><b>arc</b></big><p>
+<big><b>arm26</b></big><p>
+<big><b>arm32</b></big><p>
+<big><b>atari</b></big><p>
+<big><b>bebox</b></big><p>
+<big><b>cobalt</b></big><p>
+<big><b>hp300</b></big><p>
+<big><b>hpcmips</b></big><p>
+<big><b>i386</b></big><p>
+	<ul>
+	<li>Acroread - Linux(x86)</li>
+	<li>Honyaku-no-Ousama POWER+ - Linux(x86)</li>
+	<li>Mozilla - FreeBSD(x86)</li>
+	<li>Mozilla - Linux(x86)</li>
+	<li>Netscape - BSDI(x86)</li>
+	<li>Netscape - Linux(x86)</li>
+	<li>Netscape - Solaris(x86)</li>
+	<li>Perforce - FreeBSD(x86)</li>
+	<li>Realplayer 5, 7 - Linux(x86)</li>
+	<li>sqlplus Oracle client - Solaris(x86)</li>
+	<li>StarOffice 5.1a - Linux(x86) (requires NetBSD 1.5 or -current)</li>
+	<li>WordPerfect 8 - Linux(x86)</li>
+	</ul>
+<p>
+<big><b>luna68k</b></big><p>
+<big><b>mac68k</b></big><p>
+<big><b>macppc</b></big><p>
+<big><b>mipsco</b></big><p>
+<big><b>mvme68k</b></big><p>
+<big><b>news68k</b></big><p>
+<big><b>newsmips</b></big><p>
+<big><b>next68k</b></big><p>
+<big><b>ofppc</b></big><p>
+<big><b>pc532</b></big><p>
+<big><b>pmax</b></big><p>
+<big><b>prep</b></big><p>
+<big><b>sgimips</b></big><p>
+<big><b>sh3</b></big><p>
+<big><b>sparc</b></big><p>
+	<ul>
+	<li>Netscape - Solaris(sparc)</li>
+	</ul>
+<p>
+<big><b>sparc64</b></big><p>
+<big><b>sun3</b></big><p>
+<big><b>vax</b></big><p>
+<big><b>x68k</b></big><p>
+
+<ENTRY>problems Which applications have been reported to <b>not</b> work on my machine?  
+NetBSD runs on many CPUs and hardware platforms, for specific information,
+please find yours in the list below. If you have additional applications to
+report, please <a href="../Misc/feedback.html">let us know</a>.
+<p>
+In some cases, foreign applications require features not available in the
+emulation layer provided by earlier NetBSD releases. This usually happens when
+a foreign OS implements new syscalls and application authors change their 
+applications to require their availability. Where an application is listed
+below with the phrase 'last unsupported version', all later NetBSD
+releases are able to run the application.
+<p>
+<big><b>alpha</b></big><p>
+<big><b>amiga</b></big><p>
+<big><b>arc</b></big><p>
+<big><b>arm26</b></big><p>
+<big><b>arm32</b></big><p>
+<big><b>atari</b></big><p>
+<big><b>bebox</b></big><p>
+<big><b>cobalt</b></big><p>
+<big><b>hp300</b></big><p>
+<big><b>hpcmips</b></big><p>
+<big><b>i386</b></big><p>
+<ul>
+<li>eWnn(Japanese/English translator) - Linux(x86) (requires Mule 2.3, SEGVs)</li>
+<li>Honyaku-Damasi (Japanese/English translator) - Linux(x86)</li>
+<li>Ichitaro ARK for Java (Japanese word processor) - Linux(x86) (needs JSDK1.2.2)</li>
+<li>Objectivity - Linux(x86) (coredumps creating database)</li>
+<li>Oracle - Linux(x86) (SEGV in install)</li>
+<li>Shade Preview - Linux(x86) (may need RedHat shared libs)</li>
+<li>StarOffice 5.1a - Linux(x86) (last unsupported version, NetBSD 1.4.x)</li>
+<li>VMWare</li>
+<li>Wnn6 Ver3 - Linux(x86) (can't open a needed symlink)</li>
+</ul>
+<p>
+<big><b>luna68k</b></big><p>
+<big><b>mac68k</b></big><p>
+<big><b>macppc</b></big><p>
+<big><b>mipsco</b></big><p>
+<big><b>mvme68k</b></big><p>
+<big><b>news68k</b></big><p>
+<big><b>newsmips</b></big><p>
+<big><b>next68k</b></big><p>
+<big><b>ofppc</b></big><p>
+<big><b>pc532</b></big><p>
+<big><b>pmax</b></big><p>
+<big><b>prep</b></big><p>
+<big><b>sgimips</b></big><p>
+<big><b>sh3</b></big><p>
+<big><b>sparc</b></big><p>
+<big><b>sparc64</b></big><p>
+<big><b>sun3</b></big><p>
+<big><b>vax</b></big><p>
+<big><b>x68k</b></big><p>
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: compat.list,v 1.15 2000/10/20 04:47:42 dent Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy;
+    2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
