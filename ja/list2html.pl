@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 #
-# $Id: list2html.pl,v 1.19 1999/07/18 07:21:14 abs Exp $
+# $Id: list2html.pl,v 1.33 1999/11/25 16:50:23 abs Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
-#	<SECTION>Text		Introduces new section, before DATE or ENTRY
-#	<ENDLIST>		Optional tag for end of all special entries
+#	<SECTION>Text		Introduces new section
+#	</LIST> or <ENDLIST>	Mark end of all special entries
 #
 # Plus these optional tags: (You will probably want to use <DATE> or <ENTRY>)
 #	<DATE>tag date Text	Change entry, expanded to title & added to list
@@ -20,46 +20,55 @@
 # Additional links:
 #	([\w.+]+)\((\d)\) -> manpages		eg: ls(1)
 #	<([-\w.]+@[-\w.]+)> -> email address	eg: <user@host>
+#	<PKGSRC>category/name -> link to pkgsrc README.html
 #
 # (c) 1999 DKBrownlee. All rights reserved. This file may be used to update
 # the information on the NetBSD website. If you want to use it for any other
 # purpose, ask me first.. abs@mono.org
 #
-# Should probably 'remember' '$NetBSD' tags from output files
 
 use strict;
-require 'getopts.pl';
+use Getopt::Std;
 $^W=1;
-use vars('$opt_a','$opt_h','$opt_m');
 my($verbose,%extras,$months_previous);
+my($version,%opt,%pkgname);
+
+# List of pkgsrc names to 'human preferred' forms
+%pkgname = qw(kde KDE gimp GIMP gnome GNOME xsane XSane);
 
 $months_previous=9;	# previous months to display for DATE entries
 
-if (!&Getopts('a:m:h') || $opt_h || @ARGV != 2 )
+$version='$Revision: 1.33 $';
+$version =~ /([\d.]+)/ && ($version=$1);
+
+if (!&getopts('a:m:hV',\%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
 
     {
     print "list2html.pl [opts] infile outfile
 [opts]	-a xxx	Define 'arch=xxx' when linking to manpages
 	-m xxx	Set months to display for <DATE> (default $months_previous)
 	-h	This help.
+	-V	Display version and exit ($version - David Brownlee/abs)
 
-list2html.pl processes .list files into .html, parsing various special tags. 
+list2html.pl processes .list files into .html, parsing various special tags.
 .list files are intended to reduce the effort required to maintain files such
 as FAQs, and change logs. More details given at the start of list2html.pl.
 ";
     exit;
     }
+if ($opt{'V'})
+    { print "$version\n"; exit; }
 
 $verbose=1;
-if ($opt_m)
-    { $months_previous=$opt_m; }
+if ($opt{'m'})
+    { $months_previous=$opt{'m'}; }
 $months_previous=&get_minmonth($months_previous);
 
 %extras=(
 	'<HEADING>\s*(.*)','
 <table><tr><td>
 <a href="$HOME/Misc/daemon-copy.html">
-<img align="center" src="$HOME/images/BSD-demon.gif" border=0
+<img align="center" src="$HOME/images/BSD-demon.jpg" border=0
 width=146 height=129 alt="BSD demon"></a>
 </td><td align=center>
 <h1>NetBSD Documentation:</h1>
@@ -71,21 +80,22 @@ width=146 height=129 alt="BSD demon"></a>
   <td>
     <table><tr>
       <td>
-	<a href="$HOME/index.html">
-        <img src="$HOME/images/NetBSD-banner.gif" width=91 height=42
-	    alt="NetBSD&nbsp;Home"></a>
+	<a href="$HOME/">
+        <img src="$HOME/images/NetBSD-banner.jpg" width=91 height=42
+	    border="0" alt="NetBSD&nbsp;Home"></a>
       </td><td>
-	<a href="$HOME/index.html">Home Page</a>
+	<a href="$HOME/">Home Page</a>
       </td>
     </tr></table>
   </td><td>
     <table><tr>
       <td>
-	<a href="$DOCUMENTATION/index.html"> <img
-	    src="$HOME/images/NetBSD-banner.gif" width=91 height=42
-	    alt="NetBSD&nbsp;Documentation"></a>
+	<a href="$DOCUMENTATION/"> <img
+	    src="$HOME/images/NetBSD-banner.jpg" width=91 height=42
+	    alt="NetBSD&nbsp;Documentation"
+        border="0"></a>
       </td><td>
-	<a href="$DOCUMENTATION/index.html">Documentation top level</a>
+	<a href="$DOCUMENTATION/">Documentation top level</a>
       </td>
     </tr></table>
   </td>
@@ -118,12 +128,31 @@ sub check_date
     ( $when>$months_previous );
     }
 
+sub extract_tags
+    {
+    my($file,@tags)=@_;
+    my($tag,%map);
+
+    if (!open(FILE,$file))
+	{ return; }
+    while (<FILE>)
+	{
+	foreach $tag (@tags)
+	    {
+	    if ( /($tag)/ )
+		{ $map{$tag}=$1; }
+	    }
+	}
+    close(FILE);
+    %map;
+    }
+
 sub extras_generate
     {
     my(%extras)=@_;
     my($pathtodoc,$str);
 
-    if( $0 !~ m#(.*)/[^/]+.pl# )
+    if ($0 !~ m#(.*)/[^/]+.pl#)
 	{ &fail("Unable to extract path from '$0'"); }
     $pathtodoc="$1/Documentation";
     foreach $str ( keys %extras )
@@ -142,9 +171,9 @@ sub extras_process
     foreach $key ( keys %extras )
 	{
 	$value=$extras{$key};
-	if( $data =~ /$key/ )
+	if ($data =~ /$key/)
 	    {
-	    if( defined($1) )
+	    if (defined($1))
 		{
 		$title=$1;
 		$value=~s#\$TITLE#$title#g;
@@ -170,7 +199,7 @@ sub get_minmonth
 
     ++$month;
     $month-=$monthsback;
-    while( $month<1 )
+    while ($month<1)
 	{
 	$month+=12;
 	--$year;
@@ -185,9 +214,12 @@ sub makelist
     {
     my($infile,$outfile,%extras)=@_;
     my($data,$section,$href,$header,$list,$pre,%tags,$date_month);
-    my($date_num,$date_num_used,$entry_num,$ignore,$in_entry,$endlist);
+    my($date_num,$date_num_used,$entry_num,$ignore,$in_entry,$in_section);
+    my($endlist);
     my($title_font) = "<font face=\"helvetica, arial, sans-serif\">";
     my($end_title_font) = "</font>";
+    my(%rcsmap)=&extract_tags($outfile,'\$NetBSD.*\$');
+    my($rcstag);
 
     $list='';
 
@@ -196,17 +228,19 @@ sub makelist
     open(FILE,$infile) || die("Unable to open '$infile': $!");
     foreach( <FILE> )
 	{
-	if( defined($pre) )		# Handle continuation lines
+	foreach $rcstag (%rcsmap)
+	    { s/$rcstag/$rcsmap{$rcstag}/; }
+	if (defined($pre))		# Handle continuation lines
 	    { $_=$pre.$_; $pre=undef; }
 
-	if( substr($_,-2) eq "\\\n" )	# Handle continuation lines
+	if (substr($_,-2) eq "\\\n")	# Handle continuation lines
 	    {
 	    s/\\\n$//;
 	    $pre=$_;
 	    next;
 	    }
 
-	if( m#^<DATE>\s*(.+\S)# )	# Changes
+	if (m#^<DATE>\s*(.+\S)#)	# Changes
 	    {
 	    my($year,$month,$link);
 
@@ -218,13 +252,13 @@ sub makelist
 	    $ignore=undef;
 	    ++$date_num;
 	    $header=$1;
-	    if( $header !~ /^([-a-z0-9_.+]+)\s+(\d+) (\S+) (\d+) - (\S.*)/ )
+	    if ($header !~ /^([-a-z0-9_.+]+)\s+(\d+) (\S+) (\d+) - (\S.*)/)
 		{ &fail("'$header' not in expected 'date - event' format"); }
 	    $href=$1;
 	    $header="$5 ($2 $3)";
 	    $month="$3 $4";
 	    $link=$5;
-	    if( defined($tags{$href}) )
+	    if (defined($tags{$href}))
 		{ &fail("Duplicate name tag '$href'"); }
 	    $tags{$href}=1;
 	    if (!&check_date($month))
@@ -233,9 +267,9 @@ sub makelist
 		{
 		$_='';
 		++$date_num_used;
-		if( $month ne $date_month )
+		if ($month ne $date_month)
 		    {
-		    if( $date_month ne '' )
+		    if ($date_month ne '')
 			{ $list.="</ul>$end_title_font\n"; }
 		    $list.="<h3>$month</h3>\n$title_font<ul>\n";
 		    $_.="<hr><h2>$month</h2><hr>\n";
@@ -251,24 +285,25 @@ sub makelist
 		}
 	    }
 
-	elsif( m#^<ENTRY>\s*(.+\S)# )
+	elsif (m#^<ENTRY>\s*(.+\S)#)
 	    {
+	    if (! $in_section )
+		{ $list.="$title_font<ul>\n"; }	# Start title list
+
 	    if ($in_entry)
 		{
 		$data.="</dd></dl></p>\n";
 		$in_entry=undef;
 		}
-	    
+
 	    $ignore=undef;
 	    ++$entry_num;
-	    if( !defined($section) )
-		{ &fail("<ENTRY> before <SECTION> tag"); }
 	    $_=$1;
-	    if( ! /^([-a-z0-9_.+]+)\s+(.*)/ )
-		{ &fail("Invalid <ENTRY> ($_), not ([-a-z0-9_.+]+)\s+(.*)"); }
+	    if (! /^([-a-z0-9_.+,]+)\s+(.*)/)
+		{ &fail("Invalid <ENTRY> ($_), not ([-a-z0-9_.+,]+)\s+(.*)"); }
 	    $href=$1;
 	    $header=$2;
-	    if( defined($tags{$href}) )
+	    if (defined($tags{$href}))
 		{ &fail("Duplicate name tag '$href'"); }
 	    $tags{$href}=1;
 
@@ -279,27 +314,29 @@ sub makelist
 	    $list.="<li><a href=\"#$href\">".
 		    "$header".
 		    "</a></li>\n";
-	    $in_entry=1;
+	    $in_entry = $in_section = 1;
 	    &verbose("\t$href\n");
 	    }
 
-	elsif( m#^<ENTRYLINK>\s*(.+\S)# )
+	elsif (m#^<ENTRYLINK>\s*(.+\S)#)
 	    {
+	    if ( ! $in_section )
+		{ $list.="$title_font<ul>\n"; }	# Start title list
+
 	    $ignore=undef;
 	    ++$entry_num;
-	    if( !defined($section) )
-		{ &fail("<ENTRYLINK> before <SECTION> tag"); }
 	    $_=$1;
-	    if( ! m#^(\S+)\s+(.*)# )
+	    if (! m#^(\S+)\s+(.*)#)
 		{ &fail("Invalid <ENTRYLINK> ($_), not (\S+)\s+(.*)"); }
 	    $href=$1;
 	    $header=$2;
 	    $_ = '';
 	    $list.="<li><a href=\"$href\">$header</a></li>\n";
+	    $in_section = 1;
 	    &verbose("\t$href\n");
 	    }
 
-	elsif( m#^<SECTION>\s*(.+\S)# )
+	elsif (m#^<SECTION>\s*(.+\S)#)
 	    {
 	    if ($in_entry)
 		{
@@ -309,11 +346,12 @@ sub makelist
 	    else # In case no entries
 		{ $data =~ s#<hr>\n<h2>.*</h2><hr>\n*$##; }
 	    $ignore=undef;
-	    if( defined($section) )
+	    if (defined($section))
 		{
 		$list.="</ul>$end_title_font\n";
 		$section=$1;
-		$list.="<h2>$section</h2>\n$title_font<ul>\n";
+		$list.="<h2>$section</h2>\n";
+		$list.="$title_font<ul>\n";	# Start title list
 		}
 	    else
 		{	# If we have never seen <SECTION> remember top link!
@@ -322,18 +360,19 @@ sub makelist
 			"$title_font<ul>\n";
 		}
 	    $_="<hr>\n<h2>$section</h2><hr>";
+	    $in_section = 1;
 	    &verbose("    $section\n");
 	    }
-	elsif( m#^<TROW>\s*(.*)# )
+	elsif (m#^<TROW>\s*(.*)#)
 	    {
 	    $_=$1;
-	    if( ! m#^([^:]+:)\s+(.*)# )
+	    if (! m#^([^:]+:)\s+(.*)#)
 		{ &fail("<TROW> should match ([^:]+:)\s+(.*)"); }
 	    $ignore=undef;
 	    $_ = "<tr><th valign=top align=right>$1</th>\n    <td>$2</td></tr>";
 	    }
 
-	elsif( m#^<ENDLIST># )
+	elsif (m#^(</LIST>|<ENDLIST>)#)
 	    {
 	    if ($in_entry)
 		{
@@ -341,7 +380,7 @@ sub makelist
 		$in_entry=undef;
 		}
 	    if ($endlist)
-		{ &fail("Duplicate <ENDLIST>"); }
+		{ &fail("Duplicate </LIST> or <ENDLIST>"); }
 	    $endlist=1;
 	    $ignore=undef;
 	    $_="<hr>\n";
@@ -349,14 +388,14 @@ sub makelist
 
 	# Foul hack to avoid incorrect installboot(8) references
 	# May fail valid links also. Only until i386 vs alpha manpage resolved.
-	if( ! $ignore )
+	if (! $ignore)
 	    { $data.=&sub_external_links($_); }
 	}
 
     close(FILE);
     $list.="</ul>$end_title_font\n";
     if (!$endlist)
-	{ &fail("Missing <ENDLIST> tag"); }
+	{ &fail("Missing </LIST> tag"); }
     if ($data !~ s/<LIST>/$list/)
 	{ &fail("Unable to locate <LIST> tag"); }
     $_="\n\n<!-- DO NOT EDIT THIS FILE. EDIT '$infile' AND RUN 'make' -->\n";
@@ -366,14 +405,14 @@ sub makelist
     open(FILE,">$outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data,%extras);
     close(FILE);
-    if( $date_num )
+    if ($date_num)
 	{
 	print "$date_num date entr",($date_num==1)?'y':'ies';
 	if ($date_num_used != $date_num)
 	    { print " ($date_num_used used)"; }
 	print ".\n";
 	}
-    if( $entry_num )
+    if ($entry_num)
 	{ print "$entry_num entr",($entry_num==1)?'y':'ies',".\n"; }
     }
 
@@ -384,17 +423,28 @@ sub sub_external_links
 
     $link='http://www.flame.org/cgi-bin/uncgi/hman?';
 
-    if ($opt_a)
-	{ $link.="arch=$opt_a&amp;"; }
+    if ($opt{'a'})
+	{ $link.="arch=$opt{'a'}&amp;"; }
 
     # Man page references. As of 1.4 matches every page except '[' and 'w'.
     #
     $text =~
 	s#([a-zA-Z_][-\w.+]*[\w+])\((\d)\)#<a href="${link}page=$1&amp;sect=$2">$1($2)</a>#g;
-    
+
+    # Expand <PKGSRC>category/name entries
+    #
+    while ( $text =~ m#<PKGSRC>((\w+/|)([^\s<>]+\w))#)
+	{
+        my($n) = $3;
+	if (defined($pkgname{$n}))
+	    { $n = $pkgname{$n}; }
+        $text =~ s#<PKGSRC>((\w+/|)([^\s<>]+\w))#<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
+	}
+
     # Expand <user@host> email addresses
     #
     $text =~ s#<([-\w.]+@[-\w.]+)>#<a href="mailto:$1">&lt;$1&gt;</a>#g;
+
     $text;
     }
 
