@@ -22,7 +22,7 @@ Apple の System Disk ユーティリティーを使って Open Firmware を
 <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/macos-utils/bootvars/">
 Boot Variables</a>
 という古いプログラムもあり、いくつかのオプションが追加されています。
-しかし、 Boot Variables はバグのある OF バージョンへのパッチを含みません。
+しかし、 Boot Variables はバグのある Open Firmware バージョンへのパッチを含みません。
 お使いの機種が
 <a href="../models.html#no.sysdisk">System Disk に対応していない</a>
 場合を除いては、 System Disk を使うことをおすすめします。
@@ -43,8 +43,10 @@ Boot Variables</a>
       <a href="http://til.info.apple.com/techinfo.nsf/artnum/n60353">Disk Copy 6.3.3</a>
       以降を使う必要があります (これは、 PowerPC より前の (つまり m68k) Mac
       を含む、 MacOS 7.0.1 以降の全システムで使えます) 。
+      しかし、ブートフロッピーイメージを単に <tt>dd(8)</tt> や
+      <tt>rawrite</tt> でフロッピーに書き出すことは、できません。
       <p>
-      古いマシン (OF 1.0.5) では、 MacOS をブートするたびに、
+      古いマシン (Open Firmware 1.0.5) では、 MacOS をブートするたびに、
       Open Firmware のすべての設定 (nvram を含む)
       がデフォルト値に戻されますので注意してください。
       <p>
@@ -55,6 +57,8 @@ Boot Variables</a>
       <p>
       MacBinary から自動マウントディスクイメージへの変換のため、
       StuffIt Expander (または別のユーティリティー) が必要です。
+      <a href="http://www.stuffit.com/expander/notes.html">Aladdin Systems の
+      ヘルプページ</a> を参照してください。
       <p>
 
   <li><big><b>ディスクイメージのマウントと System Disk の実行</b></big>
@@ -63,7 +67,7 @@ Boot Variables</a>
       イメージ中に <tt>System Disk</tt> ユーティリティーがあります。
       このプログラムを実行します:
       <p>
-      <img src="/images/ports/macppc/systemdisk1.gif"
+      <img src="../../../../images/ports/macppc/systemdisk1.gif"
       origlink="../../../images/ports/macppc/systemdisk1.gif"
        width="523" height="319" alt="System Disk のスクリーンショット">
       <p>
@@ -72,9 +76,9 @@ Boot Variables</a>
       <p>
       <tt>Save</tt> ボタンをクリックすると、そのマシンに必要な nvram
       パッチをインストールしますが、 PowerMacintosh 7300 - 8600 の
-      ビデオタイミングの小修正はインストールされません。
-      これについては、 <a href="of105patch.html">OF 1.0.5 パッチ</a>を
-      別に用意してあります。
+      ビデオタイミングと同期の小修正はインストールされません。
+      これについては、 <a href="../../../../Ports/macppc/SystemDisk-tutorial/of105patch.html" origlink="of105patch.html">Open Firmware 1.0.5 パッチ</a>
+      を別に用意してあります。
       <p>
 
   <li><big><b>Advanced Options</b></big>
@@ -83,14 +87,14 @@ Boot Variables</a>
       手動で選択します。
       <tt>Advanced Options</tt> をクリックします:
       <p>
-      <img src="/images/ports/macppc/systemdisk2.gif"
+      <img src="../../../../images/ports/macppc/systemdisk2.gif"
       origlink="../../../images/ports/macppc/systemdisk2.gif"
        width="573" height="367" alt="Advanced Options のスクリーンショット">
       <p>
 
   <li><big><b>Input Device/Output Device</b></big>
       <p>
-      内蔵ビデオが Open Firmware に対応していれば、 System Disk
+      オンボードビデオが Open Firmware に対応していれば、 System Disk
       は自動的にデバイス名を決定し、
       (Open Firmware でシリアルポートをデフォルトで使うようになっていても)
       それを display として選択するので注意してください。
@@ -98,47 +102,54 @@ Boot Variables</a>
       これは Open Firmware のプロンプトで次のようにタイプして設定することも
       できます。:
       <p>
-      <pre>        setenv input-device kbd
-        setenv output-device screen</pre>
+      <pre>        0 &gt; <b>setenv input-device kbd</b>
+        0 &gt; <b>setenv output-device screen</b></pre>
       <p>
-      ここで <tt>kbd</tt> と <tt>screen</tt> は、その
-      <a href="../models.html">機種</a>に適切なデバイス名あるいはその別名です。
+      ここで <tt>screen</tt> は、お使いの
+      <a href="../models.html">機種</a>のオンボードビデオまたは
+      <a href="../faq.html#ofw-boot-video">ビデオカード</a>に対応した
+      適切なデバイス名あるいはその別名です。
       <p>
       もし (<i>USB シリアルアダプターではなく</i>) シリアルポートがあれば、
       Open Firmware との対話にモデムポートを使うために、
-      <tt>input-device</tt> と <tt>output-device</tt> の両方を ttya と
-      することができます。
+      <tt>input-device</tt> と <tt>output-device</tt>
+      の両方を <tt>ttya</tt> とすることができます。 Performa
+      の一部ではモデムが内蔵されているため、
+      <tt>ttyb</tt> (プリンターポート) を使う必要があります。
       <p>
 
   <li><big><b>Stop Boot at Open Firmware prompt</b></big>
       <p>
-      このボタンを押すと、起動のさい、直接 OF と対話できるようになります。
-      こうすることで Open Firmware を使うたびに Command-Option-O-F を
+      このボタンを押すと、起動のさい、直接 Open Firmware と対話できるように
+      なります。こうすることで Open Firmware を使うたびに Command-Option-O-F を
       押し続ける必要はなくなります。
-      これは OF プロンプトで次のようにタイプすることと同じです。:
+      これは Open Firmware プロンプトで次のようにタイプすることと同じです。:
       <p>
-      <pre>        setenv auto-boot? false</pre>
+      <pre>        0 &gt; <b>setenv auto-boot? false</b></pre>
       <p>
 
   <li><big><b>Boot device 項目</b></big>
       <p>
       もちろん、この項目は、どのデバイスからブートするかを選ぶものです。
-      これは OF プロンプトで次のようにタイプすることと同じです。:
+      基本的には、最初の段階のブートローダー ("partition zero" <tt>ofwboot</tt>
+      か XCOFF <tt>ofwboot.xcf</tt>) がどこにあるかを Open Firmware
+      に知らせます。これは Open Firmware
+      プロンプトで次のようにタイプすることと同じです。:
       <p>
-      <pre>        setenv boot-device scsi/sd@0:0</pre>
+      <pre>        0 &gt; <b>setenv boot-device scsi/sd@0:0</b></pre>
       <p>
       次のような値を取ります:
       <p>
 
       <table border="2">
 	<tr><th align="left"><tt>fd:0</tt></th>
-	<td>フロッピードライブ</td></tr>
+	<td>NetBSD インストールフロッピーの入ったフロッピードライブ</td></tr>
 
-	<tr><th align="left"><tt>enet:0</tt></th>
-	<td>OF バージョン &gt; 3.0 の機種のイーサネット</td></tr>
+	<tr><th align="left"><tt>enet:0,\ofwboot.xcf</tt></th>
+	<td>Open Firmware バージョン &gt; 3.0 の機種のイーサネット</td></tr>
 
-	<tr><th align="left"><tt>enet</tt></th>
-	<td>OF バージョン &lt; 3.0 の機種のイーサネット</td></tr>
+	<tr><th align="left"><tt>enet:,\ofwboot.xcf</tt></th>
+	<td>Open Firmware バージョン &lt; 3.0 の機種のイーサネット</td></tr>
 
 	<tr><th align="left"><tt>scsi-int/sd@<font
 	    color="#FF0000">3</font>:<font color="#00FF00">0</font></tt></th>
@@ -163,8 +174,14 @@ Boot Variables</a>
 	    hd:<font color="#00FF00">0</font><br>
 	    cd:<font color="#00FF00">0</font><br>
 	    zip:<font color="#00FF00">0</font></tt></th>
-	<td>IDE ドライブ。 内蔵 IDE を持つ初期の機種では、
+	<td>"partition zero" ブートローダーが置かれている IDE ドライブ。
+            オンボード IDE を持つ初期の機種では、
 	    スレーブのデバイスからのブートの可否は不明</td></tr>
+
+	<tr><th align="left"><tt>hd:,\ofwboot.xcf</tt></th>
+	<td>Open Firmware 3 のシステムで、 HFS パーティションに
+            <tt>ofwboot.xcf</tt> が置かれている内蔵 IDE ハードドライブ。</td></tr>
+
       </table>
       <p>
 
@@ -173,31 +190,31 @@ Boot Variables</a>
       ID は 0 、 SCSI Zip ドライブは 5 か 6 です。
       <p>
       IDE の <font color="#0000FF">0</font> は、マスターとスレーブの別
-      (マスターは 0 、スレーブは 1) です。内蔵 IDE を持つ初期の機種で、
+      (マスターは 0 、スレーブは 1) です。オンボード IDE を持つ初期の機種で、
       スレーブのデバイスからブートできるかは不明です。
       <p>
       <font color="#00FF00">0</font> はブートしようとするパーティションです。
-      NetBSD ディスクラベルを持つディスク (1.4.2 以前のインストールツールで
+      NetBSD ディスクラベルを持つディスク (NetBSD のインストールツールで
       作られた、あるいは、配布されているブートフロッピー) では、
-      0 は "full disk" です。Apple partition map を持つディスクでは、
+      "partition zero" ブートローダーをロードするために 0 を使います。
+      Apple partition map を持つディスクでは、
       NetBSD パーティションのパーティション番号 (若い番号は MacOS
-      ブートローダー用に予約されているため、たいていは 5 以上) を使います。
+      ブートローダー用に予約されているため、たいていは 8 以上) を使います。
       <p>
-      後期の機種では "whole disk" パーティションからはブートできず、
-      HFS 、 MS-DOS または ISO9660 パーティションから
-      ブートローダーかカーネルを探す必要がありますので注意してください。
+      Open Firmware 3 を持つ機種では "partition zero" ブートローダーからは
+      ブートできず、 HFS 、 MS-DOS、 ISO9660 パーティションから、または
+      イーサネット経由でブートローダーかカーネルを探す必要がありますので注意してください。
       <p>
 
   <li><big><b>Boot File</b></big>
       <p>
-      この項目は、ブートしようとするファイル名です。これは、ほとんどの場合、
-      NetBSD ブートローダーの <tt>ofwboot.xcf</tt> を使うべきです。
-      これは、 "whole disk"
-      パーティションを使わない (カーネルやブートローダーが HFS 、
-      MS-DOS または ISO9660 のパーティションにある) 場合に使います。
-      これは OF プロンプトで次のようにタイプすることと同じです。:
+      この項目は、ブートしようとするカーネル名です。これは、ほとんどの場合、
+      NetBSD/macppc カーネル <tt>netbsd</tt> を使うべきです。
+      NetBSD のインストール時は、 RAMdisk ベースのインストールカーネル
+      <tt>netbsd.ram.gz</tt> を使うことになるかもしれません。
+      これは Open Firmware プロンプトで次のようにタイプすることと同じです。:
       <p>
-      <pre>        setenv boot-file ofwboot.xcf</pre>
+      <pre>        0 &gt; <b>setenv boot-file netbsd.ram.gz</b></pre>
       <p>
       
   <li><big><b>保存と再起動</b></big>
@@ -205,6 +222,25 @@ Boot Variables</a>
       OK をクリックして、 Advanced Options の変更を反映させます。
       Save をクリックして、 Open Firmware の設定の変更と
       NVRAM のパッチを書き込みます。再起動します。
+
+  <li><big><b>設定の修正</b></big>
+      <p>
+      Open Firmware 1.0.5、 2.0.x または 2.4 のシステムでは、 NetBSD をブート
+      するために以下のコマンドを実行する必要があります:
+      <p>
+      <pre>        0 &gt; <b>setenv real-base F00000</b>
+        0 &gt; <b>reset-all</b></pre>
+      <p>
+      このコマンドは
+      <a href="../faq.html#ofw-real-base"><tt>real-base</tt></a>
+      を設定して再起動するもので、これでこの後まで設定が保存されます。
+
+  <li><big><b>NVRAMRC の引き起こす問題</b></big>
+      <p>一部の機種では、この System Disk パッチのせいで問題が起きるとの
+      報告があります。そうなった場合には、以下のコマンドを
+      Open Firmware プロンプトで実行します:
+      <pre>        0 &gt; <b>set-default use-nvramrc?</b>
+        0 &gt; <b>reset-all</b></pre>
 
 </ol>
 <p>
@@ -216,21 +252,21 @@ Boot Variables</a>
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-	src="/images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
+	src="../../../../images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="../../../"><img
-	src="/images/empty.gif" origlink="../../../images/empty.gif" border="0"
+	src="../../../../images/empty.gif" origlink="../../../images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
     <a href="../../../Ports/"><img
-	src="/images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
+	src="../../../../images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="../../../Ports/"><img
-	src="/images/empty.gif" origlink="../../../images/empty.gif" border="0"
+	src="../../../../images/empty.gif" origlink="../../../images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">対応機種</a>
   </td></tr></table>
 </td></tr></table>
@@ -239,7 +275,7 @@ Boot Variables</a>
 <address>
   <small>
   www@JP.NetBSD.ORG<br>
-  $NetBSD: index.html,v 1.13 2001/07/23 04:38:23 mbw Exp $<br>
+  $NetBSD: index.html,v 1.17 2001/12/26 22:09:01 mbw Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
