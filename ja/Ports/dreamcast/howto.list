@@ -2,8 +2,9 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2002
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rev="made" href="mailto:www@NetBSD.ORG">
 <title>NetBSD/dreamcast: How to use NetBSD/dreamcast</title>
 </head>
@@ -21,17 +22,17 @@ UNIX is recommended.  Information for this document has been culled from
 the <a href="http://mail-index.netbsd.org/port-dreamcast/">port-dreamcast
 mailing list archive</a>, Marcus Comstedt's homepage at <a
 href="http://mc.pp.se/dc/">http://mc.pp.se/dc/</a>, BeTips.net <a
-href="http://www.betips.net">http://www.betips.net</a>, and personal
-trial and error.
+href="http://www.betips.net">http://www.betips.net</a>, 
+<a href="http://members.wri.com/josht/dreamcast/dreamcast.html">Josh Tolbert's 
+Dreamcast How-to</a>, and personal trial and error.
 <p>
 
-<ul>
-  <li>Project 1 : Booting the Dreamcast from a CD (root filesystem is an
-    ISO9660 CD)
-  <li>Project 2 : Booting the Dreamcast from a Network
-</ul>
-
-<h2>Project 1</h2>
+This HOWTO will focus on netbooting your Dreamcast, since you need a writable
+filesystem to do anything useful with the system. As booting from a CD can
+be useful for test purposes -- and since some people might want to do it
+"just for the fun of it" -- brief instructions on that setup are included as
+well.
+<p>
 
 <h3>1) Requirements</h3>
 
@@ -41,24 +42,28 @@ You will need the following:
 <ul>
   <li>Dreamcast console (it is recommended that you use a unit manufactured
     September 2000 or earlier (some have reported that newer ones work as
-    well, so check the mailing list archive to be sure)
+    well, so check the mailing list archive to be sure))
     <p>
   <li>Dreamcast keyboard
     <p>
   <li>OPTIONAL - Dreamcast mouse (as of this writing there is no driver for
     it.  Maybe you could write one?)
     <p>
-  <li>a PC running windows
+  <li>a PC running Windows
     <p>
   <li>a PC running NetBSD (Linux or any other *BSD should work, too.
     BeOS does not work for step 3)
     <p>
-  <li>DiscJuggler for Windows (the demo version is fine) <a
-    href="http://www.padus.com">http://www.padus.com</a>
-    <p>
   <li>Blank CD-R's (CD-RW's cannot be read by the Dreamcast)
-  <li>Bootable NetBSD kernel (DiscJuggler image) from <a
-    href="http://www.roadsign.com/dc/">http://www.roadsign.com/dc/</a>
+    <p>
+  <li>Bootable NetBSD kernel from <a 
+    href="http://members.wri.com/josht/dreamcast/dreamcast-kernel.tar.gz">
+    Josh's site</a> (or a <a 
+    href="http://www.schnarff.com/netbsd/dreamcast-kernel.tar.gz">mirror</a>).
+    If you wish to try the test CD first, go get 
+    <a href="http://www.roadsign.com/dc/netbsd.zip"> 
+    the bootable DiscJuggler image</a> and the <a href="http://www.padus.com">
+    demo version of DiscJuggler</a> to burn it.
     <p>
   <li>"mkhybrid" and a CD burning program (I used CD Burner under BeOS, but
     you'll most likely use "cdrecord")
@@ -67,85 +72,159 @@ You will need the following:
 <h3>2) Make a Bootable Kernel CD</h3>
 
 <ul>
-  <li>Using DiscJuggler, burn the bootable kernel image file
+  <li>Extract the kernel to a convenient location. You should now have to
+      files, audio.raw and kernel.raw.
     <p>
-  <li>Pop it in the DC and turn on the power
+  <li>Burn the audio.raw track as audio first, making sure that you 
+      leave the disk open for more sessions. Under cdrecord, this is done 
+      with:
+    <p><pre>	# cdrecord dev=0,1,0 -multi -audio -audio.raw</pre>
+    <p>Obviously, you need to replace dev=0,1,0 with the appropriate
+       device for your system, found with cdrecord -scanbus.
     <p>
-  <li>You should see a bunch of boot info scroll by, and then it will
-    prompt you for a root FS
+  <li>Burn the kernel.raw file as data. This is done under cdrecord as:
+    <p><pre>	# cdrecord dev=0,1,0 -multi -xa1 netbsd-kernel.raw</pre>
+</ul>
+<p>
+To burn the test CDs:
+<ul>
+  <li>Burn the image you downloaded using DiscJuggler. If you get boot
+      messages when you put this in the Dreamcast and power up, you know
+      your system is ready to roll; please report this to <a
+      href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-dreamcast">
+      the mailing list</a> if your machine was made after September 2002.
+  <p>
+  <li>If you wish to create a filesystem on CD and test it out:
+    <ul>
+      <li>Grab the HPCSH tarballs from <a href="http://www.netbsd.org">
+          http://www.netbsd.org</a> and untar them in a convenient location
+      <p>
+      <li>Run <pre>	# sh MAKEDEV all</pre> in /home/dreamcast/dev/
+      <p>
+      <li>Use mkhybrid to burn a CD of this distribution:
+      <pre>	# mkhybrid -o DCBSD.img -V DCNetBSD -a -r /home/dreamcast/</pre>
+      -V is for volume label, -a means all files in the directory, and -r is for
+      Rock Ridge extensions (not necessarily required, but not harmful).
+      <p>
+      <li>Put your DiscJuggler CD in the Dreamcast and power up. When prompted
+          for the root FS, type "gdrom"; hit "Enter" when it asks
+          about the dump device.
+      <p>
+      <li>Swap the boot CD for your freshly made filesystem CD
+      <p>
+      <li>Type in "cd9660" at the filesystem prompt; this should put
+          you into single user mode.
+    </ul>
 </ul>
 <p>
 
-If you've gotten this far, you know your DC is of the correct manufacture
-date.  If it is later than September of 2000, please report it to the
-mailing list.
-
-<h3>3) Make Root Filesystem CD</h3>
+<h3>3) Prepare the NFS Server & Filesystem</h3>
 
 <ul>
-  <li>Retrieve the HPCSH tarballs from <a
-    href="../../">http://www.netbsd.org</a>
+  <li>Fetch the <a 
+      href="http://members.wri.com/josht/dreamcast/dreamcast-world.tar.gz">
+      world files</a> from Josh's site.
     <p>
-  <li>Untar them into their own dir on your *BSD/Linux PC
+  <li>Untar them into a conveniently exportable directory on your *BSD/Linux
+      PC. 
     <p>
-  <li>Run the MAKEDEV script.  This will create your console, as well as
-    other needed devicesi.
+  <li>Set up your /etc/exports (man exports(5) for more info on this file's
+      syntax). An <a href="http://members.wri.com/josht/dreamcast/exports.txt">
+      example</a> can be found on Josh's site. Make sure that you've:
+    <ul>
+      <li>Set "-maproot=0", otherwise the Dreamcast won't have permissions
+          to mount the filesystem. 
+      <li>Specified a network or host the share is accessible to; otherwise
+          you could end up making it writable to the world, a Really
+          Bad Thing.
+    </ul>
+    <p>
+  <li>Make sure mountd and nfsd are running; a simple "ps aux | grep 
+      '(mount|nfs)'d" will show if they're currently up. If they're not,
+      run "mountd" and "nfsd" as root to start them now; to ensure they
+      start at boot-time in the future, edit /etc/rc.conf so that 
+      nfs_server=YES, lockd=YES, and statd=YES.
+    <p>
+  <li>Set up your /etc/dhcdp.conf (man dhcpd.conf(5) for more info on this file's
+      syntax). An <a href="http://members.wri.com/josht/dreamcast/dhcpd.conf">
+      example</a> can be found a Josh's site, or alternatlely at <a 
+      href="http://www.schnarff.com/netbsd/dhcpd.conf"> Alex Kirk's site</a>.
+      Things to keep in mind when configuring dhcpd.conf:
+    <ul>
+      <li>You MUST specify the Dreamcast's MAC Address in the host
+          section. This can be found by looking at your BBA; it's on 
+          the sticker.
+      <li>Your root-path option should be wherever your world files were
+          extracted.
+      <li>Options such as domain-name-servers aren't strictly necessary,
+          but tend to make life easier.
+    </ul>
+    <p>
+  <li>Make sure dhcpd is running; turn it on with <pre>#	sh /etc/rc.d/dhcpd start</pre>
+      if it's not on. To ensure that DHCP is running whenever your box is, edit 
+      /etc/rc.conf so that dhcpd=YES.
+    <p>
+  <li>Run the MAKEDEV script in /home/dreamcast/dev/.  This will create 
+      your console, as well as other needed devicesi.
     <p>
     <pre>	# sh MAKEDEV all</pre>
     <p>
-  <li>Using mkhybrid, create an ISO9660 image from the HPCSH distribution
-    with the freshly made /dev/* stuff.
-    <pre>	# mkhybrid -o DCBSD.img -V DCNetBSD -a -r /path/to/files</pre>
+  <li>Create a swapfile for the Dreamcast. You may pick any size you wish,
+      but practical considerations say 32-64MB works best (much smaller and
+      it's not helpful, much larger and it takes excessive physical RAM to
+      maintain). Make sure it put it in the directory you're exporting as
+      the Dreamcast's root. 
     <p>
-    The -V is the volume label, the -a means all files in the source dir,
-    and the -r is for rock ridge extensions (this may not be necessary, but
-    it didn't sem to have any adverse affects on my experience)
+    <pre>	# dd if=/dev/zero of=swap bs=32k count=1024 </pre> (for 32MB)
     <p>
-  <li>Using cdrecord, burn the image as a regular ISO9660 CD (as opposed to
-    the bootable kernel image)
+  <li>Edit /home/dreamcast/etc/fstab (or wherever you've placed the Dreamcast
+      root) to mount the appropriate filesystems:
+    <pre>	192.168.2.69:/home/alex/dreamcast/dc / nfs rw,auto 0 0
+	/.swap none swap sw 0 0
+	/kern /kern kernfs rw
+	/proc /proc procfs rw 0 0
+	/dev/gdrom0c /mnt/gdrom cd9660 ro,noauto 0 0
+    </pre> 
+    <p>
 </ul>
 
 <h3>4) Try it Out</h3>
 
 <ul>
-  <li>Boot the DC from your bootable kernel CD
-  <li>When it prompts you for the root FS, you want it to point to the
-    GDROM, so type in:
+  <li>Put your CD into the Dreamcast and power up. If you made the CD
+      correctly, a familiar NetBSD bootup sequence will begin. If you've 
+      done this with a Dreamcast manufactured after September 2000,
+      please notify the <a 
+      href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-dreamcast">
+      mailing list</a>.
     <p>
-    <pre>	# gdrom0</pre>
+  <li>If you run into problems, chances are your /etc/exports or /etc/dhcpd.conf
+      are messed up. You'll want to first double-check them for stupid mistakes
+      -- we all make them, don't feel bad. If you've got a specific error
+      message with no description, look in /usr/src/sys/sys/errno.h for a brief
+      explanation.
     <p>
-  <li>When it prompts you for a dump device, just press "Enter"
+   <li>If you're really stuck, <a 
+       href="http://mail-index.netbsd.org/port-dreamcast">browse the mailing list
+       archives</a>. They're quite helpful. If you want to search them, your
+       best bet is to use Google's Advanced Search; restrict the domain to 
+       mail-index.netbsd.org and make sure that you include "dreamcast" in your
+       query.
     <p>
-  <li>At this point you should swap the bootable kernel CD for the Root
-    Filesystem CD you just burned
+   <li>That failing, post to the <a 
+       href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-dreamcast">
+       list itself</a>. Please be detailed, and include relevant error messages/
+       configuration files/logfiles (if they're small).
     <p>
-  <li>You should have a prompt for filesystem type type in:
-    <p>
-    <pre>	# cd9660</pre>
-    <p>
-    Hitting enter" with the root filesystem CD in the DC should start the
-    DC in single user mode.  It'll prompt you again for shell and terminal
-    type (vt220 or vt100 is fine).
 </ul>
 
 <h3>5) You're done!</h3>
 
-<ul>
-  <li>While this is exciting, it's not very useful at this point.  You can't
-    use an editor that requires temp space (vi), and you can't modify
-    anything.  There are a few options from here:
-    <p>
-  <li>Boot the DC from a read/write FS via NFS (requires the Broadband Adapter)
-    <p>
-  <li>Create a custom Root FS cd with all the programs you need to run and
-    let it go, doing its thing.
-    The first option brings us to...
-</ul>
-
-<h2>Project 2</h2>
-
-To be continued...
-<p>
+If you're going to be playing around with custom-compiled kernels a lot, I'd
+recommend following the instructions on Josh's <a 
+href="http://members.wri.com/josht/dreamcast/ipslave.html">IP Slave page</a>,
+which gives instructions on a setup where you won't have to burn a CD for
+each fresh new kernel.
 
 <hr>
 <a href="./">Up to <em>NetBSD/dreamcast Port Page</em></a>
@@ -157,7 +236,7 @@ To be continued...
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: howto.list,v 1.4 2001/07/25 19:25:36 dent Exp $<br>
+  $NetBSD: howto.list,v 1.6 2002/09/26 16:34:12 hubertf Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
