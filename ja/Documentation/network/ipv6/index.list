@@ -1,8 +1,10 @@
-<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html lang="ja">
 <head>
-<!-- Copyright (c) 1998-2003
+<!-- Copyright (c) 1998, 1999, 2000, 2001
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@JP.NetBSD.org">
+<link rev="made" href="mailto:www@jp.NetBSD.org">
 <title>IPv6 Networking FAQ</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -18,48 +20,174 @@
   <li><a href="http://www.kame.net/">かめプロジェクト</a>,
 	現在マージされているIPv6実装のでもと
   <li><a href="http://www.6bone.net/">
-	6bone: worldwide IPv6 experimental network</A>
-  <li><a href="http://www.freenet6.net/">Freenet6.net</A>
-  <li><a href="http://www.ipv6.org/">ipv6.org</A>
-  <li><a href="http://faq.v6.wide.ad.jp/">IPv6 FAQs by WIDE project</A>
-  <li><a href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/sys/netinet6/IMPLEMENTATION">src/sys/netinet6/IMPLEMENTATION</a>
-	実装に関する詳細情報
+	6bone: 世界規模の IPv6 実験ネットワーク</a>
+  <li><a href="http://www.freenet6.net/">Freenet6.net</a>
+  <li><a href="http://www.ipv6.org/">ipv6.org</a>
+  <li><a href="http://faq.v6.wide.ad.jp/">WIDE プロジェクトによる IPv6 FAQ</a>
+  <li><a href="http://www.feyrer.de/NetBSD/6to4.html">6to4 Explained</a>
+  <li><a href="http://orange.kame.net/dev/cvsweb.cgi/kame/IMPLEMENTATION">
+	実装に関する詳細情報</A>
 </ul>
 
 <SECTION>IPv6ネットワーキングFAQ
 
 <ENTRY>getting_started はじめましょう
-IPv6は、
-1999年6月以降のNetBSD-current、NetBSD 1.5およびそれ以降の
-NetBSDの配布にマージされています。
+IPv6 のコードは、 1999 年 6 月に NetBSDの配布にマージされ、
+NetBSD 1.5 以降の公式リリースに含まれています。
 IPv6設定はほとんどIPv4の場合と同じですので、
 IPv4ネットワーキングのための説明も参照ください。
-<P>
+<br><br>
 
-現時点では、IPv6を使うには
-<TT>GENERIC.v6</TT>に含まれている設定をカーネル設定ファイルに追加して、
-カーネルを再構築しないといけません。
-ユーザープログラムは、(可能な限り)IPv6サポートを標準で含んでいますので、
+ほとんどのアーキテクチャー (ポート) の GENERIC カーネルは、
+デフォルトで IPv6 対応が有効になっています。
+ユーザープログラムは、(可能な限り) IPv6 に標準で対応していますので、
+IPv4 だけに対応したカーネルと IPv4/v6 両対応カーネルを切替えて使う場合でさえも、
 再構築の必要はありません。
-<P>
+<br><br>
 
-NetBSD 1.4を利用しているなら、
-<A HREF="http://www.kame.net/">かめプロジェクト</A>のwebpageを見て
-IPv6サポートのためのパッチを入手するとよいでしょう。
+1.5 以前のシステムを利用している場合は、次のとおりです:
+<ul>
+  <li>NetBSD 1.4.x では、
+      <a href="http://www.kame.net/">かめプロジェクト</a>のwebpageを見て
+      IPv6サポートのためのパッチを入手するとよいでしょう。
+  <li>1999 年 11 月の終わりより前の NetBSD-current では、
+      IPv6 を使うには専用のカーネルコンフィギュレーションファイル
+      (<tt>GENERIC.v6</tt>) を使う必要があります。
+  <li>1999 年 11 月 21 日より後の NetBSD-current では、
+      <tt>GENERIC</tt> カーネルコンフィギュレーションファイルに標準で
+      IPv6 対応が含まれています。
+</ul>
+<br><br>
+
+<ENTRY>diff_ipv4  IPv6 小史と、重要な特徴
+1992 年ごろ、
+<a href="http://www.ietf.org/">IETF</a> では、 IPv4 アドレスの世界的な不足と、
+IPv4 のもつ制限による新しいプロトコルの展開への技術的な障害を認識するように
+なりました。
+これらの問題を解決するため、 IPng (IP next generation: 次世代 IP) の検討が始まりました。
+この議論は <RFC>RFC1550 に始まる RFC 群で概説されます。
+多くの議論のすえ、 1995 年ごろ、 IPv6 (IP version 6: IP バージョン 6) が
+最終的な IPng の提案として選ばれました。
+IPv6 の基本的な仕様は <RFC>RFC2460 に定められています。
+<br><br>
+
+一言でいえば、
+<em>IPv6 は IP 技術に対する再設計の成果です</em>。
+重要な特徴としては、以下のようなものがあります:
+<ul>
+  <li><strong>広い IP アドレス空間</strong>。
+	IPv4 で使う IP アドレス空間はわずか 2^32 ビットで、これは、
+	インターネット上で 40 億ノードの識別しかできません。
+	40 億は大きな数に見えるかもしれませんが、
+	これは地球上の総人口より少ないのです!
+	IPv6 では 2^128 ビットの IP アドレス空間を用意しており、
+	インターネット上で
+	340282366920938463463374607431768211456
+	(340澗, 340 * 10^36) 個のノードを一意に識別することができるようになります。
+	広いアドレス空間によって、真に<strong>端から端へのやりとり</strong>を、
+	NAT や他の IPv4 のアドレス不足への一時的な代替策を使うことなしに、
+	実現できます。
+	(今日では、 NAT は新しいプロトコルへの対応やスケーラビリティーの
+	問題といった頭痛の種を抱えています。インターネットをより成長させるためには、
+	NAT はまさに廃止する必要があります)
+  <li><strong>より新しい技術の利用</strong>。
+	20 年前に IPv4 が策定されて以来、
+	ネットワーキングに関するさまざまな技術の進歩がありました。
+	IPv6 はそれらの改良の多くを基本仕様の中でカバーしており、
+	これらの機能をいつでもどこでも使えることを前提にして使うことができます。
+	「いまどきの技術」には、次のようなものがあります (これだけに限りませんが):
+    <ul>
+    <li><strong>自動設定</strong>。
+	IPv4 では DHCP がありますが、これはオプションです。
+	DHCP サーバーのないサイトにやってきた初心者にとっては、
+	問題があるかもしれません。
+	IPv6 では、「ステートレスホスト自動設定 (stateless host autoconfiguration)」の仕組みが必須です。
+	これは、 IPv4 の DHCP よりも簡単に使ったり管理したりできます。
+	この仕様は <RFC>RFC2462 で決められています。
+    <li><strong>セキュリティー</strong>。
+	IPv4 では IPsec はオプションであり、相手が IPsec に対応しているかを
+	たずねる必要がありました。
+	IPv6 では、 IPsec への対応が必須です。
+	IPsec を必須にすることで、 IPv6 のデバイスと通信している限りは、
+	安全な IP 通信ができます。
+    <li><strong>トラフィック工学技術への適応</strong>。
+	IPv6 は、 diffserv や intserv (RSVP)
+	といったトラフィック工学によりよく対応できるように設計されました。
+	我々はまだ、トラフィック工学のための単一の標準を手にしていません。
+	それゆえ、 IPv6 基本仕様では、そのような技術にそなえてヘッダー領域に
+	24 ビットの空間を確保しておくことで、 IPv4 よりもすばらしい来たるべき標準
+	になることができます。
+    <li><strong>マルチキャスト</strong>。
+	マルチキャストは IPv4 ではオプションでしたが、 IPv6 では必須です。
+	IPv6 の基本仕様それ自体が、マルチキャストを広く使っています。
+    <li><strong>アドホックなネットワーキングへの、よりよい対応</strong>。
+	スコープ付きアドレスにより、アドホックな (あるいは「設定不要な」)
+	ネットワーキングへの、よりよい対応ができます。
+	IPv6 はエニーキャストアドレスにも対応しており、
+	サービスの探索にも役立ちます。
+    <li>さらにいろいろ。
+    </ul>
+  <li><strong>ルーティングテーブル肥大化の解消</strong>。
+	IPv4 バックボーンのルーティングテーブルの大きさは、
+	ISP やバックボーンの運営者にとって大きな頭痛の種でした。
+	IPv6 アドレス仕様では、ルート集約を主張して、
+	バックボーンルーティングエントリーの数を制限しています。
+	現在の IPv6 アドレス仕様では、デフォルトフリーのゾーンでわずか
+	8192 ルートです。
+  <li><strong>簡略化されたヘッダーの構造</strong>。
+	IPv6 パケットのヘッダーの構造は、 IPv4 のものより簡略なものになっています。
+	これにより、ベンダーが将来、 IPv6 ルーターのハードウェアアクセラレーションを実装することが、
+	容易になるでしょう。
+  <li><strong>柔軟なプロトコル拡張性</strong>。
+	IPv6 では、 <em>protocol header chain</em> の導入により、 IPv4
+	より柔軟なプロトコル拡張が可能となっています。
+	IPv6 では柔軟なプロトコル拡張が可能となっていますが、
+	中間ルーターには負荷をかけません。
+	これは、ヘッダーを二つの要素 ─すなわち、
+	中間ルーターが検査する必要のあるヘッダーと、
+	終端のノードが検査するヘッダー─に分割することで実現されています。
+	また、これにより IPv6 ルーターのハードウェアアクセラレーションが
+	容易になります。
+  <li><strong>IPv4 からの円滑な移行</strong>。
+	IPv6 の議論のなかで、移行に関する考察がいくつもなされました。
+	そして、多くの移行のための仕組みが利用可能です。
+	そのなかから、あなたのサイトに最も適した方法を選ぶことができます。
+  <li><strong>IPv4 の重要な設計思想の継承</strong>。
+	IPv4 は、世界中で非常に大規模に使われることで証明されてきたように、
+	大変成功した設計です。
+	IPv6 は「 IP の新バージョン」であり、 IPv4 を成功させた
+	設計の多くを継承しています。
+	これにより、 IPv4 から IPv6 への円滑な移行が可能となります。
+  <li>さらにいろいろ。
+</ul>
+
+IPv6 に関する良書がたくさん出ていますので、
+興味があればそれらを見てみてください。
+<ul>
+  <li><h3>以下もあわせて参照してください:</h3>
+      <ul>
+	<li><a href="http://www.ipv6.org/">ipv6.org</a>
+	<li><a href="http://www1.fatbrain.com/search/searchresults.asp?SearchFunction=key&amp;vm=c&amp;qtext=ipv6">FatBrain
+	    書店で "IPv6" を検索</a>
+	(注意: 私たちは、書店に関する特別な推奨は、
+	一切していません)
+      </ul>
+</ul>
+
 
 <ENTRY>configuration_files  ネットワーク設定ファイル
 ネットワークは、テキスト形式の設定ファイルによって設定されます。
 ホスト(ルーターでないノード)を自動設定する場合、
 以下のファイルのうちいくつかは編集しなくて済みます。
 <ul>
-  <li>/etc/rc.conf - システムの初期化時に、ネットワークサービスを
-	含むシステムサービスを自動的に開始するための設定。
-  <li>/etc/hosts - ホスト名とIPv6アドレスの対応を含むことができます。
+  <li>/etc/rc.conf - rc.conf(5) は、システムの初期化時に、ネットワークサービスを
+      含むシステムサービスを自動的に開始するための設定をします。
+  <li>/etc/hosts - hosts(5) は FQDN 名と IPv6 数値アドレスの対応を含むことができます。
   <li>/etc/ifconfig.{<em>IF</em>}. - ifconfig(8)を使ったIPv6ネットワークの
 	設定をここに含めることができます。
 </ul>
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
         <li>placeholder
       </ul>
@@ -71,74 +199,221 @@ IPv6では、ルーターとホストは明示的に区別されています。
 そうでないノードを<EM>ホスト</EM>といいます。
 ルーターは手動で設定する必要があります。
 ルーターはrtadvd(8)デーモンを使って、サブネットの情報を広告します。
-ホストは多くの場合、ネットワークインタフェースを1つしか持っていません
-(これは仕様の一部で仮定されています)。
+ホストは多くの場合、ネットワークインターフェースを1つしか持っていません
+(これは本ドキュメントの一部で仮定されています)。
 ホストは多くの場合、広告されたサブネットに関する情報をもとに自動設定されます。
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
         <li>placeholder
       </ul>
 </ul>
 
+<ENTRY>autoconfig  IPv6 ホストの自動設定
+IPv6 ホストの自動設定には、二つの異なる機構が決められています。
+一つは <em>ステートレスアドレス自動設定 (stateless address autoconfiguration)</em> と呼ばれるもので、
+<RFC>RFC2462 で定められています。
+もう一つは <em>DHCPv6</em> と呼ばれるもので、これは IETF dhc
+ワーキンググループで討議されているものです。
+NetBSD は現在、前者を実装しています。
+<br><br>
+
+ステートレスアドレス自動設定は、基本的には次のように機能します。
+ここでは、ホスト (自動設定が必要なもの) と
+ルーター (必要な情報をホストに与えるもの) の二者を考えます。
+<ul>
+  <li>ホストは、ネットワークインターフェースにリンクローカルアドレスを設定します。
+	リンクローカル IPv6 アドレスは "fe80" で始まり、
+	最下位 64 ビットに値を持ちます。
+	この最下位 64 ビットの値は <em>インターフェース ID</em> と呼ばれています。
+	Ethernet や、いくつかの他のインターフェースでは、
+	MAC アドレスをもとにインターフェース ID が作られています。
+<pre>
+host% ifconfig ne2
+ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+	media: Ethernet manual
+	inet6 fe80::a00:5aff:fe38:6f86%ne2 prefixlen 64 scopeid 0x1
+</pre>
+
+  <li>ルーター上で rtadvd(8) を走らせることにより、ルーターはリンク
+	(イーサネットセグメントなどの) に関する情報を、
+	リンク上のすべてのノードに対し、定期的に広告します。
+	この情報は ICMPv6 の "ルーター通知 (router advertisement)" パケットで運ばれます。
+	ここで示す例では、下記の情報を広告します。
+    <ul>
+      <li>IPv6 サブネットのプレフィックスは 2001:218:420::/64
+      <li>デフォルトルーターは fe80::240:5ff:fea0:8e08
+      <li>そして、他のいくつかのパラメーター。 IPv6 link MTU, default hoplimit,
+	や router lifetime など。
+    </ul>
+<pre>
+14:18:20.812850 fe80::240:5ff:fea0:8e08 &gt; ff02::1: icmp6: router advertisement&#92;
+(chlim=64, router_ltime=1800, reachable_time=30000, retrans_time=1000)(src&#92;
+lladdr: 0:40:5:a0:8e:8)(mtu: mtu=1500)(prefix info: LA valid_ltime=2592000,&#92;
+preffered_ltime=604800, prefix=2001:218:420::/64)
+			 6000 0000 00a0 3aff fe80 0000 0000 0000
+			 0240 05ff fea0 8e08 ff02 0000 0000 0000
+			 0000 0000 0000 0001 8600 d38d 4000 0708
+			 0000 7530 0000 03e8 0101 0040 05a0 8e08
+			 0501 0000 0000 05dc 0304 40c0 0027 8d00
+			 0009 3a80 0000 0000 2001 0218 0420 0000
+			 0000 0000 0000 0000
+</pre>
+
+  <li>ホストはこの広告を受けとり、グローバル IPv6 アドレスと
+	デフォルトルーターを設定します。
+	ホストで ndp(8) を走らせることで、一番最近の router advertisement
+	の詳細を見ることができます。
+<pre>
+host% ifconfig ne2
+ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+	media: Ethernet manual
+	inet6 fe80::a00:5aff:fe38:6f86%ne2 prefixlen 64 scopeid 0x1
+	inet6 2001:218:420:0:a00:5aff:fe38:6f86 prefixlen 64
+</pre>
+
+  <li>オプションとして、ホストは ICMPv6 "ルーター要請 (router solicitation)" パケットを送って、
+	ルーターからの広告を要請することができます。
+	rtsol(8) は router solicitation パケットを送ります。
+	もし移動するノードを運用するのなら、 rtsold(8) を走らせて
+	定期的に router solicitations を送出するのもいいでしょう。
+	このパケットは次のようになっています:
+<pre>
+14:18:20.300501 fe80::a00:5aff:fe38:6f86 &gt; ff02::2: icmp6: router solicitation&#92;
+(src lladdr: 8:0:5a:38:6f:86) (len 16, hlim 255)
+			 6000 0000 0010 3aff fe80 0000 0000 0000
+			 0a00 5aff fe38 6f86 ff02 0000 0000 0000
+			 0000 0000 0000 0002 8500 d7b0 0000 0000
+			 0101 0800 5a38 6f86
+</pre>
+</ul>
+この方法は <em>ステートレス</em>アドレス自動設定と呼ばれますが、
+これはルーター側でステート (状態) を管理する必要がないからです。
+これは非常に単純で堅固で効果的な自動設定の仕組みです。
+<br><br>
+
+ルーターは自動設定できないことに注意してください。
+ルーターは本当に手動で設定する必要があります。
+
 <ENTRY>setup_router  IPv6ルーターの設定
 まず、IPv6グローバルアドレスを上流組織から入手すべきでしょう。
 手にいれたなら、以下の手順をふんでください。
 <ul>
-	<li>ネットワークインタフェースの手動設定をrc.conf(8)またはrc.netに
-		記述します。
-	<li>rc.conf(8)の以下の行を設定します。<br>
+	<li>ネットワークインターフェースの手動設定を
+		/etc/ifconfig.<em>{IF}</em> または rc.conf(5) または
+		/etc/netstart.local に記述します。
+		詳しくは<a href="#setup_manual">下記の項目</a>
+		をご覧ください。
+	<li>rc.conf(5)の以下の行を設定します。<br>
 <SAMP>
-ipv6forwarding="YES"<br>
+ip6mode="router"<br>
 rtsol="NO"<br>
 rtadvd="YES"		rtadvd_flags="sm1 ne2"	# set interfaces to advertise
 </SAMP>
-	<li>/etc/rtadvd.confを編集して、router advertisementのタイマーを
+	<li>/etc/rtadvd.conf(5)を編集して、 router advertisement のタイマーを
 		微調整してもいいでしょう。
 	<li>RIPngを使って経路を広告したければ、
-		rc.conf(8)をroute6d(8)を起動するように設定します。
+		rc.conf(5)をroute6d(8)を起動するように設定します。<br>
 	<li>ルーターを再起動します。
 </ul>
+IPv6 の仕様上の制限のため、
+ルーターを自動設定することはできません。
+設定の微調整をしようとしないでください。
+結果として、予期しない結果に終わることになるでしょう。
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
         <li>placeholder
       </ul>
 </ul>
 
 <ENTRY>setup_host  IPv6ホストの設定
-IPv6ルーターがネットワーク上にいるなら、以下の手順をふめばホストの設定が
-完了します。
-再起動の後、ホストは隣接ルーター上のrtadvd(8)が放送したrouter advertisement
+IPv6ルーターがネットワーク上にいるなら、以下の手順をふめばホストの設定が完了します。
+再起動の後、ホストは隣接ルーター上の rtadvd(8) が放送した router advertisement
 によって自動設定されます。
 <ul>
-	<li>rc.conf(8)の以下の行を設定します。<br>
+	<li>rc.conf(5)の以下の行を設定します。<br>
 <SAMP>
-ipv6forwarding="NO"<br>
-rtsol="YES"	rtsol_flags="sm1"	# set your interface here
+ip6mode="autohost"<br>
+rtsol="YES"	rtsol_flags="sm1"	# ここにインターフェースを指定します
 </SAMP>
 	<li>ホストを再起動します。
 </ul>
-<P>
+<br><br>
 
-IPv6ルーターがネットワーク上にいない場合、手動設定が必要です。
+IPv6ルーターがネットワーク上にいない場合、
+手動設定が必要です。
+詳しくは
+<a href="#setup_manual">次の項目</a>をご覧ください。
+<br><br>
+
+また、 IPv6 の仕様の制限のため、多数の外部インターフェース
+(たとえば二つのイーサネットインターフェースなど)
+を持つホストでの自動設定は、推奨されません。
+この場合は手動設定してください。
+詳しくは
+<a href="#setup_manual">次の項目を</a>ご覧ください。
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
         <li>placeholder
       </ul>
 </ul>
 
 <ENTRY>setup_manual  手動設定
-ノードを手動設定する場合、以下の2つのプログラムをネットワーク初期化スクリプト
-(/etc/netstart)の中で使って設定できます。
-
+IPv6 の主な新機能のひとつは、どこででも自動設定が使えることです。
+IPv6 アドレスは 128 ビットあるので、
+手動設定では間違えやすくなっています。
+できるかぎり手動設定は避けるよう、強くおすすめします。
+たとえば:
 <ul>
-  <li>ifconfig(8) - ネットワークインタフェースの設定を見たり変更したりする。
+  <li>ルーターに経路の設定をする場合は、
+	route6d(8) のようなルーティングデーモンを走らせます。
+  <li>ホストのインターフェースアドレスを設定する場合は、
+	<tt>ip6mode=autohost</tt> と <tt>rtsol=YES</tt> を設定して、
+	隣接ルーターから情報を入手します (rc.conf(5) 参照) 。
+</ul>
+手動設定したほうが簡単だと思うかもしれませんが、それは間違いです。
+手動設定をすると、保守作業のツケを将来にまわすことになります。
+<br><br>
+
+もし、本当に手動設定が必要なら、この先の説明を読んでください。
+<br><br>
+
+ノードの設定を手動でしなければならない場合、
+rc.conf(5) にネットワークインターフェースの手動設定を
+加えてください。
+<br><br>
+
+最初に、下のように <samp>ip6mode</samp> を設定して、
+そのノードの種類 (ホストかルーターか) を明示する必要があります。
+<pre>
+ip6mode="router"	# パケットを他に転送する
+ip6mode="host"		# パケットを他に転送しない
+</pre>
+<br><br>
+
+そして、 rc.conf(5) 、または <tt>/etc/rc.d/network</tt> に記述されている
+<tt>/etc/ifconfig.xxN</tt> のようなファイルに、インターフェースの設定を追加してください。
+<tt>/etc/ifconfig.xxN</tt> は、下記のように
+複数の行を使えることに注意してください:<br>
+<SAMP>
+inet 10.1.1.1 netmask 0xffffff00<br>
+inet6 3ffe:501:ffff::1 prefixlen 64 alias
+</SAMP>
+<br><br>
+
+設定が rc.conf(5) でカバーされていない場合は、
+<tt>/etc/netstart.local</tt> または
+<tt>/etc/rc.local</tt>
+に設定を書き加えることができます。
+次のようなプログラムを使う必要があるでしょう:
+<ul>
+  <li>ifconfig(8) - ネットワークインターフェースの設定を見たり変更したりする。
   <li>route(8) - 経路表を操作する。
 </ul>
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
         <li>placeholder
       </ul>
@@ -150,133 +425,623 @@ IPv6ルーターがネットワーク上にいない場合、手動設定が必要です。
 これはIPv4の場合と同じです。
 yp(8)も多分使えると思いますが、著者はIPv6アドレスを解決するのに
 yp(8)を使ったことがありません。
-
-
 <ol>
-  <li>/etc/hosts: ノードが少ししかない小規模なネットワークでは、各ノードの
+  <li>/etc/hosts: hosts(5) ノードが少ししかない小規模なネットワークでは、各ノードの
       /etc/hostsにホスト名/IPアドレスの対応を書くとよいでしょう。
-      <p>
+      <br><br>
+
       <em>/etc/hosts:</em><br>
-      <samp>
-      fec0::a:b:c:d  host2.mydomain.org.au host2<br>
-      </samp>
-      <p>
+      <pre>
+3ffe:501:ffff::a:b:c:d  host2.mydomain.org.au host2
+      </pre>
+
   <li>DNS: ネームサーバー(named(8))を介してアクセスできるゾーンファイルで
-	ホスト名の対応を集中管理することもできます
+      ホスト名の対応を集中管理することもできます
       (DNSの設定や管理について
       <a href="http://www.dns.net/dnsrd/docs/">www.dns.net</a>
       にたくさんのドキュメントがあります)。
-      <p>
+      <br><br>
+
       <em>正索きゾーンファイルのエントリー</em><br>
-      <samp>
-      host2  IN AAAA     fec0::a:b:c:d
-      </samp>
-      <p>
+      <pre>
+host2  IN AAAA     3ffe:501:ffff::a:b:c:d
+      </pre>
+
       <em>逆索きゾーンファイルのエントリー</em><br>
-      <samp>
-      d.0.0.0.c.0.0.0.b.0.0.0.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.c.e.f.ip6.int.
+      <pre>
+d.0.0.0.c.0.0.0.b.0.0.0.a.0.0.0.0.0.0.0.f.f.f.f.1.0.5.0.e.f.f.3.ip6.int.
 	IN PTR   host2.mydomain.org.au.
-      </samp>
+      </pre>
 </ol>
+<br><br>
+
+以下のアドレスは、グローバル DNS クラウドに出しては「いけない」ことに注意してください:
+<ol>
+	<li>リンクローカルアドレス (fe80::/10 に該当するもの、たとえば fe80::1)<br>
+		これは、グローバル到達性がありません。
+	<li>サイトローカルアドレス (fec0::/10 に該当するもの、たとえば fec0::1)<br>
+		これも、グローバル到達性がありません。
+		これはプライベートアドレスに相当するものなので、
+		イントラネットの DNS クラウドで使うことができます。
+	<li>v4 射影アドレス ( ::ffff:0.0.0.0/96 に該当するもの、たとえば ::ffff:10.1.1.1)<br>
+		このアドレスはノード内での内部向け専用です。
+		これを直接 DNS データベースに入れないでください。
+</ol>
+以下のアドレスは、 DNS クラウドに入れることは推奨しません:
+<ol>
+	<li>マルチキャストアドレス (ff00::/8 に該当するもの、たとえば ff05::1)
+</ol>
+NetBSD/KAME の IPv6 コードは、以下のアドレスには対応していないため、
+本来の用途には使えません:
+<ol>
+	<li>v4 互換アドレス ( ::0.0.0.0/96 に該当するもの、たとえば ::10.1.1.1)<br>
+		NetBSD/KAME は <RFC>RFC1933 auto tunnel に対応していません。
+</ol>
+<br><br>
+
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
         <li>placeholder
       </ul>
 </ul>
 
+<ENTRY>addressing  IPv6 ユニキャストアドレス割り当て
+IPv6 アドレスの割り当てと IPv4 のそれとでは、二つの点で違いがあります。
+<ul>
+  <li>IPv6 サブネットのプレフィックス長は常に /64 であり、これと異なることはありません。
+      これにより、たくさんの
+      IPv6 デバイスをネットワークメディアとすることができます。<br>
+      IPv4 では、プレフィックス長はサブネットごとに様々であるため、
+      サブネットの振りなおしはうんざりする苦痛になります
+      (たとえば、 IPv4 サブネットを /28 から /29 に、
+      あるいはその逆に振り直すことを想像してください) 。
+  <li>普通のリーフサイトはいつも、アドレス空間に /48 をとり、
+      これにより、サイトの振りなおしが容易になり、また、
+      ISP の乗り換えも容易になります。<br>
+      IPv4 では、割り当てはサイトの規模によって異なるため、たとえば
+      ISP を乗り換える際には、大変な負担がかかることになります。
+</ul>
+
 <ENTRY>upstream  IPv6上流組織への接続
-<A HREF="http://www.6bone.net/">"6bone"</A>という名前のIPv6実験ネットワークに
+周辺の ISP の状況によっては、  (IPv4 で行なっているような) ネイティブな
+IPv6 接続ができるかもしれませんし、トンネルされた接続 (IPv6 パケットを
+IPv4 パケットにカプセル化する) ができるかもしれません。
+ここでは、後者の場合について説明します。
+<p>
+
+<a HREF="http://www.6bone.net/">"6bone"</a>という名前のIPv6実験ネットワークに
 あなたのマシンを接続することができます。
 最も近くの6boneサイトと相談して、IPv6プレフィックスアドレスを
 割り当ててもらいましょう。
 なお、6boneに接続するには通常固定のIPv4グローバルアドレスが必要です。
-<P>
+<br><br>
 
 (ISPにダイアルアップ接続しているなどで)固定のIPv4グローバルアドレスがなくても
 慌てないでください。
-<A HREF="http://www.freenet6.net/">Freenet6</A>に接続できます。
+<a HREF="http://www.freenet6.net/">Freenet6</a>に接続できます。
 Freenet6はダイアルアップ接続するたびにIPv6ネットワークに再接続できるよう、
-webインタフェースを提供しています。
-<P>
+webインターフェースを提供しています。
+<br><br>
 
 どちらの場合にも、あなたのIPv6ルーターに、
-IPv6-over-IPv4トンネリングインタフェースを設定する必要があります。
+IPv6-over-IPv4トンネリングインターフェースを設定する必要があります。
 gif(4)のマニュアルも参照してください。
 <ul>
-  <li>gifトンネルの設定: 以下の行をnetstartかrc.localに追加。<br>
-      <samp>
-      gifconfig gif0 x.x.x.x. y.y.y.y
-      </samp>
-      <p>
+  <li><strong>gifトンネルの設定:</strong>
+      以下の内容をもつ <tt>/etc/ifconfig.gif0</tt> ファイルを作ります。
+      最初の引数 (<tt>x.x.x.x</tt>) は自分の IPv4 アドレス、二番目の引数
+      (<tt>y.y.y.y</tt>) は相手方の IPv4 アドレスです。
+<pre>
+create		(1.5 より後でのみ必要)
+tunnel x.x.x.x y.y.y.y
+</pre>
+      または、以下の行を <tt>/etc/netstart.local</tt> か
+      <tt>/etc/rc.local</tt> に追加します。
+      <br>
+<pre>
+# ifconfig gif0 create		(1.5 より後でのみ必要)
+# ifconfig gif0 tunnel x.x.x.x y.y.y.y
+</pre>
+      1.5 より前のシステムの ifconfig(8) は "tunnel" キーワードを使えませんので、
+      gifconfig(8) を使ってください。
+<pre>
+# gifconfig gif0 x.x.x.x. y.y.y.y
+</pre>
+  <li><strong>トンネルがうまく機能しているか確認します</strong>:
+	最初に、次のコマンドを念じながら試します:
+<pre>
+# ping6 -n ff02::1%gif0
+</pre>
+	ローカルノードからのパケットとリモートノードからのパケットの二つが
+	観測されれば、トンネルはうまく機能しています。
+	もし x.x.x.x と y.y.y.y の間で IPv4 到達性に問題があれば、
+	応答は一つだけ、あるいはまったくないでしょう。
+	問題がある場合は以下の点を調べてください:
+	<ul>
+	<li>通信相手との間に NAT 箱がないことを確認します。
+		トンネルされた IPv6 パケットは NAT 箱を通り抜けられません。
+	<li>通信相手との間に IPv4 パケットフィルターがないことを
+		確認します。
+	</ul>
+  <li><strong>経路交換</strong>:
+	上流の設定によって、デフォルトルートを上流に設定する必要があるか、
+	または、ルーティングデーモンを走らせる必要があるかもしれません。
 </ul>
+<br><br>
+
+上記の設定は <RFC>RFC1933 IPv6-over-IPv4 設定されたトンネルを使います。
+<RFC>RFC1933 パケットは NAT ルーターを通り抜けられないことに注意してください
+(トンネルの端点それ自体─ NetBSD 箱─が NAT ルーターである場合は、
+その問題は起こらないでしょう)。
+<br><br>
+
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
-	<li><a href="http://www.6bone.net/">6bone</A>
-	<li><a href="http://www.freenet6.net/">Freenet6.net</A>
+	<li><a href="http://www.6bone.net/">6bone</a>
+	<li><a href="http://www.freenet6.net/">Freenet6.net</a>
       </ul>
+</ul>
+
+<ENTRY>typical  典型的な IPv6 ネットワークのセットアップ
+上流から、自分のホームネットワークのアドレスに、アドレスプレフィックス
+3ffe:0501:ffff::/48 が 割り当てられていると仮定します。
+自宅には以下のように二つのイーサネットセグメントがあります。
+myrouter A と myrouter B はいずれも IPv6 が使える NetBSD を走らせます。
+IPv4 アドレスは以下のとおり指定されています。
+x.x.0.1/24 内にある myrouter A から、 y.y.y.10 の上流のルーターまで
+IPv6-over-IPv4 トンネルを経由して、上流に接続したいものとします。
+<pre>
+myrouter A
+  | IPv4 x.x.0.1/24
+  |
+==+=== ethernet 0
+  |
+  | IPv4 x.x.0.2/24
+myrouter B
+  | IPv4 x.x.1.2/24
+  |
+==+=== ethernet 1
+</pre>
+<ol>
+  <li>最初に、 myrouter A から上流へのトンネルの設定が必要です。
+myrouter A 上で、 ifconfig(8) を使ってトンネルの設定をしてから、
+ping6(8) を使って到達性を確かめてください。
+"ff02::1" は全ノードマルチキャストアドレスと呼ばれ、このトンネル上の
+すべてのノード (この例では myrouter A と上流のルーター) に到達するはずです。
+二つのノードからの応答があれば、トンネルはうまく機能しています。
+一方のノード (myrouter A 自身) からしか応答がない場合は、
+上流との間に何か問題があります。
+これは IPv4 フィルタリングのせいかもしれませんし、どちらかの側での設定誤り、
+あるいは別の原因のせいかもしれません。
+先に進む前に、問題を突き止めてください。
+<pre>
+# ifconfig gif0 create		(1.5 より後でのみ必要)
+# ifconfig gif0 tunnel x.x.0.1 y.y.y.10
+# ping6 -I gif0 -n ff02::1
+PING6(56=40+8+8 bytes) fe80::a00:5aff:fe38:6f86 --&gt; ff02::1
+16 bytes from fe80::a00:5aff:fe38:6f86%lo0, icmp_seq=0 hlim=64 time=0.334 ms
+16 bytes from fe80::240:5ff:fea7:f092%gif0, icmp_seq=0 hlim=64 time=3.416 ms(DUP!)
+</pre>
+
+  <li>次に、あなたのアドレスブロック 3ffe:0501:ffff::/48 から、
+二つのイーサネットセグメントにサブネットアドレスを割り当てる必要があります。
+IPv6 サブネットのプレフィックス長は常に /64 なので、
+65536 個ものサブネットを割り当てることができます!
+ここでは単に ethernet 0 に 3ffe:0501:ffff:0000::/64 を、
+ethernet 1 に 3ffe:0501:ffff:0001::/64 を割り当てます。
+<pre>
+myrouter A ---- tunnel -------&gt; 上流
+  | IPv4 x.x.0.1/24             IPv4 y.y.y.10
+  |
+==+=== ethernet 0: x.x.0.0/24, 3ffe:501:ffff:0::/64
+  |
+  | IPv4 x.x.0.2/24
+myrouter B
+  | IPv4 x.x.1.2/24
+  |
+==+=== ethernet 1: x.x.1.0/24, 3ffe:501:ffff:1::/64
+</pre>
+
+  <li>ルーターに IPv6 グローバルアドレスを割り当てましょう。
+ルーターは「かならず」手動設定する必要があるので、
+手動設定の節で説明したように "ifconfig" をする必要があります。
+myrouter A で、 ("fe80" から始まる) リンクローカル IPv6 アドレスを調べ、
+その下位 64 ビットを、サブネットアドレスの上位 64 ビットと組み合わせ、
+それを設定します。
+リブートしても設定がなくならないようにするには、この設定を
+/etc/ifconfig.ne2 に加えます。
+<pre>
+# ifconfig ne2
+ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+	address: 08:00:5a:38:6f:86
+	media: Ethernet manual
+	inet x.x.0.1 netmask 0xffffff00 broadcast x.x.0.255
+	inet6 fe80::a00:5aff:fe38:6f86%ne2 prefixlen 64 scopeid 0x1
+# ifconfig ne2 inet6 3ffe:501:ffff:0:a00:5aff:fe38:6f86 prefixlen 64 alias
+# echo 'inet6 3ffe:501:ffff:0:a00:5aff:fe38:6f86 prefixlen 64 alias' &gt;&gt; /etc/ifconfig.ne2
+</pre>
+myrouter B でも同様に設定します。
+<pre>
+# ifconfig tlp0 inet6 3ffe:501:ffff:0:a00:5aff:fe38:8765 prefixlen 64 alias
+	(ethernet 0 側)
+# ifconfig tlp1 inet6 3ffe:501:ffff:1:a00:5aff:fe38:9710 prefixlen 64 alias
+	(ethernet 1 側)
+</pre>
+
+  <li>経路情報交換のため、両方のルーターで route6d(8) を走らせます。
+上流が経路情報の集約を要求している場合は、
+マニュアルページでコマンドラインオプションを調べてください。
+これで上流への接続性が得られたはずですので、外部の IPv6 ノードへ ping
+を試してみましょう。
+ping6(8) に "-n" オプションを指定するのを忘れないでください。 IPv6
+アドレス逆引きには非常に長い時間がかかることがあるので、テストのときはそれを避けましょう。
+<pre>
+# route6d	(両方のルーターで)
+# ping6 -n www.6bone.net
+</pre>
+
+  <li>ネットワーク上に末端ホスト (ルーター以外のノード) がある場合は、
+サブネットの情報をルーターから末端ホストに広告させるとよいかもしれません。
+そうすれば、末端ホストが自動設定可能になります。
+そのためには、 /etc/rtadvd.conf を用意して rtadvd を走らせる必要があります。
+上流のルーターからのサブネット情報は広告すべきだということに注意してください。
+図中、 myrouter A は ethernet 0 に対して広告すべきで、 myrouter
+B は ethernet 0 と 1 に対して広告すべきです。
+myrouter B から ethernet 0 への広告を抑制したいと思うかもしれません。
+というのも、 B は下流にあって、デフォルトルーターとして最適ではないからです
+(ただし、この広告を抑制すると、 myrouter A がお亡くなりになられた時、
+ethernet 0 にあるマシンが ethernet 1 にあるマシンと対話できなくなります)。
+<pre>
+# rtadvd ne2	(myrouter A から ethernet 0 への広告)
+# rtadvd tlp0 tlp1	(myrouter B から ethernet 0 と 1 への広告)
+</pre>
+そして、自動設定のために、エンドノード上で
+rtsol(8) か rtsold(8) を走らせます。
+</ol>
+<br><br>
+
+場合によっては、上流組織が、上記の筋書きとは異なる設定をするよう
+求めてくるかもしれません。
+ためらわずに tech-net メーリングリストや users@ipv6.org へ質問してください。
+ネットワーク設定について質問する場合は、「かならず」あなたのサイトの
+ネットワーク構成図をつけてください。
+ネットワーク構成図がなければ、誰もあなたのネットワーク設定を推測できません。
+
+<ENTRY>resolve  IPv6 クラウド上での DNS 名前解決
+(IPv4 を含まない) 完全な IPv6環境に移行するには、 IPv6 をしゃべる
+ネームサーバーに接触する必要があります。
+これは簡単なことです: resolv.conf(5) に IPv6 アドレスを書けばよいだけです。
+IPv6 トランスポートに対応した DNS サーバーを走らせたければ 
+<PKGSRC>net/bind9 をお試しください。
+resolv.conf(5) の設定例は以下のようになります:
+<pre>
+nameserver 3ffe:501:4819::42
+</pre>
+<p>
+上のアドレスで IPv6 に対応した DNS サーバーが走っているので、
+どうぞご自由にお試しください。
+
+<ENTRY>faith_translate  FAITH TCP リレートランスレーターの利用
+IPv6 だけに対応したクライアント と IPv4 だけに対応したサーバーを直接つないだり、
+その逆はできません。
+これには、 <em>"トランスレーター"</em> と呼ばれるデバイスが必要になります。
+<br><br>
+
+NetBSD には、 IPv6 だけ (あるいは IPv4/v6) のクライアント が IPv6 TCP を使って
+IPv4 だけのサーバーに接触するのを可能にする
+faithd(8) TCP リレートランスレーターが含まれています。
+<PKGSRC>net/totd DNS proxy サーバーを利用すれば、
+以下のような IPv6-to-IPv4 トランスレーター環境の導入ができます:
+<pre>
++--IPv6 だけのクラウド ---------+
+|                               |
+|IPv6 だけの                faithd(8)                   IPv4 だけの
+|クライアント == IPv6 ===&gt; が走っている ----- IPv4 --&gt;  サーバー
+|	         tcp     トランスレーター     tcp
+|                               |
++-------------------------------+
+</pre>
+
+実際の設定には、次のドキュメントを参照してください。
+
+<ul>
+  <li><h3>以下もあわせて参照してください:</h3>
+      <ul>
+	<li><A HREF="http://www.ietf.org/html.charters/ngtrans-charter.html">
+		IETF ngtrans working group</A>
+	<li><RFC>RFC3142: 
+		"An IPv6-to-IPv4 transport relay translator",
+		faithd(8) がどのように機能するかを説明したインターネットドラフト
+		(<a href="http://www5d.biglobe.ne.jp/~stssk/rfc3142j.html">日本語訳</a>)
+	<li><CURRENTSRC>/usr.sbin/faithd/README
+	<li><PKGSRC>net/totd
+      </ul>
+</ul>
+
+<ENTRY>with_nat  IPv6 に IPv4-only ルーターあるいは NAT ルーターを跨がせる
+あなたの組織に IPv4 だけのルーターや IPv4 NAT ルーターがあるなどして、
+直接 IPv6 でのネットワークが組むことの障害になっているなら、
+次の方法でこれらの障害を乗り越えることができます。
+あなたのネットワーク構成に最適な方法を選んでください:
+
+<ul>
+<li>二つのイーサネットセグメントの間に、二つのルーターを置くことができます。
+一つは IPv4 用、もう一つは IPv6 用です。
+	IPv6 専用ルーターを二つのセグメントの間に置くことにより、
+	IPv6 のルーティングだけをさせられます。
+	この方法なら、 IPv4 ネットワークには触らないままにしておくことができます。
+<pre>
+外部へのルーター
+  |
+==+=======================+=== IPv4/v6 サブネット A
+  |                       |
+IPv4 専用ルーター         IPv6 専用ルーター
+  | (IPv4 だけを          | (IPv6 だけを
+  |  転送)                |  転送)
+==+=======================+=== IPv4/v6 サブネット B
+</pre>
+
+<li>IPv4 での プライベート/グローバル アドレスの使い方は、
+IPv6 ネットワークには全く影響しません。
+	あなたのネットワークの管理ポリシーで認められていれば、
+	IPv4 ネットワークが NAT 箱/ファイヤーウォールによって
+	グローバルアドレスセグメントとプライベートアドレスセグメントにわけられていても、
+	それとは関係なく、グローバル IPv6 到達性を持たせるように設定できます。
+<pre>
+外部へのルーター
+  |
+==+=======================+=== サブネット A: IPv4 グローバル、 IPv6 グローバル
+  |                       |
+IPv4 専用 NAT ルーター  IPv6 専用ルーター
+  |                       |
+==+=======================+=== サブネット B: IPv4 プライベート、 IPv6 グローバル
+</pre>
+
+<li>いくつかの場合、通常の IPv4 ルーターを使ったセグメント間を跨いで
+IPv6 トラフィックをブリッジすることができます。
+	IPv4 ルーターを、イーサネットプロトコルタイプ 0x86dd
+	をブリッジさせるように設定できるなら、 IPv6 トラフィックだけをブリッジできます。
+	この場合、 サブネット割り当ては IPv4 と IPv6 で異なることになります
+	- もし、やりすぎると頭痛の種になるかもしれません……。
+<pre>
+外部へのルーター
+  |
+==+======== ether セグメント 1: IPv4 サブネット A、 IPv6 サブネット X
+  |
+IPv4 専用ルーター (ether type 0x86dd をブリッジ)
+  |
+==+======== ether セグメント 2: IPv4 サブネット B、 IPv6 サブネット X (同上)
+</pre>
+
+<li>あなたの組織から相手までに IPv4 到達性があれば、
+IPv6-over-IPv4 トンネルを両者の
+IPv4 だけのネットワークの間をまたぐのに使えます。
+<pre>
+        +--- IPv4 だけのクラウド----------------+
+        |                                       |
+  +&lt;================ IPv6-over-IPv4 トンネル ============&gt;+
+  |     |                                       |         |
+  |     +---------------------------------------+         |
+  |                                                       |
+IPv4/v6 ルーター                                        IPv4/v6 ルーター
+  |                                                       |
+==+======= IPv4/v6 セグメント 1                         ==+======= IPv4/v6 セグメント 2
+</pre>
+</ul>
+
+<ENTRY>twists  Twists
+IPv6 はまだ幼年期にあるので、
+いくつかの非標準なものや仕様の穴があります。
+KAME IPv6 実装 はそれらに取り組んでいます。
+<ul>
+  <li>IPv6 の仕様では、「スコープ付きの (scoped) 」アドレス、すなわち、
+      世界規模で一意ではないアドレスを規定しています。
+      スコープ付きアドレスを明確にするために、
+      アドレスのスコープを明示的に定義する必要があります。
+      たとえば、仕様では "リンクローカルアドレス" を規定していますが、
+      これは単一のリンク上だけでユニークです。
+      アドレスを明確にするために、リンクローカルアドレスには、
+      どの「リンク」のものかを明示する必要があります。
+      <br>
+      KAME の IPv6 コードでは、カーネル内部構造中で
+      スコープ付きアドレスの 3 バイト目と 4 バイト目にスコープ識別子を組み込んでいます。
+      このため、時々 "fe80:1::abcd:1234:abcd:1234"
+      のような内部形式を見かけると思います。これは
+      "fe80:0000:0000:0000:abcd:1234:abcd:1234 on scope 1" を意味します。
+      このような内部形式での指定は可能な限りしないでください。
+      <br>
+      スコープ付きアドレスを明確にするには、以下の二つの方法があります:
+      <ul>
+      <li>ping6(8) に対する -I オプションのような、特別なコマンドラインオプションを使います。
+      <li>アドレス指定に、 <tt>fe80::1%de0</tt> のような、
+	  拡張されたスコープ付きアドレスの記法を使います。
+	  この記法は、いくつかの限られたアプリケーションのみで使えることに注意してください
+	  (getaddrinfo(3) を使うアプリケーションがこの記法を扱えます)。
+      </ul>
+  <li>ローカルネットワークで何らかの実験を行う時は、
+      サイトローカルユニキャストアドレスを使うことを試さないでください。
+      仕様書の書き方は、曖昧すぎます。
+      仕様書も実装も、
+      サイトローカルアドレスを実際の利用に供する前に改良しなければなりません。
+      たとえ隔離された (外部につながっていない) ネットワークを動かしたい場合であっても、
+      必ず集約可能な IPv6 グローバルユニキャストアドレスを使ってください。
+  <li>その他、実装についての詳細は、
+	<a href="http://orange.kame.net/dev/cvsweb.cgi/kame/IMPLEMENTATION">
+	KAME implementation document</A> にあります。
+</ul>
+<br><br>
+
+仕様に関する事柄ではありませんが、挙げておく価値のある事柄がいくつかあります:
+
+<ul>
+  <li>すべてのツールで IPv6 通信の準備ができているわけではありません。
+      X(1) や、ほかのいくつかのツールは IPv4 通信にしか対応していません。
+      named(8) や yp(8) では、データベース中に IPv6 アドレスを入れることはできますが、
+      IPv6 通信には対応していません
+      (IPv6 クラウド上では名前解決ができません)。
+  <li>pkgsrc ディレクトリーのいくつかのものは、 <tt>USE_INET6</tt>
+      で IPv4/v6 両対応のものの構築と IPv4 だけに対応したものの構築を切り替えます。
+      <tt>USE_INET6</tt> を定義しておけば、自動的に、
+      IPv6 の準備のできている NetBSD システム向けのものになります。
+  <li>この実装は自動トンネル (<RFC>RFC1933) にも 6over4 
+      にも対応していません。
+  <li><tt>AF_INET6</tt> ワイルドカードリスニングソケットは、必要な設定をした場合に限って
+      IPv4 コネクションを捕捉します (このふるまいは <RFC>RFC2553 に記述されています)。
+      詳しくは inet6(4) および ip6(4) をご覧ください。
+  <li>IPv6 は、ネットワークインターフェースにマルチキャストへの対応を要求します。
+	ドライバーのマルチキャストへの対応に何らかの問題がある場合
+	(対応していない、マルチキャストフィルター設定にバグがある、など)、
+	IPv6 は全く動きません。
+	この種の問題がありましたら、
+	<a href="../../../Misc/send-pr.html">バグ報告をしていただく</a>ようお願いします。
+  <li>NetBSD には getipnodebyname(3) と getipnodebyaddr(3) がありません。
+	これらは、 IPv6 の基本的な API 仕様で事実上非推奨であるからです。
+	これらはまた、スコープ付きの形式の IPv6 アドレスに対応していません。
+	これらの代わりに、 getaddrinfo(3) と getnameinfo(3) を使ってください。
 </ul>
 
 <ENTRY>maintenance  管理
 <ul>
   <li>監視に便利なツール
       <ul>
-        <li>ifconfig(8) - ネットワークインタフェースのパラメーターを設定したり調べたりする。
+        <li>ifconfig(8) - ネットワークインターフェースのパラメーターを設定したり調べたりする
         <li>route(8) - 経路表を操作する
         <li>ping6(8) - ICMPv6 ECHO_REQUESTパケットをネットワーク上のノードに向けて送る
         <li>traceroute6(8) - パケットがノードに到着するまでの経路を表示
-        <li>tcpdump(1) - ネットワークインタフェース上のトラフィックを選択して表示
+        <li>tcpdump(1) - ネットワークインターフェース上のトラフィックを選択して表示
         <li>netstat(1) - ネットワーク状態の表示
+        <li>ndp(8) - arp(8) の IPv6 版
+        <li>ifmcstat(8) - カーネルのマルチキャストグループ設定の確認
         <li>systat(8) 'systat netstat' - ネットワーク接続を動的に表示
       </ul>
-  <li>経路制御デーモン
+  <li>IPv6 自動設定
       <ul>
-        <li>route6d(8) - RIPngデーモン、routed(8)に類似
-        <li>pim6dd(8) - PIMv6 dense mode マルチキャスト経路制御デーモン
-        <li><A HREF="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/net/zebra/README.html">zebra</A>
-		- zebra 経路制御デーモン、RIPng, BGP4+とOSPFv6をサポート
+	<li>rtadvd(8) - ルーターから router advertisement の発信
+	<li>rtsold(8) - ホストに使い、定期的に router solicitation を送信
+	<li>rtsol(8) - ホストに使い、単一の router solicitation を送信
+      </ul>
+  <li>ルーティングデーモン
+      <ul>
+        <li>route6d(8) - routed(8) のような RIPng ルーティングデーモン
+        <li>pim6dd(8) - PIMv6 dense mode マルチキャストルーティングデーモン
+        <li>pim6sd(8) - PIMv6 sparse mode マルチキャストルーティングデーモン
+        <li><PKGSRC>net/zebra - zebra ルーティングデーモン、 RIPng, BGP4+ および OSPFv6 に対応
+      </ul>
+  <li>IPv6 関連の疑似インターフェース
+      <ul>
+        <li>faith(4) - IPv6-to-IPv4 TCP リレー捕捉インターフェース、 faithd(8) を補助
+        <li>gif(4) - IPv[46] over IPv[46] をおこなう汎用トンネルインターフェース
+        <li>ifconfig(8) - "tunnel" サブコマンドによる gif(4) 設定
+        <li>stf(4) - 6to4 トンネルインターフェース
       </ul>
 </ul>
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
 	<li><a href="http://www.kame.net/">かめプロジェクト</a>
       </ul>
 </ul>
 
 <ENTRY>userland  ユーザーアプリケーション
-<A HREF="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/README.html">パッケージ</A>
-ディレクトリーのうちいくつかはIPv6対応しています。
-mk.confの<TT>USE_INET6</TT>の説明を参照。
-<P>
+基本システムにある次のプログラムでは IPv6 が利用できます:
+<tt>
+finger(1), 
+fstat(1), 
+ftp(1), 
+netstat(1), 
+rlogin(1), 
+rsh(1), 
+systat(1), 
+telnet(1), 
+tftp(1), 
+whois(1), 
+faithd(8), 
+fingerd(8), 
+ftpd(8), 
+ifconfig(8), 
+inetd(8), 
+lpd(8) (と関連プログラム), 
+mld6query(8), 
+mtrace6(8), 
+ndp(8), 
+pim6dd(8), 
+pim6sd(8), 
+ping6(8), 
+pppd(8), 
+rdate(8), 
+rip6query(8), 
+rlogind(8), 
+route6d(8), 
+rshd(8), 
+sendmail(8),
+syslogd(8), 
+tcpdchk(8) (と関連プログラム), 
+telnetd(8), 
+tftpd(8), 
+traceroute6(8), 
+trpt(8)
+</tt>.
+<p>
+
+RPC と NFS も IPv6 に対応しました。
+<p>
+
+また、 IPv6 に対応した
+<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/README-IPv6.html">パッケージ</a>も、ますます多くなっています。
+<br><br>
 
 IPv6対応した外部のソフトウェアを利用したい場合、
 多くの場合IPv6パッチを入手しないといけません。
 ネットワークのいろんな場所にIPv6パッチがおかれています。
+<br><br>
+
 <ul>
-  <li><h3>See also:</h3>
+  <li><h3>以下もあわせて参照してください:</h3>
       <ul>
 	<li><a href="ftp://ftp.kame.net/pub/kame/misc/">ftp://ftp.kame.net/pub/kame/misc/</a>
-	<li><a href="http://www.ipv6.org/">ipv6.org</A>
+	<li><a href="http://www.ipv6.org/">ipv6.org</a>
       </ul>
 </ul>
 
-<!-- このドキュメントは更新されておらず、現在の list2html.pl が動作しません。
-     したがって、.html を生成できるように最低限の変更をおこないました。-->
-<!-- ENDLIST -->
 </LIST>
 
-<BASELINKS>
+<a href="../"><em>NetBSD ドキュメンテーション: ネットワーク</em>に戻る</a>
+<hr>
+
+<DOCLINK>
+<hr>
+
+<p>
+<center>
+この <a href="http://www.ipv6.euronet.be/webring/">IPv6 Configuration Help</a>
+サイトは <a href="/">The NetBSD Project</a> が所有しています。
+<br>
+[ 
+ <a href="http://go.webring.yahoo.com/go?ring=ipv6&amp;id=3&amp;prev">戻る</a> 
+|
+ <a href="http://go.webring.yahoo.com/go?ring=ipv6&amp;id=3&amp;next">進む</a> 
+|
+ <a href="http://go.webring.yahoo.com/go?ring=ipv6&amp;id=3&amp;random">ランダム
+ </a> 
+|
+ <a href="http://nav.webring.yahoo.com/hub?ring=ipv6&amp;list">サイト一覧</a> 
+]
+</center>
+<p>
 
 <hr>
 <address>
+  <small>
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.list,v 1.4 1999/07/27 03:22:33 itojun Exp $<br>
-  <a href="/Misc/disclaimer.html" origlink="../../../Misc/disclaimer.html">Copyright &copy; 1998-2003
+  $NetBSD: index.list,v 1.79 2001/09/17 00:10:34 itojun Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000, 2001
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
 
 </body>
