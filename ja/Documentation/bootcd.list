@@ -64,15 +64,11 @@ Now create the ISO 9660 image.
   mkisofs -o output.iso -l -J -r -L /cdsources
 </pre>
 The second step is to install NetBSD/alpha disk and CD ROM bootstrap
-software using <tt>installboot(8.alpha)</tt>.  This is done with the
+software using <tt>installboot(8)</tt>.  This is done with the
 following command:
 <pre>
-  installboot -v output.iso /tmp/mdec.alpha/bootxx_cd9660 
+  installboot -m alpha -v output.iso /tmp/mdec.alpha/bootxx_cd9660 
 </pre>
-Note that this second step must either be performed on a NetBSD/alpha
-machine or you must compile the alpha installboot program for your machine.
-The alpha installboot program should compile and run correctly under
-NetBSD/i386.  
 
 <ENTRY>i386image NetBSD/i386
 This section shows how to make a NetBSD/i386 bootable CD ROM.  The
@@ -191,17 +187,11 @@ Now create the ISO 9660 image.
   mkisofs -o output.iso -l -J -r -L /cdsources
 </pre>
 The second step is to install NetBSD/pmax disk and CD ROM bootstrap
-software using <tt>installboot(8.pmax)</tt>.  The
-<tt>installboot(8.pmax)</tt> command is used in the following way:
+software using <tt>installboot(8)</tt>.  The
+<tt>installboot(8)</tt> command is used in the following way:
 <pre>
-  /usr/mdec/installboot -v output.iso /usr/mdec/bootxx_cd9660 
+  installboot -m pmax -v output.iso /usr/mdec/bootxx_cd9660 
 </pre>
-Note that this second step must be performed on a NetBSD/pmax machine.
-However, it is acceptable for the ISO image to be NFS mounted on the
-NetBSD/pmax machine from a remote system if the image is not being built
-locally.  Alternatively, starting with NetBSD-1.5.1, the NetBSD/pmax installboot
-program can be compiled on other NetBSD architectures.  This allows
-the generation of a bootable image using a non-pmax machine.
 
 <ENTRY>sparcimage NetBSD/sparc
 There are three steps involved in making a NetBSD/sparc bootable CD ROM.
@@ -292,12 +282,12 @@ the release, so you have to put it together yourself.
 
   echo /set type=file uname=root gname=wheel mode=0755 &gt; /tmp/boot-sun3.spec
   echo . type=dir &gt;&gt; /tmp/boot-sun3.spec
-  echo ufsboot mode=0644 &gt; /tmp/boot-sun3.spec
+  echo ufsboot mode=0644 &gt;&gt; /tmp/boot-sun3.spec
   /bin/ls netbsd* vmunix &gt;&gt; /tmp/boot-sun3.spec
 
   makefs -t ffs -B be -F /tmp/boot-sun3.spec /tmp/boot-sun3.fs /tmp/boot-sun3
 
-  installboot -v -m sun3 /tmp/boot-sun3.fs /tmp/bootxx.sun3 ufsboot
+  installboot -m sun3 -v /tmp/boot-sun3.fs /tmp/bootxx.sun3 ufsboot
 </pre>
 
 The final step is to rewrite the ISO image with (a) a sun disklabel at
@@ -358,8 +348,8 @@ kernel in the right places, do the following:
   mv -f ./usr/mdec/xxboot /tmp/mdec.vax/xxboot
   rmdir ./usr/mdec
 
-  cd /cdsources/vax/binary/kernel
-  cp -f netbsd.INSTALL.gz /cdsources/netbsd.vax.gz
+  cd /cdsources/vax/installation/netboot
+  cp -f install.ram.gz /cdsources/netbsd.vax.gz
   gunzip -f /cdsources/netbsd.vax.gz
 </pre>
 Now create the ISO 9660 image.
@@ -367,36 +357,49 @@ Now create the ISO 9660 image.
   mkisofs -o output.iso -l -J -r -L /cdsources
 </pre>
 The second step is to install NetBSD/vax disk and CD ROM bootstrap
-software using <tt>installboot(8.vax)</tt>.  The
-<tt>installboot(8.vax)</tt> command is used in the following way:
+software using <tt>installboot(8)</tt>.  The
+<tt>installboot(8)</tt> command is used in the following way:
 <pre>
-  /usr/mdec/installboot -v output.iso /usr/mdec/xxboot
+  installboot -m vax -v output.iso /usr/mdec/xxboot
 </pre>
-Note that this second step must be performed on a NetBSD/vax machine.
-However, it is acceptable for the ISO image to be NFS mounted on the
-NetBSD/vax machine from a remote system if the image is not being built
-locally.  Alternatively, the vax installboot program can be compiled on
-a NetBSD machine of a different architecture.
-
 
 <ENTRY>multiimage Multiple Machine
+
+NetBSD-current has infrastructure in
+<tt><a href="http://cvsweb.netbsd.org/bsdweb.cgi/basesrc/distrib/cdrom/"
+>src/distrib/cdrom</a></tt>
+to build CDs which can boot multiple machines.
+This has been used to build a four CD set containing thirty-nine platforms,
+with eight platforms able to boot off the CDs.
+This technique requires <tt>mkisofs</tt> version 1.15a34 or newer.
+
+<p>
+
+Alternatively, multiple machine boot CDs can be created with the
+following manual procedure.
 This procedure
 has been successfully used to create a single CD which is bootable on
 alpha, i386, pmax, and sparc.  It should be possible to also make the
 CD bootable on macppc, vax and on sun2, sun3 and sun3x.
 To create a CD which is bootable by multiple architectures, use the
 following steps in this order.  Please note that the order is critical.
+
 <ul>
+
 <li>Make sure you have all the required files including the various
 kernels and boot programs listed in the individual machine
 sections.  
+
 <li>Include a directory somewhere in the <tt>cdsources</tt> directory called <tt>mdec.pmax</tt>
 and include the pmax <tt>bootxx_cd9660</tt> file there.  For example,
 <tt>/cdsources/usr/mdec.pmax/bootxx_cd9660</tt>.
+
 <li>Include a directory somewhere in the <tt>cdsources</tt> directory called <tt>mdec.vax</tt>
 and include the vax <tt>xxboot</tt> file there.  For example,
 <tt>/cdsources/usr/mdec.vax/xxboot</tt>.
+
 <li>Include the macppc <tt>ofwboot.xcf</tt> bootloader in <tt>/cdsources</tt>.
+
 <li>Create an i386 bootable image.
 <pre>
   sh
@@ -407,6 +410,7 @@ and include the vax <tt>xxboot</tt> file there.  For example,
 Note that the appearance of the <tt>-v</tt> flag twice is required.  If you are
 making a bootable CD for an Open Firmware 3 macppc model, make sure to include
 <tt>-hfs -part</tt> in the parameters for <tt>mkisofs</tt>.
+
 <li>Run <tt>mksunbootcd</tt> on a NetBSD/sparc machine to install sparc
 and sun2/sun3 bootblocks.  Alternatively, install the 
 <PKGSRC>sysutils/mksunbootcd
@@ -414,54 +418,37 @@ package on your favorite NetBSD machine.
 <pre>
   mksunbootcd output.iso boot-sun4.fs boot-sun4c.fs boot-sun4m.fs boot-sun3.fs
 </pre>
-<li>Run the pmax <tt>installboot(8.pmax)</tt> program on a NetBSD/pmax
-machine 
-(or compile and run the pmax installboot program on a different NetBSD-1.5 or newer machine)
-to install 
-pmax bootblocks.  Note that in order to coexist with the NetBSD/alpha boot
-programs, the pmax boot program is installed in the ISO file system.  To tell
-the pmax installboot program where the boot program is, examine the log file
-from running mkisofs.
+
+<li>Run the <tt>installboot(8)</tt> program targeted for
+NetBSD/pmax to install the pmax bootblocks.
+Note that in order to coexist with other NetBSD boot blocks, the pmax
+boot block is appended to the end of the ISO file system.
 <pre>
-  grep "usr/mdec.pmax/bootxx_cd9660" /tmp/mkisofs.log
+  installboot -m pmax -v -o append,sunsum output.iso /tmp/mdec.pmax/bootxx_cd9660
 </pre>
-You should see something like:
+The <tt>-o append,sunsum</tt> option appends the first stage boot block to
+the end of the ISO file system, and restores the checksum used when booting
+on a sun.
+
+<li>Run the <tt>installboot(8)</tt> program targeted for
+NetBSD/vax to install the vax bootblocks.
+Note that in order to coexist with other NetBSD boot blocks, the vax
+boot block is appended to the end of the ISO file system.
 <pre>
-  148017 148020 cdsources/usr/mdec.pmax/bootxx_cd9660
+  installboot -m vax -v -o append,sunsum output.iso /tmp/mdec.vax/xxboot
 </pre>
-The first number (148017 in this particular case) is the ISO block you need
-to pass to the installboot program.  Now run the installboot program:
+(See the pmax entry above for an explanation of the flags).
+
+<li>Run the <tt>installboot(8)</tt> program targeted for
+NetBSD/alpha to install the alpha bootblocks.
 <pre>
-  installboot -s -i 148017 -v output.iso /tmp/mdec.pmax/bootxx_cd9660
+  installboot -m alpha -v -o append,sunsum output.iso /tmp/mdec.alpha/bootxx_cd9660
 </pre>
-The <tt>-s</tt> flag restores the checksum used when booting on a sun.
-<li>Run the vax <tt>installboot(8.vax)</tt> program on a NetBSD/vax
-machine 
-(or compile and run the vax installboot program on a different NetBSD-1.5 or newer machine)
-to install 
-vax bootblocks.  Note that in order to coexist with the NetBSD/alpha boot
-programs, the vax boot program is installed in the ISO file system.  To tell
-the vax installboot program where the boot program is, examine the log file
-from running mkisofs.
-<pre>
-  grep "usr/mdec.vax/xxbootxx" /tmp/mkisofs.log
-</pre>
-You should see something like:
-<pre>
-  148017 148020 cdsources/usr/mdec.vax/xxboot
-</pre>
-The first number (148017 in this particular case) is the ISO block you need
-to pass to the installboot program.  Now run the installboot program:
-<pre>
-  installboot -s -i 148017 -v output.iso /tmp/mdec.vax/xxboot
-</pre>
-The <tt>-s</tt> flag restores the checksum used when booting on a sun.
-<li>Run <tt>installboot(8.alpha)</tt> on a NetBSD/alpha machine to install
-alpha bootblocks.  Be sure to include the <tt>-s</tt> option which synchronizes the
-alpha and sun checksums.
-<pre>
-  installboot -vs output.iso /tmp/mdec.alpha/bootxx_cd9660
-</pre>
+Note that the alpha installboot must occur after the others, because
+currently it's the only machine dependent back-end for
+<tt>installboot(8)</tt> that can calculate the alpha checksum.
+(See the pmax entry above for an explanation of the flags).
+
 </ul>
 
 <SECTION>Examining the CD image
@@ -566,7 +553,7 @@ Adaptec Toast</a>.  Commercial software.
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: bootcd.list,v 1.35 2002/09/16 11:52:16 dmcmahill Exp $<br>
+  $NetBSD: bootcd.list,v 1.40 2002/10/05 14:26:10 grant Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 2000-2002
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
