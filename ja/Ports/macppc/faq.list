@@ -275,8 +275,54 @@ alt="screenshot of DiskCharmer">
 ここで <tt>/msdos.filesystem</tt> はあなたが決めたマウントポイント、
 <tt>/dev/disk0s11</tt> はそのパーティションのデバイス名です。あるいは、
 NetBSD や linuxppc では、 <tt>/etc/fstab</tt> に項目を追加して、
-このファイルシステムがいつもマウントされるようにもできます。 MacOS X でも
-このような方法があるかもしれませんが、私はその方法をまだ知りません。
+このファイルシステムがいつもマウントされるようにもできます。
+
+<p><li>MacOS X や Darwin で MS-DOS ファイルシステムを自動的にマウントする
+ためには、 System Startup ファイル群を作成する必要があります。
+<a href="http://www.darwinfo.org/howto/SystemStarter_HOWTO.shtml">SystemStarter
+HOWTO</a> が、スタートアップファイル群の作成方法を学ぶうえでのよい参考資料と
+なるでしょう。 <tt>autodiskmount</tt> を使った方法もおそらくあるのでしょうが、
+ここで説明する方法でうまくいきます。唯一の欠点は、 MSDOS ファイルシステムが
+Classic 環境では扱えないことです。
+以下に例を示します:
+<p>
+<ol>
+<li><tt># <b>mkdir -p /Library/StartupItems/MountMSDOS</b></tt>
+<p><li>以下の内容を持つファイル
+   <tt>/Library/StartupItems/MountMSDOS/StartupParameters.plist</tt>
+   を作成します:
+<pre>{
+  Description     = "Mount MSDOS partitions";
+  Provides        = ("Manual MSDOS partitions");
+  Requires        = ("Disks");
+  OrderPreference = "None";
+  Messages =
+  {
+    start = "Mounting MSDOS partitions";
+    stop  = "Unmounting MSDOS partitions";
+  };
+}</pre>
+<p><li>以下の内容を持つファイル
+   <tt>/Library/StartupItems/MountMSDOS/MountMSDOS</tt>
+   を作成します:
+<pre>#!/bin/sh
+
+. /etc/rc.common
+
+##
+# Manually mount HFS partition with MSDOS filesystem
+##
+
+ConsoleMessage "Mount MSDOS partitions"
+
+##
+# Mount your filesystems manually.
+##
+mount_msdos /dev/disk0s11 /Volumes/Thingies</pre>
+<p><li>
+  <tt># <b>chown -R root /Library/StartupItems/MountMSDOS</b></tt><br>
+  <tt># <b>chmod a+rx /Library/StartupItems/MountMSDOS/MountMSDOS</b></tt>
+</ol>
 </ol>
 
 <ENTRY>partitions ことごとく食い違ったパーティション記法で混乱しています
@@ -2064,7 +2110,7 @@ ADB キーボードの "power" キーを再現することができます。
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: faq.list,v 1.106 2002/05/10 05:19:57 mbw Exp $<br>
+  $NetBSD: faq.list,v 1.107 2002/05/10 21:44:58 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
