@@ -4,7 +4,7 @@
 <head>
 <!-- Copyright (c) 2000-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>NetBSD Bootable CD ROM HOWTO</title>
 </head>
@@ -35,7 +35,7 @@ It is assumed the directory <tt>/cdsources</tt> exists on your system
 and contains all the files which you want to end up on the CD ROM.
 One suggested layout for making an install CD is to follow the
 directory structure on <a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.6/">ftp.netbsd.org</a>.  For example:
+href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-1.6/">ftp.NetBSD.org</a>.  For example:
 <pre>
   /cdsources/i386/.....
   /cdsources/sparc/.....
@@ -76,7 +76,7 @@ particular example is how to make a NetBSD-1.6/i386 install CD.  It
 is assumed that the directory <tt>/cdsources/</tt> exists on your system
 and contains all the files and the directory structure from the
 <a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.6/i386/">NetBSD-1.6/i386</a>
+href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-1.6/i386/">NetBSD-1.6/i386</a>
 distribution.
 The exact contents depend on what you want on your CD.  The
 important part is that
@@ -111,7 +111,7 @@ determine your system's Open Firmware version and its support status.
 
 <p>It is assumed that the directory <tt>/cdsources/</tt> exists on your
 system and contains all the files and the directory structure from the
-<a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.6/macppc/"
+<a href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-1.6/macppc/"
 >NetBSD-1.6/macppc</a> distribution.
 The exact contents depend on what you want on your CD.
 
@@ -223,7 +223,7 @@ software using <tt>installboot(8)</tt>.  The
 
 <ENTRY>sgimips NetBSD/sgimips
 Please see <a
-href="http://mail-index.netbsd.org/port-sgimips/2003/06/29/0000.html">this
+href="http://mail-index.NetBSD.org/port-sgimips/2003/06/29/0000.html">this
 posting</a> to the <a href="../MailingLists/#port-sgimips">port-sgimips
 MailingList</a> for instructions on how to create a bootable CD ROM.  Note
 that these instructions have not been verified by the NetBSD developers (yet).
@@ -237,7 +237,7 @@ to put on the CD.  For example:
 </pre>
 Now get a bootable floppy image.  For NetBSD-1.6/sparc, this image
 may be found at
-<URL>ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.6/sparc/installation/bootfs/boot.fs.gz
+<URL>ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-1.6/sparc/installation/bootfs/boot.fs.gz
 
 The final step is to rewrite the ISO image with (a) a sun disklabel at
 the start, (b) the original image at the end, and (c) with the right
@@ -248,7 +248,7 @@ is not installed on your system, it can be installed from the
 package.  If you're creating the image on a non-NetBSD system, you
 can try compiling <tt>mksunbootcd</tt> on your system.  The sources
 are available at
-<a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/mksunbootcd/">ftp://ftp.netbsd.org/pub/NetBSD/misc/mksunbootcd/</a>.  
+<a href="ftp://ftp.NetBSD.org/pub/NetBSD/misc/mksunbootcd/">ftp://ftp.NetBSD.org/pub/NetBSD/misc/mksunbootcd/</a>.  
 
 To use <tt>mksunbootcd</tt> use the following:
 <pre>
@@ -272,9 +272,38 @@ machine for running <tt>mksunbootcd</tt> without requiring extreme amounts
 of data to be transfered over the network.
 
 <ENTRY>sparc64image NetBSD/sparc64
-Currently there is no support for booting NetBSD/sparc64 from CD.  It is
-on the sparc64 TODO list however and the hardware certainly will support
-this.
+There are three steps involved in making a NetBSD/sparc64 bootable CD ROM.
+Step 1 is to create an "almost" full ISO 9660 image of whatever you want to
+put on the CD.  For example:
+<pre>
+  mkisofs -o output.iso -l -J -r -L /cdsources
+</pre>
+
+Now get a bootable floppy image.  For NetBSD-1.6.1/sparc64, this image
+may be found at <a href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-1.6.1/sparc64/installation/misc/boot.fs.gz">ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-1.6.1/sparc64/installation/misc/boot.fs.gz</a>
+
+The final step is to rewrite the ISO image with (a) a sun disklabel at
+the start, (b) the original image at the end, and (c) with the right
+offset/size values in the disklabel for the bootloader.  The program
+<tt>sunbootcd.sh</tt> will perform this task.  If <tt>sunbootcd.sh</tt>
+is not installed on your system, it can be obtained from <a href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/distrib/common/sunbootcd.sh">ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/distrib/common/sunbootcd.sh</a>.
+
+To use <tt>sunbootcd.sh</tt> use the following:
+<pre>
+  sunbootcd.sh output.iso - - - - boot.fs
+</pre>
+The arguments are for bootable images for sun4, sun4c, sun4m, sun4d, and
+sun4u.  Specifying a dash instead of a boot image means the CD will not be
+bootable for that platform.  In the above example the only platform given
+a boot image is sun4u.
+
+Note that <tt>sunbootcd.sh</tt> rewrites the <tt>output.iso</tt> file, so
+don't run it multiple times.
+
+As a note, this step is fine to perform on a NFS mounted directory.  Ie, 
+if your ISO image is on a remote machine, it can be mounted on a NetBSD
+machine for running <tt>sunbootcd.sh</tt> without requiring extreme amounts
+of data to be transfered over the network.
 
 <ENTRY>sun2image NetBSD/sun2
 To make a NetBSD/sun2 bootable CD ROM, follow the procedure below for 
@@ -334,7 +363,7 @@ is not installed on your system, it can be installed from the
 package.  If you're creating the image on a non-NetBSD system, you
 can try compiling <tt>mksunbootcd</tt> on your system.  The sources
 are available at
-<a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/mksunbootcd/">ftp://ftp.netbsd.org/pub/NetBSD/misc/mksunbootcd/</a>.  
+<a href="ftp://ftp.NetBSD.org/pub/NetBSD/misc/mksunbootcd/">ftp://ftp.NetBSD.org/pub/NetBSD/misc/mksunbootcd/</a>.  
 
 To use <tt>mksunbootcd</tt> use the following:
 <pre>
@@ -522,7 +551,7 @@ for more details on how to do this.
 For older versions of Solaris, you might want to try the
 <tt>fbk</tt> driver written by Joerg Schilling.  The <tt>fbk</tt> driver
 is available from
-<a href="ftp://ftp.fokus.gmd.de/pub/unix/kernel/fbk/">ftp://ftp.fokus.gmd.de/pub/unix/kernel/fbk/</a>
+<a href="ftp://ftp.berlios.de/pub/schily/kernel/fbk/">ftp://ftp.berlios.de/pub/schily/kernel/fbk/</a>
 Please refer to the <tt>fbk</tt> documentation for installation instructions.
 Once the <tt>fbk</tt> driver is installed on your system, you can mount the ISO 9660 image
 with the following command:
@@ -566,6 +595,20 @@ Roxio Easy CD Creator</a>.  Commercial software.
 <li><a
 href="http://www.ahead.de/en/index.html">
 Ahead Nero Burning ROM</a>.  Commercial software.
+<li><a href="ftp://ftp.berlios.de/pub/cdrecord/alpha/win32/">CDRECORD</a>.
+Free software that can create bootable ISO 9660 images and write them to CD.
+This does not include a graphical interface, it is command line only.
+This depends on an ASPI driver, which is available
+<a href="http://www.adaptec.com/worldwide/support/driverdetail.html?cat=/Product/ASPI-4.70&filekey=aspi_v470.exe=/Product/ASPI-4.70&filekey=aspi_v470.exe">here</a>.
+For IDE drives you will need to modify your registry:
+<pre>
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ASPI32]  
+"ErrorControl"=dword:00000001  
+"Start"=dword:00000001  
+"Type"=dword:00000001  
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ASPI32\Parameters]  
+"ExcludeMiniports"="" 
+</pre>
 </ul>
 
 <ENTRY>macrecord Under MacOS
@@ -586,8 +629,8 @@ Roxio Toast</a>.  Commercial software.
 <hr>
 <address>
   <small>
-  <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: bootcd.list,v 1.51 2003/06/29 19:40:42 keihan Exp $<br>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: bootcd.list,v 1.56 2003/12/03 01:05:40 ben Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 2000-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
