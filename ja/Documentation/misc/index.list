@@ -327,7 +327,7 @@ yui#
 </pre>
 </ol>
 
-<ENTRY>cdrom Reading CDs with NetBSD
+<ENTRY>cdrom Reading data CDs with NetBSD
 
 Data CDs can contain anything from programs, sound files (mp3, wav),
 movies (mp3, quicktime) to source code, text files, etc. Before
@@ -457,23 +457,55 @@ There are two ways to handle audio CDs:
      CDROMs, CDRW and DVD drives. 
      <p>
      
-<li> To read ("rip") audio tracks in binary form without going
-     through digital-&gt;analog conversion and back, programs
-     like <PKGSRC>audio/cdd, <PKGSRC>audio/tosha and
-     <PKGSRC>audio/cdparanoia can be used. The data can then
-     be post-processed e.g. by encoding it into MP3 streams
-     (see <a href="#create-mpeg3">below</a>) or 
-     by writing them back to CD-Rs using <PKGSRC>sysutils/cdrecord
+<li> To <a name="rip">read ("rip") audio tracks</a> in binary form
+     without going through digital-&gt;analog conversion and back.
+     There are several programs available to do this:
      <p>
-     
-     Depending on your drive, the software may or may not
-     support it. Cdparanoia is known to work with a wide range
-     of IDE (ATAPI) and SCSI drives. 
-     <p>
+
+    <ul>
+    <li>For ATAPI or SCSI CD-ROMs the <PKGSRC>audio/cdd package can be used. To
+         extract track 2 with cdd, type:
+         <p>
+
+         <pre> # cdd -t 2 `pwd`</pre>
+         <p>
+
+         This will put a file called <tt>track-02.cda</tt> in the
+         current directory. 
+         <p>
+
+    <li>For SCSI CD-ROMS the <PKGSRC>audio/tosha package can be used.  To
+        extract track 2 with tosha, you should be able to type:
+        <p>
+
+        <pre> # tosha -d <i>CD-ROM-device</i> -t 2 -o track-02.cda</pre>
+        <p>
+
+    <li> For most ATAPI, SCSI and several proprietary CDROM drives, the
+         <PKGSRC>audio/cdparanoia package can be used.  With cdparanoia the data
+         can be saved to a file or directed to standard output in WAV,
+         AIFF, AIFF-C or raw format.  Currently the -g option is
+         required by the NetBSD version of cdparanoia.  A hypothetical
+         example of how to save track 2 as a WAV file is as follows:
+         <p>
+
+         <pre> $ cdparanoia -g /dev/rcd0d 2 track-02.wav</pre>
+         <p>
+
+         If you want to grab all files from a CD, cdparanoia's batch
+         mode is useful:
+
+         <pre> $ cdparanoia -g /dev/rcd0d -B</pre>
+    </ul>
+
+    The data can then be post-processed e.g. by <a
+     href="#create-mpeg3">encoding it into MP3 streams</a> or by <a
+     href="#cdr-audio">writing them to CD-Rs</a>.
+    <p>
 </ol>
 
 
-<ENTRY>cdr Using a CD-R writer
+<ENTRY>cdr Using a CD-R writer with data CDs
 
 The process of writing a CD consists of two steps: First, a "image" of
 the data must be generated, which can then be written to CD-R in a
@@ -559,6 +591,69 @@ second step.
 </ol>
 
 
+<ENTRY>cdr-audio Using a CD-R writer to create audio CDs
+
+If you want to make a backup copy of one of your audio CDs, you
+can do so by extracting ("ripping") the <a href="#cdrom-audio">audio
+tracks</a> from the CD, and then writing them back to a blank CD.
+Of course this works fine if you extract single tracks from various
+CDs, creating your very own mix CD!
+<p>
+
+The steps involved are:
+<p>
+
+<ol>
+<li> Extract the audio tracks as described as in the <a
+     href="#rip">Using audio CDs with NetBSD</a> section, to get a
+     couple of .wav files.
+     <p>
+
+<li> Write the .wav files using <PKGSRC>sysutils/cdrecord:
+     <p>
+
+     <pre> # cdrecord -v dev=/dev/rcd0d -audio -pad *.wav </pre>
+</ol>
+
+<ENTRY>cdr-mp3 Creating an audio CD from mp3s
+
+If you have converted all your audio CDs to mp3 and now want to make
+a mixed CD for your (e.g.) your car, you can do so by first converting
+the .mp3 files back to .wav format, then write them as a normal audio
+CD.
+<p>
+
+The steps involved here are:
+<p>
+
+<ol>
+<li> Create .wav files from your .mp3 files:
+     <pre> $ mpg123 -w foo.wav foo.mp3 </pre>
+     Do this for all of the mp3 files that you want to have on your
+     audio CD. The .wav filenames you use don't matter.
+     <p>
+<li> Write the .wav files to CD as described under
+     ``<a href="#cdr-audio">Using a CD-R writer with audio CDs</a>''.
+     <p>
+</ol>
+
+<ENTRY>copy-cd Copying a (data) CD with two drives
+
+If you have both a CD-R and a CD-ROM drive in your machine, you can
+copy a data CD with the following command:
+
+<pre>
+# cdrecord dev=/dev/rcd1d /dev/rcd0d
+</pre>
+
+Here the CD-ROM (cd0) contains the CD you want to copy, and the CD-R
+(cd1) contains the blank disk. Note that this only works with computer
+disks that contain some sort of data, it does <i>not</i> work with
+audio CDs! In practice you'll also want to add something like
+"<tt>speed=8</tt>" to make things a bit faster.
+<p>
+
+
 <ENTRY>cdrw Using CD-RW rewritables
 
 You can treat a CD-RW drive like a <a href="#cdr">CD-R</a> drive in
@@ -599,17 +694,26 @@ is <a href="../../Changes/changes-1.5.html">available</a>.
 release.
 
 <ENTRY>64-bit Is NetBSD a 64 bit operating system?
+
 NetBSD runs on both 32 bit and 64 bit CPUs. On the <a
-href="../../Ports/alpha/">alpha</a> CPU the kernel and
-userland run in a mode known as LP64, where <b>int</b>s are 32 bit, and
-<b>long</b>s and pointers (and the address space) are 64 bit.  On other
-64 bit capable CPUs, such as the UltraSparc (<a
-href="../../Ports/sparc64/">sparc64</a>), and MIPS (<a
-href="../../Ports/pmax/">pmax</a>) NetBSD runs in 32 bit mode
-though is in the process of being modified to 64 bit.
-<p> All NetBSD ports support 64 bit arithmetic, both in the kernel and
-in userland programs. In the kernel this is used for various counters
-and for FFS, which is the 64 bit 'Fast File System'.
+href="../../Ports/alpha/">alpha</a> CPU the kernel and userland run in
+a mode known as LP64, where <b>int</b>s are 32 bit, and <b>long</b>s
+and pointers (and the address space) are 64 bit.  The <a
+href="../../Ports/sparc64/">sparc64</a> port runs in both 32-bit and
+64-bit configurations. A 64 bit kernel (LP64) supports 32-bit
+applications in 64-bit mode. A 32 bit kernel, which uses 32 bits for
+all of integers, pointers and long integers (IPL32) can not run 64 bit
+programs.
+<p>
+
+On other 64 bit capable CPUs, such as R4000 and newer MIPS (used by <a
+href="../../Ports/#in-tree-ports">a number of ports</a>) NetBSD runs
+in 32 bit mode though is in the process of being modified to 64 bit.
+<p>
+
+All NetBSD ports support 64 bit arithmetic, both in the kernel and in
+userland programs. In the kernel this is used for various counters and
+for FFS, which is the 64 bit 'Fast File System'.  <p>
 
 <ENTRY>exportability Is NetBSD exportable?
 Up to (and including) NetBSD 1.4.x, everything except the security
@@ -1209,13 +1313,20 @@ Once booted single-user you may find some of the following commands useful:
     Set and export the TERM variable, to permit editors such as 'vi(1)' to
     work. Note: You may need to use a different terminal type from
     'vt220', depending on the console type.
-<li><tt><b>sh /etc/netstart</b></tt><br>
+<li><tt><b>sh /etc/rc.d/network start</b></tt><br>
     Bring up the network. If you have any nfs mounted filesystems you
-    may want to do this before the fsck and mount.
+    may want to do this before the fsck and mount. If you have a system prior
+    to NetBSD 1.5, the command to use is <tt><b>sh /etc/netstart</b></tt><br>.
 </ul>
 
 <ENTRY>single-user-to-multi-user How to switch from single-user to multi-user
 Exit the single-user shell with "exit" or ctrl-D.
+<p>
+
+The system will boot up to multi-user mode, starting all kind of services, etc.
+Note that disks are not checked when going from single-user to multi-user
+mode!
+<p>
 
 <ENTRY>read-only-to-read-write How to mount a 'read-only' filesystem read/write?
 Use mount(8)'s <tt>-u</tt> (update) switch: '<b><tt>mount -u /</tt></b>'.  More than likely, you booted single-user
@@ -1296,35 +1407,14 @@ href="../software/packages.html">NetBSD packages collection</a>)
 are:
 <p>
 <ol>
-<li>Extract (<i>rip</i>) the audio data of the CD.
-    <p>
-    <ul>
-    <li>For ATAPI or SCSI CD-ROMs the <PKGSRC>audio/cdd package can be used. To
-    extract track 2 with cdd, type:
-    <p>
-    <dl><dd><tt><b>cdd -t 2 `pwd`</b></tt></dd></dl>
-    <p>
-    This will put a file called <tt>track-02.cda</tt> in the current directory.
-    <p>
-    <li>For SCSI CD-ROMS the <PKGSRC>audio/tosha package can be used.  To
-    extract track 2 with tosha, you should be able to type:
-    <p>
-    <dl><dd><tt><b>tosha -d <i>CD-ROM-device</i> -t 2
-	-o track-02.cda</b></tt></dd></dl>
-    <p>
-    <li>For most ATAPI, SCSI and several proprietary CDROM drives, the
-    <PKGSRC>audio/cdparanoia package can be used.  With cdparanoia the data
-    can be saved to a file or directed to standard output in WAV, AIFF, AIFF-C
-    or raw format.  Currently the -g option is required by the NetBSD version
-    of cdparanoia.  A hypothetical example of how to save track 2 as a WAV
-    file is as follows:
-    <p>
-    <dl><dd><tt><b>cdparanoia -g /dev/rcd0d 2 track-02.wav</b></tt></dd></dl>
-    <p>
-    You may then go directly to step 3 and encode the WAV file into an MP3.<br>
-    </ul>
-<p>
-<li>Convert the CD audio format file to WAV format.
+<li> <a href="#rip">Extract (<i>rip</i>)</a> the audio data of the CD.
+     See the ``<a href="#cdrom-audio">Using audio CDs with
+     NetBSD</a>'' section for further instructions.
+     <p>
+
+<li>Convert the CD audio format file to WAV format. You only need to
+    perform this job if your ripping program (e.g. tosha, cdd) didn't
+    already do the job for you!
     <p>
     <ul>
     <li>Using the <PKGSRC>audio/sox package, type:
@@ -1358,6 +1448,7 @@ are:
     </ul>
 </ol>
 <p>
+
 The resultant MP3 file can be played with any of the
 <PKGSRC>audio/maplay, <PKGSRC>audio/mpg123, or <PKGSRC>audio/splay packages.
 
@@ -1391,7 +1482,7 @@ See the ccd(4) and ccdconfig(8) manpages for more information.
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.68 2001/03/18 13:20:31 dent Exp $<br>
+  $NetBSD: index.list,v 1.71 2001/10/26 00:39:47 hubertf Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1996, 1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
