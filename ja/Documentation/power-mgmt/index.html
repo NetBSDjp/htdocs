@@ -1,0 +1,217 @@
+<html>
+<head>
+<!-- Copyright (c) 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSDドキュメント: 電源管理</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<table><tr><td>
+<a href="../../Misc/daemon-copy.html">
+<img align="center" src="../../images/BSD-demon.gif" alt="BSD demon"></a>
+</td><td align=center>
+<h2>NetBSDドキュメント:</h2>
+<h2>ラップトップのための電源管理</h2>
+</td></tr></table>
+<p>
+<hr>
+<h3>導入</h3>
+このドキュメントはNetBSDに用意されている電源管理機能の一部と、
+殆どの今時のラップトップ・コンピュータの殆どに備わっている
+Advanced Power Management (APM)を含めて説明しています。
+<p>
+現時点では、このページの殆どはi386に特定な情報です。
+NetBSDがさらに多くのラップトップのアーキテクチャのサポートを始めるときに、
+それらのアーキテクチャの電源管理機能をカバーする様に、
+このドキュメントは拡大されるでしょう。
+
+<h3>電源管理の基本</h3>
+ラップトップの電源管理はAdvanced Power Management、
+略してAPMが中心となります。
+APMはラップトップのハードウェアの電源管理機能へのインタフェースを提供
+する、BIOSに用意されたサービス・ルーチンの集合です。
+このインタフェースを経由して、
+NetBSDはAPMの(サスペンド要求といった)APMのイベントを受け取ったり、
+電源管理の要求や(現在のバッテリ容量といった)問い合わせを行います。
+<p>
+APMは2つの異なる電源の節約状態、
+すなわちスタンバイとサスペンドを規定してます。
+AOMが実際にハードウェアのレベルで行うことは、
+使用する特定のラップトップ二依存します。
+一般的的に「スタンバイ」は軽い眠りの状態を意味していて、
+「サスペンド」の状態より多くの電力を消費し、より速い復帰ができます。
+スタンバイとサスペンドの状態へのAPMタイマは、
+マシンのBIOSで設定されるるのが一般的です。
+マシンが特定の期間に渡って「アイドル」と判断されると、
+BIOSはそれに応じた電源節約モードへの移行をオペレーティングシステムに
+要求します。
+<p>
+NetBSDのレベルでは、3つのAPMをサポートするための要素があります。
+カーネル・ドライバはAPM BIOSへのインタフェースを取ります。
+apmデーモンの<b><kbd>apmd</kbd></b>はAPMカーネルとのインタフェースを取り、
+ユーザランドのイベント処理のスクリプトを起動します。
+コマンド行のプログラム<b><kbd>apm</kbd></b>は
+<b><kbd>apmd</kbd></b>とのインタフェースを取り、
+バッテリ容量問い合わせやシステムのサスペンドの開始に使用できます。
+<p>
+一般的な電源管理のイベントの流れは、以下の手順を踏みます。
+<ol>
+<li> APM BIOSはマシンが特定の時間にアイドルな状態を続けたと判断すると、
+	スタンバイまたはサスペンドの要求をキューに入れます。
+
+<li> APMのカーネル・ドライバは(一般的に1秒に一度といった)ポーリングを
+	APM BIOSに対して行って、要求のイベントを取得します。そして、
+	スタンバイまたはサスペンドの要求をapmデーモンへのキューに入れます。
+	
+<li> APMデーモンは、現在の電源の状態やデーモンの設定をもとに、
+	要求を受け付けるかどうかを決定します。
+	要求を受け付けた場合、
+	apmデーモンはスタンバイまたはサスペンドの動作を実行して、
+	カーネル・ドライバに受け付けまたは拒否したかの通知を送ります。
+
+<li> カーネル・ドライバは受け付けまたは拒否したかを、
+	APM BIOSに通知を送ります。
+
+<li> イベントの要求が受け付けられたなら、
+	APM BIOSはハードウェアを指示されたモードに置きます。
+</ol>
+<p>
+<h3>NetBSD APMサポートの設定</h3>
+まず始めに、APMドライバを有効にしたカーネルをコンパイルする必要があります。
+使用しているカーネルの構成ファイルの次の行を追加、
+またはコメントを外してください。
+
+<pre>	apm0	at mainbus0	# Advanced power management</pre>
+
+自分のカーネルを作成する方法の詳細は、
+<a href="../kernel/index.html#how_to_build_a_kernel">
+カーネルの作り方</a>を参照してください。
+<p>
+APMカーネル・ドライバを組み込んだカーネルができたなら、
+APMデーモン(<b><kbd>apmd</kbd></b>)をブート時に起動させるために、
+<kbd>/etc/rc.conf</kbd>の変数<b><kbd>apmd</kbd></b>をYESにセットして下さい。
+<p>
+これら両方の段階を行うと、
+<b><kbd>apm</kbd></b>ユーティリティを使用してAPMシステムに
+interace
+できるようになります。例えば、
+<pre>
+% apm
+Battery charge state: high
+Battery remaining: 98 percent
+A/C adapter state: not connected
+Power management enabled
+</pre>
+APMサポートの使用方法への、より詳細な情報は
+<a href="http://www.flame.org/cgi-bin/uncgi/hman/apm;8"><b>apm(8)</b></a>
+と<a href="http://www.flame.org/cgi-bin/uncgi/hman/apmd;8"><b>apmd(8)</b></a>
+を参照してください。
+<p>
+<h3>電源管理のヒントとトリック</h3>
+電源管理のイベントの基本的なインタフェースは<b><kbd>/etc/apm</kbd></b>以下の、
+<b><kbd>standby</kbd></b>、<b><kbd>suspend</kbd></b>、
+<b><kbd>resume</kbd></b>のスクリプトです。
+<b><kbd>apmd</kbd></b>は対応したAPMイベントを受け取ると、
+適切なスクリプトを動作させます。
+
+the appropriate APM event.
+<p>
+<b><kbd>standby</kbd></b>や<b><kbd>suspend</kbd></b>スクリプトで、
+実行させたいことには以下のものがあります。
+<ul>
+<li> ネットワーク・インタフェース・カードの電源を切断。
+PCMCIAのネットワーク・インタフェース・カードを使用している場合は、
+<b><kbd>ifconfig interface down</kbd></b>を実行することで達成できます。
+<li> ネットワーク・ファイルシステムのアンマウント
+	(そのファイルシステムをアクセスできないところで、
+	ラップトップをリジュームする予定がある場合)。
+<li> 稼働中の<b><kbd>dhclient</kbd></b>や<b><kbd>pppd</kbd></b>を停止。
+</ul>
+逆に、<b><kbd>resume</kbd></b>スクリプトで、
+スタンバイやサスペンドさせたときに行ったこと、
+すべてを取り消す適切なコマンドを実行することができます。
+<p>
+NetBSD 1.4に新しい<b><kbd>atactl</kbd></b>がコマンドがあります。
+このコマンドを使用して、(IDEとしてより広く知られている)
+ATAデバイスの電源管理機能を制御することができます。
+<b><kbd>atactl</kbd></b>の<b><kbd>setidle</kbd></b>オプションを使用して、
+ディスクの回転低下を制御するスタンバイ・タイマを設定できます。
+より明確な情報は、
+<a href="http://www.flame.org/cgi-bin/uncgi/hman/atactl;8">
+<b>atactl(8)</b></a>を参照して下さい。
+<p>
+ATAスタンバイ・タイマへ設定する値に疑問があるなら、
+以下の文献を読むことをお勧めします。
+<dl>
+<dt><u>A Quantitative Ananysis of Disk Drive Power Management in Portable
+Computers</u>
+<dd>Kester Li, Roger Kumpf, Paul Horton, Thomas Anderson,
+Computer Science Division, University of California, Berkeley, <i>Winter 1994
+Usenix</i>.
+<dt><u>Thwarting the Power-Hungry Disk</u>
+<dd>Fred Douglas, P. Krishnan, Brian Marsh, Matsushita Information Technology
+Laboratory, <i>Winter 1994 Usenix</i>.
+</dl>
+これらの文献の両方で、スタンバイ・タイマには低い値、
+2から8秒のレートを推奨しています。
+<p>
+低い値をスタンバイ・タイマに設定することによる1つの問題があります。
+それはNetBSDはデフォルトでは、絶えず(少なくとも30秒の1度、
+すなわち<b><kbd>update</kbd></b>が動作するたび)
+ディスクを回転させるのに十分な頻度でディスクへの書き込むことです。
+この書き込みのもっとも共通な原因は、ファイルシステムで
+ファイルの最終アクセス時刻と(仮想ターミナルといった)
+デバイス特殊型ファイルの最終更新時刻の更新であることが判明しました。
+これらの動作は、
+<a href="http://www.flame.org/cgi-bin/uncgi/hman/mount;8"><b>mount(8)</b></a>の
+オプション<b><kbd>noatime</kbd></b>と(NetBSD 1.4で新しい)
+<b><kbd>nodevmtime</kbd></b>で抑止できます。
+これを行おうと決めた場合、
+<b><kbd>cron</kbd></b>から起動される<b><kbd>atrun</kbd></b>を変更するか、
+完全に停止したくなるでしょう。デフォルトでは、10分間隔に実行されて、
+<b><kbd>cron</kbd></b>のログファイルにエントリを書き込み、
+ディスクを回転させます。
+<p>
+また、電源がAC電源かバッテリかによって、
+電源管理を異なる設定や
+完全に電源管理を無効とすることが望ましい状況があります。
+NetBSD 1.4での新しい機能に、2つの新しい<b><kbd>apmd</kbd></b>のスクリプト、
+<b><kbd>line</kbd></b>と<b><kbd>battery</kbd></b>があります。
+これらのスクリプトはAPMが電源の供給元が変わったことを検出したときに、
+<b><kbd>apmd</kbd></b>から実行されます。
+<b><kbd>line</kbd></b>スクリプトは電灯線/AC電源へ移行したときに、
+<b><kbd>battery</kbd></b>スクリプトはバッテリ電源に移行したときに実行されます。
+また、現在の電源の供給元に対応したスクリプトは、
+<b><kbd>apmd</kbd></b>が最初に起動されたときにも実行されます。
+<p>
+これらのスクリプトの中にコマンドを記述して、
+バッテリか電灯線を使用したときに応じた電源管理の設定に変更することができます。
+ここにスクリプトの例があります。
+<ul>
+<li><b><kbd>/etc/apm/line</kbd></b>
+<pre>#!/bin/sh
+
+mount -u /
+mount -u /usr
+atactl wd0 setidle 0</pre>
+<li><b><kbd>/etc/apm/battery</kbd></b>
+<pre>#!/bin/sh
+
+mount -u -o async,noatime,nodevmtime /
+mount -u -o async,noatime /usr
+atactl wd0 setidle 5</pre>
+</ul>
+他の便利な機能に、
+<b><kbd>apmd</kbd></b>の<b><kbd>-a</kbd></b>フラッグがあります。
+これを指定すると、
+<b><kbd>apmd</kbd></b>はマシンが電灯線の電源に接続されている場合は、
+スタンバイやサスペンドのイベントを無視します。
+<hr>
+<address>
+  www@NetBSD.ORG<br> $NetBSD: index.html,v 1.1 1999/01/03 06:21:57 taca Exp $<br> <a
+  href="../../Misc/disclaimer.html">Copyright &copy; 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a> </address>
+
+</body>
+</html>
