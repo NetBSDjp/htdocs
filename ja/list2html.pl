@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.82 2002/10/22 15:01:14 wiz Exp $
+# $NetBSD: list2html.pl,v 1.86 2002/12/23 15:29:23 grant Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -64,7 +64,7 @@ my($version, %opt, %pkgname);
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.82 $';
+$version = '$Revision: 1.86 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -656,10 +656,14 @@ sub sub_external_links
 	$path =~ s#^/##;
 	$path =~ s#^usr/##;
 	$path =~ s#^src/##;
-	if ($path =~ m#^(sys|share|gnu)#)
-	    { $path = $1."src/$path"; }
-	elsif ($path !~ m#^(pkgsrc|doc|xsrc)#)
-	    { $path = "basesrc/$path"; }
+	if ($path =~ m#^(sys|share|gnu)src#) {
+		my($module) = $1;
+		$path =~ s#^${module}src##;
+		$path = "src/".$module.$path;
+	}
+	elsif ($path !~ m#^(pkgsrc|xsrc|othersrc)#) {
+		$path = "src/$path";
+	}
 	$text =~ s#<CURRENTSRC>([^\s<>]+\w)#<a href="http://cvsweb.netbsd.org/bsdweb.cgi/$path?rev=HEAD&amp;content-type=text/x-cvsweb-markup">$1</a>#;
 	}
 
