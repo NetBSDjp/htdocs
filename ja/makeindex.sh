@@ -1,13 +1,13 @@
 #!/bin/sh
 #
-# $NetBSD: makeindex.sh,v 1.6 2003/12/07 17:44:11 jschauma Exp $
+# $NetBSD: makeindex.sh,v 1.8 2004/07/18 20:46:10 jschauma Exp $
 #
 # update index.html with NEWS and EVENTS from /htdocs/ja/Changes/index.html and
 # /htdocs/ja/gallery/events.html
 
 # insert the head
 DIR=${1:-.}
-if [ "$DIR" = "." ] || [ -f ${DIR}/Changes/index.html ]; then
+if [ "$DIR" = "." ] || [ -f ${WEB_PREFIX}/${DIR}/Changes/index.html ]; then
 	ROOT="."
 else
 	ROOT=".."
