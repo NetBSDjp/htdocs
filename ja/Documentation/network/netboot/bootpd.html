@@ -5,42 +5,42 @@
 <!-- Copyright (c) 1998, 1999, 2000
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@JP.NetBSD.ORG">
-<title>Diskless NetBSD HOW-TO bootpd サーバーの設定</title>
+<title>Diskless NetBSD HOW-TO bootpd サーバーの設定</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-戻る |
-<a href="tftpd.html">進む</a> |
-<a href="">目次</a>
+戻る |
+<a href="tftpd.html">進む</a> |
+<a href="">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO <tt>bootpd</tt> サーバーの設定</h1>
+<h1>Diskless NetBSD HOW-TO <tt>bootpd</tt> サーバーの設定</h1>
 
-Internet Bootstrap Protocol は、いくつかのワークステーションの ROM が
-IP アドレスとブートローダーのファイル名を得るために使われています。
-<tt>bootpd</tt> は inetd 経由のサービスとしてでもスタンドアローン
-(<tt>/etc/rc.local</tt> などから起動される) としてでも動作できます。
-このページでは、 inetd 経由のサービスとしての設定方法だけを扱います。
+Internet Bootstrap Protocol は、いくつかのワークステーションの ROM が
+IP アドレスとブートローダーのファイル名を得るために使われています。
+<tt>bootpd</tt> は inetd 経由のサービスとしてでもスタンドアローン
+(<tt>/etc/rc.local</tt> などから起動される) としてでも動作できます。
+このページでは、 inetd 経由のサービスとしての設定方法だけを扱います。
 <p>
 
-多くの DHCP サーバーは BOOTP のリクエストを処理します。
-もし bootpd に問題があれば、 <a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a>
-のページに従って dhcp デーモンを設定してみてください。
+多くの DHCP サーバーは BOOTP のリクエストを処理します。
+もし bootpd に問題があれば、 <a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a>
+のページに従って dhcp デーモンを設定してみてください。
 <p>
 
-多くの <tt>bootp</tt> の実装は、
-bootp サーバーに要求を送ってその結果を表示するテスト用のユーティリティー
-(<tt>bootptest</tt> or <tt>bootpquery</tt>) を持っています。
-もし問題が起きたら、そのようなプログラムを他の unix マシンから使ってみてください
-(<tt>/etc/bootptab</tt> ファイルに記されている
-クライアントのイーサネットアドレスと IP アドレスを変更する必要があります) 。
+多くの <tt>bootp</tt> の実装は、
+bootp サーバーに要求を送ってその結果を表示するテスト用のユーティリティー
+(<tt>bootptest</tt> or <tt>bootpquery</tt>) を持っています。
+もし問題が起きたら、そのようなプログラムを他の unix マシンから使ってみてください
+(<tt>/etc/bootptab</tt> ファイルに記されている
+クライアントのイーサネットアドレスと IP アドレスを変更する必要があります) 。
 <p>
 
-<tt>/etc/bootptab</tt> ファイルの書式はどのプラットフォームでも同じです。
-各クライアント毎にひとつのエントリーがあります。
-次のようにエントリーを作成 (あるいは追加) します
-(<tt>boot.netbsd</tt> はプラットフォームに応じて変更します):
+<tt>/etc/bootptab</tt> ファイルの書式はどのプラットフォームでも同じです。
+各クライアント毎にひとつのエントリーがあります。
+次のようにエントリーを作成 (あるいは追加) します
+(<tt>boot.netbsd</tt> はプラットフォームに応じて変更します):
 <pre>#/etc/bootptab
 client.test.net:\
         :ht=ether:\
@@ -49,102 +49,114 @@ client.test.net:\
         :lg=192.168.1.5:\
         :ip=192.168.1.10:\
         :hn:\
-        :bf=[/tftpboot/]boot.netbsd:\   # 下の註を参照
+        :bf=[/tftpboot/]boot.netbsd:\   # 下の註を参照
         :bs=auto:\
         :rp=/export/client/root/:\
-        :vm=auto:                       # next ハードウェア用: 下の註を参照
-        :vm=rfc1048:                    # alpha ハードウェア用: 下の註を参照
+        :vm=auto:                       # next ハードウェア用: 下の註を参照
+        :vm=rfc1048:                    # alpha ハードウェア用: 下の註を参照
 </pre>
 <p>
 
-いくつかの tftp デーモンは chroot されずに実行され、
-ブートファイルに完全なパスを列挙する必要があることに注意してください。
-のちのち失敗することのないよう、あらかじめ
-コマンドラインから tftp クライアントでテストすることをおすすめします。
+いくつかの tftp デーモンは chroot されずに実行され、
+ブートファイルに完全なパスを列挙する必要があることに注意してください。
+のちのち失敗することのないよう、あらかじめ
+コマンドラインから tftp クライアントでテストすることをおすすめします。
 <p>
 
-NeXT クライアントでは "vendor magic" タグを "auto" に設定するため、
-<tt>vm=auto</tt> の行が必要なことに注意してください。
+NeXT クライアントでは "vendor magic" タグを "auto" に設定するため、
+<tt>vm=auto</tt> の行が必要なことに注意してください。
 <p>
 
-SRM 7.0 を持つ alpha では "vendor magic" タグを
-"rfc1048" に設定する必要があることに注意してください。
+SRM 7.0 を持つ alpha では "vendor magic" タグを
+"rfc1048" に設定する必要があることに注意してください。
 <p>
 
-<a href="#netbsd">NetBSD</a> での bootpd の設定<br>
-<a href="#openbsd">OpenBSD</a> での bootpd の設定<br>
-<a href="#linux">Linux</a> での bootpd の設定<br>
-<a href="#sunos">SunOS</a> での bootpd の設定<br>
-<a href="#solaris">Solaris</a> での bootpd の設定<br>
-<a href="#newsos">NEWS-OS</a> での bootpd の設定<br>
-<a href="#nextstep">NEXTSTEP</a> での bootpd の設定 (動作させられませんでした)<br>
-<a href="#hpux">HP-UX</a> での bootpd の設定<br>
+<a href="#netbsd">NetBSD</a> での bootpd の設定<br>
+<a href="#openbsd">OpenBSD</a> での bootpd の設定<br>
+<a href="#freebsd">FreeBSD</a> での bootpd の設定<br>
+<a href="#linux">Linux</a> での bootpd の設定<br>
+<a href="#sunos">SunOS</a> での bootpd の設定<br>
+<a href="#solaris">Solaris</a> での bootpd の設定<br>
+<a href="#newsos">NEWS-OS</a> での bootpd の設定<br>
+<a href="#nextstep">NEXTSTEP</a> での bootpd の設定 (動作させられませんでした)<br>
+<a href="#hpux">HP-UX</a> での bootpd の設定<br>
 <p>
 
-[<em>もし、これら以外のプラットフォームについて詳しくご存知なら、 <a
-href="../../../Misc/feedback.html">ぜひお知らせください</a></em>]
+[<em>もし、これら以外のプラットフォームについて詳しくご存知なら、 <a
+href="../../../Misc/feedback.html">ぜひお知らせください</a></em>]
 <p>
 
-もしあなたの OS がここに挙がっていなければ、
-<tt>bootpd</tt> をソースからコンパイルしてみてください:
+もしあなたの OS がここに挙がっていなければ、
+<tt>bootpd</tt> をソースからコンパイルしてみてください:
 <a href="ftp://ftp.uni-duisburg.de/Unix/networking/bootp-DD2.4.3.tar.gz">
- <tt>bootp-DD2.4.3.tar.gz</tt></a> 。また、 ISC の <a
-href="/Documentation/network/netboot/dhcpd.html#isc"><tt>dhcpd</tt></a> も、多くのプラットフォーム上で
-コンパイルして <tt>bootp</tt> クライアントへのサービスを行えます。
+ <tt>bootp-DD2.4.3.tar.gz</tt></a> 。また、 ISC の <a
+href="/Documentation/network/netboot/dhcpd.html#isc"><tt>dhcpd</tt></a> も、多くのプラットフォーム上で
+コンパイルして <tt>bootp</tt> クライアントへのサービスを行えます。
 <p>
 
 <hr>
 
-<h3><a name="netbsd">NetBSD</a> と <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="netbsd">NetBSD</a> と <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/inetd.conf</tt> から下記の行の # を削除します:
+<li><tt>/etc/inetd.conf</tt> から下記の行の # を削除します:
 <pre>bootps          dgram   udp     wait    root    /usr/sbin/bootpd        bootpd</pre>
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
+<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
+</dd></dl>
+
+<hr>
+
+<h3><a name="freebsd">FreeBSD</a></h3>
+<dl><dt><dd>
+FreeBSD には bootpd があります。詳細は
+<a href="http://www.FreeBSD.org/cgi/man.cgi?query=bootpd">man page</a> を
+御覧下さい。
+<p>
+<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="linux">Linux</a></h3>
 <dl><dt><dd>
-Linux では <tt>/usr/sbin/in.bootpd</tt> か <tt>/usr/sbin/bootpd</tt>
-があるかもしれません。調べて、 <tt>/etc/inetd.conf</tt>
-の修正箇所を適切に読みかえてください。
+Linux では <tt>/usr/sbin/in.bootpd</tt> か <tt>/usr/sbin/bootpd</tt>
+があるかもしれません。調べて、 <tt>/etc/inetd.conf</tt>
+の修正箇所を適切に読みかえてください。
 <p>
 
 <ol>
-<li><tt>/etc/inetd.conf</tt> から下記の行の # を削除します:
+<li><tt>/etc/inetd.conf</tt> から下記の行の # を削除します:
 <pre>bootps dgram   udp     wait    root    /usr/sbin/bootpd        bootpd</pre>
 <p>
 
 <li><tt># <b>ps aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
+<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="sunos">SunOS</a></h3>
 <dl><dt><dd>
-SunOS では <tt>bootpd</tt> か <tt><a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a></tt>
-をソースからコンパイルする必要があります。
+SunOS では <tt>bootpd</tt> か <tt><a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a></tt>
+をソースからコンパイルする必要があります。
 <p>
 
 <ol>
 <li>
   <a href="ftp://ftp.uni-duisburg.de/Unix/networking/bootp-DD2.4.3.tar.gz">
   <tt>bootp-DD2.4.3.tar.gz</tt></a>
-  をダウンロードして展開します。
+  をダウンロードして展開します。
 <p>
 
 <li><tt># <b>make sunos4</b></tt>
@@ -153,37 +165,37 @@ SunOS では <tt>bootpd</tt> か <tt><a href="/Documentation/network/ne
 <li><tt># <b>make install</b></tt>
 <p>
 
-<li><tt>/etc/services</tt> に下記の 2 行を追加します:
+<li><tt>/etc/services</tt> に下記の 2 行を追加します:
 <pre>        bootps          67/udp          bootp           # BOOTP Server
         bootpc          68/udp                          # BOOTP Client</pre>
 <p>
 
-<li><tt>/etc/inetd.conf</tt> に下記の行を追加します:
+<li><tt>/etc/inetd.conf</tt> に下記の行を追加します:
 <pre>bootps dgram udp wait root /usr/etc/bootpd bootpd -i</pre>
 <p>
 
 <li><tt># <b>ps aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
+<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="solaris">Solaris</a></h3>
 <dl><dt><dd>
-Solaris 2.6 以降には <a href="/Documentation/network/netboot/dhcpd.html"><tt>dhcpd</tt></a> が含まれています。
-それより前のバージョンでは、 <tt>bootpd</tt> か <tt>dhcpd</tt> をソースからコンパイルする必要がありま
-す。
+Solaris 2.6 以降には <a href="/Documentation/network/netboot/dhcpd.html"><tt>dhcpd</tt></a> が含まれています。
+それより前のバージョンでは、 <tt>bootpd</tt> か <tt>dhcpd</tt> をソースからコンパイルする必要がありま
+す。
 <p>
 
 <ol>
 <li>
   <a href="ftp://ftp.uni-duisburg.de/Unix/networking/bootp-DD2.4.3.tar.gz">
   <tt>bootp-DD2.4.3.tar.gz</tt></a>
-  をダウンロードして展開します。
+  をダウンロードして展開します。
 <p>
 
 <li><tt># <b>make sunos5</b></tt>
@@ -192,21 +204,21 @@ Solaris 2.6 以降には <a href="/Documentation/network/netboot/dhcpd.html"><
 <li><tt># <b>make install</b></tt>
 <p>
 
-<li><tt>/etc/services</tt> に下記の 2 行を追加します:
+<li><tt>/etc/services</tt> に下記の 2 行を追加します:
 <pre>        bootps          67/udp          bootp           # BOOTP Server
         bootpc          68/udp                          # BOOTP Client</pre>
 <p>
 
-<li><tt>/etc/inetd.conf</tt> に下記の行を追加します:
+<li><tt>/etc/inetd.conf</tt> に下記の行を追加します:
 <pre>bootps dgram udp wait root /usr/etc/bootpd bootpd -i</pre>
 <p>
 
 <li><tt># <b>ps -ef | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
+<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
 </dd></dl>
 
 <hr>
@@ -214,78 +226,78 @@ Solaris 2.6 以降には <a href="/Documentation/network/netboot/dhcpd.html"><
 <h3><a name="newsos">NEWS-OS</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/inetd.conf</tt> から、 <tt>bootps</tt> のある行頭の
-   # を削除します。 <tt>bootpd</tt> のパスは
-   <tt>/usr/etc/bootpd</tt> です。
+<li><tt>/etc/inetd.conf</tt> から、 <tt>bootps</tt> のある行頭の
+   # を削除します。 <tt>bootpd</tt> のパスは
+   <tt>/usr/etc/bootpd</tt> です。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
+<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="nextstep">NEXTSTEP</a></h3>
 <dl><dt><dd>
-NEXTSTEP は非標準の <a href="/Documentation/network/netboot/nextstep.bootptab"><tt>bootptab</tt></a> を使い、
-<tt>bootpd</tt> をスタンドアローンで動かしています。
-私たちはこれを動かそうと簡単に試みましたが、できませんでした。
-設定方法をもしご存じなら、私たちにお知らせください。
+NEXTSTEP は非標準の <a href="/Documentation/network/netboot/nextstep.bootptab"><tt>bootptab</tt></a> を使い、
+<tt>bootpd</tt> をスタンドアローンで動かしています。
+私たちはこれを動かそうと簡単に試みましたが、できませんでした。
+設定方法をもしご存じなら、私たちにお知らせください。
 <p>
 
-注意: ISC <a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a> のコンパイル済バージョンがあり、
-bootp クライアントに対してうまく動作するはずです。
+注意: ISC <a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a> のコンパイル済バージョンがあり、
+bootp クライアントに対してうまく動作するはずです。
 <a href="http://www.peanuts.org/peanuts/NEXTSTEP/unix/connectivity/system/">
-Peanuts</a> のアーカイブを見てください。
+Peanuts</a> のアーカイブを見てください。
 <p>
 
 <ol>
 <li><tt># <b>ps -aux | grep bootpd</b></tt><br>
-   もし走っていたら、 <tt>kill -HUP</tt> でプロセスに <tt>/etc/bootptab</tt>
-   を読み直させます。<br>
-   もし走っていなければ、動かす必要があります:<br>
+   もし走っていたら、 <tt>kill -HUP</tt> でプロセスに <tt>/etc/bootptab</tt>
+   を読み直させます。<br>
+   もし走っていなければ、動かす必要があります:<br>
    <tt># <b>/usr/etc/bootpd</b></tt>
 </ol>
 <p>
 
-<a href="bootpd.html">最初</a>に戻る。
+<a href="bootpd.html">最初</a>に戻る。
 </dd></dl>
 
 <hr>
 
 <h3><a name="hpux">HP-UX</a></h3>
 <dl><dt><dd>
-HP-UX 9 までの標準の <tt>bootpd</tt> は NetBSD クライアントに完全対応しておらず、
-ルート NFS パスを設定する <tt>rp</tt> タグに対応していません。
-また、私は HP-UX 9 で <tt>bootpd</tt> や <tt>dhcpd</tt> をソースからうまく
-コンパイルできませんでした。
+HP-UX 9 までの標準の <tt>bootpd</tt> は NetBSD クライアントに完全対応しておらず、
+ルート NFS パスを設定する <tt>rp</tt> タグに対応していません。
+また、私は HP-UX 9 で <tt>bootpd</tt> や <tt>dhcpd</tt> をソースからうまく
+コンパイルできませんでした。
 <p>
 
-HP-UX 10 にはしっかりした bootp サーバーがあります。
+HP-UX 10 にはしっかりした bootp サーバーがあります。
 <p>
 
 <ol>
-<li><tt>/etc/inetd.conf</tt> から下記の行の # を削除します:
+<li><tt>/etc/inetd.conf</tt> から下記の行の # を削除します:
 <pre>bootps      dgram  udp wait   root /usr/lbin/bootpd      bootpd</pre>
 <p>
 
 <li><tt># <b>ps -ef | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
+<a href="tftpd.html"><tt>tftpd</tt></a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-戻る |
-<a href="tftpd.html">進む</a> |
-<a href="">目次</a>
+戻る |
+<a href="tftpd.html">進む</a> |
+<a href="">目次</a>
 
 <hr> 
 
@@ -297,7 +309,7 @@ HP-UX 10 にはしっかりした bootp サーバーがあります。
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">ホームページ</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -315,7 +327,7 @@ HP-UX 10 にはしっかりした bootp サーバーがあります。
 <address>
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: bootpd.html,v 1.12 2000/10/20 05:50:22 dent Exp $<br>
+  $NetBSD: bootpd.html,v 1.13 2001/03/12 07:23:05 mbw Exp $<br>
   <a href="../../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
