@@ -206,6 +206,71 @@ wi*	at pcmcia? function ?		# Lucent WaveLan IEEE (802.11)
 Note that this is not required in -current.
 <p>
 
+<SECTION>Hardware Questions
+
+<ENTRY>smp-cpus What CPU modules are capable of running multiprocessor
+The only NetBSD/sparc models capable of SMP are the Sun 
+4/600, SPARCstation/server 10, SPARCstation/server 20, and clones of these
+models.  Most MBus CPU modules can be used in an SMP system.  Briefly, two
+modules with the same speed and (non-zero) cache size will have no problems. 
+Modules with different cache sizes and speeds have been reported to work,
+but you run into trouble when using older (i.e. slower) modules and
+modules without caches. Check the following references: 
+<ul>
+<li><a href="http://lios.apana.org.au/~cdewick/data/suncpum.html">Sun CPU
+    and Memory Tables</a>
+<li><a href="http://mbus.sunhelp.org/">The Rough Guide to MBus Modules</a>
+</ul>
+
+<p>To boot from a different CPU, run the following commands at the PROM 
+prompt:
+<pre>&lt;#0&gt; ok <b>switch-cpu</b></pre>
+You must have already booted NetBSD once to load the CPU code into the 
+PROM.  See Paul Kranenburg's <a 
+href="http://mail-index.netbsd.org/port-sparc/2003/01/20/0016.html">post</a>.
+
+<ENTRY>video-cables How do I hook up a VGA monitor to my Sun
+Well, there are two ways, build your own cable, or purchase an
+adapter.  The adapters can be found for around US$30 and the framebuffer
+will typically "just work" at its default resolution.
+<p>
+
+To build your own cable, can follow the 
+<a href="http://mail-index.netbsd.org/port-sparc/2000/04/22/0001.html">instructions
+</a>provided by Izumi Tsutsui.
+<p>
+
+Don't forget to take a look at the <a
+href="http://www.sunhelp.org/faq/FrameBuffer.html">Frame Buffer FAQ</a>
+for information on your framebuffer, what resolutions it supports, and how
+to set the default resolution in the prom.
+
+<ENTRY>pmap-failure What does a message similar to <tt>"*** U0209 ***</tt>" "<tt>PMAP 000d5000, Exp = 00000000, Obs = 04000000</tt>" from the PROM mean
+If the page map ram on a sparc2 fails the PROM will not initialise the
+frambuffer, but will output a message similar to
+<pre>
+*** U0209 ***
+	PMAP = 000d5000, Exp = 00000000, Obs = 04000000
+</pre>
+to the serial console. (the U0209 can also be U0208).
+The only options are to replace the chip, which requires exceptionally
+delicate soldering work, or the entire motherboard.
+
+<ENTRY>ross-mbus Are HyperSPARC mbus modules supported?
+Yes.  All Ross HyperSPARC modules should work.
+
+<ENTRY>ross-memory What is the memory configuration in a Ross sparc 20 clone?
+Ben Cottrell reports that:
+<cite>For anyone else who's curious about this, the slots in a Ross sparc
+20 clone go like: 0 4 1 5 2 6 3 7, going top to bottom, looking down on
+the case in its conventional orientation.
+</cite>
+
+<ENTRY>oldscsi How do I hook up this strange SCSI connector to a normal device
+Older sun4 machines might have an old style SCSI connector with three rows
+of pins.  The pins are listed on <a href="oldscsipins.html">this page</a>.
+
+
 <SECTION>PROM/Booting Questions
 
 <ENTRY>abort-to-prom How to abort to the prom
@@ -243,6 +308,21 @@ once the kernel is loaded for normal operations.
 
 <p>See the <a href="http://www.ebsinc.com/solaris/suncdrom.html">Sun CD-ROM 
 FAQ</a>.
+
+<ENTRY>sun4c-sw-cache <tt>sw flush: cache enabled</tt>
+There is a cache flushing problem with the NetBSD 1.6 release on the  
+SPARCstation/server 1, SPARCstation/server 1+, and Sun IPC.  It will lead 
+to very bad performance.  This problem is fixed in NetBSD 1.6.1 and you 
+should upgrade.
+
+<ENTRY>no-kernel-1-6-install <tt>open netbsd: no such file or directory</tt>
+D'oh.  The NetBSD 1.6 installer does not install a kernel if you select 
+the default install.  This is, of course, corrected in the NetBSD 1.6.1 
+installer.
+
+<p>The easy fix is to run the installer again and select <tt>Re-install 
+sets or install additional sets</tt> and chose the 
+<tt>kern-GENERIC.tgz</tt> package to install.
 
 <ENTRY>sun4c-framebuffer-speedup How to speed up the framebuffer on sun4c hosts
 Here is a shellscript provided by greywolf@starwolf.com which speeds up
@@ -508,49 +588,6 @@ This was used in the early versions of the Java car, which later moved to
 a faster machine.
 
 
-<SECTION>Hardware Questions
-
-<ENTRY>video-cables How do I hook up a VGA monitor to my Sun
-Well, there are two ways, build your own cable, or purchase an
-adapter.  The adapters can be found for around US$30 and the framebuffer
-will typically "just work" at its default resolution.
-<p>
-
-To build your own cable, can follow the 
-<a href="http://mail-index.netbsd.org/port-sparc/2000/04/22/0001.html">instructions
-</a>provided by Izumi Tsutsui.
-<p>
-
-Don't forget to take a look at the <a
-href="http://www.sunhelp.org/faq/FrameBuffer.html">Frame Buffer FAQ</a>
-for information on your framebuffer, what resolutions it supports, and how
-to set the default resolution in the prom.
-
-<ENTRY>pmap-failure What does a message similar to <tt>"*** U0209 ***</tt>" "<tt>PMAP 000d5000, Exp = 00000000, Obs = 04000000</tt>" from the PROM mean
-If the page map ram on a sparc2 fails the PROM will not initialise the
-frambuffer, but will output a message similar to
-<pre>
-*** U0209 ***
-	PMAP = 000d5000, Exp = 00000000, Obs = 04000000
-</pre>
-to the serial console. (the U0209 can also be U0208).
-The only options are to replace the chip, which requires exceptionally
-delicate soldering work, or the entire motherboard.
-
-<ENTRY>ross-mbus Are HyperSPARC mbus modules supported?
-Yes.  All Ross HyperSPARC modules should work.
-
-<ENTRY>ross-memory What is the memory configuration in a Ross sparc 20 clone?
-Ben Cottrell reports that:
-<cite>For anyone else who's curious about this, the slots in a Ross sparc
-20 clone go like: 0 4 1 5 2 6 3 7, going top to bottom, looking down on
-the case in its conventional orientation.
-</cite>
-
-<ENTRY>oldscsi How do I hook up this strange SCSI connector to a normal device
-Older sun4 machines might have an old style SCSI connector with three rows
-of pins.  The pins are listed on <a href="oldscsipins.html">this page</a>.
-
 
 <SECTION>SunOS and Solaris Emulation Questions
 
@@ -647,8 +684,8 @@ exec $MOZILLA_HOME/netscape $* </pre>
 <hr>
 <address>
   <small>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.86 2003/01/19 06:34:56 hubertf Exp $<br>
+  <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: faq.list,v 1.88 2003/03/27 18:21:33 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
