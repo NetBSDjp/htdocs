@@ -2,7 +2,7 @@
 <head>
 <!-- Copyright (c) 1998, 1999
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD DHCP HOWTO</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -10,67 +10,72 @@
 
 <LIST>
 
-<SECTION>DHCP Overview
+<SECTION>DHCP について
 
-<ENTRY>introduction Introduction and Purpose
+<ENTRY>introduction 紹介と目的
 
-This document attempts to explain how to setup DHCP clients and
-servers for the NetBSD operating system.
+このドキュメントの目的は、DHCPのクライアントとサーバーを NetBSDオペ
+レーティングシステムにおいて設定する方法を説明することです。
 
 
-<ENTRY>what_is_dhcp What is DHCP?
+<ENTRY>what_is_dhcp DHCPとは何か
    
 
-DHCP stands for Dynamic Host Configuration Protocol.  It allows dynamic
-configuration of the network configuration of a host computer.  The basic
-idea is this:  When a DHCP client is turned on, it initially doesn't have
-an IP address assigned to it.  It issues a broadcast message to any DHCP
-servers which are on the network.  An exchange takes place during which the
-DHCP server assigns an IP address to the client and tells the client certain
-key network configuration parameters (such as name server addresses for example).
+DHCPはDynamic Host Configuration Protocolの略です。
+それによって、ホストコンピューターの
+ネットワーク設定を動的に行うことがで
+きます。
+基本的なアイディアは以下の通り:
+<ul>
+<li>DHCPクライアントが起動された時、そのコンピューターには最初はIPアドレスが割当てられていない。
+<li>クライアントはそのネットワーク上の任意のDHCPサーバーに対してブロードキャストメッセージを発行する。
+<li>やりとりが行われ、DHCPサーバーはクライアントにIPアドレスを割当てる。
+サーバーはまた、その他の重要なネットワーク設定パラメーター(例えば、ネームサーバーのアドレスなど)も通知する。
+</ul>
 
-<ENTRY>who_needs_dhcp Who needs to use DHCP?
+<ENTRY>who_needs_dhcp DHCPはどのような人にとって有用か
 
-Many internet service providers (ISP's) require that their customers
-use a DHCP client so the ISP may dynamically assign IP addresses and
-control other network settings.
-Another use is for laptop computers which may be connected to more
-than one network.  For example a laptop may be connected to a network
-in the office and also at home.  This is an ideal use for DHCP as the
-laptop doesn't need to be manually reconfigured for use in the 2
-different networks.  In this case there needs to be a DHCP server both 
-on the office network and the home network and the laptop needs a
-DHCP client.
+多くのインターネット・サービス・プロバイダ (ISP) は ISP が
+動的に IP アドレスを割り振り、またその他の情報を通知できるようにする
+ために、顧客に対して DHCP クライアントを使用するように要求します。
+別の使い道は、一つ以上のネットワークに接続する可能性のあるラップトップコンピューターです。
+例えば、ラップトップはオフィスと自宅の両方でネットワークに接続されることがあります。
+この場合、異なる2つのネットワークに接続するために手動で設定を変更し直す必要がないので、
+DHCPを使うのがぴったりと言えます。この場合は、オフィスと自宅の両方に DHCP サーバが
+存在し、ラップトップは DHCP のクライアントである事が必要です。
 
-<ENTRY>more_info_sources Sources of More Detailed Information
+<ENTRY>more_info_sources より詳細な情報の所在
 
-For more information about DHCP in general, please refer to
+一般的な DHCP に関するより詳細な情報は、
 <a href="http://www.cis.ohio-state.edu/htbin/rfc/rfc1541.html"><b>RFC 1541</b></a>, 
-Request for Comments document for the Dynamic Host Configuration Protocol (DHCP).
-In addition there is a comprehensive 
-<a href="http://web.syr.edu/~jmwobus/comfaqs/dhcp.faq.html">DHCP FAQ</a>.
+Request for Comments document for the Dynamic Host Configuration Protocol (DHCP)
+を参照して下さい。
+また、包括的な
+<a href="http://web.syr.edu/~jmwobus/comfaqs/dhcp.faq.html">DHCP FAQ</a>
+もあります。
 
-<SECTION>DHCP Client Setup
+<SECTION>DHCP クライアントの設定
 
-This section attempts to explain how to setup DHCP clients
-under NetBSD.  This document includes information for both NetBSD-1.3
-and NetBSD-1.4.
+この節では、NetBSDにおけるDHCPクライアントの設定方法について説明します。
+このドキュメントは NetBSD-1.3 と NetBSD-1.4 について書かれています。
 
-<ENTRY>configure_dhcp Configure DHCP
+<ENTRY>configure_dhcp DHCP のコンフィギュレーション
 
-The DHCP client configuration is contained in the file <code>/etc/dhclient.conf</code>.
-You will need to create this file if it does not already exist on your system.
-Remember to customize this as needed, in particular be sure to change the hostname stuff
-and the ethernet interface.  See <tt>dhclient.conf(5)</tt> and <tt>dhcp-options(5)</tt>
-for more detailed information. A typical <code>/etc/dhclient.conf</code> is shown below.
+DHCP のクライアントの設定は <code>/etc/dhclient.conf</code> ファイルに記述します。
+もし、このファイルがなければ作成してください。
+このファイルはカスタマイズすることが必要です。
+特に、ホスト名やイーサネットインターフェースを変更することを忘れないようにしてください。
+詳細は <tt>dhclient.conf(5)</tt> と <tt>dhcp-options(5)</tt> を
+参照して下さい。
+典型的な <code>/etc/dhclient.conf</code> を以下に示します。
 
 <pre>
-Send host-name "myname.my.domain";                 &lt;=== Put your
-                                                        hostname here.
-send dhcp-client-identifier "myident";             &lt;=== Put your host
-                                                        identifier here.
-							(this is often times
-							 the same as myname).
+Send host-name "myname.my.domain";                 &lt;=== ここに
+                                                        ホスト名を書く
+send dhcp-client-identifier "myident";             &lt;=== ここにホスト
+                                                        識別子を書く
+							(これは myname と同じ
+							 であることが多い).
 request subnet-mask, broadcast-address, routers,
     domain-name-servers;
 
@@ -81,13 +86,13 @@ select-timeout 5;
 script "/etc/dhclient-script";
 
 lease {
-  interface "sn0";                               &lt;=== put your interface
-                                                      device here.
-  option host-name "myname.my.domain";           &lt;=== put your 
-                                                      hostname here
+  interface "sn0";                               &lt;=== ここにインターフェース
+                                                      デバイスを書く
+  option host-name "myname.my.domain";           &lt;=== ここに
+                                                      ホスト名を書く
   option subnet-mask 255.255.255.0;
-  option domain-name "my.domain";                &lt;=== put your
-                                                      domain name here
+  option domain-name "my.domain";                &lt;=== ここに
+                                                      ドメイン名を書く
   option domain-name-servers 127.0.0.1;
   renew 2 2000/1/12 00:00:01;
   rebind 2 2000/1/12 00:00:01;
@@ -95,20 +100,19 @@ lease {
 }
 </pre>
 
-<ENTRY>update_dhclient Update dhclient-script (NetBSD-1.3 only)
+<ENTRY>update_dhclient dhclient-script の更新 (NetBSD-1.3 のみ)
 
-If you have more than 1 network card in your machine, you need to
-edit the <code>/etc/dhclient-script</code> file to avoid a bug which
-generates a large log file.  Basically, the idea is to make 
-dhclient-script exit without doing anything when called on the network
-card which doesn't have DHCP running on it.  Note that this bug has
-been fixed in NetBSD-1.4 and later.
+ネットワークカードが二つ以上あるなら、大きなログファイルができてしまうバグ
+を回避するために<code>/etc/dhclient-script</code> を編集する必要があります。
+基本的な方針は、DHCPが走っていないネットワークカードについて呼ばれた時は、
+dhclient-script を何もしないで終了させることです。
+このバグは NetBSD-1.4 以降では修正されています。
 
-For example, on my machine, I have two network cards.  I run DHCP on 
-the <code>ae1</code> network card and do not run DHCP on 
-<code>ae0</code>.  For this example, add the following lines to
-<code>/etc/dhclient-script</code> immediately after the 
-<code>#!/bin/sh</code> line at the beginning of the file.
+例として、筆者のマシンには2枚のネットワークカードがあります。
+<code>ae1</code> ネットワークカードにはDHCPを走らせ、
+<code>ae0</code>には走らせていません。 
+この例では、以下の数行を<code>/etc/dhclient-script</code> ファイルの先頭にある 
+<code>#!/bin/sh</code> の直後に追加します。
 
 <pre>
   # don't run DHCP on ae0 
@@ -117,48 +121,52 @@ the <code>ae1</code> network card and do not run DHCP on
   fi
 </pre>
 
-<ENTRY>enable_dhcp Enable DHCP
+<ENTRY>enable_dhcp DHCP を有効にする。
 
-<h3>NetBSD-1.3 and earlier</h3>
+<h3>NetBSD-1.3 以前の場合</h3>
 
-Edit <code>/etc/netstart.local</code> and add the line '<code>dhclient
-<em>interface</em></code>', where <code><em>interface</em></code>
-is your network interface, such as <code>ae1</code> or <code>sn0</code>
-under NetBSD/mac68k or <code>ep0</code> under NetBSD/i386.
-You should be able to see what driver you
-have during the NetBSD boot sequence or by looking at the output
-of <code>dmesg</code>.  This causes the DHCP client software to be
-automatically started during the boot sequence.
+<code>/etc/netstart.local</code> を編集して、'<code>dhclient
+<em>interface</em></code>'の行を追加します。ここで<code><em>interface</em></code>
+はネットワークインターフェース、 
+例えば、NetBSD/mac68k では <code>ae1</code> や <code>sn0</code>、
+NetBSD/i386 では <code>ep0</code> などです。
+あなたがどのドライバーを持っているかは、ブートシーケンスか
+<code>dmesg</code>の出力を見ることによってわかります。
+これで、ブートシーケンス中にDHCPクライアントのソフトウェアが自動的に起動されます。
 
 <h3>NetBSD-1.4</h3>
 
-Edit <code>/etc/rc.conf</code> and edit the '<code>dhclient</code>'
-line to read '<code>dhclient=YES</code>'.  Add a list of network
-interfaces which should be configured with DHCP to the
-'<code>dhclient_flags</code>' line.  For example,
-'<code>dhclient_flags="ae1"</code>'.
+<code>/etc/rc.conf</code> を編集し、'<code>dhclient</code>' 行を
+'<code>dhclient=YES</code>' となるように変更します。また
+'<code>dhclient_flags</code>' 行に DHCP 設定をおこなう
+ネットワークインターフェースのリストを追加します。例えば
+'<code>dhclient_flags="ae1"</code>'
+とします。
 
-The next time you reboot your machine it will configure itself as a DHCP client.
-To enable DHCP without rebooting, run the command '<code>dhclient <em>interface</em></code>'
-where <code><em>interface</em></code> your network interface.
+次回のリブート時にマシンは自動的に DHCP クライアントとして設定されます。
+リブートせずに DHCP を有効にするには、コマンド
+'<code>dhclient <em>interface</em></code>' を実行して下さい。
+ここで <code><em>interface</em></code> はネットワークインターフェースを
+意味します。
 
-<SECTION>DHCP Server Setup
+<SECTION>DHCP サーバーの設定
 
-This section shows how to setup a DHCP server under NetBSD-1.4.
-Note that you do not need to set up a DHCP server unless you want to dynamically
-assign addresses for computers on your LAN.
-For more detailed information see <tt>dhcpd(8)</tt>, <tt>dhcpd.conf(5)</tt>, 
-and <tt>dhcp-options(5)</tt>.
+この節では NetBSD-1.4 における DHCP サーバーの設定方法について説明します。
+あなたの LAN で動的にアドレスを割り当てたい場合にのみ DHCP サーバーが
+必要であることに注意して下さい。
+詳細は <tt>dhcpd(8)</tt>, <tt>dhcpd.conf(5)</tt>, 
+<tt>dhcp-options(5)</tt> を参照して下さい。
 
-<ENTRY>configure_dhcpd Configure DHCPD
+<ENTRY>configure_dhcpd DHCPD のコンフィギュレーション
 
-The DHCP server configuration is contained in the file <code>/etc/dhcpd.conf</code>.
-If this file does not exist on your system, you will have to create it.
-Remember to customize this as needed, ie: change the hostname stuff and the ethernet interface. 
-A typical <code>/etc/dhcpd.conf</code> is shown below.  In the example, 7 addresses
-are made available for use by DHCP clients.  These addresses are 192.168.0.2 through
-192.168.0.8.  The DHCP server will tell the clients what IP address, netmask, routers, name
-servers, and domain name to use.
+DHCP サーバーの設定は <code>/etc/dhcpd.conf</code> ファイルに記述します。
+もし、このファイルがなければ作成して下さい。
+このファイルはカスタマイズすることが必要です。
+特に、ホスト名やイーサネットインターフェースを変更することを忘れないようにしてください。
+典型的な <code>/etc/dhcpd.conf</code> を以下に示します。 この例では、7つの
+アドレスが、DHCP クライアント用に確保されます。確保されるアドレスは 192.168.0.2 から
+192.168.0.8 です。DHCP サーバーはクライアントに対して、使用すべき IP アドレス、ネットマスク、
+ルーター、ネームサーバー とドメイン名を通知します。
 
 <pre>
 # Setting DHCPD global parameters
@@ -166,35 +174,34 @@ allow unknown-clients;
 
 # Set parameters for the 192.168.0.0/24 subnet.
 subnet 192.168.0.0 netmask 255.255.255.0 {
-range 192.168.0.2 192.168.0.8;                &lt;=== Range of IP addresses
-                                                   available for assignment.
-default-lease-time 604800;                    &lt;=== Default lease time in 
-                                                   seconds.  This is the time
-                                                   assigned if the client doesn't
-                                                   request one.
-max-lease-time 604800;                        &lt;=== Maximum time a lease will be 
-                                                   given.
-option subnet-mask 255.255.255.0;             &lt;=== subnetmask given to clients
-option domain-name-servers 1.2.3.4, 1.2.3.5;  &lt;=== put a list of name server IP
-                                                   addresses here.
+range 192.168.0.2 192.168.0.8;                &lt;=== ここに割り当て可能な
+                                                   IP アドレスの範囲を書く
+default-lease-time 604800;                    &lt;=== デフォルトの貸与時間(単位は秒)。
+                                                   クライアントが明示的に要求してこない
+                                                   場合に用いられます。
+max-lease-time 604800;                        &lt;=== 最大貸与時間
+option subnet-mask 255.255.255.0;             &lt;=== クライアントに通知するネットマスク
+option domain-name-servers 1.2.3.4, 1.2.3.5;  &lt;=== ネームサーバーの IP アドレスの
+                                                   リストをここに書く
 option domain-name "your.domain.name";
-option routers 192.168.0.1;                   &lt;=== list of routers the clients should
-                                                   use
+option routers 192.168.0.1;                   &lt;=== クライアントが使用すべきルーターの
+                                                   リスト
 }
 </pre>
 
-<ENTRY>enable_dhcpd Enable DHCPD
+<ENTRY>enable_dhcpd DHCPD を有効にする
 <h3>NetBSD-1.4</h3>
 
-Edit <code>/etc/rc.conf</code> and edit the '<code>dhcpd</code>'
-line to read '<code>dhcpd=YES</code>'.  Add a list of network
-interfaces on which DHCPD should run to the
-'<code>dhcpd_flags</code>' line.  For example,
-'<code>dhcpd_flags="-q ae1"</code>'.
+<code>/etc/rc.conf</code> を編集し、'<code>dhcpd</code>' 行を
+'<code>dhcpd=YES</code>' となるように変更します。また、
+'<code>dhcpd_flags</code>'行に DHCPD が動作する
+ネットワークインターフェースのリストを追加します。例えば
+'<code>dhcpd_flags="-q ae1"</code>'
+とします。
 
 </LIST>
 
-<a href="">Up to <em>NetBSD Documentation: Network</em></a>
+<a href=""><em>NetBSD ドキュメンテーション: ネットワーク</em></a>へ戻る
 <hr>
 
 <DOCLINK>
