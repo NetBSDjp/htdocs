@@ -10,8 +10,8 @@
 <body bgcolor="#FFFFFF" text="#000000">
 
 <a href="/Documentation/network/netboot/intro.html">戻る</a> |
-<a href="/Documentation/network/netboot/nfs.html">進む</a> |
-<a href="">目次</a>
+<a href="nfs.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
@@ -27,8 +27,8 @@
     ネットワークカードが必要です。これは新しい PC, 特にネットワークアダプターが
     付属しているものでは普及しつつあります。
     ネットワーク上にサーバーを設置し(詳細はマニュアル
-    <a href="http://www.tac.eu.org/cgi-bin/man-cgi?diskless+8">
-    diskless(8)</a>参照)、
+    <a href="http://www.tac.eu.org/cgi-bin/man-cgi?diskless+8+NetBSD-current">diskless(8)</a>
+    参照)、
     BIOS の設定を最初にネットワークからブートを試みるように変更してください。
     <p>
     もし、BIOS は対応していないが、NetBSD の 'netboot' bootloader が対応している
@@ -48,17 +48,82 @@
     ブートも可能です。 GRUB 自体はディスクから、またはネットワークから
     PXE または NBI (<a
     href="http://etherboot.sourceforge.net">Etherboot</a> のように)
-    ローダーによってロードされます。 GRUB は、 NetBSD の 'netboot'
-    ブートローダーよりも多くの種類の NIC に対応しています。あなたが
-    Etherboot を使っていて、 GRUB のバージョン 0.5.95 (本稿の執筆時点で、
-    ディスクレスブートに対応した唯一の GRUB リリース) を使いたい場合、
-    この <a
-    href="ftp://smaug.fh-regensburg.de/incoming/grub-0.5.95.etherboot-patch.gz">パッチ</a>
-    が必要です。
+    ローダーによってロードされます。 Etherboot および GRUB は、 NetBSD の
+    'netboot' ブートローダーよりも多くの種類の NIC に対応しています。
+    GRUB バージョン 0.90 以降を使う必要がありますので注意してください。
     GRUB と Etherboot は、 <a
     href="http://www.gnu.org/software/gcc/gcc.html">GCC</a> および <a
     href="http://www.gnu.org/software/binutils/binutils.html">GNU Binutils</a>
-    2.9.1 以降を必要とします。
+    2.9.1 以降を必要とします。これらは任意のシステム上でコンパイル可能であり、
+    NetBSD ホスト上でのコンパイルは必須ではありません。
+   <p>
+   EtherBoot が GRUB イメージをロードして実行するよう環境変数を設定し、
+   また、 GRUB が NetBSD カーネルをロードするように設定する必要があります。
+   必要な手順の概要は以下のとおりです。
+   <ol>
+   <li>お使いの EPROM に応じた適切な EtherBoot EPROM イメージを put する。</li>
+   <li>GRUB 0.90 を構築します。
+	<tt>--enable-diskless</tt>
+	および、お使いの NIC に応じた <tt>--enable-*</tt>
+	オプションを付けて configure する必要があります。</li>
+   <li>構築した GRUB の <tt>stage2/nbgrub</tt> イメージを TFTP サーバーに put する。</li>
+   <li>ディスクレスマシン用に <tt>dhcpd</tt> を設定する。 <tt>dhcpd</tt>
+	に以下のような項目を用意します:
+<PRE>
+ group {
+  subnet 192.168.0.0 netmask 255.255.255.0 {
+    option log-servers 192.168.0.1;
+    option domain-name-servers 192.168.0.1;
+    # location of GRUB configuration file
+    option option-150 "/tftpboot/grub.conf";
+    # NFS root path
+    option root-path "/home/dolecek/netbsd-root";
+    # path of image EtherBoot should load and execute
+    filename "/tftpboot/nbgrub";
+  }
+  host foobar { fixed-address foobar; hardware ethernet 00:c0:6c:76:17:46; }
+ }
+</PRE></li>
+  <li>GRUB 用の設定ファイルを作り、 <tt>dhcpd</tt> の <tt>option-150</tt> 
+	で設定したとおりに TFTP サーバーに put します。
+	NetBSD 用の設定例は下記のとおりです。
+<PRE>
+# uncomment following two lines to use serial terminal
+# serial --unit=0 --speed=57600
+# terminal --timeout=0 serial
+
+# Boot automatically after 5 secs.
+timeout 5
+
+# By default, boot the first entry.
+default 0
+
+# Fallback to the first entry.
+fallback 0
+
+# For booting the NetBSD
+title NetBSD
+kernel --type=netbsd /tftpboot/netbsd
+</PRE></li>
+  <li>GRUB は NetBSD にブート情報を渡しません。よって、自動的に NetBSD
+      をブートさせたければ、下記のように、カーネルに明示的にルートを
+      設定しておく必要があります:
+<PRE>
+config netbsd root on ? type nfs
+</PRE>
+     そして、カーネルを構築し、 GRUB 設定ファイルに設定したとおりに
+     TFTP サーバーに置いておきます。</li>
+   <li>シリアルコンソールを使いたい場合、 GRUB とカーネルの両方を
+       それ用に設定する必要があります。 GRUB でシリアル線を使うには、
+       上記の GRUB 設定例にある <tt>serial</tt> および <tt>terminal</tt>
+       の項目のコメントを外します。
+       NetBSD のコンソールとしてシリアル線を使うには、
+       カーネルコンフィギュレーションに次のようなオプションを追加します。
+<PRE>
+options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
+</PRE>
+   <li>以上です!</li>
+  </ol>
 <p>
 
 <li><b>フロッピーディスクから</b>
@@ -149,8 +214,8 @@
 <hr>
 
 <a href="/Documentation/network/netboot/intro.html">戻る</a> |
-<a href="/Documentation/network/netboot/nfs.html">進む</a> |
-<a href="">目次</a>
+<a href="nfs.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
@@ -182,7 +247,7 @@
   (連絡先 - <a href="../../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: intro.i386.html,v 1.15 2001/04/08 21:24:21 dent Exp $<br>
+  $NetBSD: intro.i386.html,v 1.19 2001/08/16 05:54:19 dent Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>

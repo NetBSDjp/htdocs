@@ -4,39 +4,38 @@
 <head>
 <!-- Copyright (c) 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>Finishing up your installation, Diskless NetBSD HOW-TO</title>
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<title>Diskless NetBSD HOW-TO インストールの仕上げ</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="files.html">Previous</a> |
-Next |
-<a href="./">Table of Contents</a>
+<a href="files.html">戻る</a> |
+進む |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Finishing up your installation, Diskless NetBSD HOW-TO</h1>
+<h1>Diskless NetBSD HOW-TO インストールの仕上げ</h1>
 
-This last section covers how to ensure that all of the daemons you set up
-will automatically run each time your server(s) are booted.
+この最後の節では、サーバーをブートしたときに、これまでに設定したデーモンが
+すべて自動的に動くようにする方法を説明します。
 <p>
 
-Also, you might consider compiling a new kernel for your client.  If
-you use the <tt>DISKLESS</tt> config file, it will produce a smaller
-kernel (without SCSI, HP-IB, NFS server, and a few other things), which 
-will load more quickly, and will use less RAM.  This is detailed in the
-<a href="../../kernel/#how_to_build_a_kernel">How to build a
-kernel</a> NetBSD Kernel FAQ item.
+さらに、クライアントのカーネルを再コンパイルしたいと思われるかもしれません。
+<tt>DISKLESS</tt> コンフィグファイルを使うと、小さい
+(SCSI、 HP-IB、 NFS サーバーなどを含まない) カーネルが作られ、
+ロードが早くでき、また RAM を節約できるようになります。
+これについての詳しい情報は NetBSD カーネル FAQ の
+<a href="../../kernel/#how_to_build_a_kernel">カーネルの作り方</a> にあります。
 <p>
 
-Another suggestion is to <tt>gzip</tt> the kernel on the nfs server,
-as this will load over the network faster (even with a slow client).
-The client <i>will</i> boot from this, even though it isn't named 
-<tt>netbsd</tt>, it merely has to figure out that <tt>netbsd</tt> doesn't
-exist on the nfs server and try the next kernel name, which happens to be
-<tt>netbsd.gz</tt>.  The NetBSD bootloader will attempt to load each of
-the following files in sequence until it loads one successfully and
-then executes it:
+このほか、ネットワーク経由でのロードを速くするため、 (遅いクライアントであっても)
+nfs サーバー上のカーネルを <tt>gzip</tt> で圧縮するという方法もあります。
+このカーネルの名前が <tt>netbsd</tt> でなくても、クライアントは<i>ブートします</i>が、
+これは <tt>netbsd</tt> という名前のファイルが nfs サーバー上になかったので
+次のカーネル名を試したら、それが単に <tt>netbsd.gz</tt> だった、というだけのことです。
+NetBSD のブートローダーは、ロードと実行が成功するまで、以下のファイルを順に
+ロードしようとします:
 <pre>	netbsd
 	netbsd.gz
 	netbsd.bak
@@ -47,130 +46,130 @@ then executes it:
 	onetbsd.gz</pre>
 <p>
 
-Finishing up, <a href="#netbsd">NetBSD</a><br>
-Finishing up, <a href="#openbsd">OpenBSD</a><br>
-Finishing up, <a href="#freebsd">FreeBSD</a><br>
-Finishing up, <a href="#linux">Linux</a><br>
-Finishing up, <a href="#sunos">SunOS</a><br>
-Finishing up, <a href="#solaris">Solaris</a><br>
-Finishing up, <a href="#news">NEWS-OS</a><br>
-Finishing up, <a href="#next">NEXTSTEP</a><br>
-Finishing up, <a href="#hpux9">HP-UX 9</a><br>
-Finishing up, <a href="#hpux10">HP-UX 10</a><br>
+<a href="#netbsd">NetBSD</a> での仕上げ<br>
+<a href="#openbsd">OpenBSD</a> での仕上げ<br>
+<a href="#freebsd">FreeBSD</a> での仕上げ<br>
+<a href="#linux">Linux</a> での仕上げ<br>
+<a href="#sunos">SunOS</a> での仕上げ<br>
+<a href="#solaris">Solaris</a> での仕上げ<br>
+<a href="#news">NEWS-OS</a> での仕上げ<br>
+<a href="#next">NEXTSTEP</a> での仕上げ<br>
+<a href="#hpux9">HP-UX 9</a> での仕上げ<br>
+<a href="#hpux10">HP-UX 10</a> での仕上げ<br>
 <p>
 
 <hr>
 
 <h3><a name="netbsd">NetBSD</a></h3>
 <dl><dt><dd>
-In NetBSD 1.5 and higher, all of the rc setup parameters are stored in 
-<tt>/etc/defaults/rc.conf</tt>.  Do not modify this file.  Instead, copy the
-relevant lines to <tt>/etc/rc.conf</tt> and change the values there.
+NetBSD 1.5 以降では、 rc 設定パラメーターはすべて <tt>/etc/defaults/rc.conf</tt>
+に含まれています。このファイルを書き換えてはいけません。そのかわりに、
+必要な行を <tt>/etc/rc.conf</tt> にコピーして、そちらを書き換えます。
 <p>
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, edit <tt>/etc/rc.conf</tt> and
-       make sure that the following line is set:<br>
+   <li>hp300 の rbootd の設定のため、 <tt>/etc/rc.conf</tt> を編集して、
+       下記の行があることを確かめます:<br>
        <pre>rbootd=<b>YES</b>              rbootd_flags=""</pre>
        <p>
 
-   <li>To set up mopd for vax, edit <tt>/etc/rc.conf</tt> and
-       make sure that the following line is set:<br>
+   <li>vax の mopd の設定のため、 <tt>/etc/rc.conf</tt> を編集して、
+       下記の行があることを確かめます:<br>
        <pre>mopd=<b>YES</b>              mopd_flags="-a"</pre>
    </ul>
 <p>
 </li>
 
-<li>Setting up rarpd and bootparamd:<br>
-    Edit <tt>/etc/rc.conf</tt> and make sure the following lines are set:<br>
+<li>rarpd と bootparamd の設定:<br>
+    <tt>/etc/rc.conf</tt> を編集して、下記の行があることを確かめます:<br>
 <pre>rarpd=<b>YES</b>               rarpd_flags="-a"
 bootparamd=<b>YES</b>          bootparamd_flags=""</pre>
 <p>
 
-<li>Setting up dhcpd:<br>
-    Edit <tt>/etc/rc.conf</tt> and make sure the following line is set:<br>
+<li>dhcpd の設定:<br>
+    <tt>/etc/rc.conf</tt> を編集して、下記の行があることを確かめます:<br>
 <pre>dhcpd=YES               dhcpd_flags="-q"</pre>
 <p>
 
-<li>Setting up nfs:<br>
-    Edit <tt>/etc/rc.conf</tt> and make sure the following line is set:<br>
+<li>nfs の設定:<br>
+    <tt>/etc/rc.conf</tt> を編集して、下記の行があることを確かめます:<br>
 <pre>nfs_server=<b>YES</b>                             # enable server daemons
                         mountd_flags=""
                         nfsd_flags="-6tun 4"</pre>
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
 
 <h3><a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
-For OpenBSD 2.3 and later (earlier versions needed to edit the 
-<tt>/etc/netstart</tt> file):
+OpenBSD 2.3 以降向け (それより前のバージョンでは、
+<tt>/etc/netstart</tt> ファイルを編集する必要があります):
 <p>
 
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, edit <tt>/etc/rc.conf</tt> and
-       make sure that the following line is set:<br>
+   <li>hp300 の rbootd の設定のため、 <tt>/etc/rc.conf</tt> を編集して、
+       下記の行があることを確かめます:<br>
        <pre>rbootd=<b>""</b></pre>
        <p>
 
-   <li>To set up mopd for vax, edit <tt>/etc/rc.conf</tt> and
-       make sure that the following line is set:<br>
+   <li>vax の mopd の設定のため、 <tt>/etc/rc.conf</tt> を編集して、
+       下記の行があることを確かめます:<br>
        <pre>mopd_flags="-a"</pre>
    </ul>
 <p>
 </li>
 
-<li>Setting up rarpd and bootparamd:<br>
-    Edit <tt>/etc/rc.conf</tt> and make sure the following lines are set:<br>
+<li>rarpd と bootparamd の設定:<br>
+    <tt>/etc/rc.conf</tt> を編集して、下記の行があることを確かめます:<br>
 <pre>rarpd=<b>"-a"</b>
 bootparamd=<b>""</b></pre>
 <p>
 
-<li>Setting up dhcpd:<br>
-    Edit <tt>/etc/rc.conf</tt> and make sure the following line is set:<br>
+<li>dhcpd の設定:<br>
+    <tt>/etc/rc.conf</tt> を編集して、下記の行があることを確かめます:<br>
 <pre>dhcpd_flags="-q"</pre>
 <p>
 
-<li>Setting up nfs:<br>
-    Edit <tt>/etc/rc.conf</tt> and make sure the following line is set:<br>
+<li>nfs の設定:<br>
+    <tt>/etc/rc.conf</tt> を編集して、下記の行があることを確かめます:<br>
 <pre>nfs_server=<b>YES</b></pre>
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
 
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
-In recent versions of FreeBSD, all of the rc setup parameters are stored in 
-<tt>/etc/defaults/rc.conf</tt>.  Do not modify this file.  Instead, copy the
-relevant lines to <tt>/etc/rc.conf</tt> and change the values there.
+最近のバージョンの FreeBSD では、 rc 設定パラメーターはすべて <tt>/etc/defaults/rc.conf</tt>
+に含まれています。このファイルを書き換えてはいけません。そのかわりに、
+必要な行を <tt>/etc/rc.conf</tt> にコピーして、そちらを書き換えます。
 <p>
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, edit <tt>/etc/rc.local</tt> and add the 
-       following lines:
+   <li>hp300 の rbootd の設定のため、 <tt>/etc/rc.local</tt> を編集して、
+       下記の行を追加します:
 <pre><b>echo -n ' rbootd'
 /usr[/local]/libexec/rbootd
 echo -n ' bootparamd'
 /usr/sbin/bootparamd</b></pre>
        <p>
 
-   <li>To set up mopd for vax, edit <tt>/etc/rc.local</tt> and add the 
-   following lines:
+   <li>vax の mopd の設定のため、 <tt>/etc/rc.local</tt> を編集して、
+       下記の行を追加します:
 <pre><b>echo -n ' mopd'
 /usr/local/sbin/rbootd
 echo -n ' bootparamd'
@@ -179,57 +178,57 @@ echo -n ' bootparamd'
 <p>
 </li>
 
-<li>Setting up rarpd:<br>
-   Edit <tt>/etc/rc.conf</tt> (or <tt>/etc/sysconfig</tt> for earlier 
-   versions) and make sure the following lines are set:<br>
+<li>rarpd の設定:<br>
+   <tt>/etc/rc.conf</tt> (古いバージョンでは <tt>/etc/sysconfig</tt>
+   ) を編集して、下記の行があることを確かめます:<br>
 <pre>rarpd_enable="<b>YES</b>"
 rarpd_flags="<b>-a -s</b>"</pre>
 <p>
 
-<li>Setting up dhcpd:<br>
-There is probably a line in <tt>/etc/rc.conf</tt> which will start dhcpd.
+<li>dhcpd の設定:<br>
+おそらく、 dhcpd を起動するための行が <tt>/etc/rc.conf</tt> にあります。
 <p>
 
-<li>Setting up nfs:<br>
-Some versions of the FreeBSD nfs server are unable to deal with the 8 KB block 
-size that NetBSD likes to use (see
-<a href="http://www.freebsd.org/handbook/nfs.html">http://www.freebsd.org/handbook/nfs.html</a>).
-If you find that you're getting terrible 
-performace (on the order of 2 KB/sec) and/or are having serious problems, 
-then you may need to do the following:
+<li>nfs の設定:<br>
+FreeBSD nfs サーバーには、 NetBSD が使っているような 8KB ブロックサイズを
+扱えないものがあります (
+<a href="http://www.freebsd.org/handbook/nfs.html">http://www.freebsd.org/handbook/nfs.html</a> 参照;
+訳註: 日本語訳 <a href="http://www.jp.freebsd.org/www.FreeBSD.org/ja/handbook/nfs.html">http://www.jp.freebsd.org/www.FreeBSD.org/ja/handbook/nfs.html</a>) 。
+非常に悪い性能 (2 KB/sec 程度) しか出ない場合や、
+深刻な問題が起きた場合は、次のようにする必要があるかもしれません:
 <p>
 
 <ol>
-<li>Put the following at the top of the client's <tt>/etc/rc</tt>:
+<li>クライアントの <tt>/etc/rc</tt> の冒頭に、次の行を追加する:
    <pre><b>mount -t nfs -a -o -I=1024,-r=1024,-w=1024 nfsserver:/export/client/root/ /</b></pre>
 <p>
 
-<li>Build a new kernel for the client that uses smaller blocksizes,
-   in particular, you'll need the following line in your config file:<br>
+<li>より小さいブロックサイズを使うようクライアントのカーネルを構築し直す、
+   特に、次の行がコンフィグファイルに必要です:<br>
    <tt><b>options NFS_BOOT_RWSIZE=1024</b></tt>
 <p>
 
-<li>Then follow the directions in the 
+<li>NetBSD カーネル FAQ の項目
 <a href="../../kernel/#how_to_build_a_kernel">
-How to build a kernel</a> NetBSD Kernel FAQ item.
+カーネルの作り方</a> に従ってください。
 </ol>
 <p>
 
-Also, some versions of FreeBSD have problems with NFS3.  If you encountered
-this when trying out <a href="nfs.html">nfs</a>, then be sure to include
-the <tt><b>-r2</b></tt> flag when
-starting <tt><b>mountd</b></tt>.
+また、いくつかの FreeBSD バージョンでは NFS3 に問題があります。
+<a href="nfs.html">nfs</a> を試したときに問題がある場合は、
+<tt><b>mountd</b></tt> の起動時に
+<tt><b>-r2</b></tt> フラグを含めるようにしてください。
 <p>
-   Edit <tt>/etc/rc.conf</tt> (or <tt>/etc/sysconfig</tt> for earlier 
-   versions) and make sure the following lines are set:<br>
+   <tt>/etc/rc.conf</tt> (古いバージョンでは <tt>/etc/sysconfig</tt>
+   ) を編集して、下記の行が設定されていることを確かめます:<br>
 <pre>nfs_server_enable="<b>YES</b>"
 mountd_flags="<b>-[2]r</b>"</pre>
 <p>
 
-<li>Setting up detailed logging (optional):<br>
-You may consider adding the following lines to
-<tt>/etc/syslog.conf</tt>, as they will add entries to
-<tt>/var/log/bootlog</tt> whenever your client tries booting:<br>
+<li>詳細なロギングの設定 (任意):<br>
+クライアントがブートしようとする都度 <tt>/var/log/bootlog</tt>
+に記録するよう、 <tt>/etc/syslog.conf</tt> に下記の行を追加
+したいと思う方がいるかもしれません:<br>
 <pre><b>!rbootd
 *.*                                             /var/log/bootlog
 !rarpd  
@@ -237,43 +236,42 @@ You may consider adding the following lines to
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
 
 <h3><a name="linux">Linux</a></h3>
 <dl><dt><dd>
-Some Linux nfs servers are unable to deal with the 8 KB block size that
-NetBSD likes to use.  If you find that you're getting terrible performace
-(on the order of 2 KB/sec) and/or are having serious problems, then you may
-need to do the following:
+Linux の nfs サーバーには、 NetBSD が使っているような 8KB ブロックサイズを
+扱えないものがあります。非常に悪い性能 (2 KB/sec 程度) しか出ない場合や、
+深刻な問題が起きた場合は、次のようにする必要があるかもしれません:
 <p>
 
 <ol>
-<li>Put the following at the top of the client's <tt>/etc/rc</tt>:
+<li>クライアントの <tt>/etc/rc</tt> の冒頭に、次の行を追加する:
    <pre><b>mount -t nfs -a -o -I=1024,-r=1024,-w=1024 nfsserver:/export/client/root/ /</b></pre>
 <p>
 
-<li>Build a new kernel for the client that uses smaller blocksizes,
-   in particular, you'll need the following line in your config file:<br>
+<li>より小さいブロックサイズを使うようクライアントのカーネルを構築し直す、
+   特に、次の行がコンフィグファイルに必要です:<br>
    <tt><b>options NFS_BOOT_RWSIZE=1024</b></tt>
 <p>
 
-<li>Then follow the directions in the 
+<li>NetBSD カーネル FAQ の項目
 <a href="../../kernel/#how_to_build_a_kernel">
-How to build a kernel</a> NetBSD Kernel FAQ item.
+カーネルの作り方</a> に従ってください。
 </ol>
 <p>
 
-Also, some flavors of linux have problems with NFS3.  If you encountered
-this when trying out <a href="nfs.html">nfs</a>, then be sure to include
-the <tt><b>--no-nfs-version 3</b></tt> flag when
-starting <tt><b>rpc.mountd</b></tt>.
+また、いくつかの linux の実装は NFS3 に問題があります。
+<a href="nfs.html">nfs</a> を試したときに問題がある場合は、
+<tt><b>rpc.mountd</b></tt> の起動時に
+<tt><b>--no-nfs-version 3</b></tt> フラグを含めるようにしてください。
 <p>
 
-Each flavor of linux deals with starting the daemons in a different way.  Pick
-your distribution from the list below and follow those directions.
+linux によって、デーモンの起動方法は異なります。
+下記からお使いのディストリビューションを選び、それぞれの指針に従ってください。
 <p>
 
 <ul>
@@ -286,15 +284,15 @@ your distribution from the list below and follow those directions.
 <hr noshade>
 <p>
 
-<big><b><a name="slack">Finishing up, Slackware Linux</a></b></big>
+<big><b><a name="slack">Slackware Linux での仕上げ</a></b></big>
 <p>
 
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, add the following lines to your
-      <tt>/etc/rc.d/rc.local</tt> file<br>
+   <li>hp300 の rbootd の設定のため、下記の行を
+      <tt>/etc/rc.d/rc.local</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemons:'
 if [ -f /usr/local/bin/rbootd ]; then
@@ -302,8 +300,8 @@ if [ -f /usr/local/bin/rbootd ]; then
 fi</pre>
       <p>
 
-   <li>To set up mopd for vax, add the following lines to your
-      <tt>/etc/rc.d/rc.local</tt> file<br>
+   <li>vax の mopd の設定のため、下記の行を
+      <tt>/etc/rc.d/rc.local</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemons:'
 if [ -f /usr/local/sbin/mopd ]; then
@@ -313,9 +311,9 @@ fi</pre>
 <p>
 </li>
 
-<li>Setting up rarp and bootparamd:<br>
-    Add the following lines to <tt>/etc/rc.d/rc.local</tt> after your
-    client-specific daemon
+<li>rarpd と bootparamd の設定:<br>
+    下記の行を、 <tt>/etc/rc.d/rc.local</tt>
+    の、お使いのクライアント固有のデーモンの部分の後に追加します
 <pre>echo -n ' arp'
 /sbin/arp -s client CC:CC:CC:CC:CC:CC
 /sbin/rarp -s client CC:CC:CC:CC:CC:CC
@@ -325,10 +323,11 @@ fi
 echo '.'</pre>
 <p>
 
-<li>Setting up dhcpd:<br>
-    This depends on whether dhcpd ships with your distribution.  If it
-does, then there's probably some startup script you can use.  Otherwise, 
-    add the following lines to <tt>/etc/rc.d/rc.local</tt>
+<li>dhcpd の設定:<br>
+    これはお使いのディストリビューションに
+    dhcpd が附属しているかどうかによって異なります。
+    もし附属していれば、おそらく何らかの起動スクリプトが使えるでしょう。
+    そうでなければ、下記の行を <tt>/etc/rc.d/rc.local</tt> に追加します。
 <pre>echo -n ' dhcpd'
 if [ -f /usr/[local]/sbin/dhcpd ]; then
     /usr/[local]/sbin/dhcpd -q
@@ -336,9 +335,9 @@ fi
 echo '.'</pre>
 <p>
 
-<li>Setting up nfs<br>
-   Make sure that the following lines in <tt>/etc/rc.d/rc.inet2</tt> are
-   not commented (#) out:<br>
+<li>nfs の設定<br>
+   <tt>/etc/rc.d/rc.inet2</tt> で下記の行が (# で) コメントアウトされて
+   いないことを確かめます:<br>
 <pre>if [ -f ${NET}/rpc.portmap ]; then
   # Start the NFS server daemons.
   if [ -f ${NET}/rpc.mountd ]; then
@@ -353,30 +352,30 @@ fi # Done starting various SUN RPC servers.</pre>
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 <p>
 
 <hr noshade>
 <p>
 
-<big><b><a name="redhat">Finishing up, Red Hat Linux</a></b></big>
+<big><b><a name="redhat">Red Hat Linux での仕上げ</a></b></big>
 <p>
 
-The <a href="http://world.std.com/~bdc/projects/vaxen/VAX-netboot-HOWTO-6.html#auto-linux">
-VAX Network Booting HOWTO</a> discusses how to set up SysV style
-scripts for Red Hat linux.
+<a href="http://world.std.com/~bdc/projects/vaxen/VAX-netboot-HOWTO-6.html#auto-linux">
+VAX Network Booting HOWTO</a> には、 Red Hat linux 用の SysV 風のスクリプト
+設定方法についての議論があります。
 <p>
 
-If you don't want to bother with that, you can just add the daemons to your
-<tt>/etc/rc.d/rc.local</tt>.
+もしこれについて面倒な思いをしたくなければ、単に <tt>/etc/rc.d/rc.local</tt>
+にデーモンを追加することができます。
 <p>
 
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, add the following lines to your
-      <tt>/etc/rc.d/rc.local</tt> file<br>
+   <li>hp300 の rbootd の設定のため、下記の行を
+      <tt>/etc/rc.d/rc.local</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemons:'
 if [ -f /usr/local/bin/rbootd ]; then
@@ -384,8 +383,8 @@ if [ -f /usr/local/bin/rbootd ]; then
 fi</pre>
       <p>
 
-   <li>To set up mopd for vax, add the following lines to your
-      <tt>/etc/rc.d/rc.local</tt> file<br>
+   <li>vax の mopd の設定のため、下記の行を
+      <tt>/etc/rc.d/rc.local</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemons:'
 if [ -f /usr/local/sbin/mopd ]; then
@@ -395,9 +394,9 @@ fi</pre>
 <p>
 </li>
 
-<li>Setting up rarp and bootparamd:<br>
-    Add the following lines to <tt>/etc/rc.d/rc.local</tt> after your
-    client-specific daemon
+<li>rarpd と bootparamd の設定:<br>
+    下記の行を、 <tt>/etc/rc.d/rc.local</tt>
+    の、お使いのクライアント固有のデーモンの部分の後に追加します
 <pre>echo -n ' arp'
 /sbin/arp -s client CC:CC:CC:CC:CC:CC
 /sbin/rarp -s client CC:CC:CC:CC:CC:CC
@@ -407,10 +406,11 @@ fi
 echo '.'</pre>
 <p>
 
-<li>Setting up dhcpd:<br>
-    This depends on whether dhcpd ships with your distribution.  If it
-does, then there's probably some startup script you can use.  Otherwise, 
-    add the following lines to <tt>/etc/rc.d/rc.local</tt>
+<li>dhcpd の設定:<br>
+    これはお使いのディストリビューションに
+    dhcpd が附属しているかどうかによって異なります。
+    もし附属していれば、おそらく何らかの起動スクリプトが使えるでしょう。
+    そうでなければ、下記の行を <tt>/etc/rc.d/rc.local</tt> に追加します。
 <pre>echo -n ' dhcpd'
 if [ -f /usr/[local]/sbin/dhcpd ]; then
     /usr/[local]/sbin/dhcpd -q
@@ -418,45 +418,46 @@ fi
 echo '.'</pre>
 <p>
 
-<li>Setting up nfs:<br>
-   Actually, NFS is supposed to be enabled by default on Red Hat systems.
-   If you encountered NFS3 errors, then change the line in
-   <tt>/etc/rc.d/init.d/nfs</tt> to read:
+<li>nfs の設定:<br>
+   実際、 NFS は Red Hat システムではデフォルトで有効になっているでしょう。
+   もし NFS3 エラーが起きた場合は、 <tt>/etc/rc.d/init.d/nfs</tt>
+   の読まれる行を書き換えます:
 <pre>daemon rpc.mountd --no-nfs-version 3</pre>
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 <p>
 
 <hr noshade>
 <p>
 
-<big><b><a name="debian">Finishing up, Debian Linux</a></b></big>
+<big><b><a name="debian">Debian Linux での仕上げ</a></b></big>
 <p>
 
-The <a href="http://world.std.com/~bdc/projects/vaxen/VAX-netboot-HOWTO-6.html#auto-linux">
-VAX Network Booting HOWTO</a> discusses how to set up SysV style
-scripts for Red Hat Linux.  The only notable difference is that Red Hat
-uses <tt>/etc/rc.d/init.d/</tt> and Debian uses <tt>/etc/init.d/</tt>.
+<a href="http://world.std.com/~bdc/projects/vaxen/VAX-netboot-HOWTO-6.html#auto-linux">
+VAX Network Booting HOWTO</a> には、 Red Hat linux 用の SysV 風のスクリプト
+設定方法についての議論があります。重要な相違点は、 Red Hat は
+<tt>/etc/rc.d/init.d/</tt> を使い、 Debian は <tt>/etc/init.d/</tt>
+を使うということだけです。
 <p>
 
-Note that
-the Debian rbootd package will have already installed a SysV init script 
-for rbootd and bootparam if you installed this.
+注意:
+Debian の rbootd パッケージは、インストール時に rbootd および bootparam
+用の SysV init スクリプトをインストールします。
 <p>
 
-If you don't want to bother with that, you can just add the daemons to your
-<tt>/etc/rc.local</tt>.
+もしこれについて面倒な思いをしたくなければ、単に <tt>/etc/rc.local</tt>
+にデーモンを追加することができます。
 <p>
 
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>If you did not install the Debian rbootd package, then you need
-      to set up rbootd for hp300, add the following lines to your
-      <tt>/etc/rc.local</tt> file<br>
+   <li>Debian rbootd パッケージをインストールしていない場合、
+      hp300 の rbootd の設定のため、下記の行を
+      <tt>/etc/rc.local</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemons:'
 if [ -f /usr/local/bin/rbootd ]; then
@@ -464,8 +465,8 @@ if [ -f /usr/local/bin/rbootd ]; then
 fi</pre>
       <p>
 
-   <li>To set up mopd for vax, add the following lines to your
-      <tt>/etc/rc.local</tt> file<br>
+   <li>vax の mopd の設定のため、下記の行を
+      <tt>/etc/rc.local</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemons:'
 if [ -f /usr/local/sbin/mopd ]; then
@@ -475,8 +476,8 @@ fi</pre>
 <p>
 </li>
 
-<li>Setting up rarp and bootparam:<br>
-    Add the following lines to <tt>/etc/init.d/network</tt>
+<li>rarpd と bootparamd の設定:<br>
+    下記の行を <tt>/etc/init.d/network</tt> に追加します
 <pre>/sbin/arp -s client CC:CC:CC:CC:CC:CC
 /sbin/rarp -s client CC:CC:CC:CC:CC:CC
 if [ -f /usr/[local]/sbin/rpc.bootparamd ]; then
@@ -485,10 +486,11 @@ fi
 echo '.'</pre>
 <p>
 
-<li>Setting up dhcpd:<br>
-    This depends on whether dhcpd ships with your distribution.  If it
-does, then there's probably some startup script you can use.  Otherwise, 
-    add the following lines to <tt>/etc/rc.d/rc.local</tt>
+<li>dhcpd の設定:<br>
+    これはお使いのディストリビューションに
+    dhcpd が附属しているかどうかによって異なります。
+    もし附属していれば、おそらく何らかの起動スクリプトが使えるでしょう。
+    そうでなければ、下記の行を <tt>/etc/rc.d/rc.local</tt> に追加します。
 <pre>echo -n ' dhcpd'
 if [ -f /usr/[local]/sbin/dhcpd ]; then
     /usr/[local]/sbin/dhcpd -q
@@ -496,15 +498,15 @@ fi
 echo '.'</pre>
 <p>
 
-<li>Setting up nfs:<br>
-   Make sure the important lines in <tt>/etc/init.d/netstd_nfs</tt> are not
-   commented (#) out.  There are six lines that contain <tt>nfsd</tt> and
-   <tt>mountd</tt> that you need to make sure are uncommented.
+<li>nfs の設定:<br>
+   <tt>/etc/init.d/netstd_nfs</tt> で重要な行が (# で) コメントアウトされて
+   いないことを確かめます。 <tt>nfsd</tt> と <tt>mountd</tt>
+   を含む 6 行が、コメントされていないことを確かめる必要のある部分です。
 
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
@@ -512,11 +514,11 @@ Congratulations, you're done!
 <h3><a name="sunos">SunOS</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, add the following lines to your
-      <tt>/etc/rc.d/rc.local</tt> file<br>
+   <li>hp300 の rbootd の設定のため、下記の行を
+      <tt>/etc/rc.d/rc.local</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemon:'
 if [ -f /usr/local/sbin/sun-rbootd ]; then
@@ -526,13 +528,13 @@ fi</pre>
 <p>
 </li>
 
-<li>Setting up rarpd and bootparamd:<br>
+<li>rarpd と bootparamd の設定:<br>
    <tt># <b>mkdir -p /tftpboot</b></tt>
 <p>
 
-<li>Setting up dhcpd:<br>
-Add the following lines to your
-      <tt>/etc/rc.d/rc.local</tt> file<br>
+<li>dhcpd の設定:<br>
+下記の行を
+      <tt>/etc/rc.d/rc.local</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemon:'
 if [ -f /usr/local/sbin/dhcpd ]; then
@@ -540,12 +542,12 @@ if [ -f /usr/local/sbin/dhcpd ]; then
 fi</pre>
 <p>
 
-<li>Setting up nfs:<br>
+<li>nfs の設定:<br>
    <tt># <b>touch /etc/exports</b></tt>
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
@@ -553,39 +555,39 @@ Congratulations, you're done!
 <h3><a name="solaris">Solaris</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, create a SysV-style init script that 
-      runs:<br>
+   <li>hp300 の rbootd の設定のため、下記を実行する SysV スタイルの
+      init スクリプトを作ります:<br>
       <tt>/usr/local/sbin/sun-rbootd -a</tt>
    </ul>
 <p>
 </li>
 
-<li>Setting up rarpd and bootparamd:<br>
+<li>rarpd と bootparamd の設定:<br>
    <tt># <b>mkdir -p /tftpboot</b></tt>
 <p>
 
-<li>To set up the ISC dhcpd, create a SysV-style init script that 
-   runs:<br>
+<li>ISC dhcpd の設定のため、下記を実行する SysV スタイルの
+   init スクリプトを作ります:<br>
    <tt>/usr/local/sbin/dhcpd -q</tt>
 <p>
 
-<li>Setting up nfs:<br>
-   Make sure that <tt>/etc/rc3.d/S15nfs.server</tt> exists (this is default)<br>
-   Make sure your share commands in <tt>/etc/dfs/dfstab</tt> are of the form:<br>
+<li>nfs の設定:<br>
+   <tt>/etc/rc3.d/S15nfs.server</tt> が存在することを確かめます (デフォルトでは存在します)<br>
+   <tt>/etc/dfs/dfstab</tt> 中の share コマンドの形式を確かめます:<br>
    <tt>share -F nfs ...</tt>
-   <p><li>To test out what will happen at boot time (optional), run:<br>
+   <p><li>ブート時に何が起こるか確認するため、下記を実行します (任意):<br>
    <tt># <b>/etc/init.d/nfs.server stop; /etc/init.d/nfs.server start</b></tt><br>
-   This should start rarpd, bootparam, and nfs.
-   <p>If you later decide to remove these services, don't forget to:<br>
+   これで rarpd、 bootparam、 nfs が起動するはずです。
+   <p>後日、これらのサービスを削除することにした場合は、下記を忘れずに実行します<br>
    <tt># <b>rm -rf /tftpboot</b></tt><br>
-   Remove the <tt>share</tt> lines in <tt>/etc/dfs/dfstab</tt>
+   <tt>/etc/dfs/dfstab</tt> 中の <tt>share</tt> 行の削除
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
@@ -593,11 +595,11 @@ Congratulations, you're done!
 <h3><a name="news">NEWS-OS</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, add the following lines to your
-      <tt>/etc/rc.net</tt> file<br>
+   <li>hp300 の rbootd の設定のため、下記の行を
+      <tt>/etc/rc.net</tt> ファイルに追加します<br>
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemon:'
 if [ -f /usr/local/bin/rbootd ]; then
@@ -607,9 +609,9 @@ fi</pre>
 <p>
 </li>
 
-<li>Setting up rarpd and bootparamd:<br>
-   Edit <tt>/etc/rc.net</tt> and make sure that the following lines are 
-   uncommented:<br>
+<li>rarpd と bootparamd の設定:<br>
+   <tt>/etc/rc.net</tt> を編集して、下記の行がコメントされていないことを
+   確かめます:<br>
 <pre>if [ -f /usr/etc/rpc.bootparamd ]; then   
        /usr/etc/rpc.bootparamd & (echo -n ' bootparamd' &gt;/dev/console)
 fi
@@ -619,13 +621,13 @@ fi
 </pre>
 <p>
 
-<li>Setting up nfs:<br>
-   Edit <tt>/etc/rc.custom</tt> and make sure that:<br>
+<li>nfs の設定:<br>
+   <tt>/etc/rc.custom</tt> を編集して、下記のことを確かめます:<br>
    <tt>NET=<b>on</b></tt>
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
@@ -633,43 +635,43 @@ Congratulations, you're done!
 <h3><a name="next">NEXTSTEP</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Setting up rarpd, bootparamd, and bootpd:<br>
-   Edit <tt>/etc/hostconfig</tt> and make sure that the <tt>NETMASTER</tt>
-line reads:<br>
+<li>rarpd、 bootparamd と bootpd の設定:<br>
+   <tt>/etc/hostconfig</tt> を編集し、 <tt>NETMASTER</tt> 行を読んでいることを
+確かめます<br>
 <pre>NETMASTER=-YES-
 </pre>
 <p>
 
-<li>Setting up nfs:<br>
-NFS is automatically set up from the steps described on the <a
-href="nfs.html">nfs</a> page.
+<li>nfs の設定:<br>
+NFS は、 <a href="nfs.html">nfs</a> ページで説明した段階で
+自動的に設定されています。
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
 
-<h3><a name="hpux9">HP-UX 9 and earlier</a></h3>
+<h3><a name="hpux9">HP-UX 9 以前</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up rbootd for hp300, you don't need to do anything.
-      When SAM sets your machine up to be a cluster server, it configures
-      everything so that <tt>/etc/rc</tt> will start rbootd.
+   <li>hp300 の rbootd の設定のために、何かをする必要はありません。
+      SAM がマシンをクラスターサーバーとしてセットアップする際に、
+      <tt>/etc/rc</tt> が rbootd を起動するよう、すべて設定してくれます。
       <p>
-   <li>To set up sun-rbootd, edit <tt>/etc/rc</tt> and make sure the
-      following four lines are commented out (with a #):
+   <li>sun-rbootd の設定のため、 <tt>/etc/rc</tt> を編集して、
+      下記の 4 行が (# で) コメントアウトされていることを確かめます:
 <pre><b>#</b>            if /usr/bin/rtprio 64 /etc/rbootd $RBOOTD_DEVICES; then
 <b>#</b>                echo "remote boot daemon started"
   <i>[...]</i>
 <b>#</b>                if /usr/bin/rtprio 64 /etc/rbootd; then
 <b>#</b>                    echo "remote boot daemon started"</pre>
-   Now edit one of the startup files (preferrably
-   <tt>/etc/netlinkrc</tt>) and add the following lines:
+   そして、起動ファイルのいずれか (できれば <tt>/etc/netlinkrc</tt>)
+   を編集して、下記の行を追加します:
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemon:'
 if [ -f /usr/local/sbin/sun-rbootd ]; then
@@ -679,13 +681,13 @@ fi</pre>
 <p>
 </li>
 
-<li>Setting up rarpd and bootparamd:<br>
-   HP-UX 9 and earlier do not have rarpd or bootparamd
+<li>rarpd と bootparamd の設定:<br>
+   HP-UX 9 以前には、 rarpd や bootparamd はありません。
 <p>
 
-<li>Setting up dhcpd:<br>
-Edit one of the startup files (preferrably
-   <tt>/etc/netlinkrc</tt>) and add the following lines:
+<li>dhcpd の設定:<br>
+起動ファイルのいずれか (できれば <tt>/etc/netlinkrc</tt>)
+   を編集して、下記の行を追加します:
       <pre>#Start the daemons to netboot a NetBSD client
 echo -n 'Starting diskless server daemon:'
 if [ -f /usr/local/sbin/dhcpd ]; then
@@ -693,14 +695,14 @@ if [ -f /usr/local/sbin/dhcpd ]; then
 fi</pre>
 <p>
 
-<li>Setting up nfs:<br>
-   Edit <tt>/etc/netnfsrc</tt> and make sure that:<br>
+<li>nfs の設定:<br>
+   <tt>/etc/netnfsrc</tt> を編集して、下記のことを確かめます:<br>
    <tt>NFS_SERVER=<b>1</b></tt><br>
    <tt>START_MOUNTD=<b>1</b></tt>
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
@@ -708,67 +710,68 @@ Congratulations, you're done!
 <h3><a name="hpux10">HP-UX 10</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Setting up the client-specific daemon:
+<li>クライアント固有のデーモンの設定:
 <p>
    <ul>
-   <li>To set up the HP-UX rbootd for hp300, edit your
-      <tt>/etc/rc.config.d/netdaemons</tt>  and make sure that<br>
+   <li>hp300 の HP-UX rbootd の設定のため、 <tt>/etc/rc.config.d/netdaemons</tt>
+      を編集して、下記のことを確かめます<br>
       <tt>START_RBOOTD=<b>1</b></tt>
       <p>
-   <li>To set up the sun-rbootd for hp300, create a SYSV init script
-       and make sure it is enabled (i.e. linked into <tt>/sbin/rc2.d</tt>).
-       Also, edit <tt>/etc/rc.config.d/netdaemons</tt> and make sure that<br>
+   <li>hp300 の sun-rbootd の設定のため、 SYSV init スクリプトを作り、
+       それが実行されるように (つまり <tt>/sbin/rc2.d</tt> 以下にリンク) します。
+       また、 <tt>/etc/rc.config.d/netdaemons</tt> を編集して、
+       下記のことを確かめます<br>
       <tt>START_RBOOTD=<b>0</b></tt>
    </ul>
 <p>
 </li>
 
-<li>Setting up rarpd and bootparamd: <br>
-   HP-UX 10 does not support bootparamd<br>
-   Edit <tt>/etc/rc.config.d/netconf</tt> and make sure that:<br>
+<li>rarpd と bootparamd の設定: <br>
+   HP-UX 10 は bootparamd をサポートしていません<br>
+   <tt>/etc/rc.config.d/netconf</tt> を編集して下記のことを確かめます:<br>
    <tt>RARPD=<b>1</b></tt>
 <p>
 
-<li>To set up dhcpd, create a SYSV init script
-    and make sure it is enabled (i.e. linked into <tt>/sbin/rc2.d</tt>).
+<li>dhcpd の設定のため、 SYSV init スクリプトを作り、
+    それが実行されるように (つまり <tt>/sbin/rc2.d</tt> 以下にリンク) します。
 <p>
 
-<li>Setting up nfs:<br>
-   Edit <tt>/etc/rc.config.d/nfsconf</tt> and make sure that:<br>
+<li>nfs の設定:<br>
+   <tt>/etc/rc.config.d/nfsconf</tt> を編集して、下記のことを確かめます:<br>
    <tt>NFS_SERVER=<b>1</b></tt><br>
    <tt>START_MOUNTD=<b>1</b></tt>
 </ol>
 <p>
 
-Congratulations, you're done!
+おめでとうございます、これで終わりです !
 </dd></dl>
 
 <hr>
 
-<a href="files.html">Previous</a> |
-Next |
-<a href="./">Table of Contents</a>
+<a href="files.html">戻る</a> |
+進む |
+<a href="./">目次</a>
 
 <hr> 
 
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
+        src="/images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a> 
   </td><td>
     <a href="../../../"><img
-        src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        src="/images/empty.gif" origlink="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
+        src="/images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
-        src="../../../images/empty.gif" border="0"
+        src="/images/empty.gif" origlink="../../../images/empty.gif" border="0"
         width="1" height="1" alt="NetBSD ">Documentation top level</a>
   </td></tr></table>
 </td></tr></table>
@@ -776,7 +779,9 @@ Next |
 <hr>
 <address>
   <small>
-  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  (連絡先 - <a href="../../../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
   $NetBSD: finish.html,v 1.19 2001/05/18 00:17:09 dent Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000

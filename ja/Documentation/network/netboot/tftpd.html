@@ -6,99 +6,99 @@
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>
-Diskless NetBSD HOW-TO tftpd サーバーの設定
+Diskless NetBSD HOW-TO tftpd サーバーの設定
 </title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-戻る |
-<a href="/Documentation/network/netboot/nfs.html">進む</a> |
-<a href="">目次</a>
+戻る |
+<a href="nfs.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO <tt>tftpd</tt> サーバーの設定</h1>
+<h1>Diskless NetBSD HOW-TO <tt>tftpd</tt> サーバーの設定</h1>
 
-TFTP (Trivial File Transfer Protocol) は、いくつかのベンダーのマシンの
-ブート rom がブートローダーやカーネルをダウンロードするために使います。
+TFTP (Trivial File Transfer Protocol) は、いくつかのベンダーのマシンの
+ブート rom がブートローダーやカーネルをダウンロードするために使います。
 <p>
 
-このサービスは TCP/IP 上で動くので、クライアントはまず IP アドレスを、
-大抵は <a href="/Documentation/network/netboot/rarp.html"><tt>rarp</tt></a> 、
-<a href="bootpd.html"><tt>bootp</tt></a> または
-<a href="../dhcp.html"><tt>dhcp</tt></a> から得なければなりません。
+このサービスは TCP/IP 上で動くので、クライアントはまず IP アドレスを、
+大抵は <a href="/Documentation/network/netboot/rarp.html"><tt>rarp</tt></a> 、
+<a href="bootpd.html"><tt>bootp</tt></a> または
+<a href="../dhcp.html"><tt>dhcp</tt></a> から得なければなりません。
 <p>
 
-はじめに、あなたがどのホストからも TCP wrapper 経由のアクセスを
-拒否されていないことを確認する必要があります。
-<tt>/etc/hosts.deny</tt> と <tt>/etc/hosts.allow</tt> の tftp のエントリーを調べてください。これらのファ
-イルで tftp のアクセスを制限している場合、
-<tt>hosts.deny</tt> の tftp のエントリーをコメントアウトするか、
-<tt>hosts.allow</tt> にクライアントのエントリーを追加する必要があります。
+はじめに、あなたがどのホストからも TCP wrapper 経由のアクセスを
+拒否されていないことを確認する必要があります。
+<tt>/etc/hosts.deny</tt> と <tt>/etc/hosts.allow</tt> の tftp のエントリーを調べてください。これらのファ
+イルで tftp のアクセスを制限している場合、
+<tt>hosts.deny</tt> の tftp のエントリーをコメントアウトするか、
+<tt>hosts.allow</tt> にクライアントのエントリーを追加する必要があります。
 <p>
 
-次に、クライアントのアーキテクチャー別の序説にあるとおり、
-そのアーキテクチャーに必要なファイルをすべて <tt>/tftpboot</tt> にコピーします。
-たとえば、クライアントが <a href="/Documentation/network/netboot/intro.sun.html">sparc</a> で
-IP アドレスが 192.168.1.10 の場合、次のようにします:
+次に、クライアントのアーキテクチャー別の序説にあるとおり、
+そのアーキテクチャーに必要なファイルをすべて <tt>/tftpboot</tt> にコピーします。
+たとえば、クライアントが <a href="intro.sun.html">sparc</a> で
+IP アドレスが 192.168.1.10 の場合、次のようにします:
 <pre># <b>mkdir -p /tftpboot</b>
 # <b>cp /export/client/root/usr/mdec/boot /tftpboot/C0A8010A.SUN4C</b></pre>
 <p>
 
-注意: いくつかの tftp デーモンは
-<tt>/tftpboot</tt> への chroot をサポートしませんので、
-<a href="/Documentation/network/netboot/bootparams.html">bootparams</a>、 <a href="bootpd.html">bootpd</a>、
-または <a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a> に
-ブートローダーの完全なパスを与える必要があります。
-ネットワークからうまくブートできないことで悩まないよう、あらかじめ
-<tt>tftp</tt> クライアントをテストに使うことをおすすめします。
+注意: いくつかの tftp デーモンは
+<tt>/tftpboot</tt> への chroot をサポートしませんので、
+<a href="/Documentation/network/netboot/bootparams.html">bootparams</a>、 <a href="bootpd.html">bootpd</a>、
+または <a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a> に
+ブートローダーの完全なパスを与える必要があります。
+ネットワークからうまくブートできないことで悩まないよう、あらかじめ
+<tt>tftp</tt> クライアントをテストに使うことをおすすめします。
 <p>
-もし、どうしても失敗する場合は、 <tt>/tftpboot/C0A8010A.SUN4C</tt>
-へのリクエストが chroot された <tt>tftpd</tt> 上でうまくいくように
-ディレクトリーを設定するとよいかもしれません。
+もし、どうしても失敗する場合は、 <tt>/tftpboot/C0A8010A.SUN4C</tt>
+へのリクエストが chroot された <tt>tftpd</tt> 上でうまくいくように
+ディレクトリーを設定するとよいかもしれません。
 <pre># <b>cd /tftpboot</b>
 # <b>ln -s . tftpboot</b></pre>
 <p>
-<a href="#netbsd">NetBSD</a> での tftpd の設定<br>
-<a href="#openbsd">OpenBSD</a> での tftpd の設定<br>
-<a href="#freebsd">FreeBSD</a> での tftpd の設定<br>
-<a href="#linux.inetd">Linux</a> での tftpd の設定 (<tt>inetd.conf</tt> を使用)<br>
-<a href="#linux.xinetd">Linux</a> での tftpd の設定 (<tt>xinetd.conf</tt> を使用)<br>
-<a href="#next">NEXTSTEP</a> での tftpd の設定<br>
-<a href="#hpux">HP-UX</a> での tftpd の設定<br>
+<a href="#netbsd">NetBSD</a> での tftpd の設定<br>
+<a href="#openbsd">OpenBSD</a> での tftpd の設定<br>
+<a href="#freebsd">FreeBSD</a> での tftpd の設定<br>
+<a href="#linux.inetd">Linux</a> での tftpd の設定 (<tt>inetd.conf</tt> を使用)<br>
+<a href="#linux.xinetd">Linux</a> での tftpd の設定 (<tt>xinetd.conf</tt> を使用)<br>
+<a href="#next">NEXTSTEP</a> での tftpd の設定<br>
+<a href="#hpux">HP-UX</a> での tftpd の設定<br>
 <p>
 
-[<em>もし、これら以外のプラットフォームについて詳しくご存じなら、 <a
-href="../../../Misc/feedback.html">ぜひお知らせください</a></em>]
+[<em>もし、これら以外のプラットフォームについて詳しくご存じなら、 <a
+href="../../../Misc/feedback.html">ぜひお知らせください</a></em>]
 <p>
 
 <hr>
 
-<h3><a name="netbsd">NetBSD</a> と <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="netbsd">NetBSD</a> と <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp            dgram   udp     wait    root    /usr/libexec/tftpd      tftpd -s /tftpboot</pre> 
 <p>
 
-<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
-ファイルをゲットするテストをしています。
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="/Documentation/network/netboot/nfs.html">nfs</a> の設定に進む。
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
@@ -106,75 +106,75 @@ tftp&gt; <b>quit</b></pre>
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp   dgram   udp     wait    nobody  /usr/libexec/tftpd      tftpd /tftpboot</pre> 
 <p>
 
-<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
-ファイルをゲットするテストをしています。
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="/Documentation/network/netboot/nfs.html">nfs</a> の設定に進む。
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-<h3><a name="linux.inetd">Linux (<tt>inetd.conf</tt> を使用)</a></h3>
+<h3><a name="linux.inetd">Linux (<tt>inetd.conf</tt> を使用)</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp  dgram   udp     wait    nobody  /usr/sbin/tcpd  in.tftpd /tftpboot</pre> 
 <p>
 
-<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
-ファイルをゲットするテストをしています。
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="/Documentation/network/netboot/nfs.html">nfs</a> の設定に進む。
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-<h3><a name="linux.xinetd">Linux (<tt>xinetd.conf</tt> を使用)</a></h3>
+<h3><a name="linux.xinetd">Linux (<tt>xinetd.conf</tt> を使用)</a></h3>
 <dl><dt><dd>
-xinetd はデフォルトでは使われないことに注意してください。
-これは Debian 2.1 向けの説明です。
+xinetd はデフォルトでは使われないことに注意してください。
+これは Debian 2.1 向けの説明です。
 <p>
 
 <ol>
 <li><tt># <b>adduser tftp</b></tt>
 <p>
 
-<li><tt># <b>vi /etc/shadow</b></tt> して、ユーザー tftp のパスワードを * にします。
+<li><tt># <b>vi /etc/shadow</b></tt> して、ユーザー tftp のパスワードを * にします。
 <p>
 
-<li><tt>/etc/xinetd.conf</tt> に下記のエントリーを追加します:
+<li><tt>/etc/xinetd.conf</tt> に下記のエントリーを追加します:
 <pre>service tftp
 {
         socket_type = dgram
@@ -188,56 +188,56 @@ xinetd はデフォルトでは使われないことに注意してください。
 <p>
 
 <li><tt># <b>ps aux | grep xinetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-この <tt>tftpd</tt> は、任意の unix マシン (<tt>only_from</tt>
-行に書かれているものとします)を使って次のようにテストできます:
+この <tt>tftpd</tt> は、任意の unix マシン (<tt>only_from</tt>
+行に書かれているものとします)を使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
-ファイルをゲットするテストをしています。
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="/Documentation/network/netboot/nfs.html">nfs</a> の設定に進む。
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="next">NEXTSTEP</a></h3>
 <dl><dt><dd>
-注意: NEXTSTEP では、 tftp でサービスされるファイルの置き場として
-<tt>/private/tftpboot</tt> を使います。
-ブートローダーをこのディレクトリーに置くよう注意してください。
+注意: NEXTSTEP では、 tftp でサービスされるファイルの置き場として
+<tt>/private/tftpboot</tt> を使います。
+ブートローダーをこのディレクトリーに置くよう注意してください。
 <p>
 
 <ol>
-<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp    dgram   udp     wait    root    /usr/etc/tftpd          tftpd -s /private/tftpboot
 </pre>
 <p>
 
-<li>この行は最後が <tt>/private/tftpboot</tt> で終わっていなければなりません。
+<li>この行は最後が <tt>/private/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
-ファイルをゲットするテストをしています。
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="/Documentation/network/netboot/nfs.html">nfs</a> の設定に進む。
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
@@ -245,37 +245,37 @@ tftp&gt; <b>quit</b></pre>
 <h3><a name="hpux">HP-UX</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/passwd</tt> を編集して、 tftpd アカウント用の新しいユーザーを作ります:
+<li><tt>/etc/passwd</tt> を編集して、 tftpd アカウント用の新しいユーザーを作ります:
 <pre>tftp:*:9999:9999:tftp server:/tftpboot:/bin/false</pre>
 <p>
 
-<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp         dgram  udp wait   root /etc/tftpd    tftpd</pre>
-   HP-UX 10 では、 <tt>/etc/tftpd</tt> は <tt>/usr/lbin/tftpd</tt> にします。
+   HP-UX 10 では、 <tt>/etc/tftpd</tt> は <tt>/usr/lbin/tftpd</tt> にします。
 <p>
 
 <li><tt># <b>inetd -c</b></tt><br>
-   これで、 inetd プロセスが設定ファイルを読み直します。
+   これで、 inetd プロセスが設定ファイルを読み直します。
 </ol>
 <p>
 
-この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
-ファイルをゲットするテストをしています。
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="/Documentation/network/netboot/nfs.html">nfs</a> の設定に進む。
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-戻る |
-<a href="/Documentation/network/netboot/nfs.html">進む</a> |
-<a href="">目次</a>
+戻る |
+<a href="nfs.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -287,7 +287,7 @@ tftp&gt; <b>quit</b></pre>
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">ホームページ</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -304,9 +304,11 @@ tftp&gt; <b>quit</b></pre>
 <hr>
 <address>
   <small>
-  <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: tftpd.html,v 1.16 2000/10/20 05:40:20 dent Exp $<br>
-  <a href="../../../../Misc/disclaimer.html">Copyright &copy;
+  (連絡先 - <a href="../../../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
+  $NetBSD: tftpd.html,v 1.18 2001/05/18 00:17:10 dent Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
