@@ -1,134 +1,133 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 
-<html>
+<html lang="ja">
 <head>
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.org">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
+<link rev="made" href="mailto:www@jp.NetBSD.org">
 <title>Setting up Remote Access Without Any Console</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="files.html">Back</a> |
-<a href="./">Table of Contents</a>
+<a href="files.html">戻る</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Setting up Remote Access Without Any Console</h1>
+<h1>コンソールを全く使わないリモートアクセスの設定</h1>
 
-You only need to follow these directions if your machine doesn't have a
-working local console or a working serial console (such as an iBook 
-or an hp425e).  It's not the best
-way to run a machine, as there are some things that you can only do from
-console, such as choosing the boot disk, kernel, and booting options.
+ここで説明する方法を使う必要があるのは、 (iBook や hp425e のように)
+マシンに利用可能なローカルコンソールやシリアルコンソールがない場合だけです。
+ブートディスク、カーネル、ブートオプションの選択といった、
+コンソールからしかできない操作があるので、
+この方法はマシンを動かす方法として最良のものではありません。
 <p>
 
-Basically what this page describes is how to set up your NFS filesystem
-such that the client will boot far enough to start a telnet daemon and let
-you log in to further configure the machine.
-<p>
+基本的に、このページで説明するのは、 NFS ファイルシステムを設定して
+クライアントに telnet デーモンを起動させ、
+さらなる設定をログインして行えるようにする方法です。
 
 <ol>
-<li>Create the device files.<br>
-   Trivial as this sounds, this may be the most difficult step
-   here.  First, try to run the <tt>MAKEDEV</tt> script:<br>
+<li>デバイスファイルを作ります。<br>
+   簡単そうに聞こえますが、一連の手順のなかでここが一番難しいかもしれません。
+   まずは、 <tt>MAKEDEV</tt> スクリプトを実行してみてください:<br>
    <tt># <b>cd /export/client/root/dev;./MAKEDEV all</b></tt>
    <p>
-   If your NFS server OS doesn't deal with this gracefully, then you will
-   need to manually create the necessary device files, then run
-   <tt>MAKEDEV all</tt> once your client is booted to get the standard set
-   of device files.  To manually create them, you need to look through
-   your <tt>MAKEDEV</tt> file and determine which devices you need
-   (probably ethernet, pseudo-terminals, null, stdin, stdout, and stderr).  
-   If you will be mounting the miniroot filesystem, you'll probably also
-   need the vnode disk device files.  Once you know what the major and
-   minor numbers are for your devices,
-   then you need to <tt>man mknod</tt> to determine the syntax 
-   of your server's <tt>mknod</tt> command, then make those devices.
+   NFS サーバー上でこれがうまくいかない場合は、
+   手動で必要なデバイスファイルを作り、
+   クライアントがブートしてから <tt>MAKEDEV all</tt> を実行し
+   標準的なデバイスファイルを得る必要があります。デバイスファイルを手動で作るには、
+   <tt>MAKEDEV</tt> ファイルの内容に目を通し、どのデバイスが必要か調べなければなりません
+   (おそらく、イーサネット、仮想端末、 null, stdin, stdout, stderr が必要でしょう)。
+   miniroot ファイルシステムをマウントすることになる場合は、おそらく vnode
+   ディスクデバイスファイルも必要です。デバイスのメジャー番号とマイナー番号がわかれば、
+   <tt>man mknod</tt> して、お使いのサーバーでの <tt>mknod</tt> コマンドの書式を調べ、
+   必要なデバイスを作ります。
 <p>
 
-<li>Edit <tt>/export/client/root/etc/rc.conf</tt> and change the line
-to read:<br>
+<li><tt>/export/client/root/etc/rc.conf</tt> を編集して、 rc_configured
+の行を以下のように書き換えます:<br>
 <tt>rc_configured=<b>YES</b></tt>
 <p>
 
-<li>Edit <tt>/export/client/root/etc/inetd.conf</tt> and make sure that
-the telnet daemon is uncommented (in NetBSD 1.5 and later, telnet is
-disabled by default).
+<li><tt>/export/client/root/etc/inetd.conf</tt> を編集して、 telnet
+デーモンがコメントにされていないようにします (NetBSD 1.5 とそれ以降では、 telnet
+はデフォルトでコメントアウトされています)。
 <p>
 
-<li>Edit <tt>/export/client/root/etc/master.passwd</tt> and add a user
-so that you can telnet in.  Just add a line to the end of the file
-reading something like:<br>
+<li><tt>/export/client/root/etc/master.passwd</tt> を編集してユーザーを追加し、
+telnet で入れるようにします。
+ファイルの最後に、以下のような行を加えるだけです:<br>
 <tt><b>me::1000:100::0:0:My account:/home/me:/bin/csh</b></tt><br>
-where <tt>me</tt> is the name of the account, there's no password, the
-home directory is in <tt>/home/me</tt>, and the shell is
-<tt>/bin/csh</tt>.  Make sure there's a return at the end of this line,
-but that there are no blank lines in the file.
+ここで、 <tt>me</tt> はアカウント名、パスワードは空、
+ホームディレクトリーは <tt>/home/me</tt>、シェルは <tt>/bin/csh</tt>
+です。行の末尾で改行するようにしてください。
+ただし、このファイルに空の行があってはいけません。
 <p>
 
-<li>Edit <tt>/export/client/root/etc/group</tt> and add yourself to
-group <tt>wheel</tt>:<br>
+<li><tt>/export/client/root/etc/group</tt> を編集して、
+追加したユーザーを <tt>wheel</tt> グループに追加します:<br>
 <tt>wheel:*:0:root<b>,me</b></tt>
 <p>
 
-<li>Edit <tt>/export/client/root/etc/rc.local</tt> and add a line to
-the end of the file reading:<br>
+<li><tt>/export/client/root/etc/rc.local</tt> を編集して、ファイルの最後に、
+以下のような行を加えます:<br>
 <tt><b>/usr/sbin/pwd_mkdb -p /etc/master.passwd</b></tt><br>
-This will create all of the shadow password files and databases so that
-your user can log in.
+これにより、シャドウパスワードファイルやデータベースがすべて作られ、
+追加したユーザーがログインできるようになります。
 <p>
 
-<li>Boot and telnet in.  <tt>su</tt> to root.
+<li>ブートして telnet で入ります。 <tt>su</tt> して root になります。
 <p>
 
-<li>If you didn't make all of the device files before, do so now:<br>
+<li>前の段階でデバイスファイルをすべて作っていない場合は、ここで作ります:<br>
 <tt># <b>cd /dev;./MAKEDEV all</b></tt>
 <p>
 
-<li>Create passwords for both your <tt>me</tt> user and for
-<tt>root</tt>:<br>
+<li>追加したユーザー <tt>me</tt> および <tt>root</tt>
+のパスワードを設定します:<br>
 <tt># <b>/usr/bin/passwd -l root</b></tt>
 <tt># <b>/usr/bin/passwd -l me</b></tt>
 <p>
 
-<li>Remove the <tt>pwd_mkdb</tt> line from <tt>/etc/rc.local</tt> as
-this was only needed the first time your machine booted.
+<li><tt>/etc/rc.local</tt> から <tt>pwd_mkdb</tt> の行を削除します。
+これは初めてブートした時にだけ必要だからです。
 </ol>
 <p>
 
-Congratulations!  Now you need to <a href="finish.html">finish</a> up by
-setting all of your diskless server daemons to automatically start when
-your server reboots.  Either that, or you need to 
-<a href="local.install.html#scripts">manually install</a> onto your local
-hard drive.
+おめでとうございます! あとは、
+サーバーが再起動したときにディスクレスサーバーデーモン群がすべて自動的に起動するように
+<a href="finish.html">設定すれば完了です</a>。
+または、ローカルハードディスクへ NetBSD をインストールしたいだけの場合は、
+<a href="local.install.html#scripts">手動でインストール</a>してください。
 <p>
 
 <hr>
 
-<a href="files.html">Back</a> |
-<a href="./">Table of Contents</a>
+<a href="files.html">戻る</a> |
+<a href="./">目次</a>
 
 <hr> 
 
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../images/NetBSD-flag.png" border="0"
+        src="../../../../images/NetBSD-flag.png" origlink="../../../images/NetBSD-flag.png" border="0"
         width="90" height="90" alt=""></a> 
   </td><td>
     <a href="../../../"><img
-        src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        src="../../../../images/empty.gif" origlink="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../images/NetBSD-flag.png" border="0"
+        src="../../../../images/NetBSD-flag.png" origlink="../../../images/NetBSD-flag.png" border="0"
         width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
-        src="../../../images/empty.gif" border="0"
+        src="../../../../images/empty.gif" origlink="../../../images/empty.gif" border="0"
         width="1" height="1" alt="NetBSD ">Documentation top level</a>
   </td></tr></table>
 </td></tr></table>
@@ -136,7 +135,9 @@ hard drive.
 <hr>
 <address>
   <small>
-  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@JP.NetBSD.org">日本語:
+       www@JP.NetBSD.org</a>)<br>
   $NetBSD: files.nocons.html,v 1.11 2004/10/30 22:33:31 jschauma Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
