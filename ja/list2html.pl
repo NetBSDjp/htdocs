@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.79 2002/06/26 18:40:25 abs Exp $
+# $NetBSD: list2html.pl,v 1.80 2002/07/17 08:51:17 grant Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -64,14 +64,15 @@ my($version, %opt, %pkgname);
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.79 $';
+$version = '$Revision: 1.80 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
-if (!&getopts('a:c:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
+if (!&getopts('a:c:dm:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
     {
     print "list2html.pl [opts] infile outfile
 [opts]	-a xxx	Define 'arch=xxx' when linking to manpages
 	-c xxx	Define 'collection=xxx' when linking to manpages
+	-d      Supress listing of first N date entries on stdout
 	-m xxx	Set months to display for <DATE> (default $months_previous)
 	-h	This help.
 	-V	Display version and exit ($version - David Brownlee/abs)
@@ -600,7 +601,7 @@ sub makelist
 	if ($date_num_used != $date_num)
 	    { print " ($date_num_used used)"; }
 	print ".\n";
-	if (@date_links)
+	if (@date_links && !$opt{'d'})
 	    {
 	    print "First $list_date_links date links (for main index.html):\n",
 								@date_links;
