@@ -2,109 +2,108 @@
 <html> <head>
 <!-- Copyright (c) 1998, 1999 The NetBSD Foundation, Inc.
      ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>How to actually perform a CVS pullup</title>
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<title>CVS引き上げを実際に行う方法</title>
 </head>
 
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>How to actually perform a CVS pullup</h1>
+<h1>CVS引き上げを実際に行う方法</h1>
 
-This page gives an example of how a pullup is actually done.  In the
-current release cycle (1.4) developers are expected to do pullups
-themselves after confirmation from release engineering during the
-initial phase of the release cycle.<p>
+このページでは引き上げが実際に行われる方法を、例を挙げて説明します。
+現在のリリースサイクル (1.4) では、開発者はリリースサイクルの初期段階に
+リリースエンジニアの確認を受け、その後に自分で引き上げを行うようになっています。<p>
 
-Let us say you are pulling up the changes between <code>foo.c</code>
-1.19 and 1.21.<p>
+<code>foo.c</code> 1.19から1.21への変更を引き上げる場合を例にしてみましょう。<p>
 
-(Nota bene: the idea of "pulling up to 1.21" is meaningless -- you are
-always applying diffs between two versions. One of them might be the
-base tag, but in any case, since you are pulling up diffs, you always
-need to know the two versions between which the changes occurred.)<p>
+(注意: "1.21へ引き上げる" という考え方は意味がありません --
+常に二つのバージョン間でdiffをあてることになります。
+どちらか一方が基本になるタグであるかもしれませんが、とにかくdiffを引き上げるので、
+変更が起こった二つのバージョンをいつも知っている必要があります。)<p>
 
-First, and foremost, make sure you are starting with a clean
-<code>foo.c</code>
+まず初めに、完全な<code>foo.c</code>から始めることを確認します。
 
 <blockquote>
 	cvs update -rnetbsd-1-4 foo.c
 </blockquote>
 
-(See note at the end about the effect of this command.)
+(このコマンドの効果については、最後にある注意を参照してください。)
 
-Then, you need to patch up foo.c to add the changes you want to pull
-up. There are two ways of doing this. You can create a patch file and
-apply it, or you can use cvs update's <code>-j</code> flag to avoid
-needing that.<p>
+そして、引き上げたい変更を加えるため、foo.cにパッチを当てる必要があります。
+これには二つ方法があります。
+パッチファイルを作成してあてるか、それを避けるためにcvsコマンドのupdateにある
+<code>-j</code> フラグを使う事ができます。<p>
 
-The incantation:
+まじない:
 
 <blockquote>
 	cvs diff -c -r1.19 -r1.21 foo.c &gt;/tmp/patch
 </blockquote>
 
-will produce a patch file which you can then apply by doing 
+で、以下のコマンドであてることができるパッチファイルを作成できます。
 
 <blockquote>
 	patch &lt;/tmp/patch
 </blockquote>
 
-The command
+コマンド
 
 <blockquote>
 	cvs update -j1.19 -j1.21 foo.c
 </blockquote>
 
-is essentially equivalent to the two steps listed above, and will
-similarly patch your file.<p>
+は、基本的に上にかいてある二つの段階と同等で、
+同じようにファイルにパッチをあてます。<p>
 
-Now manually examine the file to make sure What You Wanted Done Is
-Done. If you are trying to make <code>foo.c</code> identical to the
-head (presumably 1.21 is the head and 1.19 was the branch point or
-some such), you can do a
+さあ、あなたが望んだ結果になっているか確認するため、
+ファイルを手動で調べてみましょう。
+<code>foo.c</code>が穂先と一致しているか調べたいならば
+(多分1.21が穂先で、1.19が枝の先か似たようなものでしょう) 、
+こうします
 
 <blockquote>
 	cvs diff -r1.21 foo.c
 </blockquote>
 
-and the only diff should be the RCS Id. If <code>foo.c</code> isn't
-supposed to be identical to the head, you are going to have to make
-sure things are okay manually or use creative sets of cvs diffs to
-assure that what you wanted done was done.<p>
+そして、たったひとつのdiffがRCSのIdであるはずです。
+もし<code>foo.c</code>が穂先と一致していないと思われるならば、
+手動で大丈夫であることを調べるか、望んだ通りになることを確かめるため
+cvsの創造的なセットを使用するかしなければいけません。<p>
 
-In any case, once done, do a:
+とにかく、一度diffがあてられたら、こうします:
 
 <blockquote>
 	cvs commit foo.c
 </blockquote>
 
-The commit message <b>must</b> contain information about precisely
-what versions you pulled up in the commit message.  This is so that if
-somebody else has to do a pullup on the same file later (or if you
-might have to, and you might lose track) they will be able to.  Later
-could be a year from now, so don't assume that you'll remember the
-details of a particular pullup.<p>
+コメントメッセージには正確にどのバージョンを引き上げたのかについての情報を
+含め<b>なければ</b>なりません。
+これは、もし誰か他の人が同じファイルに対して後々引き上げをしなければならないとき
+(あるいはあなたが引き上げなければいけないが、見失ってしまったとき) 、
+引き上げできるようにします。
+のちのちというのは今から一年ぐらい先のことなので、
+特定の引き上げの詳細について覚えていると考えないでください。<p>
 
-The commit message <b>should</b> also give a detailed message
-explaining why the pullup was done.<p>
+コメントメッセージは引き上げがなぜ行われたのか説明する詳細なメッセージも
+付ける<b>べき</b>です。<p>
 
-So an example of an absolute minimum pullup message is "pulled up
-1.21-1.23".  This means, BTW, that you must <em>not</em> do a bunch of
-pullups in the same directory and then commit them with a message like
-"sync with trunk," because that won't say what versions you pulled
-up.<p>
+よって、完全な最小限の引き上げメッセージの例は、
+"1.21から1.23への引き上げ完了" になります。
+これは、BTW、同じディレクトリーに引き上げを行わ<em>ず</em>、
+どのバージョンを引き上げたのかを書いていないので、
+"幹と同調" のようなメッセージでコミットしたことを示します。<p>
 
 <hr>
 
-Note that the command
-
+コマンド
 <blockquote>
 	cvs update -rnetbsd-1-4 foo.c
 </blockquote>
 
-will glue <code>foo.c</code> to "netbsd-1-4" (see what happens to
-<code>CVS/Entries</code>), and subsequent CVS commands will thus apply
-to this release until you unstick this "glue" with
+は<code>foo.c</code>を"netbsd-1-4" へ貼り付け
+(<code>CVS/Entries</code>に何が起こっているか見てください) 、
+その後のCVSコマンドはこの"接着剤" を以下のコマンドで取らないかぎり、
+このリリースに適応されることに注意してください。
 
 <blockquote>
 	cvs update -A foo.c
@@ -119,11 +118,9 @@ to this release until you unstick this "glue" with
 	<a href="../../index.html">
 	<img src="../../images/NetBSD-banner.gif" alt=""></a>
       </td><td>
-	<font face="helvetica, arial">
 	<a href="../../index.html">
 	<img src="../../images/empty.gif"
-		alt="NetBSD " border=0>Home Page</a>
-	</font>
+		alt="NetBSD " border=0>ホームページ</a>
       </td>
     </tr></table>
   </td>
@@ -134,18 +131,16 @@ to this release until you unstick this "glue" with
 	<img src="../../images/NetBSD-banner.gif"
 		alt=""></a>
       </td><td>
-	<font face="helvetica, arial">
 	<a href="index.html">
 	<img src="../../images/empty.gif"
-		alt="NetBSD " border=0>Release Engineering Documentation</a>
-	</font>
+		alt="NetBSD " border=0>リリース工学ドキュメント</a>
       </td>
     </tr></table>
   </td>
 </tr></table>
 
 <hr>
-<address>  www@NetBSD.ORG<br>
+<address>  www@JP.NetBSD.ORG<br>
   $NetBSD: howto-pullup.html,v 1.3 1999/07/07 02:36:43 abs Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
