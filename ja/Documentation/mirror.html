@@ -33,9 +33,7 @@
 <li>
 <a href="#ftp-diskspace">FTP ミラーに必要なディスク容量はどれくらいか</a></li>
 <li>
-<a href="#ftp-retrieve">NetBSD FTP サイトのコピーを取得する</a></li>
-<li>
-<a href="#ftp-sync">NetBSD FTP サイトコンテンツの同期を取る</a></li>
+<a href="#ftp-retrieve-sync">NetBSD FTP サイトのコンテンツを取得する/同期を取る</a></li>
 <li>
 <a href="#ftp-notes">NetBSD FTP ミラーに関する注意事項</a></li>
 <li>
@@ -127,17 +125,44 @@ NetBSD FTP ミラーの立ち上げの基本的な手順は、以下のとおりです:
 
 </dd></dl>
 <p><h3>
-<a name="ftp-retrieve">NetBSD FTP サイトのコピーを取得する</a>
+<a name="ftp-retrieve-sync">NetBSD FTP サイトのコンテンツを取得する/同期を取る</a>
 <font size="-1">(<a href="#top">top</a>)</font>
 </h3><dl><dt><dd>
-(To be written)
 
-</dd></dl>
-<p><h3>
-<a name="ftp-sync">NetBSD FTP サイトコンテンツの同期を取る</a>
-<font size="-1">(<a href="#top">top</a>)</font>
-</h3><dl><dt><dd>
-(To be written)
+ファイルの取得や同期を行なう方法はいくつかあります。どの方法を使うかは、
+あなたの個人的な趣味や、ネットワーク接続、システムに導入されたパッケージ
+などによるでしょう。どの方法を取るにせよ、最初に適切なコマンドを手で打って実行して、
+きちんと動作することを確認してから、 <a href="http://man.netbsd.org/man/cron+8+NetBSD-current">cron(8)</a> 用のスクリプトを作るようにするのが、
+おそらくよいでしょう。
+<br><br>
+以下に、取得したコピーを同期させる方法の例をいくつか掲げます。
+"&lt;FTPROOT&gt;" は、あなたの ftp サーバーのルートディレクトリーに置き換えてください。
+<br>
+<br>
+<ul>
+	<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/net/rsync/README.html">rsync</a> を使う場合:<br>
+	<pre>
+		$ rsync -v -Wartz --delete rsync://rsync.netbsd.org/NetBSD &lt;FTPROOT&gt;/pub/NetBSD/</pre>
+	</li>
+	<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/net/wget/README.html">wget</a> を使う場合:<br>
+	<pre>
+		$ cd &lt;FTPROOT&gt;
+		$ wget -v -xnH -m ftp://ftp.netbsd.org/pub/NetBSD/</pre>
+	</li>
+	<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/net/mirror/README.html">mirror</a> を使う場合:<br>
+	<pre>
+		$ cat &gt; netbsd.org &lt;&lt;EOF
+		package=netbsd
+		comment=NetBSD
+		site=ftp.netbsd.org
+		remote_dir=/pub/NetBSD
+		local_dir=&lt;FTPROOT&gt;/pub/NetBSD
+		do_deletes=true
+		algorithm=1
+		EOF
+		$ mirror netbsd.org</pre>
+	</li>
+</ul>
 
 </dd></dl>
 <p><h3>
@@ -612,7 +637,7 @@ contactaddress  9876 Foo City, Tokyo 1234567 Japan
   (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: mirror.html,v 1.14 2003/05/04 04:09:27 kano Exp $<br>
+  $NetBSD: mirror.html,v 1.15 2003/07/09 15:23:07 kano Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
