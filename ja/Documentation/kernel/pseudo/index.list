@@ -2,13 +2,14 @@
 
 <HTML>
 <HEAD>
-<!-- Copyright (c) 2000
+<!-- Copyright (c) 1994-2002
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <!--
   ==  By Brett Lymn
   -->
 <link rev="made" href="mailto:www@JP.NetBSD.ORG">
-<TITLE>Writing a pseudo device</TITLE>
+<link rel="shortcut icon" href="../../../../favicon.ico" origlink="/favicon.ico" type="image/x-icon">
+<TITLE>NetBSD Documentation: Writing a pseudo device</TITLE>
 </HEAD>
 <BODY bgcolor="#FFFFFF" text="#000000">
 
@@ -51,7 +52,7 @@
    便利なマクロがたくさんあることが知られていて、これは
    作りたいカーネルコンフィグファイルエントリーの助けになるでしょう。
 
-    config ファイル エントリー は ソース コード ファイル 名 と合わせる必要はありません。
+    config ファイルエントリーはヘッダーファイル名と合わせる必要はありません。
    この skeleton ドライバー では、 "skeleton" 擬似デバイスと呼ぶ事にしたので
     skeleton というエントリーを コンフィグファイルに作る事になります。
    つまり、 attach, open, close, ioctl 関数 呼び出しcall の名前を、それぞれ
@@ -60,12 +61,12 @@
    あなたのコードが、カーネルと、もちろん、あなたのコード自体と、どう相互作用するかで
    キャラクター型 か ブロック デバイス のどちらかにします。
    ブロック型対キャラクター型のデバイスの決定は、
-   ドライバーが会話する根底の ハードウェアーにかなり依存し、
+   ドライバーが会話する根底の ハードウェアにかなり依存し、
    もしドライバーがデータの読書きを一定の塊で行なうデバイスなら
    ブロックデバイスが良い選択で、そのようなデバイスの例として、
    ハードディスクはたいてい 512 byte セクターをブロックとして読み書きします。
 
-   ハードウェアーが一度に読み書きするのが 1 byte のデータなら、
+   ハードウェアが一度に読み書きするのが 1 byte のデータなら、
    普通、キャラクター型デバイスが最もよい選択で、
    例えば、シリアルラインドライバーがそうです。
 
@@ -74,9 +75,9 @@
    この場合、キャラクターモードはしばしば "raw" デバイスと呼ばれます。
    それは、アクセス時に
    データブロック抽出操作(the data blocking abstractions operating) なしに
-   ハードウェアーのアクセスができるからです。
+   ハードウェアのアクセスができるからです。
 
-   擬似デバイスでは、考慮するべき根底のハードウェアーがないので、より柔軟に選べます
+   擬似デバイスでは、考慮するべき根底のハードウェアがないので、より柔軟に選べます
    擬似デバイスを使ってする内容により選択し、ブロック型デバイスは 
    ハードディスクやそのようなもののエミュレートには便利でしょう。
    skeleton ドライバーは キャラクター型デバイスです。
@@ -106,7 +107,7 @@
    この構造体の最初の要素は <STRONG>struct device</STRONG> 型である必要があり、
    エントリー名は重要ではありませんが、最初にある必要があり、
     autoconfig システムが softc struct が宣言されていることをあてにしているから
-   (????これ本当????)で、その最初の要素は struct device です。
+   <!-- ??? これ本当 ??? -->で、その最初の要素は struct device です。
    デバイスハンドル minor 番号 ごとに softc struct が必要です。
     softc 構造体は minor デバイスがそれを維持する状態の情報を、必要に応じて
    ただの struct device より多くの要素を持つことができます。
@@ -114,7 +115,7 @@
 <ENTRY>functions 関数
 
    ユーザーレベルプログラムによるアクセスには
-   カーネルインターフェイスはデバイスに対しては関数のコールを通して行ないます。
+   カーネルインターフェースはデバイスに対しては関数のコールを通して行ないます。
    デバイスは後に示すように全ての関数をサポートする必要はありませんが、
    実用的なデバイスは最低限オープンとクローズをサポートする必要はあります。
    関数名はデバイス名を前につけることを思い出してください。
@@ -131,7 +132,7 @@
   このドライバーはハンドルを求めます。???????????
 
 <P>
-<LI> <h4>open</h4>
+<LI><h4>open</h4>
 
   その名が示すように、ユーザーレベルプログラムが
   デバイスに対して open(2) コールをした時に呼び出されます。
@@ -148,17 +149,19 @@
              <DD> open しようとするデバイスのマイナー番号
 <P>
               <DT>flags
-              <DD>  ??? ユーザーによる open call のフラグを素通し ???
+              <DD>  open call に渡されるフラグ
+		<!-- ??? ユーザーによる open call のフラグを素通し ??? -->
 <P>
               <DT>mode
-              <DD>  ??? open の mode ???
+              <DD>  open のモード
+		 <!-- ??? open のモード ??? -->
 <P>
               <DT>proc
               <DD>  オープン要求をしているプロセスの proc 構造体のポインター
                 これは、そのプロセスが
                 信頼できるものである(資格証明を有効にしてよい)ことを示します。
 </DL>
-<LI> <h4>close</h4>
+<LI><h4>close</h4>
 
   open されていたデバイスを close します。
 
@@ -169,7 +172,7 @@
 
  close 関数呼び出しのパラメーターは、 open で記述したのと同じです。
 <P>
-<LI> <h4>read</h4>
+<LI><h4>read</h4>
   デバイスからデータを読み出します。
   この関数のパラメーターは:
 <P><DL>
@@ -181,16 +184,16 @@
                 read 関数は uio 構造体 にユーザーが欲しいデータを満たして戻ります。
 
               <DT>flags
-              <DD>  ??? wuffor ??
+              <DD>  flags <!-- ??? wuffor ??? -->
 </DL><P>
-<LI> <h4>write</h4>
+<LI><h4>write</h4>
   
   デバイスにデータを書きこみます。
  write 関数 のパラメーターは、 read 関数のものと同じで - ただ、違うのは
  uio 構造体はデバイスに書きこまれるデータを含んでいることです。
 
 <P>
-<LI> <h4>ioctl</h4>
+<LI><h4>ioctl</h4>
 
   デバイスに ioctl をします。
  ioctl call のパラメーターは:
@@ -202,14 +205,14 @@
               <DD>  実行される ioctl コマンドです。
                 このコマンドはヘッダーファイル内で定義され
                 カーネルコードおよびユーザーレベルコードが参照します。
-                例はサンプルのヘッダーを見てください。
+                例は<A HREF="../../../../Documentation/kernel/pseudo/pseudo_dev_skel.c" origlink="pseudo_dev_skel.c">サンプルのヘッダー</A>を見てください。
 
               <DT>data
                <DD> ユーザーレベルコードで使えるパラメーターのポインターです。
                 このパラメーターは ioctl の実装と、実際に発行されたコマンドに依存します。
 
               <DT>flags
-              <DD>  ??? wuffor ???
+              <DD>  flags <!-- ??? wuffor ??? -->
 
               <DT>proc
               <DD> ioctl 要求を出したユーザーレベルプロセスに関連する proc 構造体 です。
@@ -224,10 +227,11 @@
               <DD>  デバイスに結び付けられた tty
 
               <DT>flags
-              <DD>  ???
+              <DD>  flags <!-- ??? -->
 </DL><P>
 
-<LI> <h4>poll</h4>
+<LI><h4>poll</h4>
+
 デバイスからデータが読めるかチェックします。
 パラメーターは:
 <P><DL>
@@ -242,10 +246,10 @@
 
 </DL><P>
 
-<LI> <h4>mmap</h4>
+<LI><h4>mmap</h4>
+
   ドライバーのバッファーをユーザーレベルプログラムのメモリー空間に mmap する
-  権限をサポートします。
-  パラメーターは:
+  権限をサポートします。パラメーターは:
 <P><DL>
               <DT>dev
               <DD>  デバイスが使っているマイナーデバイス番号
@@ -276,7 +280,7 @@
 これらのファイルを変更する必要があって:
 <P>
 <OL TYPE=i>
-<LI> <h4>/usr/src/sys/sys/conf.h</h4>
+<LI><h4>/usr/src/sys/sys/conf.h</h4>
 
    このファイルには
    cdevsw (character device switch) と bdevsw (block device switch) テーブルエントリー
@@ -298,7 +302,8 @@
    もっと複雑なドライバー では、単にほかの定義の1つをコピーして、
    必要に応じ変更を加えればよいです。
 <P>
-<LI> <h4>/usr/src/sys/arch/i386/i386/conf.c (ほかの arch ではどこ?)</h4>
+<LI><h4>/usr/src/sys/arch/i386/i386/conf.c</h4>
+	<!-- ほかの arch ではどこ? -->
 
    <I>conf.h</I> に cdevsw 初期化エントリー を作れば、
    次のステップの設定をします。
@@ -387,6 +392,11 @@ file dev/skeleton.c	   skeleton	needs-flag
    この場合 skeleton - サンプル擬似デバイスです。
    4番目 で 最後の フィールド は config(8) に
    skeleton.h インクルードファイルを書かせるための制御フラグです。
+   ここでファイル名が skeleton.c になっていますが、例示したファイルを使った場合、
+   ファイル pseudo_dev_skel.c を skeleton.c にリネームするか、このエントリーを
+   (pseudo_dev_skel.c に) 変更するかする必要がありますので注意してください。
+   上述のとおり、私たちはこれを skeleton と呼んでいるので、ここは skeleton.c
+   としたほうがおそらく素直でしょう。
 
 <ENTRY>kernelconfig カーネルコンフィグファイルに新しいデバイスを追加する
     config(8) にそのデバイスのことをしゃべらせるようにするために
@@ -435,21 +445,20 @@ pseudo-device  skeleton
 <PRE>
         cc -o sample sample.c
 </PRE>
-   これで、 sample というバイナリーができるでしょう。
-
-  <STRONG>注意</STRONG> ヘッダーファイル置き場で、 <TT>pseudo_dev_skel.h</TT> を入れた
+  これで、 sample というバイナリーができるでしょう。<STRONG>注意</STRONG>:
+  ヘッダーファイル置き場で、 <TT>pseudo_dev_skel.h</TT> を入れた
   システムインクルードファイルのディレクトリーで
    <TT>make includes</TT> をする必要があります。
   さもなければ、コンパイラーはインクルードファイルが見つからないと訴えるでしょう。
-
-プログラムをコンパイルして実行すると、
-カーネルメッセージがコンソールと <TT>/var/log/messages</TT> の両方に現われ、
- それはこのようなもので:
+  プログラムをコンパイルして実行すると、
+  カーネルメッセージがコンソールと <TT>/var/log/messages</TT> の両方に現われ、
+  それはこのようなもので:
 <PRE>
 May 17 20:32:57 siren /netbsd: Got number of 42 and string of Hello World
 </PRE>
-    skeleton ioctl 要求を受けた時に skeleton ioctl ハンドラーが表示する
-   メッセージの番号と文字列は sample.c の <TT>param</TT> 構造体の中に入れます。
+   SKELTEST ioctl 要求を受けた時に skeleton ioctl ハンドラーが表示する
+   メッセージです; この番号と文字列は sample.c の <TT>param</TT>
+   構造体の中に入れてあったものです。
 </LIST>
 
 <DOCLINK>
@@ -460,10 +469,9 @@ May 17 20:32:57 siren /netbsd: Got number of 42 and string of Hello World
   (連絡先 - <a href="../../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.list,v 1.5 2000/09/21 11:24:39 dent Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy;
-    2000
-    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  $NetBSD: index.list,v 1.10 2002/07/17 10:05:26 grant Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2002
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
 
