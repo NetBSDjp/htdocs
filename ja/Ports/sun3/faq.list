@@ -21,6 +21,8 @@
     Hardware Reference FAQ</a> - overview of Sun hardware over the years
 <li><a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">Sun
     NVRAM/Hostid FAQ</a> - if your machine PROM's battery has gone dead
+<li><a href="http://www.pimpworks.org/sun/cdrom.html">Sun CD-ROM FAQ</a> - 
+    lists which CD-ROM drives can boot a Sun
 <p>
 
 <li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5.2/sun3/INSTALL.html">
@@ -84,6 +86,149 @@ SunOS kvm library, certain (low-level) disk manipulation utilities,
 and programs making explicit use of Sun's STREAMS subsystem.
 Check the compat_sunos(8) manual page for more details.
 
+<ENTRY>boot-devices Booting SCSI devices at different targets
+All sun3 and sun3x monitors support booting from SCSI devices.  
+Most users will be familiar with booting from the monitor device
+<tt>sd(0,0,0)</tt>, which they know means booting the SCSI disk
+at target zero.  However, determining the monitor device name for 
+booting an arbitrary SCSI device can be confusing.
+<p>
+
+A monitor boot device takes the form
+<i>dev</i><tt>(</tt><i>cntrl</i><tt>,</tt><i>unit</i><tt>,</tt><i>part</i><tt>)</tt>.
+<i>dev</i> is two letters, and <i>cntrl</i>, <i>unit</i>, and 
+<i>part</i> are hexadecimal numbers.
+<p>
+
+For SCSI disks and CD-ROMs, <i>dev</i> is <tt>sd</tt>.  For SCSI tapes,
+<i>dev</i> is <tt>st</tt>.
+<p>
+
+For all SCSI devices, <i>cntrl</i> is the number of the SCSI controller
+the device is attached to.  For a machine with a single SCSI controller,
+<i>cntrl</i> is <tt>0</tt>.
+<p>
+
+For all SCSI devices, <i>unit</i> identifies the SCSI target and logical unit
+number of the device.  Exactly how the SCSI target and logical unit number
+are combined into the single number <i>unit</i> depends on your machine
+type and ROM revision, and whether or not the device is a disk, CD-ROM, or
+tape.  Use the tables below to figure out how <i>unit</i> works on your machine.
+<p>
+
+For SCSI disks and CD-ROMs, <i>part</i> selects the partition to boot on
+that disk or CD-ROM.  The first partition is <tt>0</tt>, the second 
+partition is <tt>1</tt>, etc.  Normally, <i>part</i> is <tt>0</tt>, since
+the first partition on a disk is usually the bootable one.  Common 
+exceptions are booting a miniroot that has been written to the swap 
+partition, in which case <i>part</i> is <tt>1</tt>, or booting 
+a CD-ROM that contains different bootable partitions for different 
+architectures, in which case you have to know which partition boots your 
+architecture.
+<p>
+
+For SCSI tapes, <i>part</i> selects the tape segment (also called "tape file")
+to boot.  The first tape segment is <tt>0</tt>, the second tape segment
+is <tt>1</tt>, etc.  You will need to know which tape segment is bootable
+for your architecture in order to give the right <i>part</i>.
+<p>
+
+Finally, these are the tables that demonstrate how <i>unit</i> works
+on various machines.  They list <tt>sd</tt> monitor devices for disks
+and CD-ROMs, and <tt>st</tt> monitor devices for tapes, all at different
+SCSI targets.  These tables assume that you want the first SCSI 
+controller <tt>0</tt>, and the first partition or first tape segment 
+<tt>0</tt>.
+<p>
+
+<table border="1" cellpadding="2" cellspacing="1">
+<tr>
+  <td rowspan="2">Machine/rev ROM</td>
+  <td colspan="8" align="center">Monitor device to boot the disk or CD-ROM at target</td>
+</tr>
+<tr>
+  <td align="center">0</td>
+  <td align="center">1</td>
+  <td align="center">2</td>
+  <td align="center">3</td>
+  <td align="center">4</td>
+  <td align="center">5</td>
+  <td align="center">6</td>
+  <td align="center">7</td>
+</tr>
+<tr>
+  <td>3/60 rev 1.9</td>
+  <td><tt>sd(0,0,0)</tt></td>
+  <td><tt>sd(0,4,0)</tt></td>
+  <td><tt>sd(0,8,0)</tt></td>
+  <td><tt>sd(0,C,0)</tt></td>
+  <td><tt>sd(0,10,0)</tt></td>
+  <td><tt>sd(0,14,0)</tt></td>
+  <td><tt>sd(0,18,0)</tt></td>
+  <td>N/A</td>
+</tr>
+<tr>
+  <td>3/80 rev 2.9.2</td>
+  <td><tt>sd(0,0,0)</tt></td>
+  <td><tt>sd(0,8,0)</tt></td>
+  <td><tt>sd(0,10,0)</tt></td>
+  <td><tt>sd(0,18,0)</tt></td>
+  <td><tt>sd(0,20,0)</tt></td>
+  <td><tt>sd(0,28,0)</tt></td>
+  <td><tt>sd(0,30,0)</tt></td>
+  <td>N/A</td>
+</tr>
+</table>
+<p>
+
+<table border="1" cellpadding="2" cellspacing="1">
+<tr>
+  <td rowspan="2">Machine/rev ROM</td>
+  <td colspan="8" align="center">Monitor device to boot the tape at target</td>
+</tr>
+<tr>
+  <td align="center">0</td>
+  <td align="center">1</td>
+  <td align="center">2</td>
+  <td align="center">3</td>
+  <td align="center">4</td>
+  <td align="center">5</td>
+  <td align="center">6</td>
+  <td align="center">7</td>
+</tr>
+<tr>
+  <td>3/60 rev 1.9</td>
+  <td>???</td>
+  <td><tt>st(0,8,0)</tt></td>
+  <td><tt>st(0,10,0)</tt></td>
+  <td><tt>st(0,18,0)</tt></td>
+  <td><tt>st(0,0,0)</tt></td>
+  <td><tt>st(0,28,0)</tt></td>
+  <td><tt>st(0,30,0)</tt></td>
+  <td>N/A</td>
+</tr>
+<tr>
+  <td>3/80 rev 2.9.2</td>
+  <td>???</td>
+  <td><tt>st(0,8,0)</tt></td>
+  <td><tt>st(0,10,0)</tt></td>
+  <td><tt>st(0,18,0)</tt></td>
+  <td><tt>st(0,0,0)</tt></td>
+  <td><tt>st(0,28,0)</tt></td>
+  <td><tt>st(0,30,0)</tt></td>
+  <td>N/A</td>
+</tr>
+</table>
+<p>
+
+The above tables also assume that you want SCSI logical unit number zero.
+The SCSI specification allows one SCSI target to contain different logical
+units (also called LUNs).  Virtually no SCSI devices make use of this
+feature, and have only a single LUN, zero.  However, if you know you have
+a disk at a LUN other than zero (early Sun SCSI disk setups do), you can
+add the LUN number to the <i>unit</i> value, noting that <i>unit</i> is
+a hexadecimal number.
+
 <ENTRY>sun3x-history History of NetBSD/sun3x
 The sun3x port of NetBSD was initiated by two independent groups of
 developers.  The first group, headed by Gordon Ross and Jeremy Cooper,
@@ -119,7 +264,7 @@ build tree.
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.25 2001/12/17 07:37:23 dent Exp $<br>
+  $NetBSD: faq.list,v 1.26 2002/10/30 23:46:57 fredette Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
