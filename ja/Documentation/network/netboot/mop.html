@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>Setting up the mop server, Diskless NetBSD HOW-TO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<a href="intro.vax.html">Previous</a> |
+<a href="bootpd.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr>
+
+<h1>Setting up the <tt>mop</tt> server, Diskless NetBSD HOW-TO</h1>
+
+DEC's proprietary MOP (Maintenance Operations Protocol) was used to handle
+various networking tasks.  MOP is included the the bootroms of many
+VAX workstations and can be used to load a kernel from a diskless server.
+<p>
+
+Since MOP is not TCP/IP, it cannot be passed through a router (thus the
+stipulation that your client and the server(s) must be on the same
+subnet).  It also means that your server must have device drivers that are
+able to send unspecified data to the ethernet.
+<p>
+
+First, you need to get a copy of the bootloader.
+This can be found in the NetBSD 1.5.1 distribution as:
+<tt><b>ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5.1/vax/installation/netboot/netbsd.ram.gz</b></tt>
+<p>
+
+All of the mop implementations assume that the bootloader to send is
+located in the <tt>/tftpboot/mop/</tt> directory.
+<pre># <b>mkdir -p /tftpboot/mop</b>
+# <b>gunzip boot.mop.gz</b>
+# <b>cp boot.mop /tftpboot/mop/MOPBOOT.SYS</b></pre>
+
+Setting up mopd, <a href="#netbsd">NetBSD</a><br>
+Setting up mopd, <a href="#openbsd">OpenBSD</a><br>
+Setting up mopd, <a href="#freebsd">FreeBSD</a><br>
+Setting up mopd, <a href="#linux">Linux</a><br>
+<p>
+
+[<em>If you have details for any other platform, <a
+href="../../../Misc/feedback.html">please let us know</a></em>]
+<p>
+
+<hr>
+
+<h3><a name="netbsd">NetBSD</a> and <a name="openbsd">OpenBSD</a></h3>
+<dl><dt><dd>
+NetBSD and OpenBSD ship with the mop server on all supported platforms.
+<p>
+
+<ol>
+<li><tt># <b>mopd -a -d</b></tt>
+</ol>
+<p>
+
+This will start <tt>mopd</tt> in debugging mode.  When the <tt>mopd</tt>
+server gets a request, it will print diagnostic information to the
+terminal it was launched from.
+<p>
+
+If your <tt>mopd</tt> is working properly, your client will print
+something like:
+<pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
+: /netbsd</pre>
+<p>
+
+You might take this opportunity to link the <tt>MOPBOOT.SYS</tt> file to
+something that the vax client will find without prompting:
+<pre># <b>cd /tftpboot/mop</b>
+# <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
+Where <tt>cccccccccccc</tt> is the hex ethernet address of your vax
+client.  Make sure that <tt>SYS</tt> is capitalized and that any hex
+digits in the ethernet address are lower case.  If you don't do this, then
+the vax client will <i>not</i> find the correct file.
+<p>
+
+Continue on to setting up <a href="bootpd.html">bootpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="freebsd">FreeBSD</a></h3>
+<dl><dt><dd>
+There is now a <tt>mopd</tt> package for FreeBSD, although I have no further 
+information on how to install or configure it.  Feel free to try it out,
+<a href="http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr">
+http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr</a>.  The 
+instructions listed below are for an older version that is known to work.
+<p>
+<ol>
+<li>Get the source code for mopd from this site:<br>
+ <a href="ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-2.5.3.tar.gz">
+ ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-2.5.3.tar.gz</a>
+<p>
+
+<li>Untar the source code.  
+<p>
+
+<li>If you are running FreeBSD 2.2 or later,
+then you will need to edit one of the source files before compiling it.
+Edit <tt>mopd-2.5.3/common/put.c</tt> and add the following three lines to
+the <tt>#includes</tt> section at the start of the file:
+<pre>#ifdef __FreeBSD__
+#include &lt;osreldate.h&gt;
+#endif</pre>
+<p>
+There are also two places within that file where the symbol
+<tt>__FreeBSD__</tt> is checked.  Replace all occurrences of:
+<pre>#if !defined(__FreeBSD__)</pre>
+to
+<pre>#if !defined(__FreeBSD__) || __FreeBSD_version &gt;= 220000</pre>
+<p>
+
+<li><tt># <b>cd mopd-2.5.3/mopd/</b></tt><br>
+<tt># <b>make</b></tt>
+<p>
+
+<li>Install the binary:<br>
+<tt># <b>cp mopd /usr/local/sbin/</b></tt>
+<p>
+
+<li><tt># <b>/usr/local/sbin/mopd -a -d</b></tt>
+</ol>
+<p>
+
+This will start <tt>mopd</tt> in debugging mode.  When the <tt>mopd</tt>
+server gets a request, it will print diagnostic information to the
+terminal it was launched from.
+<p>
+
+If your <tt>mopd</tt> is working properly, your client will print
+something like:
+<pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
+: /netbsd</pre>
+<p>
+
+You might take this opportunity to link the <tt>MOPBOOT.SYS</tt> file to
+something that the vax client will find without prompting:
+<pre># <b>cd /tftpboot/mop</b>
+# <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
+Where <tt>cccccccccccc</tt> is the hex ethernet address of your vax
+client.  Make sure that <tt>SYS</tt> is capitalized and that any hex
+digits in the ethernet address are lower case.  If you don't do this, then
+the vax client will <i>not</i> find the correct file.
+<p>
+
+Continue on to setting up <a href="bootpd.html">bootpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="linux">Linux</a></h3>
+<dl><dt><dd>
+You may need to compile MULTICAST into your kernel to allow for
+setting your ethernet to promiscuous mode (required for mop to operate
+properly).  You may alternatively use ifconfig with the <tt>allmulti</tt>
+flag to enable promiscuous mode (e.g. <tt><b>ifconfig eth0
+allmulti</b></tt>).
+<p>
+
+<ol>
+<li>Get the source code for mopd from this site:<br>
+<a href="ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-linux-2.5.3.tar.gz">
+ ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-linux-2.5.3.tar.gz</a>
+<p>
+
+<li>Untar this file and make the mopd:<br>
+<tt># <b>cd /mopd-linux/mopd</b></tt><br>
+<tt># <b>make</b></tt>
+<p>
+
+<li>Install the binary:<br>
+<tt># <b>cp mopd /usr/local/sbin/</b></tt>
+<p>
+
+<li><tt># <b>/usr/local/sbin/mopd -a -d</b></tt>
+</ol>
+<p>
+
+This will start <tt>mopd</tt> in debugging mode.  When the <tt>mopd</tt>
+server gets a request, it will print diagnostic information to the
+terminal it was launched from.
+<p>
+
+If your <tt>mopd</tt> is working properly, your client will print
+something like:
+<pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
+: /netbsd</pre>
+<p>
+
+You might take this opportunity to link the <tt>MOPBOOT.SYS</tt> file to
+something that the vax client will find without prompting:
+<pre># <b>cd /tftpboot/mop</b>
+# <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
+Where <tt>cccccccccccc</tt> is the hex ethernet address of your vax
+client.  Make sure that <tt>SYS</tt> is capitalized and that any hex
+digits in the ethernet address are lower case.  If you don't do this, then
+the vax client will <i>not</i> find the correct file.
+<p>
+
+Continue on to setting up <a href="bootpd.html">bootpd</a>
+</dd></dl>
+
+<hr>
+
+<a href="intro.vax.html">Previous</a> |
+<a href="bootpd.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: mop.html,v 1.12 2001/07/11 11:09:03 dent Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
