@@ -1,0 +1,295 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2001
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Initialization and Services Control</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+
+<h1>NetBSD Initialization and Services Control</h1>
+
+As of NetBSD version 1.5 the startup of the system changed slightly
+to using rc scripts for controlling services. This document is an
+overview of the rc configuration on NetBSD 1.5.
+
+
+<LIST>
+
+<h2>Links</h2>
+<ul>
+<li> One of the principal developer's of the rc.d implementation on NetBSD 1.5
+     is Luke Mewburn. At USENIX 2001 Luke gave an excellent presentation on the
+     implementation of the rc.d system. A copy of the paper can be found at
+     Luke's own website in  
+     <a href="http://www.cs.rmit.edu.au/~lukem/papers/rc.d.pdf">PDF</a> format.
+<li> Will Andrews' <a href="http://www.daemonnews.org/200108/rcdsystem.html">DaemonNews
+     article</a> on the NetBSD rc.d System
+</ul>
+
+<hr>
+
+<SECTION>
+
+<ENTRY>a2 The rc.d Configuration
+
+<p>
+The rc files for the system reside under /etc, they are:
+
+<pre>
+/etc/rc
+/etc/rc.conf
+/etc/rc.d/*
+/etc/rc.lkm
+/etc/rc.local
+/etc/rc.shutdown
+/etc/rc.subr
+/etc/defaults/*
+/etc/rc.conf.d/*
+</pre>
+
+<p>
+First a look at controlling and supporting scripts:
+
+<ul>
+<li><code>/etc/rc</code> - this script runs the scripts in /etc/rc.d
+<li><code>/etc/rc.subr</code> - this script contains common functions used by rc scripts
+<li><code>/etc/shutdown</code> - this script calls the scripts in /etc/rc.d in reverse order
+</ul>
+
+<p>
+Additional scripts outside of the rc.d directory:
+
+<ul>
+<li><code>/etc/rc.lkm</code> - this script loads or unloads Loadable Kernel Modules
+<li><code>/etc/rc.local</code> - this script is (almost) the last script called at boot up, local daemons may be added here.
+</ul>
+
+<p>Following is the example from the system for an apache web server added to <code>/etc/rc.local</code>:
+
+<pre>
+if [ -f /usr/pkg/etc/rc.d/apache ]; then
+       /usr/pkg/etc/rc.d/apache start
+fi
+</pre>
+
+<p>
+The /etc/defaults directory contains the default settings for NetBSD 1.5 and the contents should not be changed. Within the rc context the only file of interest is rc.conf, this is the default rc configuration that ships with NetBSD 1.5. In order to alter a default setting, an override may be installed in /etc/rc.conf. For example, if you wanted to enable the Secure Shell Daemon:
+
+<pre>
+# cd /etc; grep ssh defaults/rc.conf
+sshd=NO                 sshd_flags=""
+# echo "sshd=YES" >> rc.conf
+</pre>
+
+<p>Or just edit the file with your favorite editor. The same can be done with any default that needs to be changed.
+
+<p>Another way to make <code>rc.conf</code> easy to edit is to do the following:
+
+<pre>
+# cd /etc/defaults
+# cat rc.conf >> ../rc.conf
+</pre>
+
+<p>Then remove anything you do not need.
+
+<p>
+Last and not least, the <code>/etc/rc.conf.d/</code> directory can be used
+for scripts that are third party.
+
+<ENTRY>a3 The rc.d Scripts
+
+<p>
+The actual scripts that control services are in /etc/rc.d, following are all of the rc scripts in NetBSD 1.5:
+
+<table width="100%" border="0" cellpadding="5" cellspacing="5">
+<tr>
+<td align="left" valign="top" width="25%">
+DAEMON<br>
+LOGIN<br>
+NETWORK<br>
+SERVERS<br>
+accounting<br>
+amd<br>
+apmd<br>
+bootconf.sh<br>
+bootparams<br>
+ccd<br>
+cleartmp<br>
+cron<br>
+dhclient<br>
+dhcpd<br>
+dhcrelay<br>
+dmesg<br>
+fsck<br>
+gated<br>
+inetd<br>
+</td>
+<td align="left" valign="top" width="25%">
+ipfilter<br>
+ipmon<br>
+ipnat<br>
+ipsec<br>
+kdc<br>
+ldconfig<br>
+lkm1<br>
+lkm2<br>
+lkm3<br>
+local<br>
+lpd<br>
+mopd<br>
+motd<br>
+mountall<br>
+mountcritlocal<br>
+mountcritremote<br>
+mountd<br>
+mrouted<br>
+named<br>    
+</td>
+<td align="left" valign="top" width="25%">
+network<br>
+nfsd<br>
+nfslocking<br>
+ntpd<br>
+ntpdate<br>
+postfix<br>
+ppp<br>
+pwcheck<br>
+quota<br>
+raidframe<br>
+rarpd<br>
+rbootd<br>
+root<br>
+route6d<br>
+routed<br>
+rpcbind<br>
+rtadvd<br>
+rtsold<br>
+rwho<br> 
+</td>
+<td align="left" valign="top" width="25%">
+savecore<br>
+screenblank<br>
+securelevel<br>
+sendmail<br>
+sshd<br>
+swap1<br>
+swap2<br>
+sysctl<br>
+sysdb<br>
+syslogd<br>
+timed<br>
+ttys<br>
+virecover<br>
+wscons<br>
+xdm<br>
+xfs<br>
+ypbind<br>
+yppasswdd<br>
+ypserv<br>     
+</td>
+</tr>
+</table>
+
+
+<p>
+Once a service has been activated or told not to activate in /etc/rc.conf it can be also be modified by calling the rc script from the command line, for example if an administrator needed to start secure shell:
+
+<pre>
+ash# /etc/rc.d/sshd start
+Starting sshd.
+</pre>
+
+<p>
+The rc scripts can recieve any of the following arguments:
+
+<ul>
+<li>start
+<li>stop
+<li>kill 
+<li>restart
+</ul>
+
+<p>An example might be when a new record has been added to the named database on a named server:
+
+<pre>
+ash# /etc/rc.d/named restart
+Stopping named.
+Starting named.
+</pre>
+
+<p>
+A slightly more complex example is when a series of settings have been changed, for instance a firewall's ipfilter rules, ipnat configuration, and the secure shell server has switched encryption type:
+
+<pre>
+ash# cd /etc/rc.d
+ash# ./ipfilter restart; ./ipnat restart; ./sshd restart
+</pre>
+
+<ENTRY>a4 The Role of <code>rcorder</code> and rc Scripts
+
+<p>
+As per the System Manager's Manual, <code>rcorder</code> &quot;is designed to print out a dependancy ordering of a set of independent files.&quot; It basically determines the order of execution one way or another. On some Unix systems this done by numbering the files and/or putting them in separate run level directories. Which can be messy. On NetBSD this is done by the controlling scripts mentioned at the beginning of this document and by the contents of each rc script. 
+
+<p>
+In the rc scripts there is a series of lines that have one of the following in them:
+
+<ul>
+<li>REQUIRE
+<li>PROVIDE
+<li>BEFORE
+<li>KEYWORD
+</ul>
+
+<p>
+These dicatate the dependencies of that particular rc script and hence <code>rcorder</code> can easily work either &quot;up&quot; or &quot;down&quot; as the situation requires. Following is an example of the <code>nfsd</code> rc script:
+
+<pre>
+. . .
+# PROVIDE: nfsd
+# REQUIRE: mountd
+
+. /etc/rc.subr         
+. . .
+</pre>
+
+<p>
+Here we can see that this script provides the <code>nfsd</code> service, however, it <EM>requires</EM> <code>mountd</code> to be running.
+
+<ENTRY>a5 Additional Reading
+
+<p>
+Following is some additional material concerning the rc.d system in NetBSD 1.5:
+
+<ul>
+<li>Luke Mewburn's USENIX Presentation in
+  <a href="http://www.cs.rmit.edu.au/~lukem/papers/rc.d.pdf">PDF</a> format.
+<li>Will Andrews <a href="http://www.daemonnews.org/">Daemonnews</a> article
+<a href="http://www.daemonnews.org/200108/rcdsystem.html">The NetBSD rc.d System</a>
+</ul>
+
+
+<ENTRY>a6 Summary
+
+<p>
+Tne new rc structure takes away the old methods of killing with a <code>-HUP</code> and concatenating a file in <code>/var/run</code> or in some cases, just plain killing and restarting. It simplifies in an elegant and powerful way.
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.5 2001/08/20 10:54:28 hubertf Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
+
