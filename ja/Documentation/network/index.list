@@ -81,7 +81,7 @@ NetBSD のインストール手順は基本的なネットワークの設定を含んでおり、
   <li>/etc/hosts - hosts(5) もっとも基本的なホスト名とIPアドレスの対応表。
   <li>/etc/myname - そのホストの FQDN (ドメイン名のついたホスト名)。
   <li>/etc/mygate - デフォルトゲートウェイ。通常は /etc/rc.conf に記述する方がよい。また、
-      routed(8) を使用することもできる。
+      routed(8) を使用することもできる。 ifconfig.if(5) 参照。
   <li>/etc/ifconfig.{<em>IF</em>}. - 
       ネットワークインターフェース <em>IF</em> の設定。
       システムの初期化時、ネットワークインターフェースを
@@ -91,11 +91,20 @@ NetBSD のインストール手順は基本的なネットワークの設定を含んでおり、
       ることができる。
       ここで記述された alias は、システムの初期化時に <em>/etc/netstart</em>
       で用いられる。
+  <li>/etc/resolv.conf - resolv.conf(5) は、数値 IP アドレスからホスト名への
+      名前解決方法を指定します。たいていの場合、探索用のドメインを指定する行と、
+      問い合わせ先ネームサーバーの IP アドレス (1 行または複数) を書いておきます:
+<p>
+<pre>
+search subdomain.yourdomain.tld yourdomain.tld
+nameserver 192.168.253.10
+nameserver 192.168.253.11
+</pre>
 </ul>
 <ul>
   <li><h3>参考:</h3>
       <ul>
-        <li>placeholder
+        <li>hostname(7)</li>
       </ul>
 </ul>
 
@@ -111,7 +120,8 @@ NetBSD のインストール手順は基本的なネットワークの設定を含んでおり、
 <ul>
   <li><h3>参考:</h3>
       <ul>
-        <li>placeholder
+	<li>domainname(1)</li>
+        <li>hostname(1), hostname(7)</li>
       </ul>
 </ul>
 
@@ -121,12 +131,16 @@ NetBSD のインストール手順は基本的なネットワークの設定を含んでおり、
 NetBSD のインストール中にネットワークの情報を与えると、
 新しいホストはすぐにネットワークに接続され、
 その IP アドレスでアクセスできるようになります。
-<ul>
-  <li><h3>参考:</h3>
-      <ul>
-        <li>placeholder
-      </ul>
-</ul>
+<p>
+ネットワークの設定の簡単な例を以下に示します。ネットワークインターフェースは
+<em>ex</em>で、 IP アドレスを 192.168.253.2 に設定し、デフォルトルーターは
+192.168.253.1 を使うものとします:
+<p>
+<pre>
+  # ifconfig lo0 127.0.0.1
+  # ifconfig ex0 192.168.253.2 netmask 255.255.255.0
+  # route add default 192.168.253.1
+</pre>
 
 <ENTRY>naming_a_host  ネットワークの新しいホストを名づける
 IP アドレスと同じようにホスト名でのアクセスを可能にするには、
@@ -166,7 +180,8 @@ IP アドレスと同じようにホスト名でのアクセスを可能にするには、
 <ul>
   <li><h3>参考:</h3>
       <ul>
-        <li>placeholder
+        <li>named.conf(5)</li>
+	<li>nsswitch.conf(5)</li>
       </ul>
 </ul>
 
@@ -195,7 +210,8 @@ IP アドレスと同じようにホスト名でのアクセスを可能にするには、
 <ul>
   <li><h3>参考:</h3>
       <ul>
-        <li>placeholder
+        <li>ipnat(5),ipnat(8)</li>
+	<li>ipf.conf(5),ipf(8)</li>
       </ul>
 </ul>
 
@@ -399,14 +415,14 @@ ipfilter=YES                                    # uses /etc/ipf.conf
 ipnat=YES                                       # uses /etc/ipnat.conf
 </PRE>
 
-<LI> /etc/rc.local で ipv4 パケットフォワーディングを有効にします:
+<LI> /etc/sysctl.conf で ipv4 パケットフォワーディングを有効にします:
 <PRE>
-sysctl -w net.inet.ip.forwarding=1
+net.inet.ip.forwarding=1
 </PRE>
 
 <LI> リブートします。
 
-<LI> デバッグには ping(8) と tcpdump(1) を使って下さい。
+<LI> デバッグには ping(8) 、 tcpdump(1) 、 ipfstat(8)、 ipnat(8) を使って下さい。
 </OL>
 
 <ENTRY>maintenance  メンテナンス
@@ -965,7 +981,7 @@ ABORT BUSY    '' AT
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.list,v 1.59 2002/07/25 21:02:12 keihan Exp $<br>
+  $NetBSD: index.list,v 1.61 2002/10/30 09:53:10 grant Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
