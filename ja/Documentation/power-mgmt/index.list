@@ -2,81 +2,95 @@
 <head>
 <!-- Copyright (c) 1998
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD Documentation: Power Management</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<HEADING>Power Management for Laptops
+<HEADING>ラップトップのための電源管理
 
 <LIST>
 
-<SECTION>Power Management
+<SECTION>電源管理
 
-<ENTRY>introduction Introduction
-This documentation describes some of the power managemnt facilities
-available in NetBSD, including the Advanced Power Management (APM)
-support found in most modern laptops.
+<ENTRY>introduction 導入
+このドキュメンテーションはNetBSDに用意されている電源管理機能の一部と、
+殆どの今時のラップトップ・コンピューターに備わっている
+Advanced Power Management (APM)を含めて説明しています。
 <p>
-Currently most of the information on this page is i386 specific.
-When NetBSD starts supporting more laptop architectures, then this
-documentation will be expanded to cover the power management features
-for those architectures.
+現時点では、このページの殆どはi386に特定な情報です。
+NetBSDがさらに多くのラップトップのアーキテクチャーのサポートを始めるときに、
+それらのアーキテクチャーの電源管理機能をカバーする様に、
+このドキュメンテーションは拡充されるでしょう。
 
-<ENTRY>basics The Basics of Power Management
-The core of laptop power management is centered around Advanced
-Power Management, or APM for short.  This is a set of BIOS provided
-service routines that provide an interface to the laptop hardware
-power management features.  It is via this interface that NetBSD
-receives APM events (such as suspend requests) or makes power management
-requests or queries (such as the current battery level).
+<ENTRY>basics 電源管理の基本
+ラップトップの電源管理はAdvanced Power Management、
+略してAPMが中心となります。
+APMはラップトップのハードウェアの電源管理機能へのインタフェースを提供
+する、BIOSに用意されたサービス・ルーチンの集合です。
+このインタフェースを経由して、
+NetBSDは(サスペンド要求といった)APMのイベントを受け取ったり、
+電源管理の要求や(現在のバッテリー容量といった)問い合わせを行います。
 <p>
-APM specifies two different power saving modes: standby and suspend.
-What this actually does at a hardware level is dependent on the
-particular laptop being used.  "standby" typically means a light sleep,
-which consumes more power and is quicker to restore from than
-the "suspend" mode.  Typically the APM timers for standby and suspend
-mode are configured in a machine's BIOS.  After a machine has been
-determined "idle" for the appropriate period of time, the BIOS will
-request that the operating system go into the appropriate power
-saving mode.
+APMは2つの異なる電源の節約状態、
+すなわちスタンバイとサスペンドを規定しています。
+APMが実際にハードウェアのレベルで行うことは、
+使用する特定のラップトップに依存します。
+一般的に「スタンバイ」は軽い眠りの状態を意味していて、
+「サスペンド」の状態より多くの電力を消費し、より速い復帰ができます。
+スタンバイとサスペンドの状態へのAPMタイマーは、
+マシンのBIOSで設定されるるのが一般的です。
+マシンが特定の期間に渡って「アイドル」と判断されると、
+BIOSはそれに応じた電源節約モードへの移行をオペレーティングシステムに
+要求します。
 <p>
-At the NetBSD level, there are three components to APM support.
-The kernel driver, which is the interface to the APM BIOS, the
-apm daemon <b><kbd>apmd</kbd></b>, which interfaces with the APM kernel
-driver and runs the userland event scripts, and the command line
-program <b><kbd>apm</kbd></b>, which interfaces to <b><kbd>apmd</kbd></b>
-and can be used to query battery level or initiate a system suspend.
+NetBSDのレベルでは、3つのAPMをサポートするための要素があります。
+カーネル・ドライバーはAPM BIOSへのインタフェースを取ります。
+apmデーモンの<b><kbd>apmd</kbd></b>はAPMカーネルとのインタフェースを取り、
+ユーザーランドのイベント処理のスクリプトを起動します。
+コマンド行のプログラム<b><kbd>apm</kbd></b>は
+<b><kbd>apmd</kbd></b>とのインタフェースを取り、
+バッテリー容量問い合わせやシステムのサスペンドの開始に使用できます。
 <p>
-The way power management events generally flow is:
+一般的な電源管理のイベントの流れは、以下の手順を踏みます。
 <ol>
-<li>The APM BIOS determines a machine has been idle for the appropriate
-amount of time, and queues a standby/suspend request.
-<li>The APM kernel driver gets the request event the next time it
-polls the APM BIOS (typically once per second) and queues the
-standby/suspend request to the apm daemon.
-<li>The apm daemon determines whether or not to accept this request,
-based on the current power source and the daemon configuration.
-If the request is accepted, it performs any standby/suspend activities,
-then sends the accept/reject notice back to the kernel driver.
-<li>The kernel driver sends the accept/reject notice to the APM BIOS.
-<li>If the event request was accepted, the APM BIOS places the
-hardware in the specified mode.
+<li>APM BIOSはマシンが特定の時間にアイドルな状態を続けたと判断すると、
+	スタンバイまたはサスペンドの要求をキューに入れます。
+<li>APMのカーネル・ドライバーは(一般的に1秒に一度といった)ポーリングを
+	APM BIOSに対して行って、要求のイベントを取得します。そして、
+	スタンバイまたはサスペンドの要求をapmデーモンへのキューに入れます。
+	
+<li>APMデーモンは、現在の電源の状態やデーモンの設定をもとに、
+	要求を受け付けるかどうかを決定します。
+	要求を受け付けた場合、
+	apmデーモンはスタンバイまたはサスペンドの動作を実行して、
+	カーネル・ドライバーに受け付けまたは拒否したかの通知を送ります。
+
+<li>カーネル・ドライバーは受け付けまたは拒否したかを、
+	APM BIOSに通知を送ります。
+
+<li>イベントの要求が受け付けられたなら、
+	APM BIOSはハードウェアを指示されたモードに置きます。
 </ol>
 
-<ENTRY>configuring Configuring NetBSD APM Support
-First off, you need to compile a kernel with the APM driver enabled.
-Add (or uncomment) the following line in your kernel configuration file:
+<ENTRY>configuring NetBSD APMサポートの設定
+まず始めに、APMドライバーを有効にしたカーネルをコンパイルする必要があります。
+使用しているカーネルの構成ファイルの次の行を追加、
+またはコメントを外してください。
+
 <pre>	apm0	at mainbus0	# Advanced power management</pre>
-See <a href="../kernel/#building_a_kernel">how to build
-a kernel</a> for details on how to build your own kernels.
+
+自分のカーネルを作成する方法の詳細は、
+<a href="../kernel/#how_to_build_a_kernel">
+カーネルの作り方</a>を参照してください。
 <p>
-Once you have a kernel with the APM kernel driver built, run the apm
-daemon (<b><kbd>apmd</kbd></b>) at boot time by setting the
-<b><kbd>apmd</kbd></b> variable <kbd>/etc/rc.conf</kbd> to YES.
+APMカーネル・ドライバーを組み込んだカーネルができたなら、
+APMデーモン(<b><kbd>apmd</kbd></b>)をブート時に起動させるために、
+<kbd>/etc/rc.conf</kbd>の変数<b><kbd>apmd</kbd></b>をYESにセットして下さい。
 <p>
-Once you've done both of these steps, you can use the <b><kbd>apm</kbd></b>
-utility to interace with the APM system.  For example:
+これら両方の段階を行うと、
+<b><kbd>apm</kbd></b>
+ユーティリティーを使用してAPMシステムとやりとりできるようになります。例えば、
 <pre>
 % apm
 Battery charge state: high
@@ -84,39 +98,42 @@ Battery remaining: 98 percent
 A/C adapter state: not connected
 Power management enabled
 </pre>
-Read <b>apm(8)</b> and <b>apmd(8)</b>
-for more detailed information on how to use the APM support.
+APMサポートの使用方法への、より詳細な情報は
+<b>apm(8)</b> と <b>apmd(8)</b>
+を参照してください。
 
-<ENTRY>hints Power Management Hints and Tricks
-The primary interfaces for power management events are the scripts
-in <b><kbd>/etc/apm</kbd></b>: <b><kbd>standby</kbd></b>,
-<b><kbd>suspend</kbd></b>, and <b><kbd>resume</kbd></b>.
-<b><kbd>apmd</kbd></b> will run these scrips when it receives
-the appropriate APM event.
+<ENTRY>hints 電源管理のヒントとトリック
+電源管理のイベントの基本的なインタフェースは<b><kbd>/etc/apm</kbd></b>以下の、
+<b><kbd>standby</kbd></b>、<b><kbd>suspend</kbd></b>、
+<b><kbd>resume</kbd></b>のスクリプトです。
+<b><kbd>apmd</kbd></b>は対応したAPMイベントを受け取ると、
+適切なスクリプトを動作させます。
 <p>
-Some things you might want to do in a <b><kbd>standby</kbd></b>
-or <b><kbd>suspend</kbd></b> script are:
+<b><kbd>standby</kbd></b>や<b><kbd>suspend</kbd></b>スクリプトで、
+実行させたいことには以下のものがあります。
 <ul>
-<li>Turn off power to a network interface card.  If you are using PCMCIA
-network interface cards, you can do this by <b><kbd>ifconfig interface down
-</kbd></b>.
-<li>Unmount network filesystems (if you plan on resuming a laptop in a place
-where that filesystem might not be accessable).
-<li>Stop running <b><kbd>dhclient</kbd></b> or <b><kbd>pppd</kbd></b>.
+<li>ネットワーク・インタフェース・カードの電源を切断。
+PCMCIAのネットワーク・インタフェース・カードを使用している場合は、
+<b><kbd>ifconfig interface down</kbd></b>を実行することで達成できます。
+<li>ネットワーク・ファイルシステムのアンマウント
+	(そのファイルシステムをアクセスできないところで、
+	ラップトップをリジュームする予定がある場合)。
+<li>稼働中の<b><kbd>dhclient</kbd></b>や<b><kbd>pppd</kbd></b>を停止。
 </ul>
-Conversely, you can run all the appropriate commands to undo all of
-the things you did at standby or suspend time in your <b><kbd>resume</kbd></b>
-script.
+逆に、<b><kbd>resume</kbd></b>スクリプトで、
+スタンバイやサスペンドさせたときに行ったこと、
+すべてを取り消す適切なコマンドを実行することができます。
 <p>
-New in NetBSD 1.4 is the <b><kbd>atactl</kbd></b> command.  This
-command can be used to control power management features of ATA devices
-(more commonly known as IDE).  You can use the
-<b><kbd>setidle</kbd></b> option of <b><kbd>atactl</kbd></b> to set the
-standby timer used to control disk spindown.  See <b>atactl(8)</b>
-for more specific information.
+NetBSD 1.4に新しい<b><kbd>atactl</kbd></b>がコマンドがあります。
+このコマンドを使用して、(IDEとしてより広く知られている)
+ATAデバイスの電源管理機能を制御することができます。
+<b><kbd>atactl</kbd></b>の<b><kbd>setidle</kbd></b>オプションを使用して、
+ディスクの回転低下を制御するスタンバイ・タイマーを設定できます。
+より明確な情報は、
+<b>atactl(8)</b>を参照して下さい。
 <p>
-If you're wondering what value to set for the ATA standby timer, I would
-recommend reading the following papers:
+ATAスタンバイ・タイマーへ設定する値に疑問があるなら、
+以下の文献を読むことをお勧めします。
 <dl>
 <dt><u>A Quantitative Ananysis of Disk Drive Power Management in Portable
 Computers</u>
@@ -127,38 +144,41 @@ Usenix</i>.
 <dd>Fred Douglas, P. Krishnan, Brian Marsh, Matsushita Information Technology
 Laboratory, <i>Winter 1994 Usenix</i>.
 </dl>
-These papers both recommend low values for a standby timer, on the order
-of 2 to 8 seconds.
+これらの文献の両方で、スタンバイ・タイマーには低い値、
+2から8秒のレートを推奨しています。
 <p>
-One problem with setting a low value value for the standby timer is
-that by default NetBSD writes to the disk often enough that the disk is
-constantly spinning up (at least once every 30 seconds, or however
-often <b><kbd>update</kbd></b> runs).  It turns out the most common
-cause of this is the filesystem updating the last access timestamps on
-files and the last modified time on device special files (such as
-pseudo-ttys).  This behavior can be suppressed by the
-<b>mount(8)</b>
-options <b><kbd>noatime</kbd></b> and (new in NetBSD 1.4)
-<b><kbd>nodevmtime</kbd></b>.  If you decide to do this as well, you
-might want to also change or remove completely the
-<b><kbd>atrun</kbd></b> job inside of <b><kbd>cron</kbd></b> - by
-default it will run once every 10 minutes and append an entry to the
-<b><kbd>cron</kbd></b> log file, causing a disk spinup.
+低い値をスタンバイ・タイマーに設定することによる1つの問題があります。
+それはNetBSDはデフォルトでは、絶えず(少なくとも30秒に1度、
+すなわち<b><kbd>update</kbd></b>が動作するたび)
+ディスクを回転開始状態にさせるのに十分な頻度でディスクへ書き込むことです。
+この書き込みのもっとも共通な原因は、ファイルシステムで
+ファイルの最終アクセス時刻と(仮想ターミナルといった)
+デバイス特殊型ファイルの最終更新時刻の更新であることが判明しました。
+これらの動作は、
+<b>mount(8)</b>の
+オプション<b><kbd>noatime</kbd></b>と(NetBSD 1.4で新しい)
+<b><kbd>nodevmtime</kbd></b>で抑止できます。
+これを行おうと決めた場合、
+<b><kbd>cron</kbd></b>から起動される<b><kbd>atrun</kbd></b>を変更するか、
+完全に停止したくなるでしょう。デフォルトでは、10分間隔に実行されて、
+<b><kbd>cron</kbd></b>のログファイルにエントリーを書き込み、
+ディスクを回転させます。
 <p>
-It is also desirable in some circumstances to use different or disable
-completely power management settings depending if one is powered by
-line power or battery.  A new feature in NetBSD 1.4 is two additional
-<b><kbd>apmd</kbd></b> scripts: <b><kbd>line</kbd></b> and
-<b><kbd>battery</kbd></b>.  These scripts are run by <b><kbd>apmd</kbd></b>
-whenever APM detects a power source change.  The <b><kbd>line</kbd></b>
-script is run upon transition to line/AC power, and the
-<b><kbd>battery</kbd></b> script is run upon transition to battery power.
-The script corresponding to the current power source is also run when
-<b><kbd>apmd</kbd></b> is first started.
+また、電源がAC電源かバッテリーかによって、
+電源管理を異なる設定や
+完全に電源管理を無効とすることが望ましい状況があります。
+NetBSD 1.4での新しい機能に、2つの新しい<b><kbd>apmd</kbd></b>のスクリプト、
+<b><kbd>line</kbd></b>と<b><kbd>battery</kbd></b>があります。
+これらのスクリプトはAPMが電源の供給元が変わったことを検出したときに、
+<b><kbd>apmd</kbd></b>から実行されます。
+<b><kbd>line</kbd></b>スクリプトは電灯線/AC電源へ移行したときに、
+<b><kbd>battery</kbd></b>スクリプトはバッテリー電源に移行したときに実行されます。
+また、現在の電源の供給元に対応したスクリプトは、
+<b><kbd>apmd</kbd></b>が最初に起動されたときにも実行されます。
 <p>
-You can place commands inside of these scripts to change the power
-management settings when using battery or line power.  Here are some
-example scripts:
+これらのスクリプトの中にコマンドを記述して、
+バッテリーか電灯線を使用したときに応じた電源管理の設定に変更することができます。
+ここにスクリプトの例があります。
 <p>
 <ul>
 <li><b><kbd>/etc/apm/line</kbd></b>
@@ -174,10 +194,11 @@ mount -u -o async,noatime,nodevmtime /
 mount -u -o async,noatime /usr
 atactl wd0 setidle 5</pre>
 </ul>
-Another useful feature is the <b><kbd>-a</kbd></b> flag to
-<b><kbd>apmd</kbd></b> which will cause <b><kbd>apmd</kbd></b> to
-ignore standby or suspend events if the machine is currently on line
-power.
+他の便利な機能に、
+<b><kbd>apmd</kbd></b>の<b><kbd>-a</kbd></b>フラグがあります。
+これを指定すると、
+<b><kbd>apmd</kbd></b>はマシンが電灯線の電源に接続されている場合は、
+スタンバイやサスペンドのイベントを無視します。
 
 </LIST>
 
