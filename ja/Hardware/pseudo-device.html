@@ -2,75 +2,109 @@
 <head>
 <!-- Copyright (c) 1998
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>Pseudo-devices Supported by NetBSD</title>
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<title>NetBSDの擬似デバイス</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>Machine-independent pseudo-device and logical drivers</h1>
+<h1>機種に依存しない擬似デバイスドライバーと論理ドライバー</h1>
 
-Pseudo-device drivers add enhanced features to real devices, or provide
-device-like interfaces to other subsystems.  They come in two flavors:
-true pseudo-devices (as configured with the `pseudo-device' keyword in
-the kernel configuration file) and logical devices (which attach as
-children of real devices during the kernel's autoconfiguration phase).
+擬似デバイスドライバーは、 実デバイスドライバーの機能を強化したり、
+システムの他の部分にデバイス的なインターフェースを提供したりします。
 
-<h2>Supported pseudo-device drivers</h2>
+これらは、2種類に分類できます。
+真の擬似デバイスドライバー (カーネルのコンフィギュレーションファイルで
+psuedo-device キーワードによって定義される)と、
+論理デバイス (カーネルの自動コンフィギュレーション中に、
+実デバイスの子供として組み込まれる)です。
+
+
+<h2>サポートされている擬似デバイスドライバー</h2>
 
 <ul>
-<li> Concatenated disk driver (<i>ccd</i>).  This pseudo-device provides
-     a method of combining multiple physical disk components into a single
-     logical disk.  The components are either serially concatenated or
-     interleaved (a.k.a. striped, RAID-0).  This is useful for combining
-     many small components into a larger, more usable disk, or for
-     enhancing performance on servers. For mirroring or parity, see
-     the RAIDframe driver (<i>raid</i>).
-<li> Memory disk driver (<i>md</i>).  This pseudo-device provides a
-     disk-like device in memory, i.e. a `RAM disk'.  It has several
-     modes of operation, including a mode which allows a kernel to
-     mount an `injected' RAM disk as the root file system, useful
-     for the install process.
-<li> RAIDframe disk driver (<i>raid</i>).  This pseudo-device provides
-     a RAID level 0, 1, 4, and 5 functionality.  Allows combining multiple
-     physical disk components into RAID sets.
-<li> Random device driver (<i>rnd</i>).  This pseudo-device provides
-     a source of random data (numbers).  It has several modes of operation,
-     and produces the random data by gathering entropy from physical devices
-     on the system, and processing that entropy with a cryptographic hash
-     function.
-<li> Vnode disk driver (<i>vnd</i>).  This pseudo-device provides a
-     disk-like interface to regular files.  This is particularly useful
-     for making or reading raw file system and disk images.
+<li>連結ディスクドライバー(<i>ccd</i>)。この擬似デバイスは、
+複数の物理ディスクを寄せ集めて、
+一つの論理ディスクとして扱う方法を提供します。
+
+直列か、インターリーブ付き(ストライプ、RAID-0 ともいう)で連結することができ、
+小さなディスクを一つの大きな、より使いやすいディスクにしたり、
+サーバーの性能を向上することができます。
+
+ミラーリングやパリティについては、RAIDframe(<i>raid</i>) ドライバーを
+参照してください。
+
+<li>メモリディスクドライバー。(<i>md</i>)
+
+この擬似デバイスは、
+メモリを使ってディスクのようなデバイスを提供します。つまり、
+「RAMディスク」です。
+これには、いくつかの動作モードがありますが、
+その一つを用いて、
+カーネルの中に「注入」したRAMディスクを
+ルートファイルシステムとしてマウントすることができます。
+この機能は、インストールにおいて有効に使用されています。
+     
+
+<li> RAIDframe ディスクドライバー(<i>raid</i>)。 
+
+この擬似デバイスは、
+RAID レベル 0、1、4、5 の機能を提供し、
+複数の物理ディスクをRAIDセットに組み上げることができます。
+
+<li> 乱数デバイスドライバー(<i>rnd</i>)。
+この擬似デバイスは、ランダムなデータ(数)の発生源になります。
+いくつかの動作モードがあり、
+システムの物理デバイスから集めたエントロピーを使って乱数を発生したり、
+暗号系のハッシュ関数でそのエントロピーを使ったりします。
+
+<li> Vnodeディスクドライバー (<i>vnd</i>)。
+この擬似デバイスは、通常のファイルに対してディスク的なインターフェースを提供します。
+生のファイルシステムやディスクイメージを作ったり読んだりする時に特に有用です。
 </ul>
 
-<h2>Supported logical device drivers</h2>
+<h2>サポートされている論理デバイスドライバー</h2>
+
 <ul>
-<li> Audio device driver (<i>audio</i>).  This driver provides a consistent
-     interface to sound hardware, which is backwards-compatible with the
-     SunOS audio interface.  It provides several audio encodings, including
-     ITU G.711 mu-law, ITU G.711 A-law, signed linear PCM, unsigned linear PCM,
-     and adaptive differential PCM.  Source-code level compatibility with
-     OSS Audio (previously known as VoxWare) is provided by a user space
-     library called <b>libossaudio.a</b>.  Binary-level compatibility with
-     OSS Audio is provided for programs running in the Linux emulation
-     subsystem.  The <i>audio</i> driver also provides a mixer interface.
-     It attaches to hardware devices that fall into the `Sound hardware'
-     category of the supported hardware lists.
-<li> Unified Workstation Console, WSCONS.  This is a set of drivers which
-     attach as logical children of various input and output devices on
-     workstations, providing a consistent, event-oriented interface to
-     the hardware, for easier application development.  Drivers in the
-     WSCONS suite include <i>wsdisplay</i> (which attaches to display
-     card drivers), <i>wskbd</i> (which attaches to keyboard drivers),
-     and <i>wsmouse</i> (which attaches to mouse drivers).  WSCONS provides
-     virtual terminals, flexible terminal emulation (including Sun,
-     VT100, and dumb terminal emulators), and flexible keyboard map support.
-     WSCONS also provides emulation of the PCVT and SYSCONS console interfaces
-     (legacy console drivers for 386BSD, NetBSD, and FreeBSD), raw
-     keyboard compatibility, and compatibility with USL console ioctls,
-     allowing legacy applications and programs for other systems to work
-     (such as Doom on direct VGA).  <b>The WSCONS drivers are still under
-     development.</b>
+<li> オーディオデバイスドライバー(<i>audio</i>)。
+
+このドライバーはSunOSのオーディオインターフェースと互換性のある、
+サウンドハードウェアに対する一貫したインターフェースを提供します。
+ITU G.711 mu-law、 ITU G.711 A-law、 有符号リニアPCM、 無符号リニアPCM、
+ADPCM などのエンコーディングが可能です。
+OSS Audio (旧名 VoxWare)とのソースレベルでの互換性がユーザー空間のライブラリ
+<b>libossaudio.a</b>によって提供されています。
+OSS Audio とのバイナリレベルでの互換性は、
+Linuxエミュレーションで動作するプログラムに対して提供されています。
+また、ミキサーインターフェースもあります。
+オーディオドライバーは、
+サポートされているハードウェアのリストで
+「サウンドハードウェア」と分類されているデバイスに組み込まれます。
+
+<li>統合ワークステーションコンソール「WSCONS」。
+これは、ワークステーションの様々な入出力デバイスに、
+子供の論理デバイスとして組み込まれるドライバーの集合体であり、
+イベント指向の一貫したハードウェア・インターフェースを提供し、
+アプリケーションの開発をより容易にします。
+WSCONSスィーツに属するドライバーは、
+<i>wsdisplay</i> (ディスプレイカードドライバーに組み込まれる)、
+<i>wskbd</i> (キーボードドライバーに組み込まれる)、
+<i>wsmouse</i> (マウスドライバーに組み込まれる)
+です。
+
+WSCONSは仮想端末、柔軟な端末エミュレーション(Sun, VT100, ダム端末など)、
+柔軟なキーボードマッピングをサポートします。
+
+また、WSCONSは、
+386BSD、 NetBSD、 FreeBSDの旧来のコンソールドライバーである
+PCVTとSYSCONSのコンソールインターフェース、
+生のキーボードとの互換性、
+及び、USLコンソールのioctlとの互換性を有しているので、
+旧来のアプリケーションや他のシステム用のプログラム(例えば、VGAを直接使うDoom)も
+動作させられます。
+
+<b>WSCONS ドライバーは現在開発中です。</b>
+
+
 </ul>
 
 <hr>
@@ -81,7 +115,7 @@ children of real devices during the kernel's autoconfiguration phase).
         <a href="../index.html">
         <img src="../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
       </td><td>
-        <a href="../index.html">Home Page</a>
+        <a href="../index.html">ホームページ</a>
       </td>
     </tr></table>
   </td><td>
@@ -91,7 +125,7 @@ children of real devices during the kernel's autoconfiguration phase).
         <img src="../images/NetBSD-banner.gif"
                 alt="Supported Hardware"></a>
       </td><td> 
-        <a href="index.html">Supported Hardware</a>
+        <a href="index.html">サポートされているハードウェア</a>
       </td>
     </tr></table>
   </td>
@@ -99,11 +133,13 @@ children of real devices during the kernel's autoconfiguration phase).
 
 <hr>
 <address>
-  www@NetBSD.ORG<br>
+  www@JP.NetBSD.ORG<br>
   $NetBSD: pseudo-device.html,v 1.4 1998/11/13 22:44:53 abs Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1998
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
 </address>
+
+<!-- Japanese Translation by bsh@grotto.iijnet.or.jp, Oct 1999 -->
 
 </body>
 </html>
