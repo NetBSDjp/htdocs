@@ -20,6 +20,10 @@ answers!) about NetBSD/next68k.
 <h2>Other sources of information</h2>
 
 <ul>
+    <li><a href="http://www.peanuts.org/peanuts/GeneralData/Documents/faq/NeXTFAQ-html/NeXTFAQ.txt">The
+        peanuts.org NEXTSTEP/OpenStep FAQ</a> (see section 5 on black hardware)
+    <li><a href="http://www.lrz-muenchen.de/~heller/NeXT/NeXT.html">NeXT
+        Hardware FAQs</a>
     <li><a href="../../Documentation/wscons/">The wscons
 	FAQ</a>, about NetBSD's platform-independent workstation
 	console driver.
@@ -31,10 +35,10 @@ answers!) about NetBSD/next68k.
 
 <SECTION>Booting
 
-<ENTRY>rom-monitor How do I get to the firmware, or the ROM Monitor?
-You can get to the ROM monitor, or break into the debugger at any
-time, by hitting both <b>COMMAND</b> and the backquote (<tt>`</tt>) key
-above the <tt>7</tt> on the numeric keypad.
+<ENTRY>rom-monitor How do I get to the ROM Monitor or the debugger?
+You can get to the ROM monitor, or break into the debugger (once the
+NetBSD kernel is running) at any time, by hitting both <b>COMMAND</b> and
+the backquote (<tt>`</tt>) key above the <tt>7</tt> on the numeric keypad. 
 
 <ENTRY>reset How do I reset the system without pulling the plug?
 This is a hard reset -- it does not sync the filesystems first.  Press
@@ -48,6 +52,24 @@ href="../../Documentation/network/netboot/">Diskless NetBSD HOW-TO</a> devoted
 to <a
 href="../../Documentation/network/netboot/intro.next68k.html">Netbooting
 NetBSD/next68k</a>.  
+
+<ENTRY>boot-disk1 How do I boot from a second hard drive or CD-ROM?
+The ROM Monitor <tt>bsd()</tt> command defaults to booting from the 
+lowest SCSI ID drive which is usually the internal hard drive at ID 0.  
+To boot from the next SCSI hard drive, you would use <tt>bsd(1,0,0)</tt> 
+which will boot from the next highest SCSI ID drive -- <i>not necessarily 
+SCSI ID 1</i>.
+<table border=1 cellpadding=5>
+<tr><th>SCSI ID</th><th>boot command</th></tr>
+<tr><td>0</td><td><tt>bsd()</tt></td></tr>
+<tr><td>2</td><td><tt>bsd(1,0,0)</tt></td></tr>
+<tr><td>6</td><td><tt>bsd(2,0,0)</tt></td></tr>
+</table>
+
+<p>
+Only turbo NeXT systems can boot directly from a CD-ROM.  Non-turbo 
+models need to load the bootloader from a floppy, SCSI hard drive, or 
+over the network.
 
 <ENTRY>monitor-commands What can I do in the ROM Monitor?
 From the ROM Monitor prompt, type <tt><b>?</b></tt> to get a listing of 
@@ -106,7 +128,70 @@ enable parity cehcking if parity memory is present:  no?  <b>no</b>
 </pre>
 <SECTION>Hardware
 
+<ENTRY>connections How do the keyboard, mouse, and monitor connect to the NeXT hardware?
+For monochrome systems (NeXT Computer, NeXTcube, NeXTstation, NeXTcube 
+Turbo, and NeXTstation Turbo) without a NeXTdimension board, a 19 pin 
+cable connects the system to the mono MegaPixel Display.  The cable 
+carries power for the monitor, video for the monitor, sound in and out, 
+and the keyboard/mouse connector.  The keyboard plugs into the monitor, 
+and the mouse plugs into the keyboard.
+
+<p>
+For color systems (NeXTstation Color and NeXTstation Color Turbo) a funky
+"Y-Cable" connects the system to a soundbox and to a monitor.  The monitor
+end of the cable is a 13W3 connector.  You can use any multisync monitor
+(with the appropriate adapter) or a fixed frequency monitor supporting the
+approprate refresh rate.  NeXTstation Color supports 68 Hz refresh at
+1280x1024.  NeXTstation Color Turbo supports 72 Hz refresh. The soundbox
+provides the additional functionality of the mono MegaPixel Display (sound
+in and out and keyboard/mouse connector).  The keyboard plugs into the 
+soundbox, and the mouse plugs into the keyboard.
+
+<p>
+For cube systems with a NeXTdimension board, the refresh rate is 68 Hz.
+If the cube is using a mono MegaPixel Display in addition to the 
+NeXTdimension driven display, a simple 13W3 cable is used to connect the 
+monitor to the NeXTdimension.  If the cube is not using a mono MegaPixel 
+Display, you must use a "Y-cable" and a soundbox connected to the 
+NeXTdimension board.
+
+
+<ENTRY>adb Differentiating ADB and non-ADB keyboards and mice
+Currently, only non-ADB keyboards and mice are supported.
+<p>
+Non-ADB keyboards use a mini-DIN connector with 5 pins.  Non-ADB keyboards
+have a black power key between the brightness and volume keys.  Non-ADB
+mice use a mini-DIN 8 connector.  Non-ADB mice are rectangular.  All NeXT
+hardware supports these peripherals with the original mono MegaPixel
+Display (N4000 or N4000A) or a non-ADB soundbox (serial number prefix 
+ABN).  The ADB monitor and soundbox cables will work with non-ADB 
+monitors and soundboxes.  Non-ADB monitor cables (part numbers 150 or 1532)
+and soundbox cables (part number 2286) only work with non-ADB monitors 
+and soundboxes.
+<p>
+ADB cables have mini-DIN 4 connectors. ADB NeXT keyboards have a flat
+green power button.  ADB NeXT mice are rounded.  Apple Macintosh ADB
+keyboards and mice should also work.  ADB peripherals are only supported
+on NeXT hardware with ROM version v.74 (most turbo systems and some later 
+non-turbo systems).  You also need a newer mono MegaPixel Display 
+(N4000B) or ADB soundbox (serial number prefix ADD).  Additionally, you need
+an ADB monitor cable (part numbers 4534 or 4535) or an ADB soundbox cable
+(part number 4536).
+<p>
+Black Hole, Inc. has a 
+<a href="http://blackholeinc.com/images/set1/nextadbnonadb.gif">graphic</a> 
+depicting the differences.  ChannelU also has a
+<a href="http://www.channelu.com/Turbo/NeXT/mousekeysound.html">webpage</a>
+with pictures of these devices.
+
 <ENTRY>no-monitor How do I run my NeXT headless?
+From <a
+href="http://www.peanuts.org/faq-serve/cache/189.html">The Peanut's Archive
+FAQ</a>.  Also, see this 
+<a href="http://mail-index.NetBSD.org/port-next68k/1998/06/30/0000.html">post</a>
+describing how to build a better switch.
+
+<p>
 The procedure is to just touch pins 6 and GND on the DB-19 NeXT monitor
 out with a 470 Ohm resistor (450 is the actual resistance, but 470 ohms
 is more commonly found in resistors).  The touching with the resistor
@@ -120,7 +205,8 @@ There's a pinout diagram of the DB-19 in the NeXT Users Reference
 Manual, as well as <a href="#monitor-pinout">below</a>.
 <p>
 
-If you have an old Cube, the power supply needs to have more power
+If you have an old Cube (serial number below AAK0016370),
+the power supply needs to have more power
 drawn from it than an 030 (and 040?) board uses to stay on.
 So: On the DB-19, attach a Power Resistor (20 Ohm, at least 20 Watt)
 between pins 12 and GND. (Pin 12 is -12V, pin 13 works well for GND).
@@ -134,8 +220,9 @@ To power off, type "halt -p" as root on the machine
 ethernet connection). 
 <p>
 
-Also, you have to have the <a href="#rom-monitor">ROM Monitor</a>
-settings done correctly. The important ones are: 
+Also, you need to use the NeXT keyboard to set up the <a 
+href="#rom-monitor">ROM 
+Monitor</a>. The important ones are: 
 <p>
 
 <ul>
@@ -144,11 +231,6 @@ settings done correctly. The important ones are:
     <li>Port A as alternate Console? Y (if you have one, it's nice)
     <li>Verbose mode? N (I think this may need to be N to work, don't remember).
 </ul>
-<p>
-
-The above was taken from <a
-href="http://www.peanuts.org/faq-serve/cache/189.html">The Peanut's Archive
-FAQ</a>.
 
 <ENTRY>serial-console How do I build a serial console cable?
 
@@ -202,7 +284,7 @@ cable, as seen from the back of the machine:
 <address>
 <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: faq.list,v 1.24 2003/07/23 16:32:38 keihan Exp $<br>
+  $NetBSD: faq.list,v 1.26 2003/10/30 08:31:34 keihan Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
