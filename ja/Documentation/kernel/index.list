@@ -2,9 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>NetBSD Documentation: Kernel</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -33,7 +34,7 @@
 <li><a href="config-torek.ps">Device Configuration in 4.4BSD</a>
 <li><a href="http://www.mckusick.com/softdep/index.html">Information about Soft Updates (Soft Dependencies, softdep) and Snapshots</a>
 <li><a href="http://www.ccrc.wustl.edu/pub/chuck/">Integratig ATM Networking into BSD</a>
-<li><a href="http://www.pdl.cs.cmu.edu/PUBLICATIONS/publications.html#RAID">Lots of docs around RAID and RAIDframe</a>
+<li><a href="http://www.pdl.cs.cmu.edu/RAID/index.html">Lots of docs around RAID and RAIDframe</a>
 <li><a href="http://dinsen.net/netbsd/kernel.html">Anders Dinsen's
     kernel documentation overview</a>
 </ul>
@@ -46,9 +47,9 @@ To compile a custom kernel for the same release as you already have installed
 you only need the kernel <tt>syssrc.tgz</tt> file.
 For a given release this is held in the gzipped tarfile
 'source/sets/syssrc.tgz' under the main directory for
-that release. For example NetBSD 1.5 kernel source is in the file:
+that release. For example NetBSD 1.5.2 kernel source is in the file:
 <pre>   <a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5/source/sets/syssrc.tgz">/pub/NetBSD/NetBSD-1.5/source/sets/syssrc.tgz</a></pre>
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5.2/source/sets/syssrc.tgz">/pub/NetBSD/NetBSD-1.5.2/source/sets/syssrc.tgz</a></pre>
 If you have a <a href="../../Sites/cdroms.html">NetBSD CD-Rom</a>, the
 'source/sets/syssrc.tgz' file should be included. The source can be
 extracted anywhere, though the traditional location is inside /usr/src.
@@ -80,6 +81,10 @@ Follow the directions on how to
 NetBSD-current with anoncvs</a>
 
 <ENTRY>how_to_build_a_kernel How to build a kernel
+
+<a name="building_a_kernel"></a>
+<!-- Don't change the above targets - SAs reference them. -->
+
 <ol>
     <li>Ensure you have installed the Compilers (<tt>comp.tgz</tt>) set
 	that came with your base system.
@@ -162,34 +167,42 @@ kernel</a>.
 <ENTRY>mclpool-limit What does <tt><b>mclpool limit reached: increase NMBCLUSTERS</b></tt> mean?
 This means the kernel has run out of space to map mbuf clusters.
 mbuf clusters are used by the network code to store packets and
-other network related data. To fix this you can either add 
+other network related data.
+<p>
+The default setting for NMBCLUSTERS is 1024 (256 in NetBSD 1.5 and earlier),
+so if you have this problem, try doubling the value until the error message
+disappears.  To display the current value of NMBCLUSTERS you can use sysctl(8)
+as follows:
+<blockquote><code>
+	# sysctl kern.mbuf.nmbclusters
+</code></blockquote>
+Alternatively, try
+<blockquote><code>
+	# echo 'print nmbclusters' | gdb -q /netbsd
+</code></blockquote>
+See also options(4) for more details on kernel configuration options.
+<p>
+To change the value, add
 <blockquote>
-	options NMBCLUSTERS=1024<br>
+	options NMBCLUSTERS=2048<br>
 </blockquote>
 to your <a href="#how_to_build_a_kernel">kernel configuration</a>, or patch the
 binary:
 <blockquote>
         # <strong>gdb --write /netbsd</strong><br>
-        (gdb) <strong>set nmbclusters=1024</strong><br> 
+        (gdb) <strong>set nmbclusters=2048</strong><br> 
         (gdb) <strong>quit</strong><br>
 </blockquote>
 Note that if you patch the binary only, you will need to reboot for the change
 to take effect.  If you're on a platform which supports it, you can set the
 value with:
 <blockquote>
-	# <strong>sysctl -w kern.mbuf.nmbclusters=1024</strong><br>
+	# <strong>sysctl -w kern.mbuf.nmbclusters=2048</strong><br>
 </blockquote>
 This will work, but will be lost on the next reboot.  Combining this,
 and patching the binary, would mean no need to build a new kernel or
 reboot.
 <p>
-The default setting for NMBCLUSTERS is 256, so if you have this problem,
-try with e.g. 1024. Busy server machines sometimes need even more.  The
-following will display the current value of NMBCLUSTERS:
-<blockquote>
-	# <strong>echo 'print nmbclusters' | gdb -q /netbsd</strong><br>
-</blockquote>
-See also options(4) for more details on kernel configuration options.
 
 <ENTRY>spl_not_lowered What does <tt><b>WARNING: SPL NOT LOWERED ON SYSCALL EXIT</b></tt> mean?
 This kernel message means that there is a bug in the kernel where a syscall did
@@ -205,6 +218,34 @@ of the trace command (as well as any other relevant information), since you
 should under no circumstances be getting this kernel message.
 <p>
 See also spl(9) for more information on spl functions.
+
+<ENTRY>stray-ir7 What does <tt><b>Stray interrupt on IRQ 7</b></tt> mean?
+    The "Stray interrupt on IRQ 7" kernel message means that the interrupt
+    controller reported an unmasked interrupt on IRQ 7, but no driver 
+    attached to that IRQ 'claimed' it.
+    <p>
+    There are two reasons this can happen:
+    <p>
+    <ol> 
+      <li>In anything other than a PC, it would almost always means that     
+        there is a driver attached to the IRQ (otherwise it would be
+        masked), but it is the wrong driver.
+        <p>
+      <li>In a PC, there is the more obscure issue of 'default IR7's.
+	That is, when a device asserts an IRQ, but the IRQ is
+	deasserted after the PIC latches the interrupt and before the CPU
+	acknowledges it, the PIC just flat out lies about which IRQ it
+	was.
+	<p>
+	There is a scheme for recognizing 'default IR7's, but it turns out
+	that it fails badly on some older systems, and in general it's
+	better to fix drivers to not generate them in the first place.  In
+	some cases it's difficult to completely prevent them when using
+	edge-triggered interrupts though.
+    </ol>
+    <p>
+    You should only get this kernel message running a kernel with the
+    DEBUG option defined.
 
 <ENTRY>why_msoft_float Why are kernels compiled with <tt><b>-msoft-float</b></tt>
 <p>
@@ -254,10 +295,22 @@ more memory!
 The first point to note is you should subscribe to the
 <a href="../../MailingLists/#current-users">current-users</a> mail
 list.  Tracking -current without reading current-users is akin to driving
-in the dark without any lights. You have been warned :).<p>
+in the dark without any lights. You have been warned :).
+<p>
 It is always worth downloading the latest
 <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</a>, compiling, installing and rerunning on your config
 file - config changes reasonably frequently between releases.
+<p>
+Sometimes, binaries and/or libraries need to be updated before you
+will be able to build -current on a release. In these situations, it
+may be simpler to install from a binary snapshot, and then build
+-current. Snapshots of -current for i386 (for example) can be found in
+<a
+href="ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/snapshot/">/pub/NetBSD/arch/i386/snapshot/</a>.
+The
+<CURRENTSRC>src/UPDATING
+file contains information about these important changes which you should
+be aware of when attempting to build -current, or a -current kernel.
 
 <ENTRY>debugging_a_kernel_crash_dump Debugging a kernel crash dump
 <ol>
@@ -406,8 +459,8 @@ usb driver:
 <ul>
 <li>Compile a kernel with <tt>USB_DEBUG</tt> and <tt>DDB</tt> defined.
 <li>Boot with <tt><b>-d</b></tt> to enter ddb(4).
-<li>In ddb set the variables usbdebug and uhcidebug to 5 ("<b>set
-usbdebug=5</b>" and "<b>set uhcidebug=5</b>")
+<li>In ddb set the variables usbdebug and uhcidebug to 5 ("<b>write
+usbdebug=5</b>" and "<b>write uhcidebug=5</b>")
 <li>Plug something in and <b><tt>continue</tt></b>.
 </ul>
 
@@ -433,7 +486,7 @@ This assumes the device is of a generic type which is already supported, but
 the device ID is not recognised. Adding a device that performs differently
 includes writing code.
 <ol>
-<li>Compile a kernel with options(4) <tt>PCMCIA_VERBOSE</tt>.
+<li>Compile a kernel with options(4) <tt>PCMCIAVERBOSE</tt>.
 <li>Check the boot messages - the card should be reported as
     '<tt>not configured</tt>'. Note the Manufacturer and product codes
     (in this case <tt><b>0x143</b></tt> and <tt><b>0x201</b></tt>):
@@ -483,6 +536,12 @@ memory.  How much faster depends on what you're doing, but you'll
 probably notice the difference.  <p>
 <p>
 
+See also:
+<a href="http://www.usenix.org/publications/library/proceedings/usenix2000/freenix/full_papers/silvers/silvers_html/">UBC: An Efficient Unified I/O and
+Memory Caching Subsystem for NetBSD</a>
+by Chuck Silvers.
+
+
 </LIST>
 
 <DOCLINK>
@@ -491,8 +550,8 @@ probably notice the difference.  <p>
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.51 2001/03/16 15:05:14 dent Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  $NetBSD: index.list,v 1.65 2002/12/30 21:59:17 keihan Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
