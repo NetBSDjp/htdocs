@@ -5,7 +5,7 @@
 
 ###########################################################################
 
-all: index.html update
+all: index.html
 
 index.html: index.list
 
