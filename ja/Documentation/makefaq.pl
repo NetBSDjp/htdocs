@@ -2,6 +2,7 @@
 #
 # $Id: makefaq.pl,v 1.9 1999/03/01 08:58:14 abs Exp $
 # Process *.faq files into indexed *.html files. (abs)
+# 日本語サポート(sakamoto)
 # Looks for these compulsary tags:
 #	<SECTION>Text		Introduces a new section (before first <ENTRY>)
 #	<ENTRY>tag Text		New entry, expanded to title and added to list
@@ -15,6 +16,7 @@
 # Continuation lines are understood (useful for the special tags)
 
 use strict;
+require("jcode.pl");
 $^W=1;
 my($verbose,$baselinks,$heading,$pathtodoc);
 
@@ -31,7 +33,7 @@ $baselinks='
 	<a href="$HOME/index.html">
 	<img src="$HOME/images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
       </td><td>
-	<a href="$HOME/index.html">Home Page</a>
+	<a href="$HOME/index.html">ホームページ</a>
       </td>
     </tr></table>
   </td><td>
@@ -41,7 +43,7 @@ $baselinks='
 	<img src="$HOME/images/NetBSD-banner.gif"
 	alt="NetBSD&nbsp;Documentation"></a>
       </td><td>
-	<a href="$DOCUMENTATION/index.html">Documentation top level</a>
+	<a href="$DOCUMENTATION/index.html">ドキュメントとFAQ</a>
       </td>
     </tr></table>
   </td>
@@ -53,7 +55,7 @@ $heading='
 <a href="$HOME/Misc/daemon-copy.html">
 <img align="center" src="$HOME/images/BSD-demon.gif" alt="BSD demon"></a>
 </td><td align=center>
-<h1>NetBSD Documentation:</h1>
+<h1>NetBSD ドキュメント:</h1>
 <h1>$TITLE</h1>
 </td></tr></table>
 <p>
@@ -66,6 +68,8 @@ $pathtodoc=$1;
 $heading   =~ s#\$HOME#$pathtodoc/..#g;
 $baselinks =~ s#\$HOME#$pathtodoc/..#g;
 $baselinks =~ s#\$DOCUMENTATION#$pathtodoc#g;
+$baselinks = &jcode'to('jis', $baselinks);
+$heading = &jcode'to('jis', $heading);
 
 &makefaq(@ARGV);
 exit;
