@@ -4,7 +4,7 @@
 <head>
 <!-- Copyright (c) 1994-2003
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.org">
 <link rel="shortcut icon" href="../../../favicon.ico" origlink="/favicon.ico" type="image/x-icon">
 <title>NetBSD Initialization and Services Control</title>
 </head>
@@ -44,7 +44,7 @@ NetBSD 1.5 以降における rc コンフィギュレーションの概要です。
 <ENTRY>a2 rc.d コンフィギュレーション
 
 <p>
-システムの rc ファイル群は、下記のとおり /etc 以下に配置されています:
+システムの rc ファイル群は、下記のとおり <code>/etc</code> 以下に配置されています:
 
 <pre>
 /etc/rc
@@ -62,9 +62,9 @@ NetBSD 1.5 以降における rc コンフィギュレーションの概要です。
 最初に、制御およびサポート用のスクリプトを見てみましょう:
 
 <ul>
-<li><code>/etc/rc</code> - このスクリプトが /etc/rc.d にあるスクリプト群を実行します
+<li><code>/etc/rc</code> - このスクリプトが <code>/etc/rc.d</code> にあるスクリプト群を実行します
 <li><code>/etc/rc.subr</code> - このスクリプトには rc スクリプト群が共通して使う関数が含まれます
-<li><code>/etc/shutdown</code> - このスクリプトは /etc/rc.d にあるスクリプト群を逆順に呼び出します
+<li><code>/etc/shutdown</code> - このスクリプトは <code>/etc/rc.d</code> にあるスクリプト群を逆順に呼び出します
 </ul>
 
 <p>
@@ -84,7 +84,7 @@ fi
 </pre>
 
 <p>
-/etc/defaults ディレクトリーには NetBSD のデフォルト設定が置かれており、これは書き換えてはいけません。 rc の話題の中では、意味を持つファイルは rc.conf だけで、これは NetBSD に附属するデフォルトの rc コンフィギュレーションです。デフォルト設定の変更は、 /etc/rc.conf を上書きすることでできます。たとえば、セキュアシェルデーモンを有効にしたければ次のようにします:
+<code>/etc/defaults</code> ディレクトリーには NetBSD のデフォルト設定が置かれており、これは書き換えてはいけません。 rc の話題の中では、意味を持つファイルは <code>/etc/rc.conf</code> だけで、これは NetBSD に附属するデフォルトの rc コンフィギュレーションです。デフォルト設定の変更は、 <code>rc.conf</code> を上書きすることでできます。たとえば、セキュアシェルデーモンを有効にしたければ次のようにします:
 
 <pre>
 # cd /etc; grep ssh defaults/rc.conf
@@ -104,13 +104,29 @@ sshd=NO                 sshd_flags=""
 <p>こうしてから、不要な部分を削ります。
 
 <p>
-最後になりましたが、 <code>/etc/rc.conf.d/</code> ディレクトリーは、
-サードパーティー製スクリプト用にも使えます。
+<code>/etc/rc.conf.d</code> ディレクトリーは <code>/etc/rc.conf<code> とほとんど同じ方法で使うことができます:
+
+<pre>
+# cd /etc; grep ^wscons defaults/rc.conf
+wscons=NO		wscons_flags=""		# setup wscons from wscons.conf
+# echo "wscons=YES" >> rc.conf.d/wscons
+</pre>
+
+<p>
+ただし、 <code>/etc/rc.conf.d</code> にあるスクリプトは <code>/etc/rc.d</code> にあるスクリプトより<b>後に</b> <code>rc.subr</code> によって読み込まれるため、興味深い可能性が考えられます。以下のような方法でベースシステムのコマンドを pkgsrc でインストールしたコマンドで置き換えることを考えてみましょう:
+
+<pre>
+echo 'command="/usr/pkg/bin/${name}"' > /etc/rc.conf.d/ntpd
+ln /etc/rc.conf.d/ntpd /etc/rc.conf.d/ntpdate
+</pre>
+
+<p>
+<code>/etc/rc.conf.d</code> スクリプトに対して <code>${name}</code> が使えることに注目してください。さらに、 <code>/etc/rc.d</code> スクリプトをすべて <code>/etc/rc.conf.d</code> にあるスクリプト群で上書きすることも可能ですが、そうするのであれば、ふつうに <code>/etc/rc.d</code> 自体を書き換えたほうがきれいでよりわかりやすいでしょう。
 
 <ENTRY>a3 rc.d スクリプト群
 
 <p>
-サービスを制御するスクリプト群は /etc/rc.d 以下にあります。以下は NetBSD 1.5 に含まれるすべての rc スクリプトです:
+サービスを制御するスクリプト群は <code>/etc/rc.d</code> 以下にあります。以下は NetBSD 1.5 に含まれるすべての rc スクリプトです:
 
 <table width="100%" border="0" cellpadding="5" cellspacing="5">
 <tr>
@@ -203,7 +219,7 @@ ypserv<br>
 
 
 <p>
-いったんサービスを有効にしたり、あるいは有効にしないように /etc/rc.conf で指定してあっても、コマンドラインから rc スクリプトを呼び出せば変更できます。たとえば管理者がセキュアシェルを動かす必要がある場合には、次のようにします:
+いったんサービスを有効にしたり、あるいは有効にしないように <code>/etc/rc.conf</code> で指定してあっても、コマンドラインから rc スクリプトを呼び出せば変更できます。たとえば管理者がセキュアシェルを動かす必要がある場合には、次のようにします:
 
 <pre>
 ash# /etc/rc.d/sshd start
@@ -299,10 +315,10 @@ rc スクリプト群には、以下に示すような行が含まれています:
 <hr>
 <address>
   <small>
-  (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
-       <a href="mailto:www@JP.NetBSD.ORG">日本語:
-       www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.list,v 1.16 2003/06/28 16:46:47 jschauma Exp $<br>
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@JP.NetBSD.org">日本語:
+       www@JP.NetBSD.org</a>)<br>
+  $NetBSD: index.list,v 1.20 2003/12/07 19:15:50 fredb Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
