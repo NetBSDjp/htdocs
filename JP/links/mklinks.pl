@@ -1,6 +1,6 @@
 #!/usr/pkg/bin/perl
 #
-# $Id: mklinks.pl,v 1.2 1999/02/22 08:46:51 sakamoto Exp $
+# $Id: mklinks.pl,v 1.3 1999/04/19 07:45:17 sakamoto Exp $
 #
 # <ITEM>
 # <TITLE>
@@ -17,7 +17,7 @@ $string =~ s/\n//g;
 
 &jcode'jis2euc(*string);
 
-$item = 0;
+$itemnum = 0;
 $itemf = 0;
 @P = split(/</, $string);
 
@@ -31,40 +31,21 @@ foreach $p (@P) {
 	check: {
 		if ($tag eq "item") {
 			if ($itemf) {
-				die "Invalid item start " . ($item + 1) . "\n";
+				die "Invalid item start "
+					. ($itemnum + 1) . "\n";
 			}
 			$itemf = !$itemf;
 			last check;
-		}
-
-		if ($tag eq "title") {
-			$item_title[$item] = $content;
-			last check;
-		}
-
-		if ($tag eq "url") {
-			$item_url[$item] = $content;
-			last check;
-		}
-
-		if ($tag eq "keyword") {
-			$item_keyword[$item] = $content;
-			last check;
-		}
-
-		if ($tag eq "description") {
-			$item_description[$item] = $content;
-			last check;
-		}
-
-		if ($tag eq "/item") {
+		} elsif ($tag eq "/item") {
 			if (!$itemf) {
-				die "Invalid item close $item\n";
+				die "Invalid item close $itemnum\n";
 			}
 			$itemf = !$itemf;
-			$item++;
+			$itemnum++;
 			last check;
 		}
+
+		$item{$itemnum.$tag} = $content;
 	}
 }
 
@@ -76,19 +57,16 @@ open(LIST_ARCH, '>arch.html') || die "Can't open arch.html $!";
 &makelist_by_arch(LIST_ARCH);
 close(LIST_ARCH);
 
-
-
-
 sub makelist_by_register {
 	local($FD) = @_;
 
 	&print_head($FD, "NetBSD-related LINKS (by registered)",
 		"<h1>NetBSD ´ØÏ¢¥ê¥ó¥¯(ÅÐÏ¿½ç)</h1>\n" .
 		"<hr>\n");
-	for ($i = 0; $i < $item; $i++) {
+	for ($i = 0; $i < $itemnum; $i++) {
 		&print_item($FD, $i,
-			$item_title[$i], $item_url[$i],
-			$item_keyword[$i], $item_description[$i]);
+			$item{$i.'title'}, $item{$i.'url'},
+			$item{$i.'keyword'}, $item{$i.'description'});
 	}
 	&print_tail($FD);
 }
@@ -120,8 +98,8 @@ sub makelist_by_arch {
 EOF
 	}
 
-	for ($i = 0; $i < $item; $i++) {
-		local(@k) = split(/,/, $item_keyword[$i]);
+	for ($i = 0; $i < $itemnum; $i++) {
+		local(@k) = split(/,/, $item{$i.'keyword'});
 		local($kw);
 
 		foreach $kw (@k) {
@@ -146,9 +124,9 @@ EOF
 		for ($num = 0; $num < $arch_num[$j]; $num++) {
 			$i = $arch_index{$j, $num};
 			&print_item($FD, $i,
-				$item_title[$i], $item_url[$i],
-				$item_keyword[$i],
-				$item_description[$i]);
+				$item{$i.'title'}, $item{$i.'url'},
+				$item{$i.'keyword'},
+				$item{$i.'description'});
 		}
 	}
 	&print_tail($FD);
