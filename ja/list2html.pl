@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.91 2003/12/16 03:50:16 jschauma Exp $
+# $NetBSD: list2html.pl,v 1.92 2004/02/28 04:41:22 grant Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
@@ -48,6 +48,7 @@
 #
 
 use strict;
+use File::Basename;
 use Getopt::Std;
 use Text::Wrap;
 $Text::Wrap::columns = 45;
@@ -67,7 +68,7 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.91 $';
+$version = '$Revision: 1.92 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -273,9 +274,20 @@ sub extras_generate
     my(%extras) = @_;
     my($pathtodoc, $pathtodev, $pathtoports, $pathtogal, $str, $home);
 
-    if ($0 !~ m#(.*)/[^/]+.pl#)
-	{ &fail("Unable to extract path from '$0'"); }
-    $home = "$1";
+    $home = $0;
+    # extract the relative pathname from our name, no trailing /
+    if ($home =~ m#^/#) {
+	$home = dirname($home);
+	if ($home =~ m#.*/(\.\.?/?.*)/?$#) {
+	    $home = $1;
+	}
+    } else {
+	if ($home !~ m#(.*)/[^/]+.pl#) {
+	    &fail("Unable to extract path from '$0'");
+	}
+    	$home = $1;
+    }
+
     $pathtodoc = "$home/Documentation/";
     $pathtodev = "$home/developers/";
     $pathtoports = "$home/Ports/";
