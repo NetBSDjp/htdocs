@@ -1,6 +1,6 @@
 <html>
 <head>
-<!-- Copyright (c) 1998, 1999
+<!-- Copyright (c) 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
 <title>Kernel programming FAQ</title>
@@ -15,8 +15,9 @@ should become more useful.
 <hr>
 <h2>Other related links</h2>
 <ul>
-<li> bus_dma(9) - NetBSD's machine independent DMA framework
-	(<a href="bus_dma.ps">postscript()</a>)
+<li> bus_dma(9) - NetBSD's bus and machine independent DMA framework, 
+        described in it's own <a href="bus_dma.ps">paper</a> (120k, postscript)
+<li> bus_space(9) - NetBSD's bus space manipulation interface
 <li><a href="converting-ethernet-drivers.html">
 	Converting ancient BSD Ethernet drivers to NetBSD-1.2D and later</a>
 <li><a href="porting-freebsd-net.html">
@@ -29,7 +30,12 @@ should become more useful.
 
 <ENTRY>knf What is KNF
 KNF stands for "Kernel Normal Form" - it's a C coding style documented in
-<a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/share/misc/style">/usr/share/misc/style</a>.
+/usr/share/misc/style, which is included in the source tree as
+<CURRENTSRC>/usr/src/share/misc/style.
+
+<ENTRY>packed-attribute Using the `packed' attribute
+Always use the `packed' attribute in structures which describe
+wire protocol data formats.
 
 <ENTRY>printf Using printf() for debugging
 Probably the simplest way of generating debugging information from a kernel
@@ -70,36 +76,127 @@ Most drivers are split between bus specific attach code, and a machine
 independent core. As an example, the driver for the PCI lance ethernet chip
 has entries in the following files:
 <ul>
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/pci/files.pci">/usr/src/sys/dev/pci/files.pci</a> - attach information (look for 'le at pci').
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/pci/if_le_pci.c">/usr/src/sys/dev/pci/if_le_pci.c</a> - PCI bus attach code for the driver.
+<li><CURRENTSRC>/sys/dev/pci/files.pci
+	- attach information (look for 'le at pci').
+<li><CURRENTSRC>/sys/dev/pci/if_le_pci.c
+	- PCI bus attach code for the driver.
 <p>
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/conf/files">/usr/src/sys/conf/files</a> - MI core attach information (look for 'le:').
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/am7990.c">/usr/src/sys/dev/ic/am7990.c</a> - MI driver 24bit access code.
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/am79900.c">/usr/src/sys/dev/ic/am79900.c</a> - MI driver 32bit access code.
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/lance.c">/usr/src/sys/dev/ic/lance.c</a> - MI core driver code.
+<li><CURRENTSRC>/sys/conf/files
+	- MI core attach information (look for 'le:').
+<li><CURRENTSRC>/sys/dev/ic/am7990.c
+	- MI driver 24bit access code.
+<li><CURRENTSRC>/sys/dev/ic/am79900.c
+	- MI driver 32bit access code.
+<li><CURRENTSRC>/sys/dev/ic/lance.c
+	- MI core driver code.
 </ul>
 
 <ENTRY>adding_a_system_call Adding a system call
 Add an entry in <tt>syscalls.master</tt>, and add the syscall stub to the
-appropriate place in <tt> <a 
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/lib/libc/sys/Makefile.inc"> 
-/usr/src/lib/libc/sys/Makefile.inc</a></tt>.
+appropriate place in <tt>
+<CURRENTSRC>/usr/src/lib/libc/sys/Makefile.inc
+</tt>.
+
+<ENTRY>mmap_in_pseudo-device How to implement mmap in a pseudo-device
+Your device is most likely a character device, so you will be using the device
+pager (the VM system hides all of this from you, don't worry).
+<p>
+The first thing you need to do is pick some arbitrary offsets for your mmap
+interface.  Something like "mmap offset 0-M gives object A, N-O gives object
+B", etc.
+<p>
+After that, your mmap routine would look something like this:
+<p>
+<pre>
+int
+foommap(dev, off, prot)
+        dev_t dev;
+        int off, prot;
+{
+
+        if (off & PAGE_MASK)
+                panic("foommap");
+
+        if ((u_int)off &gt;= FOO_REGION1_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION1_MMAP_OFFSET + FOO_REGION1_SIZE))
+                return (atop(FOO_REGION1_ADDR + ((u_int)off -
+                    FOO_REGION1_MMAP_OFFSET)));
+
+        if ((u_int)off &gt;= FOO_REGION2_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION2_MMAP_OFFSET + FOO_REGION2_SIZE))
+                return (atop(FOO_REGION1_ADDR + ((u_int)off -
+                    FOO_REGION2_MMAP_OFFSET)));
+
+        /* Page not found. */
+        return (-1);
+}
+</pre>
+<p>
+Now, this is slightly more complicated by the fact that you are going to be
+mmap'ing what are simply kernel memory objects (it is a pseudo-device after
+all).
+<p>
+In order to make this work, you're going to want to make sure you allocate the
+memory objects to be mmap'd on page-aligned boundaries.  If you are allocating
+something &gt;= PAGE_SIZE in size, this is guaranteed.  Otherwise, you are going
+to have to use uvm_km_alloc(), and round your allocation size up to page size.
+<p>
+Then it would look a bit more like this:
+<p>
+<pre>
+int
+foommap(dev, off, prot)
+        dev_t dev;
+        int off, prot;
+{
+        paddr_t pa;
+
+        if (off & PAGE_MASK)
+                panic("foommap: offset not page aligned");
+
+        if ((u_int)off &gt;= FOO_REGION1_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION1_MMAP_OFFSET + FOO_REGION1_SIZE)) {
+                if ((vaddr_t)foo_object1 & PAGE_MASK)
+                        panic("foommap: foo_object1 not page aligned");
+                if (pmap_extract(pmap_kernel(), foo_object1 +
+                    (u_int)off - FOO_REGION1_MMAP_OFFSET, &pa) == FALSE)
+                        panic("foommap: foo_object1 page not mapped");
+                return (atop(pa));
+        }
+
+        if ((u_int)off &gt;= FOO_REGION2_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION2_MMAP_OFFSET + FOO_REGION2_SIZE)) {
+                if ((vaddr_t)foo_object2 & PAGE_MASK)
+                        panic("foommap: foo_object2 not page aligned");
+                if (pmap_extract(pmap_kernel(), foo_object2 +
+                    (u_int)off - FOO_REGION2_MMAP_OFFSET, &pa) == FALSE)
+                        panic("foommap: foo_object2 page not mapped");
+                return (atop(pa));
+        }
+
+        /* Page not found. */
+        return (-1);
+}
+</pre>
 
 <ENTRY>accessing_a_kernel_structure_from_userland Accessing a kernel structure from userland
-The canonical example for this is:  <tt><a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/usr.bin/vmstat/dkstats.c">/usr/src/usr.bin/vmstat/dkstats.c</a></tt>, which reads disk statistics.
+The canonical example for this is:  <tt>
+<CURRENTSRC>/usr/src/usr.bin/vmstat/dkstats.c
+</tt>, which reads disk statistics.
 
-<ENDLIST>
+</LIST>
 
 <a href="">Back to <em>NetBSD Documentation: Kernel</em></a>
+<hr>
 
-<BASELINKS>
+<DOCLINK>
 
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: programming.list,v 1.8 1999/11/24 00:44:00 abs Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
+  $NetBSD: programming.list,v 1.14 2000/08/07 14:27:10 hubertf Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
 </address>
 
