@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.109 2002/03/02 22:18:41 scw Exp $
+#	$NetBSD: index.m4,v 1.110 2002/03/13 04:41:35 simonb Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -327,6 +327,24 @@ PORTLIST(port-dreamcast)
   日立 Super-H (SH3/4) チップベースのすべてのポートに関する質問のための
   <a href="#port-sh3">port-sh3</a> リストもあります。
 ENDLIST
+PORTLIST(port-evbarm)
+  ARM ベースの評価ボード上の NetBSD (NetBSD/evbarm)
+  固有の事項の議論用です。
+  ARM ベースのすべてのポートに関する質問のための
+  <a href="#port-arm">port-arm</a> リストもあります。
+ENDLIST
+PORTLIST(port-evbmips)
+  MIPS ベースの CPU を持つ評価ボード上の NetBSD (NetBSD/evbmips)
+  固有の事項の議論用です。現在のところ MIPS Malta がサポートされています。
+  MIPS ベースのすべてのポートに関する質問のための
+  <a href="#port-mips">port-mips</a> リストもあります。
+ENDLIST
+PORTLIST(port-evbsh3)
+  日立 SuperH(TM) SH3/4 評価ボード上の NetBSD (NetBSD/evbsh3)
+  固有の事項の議論用です。
+  sh3 ベースのすべてのポートに関する質問のための
+  <a href="#port-sh3">port-sh3</a> リストもあります。
+ENDLIST
 PORTLIST(port-hp300)
   Hewlett-Packard の 9000/300 および 9000/400 シリーズのマシン上の NetBSD
   (NetBSD/hp300) 固有の事項の議論用です。
@@ -402,10 +420,13 @@ LIST(port-mips)
   <a href="#port-algor">port-algor</a>、
   <a href="#port-arc">port-arc</a>、
   <a href="#port-cobalt">port-cobalt</a>、
+  <a href="#port-evbmips">port-evbmips</a>、
   <a href="#port-hpcmips">port-hpcmips</a>、
   <a href="#port-mipsco">port-mipsco</a>、
   <a href="#port-newsmips">port-newsmips</a>、
+  <a href="#port-playstation2">port-playstation2</a>、
   <a href="#port-pmax">port-pmax</a>、
+  <a href="#port-sbmips">port-sbmips</a>、
   <a href="#port-sgimips">port-sgimips</a>。
 ENDLIST
 PORTLIST(port-mipsco)
@@ -457,6 +478,8 @@ ENDLIST
 PORTLIST(port-playstation2)
   Sony Playstation 2 マシン上の NetBSD (NetBSD/playstation2)
   固有の事項の議論用です。
+  MIPS ベースのすべてのポートに関する質問のための
+  <a href="#port-mips">port-mips</a> リストもあります。
 ENDLIST
 PORTLIST(port-pmax)
   Digital の MIPS ベースの DECstation および DECsystem マシン上の NetBSD
@@ -489,6 +512,12 @@ PORTLIST(port-sandpoint)
   プラットフォーム上の NetBSD (NetBSD/sandpoint) 固有の事項の議論用です。
   PowerPC ベースのすべてのポートに関する質問のための
   <a href="#port-powerpc">port-powerpc</a> リストもあります。
+ENDLIST
+PORTLIST(port-sbmips)
+  Broadcom の SiByte Broadband Processor ベースのプラットフォーム上の
+  NetBSD (NetBSD/sbmips) 固有の事項の議論用です。
+  MIPS ベースのすべてのポートに関する質問のための
+  <a href="#port-mips">port-mips</a> リストもあります。
 ENDLIST
 PORTLIST(port-sgimips)
   SGI の MIPS プラットフォーム上の NetBSD (NetBSD/sgimips)
@@ -598,7 +627,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.109 2002/03/02 22:18:41 scw Exp $<br>
+  $NetBSD: index.m4,v 1.110 2002/03/13 04:41:35 simonb Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
