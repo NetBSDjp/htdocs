@@ -1,7 +1,7 @@
-#	$NetBSD: Makefile,v 1.1 1999/06/17 19:57:44 danw Exp $
+#	$NetBSD: Makefile,v 1.4 2001/05/21 01:43:16 mbw Exp $
 #	Process .list files into .html files
 
-all:	faq.html
+all:	faq.html x11.html
 
 .SUFFIXES:	.list .html
 

@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD/macppc X11 FAQ</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1>NetBSD/macppc X11 FAQ</h1>
+
+This page describes the various issues related to the X Window System on
+NetBSD/macppc systems.
+
+<LIST>
+
+<h2>See also the following related information:</h2>
+<ul>
+<li>NetBSD Documentation: <a href="../../Documentation/x/">X Window System</a>
+<li><a href="http://www.xfree86.org">The Xfree86 Project Home Page</a>
+</ul>
+
+<SECTION>General Questions
+
+<ENTRY>which-x Which X Window System package should I use?
+Xmacppc or XFree86?  There are two complete X Window System packages
+available for the macppc platform.  
+<p>
+The <a href="#xmacppc-support">Xmacppc</a> package uses the raw
+device that is set up by Open Firmware.  It is very limited in capability,
+but runs on almost all supported macppc models.  It cannot change the
+resolution of your screen or use more than 8 bpp color depth.  It does not
+have any acceleration of any sort.
+<p>
+The <a href="#xfree-support">XFree86</a> package uses
+its own knowledge about the video card's chipset, but there are no
+drivers for the older macppc models which used Apple-developed video
+chipsets (as opposed to newer systems which use video cards from ATI or
+NVIDIA).  Thus, XFree86 supports a small subset of all supported macppc
+models, but it is a much more capable X server -- it handles resolution
+switching and more than 8 bpp color depth, in addition to some
+acceleration.
+
+<ENTRY>delete How come the delete key produces a tilde (<tt>~</tt>) instead of deleting?
+Actually, it produces the proper VT100 delete key, not the delete escape
+sequence (which is what just about every other VT100 emulator does).
+<p>
+You will need to run the following command each time you start the X
+server:
+<pre># <b>xmodmap -e "keycode 59 = BackSpace"</b></pre>
+Of course, you can place this command into your <tt>xdm/Xsetup_0</tt> file
+or in each users' <tt>.xinitrc</tt>.
+
+<p>
+To get only xterm to recognize this, insert the following line into one of
+the default setting locations:
+<pre>XTerm*VT100*deleteIsDEL: true</pre>
+
+<p>
+While the most universal location would be
+<tt>/usr/X11R6/lib/X11/app-defaults/XTerm</tt>, this might cause problems
+if you or one of your users runs an xterm on a remote X server without
+the correct VT100 delete key.  Less intrusively, you could put it into
+the <tt>.Xdefaults</tt> file in the home directory of each user that will
+be using X from the console.
+
+<ENTRY>root-console <tt>Cannot open kbd/mouse : no such file or directory</tt>
+This happens when a non-root user tries to run <tt>startx</tt> or
+<tt>xinit</tt>.  The default behavior of NetBSD/macppc is for the console
+devices to belong only to root.  We suggest you run something like xdm,
+which will change the permissions when a user sucessfully logs in.
+<p>
+Alternatively, you can use ttyaction(5) which changes the permissions when 
+the user logs in.  For example, create <tt>/etc/ttyaction</tt> with the 
+following contents:
+<pre>console * /usr/sbin/chown ${USER} /dev/wskbd0 /dev/wsmouse0
+ttyE0   * /usr/sbin/chown ${USER} /dev/wskbd0 /dev/wsmouse0</pre>
+
+
+<ENTRY>mouse-buttons How can I emulate a 3-button mouse with a 1-button mouse in X?
+
+At the moment, you can only set up keys on your keyboard to be mouse 
+keys.  We suggest trying to find a cheap 3 button mouse, as most ADB
+and USB mice are supported.
+<p>
+You will be using xmodmap(1)
+to remap keys on your keyboard to mouse buttons.
+Create an <tt>.xmodmaprc</tt> file in each users' home directory, and have
+their <tt>.xinitrc</tt> run `<tt>xmodmap .xmodmaprc</tt>'. The contents of
+the <tt>.xmodmaprc</tt> will specify which key enables/disables the keyboard
+pointer buttons, and which keys correspond to which mouse buttons.  For
+example, on an Apple Extended Keyboard II, I use:
+<pre>keycode  79 = Pointer_EnableKeys
+keycode 113 = Pointer_Button1
+keycode 115 = Pointer_Button2
+keycode 121 = Pointer_Button3</pre>
+where keycode 79 is the `<tt>Num Lock</tt>' key (which enables/disables
+mouse keys), and 113, 115, and 121 correspond to F13, F14, and F15.
+<p>
+On my PowerBook (FireWire), I use F8 (108) to enable and F10 (117), F11
+(111), and F12 (119) for the mouse keys.
+<p>
+To figure out what keys correspond to which keycodes, use the 
+xev(1)
+command.  You may also want to put your keymap for the <a
+href="#delete">delete key</a> into your <tt>.xmodmaprc</tt> as well.
+
+
+<SECTION>XFree86 Questions
+
+<ENTRY>xfree-support Which models can run XFree86?
+Only models that have supported video cards with appropriate Open Firmware
+initialization.  In general, this means only recent models (i.e. Open
+Firmware 3) or a supported video card (such as an ATI Rage 128).
+<p>
+To install Xfree86, you will need to:
+<ol>
+<li>download the pre-compiled XFree86 distribution:<br>
+  <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/X-4.0.1-1.5/">
+  ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/X-4.0.1-1.5/</a>
+<li>remove your existing X WIndow System package in <tt>/usr/X11R6</tt>
+  and extract the XFree86 distribution
+<li>Create an <a href="#xfconfig"><tt>/etc/X11/XF86Config</tt></a> file
+  which describes your hardware and settings
+<li><a href="http://www.netbsd.org/Documentation/kernel/index.html#how_to_build_a_kernel">
+Compile and install a kernel</a> with `<tt>options INSECURE</tt>'.
+</ol>
+
+<ENTRY>xfconfig How do I create an XF86Config file?
+Coming soon.
+
+<ENTRY>insecure <tt>Fatal server error: ppcPciInit: /dev/kmem</tt>
+Unfortunately, at present, the XFree86 X server requires direct access to
+<tt>/dev/kmem</tt> which is typically something you only want root
+programs to have access to.  By doing the following, you are opening up a
+security hole (albeit a small one).
+<p>
+You will need to <a
+href="http://www.netbsd.org/Documentation/kernel/index.html#how_to_build_a_kernel">
+compile a new kernel</a> with `<tt>options INSECURE</tt>', as
+this is not enabled in the default GENERIC kernel shipped with
+distributions of NetBSD.
+
+<ENTRY>xkb My keymap is all screwed up.
+You may need to create (as root) the following directory for XFree86 to store
+keyboard mapping information:
+<pre>mkdir -p /var/db/xkb;chmod 755 /var/db/xkb</pre>
+
+<SECTION>Xmacppc Questions
+
+<ENTRY>xmacppc-support Which models can run Xmacppc?
+Every model that can boot with console support and models with supported
+video cards (that have proper Open Firmware initialization code).  Models
+which require you to use a serial console can not run any X servers.
+<p>
+While it supports almost every NetBSD/macppc model, the downside is that
+the color depth is limited to 8 bpp, there is no way to change screen
+resolution, and there is no graphics acceleration.
+<p>
+This is the standard X server which is distributed with NetBSD 1.5.x.
+
+<ENTRY>changing-resolution How do I change the resolution or the number of colors?
+You can't do this from within NetBSD.  These settings need to be changed
+in Open Firmware.  Also, NetBSD/macppc does not yet support color depths
+of more than 8 bpp.
+<p>
+Older machines (7300 - 8600) cannot change resolutions from within
+OF.  They are fixed to 640x480 at 67 Hz (after applying the <a
+href="SystemDisk-tutorial/of105patch.html">patch</a>).  Without this
+patch, the frequency is undetermined (usually 60 Hz or 120 Hz, but could  
+be just about anything).
+<p>
+<!-- On newer machines OF &gt;= 2.0, you can type (at the OF prompt):
+(pre)0 &gt; (b)dev screen(/b)
+0 &gt; (b)show-modes(/b)
+0 &gt; (b)mode#(/b)
+1 &gt; (b).(/b)(/pre)
+(p)
+This will list the resolutions available on your system.  If you set your
+system to one of these resolutions from within MacOS, then Open FIrmware
+should keep that setting. -->
+
+On newer machines, you need to set the resolution you want from within
+MacOS.  Open Firmware should then keep that setting.
+<p>
+Chris Tribo reports that his XClaimVR 64 card ignores the MacOS monitor
+setting and always comes up at the same resolution.
+
+
+<!-- ======================================== -->
+</LIST>
+
+<a href="./">Up to <em>NetBSD/macppc Port Page</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: x11.list,v 1.6 2001/09/13 22:04:19 tv Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
