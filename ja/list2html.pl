@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.65 2001/04/09 00:11:59 dent Exp $
+# $NetBSD: list2html.pl,v 1.66 2001/06/06 22:49:38 kim Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -53,13 +53,14 @@ my($version, %opt, %pkgname);
 $months_previous = 9;	# Previous months to display for DATE entries
 $list_date_links = 6;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.65 $';
+$version = '$Revision: 1.66 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
-if (!&getopts('a:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
+if (!&getopts('a:c:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
     {
     print "list2html.pl [opts] infile outfile
 [opts]	-a xxx	Define 'arch=xxx' when linking to manpages
+	-c xxx	Define 'collection=xxx' when linking to manpages
 	-m xxx	Set months to display for <DATE> (default $months_previous)
 	-h	This help.
 	-V	Display version and exit ($version - David Brownlee/abs)
@@ -603,11 +604,10 @@ sub sub_external_links
     # 
     $_ = $text; # Output text include match string, so handle in sections
     $text = '';
-    while ( m#([a-zA-Z_][-\w.+]*[\w+])\((\d)(|\.(\w+))\)# )
+    while ( m#([a-zA-Z_][-\w.+]*[\w+])\((\d)(?:\.(\w+))?(?:/([-\w]+))?\)# )
 	{
-	my($page, $section, $arch, $link);
-
-	($page, $section, $arch) = ($1, $2, $4);
+	my($page, $section, $arch, $collection) = ($1, $2, $3, $4);
+	my($link);
 
 	$link = 'http://www.tac.eu.org/cgi-bin/man-cgi?';
 
@@ -617,6 +617,11 @@ sub sub_external_links
 	    { $link .= ".$arch"; }
 	elsif ($opt{'a'})
 	    { $link .= ".$opt{'a'}"; }
+
+	if (defined($collection))
+	    { $link .= "+$collection"; }
+	elsif ($opt{'c'})
+	    { $link .= "+$opt{'c'}"; }
 
 	$text .= $` . "<a href=\"$link\">$page($section)</a>";
 	$_ = $';
