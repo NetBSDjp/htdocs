@@ -1,0 +1,325 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>Setting up the bootpd server, Diskless NetBSD HOW-TO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+Previous |
+<a href="tftpd.html">Next</a> |
+<a href="">Table of Contents</a>
+
+<hr>
+
+<h1>Setting up the <tt>bootpd</tt> server, Diskless NetBSD HOW-TO</h1>
+
+The Internet Bootstrap Protocol is used by the boot ROM in some
+workstations to request IP addresses and boot loader filenames.  
+<tt>bootpd</tt> can run as an inetd service, or in standalone mode (i.e. 
+launched from <tt>/etc/rc.local</tt> or equivalent).  This page only
+covers how to set it up as an inetd service.
+<p>
+
+Many DHCP servers will handle BOOTP requests.  If you find your bootpd
+is causing trouble, try following the directions on the <a
+href="dhcpd.html">dhcpd</a> page to set up a dhcp daemon.
+<p>
+
+Many <tt>bootp</tt> implementations come with a test utility (such as 
+<tt>bootptest</tt> or <tt>bootpquery</tt>) which will
+query a bootp server and print its responses.  If you're having troubles,
+try using one of these programs from another unix machine (you'll have to
+change the client ethernet address and IP address in the 
+<tt>/etc/bootptab</tt> file).
+<p>
+
+The <tt>/etc/bootptab</tt> file has a standard format across all platforms.
+There is one entry per client.
+Create it with (or add to it) the following entry (replace <tt>boot.netbsd</tt>
+with the appropriate file for your platform):
+<pre>#/etc/bootptab
+client.test.net:\
+        :ht=ether:\
+        :ha=CCCCCCCCCCCC:\
+        :sm=255.255.255.0:\
+        :lg=192.168.1.5:\
+        :ip=192.168.1.10:\
+        :hn:\
+        :bf=[/tftpboot/]boot.netbsd:\   # see note below
+	:bs=auto:\
+        :rp=/export/client/root/:\
+        :vm=auto:                       # see note below for next hardware
+        :vm=rfc1048:                    # see note below for alpha hardware
+</pre>
+<p>
+
+Note that some tftp daemons do not run chroot'ed, and you will need to
+list the complete path to the boot file.  This is something you should
+test with a command-line tftp client to save yourself from much
+frustration later.
+<p>
+
+Note that the <tt>vm=auto</tt> line is necessary for NeXT clients, as they
+require this "vendor magic" tag be set to "auto".
+<p>
+
+Note that alphas with SRM 7.0 require the "vendor magic" tag to be set to 
+"rfc1048".
+<p>
+
+Setting up bootpd, <a href="#netbsd">NetBSD</a><br>
+Setting up bootpd, <a href="#openbsd">OpenBSD</a><br>
+Setting up bootpd, <a href="#linux">Linux</a><br>
+Setting up bootpd, <a href="#sunos">SunOS</a><br>
+Setting up bootpd, <a href="#solaris">Solaris</a><br>
+Setting up bootpd, <a href="#newsos">NEWS-OS</a><br>
+Setting up bootpd, <a href="#nextstep">NEXTSTEP</a> (couldn't get it to work)<br>
+Setting up bootpd, <a href="#hpux">HP-UX</a><br>
+<p>
+
+[<em>If you have details for any other platform, <a
+href="../../../Misc/feedback.html">please let us know</a></em>]
+<p>
+
+If your OS isn't listed here, you can try compiling <tt>bootpd</tt> from
+the source:
+<a href="ftp://ftp.uni-duisburg.de/Unix/networking/bootp-DD2.4.3.tar.gz">
+ <tt>bootp-DD2.4.3.tar.gz</tt></a>.  Also, the ISC <a
+href="dhcpd.html#isc"><tt>dhcpd</tt></a> compiles on many platforms and
+will serve <tt>bootp</tt> clients.
+<p>
+
+<hr>
+
+<h3><a name="netbsd">NetBSD</a> and <a name="openbsd">OpenBSD</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the # from the following line:
+<pre>bootps          dgram   udp     wait    root    /usr/sbin/bootpd        bootpd</pre>
+<p>
+
+<li><tt># <b>ps -aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+Continue on to setting up <a href="tftpd.html"><tt>tftpd</tt></a>.
+</dd></dl>
+
+<hr>
+
+<h3><a name="linux">Linux</a></h3>
+<dl><dt><dd>
+Linux may have <tt>/usr/sbin/in.bootpd</tt> or <tt>/usr/sbin/bootpd</tt>.
+Check this, as it changes what you need to put into your 
+<tt>/etc/inetd.conf</tt>.
+<p>
+
+<ol>
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the # from the following line:
+<pre>bootps dgram   udp     wait    root    /usr/sbin/bootpd        bootpd</pre>
+<p>
+
+<li><tt># <b>ps aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+Continue on to setting up <a href="tftpd.html"><tt>tftpd</tt></a>.
+</dd></dl>
+
+<hr>
+
+<h3><a name="sunos">SunOS</a></h3>
+<dl><dt><dd>
+For SunOS, you'll need to compile <tt>bootpd</tt> or <tt><a
+href="dhcpd.html">dhcpd</a></tt> from sources.
+<p>
+
+<ol>
+<li>Download and extract 
+  <a href="ftp://ftp.uni-duisburg.de/Unix/networking/bootp-DD2.4.3.tar.gz">
+  <tt>bootp-DD2.4.3.tar.gz</tt></a>
+<p>
+
+<li><tt># <b>make sunos4</b></tt>
+<p>
+
+<li><tt># <b>make install</b></tt>
+<p>
+
+<li>Add the following two lines to <tt>/etc/services</tt>:
+<pre>        bootps          67/udp          bootp           # BOOTP Server
+        bootpc          68/udp                          # BOOTP Client</pre>
+<p>
+
+<li>Add the following line to your <tt>/etc/inetd.conf</tt>:
+<pre>bootps dgram udp wait root /usr/etc/bootpd bootpd -i</pre>
+<p>
+
+<li><tt># <b>ps aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+Continue on to setting up <a href="tftpd.html"><tt>tftpd</tt></a>.
+</dd></dl>
+
+<hr>
+
+<h3><a name="solaris">Solaris</a></h3>
+<dl><dt><dd>
+Solaris 2.6 and later have a native <a href="dhcpd.html"><tt>dhcpd</tt></a>.
+For earlier versions, you'll need to compile <tt>bootpd</tt> or
+<tt>dhcpd</tt> from sources.
+<p>
+
+<ol>
+<li>Download and extract 
+  <a href="ftp://ftp.uni-duisburg.de/Unix/networking/bootp-DD2.4.3.tar.gz">
+  <tt>bootp-DD2.4.3.tar.gz</tt></a>
+<p>
+
+<li><tt># <b>make sunos5</b></tt>
+<p>
+
+<li><tt># <b>make install</b></tt>
+<p>
+
+<li>Add the following two lines to <tt>/etc/services</tt>:
+<pre>        bootps          67/udp          bootp           # BOOTP Server
+        bootpc          68/udp                          # BOOTP Client</pre>
+<p>
+
+<li>Add the following line to your <tt>/etc/inetd.conf</tt>:
+<pre>bootps dgram udp wait root /usr/etc/bootpd bootpd -i</pre>
+<p>
+
+<li><tt># <b>ps -ef | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+Continue on to setting up <a href="tftpd.html"><tt>tftpd</tt></a>.
+</dd></dl>
+
+<hr>
+
+<h3><a name="newsos">NEWS-OS</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the # from the line
+   beginning with <tt>bootps</tt>.  The path to <tt>bootpd</tt> is 
+   <tt>/usr/etc/bootpd</tt>
+<p>
+
+<li><tt># <b>ps -aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+Continue on to setting up <a href="tftpd.html"><tt>tftpd</tt></a>.
+</dd></dl>
+
+<hr>
+
+<h3><a name="nextstep">NEXTSTEP</a></h3>
+<dl><dt><dd>
+NEXTSTEP uses a non-standard <a
+href="nextstep.bootptab"><tt>bootptab</tt></a> and runs the
+<tt>bootpd</tt> standalone.  We tried briefly and couldn't get it to work.  
+Please send us feedback and let us know how to set this up properly.
+<p>
+
+Note, there are pre-compiled versions of the ISC <a
+href="dhcpd.html">dhcpd</a> which should work for bootp clients.  See the
+<a href="http://www.peanuts.org/peanuts/NEXTSTEP/unix/connectivity/system/">
+Peanuts</a> archive.
+<p>
+
+<ol>
+<li><tt># <b>ps -aux | grep bootpd</b></tt><br>
+   If it's running, <tt>kill -HUP</tt> that process to force it to reread
+   <tt>/etc/bootptab</tt>.<br>
+   If it's not running, then you need to run it:<br>
+   <tt># <b>/usr/etc/bootpd</b></tt>
+</ol>
+<p>
+
+Back to the <a href="bootpd.html">top</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="hpux">HP-UX</a></h3>
+<dl><dt><dd>
+The native <tt>bootpd</tt> in HP-UX 9 and earlier doesn't fully support
+NetBSD clients, as it doesn't
+support the <tt>rp</tt> tag which sets the root NFS path.  I also couldn't get
+the <tt>bootpd</tt> or <tt>dhcpd</tt> sources to compile properly under
+HP-UX 9.
+<p>
+
+HP-UX 10 comes with a decent bootp server.
+<p>
+
+<ol>
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the # from the following line:
+<pre>bootps      dgram  udp wait   root /usr/lbin/bootpd      bootpd</pre>
+<p>
+
+<li><tt># <b>ps -ef | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+Continue on to setting up <a href="tftpd.html"><tt>tftpd</tt></a>.
+</dd></dl>
+
+<hr>
+
+Previous |
+<a href="tftpd.html">Next</a> |
+<a href="">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: bootpd.html,v 1.12 2000/10/20 05:50:22 dent Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>

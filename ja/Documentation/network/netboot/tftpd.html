@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>
+Setting up the tftpd server, Diskless NetBSD HOW-TO
+</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+Previous |
+<a href="nfs.html">Next</a> |
+<a href="">Table of Contents</a>
+
+<hr>
+
+<h1>Setting up the <tt>tftpd</tt> server, Diskless NetBSD HOW-TO</h1>
+
+TFTP (or Trivial File Transfer Protocol) is used by the boot rom in several
+vendors' machines to download the boot loader and/or the kernel.
+<p>
+
+This service runs over TCP/IP, so the client must first obtain an IP address,
+typically via <a href="rarp.html"><tt>rarp</tt></a>, 
+<a href="bootpd.html"><tt>bootp</tt></a>, or 
+<a href="../dhcp.html"><tt>dhcp</tt></a>.
+<p>
+
+First, you need to make sure that you haven't denied any host access via
+TCP wrappers.  Look in <tt>/etc/hosts.deny</tt> and
+<tt>/etc/hosts.allow</tt> for tftp entries.  If you're using these
+files to restrict tftp access, then you need to either comment out the
+tftp entry in <tt>hosts.deny</tt> or add an entry for your client in
+<tt>hosts.allow</tt>
+<p>
+
+Next, you should copy all of the files necessary for your architecture
+to <tt>/tftpboot</tt>, as specified in the client architecture-specific 
+introduction.  For example, for a <a href="intro.sun.html">sparc</a>
+client with IP address 192.168.1.10, you'd run:
+<pre># <b>mkdir -p /tftpboot</b>
+# <b>cp /export/client/root/usr/mdec/boot /tftpboot/C0A8010A.SUN4C</b></pre>
+<p>
+
+Note, some tftp daemons do not support chroot'ing into <tt>/tftpboot</tt>,
+and you may need to specify in <a href="bootparams.html">bootparams</a>,
+<a href="bootpd.html">bootpd</a>, or <a href="dhcpd.html">dhcpd</a> the
+entire path to the bootloader.  This is something you should test using
+the <tt>tftp</tt> client before getting frustrated that netbooting doesn't
+work.
+<p>
+If all else fails, you can set your directories up such that a request for
+<tt>/tftpboot/C0A8010A.SUN4C</tt> works on a chroot'ed <tt>tftpd</tt>:
+<pre># <b>cd /tftpboot</b>
+# <b>ln -s . tftpboot</b></pre>
+<p>
+Setting up tftpd, <a href="#netbsd">NetBSD</a><br>
+Setting up tftpd, <a href="#openbsd">OpenBSD</a><br>
+Setting up tftpd, <a href="#freebsd">FreeBSD</a><br>
+Setting up tftpd, <a href="#linux.inetd">Linux</a> (using <tt>inetd.conf</tt>)<br>
+Setting up tftpd, <a href="#linux.xinetd">Linux</a> (using <tt>xinetd.conf</tt>)<br>
+Setting up tftpd, <a href="#next">NEXTSTEP</a><br>
+Setting up tftpd, <a href="#hpux">HP-UX</a><br>
+<p>
+
+[<em>If you have details for any other platform, <a
+href="../../../Misc/feedback.html">please let us know</a></em>]
+<p>
+
+<hr>
+
+<h3><a name="netbsd">NetBSD</a> and <a name="openbsd">OpenBSD</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
+   following line:<br>
+   <pre>tftp            dgram   udp     wait    root    /usr/libexec/tftpd      tftpd -s /tftpboot</pre> 
+<p>
+
+<li>Ensure that the last item on the line is <tt>/tftpboot</tt>
+<p>
+
+<li><tt># <b>ps -aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+You can test your <tt>tftpd</tt> from any unix machine, by running:
+<pre># <b>tftp tftpserver.test.net</b>
+tftp&gt; <b>get C0A8010A.SUN4C</b>
+Received 683 bytes in 0.3 seconds
+tftp&gt; <b>quit</b></pre>
+In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
+file to get.
+<p>
+
+Continue on to setting up <a href="nfs.html">nfs</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="freebsd">FreeBSD</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
+   following line:<br>
+   <pre>tftp   dgram   udp     wait    nobody  /usr/libexec/tftpd      tftpd /tftpboot</pre> 
+<p>
+
+<li>Ensure that the last item on the line is <tt>/tftpboot</tt>
+<p>
+
+<li><tt># <b>ps -aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+You can test your <tt>tftpd</tt> from any unix machine, by running:
+<pre># <b>tftp tftpserver.test.net</b>
+tftp&gt; <b>get C0A8010A.SUN4C</b>
+Received 683 bytes in 0.3 seconds
+tftp&gt; <b>quit</b></pre>
+In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
+file to get.
+<p>
+
+Continue on to setting up <a href="nfs.html">nfs</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="linux.inetd">Linux (using <tt>inetd.conf</tt>)</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
+   following line:<br>
+   <pre>tftp  dgram   udp     wait    nobody  /usr/sbin/tcpd  in.tftpd /tftpboot</pre> 
+<p>
+
+<li>Ensure that the last item on the line is <tt>/tftpboot</tt>
+<p>
+
+<li><tt># <b>ps aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+You can test your <tt>tftpd</tt> from any unix machine, by running:
+<pre># <b>tftp tftpserver.test.net</b>
+tftp&gt; <b>get C0A8010A.SUN4C</b>
+Received 683 bytes in 0.3 seconds
+tftp&gt; <b>quit</b></pre>
+In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
+file to get.
+<p>
+
+Continue on to setting up <a href="nfs.html">nfs</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="linux.xinetd">Linux (using <tt>xinetd.conf</tt>)</a></h3>
+<dl><dt><dd>
+Note, xinetd is not used by default.  These are instructions for Debian 2.1
+<p>
+
+<ol>
+<li><tt># <b>adduser tftp</b></tt>
+<p>
+
+<li><tt># <b>vi /etc/shadow</b></tt> to change tftp's password to be *.
+<p>
+
+<li>Edit <tt>/etc/xinetd.conf</tt> and add the following entry: 
+<pre>service tftp
+{
+        socket_type = dgram
+        protocol = udp
+        wait = yes
+        user = tftp
+        server = /usr/sbin/in.tftpd
+        server_args = -l /tftpboot
+        only_from = client.test.net
+}</pre>
+<p>
+
+<li><tt># <b>ps aux | grep xinetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+You can test your <tt>tftpd</tt> from any unix machine (assuming you add it to
+the <tt>only_from</tt> line), by running:
+<pre># <b>tftp tftpserver.test.net</b>
+tftp&gt; <b>get C0A8010A.SUN4C</b>
+Received 683 bytes in 0.3 seconds
+tftp&gt; <b>quit</b></pre>
+In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
+file to get.
+<p>
+
+Continue on to setting up <a href="nfs.html">nfs</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="next">NEXTSTEP</a></h3>
+<dl><dt><dd>
+Note, NEXTSTEP uses <tt>/private/tftpboot</tt> as the location for tftp
+served files.  Make sure your bootloaders are placed in this directory.
+<p>
+
+<ol>
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
+   following line:<br>
+   <pre>tftp    dgram   udp     wait    root    /usr/etc/tftpd          tftpd -s /private/tftpboot
+</pre>
+<p>
+
+<li>Ensure that the last item on the line is <tt>/private/tftpboot</tt>
+<p>
+
+<li><tt># <b>ps -aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+You can test your <tt>tftpd</tt> from any unix machine, by running:
+<pre># <b>tftp tftpserver.test.net</b>
+tftp&gt; <b>get C0A8010A.SUN4C</b>
+Received 683 bytes in 0.3 seconds
+tftp&gt; <b>quit</b></pre>
+In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
+file to get.
+<p>
+
+Continue on to setting up <a href="nfs.html">nfs</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="hpux">HP-UX</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Edit <tt>/etc/passwd</tt> and create a new user for the tftpd account:
+<pre>tftp:*:9999:9999:tftp server:/tftpboot:/bin/false</pre>
+<p>
+
+<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
+   following line:<br>
+   <pre>tftp         dgram  udp wait   root /etc/tftpd    tftpd</pre>
+   Under HP-UX 10, the path is <tt>/usr/lbin/tftpd</tt> instead of <tt>/etc/tftpd</tt>
+<p>
+
+<li><tt># <b>inetd -c</b></tt><br>
+   This tells the inetd process to re-read its configuration file
+</ol>
+<p>
+
+You can test your <tt>tftpd</tt> from any unix machine, by running:
+<pre># <b>tftp tftpserver.test.net</b>
+tftp&gt; <b>get C0A8010A.SUN4C</b>
+Received 683 bytes in 0.3 seconds
+tftp&gt; <b>quit</b></pre>
+In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
+file to get.
+<p>
+
+Continue on to setting up <a href="nfs.html">nfs</a>
+</dd></dl>
+
+<hr>
+
+Previous |
+<a href="nfs.html">Next</a> |
+<a href="">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: tftpd.html,v 1.16 2000/10/20 05:40:20 dent Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
