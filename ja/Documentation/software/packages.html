@@ -1,0 +1,314 @@
+<html>
+<head>
+<!-- Copyright (c) 1997, 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD packages コレクション</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+
+<h2 align=center><font color="#8080ff">
+	NetBSD packages コレクション
+</font></h2>
+
+<p>
+手短に言えば、NetBSD packages コレクションは、
+NetBSDに移植されたソフトウェアユーティリティとライブラリの集まりです。
+</p>
+<p>
+packages コレクションソフトウェアはソフトウェアを、
+いくつかの手段によりインターネットを通して、
+そのホームサイトから捜して持ってきて、それが正しいものか確かめ、
+あらゆるパッチを当てて、NetBSDのためにそのソフトウェアを設定し、
+そしてそれを構築することを行います。
+
+あらゆる不可欠なソフトウェアは、
+あなたのために同じように構築されインストールされるでしょう。
+
+ソフトウェアのインストールとアンインストールは、
+packaging ユーティリティにより管理されます。
+</p>
+
+<p>
+ソフトウェアソースやバイナリをそれらのホームサイトから自分自身で得るよりも、
+packagesが進んでいることをいくつか挙げます。
+<ul>
+<li>packagesはすでに、
+	あなたのシステムで正しくコンパイル、
+	インストールされるように設定されているので、
+	自分自身でソフトウェアを移植することを心配する必要がありません。
+<li>分類された、
+	NetBSDで動くソフトウェアのプログラムの最新バージョンと、
+	そのパッチを得ることができます。
+<li>いったん使い方がわかれば、ダイアルアップ接続でさえ、
+	簡単にすばやく使うことができます。
+<li>他の人に役立つように、
+	あなたの移植作業をpackaging システムに追加して貢献することができます。
+</ul>
+
+<p>
+packagesでは、コンパイル済みのbinary packagesか、
+ソフトウェアをインストールおよび維持するための'pkgsrc'を使用することができます。
+</P>
+
+<hr>
+<h3><font color="#8080ff">コンパイル済み
+	Binary Packages のインストール</font></h3>
+
+NetBSD 1.3用、もしくはより新しいNetBSD用
+コンパイル済みbinary packages セレクションは、
+<a href="../../Sites/net.html">NetBSD ftp サイト</a>の
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages">/pub/NetBSD/packages/</a>
+にて利用できます。
+<p>
+おそらく大多数のユーザーは、もっとも有益な
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/README.html">browsable
+web listing</a>を見つけるでしょう。
+<p>
+これらのbinary packagesは、手元のディスクにダウンロードして
+<pre>    pkg_add &lt;package&gt;</pre>
+というように pkg_add でインストールすることができますし、
+<pre>    pkg_add ftp://ftp.netbsd/org/pub/NetBSD/packages/&lt;os_release&gt;/&lt;arch&gt/&lt;type&gt/&lt;package&gt;</pre>
+というように直接 pkg_add に完全なURLを指定して、インストールすることもできます。
+
+<p>
+packagesは、通常 <tt>/usr/pkg</tt> にインストールされます。
+パス変数(PATH)に確実に <tt>/usr/pkg/bin</tt> と <tt>/usr/pkg/sbin</tt>
+を加えてください(一番の方法は、<tt>/etc/csh.cshrc</tt>で設定することです)。
+
+<hr>
+<h3><font color="#8080ff">NetBSD Packages コレクションの設定</font></h3>
+
+<ol>
+<li><p>
+    NetBSD Packages コレクションは毎週アーカイブされ、
+    tar+gzipされたファイルでNetBSD ftp サイトと多くのミラーサイトに置かれます。
+    
+    この'<i>package ソースファイル (pkgsrc)</i>'は、
+    現在のPackages コレクション中の、
+    各々のソフトウェアの説明と情報が含まれています。
+    
+    このpkgsrcを得てシステムにインストールすることにより、
+    そのコレクションに含まれるソフトウェアを簡単にコンパイル、
+    インストールすることができます。
+    
+    まず必要なことは、
+    Package コレクション ソースファイル(pkgsrc)をダウンロードすることです。
+    NetBSDサイトから、
+    もしくは近くの<a href="../../Sites/net.html">ミラーサイト</a>から、
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/pkgsrc.tar.gz">
+    ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/pkgsrc.tar.gz</a>
+    を得ます。
+</p></li>
+<li><p>
+    一旦自分のシステムにpkgsrc.tar.gzをダウンロードしたら、
+    '<tt>su -</tt>' のようにrootでログインし、
+    '<i>/usr</i>' ディレクトリにそのファイルをコピーします。
+</p></li>
+
+<li><p>
+    もし、以前の pkgsrc.tar.gz を展開していたならば、まずそれを削除します。
+<pre>
+	rm -rf pkgsrc
+</pre>
+</p></li>
+<li><p>
+    そしてtarで、
+    そのファイルを伸長し新たなホーム(<tt>/usr/pkgsrc</tt>)に展開します。
+<pre>
+	tar -xzvpf pkgsrc.tar.gz
+</pre>
+</p></li>
+<li><p>
+    コレクションからpackageを構築するときは、
+    通常新しいディレクトリツリー '<i>/usr/pkg/</i>' を作成し、
+    そこにインストールすることになります。
+    例えば、'<tt>LOCALBASE=/usr/local</tt>' を
+    <tt>/etc/mk.conf</tt> に加えることにより、これを変更することができます。
+</p></li>
+</ol>
+
+<h3><font color="#8080ff">NetBSD Packages コレクションの使用</font></h3>
+
+<ol>
+<li><p>
+'<i>/usr/pkgsrc/</i>' ディレクトリには、
+カテゴリ別に整理されたサブディレクトリが含まれます。
+各ディレクトリでは '<i>README</i>' ファイルで、
+それぞれのユーティリティ/アプリケーションが何なのかを知ることができます。
+</p></li>
+<li><p>
+アプリケーションのひとつをインストールするのは非常に簡単です。
+例えば、あなたのシステムに Joe というエディター(Joeは小さいが、
+WordstarやEmacsのようなエディターを真似たパワフルなエディターです)
+をインストールするには、まず次のようにカレントディレクトリを変更します。
+<pre>
+	cd /usr/pkgsrc/editors/joe
+</pre>
+</p></li>
+<li><p>
+もしダイアルアップ接続によりインターネットにアクセスしているならば、
+ソフトウェアソースおよびあらゆるパッチを捜して持ってくるために、
+この時点で接続してください。
+</p></li>
+<li><p>
+そして '<i>/usr/pkgsrc/editors/joe</i>' ディレクトリにて、
+<pre>
+	make
+</pre>
+と入力します。ソースとパッチ、コンパイルに必要ないくつかのソフトウェアが
+あなたのシステムにダウンロードされるでしょう。
+</p></li>
+<li><p>
+ソフトウェアがダウンロードされると、パッチが適用された上で、
+コンパイルされます。それにかかる時間はあなたのコンピューターによりますし、
+そのソフトウェアが依存している他のpackagesの数にもよります。
+</p></li>
+<li><p>
+これが完了し、どんなエラーも表示されなければ、
+ダイアルアップ接続を切断してもかまいません(電話代は節約しましょう!)。
+</p></li>
+<li><p>
+次は新たにコンパイルされたプログラムを、
+実際にあなたのシステムにインストールします。
+'<i>/usr/pkgsrc/editors/joe</i>' ディレクトリにいる間に
+(もしくはインストールのためのディレクトリで)
+<pre>
+	make install
+</pre>
+と入力してください。
+</p></li>
+<li><p>
+そのソフトウェアはまさにインストールされ、
+使用できるようにセットアップされたことになります。
+
+もうこれ以上コンパイル後の作業ファイルは必要とされないので、
+<pre>
+	make clean
+</pre>
+と入力し作業ファイルを削除してしまってもかまいません。
+
+もし、プログラムをコンパイルするときに、
+依存関係により他のpackagesがコンパイル/インストールされたならば、
+それらも次のコマンドにより、きちんと削除することができます。
+<pre>
+	make clean-depends
+</pre>
+</p></li>
+</ol>
+
+<h3><font color="#8080ff">
+	利用することができるNetBSD Packages コレクションの見つけ方
+</font></h3>
+<p>
+コレクション中にどんなpackagesがあるのかを知る、もっとも良い方法は、
+pkgsrc の一番上のディレクトリ(これは通常 /usr/pkgsrc でしょう)に移動し、
+"make readme" と入力することです。
+
+これにより、README.html というファイルが pkgsrc の一番上のディレクトリ、
+またすべてのカテゴリとpackage ディレクトリに作成され、
+lynx (pkgsrc/www/lynx) や Mozilla (pkgsrc/www/mozilla) や Communicator
+のようなブラウザーを使うことで、
+packageの機能に付いての短い(一行)コメントと、
+詳細な説明へのポインタを見ることができるようになります。
+
+これはまた次のURLでも見ることができます。
+</p>
+<pre>	<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/README.html">ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/README.html</a></pre>
+<p>
+
+コレクション中のpackagesを見つける別の方法としては、
+pkgsrc の一番上のディレクトリに移動して、
+"make index" と入力するというのもあります。
+
+これは、"make print-index | more" で見ることができる
+pksrc/INDEX を作成します。
+
+また、packagesやキーワードを "make search key=&lt;somekeyword&gt;" により
+検索することもできます。
+</p>
+
+<h3><font color="#8080ff">その他のNetBSD Packages
+コレクション用コマンド</font></h3>
+
+<p>
+NetBSD Package コレクションを使う上で、役に立つその他のコマンドは
+</p>
+
+<ul>
+<li>
+<tt>make deinstall</tt> - システムにインストールされたpackageを削除します。
+上記手順の逆を行います。
+</li>
+<li>
+<tt>pkg_info</tt> - システムにインストールされたpackageを表示します
+(packagesのインストールによりデータベースに追加されています)。
+</li>
+</ul>
+
+<p>
+NetBSD Packages コレクションについての、より詳細な、役立つ情報は
+NetBSD サイトで入手できます。
+いくつかのリンクを挙げておきます。
+</p>
+
+<ul>
+<li>
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/Packages.txt">
+	Complete documentation on the NetBSD Package System</a>
+</li>
+<li>
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/README">
+	Welcome to NetBSD Packages Collection</a>
+</li>
+<li>
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/README.html">
+	Web page front end to the NetBSD Packages Collection</a>
+</li>
+<li>
+<a href="../../Changes/pkg-changes.html">
+	Changes to the NetBSD Packages Collection</a>
+</li>
+</ul>
+
+<p align=right>
+<font size="-1">Many thanks to <a href="http://www.ewor.demon.co.uk/unix/netbsd/packages.html">Simon Rowe's NetBSD pages</a></font>
+</p>
+
+<hr>
+<a href="index.html">Back to <em>NetBSD Documentation: Software</em></a>
+
+<hr>
+<table width="100%"><tr>
+  <td>
+    <table><tr>
+      <td>
+	<a href="../../index.html">
+	<img src="../../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
+      </td><td>
+	<a href="../../index.html">Home Page</a>
+      </td>
+    </tr></table>
+  </td><td>
+    <table><tr>
+      <td>
+	<a href="../index.html">
+	<img src="../../images/NetBSD-banner.gif"
+	alt="NetBSD&nbsp;Documentation"></a>
+      </td><td>
+	<a href="../index.html">Documentation top level</a>
+      </td>
+    </tr></table>
+  </td>
+</tr></table>
+
+<hr>
+<address>
+  www@NetBSD.ORG<br>
+  $NetBSD: packages.html,v 1.1 1999/01/06 09:29:13 sakamoto Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1997, 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
