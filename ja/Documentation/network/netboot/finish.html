@@ -50,6 +50,7 @@ then executes it:
 Finishing up, <a href="#netbsd">NetBSD</a><br>
 Finishing up, <a href="#openbsd">OpenBSD</a><br>
 Finishing up, <a href="#freebsd">FreeBSD</a><br>
+Finishing up, <a href="#macosx">MacOS X and Darwin</a><br>
 Finishing up, <a href="#linux">Linux</a><br>
 Finishing up, <a href="#sunos">SunOS</a><br>
 Finishing up, <a href="#solaris">Solaris</a><br>
@@ -231,6 +232,75 @@ You may consider adding the following lines to
 *.*                                             /var/log/bootlog
 !rarpd  
 *.*                                             /var/log/bootlog</b></pre>
+</ol>
+<p>
+
+Congratulations, you're done!
+</dd></dl>
+
+<hr>
+
+<h3><a name="macosx">MacOS X and Darwin</a></h3>
+<dl><dt><dd>
+In MacOS X and Darwin, the system startup scripts are stored in 
+<tt>/System/Library/StartupItems/</tt>.  You'll want to create a bundle like
+these to start the netboot services in the user startup 
+scripts <tt>/Library/StartupItems</tt>.  NFS services are always started if 
+there is a NetInfo directory called <tt>/exports</tt>.
+<p>
+The <tt>/etc/hostconfig</tt> describes which built-in services are 
+automatically started.  To prevent the native <tt>bootpd</tt> from starting
+(since it doesn't work and conflicts with <tt>dhcpd</tt>), make sure that 
+the following lines are set:
+<pre>CONFIGSERVER=-NO-
+NETBOOTSERVER=-NO-</pre>
+<p>The 
+<a href="http://www.darwinfo.org/howto/SystemStarter_HOWTO.shtml">SystemStarter
+HOWTO</a> is a good reference if you want to learn more about creating your
+own startup bundles.
+<p>
+<ol>
+<li>
+<tt># <b>mkdir -p /Library/StartupItems/NetBSDNetBoot</b></tt>
+<p><li>Create 
+   <tt>/Library/StartupItems/NetBSDNetBoot/StartupParameters.plist</tt> with
+   the following contents:
+<pre>{
+  Description     = "NetBoot services for NetBSD clients";
+  Provides        = ("DHCPD",
+                     "bootparams",
+                     "rbootd");
+  Requires        = ("NetInfo",
+                     "Network");
+  OrderPreference = "None";
+  Messages =
+  {
+    start = "Starting NetBSD NetBoot services";
+    stop  = "Stopping NetBSD NetBoot services";
+  };
+}</pre>
+<p><li>Create
+   <tt>/Library/StartupItems/NetBSDNetBoot/NetBSDNetBoot</tt> with
+   the following contents:
+<pre>#!/bin/sh
+
+. /etc/rc.common
+
+##
+# Start up NetBSD NetBoot services
+##
+
+ConsoleMessage "Starting NetBSD NetBoot Services"
+
+##
+# Start NetBSD NetBoot services
+##
+/usr/libexec/rbootd
+bootparamd
+dhcpd -q</pre>
+<p><li>
+  <tt># <b>chown -R root /Library/StartupItems/NetBSDNetBoot</b></tt><br>
+  <tt># <b>chmod a+rx /Library/StartupItems/NetBSDNetBoot/NetBSDNetBoot</b></tt>
 </ol>
 <p>
 
@@ -766,7 +836,7 @@ Next |
 <address>
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: finish.html,v 1.20 2002/03/06 06:16:07 mbw Exp $<br>
+  $NetBSD: finish.html,v 1.21 2002/05/10 21:32:59 mbw Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>

@@ -49,7 +49,7 @@ Note, some tftp daemons do not support chroot'ing into <tt>/tftpboot</tt>,
 and you may need to specify in <a href="bootparams.html">bootparams</a>,
 <a href="bootpd.html">bootpd</a>, or <a href="dhcpd.html">dhcpd</a> the
 entire path to the bootloader.  This is something you should test using
-the <tt>tftp</tt> client before getting frustrated that netbooting doesn't
+the <tt>tftp(1)</tt> client before getting frustrated that netbooting doesn't
 work.
 <p>
 If all else fails, you can set your directories up such that a request for
@@ -60,6 +60,7 @@ If all else fails, you can set your directories up such that a request for
 Setting up tftpd, <a href="#netbsd">NetBSD</a><br>
 Setting up tftpd, <a href="#openbsd">OpenBSD</a><br>
 Setting up tftpd, <a href="#freebsd">FreeBSD</a><br>
+Setting up tftpd, <a href="#macosx">MacOS X and Darwin</a><br>
 Setting up tftpd, <a href="#linux.inetd">Linux</a> (using <tt>inetd.conf</tt>)<br>
 Setting up tftpd, <a href="#linux.xinetd">Linux</a> (using <tt>xinetd.conf</tt>)<br>
 Setting up tftpd, <a href="#next">NEXTSTEP</a><br>
@@ -131,6 +132,43 @@ Continue on to setting up <a href="nfs.html">nfs</a>
 </dd></dl>
 
 <hr>
+
+<h3><a name="macosx">MacOS X and Darwin</a></h3>
+<dl><dt><dd>
+These systems recommend placing your <tt>tftpd</tt> files in 
+<tt>/private/tftpboot</tt> due to their inherently clustered behavior.
+<p>
+<ol>
+<li><tt># <b>mkdir -p /private/tftpboot</b></tt><br>
+<p><li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
+   following line:<br>
+   <pre>tftp    dgram   udp     wait    nobody  /usr/libexec/tcpd               tftpd /private/tftpboot</pre>
+<p>
+
+<li>Ensure that the last item on the line is <tt>/private/tftpboot</tt><br>
+  Even though the <tt>tftpd(8)</tt> man page says it supports the <tt>-s</tt>
+  <tt>chroot(2)</tt> flag, it has permission problems.
+<p>
+
+<li><tt># <b>ps aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+</ol>
+<p>
+
+You can test your <tt>tftpd</tt> from any unix machine, by running:
+<pre># <b>tftp tftpserver.test.net</b>
+tftp&gt; <b>get C0A8010A.SUN4C</b>
+Received 683 bytes in 0.3 seconds
+tftp&gt; <b>quit</b></pre>
+In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
+file to get.
+<p>
+
+Continue on to setting up <a href="nfs.html">nfs</a>
+</dd></dl>
+
+<hr>
+
 
 <h3><a name="linux.inetd">Linux (using <tt>inetd.conf</tt>)</a></h3>
 <dl><dt><dd>
@@ -306,7 +344,7 @@ Previous |
 <address>
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: tftpd.html,v 1.19 2002/02/14 13:48:32 jrf Exp $<br>
+  $NetBSD: tftpd.html,v 1.20 2002/05/10 04:57:00 mbw Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
