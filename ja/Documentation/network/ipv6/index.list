@@ -1,6 +1,8 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<!-- Copyright (c) 1998, 1999
+<!-- Copyright (c) 1998, 1999, 2000, 2001
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
 <title>IPv6 Networking FAQ</title>
@@ -9,42 +11,169 @@
 
 <HEADING>NetBSD IPv6 Networking
 
-This page is developing, and we welcome any
+This page is being developed, and we welcome any
 <a href="../../../Misc/feedback.html">comments or suggestions</a>.
 
 <LIST>
 <h2>Other links</h2>
 <ul>
   <li><a href="http://www.kame.net/">KAME project</a>,
-	where the IPv6 implementation come from
+	where the IPv6 implementation came from
   <li><a href="http://www.6bone.net/">
-	6bone: worldwide IPv6 experimental network</A>
-  <li><a href="http://www.freenet6.net/">Freenet6.net</A>
-  <li><a href="http://www.ipv6.org/">ipv6.org</A>
-  <li><a href="http://faq.v6.wide.ad.jp/">IPv6 FAQs by WIDE project</A>
-  <li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/netinet6/IMPLEMENTATION">src/sys/netinet6/IMPLEMENTATION</a>:
-	detailed informtaion on the implementation
+	6bone: worldwide IPv6 experimental network</a>
+  <li><a href="http://www.freenet6.net/">Freenet6.net</a>
+  <li><a href="http://www.ipv6.org/">ipv6.org</a>
+  <li><a href="http://faq.v6.wide.ad.jp/">IPv6 FAQs by WIDE project</a>
+  <li><a href="http://www.feyrer.de/NetBSD/6to4.html">6to4 Explained</a>
+  <li><a href="http://orange.kame.net/dev/cvsweb.cgi/kame/IMPLEMENTATION">
+	detailed information on the implementation</A>
 </ul>
 
 <SECTION>IPv6 Networking FAQ
 
 <ENTRY>getting_started Getting Started
-IPv6 code is merged into the NetBSD distributions (NetBSD-current
-after June 1999, and NetBSD 1.5 or later).
+IPv6 code was merged into NetBSD in June 1999.
+It is included in the NetBSD 1.5 official release and later.
 IPv6 configuration is mostly the same as IPv4 configuration,
-so you may want to check the documentations for IPv4 networking.
-<P>
+so you may want to check the documentation for IPv4 networking.
+<br><br>
 
-At this moment you will need to rebuild the kernel,
-with configuration lines included in 
-<TT>GENERIC.v6</TT> enabled.
+GENERIC kernel configuration enable IPv6 support by default for most of
+the architectures (ports).
 Userland code includes IPv6 support where possible, by default,
-so no rebuild of userland is necessary.
-<P>
+so no rebuild of userland is necessary even if you switch between an
+IPv4-only kernel and an IPv4/v6 kernel.
+<br><br>
 
-If you are using NetBSD 1.4, you may want to visit
-<A HREF="http://www.kame.net/">KAME project</A> webpage
-for IPv6 support patches.
+If you have pre-1.5 systems, your situation is as follows:
+<ul>
+  <li>If you are using NetBSD 1.4.x, you may want to visit the
+      <a href="http://www.kame.net/">KAME project</a> web page
+      for IPv6 support patches.
+  <li>If you are using NetBSD-current before late November 1999,
+      the use of special kernel configuration file
+      (<tt>GENERIC.v6</tt>) is required to use IPv6.
+  <li>If you are using NetBSD-current after November 21 1999,
+      the <tt>GENERIC</tt> kernel configuration file includes
+      IPv6 support by default.
+</ul>
+<br><br>
+
+<ENTRY>diff_ipv4  A little history of IPv6, and key features
+Around 1992, the
+<a href="http://www.ietf.org/">IETF</a> became aware of a global shortage
+of IPv4 addresses, and technical obstacles in deploying new
+protocols due to limitations imposed by IPv4.
+An IPng (IP next generation) effort was started to solve these issues.
+The discussion is outlined in bunch of RFCs, starting from <RFC>RFC1550.
+After large amount of discussion, around year 1995,
+IPv6 (IP version 6) was picked as the final IPng proposal.
+The IPv6 base specification is specified in <RFC>RFC2460.
+<br><br>
+
+In a single sentence,
+<em>IPv6 is a re-engineering effort against IP technology</em>.
+Key features are listed below:
+<ul>
+  <li><strong>Larger IP address space</strong>.
+	IPv4 uses only 2^32 bits for IP address space, which allows only
+	4 billion nodes to be identified on the Internet.
+	4 billion may look like a large number; however,
+	it is less than the human population on the earth!
+	IPv6 allows 2^128 bits for IP address space, allowing
+	340282366920938463463374607431768211456
+	(three hundred forty undecillion) nodes to be uniquely identified
+	on the Internet.
+	Larger address space allows true
+	<strong>end to end communication</strong>, without NAT or other other
+	short term workaround against IPv4 address shortage.
+	(In these days NAT has been a headache to new protocol deployment,
+	and scalability issues, we really need to decommission NATs for the
+	Internet to grow further)
+  <li><strong>Deploy more recent technologies</strong>.
+	After IPv4 was specified 20 years before,
+	we saw many technical improvement in networking.
+	IPv6 covers a number of those improvements in its base specification,
+	allowing people to assume these features available everywhere, anytime.
+	"Recent technologies" include, not limited to, the following:
+    <ul>
+    <li><strong>Autoconfiguration</strong>.
+	With IPv4, DHCP has been there but is optional.
+	A novice user can get into trouble if they visit an offsite without
+	a DHCP server.
+	With IPv6, "stateless host autoconfiguration" mechanism is mandatory.
+	This is much simpler to use and manage than IPv4 DHCP.
+	<RFC>RFC2462 has the specification for it.
+    <li><strong>Security</strong>.
+	With IPv4, IPsec is optional and you need to ask the peer if it
+	supports IPsec.
+	With IPv6, IPsec support is mandatory.
+	By mandating IPsec, we can assume that you can secure your IP
+	communication whenever you talk to IPv6 devices.
+    <li><strong>Friendly to traffic engineering technologies</strong>.
+	IPv6 was designed to allow better support for traffic engineering
+	like diffserv or intserv (RSVP).
+	We do not have single standard for traffic engineering yet;
+	so the IPv6 base specification reserves a 24-bit space in the header
+	field for those technologies and is able to adapt to coming standards
+	better than IPv4.
+    <li><strong>Multicast</strong>.
+	Multicast is mandatory in IPv6, which was optional in IPv4.
+	The IPv6 base specifications themselves extensively use multicast.
+    <li><strong>Better support for ad-hoc networking</strong>.
+	Scoped addresses allow better support for ad-hoc (or "zeroconf")
+	networking.
+	IPv6 supports anycast addresses, which can also contribute to service
+	discoveries.
+    <li>and more.
+    </ul>
+  <li><strong>A cure to routing table growth</strong>.
+	The IPv4 backbone routing table size has been a big headache to
+	ISPs and backbone operators.
+	The IPv6 addressing specification restricts the number of backbone
+	routing entries by advocating route aggregation.
+	With the current IPv6 addressing specification, we will see only 8192
+	routes on the default-free zone.
+  <li><strong>Simplified header structures</strong>.
+	IPv6 has simpler packet header structures than IPv4.
+	It will allow future vendors to implement hardware acceleration for
+	IPv6 routers easier.
+  <li><strong>Allows flexible protocol extensions</strong>.
+	IPv6 allows more flexible protocol extensions than IPv4 does, by
+	introducing a <em>protocol header chain</em>.
+	Even though IPv6 allows flexible protocol extensions, IPv6 does not
+	impose overhead to intermediate routers.
+	It is achieved by splitting headers into two flavors: the headers
+	intermediate routers need to examine, and the headers the end nodes
+	will examine.
+	This also eases hardware acceleration for IPv6 routers.
+  <li><strong>Smooth transition from IPv4</strong>.
+	There were number of transition considerations made during the
+	IPv6 discussions.
+	Also, there are large number of transition mechanisms available.
+	You can pick the most suitable one for your site.
+  <li><strong>Follows the key design principles of IPv4</strong>.
+	IPv4 was a very successful design, as proven by the ultra large-scale
+	global deployment.
+	IPv6 is "new version of IP", and it follows many of the design
+	features that made IPv4 very successful.
+	This will also allow smooth transition from IPv4 to IPv6.
+  <li>and more.
+</ul>
+
+There are number of good books available on IPv6. Be sure to check these
+if you are interested.
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+	<li><a href="http://www.ipv6.org/">ipv6.org</a>
+	<li><a href="http://www1.fatbrain.com/search/searchresults.asp?SearchFunction=key&amp;vm=c&amp;qtext=ipv6">Search
+	    FatBrain bookstore for "IPv6"</a>
+	(NOTE: we are not making any particular recommendations regarding
+	the bookstore)
+      </ul>
+</ul>
+
 
 <ENTRY>configuration_files  Network Configuration Files
 The network configuration is defined in a set of text
@@ -53,9 +182,9 @@ Note that you do not need to edit some of those if you are configuring a host
 (not a router), by using autoconfiguration.
 <ul>
   <li>/etc/rc.conf - rc.conf(5) specifies system services,
-      including the the network services, to be automatically
-      started at system initialisation.
-  <li>/etc/hosts - hosts(5) can include mapping between FQDN name
+      including the network services, to be automatically
+      started at system initialization.
+  <li>/etc/hosts - hosts(5) can include mappings between FQDN names
 	and IPv6 numeric addresses.
   <li>/etc/ifconfig.{<em>IF</em>}. - you can include IPv6 network setup,
 	using ifconfig(8), into here.
@@ -67,14 +196,14 @@ Note that you do not need to edit some of those if you are configuring a host
       </ul>
 </ul>
 
-<ENTRY>router_or_host  Is the machine a router, or a host
+<ENTRY>router_or_host  Is the machine a router or a host
 In IPv6, routers and hosts are clearly separated.
-Nodes that forward packet for others are called <EM>routers</EM>.
-Nodes that does not are called <EM>hosts</EM>.
-Routers needs to be configured manually.
+Nodes that forward packets for others are called <em>routers</em>.
+Nodes that do not are called <em>hosts</em>.
+Routers need to be configured manually.
 Routers will advertise information about subnet using rtadvd(8) daemon.
 Hosts usually have only one external network interface
-(some part of document assumes this),
+(some part of this document assumes this),
 and will be autoconfigured using the advertised subnet information.
 <ul>
   <li><h3>See also:</h3>
@@ -83,24 +212,117 @@ and will be autoconfigured using the advertised subnet information.
       </ul>
 </ul>
 
+<ENTRY>autoconfig  Host autoconfiguration in IPv6
+There are two separate mechanisms defined for IPv6 host autoconfiguration.
+One is called <em>stateless address autoconfiguration</em>,
+and is specified in <RFC>RFC2462.
+The other is called <em>DHCPv6</em>, and is being discussed by the IETF dhc
+working group.
+NetBSD currently implements the former.
+<br><br>
+
+Stateless address configuration basically works as follows.
+We have two parties here: a host (which is to be autoconfigured) and a router
+(which emits necessary information to the host).
+<ul>
+  <li>The host configures a link-local address to its network interface.
+	A link-local IPv6 address starts with "fe80", and has a value in
+	the lower-most 64 bits.
+	The lower-most 64 bits are called the <em>interface ID</em>.
+	For Ethernet and some other interfaces, the MAC address is used as
+	the source for interface ID.
+<pre>
+host% ifconfig ne2
+ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+	media: Ethernet manual
+	inet6 fe80::a00:5aff:fe38:6f86%ne2 prefixlen 64 scopeid 0x1
+</pre>
+
+  <li>By running rtadvd(8) on the router, the router periodically advertises
+	information about the link (like Ethernet segment)
+	to all nodes on the link.
+	The information is carried by ICMPv6 "router advertisement" packet.
+	The attached example advertises the following information:
+    <ul>
+      <li>IPv6 subnet prefix is 2001:218:420::/64
+      <li>Default router is on fe80::240:5ff:fea0:8e08
+      <li>And couple of more parameters, like IPv6 link MTU, default hoplimit,
+	and router lifetime.
+    </ul>
+<pre>
+14:18:20.812850 fe80::240:5ff:fea0:8e08 &gt; ff02::1: icmp6: router advertisement&#92;
+(chlim=64, router_ltime=1800, reachable_time=30000, retrans_time=1000)(src&#92;
+lladdr: 0:40:5:a0:8e:8)(mtu: mtu=1500)(prefix info: LA valid_ltime=2592000,&#92;
+preffered_ltime=604800, prefix=2001:218:420::/64)
+			 6000 0000 00a0 3aff fe80 0000 0000 0000
+			 0240 05ff fea0 8e08 ff02 0000 0000 0000
+			 0000 0000 0000 0001 8600 d38d 4000 0708
+			 0000 7530 0000 03e8 0101 0040 05a0 8e08
+			 0501 0000 0000 05dc 0304 40c0 0027 8d00
+			 0009 3a80 0000 0000 2001 0218 0420 0000
+			 0000 0000 0000 0000
+</pre>
+
+  <li>The host catches the advertisement, and configures the global IPv6
+	address and the default router.
+	By running ndp(8) on the host, we can see more detail about
+	the most recent router advertisement.
+<pre>
+host% ifconfig ne2
+ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+	media: Ethernet manual
+	inet6 fe80::a00:5aff:fe38:6f86%ne2 prefixlen 64 scopeid 0x1
+	inet6 2001:218:420:0:a00:5aff:fe38:6f86 prefixlen 64
+</pre>
+
+  <li>Optionally, the host can ask for an advertisement from the router
+	by sending an ICMPv6 "router solicitation" packet.
+	rtsol(8) transmits the router solicitation packet.
+	If you are running a mobile node, you may want to run rtsold(8) and
+	transmit router solicitations periodically.
+	The packet will be like this:
+<pre>
+14:18:20.300501 fe80::a00:5aff:fe38:6f86 &gt; ff02::2: icmp6: router solicitation&#92;
+(src lladdr: 8:0:5a:38:6f:86) (len 16, hlim 255)
+			 6000 0000 0010 3aff fe80 0000 0000 0000
+			 0a00 5aff fe38 6f86 ff02 0000 0000 0000
+			 0000 0000 0000 0002 8500 d7b0 0000 0000
+			 0101 0800 5a38 6f86
+</pre>
+</ul>
+We call it <em>stateless</em> address autoconfiguration,
+since we do not need to manage state in the router side.
+It is a very simple, robust and effective autoconfiguration mechanism.
+<br><br>
+
+Note that we cannot autoconfigure routers.
+Routers really need to be configured manually.
+
 <ENTRY>setup_router  Setting up an IPv6 router
 First, you may want to get an IPv6 global address from upstream provider.
 If you have one, you'll need to perform the following steps.
 <ul>
 	<li>Add manual configuration for network interfaces,
-		into rc.conf(8) or rc.net.
-	<li>Configure the following lines in rc.conf(8).<br>
+		into /etc/ifconfig.<em>{IF}</em>,
+		rc.conf(5) or /etc/netstart.local.
+		See <a href="#setup_manual">the following section</a>
+		for details.
+	<li>Configure the following lines in rc.conf(5).<br>
 <SAMP>
-ipv6forwarding="YES"<br>
+ip6mode="router"<br>
 rtsol="NO"<br>
 rtadvd="YES"		rtadvd_flags="sm1 ne2"	# set interfaces to advertise
 </SAMP>
-	<li>You may want to edit /etc/rtadvd.conf for fine-tuning
-		router advertisement timers.
+	<li>You may want to edit /etc/rtadvd.conf(5) for fine-tuning
+		the router advertisement timers.
 	<li>If you would like to announce routes by using RIPng,
-		configure rc.conf(8) to run route6d(8).
+		configure rc.conf(5) to run route6d(8).<br>
 	<li>Perform a reboot.
 </ul>
+Due to restrictions in the IPv6 specification, it is not possible to
+autoconfigure routers.
+Do not attempt to tweak the configuration.
+You will end up having unexpected behavior as a result.
 <ul>
   <li><h3>See also:</h3>
       <ul>
@@ -111,19 +333,29 @@ rtadvd="YES"		rtadvd_flags="sm1 ne2"	# set interfaces to advertise
 <ENTRY>setup_host  Setting up an IPv6 host
 If you have an IPv6 router on the network, all you have to do is as follows.
 After the reboot, the host will be autoconfigured by using
-Router Advertisements from rtadvd(8) on the adjacent router.
+Router Advertisements from the rtadvd(8) on the adjacent router.
 <ul>
-	<li>Configure the following lines in rc.conf(8).<br>
+	<li>Configure the following lines in rc.conf(5).<br>
 <SAMP>
-ipv6forwarding="NO"<br>
+ip6mode="autohost"<br>
 rtsol="YES"	rtsol_flags="sm1"	# set your interface here
 </SAMP>
 	<li>Perform a reboot.
 </ul>
-<P>
+<br><br>
 
 If you do not have an IPv6 router on the network,
-you'll need to configure manually.
+you'll need to manually configure your system.
+See <a href="#setup_manual">the following section</a>
+for details.
+<br><br>
+
+Also, due to restrictions in the IPv6 specification, it is not recommended to
+autoconfigure a host with multiple external interfaces (like 2 ethernet
+interfaces).
+Please perform manual configuration in this case.
+See <a href="#setup_manual">the following section</a>
+for details.
 <ul>
   <li><h3>See also:</h3>
       <ul>
@@ -132,10 +364,53 @@ you'll need to configure manually.
 </ul>
 
 <ENTRY>setup_manual  Manual Configuration
-If you need to configure a node manually,
-two important network configuration programs can be used
-in the network startup script (/etc/netstart).
+One of the key value-adds of IPv6 is the ubiquitous availability of
+autoconfiguration.
+Since IPv6 addresses are 128 bits, there's a higher chance for mistakes in
+manual configuration.
+We strongly recommend that you avoid manual configuration whenever possible.
+For example:
+<ul>
+  <li>If you configure routes to routers, run a routing daemon like route6d(8).
+  <li>If you configure interface addresses on hosts, get the information
+	from an adjacent router by configuring <tt>ip6mode=autohost</tt>
+	and <tt>rtsol=YES</tt> (see rc.conf(5)).
+</ul>
+If you think it is easier to do manual configuration, it's not.
+Manual configuration will impose future maintenance labor upon you.
+<br><br>
 
+If you really need a manual configuration, read on.
+<br><br>
+
+If you need to configure a node manually,
+add manual configuration for network interfaces
+into rc.conf(5).
+<br><br>
+
+You will first need to declare the type of the node (host or router)
+by setting <samp>ip6mode</samp> as per below.
+<pre>
+ip6mode="router"	# forward packets for others
+ip6mode="host"		# do not forward packets for others
+</pre>
+<br><br>
+
+Then, add interface configuration into rc.conf(5), or other files sourced
+by <tt>/etc/rc.d/network</tt> such as <tt>/etc/ifconfig.xxN</tt>.
+Note that you can have multiple lines in
+<tt>/etc/ifconfig.xxN</tt>, like:<br>
+<SAMP>
+inet 10.1.1.1 netmask 0xffffff00<br>
+inet6 3ffe:501:ffff::1 prefixlen 64 alias
+</SAMP>
+<br><br>
+
+If your configuration is not covered by rc.conf(5),
+configuration can be added into 
+<tt>/etc/netstart.local</tt> or
+<tt>/etc/rc.local</tt>.
+You will need to use the following programs:
 <ul>
   <li>ifconfig(8) - change or view the characteristics of a network interface.
   <li>route(8) - manipulate the network routing tables.
@@ -148,39 +423,66 @@ in the network startup script (/etc/netstart).
 </ul>
 
 <ENTRY>naming_a_node  Naming a New Node on the Network
-String hostname will be resolved to IPv6 numeric addresses, by using
-/etc/hosts(5), and DNS.
+A string hostname will be resolved to IPv6 numeric addresses by using
+/etc/hosts(5), and/or DNS.
 This is much like the same as IPv4 case.
-yp(8) may be used, however, the author have no experience using yp(8)
+yp(8) may be used, however, the author has no experience using yp(8)
 with IPv6 addresses.
-
 <ol>
   <li>/etc/hosts: hosts(5) For small networks of a few nodes, the
       hostname/IP maps can be manually duplicated in the /etc/hosts
       files of each node.
-      <p>
+      <br><br>
+
       <em>/etc/hosts:</em><br>
-      <samp>
-      fec0::a:b:c:d  host2.mydomain.org.au host2<br>
-      </samp>
-      <p>
-  <li>DNS: The hostname maps can be centralised into zone-files which
+      <pre>
+3ffe:501:ffff::a:b:c:d  host2.mydomain.org.au host2
+      </pre>
+
+  <li>DNS: The hostname maps can be centralized into zone-files which
       are accessed by the name-server, named(8).
       (there are many documents at
       <a href="http://www.dns.net/dnsrd/docs/">www.dns.net</a>
-      dealing with setting up and maintaining DNS files).
-      <p>
+      which deal with setting up and maintaining DNS files).
+      <br><br>
+
       <em>Forward zone file entry</em><br>
-      <samp>
-      host2  IN AAAA     fec0::a:b:c:d
-      </samp>
-      <p>
+      <pre>
+host2  IN AAAA     3ffe:501:ffff::a:b:c:d
+      </pre>
+
       <em>Reverse zone file entry</em><br>
-      <samp>
-      d.0.0.0.c.0.0.0.b.0.0.0.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.c.e.f.ip6.int.
+      <pre>
+d.0.0.0.c.0.0.0.b.0.0.0.a.0.0.0.0.0.0.0.f.f.f.f.1.0.5.0.e.f.f.3.ip6.int.
 	IN PTR   host2.mydomain.org.au.
-      </samp>
+      </pre>
 </ol>
+<br><br>
+
+Please note that the following addresses MUST NOT appear on global DNS cloud:
+<ol>
+	<li>link-local addresses (matches fe80::/10, like fe80::1)<br>
+		This one is not globally reachable.
+	<li>site-local addresses (matches fec0::/10, like fec0::1)<br>
+		This one is not globally reachable either.
+		This one somewhat like a private address, so you can put it
+		into your intranet DNS cloud.
+	<li>v4 mapped addresses (matches ::ffff:0.0.0.0/96, like ::ffff:10.1.1.1)<br>
+		This address is only for internal use in a node.
+		Do not put this into DNS database directly.
+</ol>
+It is not recommended to put these addresses onto DNS cloud:
+<ol>
+	<li>multicast addresses (matches ff00::/8, like ff05::1)
+</ol>
+For the NetBSD/KAME IPv6 code, putting the following address does not make
+sense due to lack of support:
+<ol>
+	<li>v4 compatible address (matches ::0.0.0.0/96, like ::10.1.1.1)<br>
+		NetBSD/KAME does not support <RFC>RFC1933 auto tunnel.
+</ol>
+<br><br>
+
 <ul>
   <li><h3>See also:</h3>
       <ul>
@@ -188,56 +490,453 @@ with IPv6 addresses.
       </ul>
 </ul>
 
-<ENTRY>upstream  Connecting to IPv6 upstream
-You can hook your machine up to experimental IPv6 network,
-called <A HREF="http://www.6bone.net/">"6bone"</A>.
-You will need to talk with nearest 6bone site, to get your IPv6 prefix address.
-Note that you'll need to have fixed IPv4 global address for this.
-<P>
+<ENTRY>addressing  IPv6 unicast address allocation
+There are couple of differences between IPv6 and IPv4 address allocation.
+<ul>
+  <li>The prefix length for an IPv6 subnet will always be /64; no more, no less.
+      It allows you to place as many IPv6 devices as the underlying network
+      medium allows.  <br>
+      With IPv4, prefix length varies between subnets to subnets,
+      and it caused painful costs when renumbering subnets
+      (for example, imagine when you renumber an IPv4 subnet from
+      /28 to /29 or vice versa).
+  <li>An ordinary leaf site will always get /48 of address space.
+      It will make site renumbering easier, and allows you to switch ISP more
+      easily. <br>
+      With IPv4, the allocation varies by the size of the site, and made
+      it very painful when you migrated from one ISP to another, for example.
+</ul>
 
-If you do not have fixed IPv4 global address (if you are using dialup ISP
+<ENTRY>upstream  Connecting to IPv6 upstream
+Depending on the ISP situation around you, you may be able to get native
+IPv6 connectivity (just like you do for IPv4), or you may be able to get
+tunnelled connectivity (IPv6 packets encapsulated into IPv4 packets).
+The section talks about the latter case.
+<p>
+
+You can hook your machine up to experimental IPv6 network,
+called <a HREF="http://www.6bone.net/">"6bone"</a>.
+You will need to talk with nearest 6bone site, to get your IPv6 address prefix.
+Note that you'll need to have a fixed IPv4 global address for this.
+<br><br>
+
+If you do not have a fixed IPv4 global address (if you are using dialup ISP
 connection), don't panic.
-You can hook yourself up to <A HREF="http://www.freenet6.net/">Freenet6</A>.
+You can hook yourself up to <a HREF="http://www.freenet6.net/">Freenet6</a>.
 They provide a web interface to hook up your home network whenever you
 reconnect to the Internet.
-<P>
+<br><br>
 
-In both cases, you will need to set up an IPv6-over-IPv4 tunnelling interface
+In both cases, you will need to set up an IPv6-over-IPv4 tunneling interface
 onto your router.
 Consult gif(4) for details.
 <ul>
-  <li>Setting up gif tunnel: add a line into netstart or rc.local.<br>
-      <samp>
-      gifconfig gif0 x.x.x.x. y.y.y.y
-      </samp>
-      <p>
+  <li><strong>Setting up gif tunnel</strong>:
+      create <tt>/etc/ifconfig.gif0</tt> with the following content.
+      The first argument (<tt>x.x.x.x</tt>) is your IPv4 address, and the
+      second one (<tt>y.y.y.y</tt>) is the IPv4 address of the other endpoint.
+<pre>
+create		(only needed on post-1.5)
+tunnel x.x.x.x y.y.y.y
+</pre>
+      Or, add the following lines into <tt>/etc/netstart.local</tt> or
+      <tt>/etc/rc.local</tt>.
+      <br>
+<pre>
+# ifconfig gif0 create		(only needed on post-1.5)
+# ifconfig gif0 tunnel x.x.x.x y.y.y.y
+</pre>
+      If your system is pre-1.5 and ifconfig(8) does not support the "tunnel"
+      keyword, use gifconfig(8).
+<pre>
+# gifconfig gif0 x.x.x.x. y.y.y.y
+</pre>
+  <li><strong>See if the tunnel is working correctly</strong>:
+	First try invoking the following command:
+<pre>
+# ping6 -n ff02::1%gif0
+</pre>
+	If you see two packets, one from your local node and another from
+	the remote node, the tunnel is working fine.
+	If you have an IPv4 reachability problem between x.x.x.x and y.y.y.y,
+	you will see only one reply or no reply.
+	Here are items to look at if you are having trouble:
+	<ul>
+	<li>Make sure you do not have a NAT box between you and the peer.
+		Tunnelled IPv6 packets cannot go through a NAT box.
+	<li>Make sure you do not have any IPv4 packet filters between
+		you and the peer.
+	</ul>
+  <li><strong>Exchange routes</strong>:
+	Depending on your upstream configuration, you may need to set up
+	default route to the upstream, or you may need to run a routing daemon.
 </ul>
+<br><br>
+
+The above configuration uses an <RFC>RFC1933 IPv6-over-IPv4 configured tunnel.
+Note that <RFC>RFC1933 packets will not be able to go through a NAT router
+(if your tunnel endpoint itself - a NetBSD box - is a NAT router,
+it should not be a problem).
+<br><br>
+
 <ul>
   <li><h3>See also:</h3>
       <ul>
-	<li><a href="http://www.6bone.net/">6bone</A>
-	<li><a href="http://www.freenet6.net/">Freenet6.net</A>
+	<li><a href="http://www.6bone.net/">6bone</a>
+	<li><a href="http://www.freenet6.net/">Freenet6.net</a>
       </ul>
+</ul>
+
+<ENTRY>typical  Typical IPv6 network setup
+Suppose you have obtained your address prefix, 3ffe:0501:ffff::/48
+from your upstream for your home network.
+You have two ethernet segments in your home, like below.
+Both myrouter A and myrouter B run IPv6-capable NetBSD.
+IPv4 addresses are assigned like below.
+You wish to connect to the upstream via IPv6-over-IPv4 tunnel,
+from myrouter A at x.x.0.1/24 to upstream router at y.y.y.10.
+<pre>
+myrouter A
+  | IPv4 x.x.0.1/24
+  |
+==+=== ethernet 0
+  |
+  | IPv4 x.x.0.2/24
+myrouter B
+  | IPv4 x.x.1.2/24
+  |
+==+=== ethernet 1
+</pre>
+<ol>
+  <li>First, you need to configure your tunnel to the upstream from myrouter A.
+On myrouter A, configure the tunnel by using ifconfig(8),
+and then confirm the reachability by using ping6(8).
+"ff02::1" is referred to as an all-node multicast address, which should reach
+all nodes on the tunnel - in this case, myrouter A and upstream router.
+If you get answers from two nodes, the tunnel is working fine.
+If you get answer from only one node (myrouter A itself), something is
+bad between you and the upstream.
+It could be IPv4 filtering, it could be misconfiguration on either side,
+or something else.
+Track the problem down before proceeding.
+<pre>
+# ifconfig gif0 create		(only needed on post-1.5)
+# ifconfig gif0 tunnel x.x.0.1 y.y.y.10
+# ping6 -I gif0 -n ff02::1
+PING6(56=40+8+8 bytes) fe80::a00:5aff:fe38:6f86 --&gt; ff02::1
+16 bytes from fe80::a00:5aff:fe38:6f86%lo0, icmp_seq=0 hlim=64 time=0.334 ms
+16 bytes from fe80::240:5ff:fea7:f092%gif0, icmp_seq=0 hlim=64 time=3.416 ms(DUP!)
+</pre>
+
+  <li>Next, you need to assign a subnet address from your address block,
+3ffe:0501:ffff::/48, to two of your ethernet segments.
+Since the prefix length for IPv6 subnet is always /64, you have 65536 subnets
+available for you!
+Let's just assign 3ffe:0501:ffff:0000::/64 to ethernet 0, and
+3ffe:0501:ffff:0001::/64 to ethernet 1.
+<pre>
+myrouter A ---- tunnel -------&gt;	upstream
+  | IPv4 x.x.0.1/24		IPv4 y.y.y.10
+  |
+==+=== ethernet 0: x.x.0.0/24, 3ffe:501:ffff:0::/64
+  |
+  | IPv4 x.x.0.2/24
+myrouter B
+  | IPv4 x.x.1.2/24
+  |
+==+=== ethernet 1: x.x.1.0/24, 3ffe:501:ffff:1::/64
+</pre>
+
+  <li>Let us assign IPv6 global address to your routers.
+Since routers MUST be manually configured, you need to perform the "ifconfig"
+as described in manual configuration section.
+For myrouter A, lookup link-local IPv6 address (it starts with "fe80"),
+take the lower 64 bits, attach upper 64 bits from the subnet address,
+and configure it.
+To preserve configuration across reboot, you may wish to append the
+setting to /etc/ifconfig.ne2.
+<pre>
+# ifconfig ne2
+ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+	address: 08:00:5a:38:6f:86
+	media: Ethernet manual
+	inet x.x.0.1 netmask 0xffffff00 broadcast x.x.0.255
+	inet6 fe80::a00:5aff:fe38:6f86%ne2 prefixlen 64 scopeid 0x1
+# ifconfig ne2 inet6 3ffe:501:ffff:0:a00:5aff:fe38:6f86 prefixlen 64 alias
+# echo 'inet6 3ffe:501:ffff:0:a00:5aff:fe38:6f86 prefixlen 64 alias' &gt;&gt; /etc/ifconfig.ne2
+</pre>
+For myrouter B, do the similar thing.
+<pre>
+# ifconfig tlp0 inet6 3ffe:501:ffff:0:a00:5aff:fe38:8765 prefixlen 64 alias
+	(ethernet 0 side)
+# ifconfig tlp1 inet6 3ffe:501:ffff:1:a00:5aff:fe38:9710 prefixlen 64 alias
+	(ethernet 1 side)
+</pre>
+
+  <li>To exchange routing information, run route6d(8) on both routers.
+If the upstream asks you to aggregate route announcements, please consult
+the manual page for command line options.
+Now that connectivity to yourupstream should be okay, try to ping external
+IPv6 nodes.
+Do not forget to specify "-n" to ping6(8); IPv6 reverse address lookup
+can take a very long time and should be avoided when you do tests.
+<pre>
+# route6d	(on both routers)
+# ping6 -n www.6bone.net
+</pre>
+
+  <li>If you have end hosts (non-router nodes) on your network, you may
+want your router to advertise subnet information to end hosts.
+By doing this, your end hosts will be able to autoconfigure themselves.
+You will need to prepare /etc/rtadvd.conf, and run rtadvd(8).
+Note that you should advertise subnet information from the upstream router.
+In the picture, myrouter A should advertise to ethernet 0, and myrouter
+B should advertise to ethernet 0 and 1.
+You may want to disable advertisement from myrouter B to ethernet 0,
+because B is on the downstream and is not optimal as the default router
+(but if you disable it, machines on ethernet 0 will not be able to talk with
+machines on ethernet 1 when myrouter A is dead).
+<pre>
+# rtadvd ne2	(from myrouter A to ethernet 0)
+# rtadvd tlp0 tlp1	(from myrouter B to ethernet 0 and 1)
+</pre>
+Then, you need to run rtsol(8) or rtsold(8) on your end nodes so that
+they can be autoconfigured.
+</ol>
+<br><br>
+
+In some cases, your upstream may ask you to configure differently from the
+above scenario.
+Do not hesitate to ask on the tech-net mailing list, or users@ipv6.org.
+When you ask about your configuration, be VERY sure to attach a network
+diagram for your site.
+Without a network diagram, nobody can guess your network configuration.
+
+<ENTRY>resolve  Resolve DNS names over IPv6 cloud
+To go to a totally IPv6 environment (without IPv4),
+you'd need to contact name servers using IPv6 cloud.  
+It's easy: you just need to put IPv6 addresses into resolv.conf(5).
+If you would like to run an IPv6 transport ready DNS server, try running
+<PKGSRC>net/bind9.
+Example configuration would be like this:
+<pre>
+nameserver 3ffe:501:4819::42
+</pre>
+<p>
+There's a working IPv6-ready DNS server running on the above address, so feel
+free to try it out.
+
+<ENTRY>faith_translate  Using FAITH TCP relay translator
+We cannot connect directly from an IPv6-only client to an IPv4-only server,
+or vice versa.
+We need a device called a <em>"translator"</em> to do this.
+<br><br>
+
+NetBSD is shipped with the faithd(8) TCP relay translator, which can be used
+to enable an IPv6-only (or IPv4/v6) client to contact IPv4-only servers
+by using IPv6 TCP.
+By using it with <PKGSRC>net/totd DNS proxy server, you can install an
+IPv6-to-IPv4 translator environment, like this:
+<pre>
++--IPv6 only cloud------+
+|			|
+|IPv6 only		|			IPv4 only
+|client	 == IPv6 ===&gt; translator ----- IPv4 --&gt;	servers
+|	    tcp	      runs faithd(8)   tcp
+|			|
++-----------------------+
+</pre>
+
+For actual setup, please refer to the following documents.
+
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+	<li><A HREF="http://www.ietf.org/html.charters/ngtrans-charter.html">
+		IETF ngtrans working group</A>
+	<li><RFC>RFC3142: 
+		"An IPv6-to-IPv4 transport relay translator",
+		internet-draft describes how faithd(8) works
+	<li><CURRENTSRC>/usr.sbin/faithd/README
+	<li><PKGSRC>net/totd
+      </ul>
+</ul>
+
+<ENTRY>with_nat  IPv6 across IPv4-only routers, or NAT routers
+If your organization has IPv4-only routers, IPv4 NAT routers,
+or other things that may become obstacles to direct IPv6 networking,
+you can overcome these hurdles by following ways.
+Pick the most suitable one for your network configuration:
+
+<ul>
+<li>It is possible to place two routers, one for IPv4, and one for IPv6,
+between two ethernet segments.
+	You can place IPv6-only routers between two segments,
+	enabling IPv6 routing only.
+	This way, you can keep IPv4 network untouched.
+<pre>
+outgoing router
+  |
+==+=======================+=== IPv4/v6 subnet A
+  |			  |
+IPv4-only router	IPv6-only router
+  | forward		  | forward
+  | IPv4 only		  | IPv6 only
+==+=======================+=== IPv4/v6 subnet B
+</pre>
+
+<li>Usage of private/global address in IPv4 has nothing to do with
+IPv6 network.
+	If it is allowed under your network management policy, you can
+	configure global IPv6 reachability, while splitting IPv4 network
+	into private address segment and global address segment by NAT box/
+	firewalls.
+<pre>
+outgoing router
+  |
+==+=======================+=== subnet A: IPv4 global, IPv6 global
+  |			  |
+IPv4-only NAT router	IPv6-only router
+  |			  |
+==+=======================+=== subnet B: IPv4 private, IPv6 global
+</pre>
+
+<li>In some cases, you can bridge IPv6 traffic across segments by using
+normal IPv4 router.
+	If you can configure your IPv4 router to bridge ethernet protocol type
+	0x86dd, you can bridge IPv6 traffic only.
+	In this case, subnet allocation will become different between IPv4
+	and IPv6 - this may become headache if you do this too much...
+<pre>
+outgoing router
+  |
+==+======== ether segment 1: IPv4 subnet A, IPv6 subnet X
+  |
+IPv4-only router (bridge ether type 0x86dd)
+  |
+==+======== ether segment 2: IPv4 subnet B, IPv6 subnet X (same as above)
+</pre>
+
+<li>If you have IPv4 reachability between two distant location in your 
+organization, you can use IPv6-over-IPv4 tunnel to go across IPv4-only
+network in between.
+<pre>
+	+--- IPv4-only cloud -------------------+
+	|					|
+  +&lt;================= IPv6-over-IPv4 tunnel =============&gt;+
+  |	|					|	  |
+  |	+---------------------------------------+	  |
+  |							  |
+IPv4/v6 router						IPv4/v6 router
+  |							  |
+==+======= IPv4/v6 segment 1				==+======= IPv4/v6 segment 2
+</pre>
+</ul>
+
+<ENTRY>twists  Twists
+Because IPv6 is still in its infancy, there are several non-standard
+items or specfication holes.
+The KAME IPv6 implementation tries to address those.
+<ul>
+  <li>IPv6 specifies "scoped", or not-worldwide-unique, addresses in the
+      specification.
+      To disambiguate a scoped address, we need to explicitly specify the
+      scope of the address.
+      For example, the specification specifies a "link-local address" which
+      is unique on a single link only.
+      You need to specify the outgoing "link" with the address to disambiguate
+      the address.
+      <br>
+      KAME IPv6 code embeds a scope identifier into the 3rd and 4th byte of
+      a scoped address in the in-kernel structures.
+      Because of this, you sometimes see embedded form, like
+      "fe80:1::abcd:1234:abcd:1234" to mean
+      "fe80:0000:0000:0000:abcd:1234:abcd:1234 on scope 1".
+      You should not specify the embedded form whenever possible.
+      <br>
+      To disambiguate a scoped address, you have two options:
+      <ul>
+      <li>Use a special command line option, like -I option for ping6(8).
+      <li>Use the extended scoped address syntax, like <tt>fe80::1%de0</tt>
+	  for specifying the address.
+	  Note that the syntax is available only for certain set of
+	  applications (applications that use getaddrinfo(3) can handle this).
+      </ul>
+  <li>When you perform some experiments in your local network, do not
+      try to use site-local unicast addresses.
+      The way the specification is written is too vague.  Both the
+      specification and implementations
+      should be improved before putting site-local addresses into real use.
+      Even if you wish to run partitioned networks (which does not connect
+      to the outside), always use IPv6 aggregatable global unicast addresses.
+  <li>Other implementation details can be found in 
+	<a href="http://orange.kame.net/dev/cvsweb.cgi/kame/IMPLEMENTATION">
+	KAME implementation document</A>.
+</ul>
+<br><br>
+
+Not about the specification, but there are some things worth mentioning:
+
+<ul>
+  <li>Not all the tools are IPv6 transport ready.
+      X(1), and some other tools support IPv4 transport only.
+      Though named(8) and yp(8) can contain IPv6 address in their database,
+      they do not support IPv6 transport (they cannot resolve names
+      over the IPv6 cloud).
+  <li>Some of pkgsrc directories have been changed to use <tt>USE_INET6</tt>
+      to switch between IPv4/v6 builds and IPv4-only builds.
+      <tt>USE_INET6</tt> will automatically be turned on for IPv6-ready NetBSD
+      systems.
+  <li>The implementation does not support automatic tunnels (<RFC>RFC1933)
+      nor 6over4.
+  <li><tt>AF_INET6</tt> wildcard listening sockets will grab IPv4 connection
+      only with certain configurations (<RFC>RFC2553 documents this behavior).
+      Consult inet6(4) and ip6(4) for more details.
+  <li>IPv6 requires network interfaces to have multicast support.
+	If your driver has any problem in multicast support
+	(like lack of support, bug in multicast filter configuration, etc),
+	then IPv6 does not work at all.
+	If you see this kind of problem, please
+	<a href="../../../Misc/send-pr.html">do send a bug report</a>.
+  <li>NetBSD does not ship with getipnodebyname(3) nor getipnodebyaddr(3),
+	as they are practically deprecated in the IPv6 basic API specification.
+	They also lack support for the scoped nature of IPv6 address.
+	Use getaddrinfo(3) and getnameinfo(3) instead.
 </ul>
 
 <ENTRY>maintenance  Maintenance
 <ul>
   <li>Monitoring activity - useful tools
       <ul>
-        <li>ifconfig(8) - configure and display network interface parameters.
-        <li>route(8) - manipulate the routing tables.
+        <li>ifconfig(8) - configure and display network interface parameters
+        <li>route(8) - manipulate the routing tables
         <li>ping6(8) - send ICMPv6 ECHO_REQUEST packets to network nodes
-        <li>traceroute6(8) - print the route packets take to reach a network node
+        <li>traceroute6(8) - print the route that packets take to reach a network node
         <li>tcpdump(1) - selectively view traffic on a network interface
         <li>netstat(1) - show network status
+        <li>ndp(8) - arp(8) lookalike for IPv6
+        <li>ifmcstat(8) - check kernel multicast group configuration
         <li>systat(8) 'systat netstat' - dynamically display network connections
+      </ul>
+  <li>IPv6 autoconfiguration
+      <ul>
+	<li>rtadvd(8) - transmit router advertisements from router
+	<li>rtsold(8) - periodically send router solicitation, for use on hosts
+	<li>rtsol(8) - send single router solicitation; for use on hosts
       </ul>
   <li>Routing daemons
       <ul>
         <li>route6d(8) - RIPng routing daemon, just like routed(8)
-        <li>pim6dd(8) - PIMv6 dense mode multicast routing daemon
-        <li><A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/net/zebra/README.html">zebra</A>
-		- zebra routing daemon, supports RIPng, BGP4+, and OSPFv6
+        <li><PKGSRC>net/pim6dd - PIMv6 dense mode multicast routing daemon
+        <li><PKGSRC>net/pim6sd - PIMv6 sparse mode multicast routing daemon
+        <li><PKGSRC>net/zebra - zebra routing daemon, supports RIPng, BGP4+, and OSPFv6
+      </ul>
+  <li>IPv6-related pseudo interfaces
+      <ul>
+        <li>faith(4) - IPv6-to-IPv4 TCP relay capturing interface, helps faithd(8)
+        <li>gif(4) - generic tunnel interface, which does IPv[46] over IPv[46]
+        <li>ifconfig(8) - configures gif(4) with "tunnel" subcommand
+        <li>stf(4) - 6to4 tunnel interface
       </ul>
 </ul>
 <ul>
@@ -248,32 +947,101 @@ Consult gif(4) for details.
 </ul>
 
 <ENTRY>userland  Userland applications
-Some of <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/README.html">package</A>
-directories are now IPv6 ready.
-Check <TT>USE_INET6</TT> settings in mk.conf.
-<P>
+The following programs in the base system are known to be IPv6-enabled:
+<tt>
+finger(1), 
+fstat(1), 
+ftp(1), 
+netstat(1), 
+rlogin(1), 
+rsh(1), 
+systat(1), 
+telnet(1), 
+tftp(1), 
+whois(1), 
+faithd(8), 
+fingerd(8), 
+ftpd(8), 
+ifconfig(8), 
+inetd(8), 
+lpd(8) (and friends), 
+mld6query(8), 
+mtrace6(8), 
+ndp(8), 
+pim6dd(8), 
+pim6sd(8), 
+ping6(8), 
+pppd(8), 
+rdate(8), 
+rip6query(8), 
+rlogind(8), 
+route6d(8), 
+rshd(8), 
+sendmail(8),
+syslogd(8), 
+tcpdchk(8) (and friends), 
+telnetd(8), 
+tftpd(8), 
+traceroute6(8), 
+trpt(8)
+</tt>.
+<p>
 
-If you want an IPv6-ready third-party software, you may need to get an
+RPC and NFS now support IPv6.
+<p>
+
+An increasing number of
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/README-IPv6.html">packages</a> are also ready for IPv6.
+<br><br>
+
+If you want IPv6-ready third-party software, you may need to get an
 IPv6 patch for the software.
 There are collections of IPv6 patches on the net.
+<br><br>
+
 <ul>
   <li><h3>See also:</h3>
       <ul>
 	<li><a href="ftp://ftp.kame.net/pub/kame/misc/">ftp://ftp.kame.net/pub/kame/misc/</a>
-	<li><a href="http://www.ipv6.org/">ipv6.org</A>
+	<li><a href="http://www.ipv6.org/">ipv6.org</a>
       </ul>
 </ul>
 
-<ENDLIST>
+</LIST>
 
-<BASELINKS>
+<a href="../">Up to <em>NetBSD Documentation: Network</em></a>
+<hr>
+
+<DOCLINK>
+<hr>
+
+<p>
+<center>
+This <a href="http://www.ipv6.euronet.be/webring/">IPv6 Configuration Help</a>
+site is owned by <a href="/">The NetBSD Project</a>.
+<br>
+[ 
+ <a href="http://go.webring.yahoo.com/go?ring=ipv6&amp;id=3&amp;prev">Previous</a> 
+|
+ <a href="http://go.webring.yahoo.com/go?ring=ipv6&amp;id=3&amp;next">Next</a> 
+|
+ <a href="http://go.webring.yahoo.com/go?ring=ipv6&amp;id=3&amp;random">Random
+ Site</a> 
+|
+ <a href="http://nav.webring.yahoo.com/hub?ring=ipv6&amp;list">List Sites</a> 
+]
+</center>
+<p>
 
 <hr>
 <address>
+  <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.6 1999/07/27 12:56:17 itojun Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
+  $NetBSD: index.list,v 1.79 2001/09/17 00:10:34 itojun Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000, 2001
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
 
 </body>
