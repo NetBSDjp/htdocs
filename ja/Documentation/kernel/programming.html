@@ -12,8 +12,8 @@
 
 
 <table><tr><td>
-<a href="/Misc/daemon-copy.html" origlink="../../Misc/daemon-copy.html">
-<img align="center" src="/images/BSD-demon.jpg" origlink="../../images/BSD-demon.jpg" border=0
+<a href="/Misc/daemon-copy.html">
+<img align="center" src="/images/BSD-demon.jpg" border=0
 width=146 height=129 alt="BSD demon"></a>
 </td><td align=center>
 <h1>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B:</h1>
@@ -44,6 +44,7 @@ width=146 height=129 alt="BSD demon"></a>
 <li><a href="#forcing-ddb">$B6/@)E*$K(B DDB $B$KMn$H$9(B</a></li>
 <li><a href="#adding_a_new_driver">$B%+!<%M%k$K?7$7$$%I%i%$%P!<$rDI2C$9$k(B</a></li>
 <li><a href="#adding_a_system_call">$B%7%9%F%`%3!<%k$rDI2C$9$k(B</a></li>
+<li><a href="#mmap_in_pseudo-device">$B2>A[%G%P%$%9$K(B mmap $B$r<BAu$9$kJ}K!(B</a></li>
 <li><a href="#accessing_a_kernel_structure_from_userland">$B%f!<%6!<%i%s%I$+$i%+!<%M%k$N9=B$BN$X%"%/%;%9$9$k(B</a></li>
 </ul></font>
 
@@ -148,6 +149,92 @@ printf() $B$r;H$&$3$H$G$7$g$&!#%+!<%M%k$N(B printf $B$O(B $B%3%s%=!<%k$K=PN
 
 </dd></dl></p>
 <p><dl><dt>
+<font><h3><a name="mmap_in_pseudo-device">$B2>A[%G%P%$%9$K(B mmap $B$r<BAu$9$kJ}K!(B</a>
+<font size="-1">(<a href="#top">top</a>)</font></h3></font>
+</dt><dd>
+$B$"$J$?$N:n$C$?%G%P%$%9$O!"$*$=$i$/%-%c%i%/%?!<%G%P%$%9$G$7$g$&!#$b$7!"(B
+$B$=$&$G$"$l$P!"%G%P%$%9%Z!<%8%c!<$r;H$C$F$$$k$O$:$G$9!#(B(VM $B%7%9%F%`$O!"(B
+$B$3$l$i$9$Y$F$r1#JC$7$F$$$k$N$G!"?4G[$7$J$$$G$/$@$5$$(B)$B!#(B
+<p>
+$B:G=i$K!"(Bmmap $B%$%s%?!<%U%'!<%9$N$?$a$K!"E,Ev$J%*%U%;%C%H$r$$$/$D$+A*(B
+$B$s$G$/$@$5$$!#Nc$($P!V(Bmmap $B%*%U%;%C%H(B 0-M $B$O(B $B%*%V%8%'%/%H(BA$B$r$"$?$($k!"(B
+N-O $B$O%*%V%8%'%/%H(B B $B$r$"$?$($k!WEy$N$h$&$K!#(B
+<p>
+$B$3$l$,=*$k$H!"(Bmmap $B%k!<%A%s$O0J2<$N$h$&$K<BAu$G$-$^$9!#(B
+<p>
+<pre>
+int
+foommap(dev, off, prot)
+        dev_t dev;
+        int off, prot;
+{
+
+        if (off & PAGE_MASK)
+                panic("foommap");
+
+        if ((u_int)off &gt;= FOO_REGION1_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION1_MMAP_OFFSET + FOO_REGION1_SIZE))
+                return (atop(FOO_REGION1_ADDR + ((u_int)off -
+                    FOO_REGION1_MMAP_OFFSET)));
+
+        if ((u_int)off &gt;= FOO_REGION2_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION2_MMAP_OFFSET + FOO_REGION2_SIZE))
+                return (atop(FOO_REGION1_ADDR + ((u_int)off -
+                    FOO_REGION2_MMAP_OFFSET)));
+
+        /* Page not found. */
+        return (-1);
+}
+</pre>
+<p>
+$B$5$F!"<B:]$K$OC1=c$J%+!<%M%k%a%b%j!<%*%V%8%'%/%H$r(B mmap $B$9$k$N$G!"(B
+$B%3!<%I$O$b$&$9$3$7J#;($K$J$j$^$9(B($B7k6I$O2>A[%G%P%$%9$G$9$+$i(B)$B!#(B
+<p>
+$B$3$l$rF0:n$5$;$k$?$a$K$O!"%"%m%1!<%H$7$?%a%b%j!<%*%V%8%'%/%H$r%Z!<%8D4@0(B
+$B$5$l$?6-3&$K3N<B$K(B mmap $B$7$J$1$l$P$J$j$^$;$s!#$b$7!"%"%m%1!<%H$7$?%a%b%j(B
+$B$N%5%$%:(B &gt;= PAGE_SIZE $B$J$i!"$3$l$OJ]>Z$5$l$^$9!#$=$&$G$J$1$l$P!"(B
+uvm_km_alloc() $B$r;H$$!"%"%m%1!<%7%g%s%5%$%:$r%Z!<%8%5%$%:$K@Z$j$"$2$F$/$@$5$$!#(B
+<p>
+$B<c43$N=$@5$r2C$($k$H0J2<$N$h$&$K$J$j$^$9!#(B
+<p>
+<pre>
+int
+foommap(dev, off, prot)
+        dev_t dev;
+        int off, prot;
+{
+        paddr_t pa;
+
+        if (off & PAGE_MASK)
+                panic("foommap: offset not page aligned");
+
+        if ((u_int)off &gt;= FOO_REGION1_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION1_MMAP_OFFSET + FOO_REGION1_SIZE)) {
+                if ((vaddr_t)foo_object1 & PAGE_MASK)
+                        panic("foommap: foo_object1 not page aligned");
+                if (pmap_extract(pmap_kernel(), foo_object1 +
+                    (u_int)off - FOO_REGION1_MMAP_OFFSET, &pa) == FALSE)
+                        panic("foommap: foo_object1 page not mapped");
+                return (atop(pa));
+        }
+
+        if ((u_int)off &gt;= FOO_REGION2_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION2_MMAP_OFFSET + FOO_REGION2_SIZE)) {
+                if ((vaddr_t)foo_object2 & PAGE_MASK)
+                        panic("foommap: foo_object2 not page aligned");
+                if (pmap_extract(pmap_kernel(), foo_object2 +
+                    (u_int)off - FOO_REGION2_MMAP_OFFSET, &pa) == FALSE)
+                        panic("foommap: foo_object2 page not mapped");
+                return (atop(pa));
+        }
+
+        /* Page not found. */
+        return (-1);
+}
+</pre>
+
+</dd></dl></p>
+<p><dl><dt>
 <font><h3><a name="accessing_a_kernel_structure_from_userland">$B%f!<%6!<%i%s%I$+$i%+!<%M%k$N9=B$BN$X%"%/%;%9$9$k(B</a>
 <font size="-1">(<a href="#top">top</a>)</font></h3></font>
 </dt><dd>
@@ -159,7 +246,7 @@ printf() $B$r;H$&$3$H$G$7$g$&!#%+!<%M%k$N(B printf $B$O(B $B%3%s%=!<%k$K=PN
 </dd></dl></p>
 <hr>
 
-<a href=""><em>NetBSD Documentation: Kernel</em> $B$KLa$k(B</a>
+<a href="" origlink=""><em>NetBSD Documentation: Kernel</em> $B$KLa$k(B</a>
 <hr>
 
 
@@ -168,11 +255,11 @@ printf() $B$r;H$&$3$H$G$7$g$&!#%+!<%M%k$N(B printf $B$O(B $B%3%s%=!<%k$K=PN
   <table><tr>
   <td>
     <a href="../../">
-    <img src="/images/NetBSD-banner.gif" origlink="../../images/NetBSD-banner.gif" border=0 alt=""></a>
+    <img src="/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
     <font>
     <a href="../../">
-    <img src="/images/empty.gif" origlink="../../images/empty.gif" border=0
+    <img src="/images/empty.gif" border=0
      alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
     </font>
   </td>
@@ -180,12 +267,12 @@ printf() $B$r;H$&$3$H$G$7$g$&!#%+!<%M%k$N(B printf $B$O(B $B%3%s%=!<%k$K=PN
 </td><td>
   <table><tr>
   <td>
-    <a href="/Documentation" origlink="../../Documentation">
-    <img src="/images/NetBSD-banner.gif" origlink="../../images/NetBSD-banner.gif" border=0 alt=""></a>
+    <a href="../../Documentation">
+    <img src="/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
     <font>
-    <a href="/Documentation" origlink="../../Documentation">
-    <img src="/images/empty.gif" origlink="../../images/empty.gif" border=0
+    <a href="../../Documentation">
+    <img src="/images/empty.gif" border=0
      alt="NetBSD ">Documentation top level</a>
     </font>
   </td>
@@ -197,7 +284,7 @@ printf() $B$r;H$&$3$H$G$7$g$&!#%+!<%M%k$N(B printf $B$O(B $B%3%s%=!<%k$K=PN
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: programming.html,v 1.8 2000/02/24 10:14:30 kawamoto Exp $<br>
+  $NetBSD: programming.html,v 1.9 2000/06/12 05:12:09 bsh Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
