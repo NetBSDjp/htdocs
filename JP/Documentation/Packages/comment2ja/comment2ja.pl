@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.19 1999/12/08 03:57:47 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.20 1999/12/08 04:08:08 sakamoto Exp $
 #
 
 $|=1;
@@ -129,8 +129,8 @@ foreach $dir (readdir(TOPDIR)) {
 	while (<SRC>) {
 		s/You are now in the directory (".*")./$1 ディレクトリー/;
 		s/\"..\/(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
-		s/Here are the one-line descriptions for each of the items (/このカテゴリーに含まれるパッケージ (/;
-		s/) in this directory:/) の一行コメント/;
+		s/Here are the one-line descriptions for each of the items \(/このカテゴリーに含まれるパッケージ (/;
+		s/\) in this directory:/) の一行コメント/;
 
 		if (/^<TR><TD VALIGN=TOP><a href=\"([^\/]+)/) {
 			my ($p) = "$dir/$1";
