@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2003
+<!-- Copyright (c) 1994-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -22,7 +22,7 @@ If you add entries here, please add them to ../index.html as well.
 Note that the relative URL path needs to be modified.
 -->
 <ul>
-  <li><a href="inetd/">The Internet Super Server (inetd)</a>
+  <li><a href="../../guide/en/chap-inetd.html">The Internet Super Server (inetd)</a>
   <li><a href="nsps/">NetBSD Security Processes and Services</a>
   <li><a href="wavelan.html">Wireless networking using the Lucent WaveLAN</a>
   <li><a href="netboot/">HOWTO Netboot a diskless machine</a>
@@ -61,6 +61,7 @@ Note that the relative URL path needs to be modified.
           -->
 
   <li> The <a href="ftp://ftp.csl.sony.co.jp/pub/kjc/papers/altq98.ps.gz">AltQ Paper</a>
+  <li> <a href="http://caunter.ca/nsupdate.txt">nsupdate HOWTO</a></li>
 </ul>
 
 <SECTION>Networking FAQ
@@ -85,13 +86,16 @@ configuration files.
       including the network services, to be automatically
       started at system initialisation.
   <li>/etc/hosts - hosts(5) the most basic hostname/IP map.
-  <li>/etc/myname - the fully qualified hostname.
-  <li>/etc/mygate - default gateway. Usually better put in /etc/rc.conf, or
+  <li>/etc/myname - the fully qualified hostname (unless set via
+      <tt>hostname</tt> in /etc/rc.conf).  
+  <li>/etc/mygate - default gateway. Usually better put as
+      <tt>defaultroute</tt> in /etc/rc.conf, or 
       you can run routed(8).
   <li>/etc/ifconfig.{<em>IF</em>}. - the definition of
       network interface <em>IF</em>, used by
       <em>/etc/rc.d/network</em> at system initialisation, to configure
-     a network interface. See ifconfig.if(5).
+     a network interface. See ifconfig.if(5). An alternative is
+      setting <tt>ifconfig_IF="..."</tt> in /etc/rc.conf.
   <li>/etc/ifaliases - ifaliases(5) a single interface can be aliased to more
       than one IP number. The aliases are specified here, and used by
       <em>/etc/rc.d/network</em> at system initialisation.
@@ -104,6 +108,8 @@ search subdomain.yourdomain.tld yourdomain.tld
 nameserver 192.168.253.10
 nameserver 192.168.253.11
 </pre>
+
+      Beware, this file is overwritten by dhclient(8)!
 </ul>
 <ul>
   <li><h3>See also:</h3>
@@ -112,14 +118,19 @@ nameserver 192.168.253.11
       </ul>
 </ul>
 
+
 <ENTRY>configuration_programs  Network Configuration Programs
-Two important network configuration programs are used in the network startup script
-(/etc/rc.d/network), and can be used to manually configure an active network.
+
+Two important network configuration programs are used in the network
+startup script (/etc/rc.d/network), and can be used to manually
+configure an active network. 
+<p>
 
 <ul>
   <li>ifconfig(8) - change or view the characteristics of a network interface.
   <li>route(8) - manipulate the network routing tables.
 </ul>
+
 <ul>
   <li><h3>See also:</h3>
       <ul>
@@ -128,24 +139,37 @@ Two important network configuration programs are used in the network startup scr
       </ul>
 </ul>
 
+
 <ENTRY>adding_a_host  Adding a New Host to the Network
-The minimum software requirement for a host to be added to a network
-is a configured interface with an address on the local network. If
-you provide network information during the NetBSD installation
-process, the new host can be immediately connected to the network and
-accessed by its IP number.
+
+If your network is setup to use DHCP, all you need to do is set
+"<tt>dhclient=yes</tt>" in /etc/rc.conf, and the DHCP client will be
+started at boot time to automatically configure your machine's IP
+address, hostname, default router, nameservers and domainname used.
+See <a href="dhcp.html">here</a> for more information on DHCP.
 <p>
+
+If no DHCP is available, the minimum software requirement for a host
+to be added to a network is a configured interface with an address on
+the local network. If you provide network information during the
+NetBSD installation process, the new host can be immediately connected
+to the network and accessed by its IP number.
+<p>
+
 The following is a simple example of how to configure networking, assuming
 that you have one <em>ex</em> network interface and want your IP to be
 192.168.253.2, using a default route of 192.168.253.1:
 <p>
+
 <pre>
   # ifconfig lo0 127.0.0.1
   # ifconfig ex0 192.168.253.2 netmask 255.255.255.0
   # route add default 192.168.253.1
 </pre>
 
+
 <ENTRY>naming_a_host  Naming a New Host on the Network
+
 To allow access by hostname as well as by IP number, the new hostname
 and its IP number are added to the network configuration files. There
 are a number of ways to manage this;
@@ -160,23 +184,33 @@ are a number of ways to manage this;
       192.168.1.2  host2.mydomain.org.au host2<br>
       </samp>
       <p>
-  <li>yp(8) enables the /etc/hosts files on the network to be
+
+  <li>NIS (Network Information Service, formerly known as Yellow Pages
+      (YP) enables the /etc/hosts files on the network to be   
       automatically
-      synchronised (along with other configuration files).
+      synchronised (along with other configuration files like passwd
+      and group information). 
+      See domainname(1), ypinit(8) and yp(8) as well as the
+      <tt>ypbind</tt> and <tt>domainname</tt> variables in rc.conf(5)
+      for more information.
+      <p>
+
   <li>DNS: The hostname maps can be centralised into zone-files which
       are accessed by the name-server, named(8).
       (there are many documents at
       <a href="http://www.dns.net/dnsrd/docs/">www.dns.net</a>
       dealing with setting up and maintaining DNS files).
       <p>
+
       <em>Forward zone file entry</em><br>
       <samp>
-      host2  A     192.168.1.2
+      host2  IN A     192.168.1.2
       </samp>
       <p>
+
       <em>Reverse zone file entry</em><br>
       <samp>
-      2      PTR   host2.mydomain.org.au.
+      2      IN PTR   host2.mydomain.org.au.
       </samp>
 </ol>
 <ul>
@@ -187,11 +221,14 @@ are a number of ways to manage this;
       </ul>
 </ul>
 
+
 <ENTRY>internetworking  Inter-networking
+
 Connecting your network (which may consist of a single host) to
-another network requires that at least one host acts as a gateway between the two
-networks. The gateway host has two network interfaces - one
-configured for each network.
+another network requires that at least one host acts as a gateway
+between the two networks. The gateway host has two network interfaces
+- one configured for each network.
+<p>
 
 <ul>
   <li>Create an interface configuration file (/etc/ifconfig.{<em>interface</em>})
@@ -202,17 +239,27 @@ configured for each network.
       192.168.2.30 netmask 0xffffff00 media 10base2/BNC
       </samp>
       <p>
+
+      As an alternative, put the following line into /etc/rc.conf:
+      <p>
+
+      <samp>
+      ifconfig_we1="192.168.2.30 netmask 0xffffff00 media 10base2/BNC"
+      </samp>
+
   <li>Reboot your computer to activate the new interface.
-  <li>Enable IP packet forwarding.  You can either compile a kernel
-      with "options GATEWAY", or you can "sysctl -w
-      net.inet.ip.forwarding=1" each time your machine boots, e.g.,
-      from /etc/rc.local.
+  <li>If needed, enable IP packet forwarding.  You can either compile
+      a kernel with "options GATEWAY", or you can "<tt>sysctl -w
+      net.inet.ip.forwarding=1</tt>" each time your machine boots,
+      or put "<tt>net.inet.ip.forwarding=1</tt>" into
+      /etc/sysctl.conf. 
 </ul>
 <ul>
   <li><h3>See also:</h3>
       <ul>
         <li>ipnat(5),ipnat(8)</li>
 	<li>ipf.conf(5),ipf(8)</li>
+	<li>sysctl.conf(5),sysctl(8)</li>
       </ul>
 </ul>
 
@@ -359,20 +406,19 @@ you do with a "normal" (analog) modem.
 
 
 <ENTRY>isdn4bsd	Inter-networking with ISDN cards
-The <a href="http://www.freebsd-support.de/i4b/">isdn4bsd</a> package enables
-<a href="../../Ports/alpha/">NetBSD/alpha</a>,
-<a href="../../Ports/amiga/">NetBSD/amiga</a>,
-<a href="../../Ports/atari/">NetBSD/atari</a> and
-<a href="../../Ports/i386/">NetBSD/i386</a>
-to use ISDN networking cards connected to DSS1 (European protocol)
-exchanges.  For this, you need to patch your kernel sources according
-to the instructions that come with the package, build a new kernel
-with the ISDN support compiled in and also build some control
-programs.
-<p>Note that this package is still considered to be in the beta test
-phase.
-<p>Also note that this is about ISDN cards, not about ISDN modems. The latter
-should be usable <a href="#ppp">like normal modems.</a>
+Please see <a href="isdn/">here</a>.
+
+
+<ENTRY>pppoe Inter-networking with DSL / PPPoE
+
+Please see <a href="pppoe/">here</a> for general instructions on DSL /
+PPPoE. There's also <a href="pppoe/#t-online">some more help</a> for users
+of the german ISP T-Online. 
+
+
+<ENTRY>gprs Inter-networking with GPRS / CDPD
+Please see <a href="gprs.html">here</a>.
+
 
 <ENTRY>simplenat	A simple NAT ("IP Masquerading") setup
 
@@ -383,7 +429,7 @@ universe), do the following: <P>
 
 <OL>
 <LI> On your clients, use the NAT machine as default router (put
-	<TT>defaultrouter="<I>a.b.c.d</I>"</TT> into their /etc/rc.conf if
+	<TT>defaultroute="<I>a.b.c.d</I>"</TT> into their /etc/rc.conf if
 	they run NetBSD, where <TT><I>a.b.c.d</I></TT> is the internal
 	IP number (from the 10.0.0.0 net, i.e.)).
 <LI> On your NAT machine, first make sure your kernel has ipfilter
@@ -456,7 +502,11 @@ then you may want to enable <a href="pppoe/#clamping">MSS clamping</a> too.
   <li>If you want a full-featured firewall that also does
       Network Address Translation (NAT, sometimes called IP
       masquerading), use IPfilter, which comes with NetBSD.
-      Check out its <a href="http://coombs.anu.edu.au/ipfilter/">homepage</a>.
+      Check out its <a
+      href="http://coombs.anu.edu.au/ipfilter/">homepage</a>.
+      Config files for NetBSD are ipf.conf(5), ipf6.conf(5),
+      ipnat.conf(5), commands and other useful manpages are ipf(4),
+      ipf(8), ipfs(8) and ipfstat(8). 
 </ul>
 <ul>
   <li><h3>See also:</h3>
@@ -479,33 +529,13 @@ to print to AppleTalk printers.  The necessary source is available
 via the NetBSD <a href="../software/packages.html">Packages
 Collection</a>.
 
-<ENTRY>new_bind  Converting to BIND version 8
-As of NetBSD 1.4, we are now using BIND version 8, which has a
-different configuration file format.  The primary named config file
-has changed names from named.boot to named.conf.  You can convert your
-old configuration files like this:
-<p>
-<samp>
-/usr/sbin/named-bootconf &lt; named.boot &gt; named.conf
-</samp>
-<p>
-Also, along with BIND being integrated with NetBSD <a
-href="../../Releases/formal.html">formal releases</a>, the 8.x
-and 9.x families of releases are available in the <a
-href="../software/packages.html">NetBSD Packages Collection</a>.
-See the <PKGSRC>net/bind8 and <PKGSRC>net/bind9 packages
-respectively.
-<p>
-At this point, BIND 4 has been deprecated, and it is strongly recommended
-that you upgrade.  If you <em>have</em> to continue to use the old 4.x
-releases of BIND, there is a <PKGSRC>net/bind4 package.
 
 <ENTRY>kerberos Kerberos
 Kerberos is a network authentication system designed to provide strong
 authentication for client/server applications by using secret-key
 cryptography.
 <p>
-NetBSD 1.5 and later ship with the KTH Heimdal Kerberos 5 implementation.
+NetBSD ships with the KTH Heimdal Kerberos 5 implementation.
 <p>
 This section provides some simple instructions to get your NetBSD systems
 configured to use Kerberos.  For those not familiar with Kerberos, this
@@ -815,12 +845,16 @@ configured to use Kerberos.
 </ol>
 Congratulations!  You now have a working Kerberos realm!
 <p>
+
+<ENTRY>win2k Authentication for Windows 2000
+
 For those of you using Windows 2000, it is also possible to use
-your NetBSD KDC has an authentication server for your Windows 2000
+your NetBSD KDC as an authentication server for your Windows 2000
 hosts.  Windows 2000 uses Kerberos to authenticate Windows Domain
 logins.  NetBSD cannot act as a Windows 2000 Domain Controller,
 but using Samba, it can act as a Workgroup server.
 <p>
+
 For the purpose of these instructions, we assume you have already
 configured Samba on your server, and configured your Windows 2000
 hosts to use it.
@@ -907,74 +941,6 @@ For more information about Kerberos, refer to these links:
 	to tcp port 113 without sending any response.
     </ol>
 
-<ENTRY>t-online Gotchas for german ISP T-Online
-	If you want to dial-in into the german ISP T-Online, the
-	two most tricky things are getting the correct username, and
-	using a proper chat-script. See <a href="#ppp">above</a> for a
-	general description of how to set up PPP.
-	<p>
-
-	<ol>
-	<li> Your login name at T-Online consists of three parts,
-	     glued together:
-	     <p>
-
-	     <ol>
-	     <li> Anschlu&szlig;kennung: 12 digit number
-   	          (<i>AAAAAAAAAAAA</i>), e.g. 000120123456
-	     <li> T-Online Nr: 12 digit number (<i>TTTTTTTTTTTT</i>),
-   	          e.g. 3200123456. Often
-	          starts with "32"; if yours is less than 12 digits,
-	          add a '#')
-	     <li> Mitbenutzer-Nummer, usually "0001" (<i>MMMM</i>),
-   	          e.g. 0001
-             </ol>
-	     <p>
-             Your login is now all three parts put in a row, with no
-	     seperator ("<i>AAAAAAAAAAAATTTTTTTTTTTTMMMM</i>"),
-  	     e.g. 0001201234563200123456#0001. Use this for
-	     the "<tt>user</tt>"-line in your PPP options file.
-	     <p>
-	<li> In the chat-script, you need to pay attention to send a
-	     "<tt>.</tt>" after the modem reported a <tt>CONNECT</tt>:
-
-<pre>
-ABORT BUSY    '' AT
-              OK ATZ
-              OK ATL1
-              OK ATD0191011
-              CONNECT <u>'.'</u>
-</pre>
-	     Without this trailing dot, you may be disconnected
-	     immediately without an answer from the T-Online dialin
-	     server after your side has sent out the first LCP
-	     ConfReq frame.
-             <p>
-	<li> If you want to use T-Online with T-DSL, be sure to append
-	     "<tt>@t-online.de</tt>" for the login, e.g. "<tt>0001201234563200123456#0001@t-online.de</tt>".
-	     <p>
-	</ol>
-
-		Here are some (german language) links with more information
-		(don't let yourself distract that most of them are not
-		for NetBSD - being just another Unix-like operating
-		system, these tips usually apply to NetBSD as well):
-		<p>
-
-		<ul>
-		<li> <a href="http://www.linux-user.de/ausgabe/2001/08/018-rp-pppoe/rp-pppoe.html">Gut gebr&uuml;llt - Roaring Penguin Software's DSL-Software</a>
-		<li> <a href="http://www.albert-rommel.de/ppp.htm">PPP-Zugang
-			  zu <font color="#FF00FF">T</font>-Online</a>
-		<li> <a href="http://home.t-online.de/home/Diedrich.Ehlerding/besonderheiten.html">Netzzugang bei <font color="#FF00FF">T</font>-Online: Besonderheiten und Einschränkungen</a>
-		<li> <a href="http://sdb.suse.de/sdb/de/html/toppp.html">SuSE:
-		     T-Online Zugang mit PPP</a>
-		<li> <a
-		     href="http://sdb.suse.de/sdb/de/html/t_online3.html">SuSE:
-		     T-Online: Verbindung wird nicht aufgebaut</a>
-		<li> <a
-			  href="http://sdb.suse.de/sdb/de/html/toppp_files.html">SuSE: PPP-Files für T-Online</a>
-		</ul>
-
 </LIST>
 
 	<DOCLINK>
@@ -983,7 +949,7 @@ ABORT BUSY    '' AT
 	<address>
 	  <small>
 	  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-	  $NetBSD: index.list,v 1.74 2004/03/20 21:39:48 snj Exp $<br>
+	  $NetBSD: index.list,v 1.80 2004/12/10 22:45:53 daniel Exp $<br>
 	  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
 	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
 	  </small>

@@ -2,9 +2,9 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2003
+<!-- Copyright (c) 1994-2004
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>NetBSD Documentation: Steps to connect via PPPoE (DSL)</title>
 </head>
@@ -79,7 +79,7 @@ an IP address assigned.
 Now you need your authentication data. Most providers offer some documentation
 how that data has to be formatted for Linux users, as the windows software
 often plays tricks and ask for provider specific things. If you are using
-t-online, please see <a href="#t-online-usernames">this side note</a>.
+t-online, please see <a href="#t-online-isdn-vs-dsl">this side note</a>.
 Enter the authentication data via a command like this (note that you may need
 to protect special characters from the shell by using single quotes):
 <pre>
@@ -145,6 +145,11 @@ on, used if you have a <a href="#stay-connected">flat rate</a> charging model.
 <p>
 If you pay for connection time, you will prefer an <a href="#connect-on-demand">
 on demand</a> connection.
+<p>
+Regardless, your ISP should have provided you with the IP addresses of your
+nameservers, which you should enter in <tt>/etc/resolv.conf</tt>.  See
+resolv.conf(5) and the <a href="../index.html#configuration_files">Networking
+FAQ</a> for details.
 
 <ENTRY>stay-connected Setup a line that is always connected
 The aim of this setup is to keep the line open as long as possible, and in
@@ -305,24 +310,94 @@ of 0x40 bytes of TCP options) but it seems to not be sufficient in some
 cases. Experiments conducted by various people have shown that clamping
 to the MSS values suggested above works best.
 
-</LIST>
 
-<H2><a name="t-online-usernames">Side note for t-online users</a></H2>
-If you have used an ISDN connection to t-online before, note that T-DSL 
+<SECTION>Various notes
+
+<ENTRY>t-online General information on T-Online account names
+	If you want to dial-in into the german ISP T-Online, the
+	two most tricky things are getting the correct username, and
+	using a proper chat-script. See <a href="#ppp">above</a> for a
+	general description of how to set up PPP.
+	<p>
+
+	<ol>
+	<li> Your login name at T-Online consists of three parts,
+	     glued together:
+	     <p>
+
+	     <ol>
+	     <li> Anschlu&szlig;kennung: 12 digit number
+   	          (<i>AAAAAAAAAAAA</i>), e.g. 000120123456
+	     <li> T-Online Nr: 12 digit number (<i>TTTTTTTTTTTT</i>),
+   	          e.g. 3200123456. Often
+	          starts with "32"; if yours is less than 12 digits,
+	          add a '#')
+	     <li> Mitbenutzer-Nummer, usually "0001" (<i>MMMM</i>),
+   	          e.g. 0001
+             </ol>
+	     <p>
+             Your login is now all three parts put in a row, with no
+	     seperator ("<i>AAAAAAAAAAAATTTTTTTTTTTTMMMM</i>"),
+  	     e.g. 0001201234563200123456#0001. Use this for
+	     the "<tt>user</tt>"-line in your PPP options file.
+	     <p>
+	<li> In the chat-script, you need to pay attention to send a
+	     "<tt>.</tt>" after the modem reported a <tt>CONNECT</tt>:
+
+<pre>
+ABORT BUSY    '' AT
+              OK ATZ
+              OK ATL1
+              OK ATD0191011
+              CONNECT <u>'.'</u>
+</pre>
+	     Without this trailing dot, you may be disconnected
+	     immediately without an answer from the T-Online dialin
+	     server after your side has sent out the first LCP
+	     ConfReq frame.
+             <p>
+	<li> If you want to use T-Online with T-DSL, be sure to append
+	     "<tt>@t-online.de</tt>" for the login, e.g. "<tt>0001201234563200123456#0001@t-online.de</tt>".
+	     <p>
+	</ol>
+
+		Here are some (german language) links with more information
+		(don't let yourself distract that most of them are not
+		for NetBSD - being just another Unix-like operating
+		system, these tips usually apply to NetBSD as well):
+		<p>
+
+		<ul>
+		<li> <a href="http://www.linux-user.de/ausgabe/2001/08/018-rp-pppoe/rp-pppoe.html">Gut gebr&uuml;llt - Roaring Penguin Software's DSL-Software</a>
+		<li> <a href="http://www.albert-rommel.de/ppp.htm">PPP-Zugang
+			  zu <font color="#FF00FF">T</font>-Online</a>
+		<li> <a href="http://home.t-online.de/home/Diedrich.Ehlerding/besonderheiten.html">Netzzugang bei <font color="#FF00FF">T</font>-Online: Besonderheiten und Einschränkungen</a>
+		<li> <a href="http://sdb.suse.de/sdb/de/html/toppp.html">SuSE:
+		     T-Online Zugang mit PPP</a>
+		<li> <a
+		     href="http://sdb.suse.de/sdb/de/html/t_online3.html">SuSE:
+		     T-Online: Verbindung wird nicht aufgebaut</a>
+		<li> <a
+			  href="http://sdb.suse.de/sdb/de/html/toppp_files.html">SuSE: PPP-Files für T-Online</a>
+		</ul>
+
+<ENTRY>t-online-isdn-vs-dsl T-Online accounts names for ISDN and DSL
+If you have used an ISDN connection to T-Online before, note that T-DSL 
 usernames differ from the ISDN ones. The DSL usernames need an additional
-<tt>@t-online.de</tt> suffix, so the complete structure is
-<tt>000XXXXXXXXXYYYYYYYYYYYY#0001@t-online.de</tt> (where the <tt>#</tt> is
-rumored to be optional, and <tt>0001</tt> is your sub-user number).
-<hr>
+<tt>@t-online.de</tt> suffix, see the
+<a href="#t-online">General information on T-Online account names</a>
+section.
+
+</LIST>
 
 <DOCLINK>
 
 <hr>
 <address>
   <small>
-  <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.16 2003/01/29 09:13:04 tron Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: index.list,v 1.21 2004/08/28 15:35:07 hubertf Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
