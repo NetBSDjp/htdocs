@@ -25,6 +25,13 @@
 <li>
 <a href="#boot-flash">メモリカードからの起動</a></li>
 </ul>
+<h2>カーネルのクロスコンパイル</h2>
+<ul>
+<li>
+<a href="#cross-tools">クロスツールの準備</a></li>
+<li>
+<a href="#kernel-build">カーネルの構築</a></li>
+</ul>
 
 
 <hr>
@@ -120,6 +127,46 @@ OK か リターンを押します(もちろん)。
 
 </dd></dl>
 <hr>
+<h2>カーネルのクロスコンパイル</h2><hr>
+<p><h3>
+<a name="cross-tools">クロスツールの準備</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+<a href="../../Documentation/current/">NetBSD-current の追跡</a>ドキュメントの
+cvs の使い方に従い、 cvs checkout <code>gnusrc/gnu/dist/toolchain</code>
+する必要があります。
+<p>
+<code>arm-unknown-netbsdelf</code> ターゲット用に configure してから
+<code>gmake -k</code> を実行します。
+<dl>
+  <dd><code>cd gnusrc/gnu/dist/toolchain</code>
+  <dd><code>./configure --target=arm-unknown-netbsdelf --prefix=/usr/local/cross</code>
+  <dd><code>gmake -k</code>
+  <dd><code>gmake -k install</code>
+</dl>
+以上の構築プロセスでエラーが出るかもしれませんが、 binutils、 gas、 gcc、
+ld を使っている限りは気にする必要はありません。
+
+</dd></dl>
+<p><h3>
+<a name="kernel-build">カーネルの構築</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+少なくとも、下記の環境変数を <code>make</code> に渡すようにすべきです。
+上記のクロスツールを <code>/usr/local/cross</code>
+以外の場所にインストールしている場合は、パス名を調整してください。
+<blockquote><pre>
+MACHINE=hpcarm
+MACHINE_ARCH=arm32
+CC=/usr/local/cross/bin/arm-unknown-netbsdelf-gcc
+AS=/usr/local/cross/bin/arm-unknown-netbsdelf-as
+LD=/usr/local/cross/bin/arm-unknown-netbsdelf-ld
+NM=/usr/local/cross/bin/arm-unknown-netbsdelf-nm
+RANLIB=/usr/local/cross/bin/arm-unknown-netbsdelf-ranlib
+SIZE=/usr/local/cross/bin/arm-unknown-netbsdelf-size
+</pre></blockquote>
+</dd></dl>
+<hr>
 
 <a href="./"> <em>NetBSD/hpcarm ポートページ</em> にもどる</a>
 <hr>
@@ -150,7 +197,7 @@ OK か リターンを押します(もちろん)。
 <address>
   <small>
   www@JP.NetBSD.ORG<br>
-  $NetBSD: howto-use.html,v 1.3 2001/06/07 18:34:17 kano Exp $<br>
+  $NetBSD: howto-use.html,v 1.4 2001/06/16 19:43:00 kano Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     2001 The NetBSD Foundation, Inc. ALL RIGHTS RESERVED.</a> 
   </small>
