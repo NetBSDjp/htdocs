@@ -1,0 +1,127 @@
+<html>
+<head>
+<!-- Copyright (c) 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>Why implement traditional vfork()</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<table><tr><td>
+<a href="../../Misc/daemon-copy.html">
+<img align="center" src="../../images/BSD-demon.gif" alt="BSD demon"></a>
+</td><td align=center>
+<h1>Why implement traditional <code>vfork()</code></h1>
+</td></tr></table>
+<p>
+
+<hr>
+<code>vfork()</code> is designed to be used in the specific case where
+the child will <code>exec()</code> another program, and the parent can
+block until this happens. A traditional <code>fork()</code> required
+duplicating all the pages of the parent process in the child - a
+significant overhead.
+
+<p>
+The Mach VM system added COW (Copy On Write), which made
+<code>fork()</code> much cheaper, and in BSD 4.4, <code>vfork()</code>
+was made synomymous to <code>fork()</code>.  After NetBSD 1.3 a
+traditional <code>vfork()</code> was reimplemented.
+
+<p>
+A good amount of effort was directed at making COW better in <a
+href="uvm.html"><strong>UVM</strong></a>, but an address
+space-sharing <code>vfork()</code> <em>still</em> turns out to be a win.  It shaves
+several seconds off a build of libc on a 200MHz PPro.
+
+<p>
+<strong><code>vfork()</code>/<code>exec()</code> using the 4.4BSD
+<code>vfork()</code> and COW:</strong>
+
+<ul>
+<li>	Traverse parent's vm_map, marking the writable portions of the
+        address space COW.  This means invoking the pmap, modifying PTEs,
+        and flushing the TLB.
+
+<li>    Create a vm_map for the child, copy the parent's vm_map entries
+        into the child's vm_map.  Optionally, invoke the pmap to copy
+        PTEs from the parent's page tables into the child's page tables.
+
+<li>    Block parent.
+
+<li>    Child runs.  If PTEs were <em>not</em> copied, take page fault to get
+        a physical mapping for the text page at the current program counter.
+
+<li>    Child execs, and unmaps the entire address space that was just
+        created, and creates a new one.  This implies that the parent's
+        vm_map has to be traversed to mark the COW portions not-COW.
+
+<li>    Unblock parent.
+
+<li>    Parent runs, takes page fault when modifying previously R/W
+        data that was marked R/O for COW (no data is copied at this
+        time
+
+</ul>
+<strong>The 3.0BSD/NetBSD <code>vfork()</code>, using address space
+sharing:</strong>
+
+<ul>
+<li>    Take reference to parent's vmspace structure.
+
+<li>    Block parent.
+
+<li>    Child runs.  No page faults occur because the parent's page
+        tables are being used, and the PTEs are already valid.
+
+<li>    Child execs, deletes the reference it had to the parent's,
+        and creates a new one.
+
+<li>    Unblock parent.
+
+<li>    Parent runs.  (No page faults occur because the parent's
+        vm_map was not modified.)
+
+</ul>
+
+So, in the case where you're going to fork and then exec, the latter
+case is clearly faster. Even if your COW algorithms are good, you still
+have to do a lot more work compared to the vmspace-sharing case!
+
+<hr>
+<a href="index.html">Back to <em>NetBSD Documentation: Kernel</em></a>
+
+<hr>
+<table width="100%"><tr>
+  <td>
+    <table><tr>
+      <td>
+	<a href="../../index.html">
+	<img src="../../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
+      </td><td>
+	<a href="../../index.html">Home Page</a>
+      </td>
+    </tr></table>
+  </td><td>
+    <table><tr>
+      <td>
+	<a href="index.html">
+	<img src="../../images/NetBSD-banner.gif"
+	alt="NetBSD&nbsp;Documentation"></a>
+      </td><td>
+	<a href="index.html">Documentation top level</a>
+      </td>
+    </tr></table>
+  </td>
+</tr></table>
+
+<hr>
+<address>
+  www@NetBSD.ORG<br>
+  $NetBSD: vfork.html,v 1.3 1998/10/19 07:30:04 abs Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
