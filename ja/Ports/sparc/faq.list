@@ -1,0 +1,463 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2001
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD/sparc Frequently Asked Questions</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1>NetBSD/sparc Frequently Asked Questions</h1>
+
+It is intended for this to become a repository of frequently asked questions
+(and answers) specific to NetBSD/sparc. 
+
+<LIST>
+
+<h2>Other sources of information</h2>
+
+<ul>
+<li><a href="http://www.sunhelp.org/">SunHELP</a> - much sun related information
+<li><a href="http://www.sunhelp.org/faq/sunref1.html">Sun
+    Hardware Reference FAQ</a> - overview of Sun hardware over the years
+<li><a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">Sun
+    NVRAM/Hostid FAQ</a> - if your machine PROM's battery has gone dead
+<li><a href="http://www.stokely.com/unix.serial.port.resources/A-B-Ycablepinout.html">
+    Sun Serial Port & Cable Pinouts</a> - lists serial port pinouts for
+    almost all models
+<li><a href="http://www.sunhelp.org/faq/FrameBuffer.html">Frame Buffer
+FAQ</a> by David Tong
+<li><a href="http://lios.apana.org.au/~cdewick/data/bootroms.html">BootROM
+Images</a> collected by Craig Dewick
+</ul>
+<p>
+
+<ul>
+<li><a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.5/sparc/INSTALL.html">
+    NetBSD 1.5 install notes</a> - supported hardware and how to install.
+<li><a href="../../MailingLists/#port-sparc"> port-sparc mail list</a>
+    - if you have any additional questions please subscribe.
+<li><a href="../../Documentation/network/netboot/intro.sun.html">Netbooting
+    NetBSD/sparc and NetBSD/sun3</a>.
+<li><a href="../../Documentation/">General NetBSD Documentation</a>
+    - for questions not specific to NetBSD/sparc.
+</ul>
+<p>
+
+<SECTION>General Questions
+
+<ENTRY>abort-to-prom How to abort to the prom
+There are three ways to abort to the prom:
+<p>
+
+<ul>
+<li>If using a Sun keyboard, Press <tt>[L1]</tt>+<tt>[A]</tt>,
+    (or <tt>[STOP]</tt>+<tt>[A]</tt>)
+<li>If using a Tadpole SPARCbook keyboard, press <tt>[Pause]</tt>+<tt>[A]</tt>
+<li>If using a serial console, send a BREAK signal (the method may very from
+    terminal to terminal).
+</ul>
+<p>
+
+Once at the prom you can continue with '<tt>go</tt>' ('ok' prompt), or
+'<tt>c</tt>' (&gt; prompt).
+
+<ENTRY>prom-passwd The PROM wants a password when I abort booting
+You need physical access to the machine to erase the password.  Power off,
+power on, hold <tt>[L1]</tt>+<tt>[N]</tt>,
+    (or <tt>[STOP]</tt>+<tt>[N]</tt>) until the PROM prompt.  This will
+reset your PROM to the factory defaults.
+<p>
+
+Alternatively (this is not for the faint of heart), power on, abort, wait
+for the password prompt, carefully remove the PROM chip, hit return,
+carefully replace the PROM, enter a new password.
+
+<ENTRY>cachechipbug What does the <tt><b>cache chip bug; trap page uncached</b></tt> kernel message mean?
+If you get this kernel message, nothing has gone wrong.  Machines with
+"buserr-type" 1 have a bug in the cache chip that affects traps.  The
+<tt><b>cache chip bug; trap page uncached</b></tt> message is the kernel
+activating a workaround for this bug.
+<p>
+
+Without this workaround, the cache simply delivers wrong data.  Often this
+turns into an illegal instruction, so that you get a trap during a trap,
+which causes a reset.  This condition can only be caught by the ROM, and
+by then it is too late to do anything about it.  This message, if you happen
+to get it, just means you'll avoid that problem.
+
+<ENTRY>sun4c-framebuffer-speedup How to speed up the framebuffer on sun4c hosts
+Here is a shellscript provided by greywolf@starwolf.com which speeds up
+PROM access to the framebuffer on sun4c hosts running OBP version 2 and
+greater (such as the IPX).
+<pre>
+#! /bin/sh -
+eeprom 'nvramrc=probe-all install-console
+ramforth
+: cache-page dup pgmap@ cacheable swap pgmap! ;
+up@ cache-page
+here origin do i cache-page pagesize +loop
+banner'
+eeprom 'use-nvramrc?=true'
+exit 0
+</pre>
+
+<ENTRY>cgsix-framebuffer-garbage Framebuffer displays garbage on scrollback
+When exiting vi, and sometimes when scrolling back, the display scrolls
+back for a few seconds displaying a lot of garbage. There is usually
+garbage in the non-text portion of the screen as well. This is
+purported to be caused by a firmware bug on Sbus cgsix boards, and has
+to date been noticed on all machines in which a cgsix board is installed.
+<br> Some options:
+<p>
+
+<ul>
+<li>Set your terminal type to <tt>sun-cgsix</tt>.
+<li>Edit your termcap so that the default '<tt>sun</tt>' entry has
+<tt>:tc=sun-cgsix:</tt> instead of <tt>:tc=sun-il:</tt>
+<li>Edit <tt>/etc/ttys</tt> and change
+<br><tt>console "/usr/libexec/getty suncons"    sun on secure</tt>
+<br>to
+<br><tt>console "/usr/libexec/getty suncons"    sun-cgsix on secure</tt>
+</ul>
+
+<ENTRY>tcpdump-coredump tcpdump coredumps
+This was caused by a missing define in the 1.3.X release. It is fixed in 1.4,
+and an upgrade is recommended, though it is possible to download and extract
+the source for 1.4 and compile '<tt>usr.sbin/tcpdump</tt>' with some tweaking.
+
+<ENTRY>sparclinux-sun4c Why is NetBSD so much faster than SparcLinux on sun4c
+The memory management hardware on sun4c machines (SPARCStation
+1, 1+, 2, IPC, IPX, SLC, ELC and clones) is not handled
+particularly well by Linux. Until Linux reworks their MMU code
+NetBSD will be very much faster on this hardware.
+
+<ENTRY>floppy-memory-boundary When booting from 1.4.2 floppies, you get "Data Access Exception"
+Unfortunately, the NetBSD 1.4.2 floppies, have a problem with the
+bootloader on some machines (in particular, sun4c machines with
+non-contiguous memory banks, such as the IPX).  If you
+encounter this error, then you will need to download the repaired 
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/sparc/1.4.2-bootfs/">floppy
+images</a> or install a 16 MB SIMM in the first bank of your machine (4 MB
+isn't large enough to hold the broken bootloader and the kernel).
+<p>
+
+This problem is only present on 1.4.2 boot floppies.
+It has been fixed in -current and will not be present in future
+releases of NetBSD/sparc.
+
+<ENTRY>illegal-reloc I get a <tt><b>ld: /usr/lib/c++rt0.o: illegal reloc type mix</b></tt> when compiling
+For versions older than 1.4.3, the default NetBSD/sparc /usr/lib/c++rt0.o
+is compiled -fpic.  This means it can only handle offsets up to a certain
+size, and can fail to work in large programs.  Compiling -fPIC allows
+larger offsets and should permit large programs to function.
+<p>
+
+If you're using a NetBSD release before 1.4.3, replacing /usr/lib/c++rt0.o
+with a -fPIC version, located at <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/arch/sparc/c++rt0/">ftp://ftp.netbsd.org/pub/NetBSD/arch/sparc/c++rt0/</a>,
+will solve this problem. 
+
+<ENTRY>boot-floppy Making install boot floppies
+To create install floppies for NetBSD/sparc, you first need to have the
+release source.  You also need to have the release files installed; you'll
+find them under the
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-release-1-5/tar_files/src/distrib.tar.gz">
+NetBSD-release</a> section.  Note that the release source extracts to
+the <tt>src</tt> directory, so be sure to extract the archive under <tt>/usr</tt>.
+Next, create the INSTALL kernel:
+<blockquote><pre>
+# cd /sys/arch/sparc/INSTALL; make</pre></blockquote>
+After the kernel has build, you can create the installation floppies:
+<blockquote><pre># cd /usr/src/distrib/sparc/sysinst.ramdisk; make
+# cd /usr/src/distrib/sparc/sysinst.bootfs; make</pre></blockquote>
+
+<ENTRY>bootcd Making a bootable CD-ROM
+See the <a
+href="../../Documentation/bootcd.html#sparcimage">NetBSD
+Bootable CD ROM HOWTO</a>.
+
+<ENTRY>video-cables How do I hook up a VGA monitor to my Sun
+Well, there are two ways, build your own cable, or purchase an
+adapter.  The adapters can be found for around US$30 and the framebuffer
+will typically "just work" at its default resolution.
+<p>
+
+To build your own cable, can follow the 
+<a href="http://mail-index.netbsd.org/port-sparc/2000/04/22/0001.html">instructions
+</a>provided by Izumi Tsutsui.
+<p>
+
+Don't forget to take a look at the <a
+href="http://www.sunhelp.org/faq/FrameBuffer.html">Frame Buffer FAQ</a>
+for information on your framebuffer, what resolutions it supports, and how
+to set the default resolution in the prom.
+
+<ENTRY>cylinders Do I really have to have my partitions start and end on cylinder boundaries
+Yes and no.  The prom only knows how to load a bootloader from the
+beginning of a cylinder.  This means that your bootable partitions need to
+start on cylinder boundaries.   The cylinder size in your disklabel does
+not have to bear any relation to the actual physical cylinder size of the
+disk.  You can't just set your cylinder size to 1 (i.e. the number of
+cylinders = the number of sectors), since the number of cylinders is
+stored as a 16 bit number (i.e. your disk could only be about 32 MB).
+<p>
+
+The partitions apparently do not need to end on cylinder boundaries, and
+there are no bad side-effects of doing so.
+
+<ENTRY>mpg123-nosupportedrate I'm getting a <tt><b>No supported rate found!</b></tt> error from mpg123
+If you've gotten this error you'll have to pass arguments to mpg123 for your
+number of channels and rate of stream.  Older systems (such as the sun4c 
+machines and the SparcClassic) only support an 8 bit 8 kHz mono sampling
+rate.  For these systems, you would specify:
+<p>
+
+<blockquote>
+mpg123 -m -r 8000 <i>filename</i>
+</blockquote>
+<p>
+
+The -m option is for mixing both channels for mono output, and the -r specifies
+the rate that the audio card supports. 
+
+<ENTRY>oldscsi How do I hook up this strange SCSI connector to a normal device
+Older sun4 machines might have an old style SCSI connector with three rows
+of pins.  The pins are listed on <a href="oldscsipins.html">this page</a>.
+
+<ENTRY>fox What was the Fox?
+The Fox is probably best described as a brick sized SS4. Among it's features:
+<p>
+
+<ul>
+<li> one SBus and one AFX slot side by side so you can only use one
+<li> Crystal Semiconductor 4231(sp?) audio
+<li> stp4020 (PCMCIA)
+<li> the usual onboard serial a/b, SCSI, 10BaseT
+</ul>
+<p>
+
+This was used in the early versions of the Java car, which later moved to
+a faster machine.
+
+<SECTION>Serial Port Questions
+
+<ENTRY>sparc2-serial-console Problems running a serial console on a SPARCstation 2 prior to NetBSD 1.4.2
+When booting a 1.4  or 1.4.1 kernel from a serial console, the following
+messages may appear:
+<blockquote>
+<pre>Warning: unparseable stdin-path property
+Warning: unparseable stdout-path property
+cninit: invalid inSource 0xffffffff</pre>
+</blockquote>
+This is a know problem when booting with a serial console on a
+SPARCstation 2
+with a PROM revision prior to 2.4.  The full details can be found under
+<a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=7409">
+PR/7409</a>.  The problem has been solved in NetBSD 1.4.2.  If you need a
+patched 1.4.1 GENERIC kernel, try
+<a href="ftp://ftp.yubyub.net/pub/NetBSD/NetBSD-1.4.1/sparc/netbsd.GENERIC_SS2_CONSOLE.gz">
+this one</a>.  A patch which alters <tt>src/arch/sparc/dev/zs.c</tt> to force
+<tt>/dev/ttya</tt> as the only serial console can be found as
+<a href="ftp://ftp.yubyub.net/pub/NetBSD/NetBSD-1.4.1/sparc/zs.diff">
+zs.diff</a>.
+Note that this patch does not prevent a standard keyboard and monitor from
+being the console; it forces <tt>/dev/ttya</tt> to be the console should a
+serial console be selected.
+
+<ENTRY>serial-unplug Whenever I unplug the serial console, my machine reboots!
+A continuous stream of zeros is equivalent to a "BREAK" command which will
+enter the prom.  This might happen, since the serial lines are floating
+when you unplug your cable.  If you build a special switchbox that uses
+a pullup resistor, then you can avoid this problem.
+<p>
+
+Put a 4.7 KOhm resistor between pins 3 and 25.
+
+<ENTRY>serial-port-minidin8 Can I use a Macintosh serial cable on machines that have a MiniDin8 connector?
+Yes and no.  Yes, you can use it, but it doesn't support the same hardware
+handshaking lines so you won't get hardware handshaking.
+<p>
+
+Stokely's <a
+href="http://www.stokely.com/unix.serial.port.resources/A-B-Ycablepinout.html">
+Sun Serial Port & Cables Pinouts</a> has all the details.
+
+<ENTRY>serial-port-splitter Splitting the serial port on a SPARCstation 20 and SPARC classic
+Some sparc machines, such as the SPARCstation 20 and SPARC Classic, have 2
+serial
+ports but use a single DB-25 connector. Serial port A is wired
+using the standard pin out so that it may be used with a "normal"
+(whatever that means with serial ports) serial cable. To use serial
+port B, an adapter cable is required. Dan McMahill has traced the pin
+out on a Sun P/N 530-1677-01 cable.
+<p>
+
+<ul>
+<li><a href="faq/sun_530-1677-01-rev50.txt">Cable Diagram (ascii 4k)</a>
+<li><a href="faq/sun_530-1677-01-rev50.jpg">Cable Diagram (jpeg 76k)</a>
+<li><a href="faq/sun_530-1677-01-rev50.ps">Cable Diagram (postscript 18k)</a>
+</ul>
+
+<ENTRY>fastserial Can I run my built-in serial port faster than 38400 bps?
+The short answer: No.
+<p>
+The long answer is that you can possibly run it at non-standard speeds
+(such as 76800 bps and 51200 bps).  der Mouse has patched things
+in the attempt to run the serial chip in an even 
+<a href="http://mail-index.netbsd.org/port-sparc/2000/04/25/0005.html">faster
+mode</a>, but it is very unreliable (i.e. very error-prone).
+<p>
+
+Note that some of the <a href="../sparc64/">sparc64</a> machines can run
+their serial ports faster, but they use a different serial chipset.
+
+<SECTION>Ethernet Questions
+
+<ENTRY>ether-address All my ethernet interfaces have the same hardware address
+Yes, that's correct.  In general, each machine only has one ethernet 
+hardware address (a.k.a. MAC) for <i>all</i> ethernet interfaces attached
+to it, since the MAC address is stored in the NVRAM on the motherboard
+instead of on the ethernet interface.
+<p>
+
+This means that if you have a sparc box with more than one ethernet
+interface, no two interfaces can be on the same subnet. In most practical 
+situations, this should not be a problem.  For example:
+<pre>smaug% ifconfig -a
+le0: flags=8822&lt;BROADCAST,NOTRAILERS,SIMPLEX,MULTICAST&gt; mtu 1500
+        address: 08:00:20:20:e2:54
+        media: Ethernet autoselect
+be0: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+        address: 08:00:20:20:e2:54
+        media: Ethernet autoselect (10baseT half-duplex)
+</pre>
+
+<ENTRY>dead-nvram Ethernet address or hostid are all ones
+If a machine boots up with with an all-ones ethernet address (i.e.
+ff:ff:ff:ff:ff:ff) or hostid, it is most likely because the NVRAM has
+reached the end of its life cycle. This is especially common on sun4c
+class machines because the NVRAM used in those systems have relatively
+short life spans many of which are currently ending now.
+<p>
+
+See the <a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">
+Sun NVRAM/Hostid FAQ</a> for information on how to replace and reinitialize
+the chip and possible workarounds if you cannot find a new NVRAM chip.
+
+<ENTRY>tadpole-3gx-transceiver Tadpole 3GX transceiver does not work if not \
+	plugged in at boot
+The interface may be autosensing to 10BaseT, even though there's
+no physical 10Base-T port.
+<p>
+
+Check the media type in the output of "<tt><b>ifconfig le0</b></tt>".
+it should read <tt>10Base5</tt> to use the external transceiver, if
+not issue a "<tt><b>ifconfig le0 media 10base5</b></tt>" command.
+
+<SECTION>JavaStation Questions
+
+<ENTRY>javastation-info Hardware information
+The Linux on the Sun JavaStation NC HOWTO contains gobs of good info.  <a
+href="http://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html_single/JavaStation-HOWTO.html#WHATISCHAPTER">
+Section 2</a> covers the various models and what sorts of guts they've
+got. <a
+href="http://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html_single/JavaStation-HOWTO.html#BACKGROUNDREQUIREMENTSCHAPTER">
+Section 3</a> describes the netboot environment (also see the NetBSD <a
+href="../../Documentation/network/netboot/">Diskless HOW-TO</a> on how to
+set up netbooting for these puppies).  And <a
+href="http://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html_single/JavaStation-HOWTO.html#APPENDIXCHAPTER">
+Section 10</a> lists the jumper settings for JavaStations.
+
+<SECTION>Ross Hardware Questions
+
+<ENTRY>ross-mbus Are HyperSPARC mbus modules supported?
+Yes.  All Ross HyperSPARC modules should work.
+
+<ENTRY>ross-memory What is the memory configuration in a Ross sparc 20 clone?
+Ben Cottrell reports that:
+<cite>For anyone else who's curious about this, the slots in a Ross sparc
+20 clone go like: 0 4 1 5 2 6 3 7, going top to bottom, looking down on
+the case in its conventional orientation.
+</cite>
+
+<SECTION>SunOS and Solaris Emulation Questions
+
+<ENTRY>emulation-setup How do I set up SunOS emulation?
+To setup SunOS emulation, you'll need some of SunOS's libraries.  They can
+be found at Sun's support site.  You'll need the following libraries:
+<p>
+
+<ul>
+<li><tt><a href="ftp://sunsolve.sun.com/pub/patches/102545.readme">
+ftp://sunsolve.sun.com/pub/patches/102545-13.tar.Z</a></tt>
+ - This archive contains <tt>102545-13/lib/libc.so19</tt> and
+<tt>102545-13/5lib/libc.so29</tt>, which should be renamed to
+<tt>/emul/sunos/usr/lib/libc.so.1.9</tt> and
+ <tt>/emul/sunos/usr/5lib/libc.so.2.9</tt> respectively.
+<li><tt><a href="ftp://sunsolve.sun.com/pub/patches/100257-06.tar.Z">
+ftp://sunsolve.sun.com/pub/patches/100257-06.tar.Z</a></tt>
+ - This archive contains <tt>100257-06/4.1.3c/sun4/ld.so</tt>, which
+should be renamed to <tt>/emul/sunos/usr/lib/ld.so</tt>
+<li>Lastly, you'll need to get <tt>libdl.so.1.0</tt> from any
+SunOS machine, and place this file in <tt>/emul/sunos/usr/lib</tt>.
+Please note that the <tt>libdl.so.1.0</tt> from Solaris will
+not work for SunOS emulation.
+</ul>
+
+<ENTRY>netscape Can NetBSD/sparc run Netscape
+There are three 'Netscape' browsers in the <a href="../../Documentation/software/packages.html">NetBSD packages collection</a>:
+<p>
+
+<ul>
+<li><PKGSRC>www/communicator - complete Netscape communicator install including email. (requires SunOS libraries)
+<li><PKGSRC>www/navigator - Standalone Navigator browser (requires SunOS libraries)
+<li><PKGSRC>www/mozilla - Free version of the Netscape browser.
+</ul>
+<p>
+
+Both the communicator and navigator packages will run faster and
+provide more features than mozilla, but they require SunOS libraries in
+/emul/sunos (see compat_sunos(8)). All of these except libdl.so are
+available from Sun's <a href="ftp://sunsolve.sun.com/pub/patches/">ftp
+site</a>. If anyone is interested in putting together a libdl it would
+be greatly appreciated :)
+
+<ENTRY>solaris-netscape-socket Under Solaris emulation, Netscape fails with `Error: Can't open display: :0.0'
+Solaris Netscape (at least, version 4.51 attempts to use a pipe rather
+than a Unix domain socket to connect to the X server. Put
+<b>DISPLAY=unix:0.0</b> into netscape's environment before starting it
+and it will work ok. The easiest way to do this, as well as the other
+variables you need to set up for it, is to have a shell script that does
+this before executing netscape:
+<p>
+
+<blockquote>
+<pre>#!/bin/sh
+export XKEYSYMDB=/usr/X11R6/lib/X11/XKeysymDB
+export MOZILLA_HOME=/usr/local/netscape.svr4
+export XNLSPATH=$MOZILLA_HOME/nls
+exec $MOZILLA_HOME/netscape $* </pre>
+</blockquote>
+
+</LIST>
+
+<a href="">Up to <em>NetBSD/sparc Port Page</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: faq.list,v 1.61 2001/03/26 21:12:45 cjones Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
