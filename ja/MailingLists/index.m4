@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.146 2003/10/20 13:14:29 perry Exp $
+#	$NetBSD: index.m4,v 1.147 2003/11/27 13:37:46 heinz Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -606,7 +606,7 @@ PORTLIST(port-sh3)
   <a href="#port-hpcsh">port-hpcsh</a>.
 ENDLIST
 PORTLIST(port-sh5)
-  Discussion of issues relevant to all SH5-based NetBDS ports.
+  Discussion of issues relevant to all SH5-based NetBSD ports.
 ENDLIST
 PORTLIST(port-sparc)
   Discussion of issues specific to NetBSD on Sun's 32-bit Sparc based machines
@@ -702,7 +702,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.146 2003/10/20 13:14:29 perry Exp $<br>
+  $NetBSD: index.m4,v 1.147 2003/11/27 13:37:46 heinz Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
