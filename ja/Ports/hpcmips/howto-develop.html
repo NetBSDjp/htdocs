@@ -21,20 +21,60 @@
 This page contains information that current and potential developers of
 NetBSD/hpcmips might find useful.
 
-<h2><a name="top">Building NetBSD/hpcmips bits</a></h2>
+<h2><a name="top">Environment for developers</a></h2>
+<font face="helvetica, arial, sans-serif"><ul>
+<li><a href="#env-dev">Self compile Environment</a></li>
+</ul></font>
+<h2>Building NetBSD/hpcmips bits</h2>
 <font face="helvetica, arial, sans-serif"><ul>
 <li><a href="#prep-bins">Preparing your system to build a kernel and binaries</a></li>
+<li><a href="#src-cvs">Getting Source from NetBSD CVS tree.</a></li>
 <li><a href="#build-bins">Building a kernel and binaries</a></li>
-<li><a href="#prep-booter">Preparing to build Windows CE programs</a></li>
-<li><a href="#build-booter">Building the Windows CE Boot Program (pbsdboot.exe)</a></li>
-<li><a href="#build-references">Further references for the Microsoft tools</a></li>
 </ul></font>
 <h2>NetBSD/hpcmips kernel hacking</h2>
 <font face="helvetica, arial, sans-serif"><ul>
 <li><a href="#add-platform">Adding support for a new system</a></li>
 </ul></font>
+<h2>pbsdboot.exe - boot program from CE environment</h2>
+<font face="helvetica, arial, sans-serif"><ul>
+<li><a href="#prep-booter">Preparing to build Windows CE programs</a></li>
+<li><a href="#build-booter">Building the Windows CE Boot Program (pbsdboot.exe)</a></li>
+<li><a href="#build-references">Further references for the Microsoft tools</a></li>
+<li><a href="#jp-menu">Japanese characters in menu</a></li>
+<li><a href="#fb-names">frame buffer type names</a></li>
+<li><a href="#share-source">share source tree with other ports</a></li>
+</ul></font>
 
+<hr>
+<h2>Environment for developers</h2><hr>
+<p><dl><dt>
+<font face="helvetica, arial, sans-serif"><h3><a name="env-dev">Self compile Environment</a>
+<font size="-1">(<a href="#top">top</a>)</font></h3></font>
+</dt><dd>
 
+developers needs Ethernet cards and Large disks.
+typcal CE system has CF slot and PCMCIA slots.
+assign CF to Ethernet card and PCMCIA to ATA/SCSI Interface.
+
+<dl>
+  <dt>CF Ethernet card
+  <dt>Type1:
+  <dd>Socket Communication CF Ether Cards
+  <dd>TDK CF Ethernet Cards
+  <dt>Type2:
+  <dd>Zircom CF Ethernet Cards
+  <dt>PCMCIA SCSI Card
+  <dt>Adaptec SlimSCSI 1460 series Card with any SCSI Disk works fine.
+  <dt>Adaptec SlimSCSI 1480 is Cardbus version,CardBus won't work.
+  <dd>If you want to build NetBSD/hpcmips system from source file.
+  you have 2G SCSI Disks.
+  <dd>If you want to build NetBSD/hpcmips system with all packages
+  from source file,5-10G Disks required.
+  <dt>PCMCIA ATA Card
+  <dd>some ATA-PCMCIA cards works fine,but I recommended SCSI system.
+</dl>
+
+</dd></dl></p>
 <hr>
 <h2>Building NetBSD/hpcmips bits</h2><hr>
 <p><dl><dt>
@@ -52,11 +92,65 @@ NetBSD/hpcmips might find useful.
 
 </dd></dl></p>
 <p><dl><dt>
+<font face="helvetica, arial, sans-serif"><h3><a name="src-cvs">Getting Source from NetBSD CVS tree.</a>
+<font size="-1">(<a href="#top">top</a>)</font></h3></font>
+</dt><dd>
+
+NetBSD/hpcmips use same source tree as other NetBSD plathome.
+<a href="http://www.netbsd.org/Documentation/current/">
+Tracking NetBSD-current </a> helps you.
+NetBSD-current source tree URL is <a href="ftp://ftp.jp.netbsd.org/pub/NetBSD-current/tar_files/src/"><i>ftp://ftp.netbsd.org/pub/NetBSD-current/tar_files/src/</i></a>.
+<dl>
+<dt> getting current source snapshot
+<dt> See <a href="http://www.netbsd.org/Sites/net.html#anoncvs">AnonCVS mirrors</a> and select your nearest anoncvs server.
+<dt> CVS/Repository path fix to your nearest anoncvs server
+<dt> access anoncvs server (cf. to access jp.netbsd.org anoncvs server)
+<dd> cvs -d :pserver:anoncvs@jp.netbsd.org:/cvs/cvsroot login
+<dd> cvs -d :pserver:anoncvs@jp.netbsd.org:/cvs/cvsroot co src
+<dd> cvs update -P -d
+</dl>
+<pre>
+fix CVS Repository Paths to your nearest server.
+
+sh
+for f in `find . -name Repository`; do
+        mv $f $f.orig
+        sed -e 's|^|/cvs|' $f.orig > $f
+        rm $f.orig
+done
+echo ":pserver:anoncvs@sup.jp.netbsd.org:/cvs/cvsroot" > /tmp/A
+find . -name Root -exec cp /tmp/A {} \;
+
+</pre>
+
+</dd></dl></p>
+<p><dl><dt>
 <font face="helvetica, arial, sans-serif"><h3><a name="build-bins">Building a kernel and binaries</a>
 <font size="-1">(<a href="#top">top</a>)</font></h3></font>
 </dt><dd>
 
 </dd></dl></p>
+<hr>
+<h2>NetBSD/hpcmips kernel hacking</h2><hr>
+<p><dl><dt>
+<font face="helvetica, arial, sans-serif"><h3><a name="add-platform">Adding support for a new system</a>
+<font size="-1">(<a href="#top">top</a>)</font></h3></font>
+</dt><dd>
+
+<!-- XXX REWORK -->
+<dl>
+  <dt>commit syssrc/sys/arch/hpcmips/hpcmips: platid.def
+  <dt>make syssrc/sys/arch/hpcmips/ dir.
+  <dd>regen syssrc/sys/arch/hpcmips/include: platid_generated.h platid_mask.h
+  <dt>commit syssrc/sys/arch/hpcmips/ dir.
+  <dt>add entry /syssrc/sys/arch/hpcmips/stand/pbsdboot/main.c and commit
+  <dt>keyboard translation table
+  <dd>commit /syssrc/sys/arch/hpcmips/vr/vrkiu.c
+</dl>
+
+</dd></dl></p>
+<hr>
+<h2>pbsdboot.exe - boot program from CE environment</h2><hr>
 <p><dl><dt>
 <font face="helvetica, arial, sans-serif"><h3><a name="prep-booter">Preparing to build Windows CE programs</a>
 <font size="-1">(<a href="#top">top</a>)</font></h3></font>
@@ -128,13 +222,13 @@ depending on Platform Builder/Embedded Toolkit version:
   <dl>
     <dl>
       <dt>Windows CE Embedded Toolkit for Visual C++ 5.0:
-      <dd>Unknown.  If you know, <a href="/Ports/hpcmips/www@netbsd.org" origlink="www@netbsd.org">send us mail</a>.
+      <dd>Unknown.  If you know, <a href="www@netbsd.org">send us mail</a>.
 
       <dt>Windows CE Platform Builder 2.11:
       <dd>On Disc 1, at the path "<tt>\public\common\oak\inc\diskio.h</tt>."
 
       <dt>Windows CE Platform Builder 2.12:
-      <dd>Unknown.  If you know, <a href="/Ports/hpcmips/www@netbsd.org" origlink="www@netbsd.org">send us mail</a>.
+      <dd>Unknown.  If you know, <a href="www@netbsd.org">send us mail</a>.
     </dl>
   </dl>
 
@@ -157,23 +251,56 @@ depending on Platform Builder/Embedded Toolkit version:
   </ul>
 
 </dd></dl></p>
-<hr>
-<h2>NetBSD/hpcmips kernel hacking</h2><hr>
 <p><dl><dt>
-<font face="helvetica, arial, sans-serif"><h3><a name="add-platform">Adding support for a new system</a>
+<font face="helvetica, arial, sans-serif"><h3><a name="jp-menu">Japanese characters in menu</a>
 <font size="-1">(<a href="#top">top</a>)</font></h3></font>
 </dt><dd>
 
-<!-- XXX REWORK -->
+<!-- from port-hpcmips@netbsd.org Date: Wed, 09 Feb 2000 10:21:58 +0900 -->
+<p>
+Japanese characters in menu is very important for Japanese version
+Windows CE users. Because, newer version of Windows CE(Japanese version;
+2.11?) treats CF/PC Card folder as 'MEMORIKA-DO' (spelled in Japanese,
+Katakana), not 'Storage Card'.
+
+On the other hand, older version of Windows CE(Japanese version; 1.0 and
+2.0?) treats them as 'Storage Card'.
+
+Therefore, both of 'Storage Card' and 'MEMORIKA-DO' are necessary for
+Japanese users.
+
+(Does GetLocaleInfo API of WindowsCE help us ?)
+
+</dd></dl></p>
+<p><dl><dt>
+<font face="helvetica, arial, sans-serif"><h3><a name="fb-names">frame buffer type names</a>
+<font size="-1">(<a href="#top">top</a>)</font></h3></font>
+</dt><dd>
+
+<!-- from port-hpcmips@netbsd.org Date: Sun, 6 Feb 2000 21:58:28 +0900 -->
 <dl>
-  <dt>commit syssrc/sys/arch/hpcmips/hpcmips: platid.def
-  <dt>make syssrc/sys/arch/hpcmips/ dir.
-  <dd>regen syssrc/sys/arch/hpcmips/include: platid_generated.h platid_mask.h
-  <dt>commit syssrc/sys/arch/hpcmips/ dir.
-  <dt>add entry /syssrc/sys/arch/hpcmips/stand/pbsdboot/main.c and commit
-  <dt>keyboard translation table
-  <dd>commit /syssrc/sys/arch/hpcmips/vr/vrkiu.c
+  <dt>D2
+  <dd>2bpp
+  <dt>Dxx_yyyy and M2L_y
+  <dd>xx means frame buffer depth 
+  <dd>y means the pixel value of the forground color in hexadecimal
+  <dt>'M2L means most significant bit to least significant bit. The MSB
+  is left pixel and LSB is right pixel if a byte represents two or
+  more pixels. 'L2M means reverse order.
+
+  The 'x2' option provides virtual double width screen. For example,
+  Palm Size PC, Freestype, which has LCD of 320x240, pretend to has
+  LCD of 640x480. It had been hack for debugging until serial port
+  got available. Please don't mind about it.
 </dl>
+
+</dd></dl></p>
+<p><dl><dt>
+<font face="helvetica, arial, sans-serif"><h3><a name="share-source">share source tree with other ports</a>
+<font size="-1">(<a href="#top">top</a>)</font></h3></font>
+</dt><dd>
+
+set OBJMACHINE environment.
 
 </dd></dl></p>
 <hr>
@@ -181,13 +308,26 @@ depending on Platform Builder/Embedded Toolkit version:
 <a href="">Up to <em>NetBSD/hpcmips Port Page</em></a>
 <hr>
 
-<HOMELINK>
+
+<table><tr>
+  <td>
+    <a href="../../">
+    <img src="../../images/NetBSD-banner.gif" border=0 alt=""></a>
+  </td><td>
+    <font face="helvetica, arial">
+    <a href="../../">
+    <img src="../../images/empty.gif" border=0
+	    alt="NetBSD ">Home Page</a>
+    </font>
+  </td>
+</tr></table>
+
 
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: howto-develop.html,v 1.2 2000/02/24 10:14:36 kawamoto Exp $<br>
-  <a href="/Misc/disclaimer.html" origlink="../../Misc/disclaimer.html">Copyright &copy; 2000
+  $NetBSD: howto-develop.html,v 1.3 2000/03/22 05:28:46 jun Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 2000
     The NetBSD Foundation, Inc. ALL RIGHTS RESERVED.</a> 
 </address>
 

@@ -23,14 +23,62 @@ systems.
 
 <SECTION>Getting started with NetBSD/hpcmips
 
+<ENTRY>overview-start over view to start NetBSD/hpcmips
+
+need at least 2 files to start NetBSD/hpcmips.
+	<dl>
+	<dt>pbsdboot.exe
+	<dd>bootloader runs on WindowsCE environment.
+	<dt>netbsd kernel
+	</dl>
+On pbsdboot pull-down menu,setup hardware type,kernel path.
+pbsdboot teach hardware type,flamebuffer information to kernel.
+pbsdboot put kernel file image to all Windows CE memory area,
+so you MUST backup all of your datas on life with Windows CE era.
+to push Boot and loading kernel.You get into NetBSD/hpcmips kernel world start up.
+
+<ENTRY>overview-filesystem filesystem overview
+
+Choice file system
+	<dl>
+	<dt>filesystem on Compact Flash Cards or ATA Cards
+	<dd>contain DOS partition for pbsdboot.exe and partition for NetBSD 
+	<dt>filesystem on SCSI/IDE disk
+	<dd>NetBSD/hpcmips supports PCMCIA SCSI Card such as SlimSCSI.so you can make your file system on SCSI disks.recommended for developers.
+	<dt>filesystem on NFS Server
+	<dd>On booting process:
+	<dd>NetBSD/hpcmips find pcmcia Ethernet Card
+	<dd>find IP address via dhcp server
+	<dd>find NFS server 
+	<dd>mount / partition from NFS server
+	</dl>
+
+<ENTRY>cf-recomen Do I need to purchase a CF or ATA card? If so - got any recomendations?
+
+<dl>
+  <dt>for typical users.recommended 128M CF.
+    <dd>base+kern+etc+comp works fine
+  <dt>80M-96M CF
+    <dd>base+kern+etc basical NetBSD system available in your pocket.
+  <dt>less than 64M CF
+    <dd>base+kern+etc with delete large unuse files
+  <dt>15M CF
+    <dd>north pole for living.some adventure living here.
+</dl>
+
 <ENTRY>prep-hwsupport Finding out if your system is supported by NetBSD/hpcmips
+
+check <a href="http://www.netbsd.org/Ports/hpcmips/#supported">
+Supported Machines</a> pages.
+
 <ENTRY>prep-cardsupport Supported CF and PCMCIA cards
 
         <dl>
-        <dt>See NetBSD <a href="http://www.netbsd.org/Hardware/pcmcia.html">Mach
-ine-independent PCMCIA drivers</a>.
+        <dt>NetBSD <a href="http://mail-index.netbsd.org/cgi-bin/hw.cgi">Supported hardware database</a> is available.Select PCMCIA and query/add database. We build this database.
+        <dt>See NetBSD <a href="http://www.netbsd.org/Hardware/pcmcia.html">Machine-independent PCMCIA drivers</a>.
         <dt>Compact Flash Storage
-        <dd>over 48M CF
+        <dd>over 48M CF SanDisk
+        <dd>note:on z50 Extreme Memory Compact Flash EM-CF/128/P (PQI FLASH DISK 1201N)sometimes chokes and hangs the z50, especially under heavy "disk" load.
         <dt>PCMCIA Devices cards
         <dd>NE2000 compatible corega Ether PCC-T
         <dd>3com 3C589*
@@ -39,24 +87,38 @@ ine-independent PCMCIA drivers</a>.
         <dd><a href="http://www.tdk.co.jp/tjbda01/bda11100.htm">TDK LAC-CF010 CF
  Ethernet Card </a>
         <dd>NTT DoCoMo Paldio 611S (Japan:PHS include CF Modem I/F)
-        <dt>Adaptec SlimSCSI card
-        <dt> Adaptec, Inc., APA-1460 SCSI Host Adapter
-        <dt> Apricorn EZ-GIG Expansion Card
+        <dt>Adaptec SlimSCSI 1460 (APA-1460)
+        <dt>Apricorn EZ-GIG Expansion Card
+	<dt>Callunacard CT260T2
         </dl>
 
 
 <ENTRY>prep-get Getting the NetBSD/hpcmips distribution:
 
 <dl>
-      <dd>check <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/snapshot/">ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/snapshot/</a>
-      <dt>binary/sets:NetBSD/hpcmips binary such as base.tgz,comp.tgz..
-      <dt>installation:pbsdboot.exe.gz and netbsd.gz
-      <dt>source:source file
+      <dt>check <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/snapshot/">ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/snapshot/</a>
+      <dd>binary/sets:NetBSD/hpcmips binary such as base.tgz,comp.tgz..
+      <dd>installation:pbsdboot.exe.gz and netbsd.gz
+      <dd>source:source file
       <dd>place pbsdboot.exe and netbsd on your CF.and exec pbsdboot.exe to start netbsd kernel includes sysinst.
 </dl>
         
 
 <ENTRY>prep-getbooter Getting the NetBSD/hpcmips boot loader (pbsdboot.exe)
+
+Download from <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/stand/pbsdboot">pbsdboot download directory</a>.
+ Pbsdboot.exe is compiled for WindowsCE 2.00.
+    Use Pbsdboot1.exe for Windows CE 1.01.
+    Pbsdboot is renewed to set up color map for 8 bit frame
+    buffer machines. Now we can use 256 colors, though we
+    don't know about details of video controller chip.
+    (We actually do not know about the video chips at all.)
+
+    Because Windows CE 1.0 does not support color map at all,
+    the pbsdboot can not support both CE 1.0 and 2.0 with single
+    binary. Thus pbsdboot.exe is compiled for CE 2.0 or later. You
+    should involve pbsdboot1.exe for CE 1.0.
+
 <ENTRY>prep-kernel Getting the NetBSD/hpcmips kernel 
 
 <dl>
@@ -67,9 +129,24 @@ ine-independent PCMCIA drivers</a>.
 </dl>
 
 <ENTRY>prep-cfpart Preparing a Compact Flash card with a NetBSD partition
- <a href="/Ports/hpcmips/install.txt" origlink="install.txt">Creating a file system on Compact Flash</a>.  
+ <a href="install.txt">Creating a file system on Compact Flash</a>.  
 <ENTRY>prep-cfnopart Preparing a Compact Flash card without a NetBSD partition
 <ENTRY>prep-support Getting support from mailing lists
+
+<dl>
+  <dd> <a href="../../MailingLists/#port-hpcmips">NetBSD/hpcmips mailing list (English language)</a>
+  <dd> <a href="http://www.jp.netbsd.org/ja/JP/ml.html#port-hpcmips-ja">NetBSD/hpcmips mailing list (Japanese language)</a>
+</dl>
+<ENTRY>key-map keyboard mapping control
+
+<dl>
+   <dt>Swap CTRLCAPS 
+   <dd>wsconsctl -w encoding=jp.swapctrlcaps
+   <dt>Muhenkan key to Function 10 (for MGL2 switch window)
+   <dd>wsconsctl -w map+="keysym Muhenkan = F10"
+   <dt>Henkan key to Function 9 (for MGL2 change window)
+   <dd>wsconsctl -w map+="keysym Henkan = F9"
+</dl>
 
 <SECTION>pbsdboot.exe: the NetBSD/hpcmips boot loader
 
@@ -83,7 +160,7 @@ ine-independent PCMCIA drivers</a>.
          <dd>-m      use miniroot in memory
          <dd>-s      single user mode
          <dd>-h      use serial console
-         <dd>-a      ask for name
+         <dd>-a      ask for name:kernel ask root device (such as wd0a),dump device (such as wd0b),file system (such as ffs).To change root device on Slim SCSI card/IDE PCMCIA card,use this option and set root device to sd0/wd.
          <dd>-b=DEV  change boot device to DEV(wd0,sd0,nfs etc.)
 </dl>
 <ENTRY>booter-console Booting the kernel with a serial console
@@ -98,6 +175,19 @@ ine-independent PCMCIA drivers</a>.
          <dd>D8_00 : black typo on white screen
 </dl>
 <ENTRY>booter-configfb Configuring the frame buffer type in the boot loader
+<ENTRY>booter-quickboot automatically run
+To skip touch panel calibration,Power on with shift+power key.
+Some systems will automatically run \Storage Card\AutoRun\XXXXXX\Autorun.exe
+where XXXXXX is the CPU family.  However, that isnt' true for all
+systems.  Also, the exact path is from memory and may be slightly
+incorrect.
+
+<dl>
+<dt>CASIO Cassiopeia:
+<dd>        \CF\R4100\AutoRun.exe
+</dl>
+
+
 <ENTRY>booter-everex-quickboot One-button boot on the Everex Freestyle
 
   <p>
@@ -110,6 +200,8 @@ ine-independent PCMCIA drivers</a>.
 
   <p>
   To boot, just push the Freestyle "Record" button.
+PHILIPS Nino312 can use this method.
+
 
 </LIST>
 
@@ -121,8 +213,8 @@ ine-independent PCMCIA drivers</a>.
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: howto-use.list,v 1.2 2000/02/24 10:14:36 kawamoto Exp $<br>
-  <a href="/Misc/disclaimer.html" origlink="../../Misc/disclaimer.html">Copyright &copy; 2000
+  $NetBSD: howto-use.list,v 1.3 2000/03/22 05:28:46 jun Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 2000
     The NetBSD Foundation, Inc. ALL RIGHTS RESERVED.</a> 
 </address>
 

@@ -19,6 +19,31 @@ This page contains information that current and potential developers of
 NetBSD/hpcmips might find useful.
 
 <LIST>
+<SECTION>Environment for developers
+
+<ENTRY>env-dev Self compile Environment
+
+developers needs Ethernet cards and Large disks.
+typcal CE system has CF slot and PCMCIA slots.
+assign CF to Ethernet card and PCMCIA to ATA/SCSI Interface.
+
+<dl>
+  <dt>CF Ethernet card
+  <dt>Type1:
+  <dd>Socket Communication CF Ether Cards
+  <dd>TDK CF Ethernet Cards
+  <dt>Type2:
+  <dd>Zircom CF Ethernet Cards
+  <dt>PCMCIA SCSI Card
+  <dt>Adaptec SlimSCSI 1460 series Card with any SCSI Disk works fine.
+  <dt>Adaptec SlimSCSI 1480 is Cardbus version,CardBus won't work.
+  <dd>If you want to build NetBSD/hpcmips system from source file.
+  you have 2G SCSI Disks.
+  <dd>If you want to build NetBSD/hpcmips system with all packages
+  from source file,5-10G Disks required.
+  <dt>PCMCIA ATA Card
+  <dd>some ATA-PCMCIA cards works fine,but I recommended SCSI system.
+</dl>
 
 <SECTION>Building NetBSD/hpcmips bits
 
@@ -32,7 +57,53 @@ NetBSD/hpcmips might find useful.
     <dd><a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/cross/i386-hpcmips/mipsel-netbsd.tgz">mipsel-netbsd.tgz</a> i386 cross compile environment.(experimental)
  </dl>
 
+<ENTRY>src-cvs Getting Source from NetBSD CVS tree.
+
+NetBSD/hpcmips use same source tree as other NetBSD plathome.
+<a href="http://www.netbsd.org/Documentation/current/">
+Tracking NetBSD-current </a> helps you.
+NetBSD-current source tree URL is <a href="ftp://ftp.jp.netbsd.org/pub/NetBSD-current/tar_files/src/"><i>ftp://ftp.netbsd.org/pub/NetBSD-current/tar_files/src/</i></a>.
+<dl>
+<dt> getting current source snapshot
+<dt> See <a href="http://www.netbsd.org/Sites/net.html#anoncvs">AnonCVS mirrors</a> and select your nearest anoncvs server.
+<dt> CVS/Repository path fix to your nearest anoncvs server
+<dt> access anoncvs server (cf. to access jp.netbsd.org anoncvs server)
+<dd> cvs -d :pserver:anoncvs@jp.netbsd.org:/cvs/cvsroot login
+<dd> cvs -d :pserver:anoncvs@jp.netbsd.org:/cvs/cvsroot co src
+<dd> cvs update -P -d
+</dl>
+<pre>
+fix CVS Repository Paths to your nearest server.
+
+sh
+for f in `find . -name Repository`; do
+        mv $f $f.orig
+        sed -e 's|^|/cvs|' $f.orig > $f
+        rm $f.orig
+done
+echo ":pserver:anoncvs@sup.jp.netbsd.org:/cvs/cvsroot" > /tmp/A
+find . -name Root -exec cp /tmp/A {} \;
+
+</pre>
+
 <ENTRY>build-bins Building a kernel and binaries
+
+<SECTION>NetBSD/hpcmips kernel hacking
+
+<ENTRY>add-platform Adding support for a new system
+
+<!-- XXX REWORK -->
+<dl>
+  <dt>commit syssrc/sys/arch/hpcmips/hpcmips: platid.def
+  <dt>make syssrc/sys/arch/hpcmips/ dir.
+  <dd>regen syssrc/sys/arch/hpcmips/include: platid_generated.h platid_mask.h
+  <dt>commit syssrc/sys/arch/hpcmips/ dir.
+  <dt>add entry /syssrc/sys/arch/hpcmips/stand/pbsdboot/main.c and commit
+  <dt>keyboard translation table
+  <dd>commit /syssrc/sys/arch/hpcmips/vr/vrkiu.c
+</dl>
+
+<SECTION>pbsdboot.exe - boot program from CE environment 
 
 <ENTRY>prep-booter Preparing to build Windows CE programs
 
@@ -102,13 +173,13 @@ depending on Platform Builder/Embedded Toolkit version:
   <dl>
     <dl>
       <dt>Windows CE Embedded Toolkit for Visual C++ 5.0:
-      <dd>Unknown.  If you know, <a href="/Ports/hpcmips/www@netbsd.org" origlink="www@netbsd.org">send us mail</a>.
+      <dd>Unknown.  If you know, <a href="www@netbsd.org">send us mail</a>.
 
       <dt>Windows CE Platform Builder 2.11:
       <dd>On Disc 1, at the path "<tt>\public\common\oak\inc\diskio.h</tt>."
 
       <dt>Windows CE Platform Builder 2.12:
-      <dd>Unknown.  If you know, <a href="/Ports/hpcmips/www@netbsd.org" origlink="www@netbsd.org">send us mail</a>.
+      <dd>Unknown.  If you know, <a href="www@netbsd.org">send us mail</a>.
     </dl>
   </dl>
 
@@ -122,20 +193,45 @@ depending on Platform Builder/Embedded Toolkit version:
     <li><a href="http://www.microsoft.com/windowsce/Embedded/start/datasheet.asp">Windows CE Platform Builder Datasheet</a>
   </ul>
 
-<SECTION>NetBSD/hpcmips kernel hacking
+<ENTRY>jp-menu Japanese characters in menu
 
-<ENTRY>add-platform Adding support for a new system
+<!-- from port-hpcmips@netbsd.org Date: Wed, 09 Feb 2000 10:21:58 +0900 -->
+<p>
+Japanese characters in menu is very important for Japanese version
+Windows CE users. Because, newer version of Windows CE(Japanese version;
+2.11?) treats CF/PC Card folder as 'MEMORIKA-DO' (spelled in Japanese,
+Katakana), not 'Storage Card'.
 
-<!-- XXX REWORK -->
+On the other hand, older version of Windows CE(Japanese version; 1.0 and
+2.0?) treats them as 'Storage Card'.
+
+Therefore, both of 'Storage Card' and 'MEMORIKA-DO' are necessary for
+Japanese users.
+
+(Does GetLocaleInfo API of WindowsCE help us ?)
+
+<ENTRY>fb-names frame buffer type names
+
+<!-- from port-hpcmips@netbsd.org Date: Sun, 6 Feb 2000 21:58:28 +0900 -->
 <dl>
-  <dt>commit syssrc/sys/arch/hpcmips/hpcmips: platid.def
-  <dt>make syssrc/sys/arch/hpcmips/ dir.
-  <dd>regen syssrc/sys/arch/hpcmips/include: platid_generated.h platid_mask.h
-  <dt>commit syssrc/sys/arch/hpcmips/ dir.
-  <dt>add entry /syssrc/sys/arch/hpcmips/stand/pbsdboot/main.c and commit
-  <dt>keyboard translation table
-  <dd>commit /syssrc/sys/arch/hpcmips/vr/vrkiu.c
+  <dt>D2
+  <dd>2bpp
+  <dt>Dxx_yyyy and M2L_y
+  <dd>xx means frame buffer depth 
+  <dd>y means the pixel value of the forground color in hexadecimal
+  <dt>'M2L means most significant bit to least significant bit. The MSB
+  is left pixel and LSB is right pixel if a byte represents two or
+  more pixels. 'L2M means reverse order.
+
+  The 'x2' option provides virtual double width screen. For example,
+  Palm Size PC, Freestype, which has LCD of 320x240, pretend to has
+  LCD of 640x480. It had been hack for debugging until serial port
+  got available. Please don't mind about it.
 </dl>
+
+<ENTRY>share-source share source tree with other ports
+
+set OBJMACHINE environment.
 
 </LIST>
 
@@ -147,8 +243,8 @@ depending on Platform Builder/Embedded Toolkit version:
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: howto-develop.list,v 1.2 2000/02/24 10:14:36 kawamoto Exp $<br>
-  <a href="/Misc/disclaimer.html" origlink="../../Misc/disclaimer.html">Copyright &copy; 2000
+  $NetBSD: howto-develop.list,v 1.3 2000/03/22 05:28:46 jun Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 2000
     The NetBSD Foundation, Inc. ALL RIGHTS RESERVED.</a> 
 </address>
 

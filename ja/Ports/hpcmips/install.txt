@@ -1,6 +1,35 @@
 NetBSD/hpcmips installation 
 	- to make your file system on Compact Flush -
-$NetBSD: install.txt,v 1.1 2000/02/16 09:22:41 jun Exp $
+$NetBSD: install.txt,v 1.2 2000/03/22 05:28:46 jun Exp $
+
+0. NetBSD/hpcmips kernel with sysinst
+
+NetBSD/hpcmips has bootloader and system installer.
+on
+ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/snapshot/20000208/installation
+[20000208 is snapshot release date,try to use newer one if exists.]
+
+get binary mode
+	netbsd
+	pbsdboot.exe
+pbsdboot.exe is WindowsCE applicaton.start pbsdboot and
+ - set hardware type (NEC MobileGear R500...)
+ - kernel path. (\Storage Card\netbsd)
+
+[CAUTION! once NetBSD/hpcmips booting,your CE machine lost 
+memories on WindowsCE era.please backup such as  outlook
+mail data ,PocketExcel datas on your CE memories.]
+
+click boot button and you get into NetBSD/hpcmips.
+
+NetBSD/hpcmips kernel with system installer costs almost 6MB memory area.
+Please allocate Windows CE memory to load sysinst-netbsd kernel.
+If you failed pbsdboot.exe with "cannot allocate heap" error,
+allocate more memory and less disk from Windows CE 
+[Setting]->[ControlPanel]->[System]->[Memory].
+
+If you have failed with sysinst system installation,
+read below sequence.
 
 1. CF partition
 fdisk CF partition
@@ -18,7 +47,27 @@ fdisk command results.
       .........
 
 disklabel command results.
-      .........
+
+disklabel wd0   --- print wd0 partition information
+disklabel wd0 > label.CF  --- dump wd0 partition information
+edit label.CF   --- edit wd0 partition information
+
+On typcal 128M cf last lines:
+#        size  offset  fstype [fsize bsize  cpg]
+  a:   209920    4352  4.2BSD   1024  4096   16  # (Cyl.    17 - 836)
+  b:    12800  214272    swap                    # (Cyl.   837 - 886)
+  c:   222720    4352  unused      0     0       # (Cyl.    17 - 886)
+  d:   227584       0  unused      0     0       # (Cyl.     0 - 888)
+  e:     4320      32   MSDOS                    # (Cyl.     0*- 16 )
+
+more info. 
+http://www.netbsd.org/Ports/i386/faq.html#msdos_partition
+
+On typcal fstab entry:
+/dev/wd0a  /  ffs rw 1 1
+/dev/wd0b none swap sw 0 0
+/kern     /kern kernfs rw
+/dev/wd0e /msdos msdos rw 0 0
 
 2. newfs & mount PC
 newfs /dev/wd1a 
@@ -33,13 +82,12 @@ if so,you don't need to set kernel file on msdos partition.
 
 3. get distribution
 get base.tgz etc.tgz kern.tgz
-	ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/snapshot/snap-1999100
+	ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/snapshot/
+
 
 4. copy kernel
 tar xzvf kern.tgz
 	netbsd    - root wd0a swap wd0b
-	sdnetbsd  - root sd0a swap sd0b
-	nfsnetbsd - root nfs  swap nfs
 
 cp -p netbsd /mnt/netbsd
 cp -p netbsd /msdos2/netbsd
@@ -51,6 +99,10 @@ cp -p pbsdboot.exe /msdos2/pbsdboot.exe
 6. extract sets
 tar xzvf base.tgz -C /mnt
 tar xzvf etc.tgz  -C /mnt
+
+if you have no distrib sets space,
+ cd /; ftp -o "|tar xpfz -" ftp://.....
+can extract sets directry.
 
 7. make device nodes
 
