@@ -1,4 +1,6 @@
 #	$NetBSD: Makefile,v 1.8 2003/01/10 00:37:41 jschauma Exp $
+#	<!-- based on english translation: -->
+#	<!-- NetBSD: Makefile,v 1.8 2003/01/10 00:37:41 jschauma Exp   -->
 
 all: subdirs supporting-cast.html
 

@@ -1,4 +1,6 @@
 # $NetBSD: Makefile,v 1.3 2002/02/14 03:22:23 jschauma Exp $
+# <!-- based on english translation: -->
+# <!-- NetBSD: Makefile,v 1.3 2002/02/14 03:22:23 jschauma Exp   -->
 # Nasty makefile to recurse into subdirs to ensure faq files are up to date
 
 all:	index

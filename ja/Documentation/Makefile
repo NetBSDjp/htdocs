@@ -1,4 +1,6 @@
 # $NetBSD: Makefile,v 1.12 2003/06/10 14:22:38 jschauma Exp $
+# <!-- based on english translation: -->
+# <!-- NetBSD: Makefile,v 1.12 2003/06/10 14:22:38 jschauma Exp   -->
 # Nasty makefile to recurse into subdirs to ensure faq files are up to date
 
 all::	books.html bootcd.html bootfloppy.html compat.html elf.html

@@ -1,4 +1,6 @@
 #	$NetBSD: Makefile,v 1.3 2002/08/01 20:26:00 jschauma Exp $
+#	<!-- based on english translation: -->
+#	<!-- NetBSD: Makefile,v 1.3 2002/08/01 20:26:00 jschauma Exp   -->
 #	Process .list files into .html files
 
 all:	index.html

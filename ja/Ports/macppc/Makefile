@@ -1,4 +1,6 @@
 #	$NetBSD: Makefile,v 1.6 2004/04/18 22:51:21 mbw Exp $
+#	<!-- based on english translation: -->
+#	<!-- NetBSD: Makefile,v 1.6 2004/04/18 22:51:21 mbw Exp   -->
 #	Process .list files into .html files
 
 all:	faq.html oldfaq.html x11.html

@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 
 #	$NetBSD: data2html.pl,v 1.3 2000/09/21 11:19:12 dent Exp $
+#	<!-- based on english translation: -->
+#	<!-- NetBSD: data2html.pl,v 1.3 2000/09/21 11:19:12 dent Exp   -->
 #
 # Copyright (c) 1997 The NetBSD Foundation, Inc.
 # All rights reserved.

@@ -1,4 +1,6 @@
 #	$NetBSD: Makefile,v 1.6 2002/08/01 20:24:59 jschauma Exp $
+#	<!-- based on english translation: -->
+#	<!-- NetBSD: Makefile,v 1.6 2002/08/01 20:24:59 jschauma Exp   -->
 #       Process .list files into .html files
 
 all:  NetBSD-1.5.1.html NetBSD-1.5.2.html NetBSD-1.5.3.html index.html

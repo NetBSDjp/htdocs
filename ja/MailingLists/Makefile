@@ -1,4 +1,6 @@
 #	$NetBSD: Makefile,v 1.2 1995/08/15 04:15:52 thorpej Exp $
+#	<!-- based on english translation: -->
+#	<!-- NetBSD: Makefile,v 1.2 1995/08/15 04:15:52 thorpej Exp   -->
 #	XXX
 
 index.html:	index.m4

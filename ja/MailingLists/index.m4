@@ -1,5 +1,7 @@
 divert(-1)dnl
 #	$NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $
+#	<!-- based on english translation: -->
+#	<!-- NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp   -->
 #	Copyright (c) 1994-2004
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -726,6 +728,8 @@ divert(9)
        <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $<br>
+  <!-- based on english translation: -->
+  <!-- NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp   -->
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

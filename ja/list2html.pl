@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 #
 # $NetBSD: list2html.pl,v 1.96 2004/10/30 22:33:23 jschauma Exp $
+# <!-- based on english translation: -->
+# <!-- NetBSD: list2html.pl,v 1.96 2004/10/30 22:33:23 jschauma Exp   -->
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)

@@ -1,4 +1,6 @@
 #       $NetBSD: Makefile,v 1.6 2002/06/14 01:35:13 hubertf Exp $
+#       <!-- based on english translation: -->
+#       <!-- NetBSD: Makefile,v 1.6 2002/06/14 01:35:13 hubertf Exp   -->
 #
 # Process .act files into .html files
 #

@@ -1,4 +1,6 @@
-#	$NetBSD: Makefile,v 1.2 2002/09/19 14:18:46 kawamoto Exp $
+#	$NetBSD: Makefile,v 1.3 2005/02/07 16:46:33 kano Exp $
+#	<!-- based on english translation: -->
+#	<!-- NetBSD: Makefile,v 1.3 2002/08/01 20:25:05 jschauma Exp   -->
 #	Process .list files into .html files
 
 all::	howto-develop.html howto-use.html compat-pmax.html pocketv6.html faq.html

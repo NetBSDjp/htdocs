@@ -1,4 +1,6 @@
 /*	$NetBSD: mkdevht.c,v 1.13 2002/11/02 14:29:46 grant Exp $	*/
+/*	<!-- based on english translation: -->	*/
+/*	<!-- NetBSD: mkdevht.c,v 1.13 2002/11/02 14:29:46 grant Exp   -->	*/
 
 char *copyright =
 	"Copyright (c) 2000 Mason Loring Bliss";
@@ -69,6 +71,9 @@ collectline(int line, int silent, FILE *source, char *field, char **space,
 		}
 		if (inputline[length - 1] == '\n')
 			--length;
+		/* Skip comments. */
+		if (inputline[0] == '#')
+			length = 0;
 	}
 
 	/* See if the desired field is here. */
