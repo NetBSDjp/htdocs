@@ -2,7 +2,7 @@
 
 supporting-cast.html: mkdevht supporting-cast.data supporting-cast.head supporting-cast.tail 
 	./mkdevht ./supporting-cast.data
-	cd ../de/People/ && make
+#	cd ../de/People/ && make
 
 mkdevht: mkdevht.c
 	gcc -Wall -O2 -o mkdevht mkdevht.c
