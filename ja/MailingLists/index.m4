@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.92 2001/02/27 14:09:19 soda Exp $
+#	$NetBSD: index.m4,v 1.94 2001/03/09 22:22:18 soda Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -262,13 +262,25 @@ PORTLIST(port-arc)
   There is also a <a href="#port-mips">port-mips</a> list for
   questions related to all MIPS based ports.
 ENDLIST
+LIST(port-arm)
+  Discussion of issues relevant to all ARM-based NetBSD ports.
+  There are lists for the individual ports and they should be used for
+  port-specific questions and information:
+  <a href="#port-arm26">port-arm26</a>, and
+  <a href="#port-arm32">port-arm32</a>, and
+  <a href="#port-hpcarm">port-hpcarm</a>.
+ENDLIST
 PORTLIST(port-arm26)
   Discussion of issues specific to NetBSD on ARM2 and ARM3 based machines
   (NetBSD/arm26).
+  There is also a <a href="#port-arm">port-arm</a> list for
+  questions related to all ARM based ports.
 ENDLIST
 PORTLIST(port-arm32)
   Discussion of issues specific to NetBSD on the ARM and StrongARM families of
   microprocessors (NetBSD/arm32).
+  There is also a <a href="#port-arm">port-arm</a> list for
+  questions related to all ARM based ports.
 ENDLIST
 PORTLIST(port-atari)
   Discussion of issues specific to NetBSD on Atari's TT030, Falcon, and Hades
@@ -306,6 +318,8 @@ ENDLIST
 PORTLIST(port-hpcarm)
   Discussion of issues specific to NetBSD on ARM based Windows CE PDA machines
   (NetBSD/hpcarm).
+  There is also a <a href="#port-arm">port-arm</a> list for
+  questions related to all ARM based ports.
 ENDLIST
 PORTLIST(port-hpcmips)
   Discussion of issues specific to NetBSD on MIPS based Windows CE PDA machines
@@ -534,7 +548,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.92 2001/02/27 14:09:19 soda Exp $<br>
+  $NetBSD: index.m4,v 1.94 2001/03/09 22:22:18 soda Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
