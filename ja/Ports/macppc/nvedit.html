@@ -15,22 +15,76 @@
 <hr>
 <p>
 
-このページでは、
-Open Firmware の nvram の内容を編集するためのコマンドを簡単に説明します。
+このページは、 Open Firmware NVRAMRC の内容を編集するために必要なコマンド
+についての、簡単な入門です。 NVRAMRC は、システムのリブートのたびに実行される、
+永久に保持されるファイルです。通常、これは、ブート時のシステムの挙動を
+修正するための FORTH コマンド群を含んでいます。 NVRAMRC
+の内容の書き方について、さらなる情報は、
+<a href="http://karchive.info.apple.com/article.html?artnum=60285">Apple
+Network Server 500,700: Open Firmware Read Me</a> Technote
+がよい出発点となります。
+<p>
+この NVRAMRC に影響を与えるコマンド群が Open Firmware に含まれます。
+このコマンドは、 Open Firmware プロンプト (つまり、 <tt>0 &gt;</tt>
+というプロンプト) から入力されます。 Open Firmware 設定すべてについて、
+設定の変更後は、 <tt>reset-all</tt> コマンドを使ってマシンをリセット
+することをおすすめします。
 <p>
 
-Open Firmware の仕様として、 すべての OF の実装にはエディターが
-組み込まれています。
-このページでは、その使い方を説明します。
-いくつかのコマンドが emacs とよく似ていると思う方もいるでしょう。
+<table border=1 cellpadding=5>
+<tr><td valign=top><tt>nvedit</tt></td>
+<td>現在の nvramrc の内容の編集を開始します。一時的な
+バッファーにファイルが残されている場合には、そのファイルの編集を
+再開します。そうでなければ、 NVRAMRC の内容を一時的なバッファーに
+コピーして、それの編集を開始します。</td></tr>
+
+<tr><td valign=top><tt>nvstore</tt></td>
+<td>一時的な nvram バッファーの内容を NVRAMRC に保存したうえで、
+一時的なバッファーの内容を破棄します</td></tr>
+
+<tr><td valign=top><tt>nvquit</tt></td>
+<td>一時的な nvramrc バッファーの内容を、
+NVRAMRC に書き込まずに破棄します</td></tr>
+
+<tr><td valign=top><tt>nvrun</tt></td>
+<td>一時的な nvram バッファーの内容を実行します</td></tr>
+
+<tr><td valign=top nowrap><tt>nvalias
+&lt;alias&gt; &lt;device-path-name&gt;</tt></td>
+<td>指定したデバイスの別名を定義します (他の devaliases ではなく、
+フルパスを使う必要があります) 、たとえば PowerMacintosh 7300 で<br>
+  <tt>nvalias bsd-cd /bandit/gc/mesh/sd@3:0,\OFWBOOT.XCF</tt><br>
+とすると、 `<tt>boot bsd-cd</tt>' とタイプすれば
+<tt>ofwboot.xcf</tt> が CD-ROM ドライブからロードされるように
+なります</td></tr>
+
+<tr><td valign=top><tt>nvunalias &lt;alias&gt;</tt></td>
+<td>デバイスの別名を NVRAMRC から削除します</td></tr>
+
+<tr><td valign=top><tt>setenv use-nvramrc? &lt;value&gt;</tt></td>
+<td>この &lt;value&gt; は、 <tt>true</tt> か <tt>false</tt> のいずれかです。
+この環境変数は、マシンのリセットやリブートの都度
+NVRAM の内容を実行するかどうかを定義します</td></tr>
+
+</table>
+<p>
+<hr>
+<p>
+<i>注意: 一部の Open Firmware 1.0.5 のシステムでは、 <tt>nvalias</tt>
+の設定に加えて System Disk のパッチを置けるだけの NVRAM 容量がありません。
+<tt>nvalias</tt> は保存せずに
+System Disk パッチを保存すべきかもしれません</i>。
+
+<p>
+
+Open Firmware の仕様として、 すべての Open Firmware の実装にはエディターが
+組み込まれています。以下は、このエディターで使われるコマンドです。
+いくつかのコマンドが emacs とよく似ていることに気づく方もいるでしょう。
 ここでは、 <tt>C-x</tt> という表現を、
 control キーと <tt>x</tt> キーを同時に押す意味に使います。
 <p>
 
-<table>
-<tr><td><tt>nvedit</tt></td>
-<td>現在の nvramrc の内容の編集を開始します。</td></tr>
-
+<table border=1 cellpadding=5>
 <tr><td><tt>C-l</tt></td>
 <td>ディスプレーを再描画します。</td></tr>
 
@@ -49,24 +103,11 @@ control キーと <tt>x</tt> キーを同時に押す意味に使います。
 <tr><td><tt>C-b</tt></td>
 <td>一文字戻ります。</td></tr>
 
-<tr><td><tt>C-c</tt></td>
-<td>エディターを終了し、編集した内容を nvram のバッファーに保持します。<br>
-<i>註: これは変更を nvramrc に保存<b>しません</b>。</i></td></tr>
+<tr><td valign=top><tt>C-c</tt></td>
+<td>エディターを終了し、編集した内容を一時的なバッファーに保持します<br>
+<i>注意: これは変更を NVRAMRC に保存<b>しません</b>、
+<tt>nvstore</tt> を実行する必要があります</i></td></tr>
 
-<tr><td><tt>nvstore</tt></td>
-<td>編集された nvram のバッファーを nvramrc に保存します。</td></tr>
-
-<tr><td><tt>nvquit</tt></td>
-<td>編集された nvram のバッファーの内容を破棄します。</td></tr>
-
-<tr><td><tt>nvrun</tt></td>
-<td>編集された nvram のバッファーの内容を実行します。</td></tr>
-
-<tr><td><tt>nvalias</tt></td>
-<td>デバイスの別名を nvramrc に追加します。</td></tr>
-
-<tr><td><tt>nvrun</tt></td>
-<td>デバイスの別名を nvramrc から削除します。</td></tr>
 </table>
 <p>
 
@@ -74,7 +115,8 @@ control キーと <tt>x</tt> キーを同時に押す意味に使います。
 <p>
 
 ブートする前に (ハードドライブが動くまで) 待つようにするためには、
-<a href="SystemDisk-tutorial/of105patch2.txt">下記のパッチ</a> を nvramrc に追加します:
+<a href="SystemDisk-tutorial/of105patch2.txt">下記のパッチ</a> を
+nvramrc に追加します:
 
 <pre>: wBoot
 begin
@@ -84,21 +126,22 @@ begin
 key? until
 ;</pre>
 
-それから <tt>nvstore</tt> を実行します。
-さらに、ブートコマンドの変更を指示しなければなりません。
-OF プロンプトで次のようにタイプします:<br>
+それから <tt>nvstore</tt> を実行します。さらに、ブートコマンドの変更を
+指示しなければなりません。 OF プロンプトで次のようにタイプします:<br>
 
 <tt>0 &gt; <b>setenv boot-command wBoot</b></tt>
 <p>
 
-あるいは、 OF 2 以降の機種では、
-次のようにしてブートコマンドを変更することもできます:<br>
+上記のかわりに、次のようにしてブートコマンドを変更することもできます:<br>
 
-<tt>0 &gt; <b>boot-command begin ['] boot catch 1000 ms cr again</b></tt>
+<tt>0 &gt; <b>boot-command begin ['] boot catch 999 ms cr again</b></tt>
+<p>
+初期の Open Firmware 1.0.5 の機種の一部では、この一行を使った方法では
+動作しないとの報告があります。
 <p>
 
 <hr>
-<a href="">Up to <em>NetBSD/macppc Port Page</em></a>
+<a href="./">Up to <em>NetBSD/macppc Port Page</em></a>
 <hr>
 
 <table width="100%"><tr><td>
@@ -127,7 +170,7 @@ OF プロンプトで次のようにタイプします:<br>
 <address>
   <small>
   www@JP.NetBSD.ORG<br>
-  $NetBSD: nvedit.html,v 1.2 2000/08/27 06:12:33 mbw Exp $<br>
+  $NetBSD: nvedit.html,v 1.7 2001/08/15 19:02:17 dent Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
