@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.109 2002/03/02 22:18:41 scw Exp $
+#	$NetBSD: index.m4,v 1.110 2002/03/13 04:41:35 simonb Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -331,6 +331,24 @@ PORTLIST(port-dreamcast)
   There is also a <a href="#port-sh3">port-sh3</a> list for
   questions related to all Hitachi Super-H (SH3/4) chips-based ports.
 ENDLIST
+PORTLIST(port-evbarm)
+  Discussion of issues specific to NetBSD on ARM-based evaluation boards
+  (NetBSD/evbarm).
+  There is also a <a href="#port-arm">port-arm</a> list for
+  questions related to all ARM based ports.
+ENDLIST
+PORTLIST(port-evbmips)
+  Discussion of issues specific to NetBSD on evaluation boards with
+  MIPS-based CPUs  (NetBSD/evbmips).  Currently the MIPS Malta is supported.
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
+ENDLIST
+PORTLIST(port-evbsh3)
+  Discussion of issues specific to NetBSD on Hitachi SuperH(TM) SH3/4
+  evaluation boards (NetBSD/evbsh3).
+  There is also a <a href="#port-sh3">port-sh3</a> list for
+  questions related to all sh3 based ports.
+ENDLIST
 PORTLIST(port-hp300)
   Discussion of issues specific to NetBSD on Hewlett-Packard's 9000/300 and
   9000/400 series machines (NetBSD/hp300).
@@ -406,10 +424,13 @@ LIST(port-mips)
   <a href="#port-algor">port-algor</a>,
   <a href="#port-arc">port-arc</a>,
   <a href="#port-cobalt">port-cobalt</a>,
+  <a href="#port-evbmips">port-evbmips</a>,
   <a href="#port-hpcmips">port-hpcmips</a>,
   <a href="#port-mipsco">port-mipsco</a>,
   <a href="#port-newsmips">port-newsmips</a>,
+  <a href="#port-playstation2">port-playstation2</a>,
   <a href="#port-pmax">port-pmax</a>, and
+  <a href="#port-sbmips">port-sbmips</a>.
   <a href="#port-sgimips">port-sgimips</a>.
 ENDLIST
 PORTLIST(port-mipsco)
@@ -460,6 +481,8 @@ ENDLIST
 PORTLIST(port-playstation2)
   Discussion of issues specific to NetBSD on Sony's Playstation 2
   machines (NetBSD/playstation2).
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
 ENDLIST
 PORTLIST(port-pmax)
   Discussion of issues specific to NetBSD on Digital's MIPS based DECstation
@@ -493,6 +516,12 @@ PORTLIST(port-sandpoint)
   platform using the MPC8240 processor module (NetBSD/sandpoint).
   There is also a <a href="#port-powerpc">port-powerpc</a> list for
   questions related to all PowerPC based ports.
+ENDLIST
+PORTLIST(port-sbmips)
+  Discussion of issues specific to NetBSD on Broadcom's SiByte
+  Broadband Processor-based platforms (NetBSD/sbmips).  There
+  is also a <a href="#port-mips">port-mips</a> list for questions
+  related to all MIPS based ports.
 ENDLIST
 PORTLIST(port-sgimips)
   Discussion of issues specific to NetBSD on SGI MIPS platforms
@@ -601,7 +630,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.109 2002/03/02 22:18:41 scw Exp $<br>
+  $NetBSD: index.m4,v 1.110 2002/03/13 04:41:35 simonb Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
