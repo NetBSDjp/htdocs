@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998-2004
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
+<title>Setting up the ndbootd (ND) server, Diskless NetBSD HOW-TO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+Previous |
+<a href="rarp.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr>
+
+<h1>Setting up the <tt>ndbootd</tt> (ND) server, Diskless NetBSD HOW-TO</h1>
+
+Sun's old Network Disk (ND) protocol is used by Sun 2 machines to boot
+over the network.  The ND protocol was designed by Sun before they
+designed NFS.  ND simply
+makes the raw blocks of a disk available to network clients.  Contrast
+this with the true namespace and file abstractions that NFS provides.
+<p>
+
+<tt>ndbootd</tt> is a server that supports the ND protocol.
+However, it is limited to serving up an imaginary disk that contains only
+first- and second-stage boot loaders.
+<p>
+
+First, you need to get copies of these bootloaders.  The first- and 
+second-stage boot loaders are called <tt>bootyy</tt> and <tt>netboot</tt>,
+respectively, and they can be found in a NetBSD/sun2 distribution under
+<b><tt>installation/netboot/</tt></b>.
+<p>
+
+It is easiest to configure <tt>ndbootd</tt> to find these bootloaders in
+the <tt>/tftpboot</tt> directory, so place these files there.  Then you
+need to make symlinks to <tt>netboot</tt> for each individual client as
+outlined in the <a href="intro.sun2.html">introduction</a>.  For example,
+for a sun2 client with IP address 192.168.1.10, you would do: 
+
+<pre># <b>mkdir -p /tftpboot</b>
+# <b>cp /from/some/where/bootxx /tftpboot</b>
+# <b>cp /from/some/where/netboot /tftpboot</b>
+# <b>cd /tftpboot</b> 
+# <b>ln -s netboot C0A8010A.SUN2</b></pre>
+
+In addition to serving boot loaders to clients, <tt>ndbootd</tt> also tells
+clients their IP addresses.  Accordingly, the next sections contain some
+suspiciously <a href="rarp.html">rarp</a>-like instructions.  (Which is
+fine, since you have to set up rarp also.)
+<p>
+
+Setting up ndbootd, <a href="#netbsd">NetBSD</a><br>
+Setting up ndbootd, <a href="#openbsd">OpenBSD</a><br>
+Setting up ndbootd, <a href="#freebsd">FreeBSD</a><br>
+Setting up ndbootd, <a href="#linux">Linux</a><br>
+Setting up ndbootd, <a href="#sunos">SunOS</a><br>
+Setting up ndbootd, <a href="#solaris">Solaris</a><br>
+<p>
+
+<hr>
+
+<h3><a name="netbsd">NetBSD</a></h3>
+<dl><dt><dd>
+Recent NetBSD releases include <tt>ndbootd</tt>.  For ancient releases
+you will need to download, build, and install the latest version under 
+<a href="http://mit.edu/fredette/www/ndbootd/">http://mit.edu/fredette/www/ndbootd/</a>.
+<p>
+
+If you have built your own kernel, make sure you have the following in
+your config file:
+<pre>pseudo-device   bpfilter        16</pre>
+The <tt>GENERIC</tt> kernel distributed with NetBSD has this compiled in.
+<p>
+
+<ol>
+<li>Create an <tt>/etc/ethers</tt> file, listing your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li>Add your client to the <tt>/etc/hosts</tt> file:<br>
+    <b><tt>192.168.1.10           client</tt></b>
+<p>
+
+<li><tt># <b>/usr/sbin/ndbootd -d -s /tftpboot /tftpboot/bootyy</b></tt>
+</ol>
+<p>
+
+This will start <tt>ndbootd</tt> in debugging mode in the foreground
+(i.e. you can <tt>^C</tt> out of it).
+When the server gets a request, it will print many debugging messages.
+<p>
+
+Continue on to setting up <a href="rarp.html">rarp</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="freebsd">FreeBSD</a> and <a name="openbsd">OpenBSD</a></h3>
+<dl><dt><dd>
+You will need to download, build, and install the latest version of 
+<tt>ndbootd</tt> under
+<a href="http://mit.edu/fredette/www/ndbootd/">http://mit.edu/fredette/www/ndbootd/</a>.
+<p>
+
+<ol>
+<li>Create an <tt>/etc/ethers</tt> file, listing your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li>Add your client to the <tt>/etc/hosts</tt> file:<br>
+    <b><tt>192.168.1.10           client</tt></b>
+<p>
+
+<li><tt># <b>/usr/local/sbin/ndbootd -d -s /tftpboot /tftpboot/bootyy</b></tt>
+</ol>
+<p>
+
+This will start <tt>ndbootd</tt> in debugging mode in the foreground 
+(i.e. you can <tt>^C</tt> out of it).  When the server gets a request,
+it will print many debugging messages.
+<p>
+
+Continue on to setting up <a href="rarp.html">rarp</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="linux">Linux</a></h3>
+<dl><dt><dd>
+TBD.  <tt>ndbootd</tt> does not currently run on Linux (no raw Ethernet
+access functions have been written yet).  If you're a programmer, you
+could write them - the interface you would need to provide is the same
+as <tt>config/ndbootd-bpf.c</tt> in the sources.
+</dd></dl>
+
+<hr>
+
+<h3><a name="sunos">SunOS</a></h3>
+<dl><dt><dd>
+TBD.  <tt>ndbootd</tt> does not currently run on SunOS (no raw Ethernet
+access functions have been written yet).  If you're a programmer, you
+could write them - the interface you would need to provide is the same
+as <tt>config/ndbootd-bpf.c</tt> in the sources.
+</dd></dl>
+
+<hr>
+
+<h3><a name="solaris">Solaris</a></h3>
+<dl><dt><dd>
+TBD.  <tt>ndbootd</tt> does not currently run on Solaris (no raw Ethernet
+access functions have been written yet).  If you're a programmer, you
+could write them - the interface you would need to provide is the same
+as <tt>config/ndbootd-bpf.c</tt> in the sources.
+</dd></dl>
+
+<hr>
+
+Previous |
+<a href="rarp.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: nd.html,v 1.11 2004/10/30 22:33:31 jschauma Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
