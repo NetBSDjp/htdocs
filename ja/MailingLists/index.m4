@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.121 2003/03/14 12:31:50 kim Exp $
+#	$NetBSD: index.m4,v 1.122 2003/04/01 20:06:59 jschauma Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -659,7 +659,7 @@ divert(9)
   (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.121 2003/03/14 12:31:50 kim Exp $<br>
+  $NetBSD: index.m4,v 1.122 2003/04/01 20:06:59 jschauma Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
