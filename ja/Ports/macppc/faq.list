@@ -269,8 +269,54 @@ version of MacOS).
 where <tt>/msdos.filesystem</tt> is the mount point you'd like, and 
 <tt>/dev/disk0s11</tt> is the device name for your partition.  Alternatively,
 for NetBSD and linuxppc, you can add an entry to your <tt>/etc/fstab</tt>
-to always mount this filesystem.  There's probably a way to do this with MacOS
-X, but I don't know how yet.
+to always mount this filesystem.  
+
+<p><li>To get MacOS X and Darwin to automatically mount your MS-DOS file system,
+you need to create a System Startup bundle.  The 
+<a href="http://www.darwinfo.org/howto/SystemStarter_HOWTO.shtml">SystemStarter
+HOWTO</a> is a good reference if you want to learn more about creating your
+own startup bundles.  There's probably a way to do this using 
+<tt>autodiskmount</tt>, but this technique works fine.  The only downside is
+that the MSDOS filesystem is unavailable to the Classic environment.
+Here's an example of what to do:
+<p>
+<ol>
+<li><tt># <b>mkdir -p /Library/StartupItems/MountMSDOS</b></tt>
+<p><li>Create 
+   <tt>/Library/StartupItems/MountMSDOS/StartupParameters.plist</tt> with
+   the following contents:
+<pre>{
+  Description     = "Mount MSDOS partitions";
+  Provides        = ("Manual MSDOS partitions");
+  Requires        = ("Disks");
+  OrderPreference = "None";
+  Messages =
+  {
+    start = "Mounting MSDOS partitions";
+    stop  = "Unmounting MSDOS partitions";
+  };
+}</pre>
+<p><li>Create
+   <tt>/Library/StartupItems/MountMSDOS/MountMSDOS</tt> with
+   the following contents:
+<pre>#!/bin/sh
+
+. /etc/rc.common
+
+##
+# Manually mount HFS partition with MSDOS filesystem
+##
+
+ConsoleMessage "Mount MSDOS partitions"
+
+##
+# Mount your filesystems manually.
+##
+mount_msdos /dev/disk0s11 /Volumes/Thingies</pre>
+<p><li>
+  <tt># <b>chown -R root /Library/StartupItems/MountMSDOS</b></tt><br>
+  <tt># <b>chmod a+rx /Library/StartupItems/MountMSDOS/MountMSDOS</b></tt>
+</ol>
 </ol>
 
 <ENTRY>partitions I'm confused by all these contradicting partition notations
@@ -2041,7 +2087,7 @@ to the mailing list on this topic.
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.106 2002/05/10 05:19:57 mbw Exp $<br>
+  $NetBSD: faq.list,v 1.107 2002/05/10 21:44:58 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
