@@ -53,11 +53,11 @@ $verbose=1;
 
 %extras=(
 
-'<TOPACTION','<td bgcolor="#000000"><img src="../../images/empty.gif" width="1" height="1" alt=" "></td>
-<td bgcolor="#000000"><img src="../../images/empty.gif" width="1" height="1" alt=" "></td>
-<td bgcolor="#000000"><img src="../../images/empty.gif" width="1" height="1" alt=" "></td>
-<td bgcolor="#d8d8d8"><img src="../../images/empty.gif" width="1" height="1" alt=" "></td>
-<td bgcolor="#d8d8d8"><img src="../../images/empty.gif" width="1" height="1" alt=" "></td>'
+'<TOPACTION','<td bgcolor="#000000"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>
+<td bgcolor="#000000"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>
+<td bgcolor="#000000"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>
+<td bgcolor="#d8d8d8"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>
+<td bgcolor="#d8d8d8"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>'
 
 );
 
@@ -137,8 +137,8 @@ sub makeact
     my($data,$section,$href,$header,$act,$pre,%tags,$date_month);
     my($date_num,$date_num_used,$entry_num,$ignore,$in_entry,$in_section);
     my($endact);
-    my($title_font) = "<font face=\"helvetica, arial, sans-serif\">";
-    my($end_title_font) = "</font>";
+    my($title_font) = "";
+    my($end_title_font) = "";
     my(%rcsmap)=&extract_tags($outfile,'\$NetBSD.*\$');
     my($rcstag);
 
@@ -171,7 +171,7 @@ sub makeact
     if ($data !~ s/(<head[^>]*>)/$1$_/i)
 	{ &fail("Unable to locate <head> tag"); }
 
-    open(FILE,">$outfile") || die("Unable to write '$outfile': $!");
+    open(FILE,"|nkf -j >$outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data,%extras);
     close(FILE);
     if ($date_num)

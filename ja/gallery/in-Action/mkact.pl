@@ -12,7 +12,7 @@ $debug=0;
 
 sub printfile {
     local($file)=@_;
-    open(F, "$file") or die "Cannot open $file for reading: $!\n";
+    open(F, "nkf -e $file|") or die "Cannot open $file for reading: $!\n";
     while(<F>) {
 	s/<!--.*//g;
 	print "$_";
@@ -28,10 +28,10 @@ while(<>) {
 
 	print "\n<tr>\n";
 
-        print "<td bgcolor=\"#000000\"><img src=\"../../images/empty.gif\"";
+        print "<td bgcolor=\"#000000\"><img src=\"../../../images/empty.gif\" origlink=\"../../images/empty.gif\"";
         print " width=\"1\" height=\"1\" alt=\" \"></td>\n";
 	print "<td bgcolor=\"#e8e8e8\" align=\"center\">$type</td>\n";
-        print "<td bgcolor=\"#000000\"><img src=\"../../images/empty.gif\"";
+        print "<td bgcolor=\"#000000\"><img src=\"../../../images/empty.gif\" origlink=\"../../images/empty.gif\"";
         print " width=\"1\" height=\"1\" alt=\" \"></td>\n";
 	print "<td>\n";
 	print "<tt>$entry:</tt><BR>\n"
@@ -57,20 +57,20 @@ while(<>) {
 	       "\n"
 	       );
 
-        print "<td bgcolor=\"#d8d8d8\"><img src=\"../../images/empty.gif\"";
+        print "<td bgcolor=\"#d8d8d8\"><img src=\"../../../images/empty.gif\" origlink=\"../../images/empty.gif\"";
         print " width=\"1\" height=\"1\" alt=\" \"></td>\n";
 
         print ("</tr>\n\n");
         print "<tr>\n";
-        print "<td bgcolor=\"#000000\"><img src=\"../../images/empty.gif\"";
+        print "<td bgcolor=\"#000000\"><img src=\"../../../images/empty.gif\" origlink=\"../../images/empty.gif\"";
         print " width=\"1\" height=\"1\" alt=\" \"></td>\n";
-        print "<td bgcolor=\"#000000\"><img src=\"../../images/empty.gif\"";
+        print "<td bgcolor=\"#000000\"><img src=\"../../../images/empty.gif\" origlink=\"../../images/empty.gif\"";
         print " width=\"1\" height=\"1\" alt=\" \"></td>\n";
-        print "<td bgcolor=\"#000000\"><img src=\"../../images/empty.gif\"";
+        print "<td bgcolor=\"#000000\"><img src=\"../../../images/empty.gif\" origlink=\"../../images/empty.gif\"";
         print " width=\"1\" height=\"1\" alt=\" \"></td>\n";
-        print "<td bgcolor=\"#d8d8d8\"><img src=\"../../images/empty.gif\"";
+        print "<td bgcolor=\"#d8d8d8\"><img src=\"../../../images/empty.gif\" origlink=\"../../images/empty.gif\"";
 	print " width=\"1\" height=\"1\" alt=\" \"></td>\n";
-        print "<td bgcolor=\"#d8d8d8\"><img src=\"../../images/empty.gif\"";
+        print "<td bgcolor=\"#d8d8d8\"><img src=\"../../../images/empty.gif\" origlink=\"../../images/empty.gif\"";
 	print " width=\"1\" height=\"1\" alt=\" \"></td>\n</tr>\n";
 
     } else {

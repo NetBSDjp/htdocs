@@ -11,7 +11,7 @@ index.html: index.act-template mkact.pl Makefile
 .SUFFIXES:      .act-template .html
 
 .act-template.html:
-	perl mkact.pl <$< >$*.act
+	nkf -e < $< | perl mkact.pl >$*.act
 	perl ./act2html.pl $*.act $@
 	rm $*.act
 
