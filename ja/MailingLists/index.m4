@@ -1,8 +1,8 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.138 2003/07/01 13:38:58 lukem Exp $
+#	$NetBSD: index.m4,v 1.140 2003/08/04 12:21:42 soren Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
-# http://mail-index.netbsd.org/
+# http://mail-index.NetBSD.org/
 
 undefine(`index')
 
@@ -77,7 +77,7 @@ divert(0)dnl
 <h2>NetBSD メーリングリスト</h2>
 
 <p>
-(訳註: ここで説明しているのは本家のメーリングリストです。日本語のメーリングリストについては <a href="http://www.jp.netbsd.org/ja/JP/ml.html">日本語メーリングリストのページ</a>を見てください。)
+(訳註: ここで説明しているのは本家のメーリングリストです。日本語のメーリングリストについては <a href="http://www.jp.NetBSD.org/ja/JP/ml.html">日本語メーリングリストのページ</a>を見てください。)
 <p>
 
 NetBSD プロジェクトでは、 NetBSD ユーザーと開発者が容易にやりとりできるよう、
@@ -152,9 +152,9 @@ href="../Misc/search.html">その他の NetBSD 検索</a>)<br>
   <td valign="top">
   <form method="get" action="http://www.google.com/custom">
     <input type="text" name="q" size=30 maxlength="255" value="">
-    <input type="hidden" name="cof" value="LW:247;L:http://www.netbsd.org/images/NetBSD-smaller.jpg;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
-    <input type="hidden" name="domains" value="mail-index.netbsd.org">
-    <input type="hidden" name="sitesearch" value="mail-index.netbsd.org">
+    <input type="hidden" name="cof" value="LW:247;L:http://www.NetBSD.org/images/NetBSD-smaller.jpg;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
+    <input type="hidden" name="domains" value="mail-index.NetBSD.org">
+    <input type="hidden" name="sitesearch" value="mail-index.NetBSD.org">
     <br>
     <input type="submit" value="Google 検索">
     </form>
@@ -249,6 +249,9 @@ LIST(regional-london)
 ENDLIST
 LIST(regional-nl)
   オランダ在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-nordic)
+  北欧在住のユーザー向けの議論用です。
 ENDLIST
 LIST(regional-nyc)
   ニューヨークシティー在住のユーザー向けの議論用です。
@@ -696,10 +699,10 @@ divert(9)
 <hr> 
 <address>
   <small>
-  (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
-       <a href="mailto:www@JP.NetBSD.ORG">日本語:
-       www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.138 2003/07/01 13:38:58 lukem Exp $<br>
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@JP.NetBSD.org">日本語:
+       www@JP.NetBSD.org</a>)<br>
+  $NetBSD: index.m4,v 1.140 2003/08/04 12:21:42 soren Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
