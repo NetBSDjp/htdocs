@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.8 1999/08/24 04:00:51 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.9 1999/08/25 11:31:57 sakamoto Exp $
 #
 
 $|=1;
-my (%category, %packages);
+my (%category, %packages,%nodata);
 my ($pkgsrc) = shift;
 my ($wwwdir) = shift;
 my ($mode) = 0755;
@@ -51,11 +51,13 @@ open(DST, "|nkf -j > $wwwdir/README.html") || die "dst:$wwwsrc/README.html\n";
 while (<SRC>) {
 	s/\"(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 	if (/^<TR><TD VALIGN=TOP><a href=\"([^\/]+)/) {
-		my ($cat) = $category{$1};
+		my ($p) = $1;
+		my ($cat) = $category{$p};
 		if (defined($cat)) {
 			s/(: <TD>).*/$1$cat/;
 		} else {
-			print "NODATA: $1\n";
+			/: <TD>(.*)/;
+			$nodata{$p} = $1;
 		}
 	}
 	print DST $_;
@@ -74,11 +76,13 @@ open(DST, "|nkf -j > $wwwdir/README-all.html") || die "dst:$wwwsrc/README-all.ht
 while (<SRC>) {
 	s/\"(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 	if (/^<TR VALIGN=TOP><TD VALIGN=TOP><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
-		my ($pkg) = $packages{$1};
+		my ($p) = $1;
+		my ($pkg) = $packages{$p};
 		if (defined($pkg)) {
 			s/(\) <TD>).*/$1$pkg/;
 		} else {
-			print "NODATA: $1\n";
+			/\) <TD>(.*)/;
+			$nodata{$p} = $1;
 		}
 	}
 	print DST $_;
@@ -110,11 +114,13 @@ foreach $dir (readdir(TOPDIR)) {
 		s/You are now in the directory (".*")./$1 ディレクトリー/;
 		s/\"..\/(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 		if (/^<TR><TD VALIGN=TOP><a href=\"([^\/]+)/) {
-			my ($pkg) = $packages{"$dir/$1"};
+			my ($p) = "$dir/$1";
+			my ($pkg) = $packages{$p};
 			if (defined($pkg)) {
 				s/(: <TD>).*/$1$pkg/;
 			} else {
-				print "NODATA: $dir/$1\n";
+				/: <TD>(.*)/;
+				$nodata{$p} = $1;
 			}
 		}
 		print DST $_;
@@ -172,5 +178,35 @@ foreach $dir (readdir(TOPDIR)) {
 }
 closedir(TOPDIR);
 unlink("$tmpfile", "$tmpfile.orig", "$tmpfile.rej", "$tmpfile.rej.orig");
+
+#
+# nodata pkgs
+#
+open(DST, ">$wwwdir/nodata.html") || die "dst:$wwwsrc/nodata.html\n";
+my (@pkgs) = keys %nodata;
+if ($#pkgs > 0) {
+	print "NODATA:\n";
+	print DST <<EOF;
+<html>
+<head><title>NetBSD Packages</title></head>
+<body>
+<table border=1>
+EOF
+
+	my ($pkg);
+	foreach $pkg (sort keys %nodata) {
+		print DST "<tr><td>$pkg <td>$nodata{$pkg}\n";
+		print "$pkg	$nodata{$pkg}\n";
+	}
+
+	print DST <<EOF;
+</table>
+</body>
+</html>
+EOF
+} else {
+	print DST "<html><body>OK</body></html>\n";
+}
+close(DST);
 
 0;
