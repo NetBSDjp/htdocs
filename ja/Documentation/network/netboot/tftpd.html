@@ -24,7 +24,7 @@ TFTP (Trivial File Transfer Protocol) は、いくつかのベンダーのマシンの
 <p>
 
 このサービスは TCP/IP 上で動くので、クライアントはまず IP アドレスを、
-大抵は <a href="/Documentation/network/netboot/rarp.html"><tt>rarp</tt></a> 、
+大抵は <a href="../../../../Documentation/network/netboot/rarp.html" origlink="rarp.html"><tt>rarp</tt></a> 、
 <a href="bootpd.html"><tt>bootp</tt></a> または
 <a href="../dhcp.html"><tt>dhcp</tt></a> から得なければなりません。
 <p>
@@ -47,11 +47,11 @@ IP アドレスが 192.168.1.10 の場合、次のようにします:
 
 注意: いくつかの tftp デーモンは
 <tt>/tftpboot</tt> への chroot をサポートしませんので、
-<a href="/Documentation/network/netboot/bootparams.html">bootparams</a>、 <a href="bootpd.html">bootpd</a>、
-または <a href="/Documentation/network/netboot/dhcpd.html">dhcpd</a> に
+<a href="../../../../Documentation/network/netboot/bootparams.html" origlink="bootparams.html">bootparams</a>、 <a href="bootpd.html">bootpd</a>、
+または <a href="dhcpd.html">dhcpd</a> に
 ブートローダーの完全なパスを与える必要があります。
 ネットワークからうまくブートできないことで悩まないよう、あらかじめ
-<tt>tftp</tt> クライアントをテストに使うことをおすすめします。
+<tt>tftp(1)</tt> クライアントをテストに使うことをおすすめします。
 <p>
 もし、どうしても失敗する場合は、 <tt>/tftpboot/C0A8010A.SUN4C</tt>
 へのリクエストが chroot された <tt>tftpd</tt> 上でうまくいくように
@@ -62,6 +62,7 @@ IP アドレスが 192.168.1.10 の場合、次のようにします:
 <a href="#netbsd">NetBSD</a> での tftpd の設定<br>
 <a href="#openbsd">OpenBSD</a> での tftpd の設定<br>
 <a href="#freebsd">FreeBSD</a> での tftpd の設定<br>
+<a href="#macosx">MacOS X と Darwin</a> での tftpd の設定<br>
 <a href="#linux.inetd">Linux</a> での tftpd の設定 (<tt>inetd.conf</tt> を使用)<br>
 <a href="#linux.xinetd">Linux</a> での tftpd の設定 (<tt>xinetd.conf</tt> を使用)<br>
 <a href="#next">NEXTSTEP</a> での tftpd の設定<br>
@@ -131,6 +132,43 @@ tftp&gt; <b>quit</b></pre>
 </dd></dl>
 
 <hr>
+
+<h3><a name="macosx">MacOS X と Darwin</a></h3>
+<dl><dt><dd>
+このシステムでは、その本質的にクラスター化された性質から、 <tt>tftpd</tt>
+ファイル群を <tt>/private/tftpboot</tt> に置くことが推奨されます。
+<p>
+<ol>
+<li><tt># <b>mkdir -p /private/tftpboot</b></tt><br>
+<p><li><tt>/etc/inetd.conf</tt> を編集し、下記の行の <tt>#</tt>
+   を削除します:<br>
+   <pre>tftp    dgram   udp     wait    nobody  /usr/libexec/tcpd               tftpd /private/tftpboot</pre>
+<p>
+
+<li>この行は最後が <tt>/private/tftpboot</tt> で終わっていなければなりません。<br>
+  <tt>tftpd(8)</tt> マニュアルページでは <tt>-s</tt> で <tt>chroot(2)</tt>
+  フラグをサポートしているとありますが、それでも permission の問題があります。
+<p>
+
+<li><tt># <b>ps aux | grep inetd</b></tt><br>
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
+</ol>
+<p>
+
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
+<pre># <b>tftp tftpserver.test.net</b>
+tftp&gt; <b>get C0A8010A.SUN4C</b>
+Received 683 bytes in 0.3 seconds
+tftp&gt; <b>quit</b></pre>
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
+<p>
+
+<a href="nfs.html">nfs</a> の設定に進む。
+</dd></dl>
+
+<hr>
+
 
 <h3><a name="linux.inetd">Linux (<tt>inetd.conf</tt> を使用)</a></h3>
 <dl><dt><dd>
@@ -307,7 +345,7 @@ tftp&gt; <b>quit</b></pre>
   (連絡先 - <a href="../../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: tftpd.html,v 1.19 2002/02/14 13:48:32 jrf Exp $<br>
+  $NetBSD: tftpd.html,v 1.20 2002/05/10 04:57:00 mbw Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>

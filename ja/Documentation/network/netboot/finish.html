@@ -49,6 +49,7 @@ NetBSD $B$N%V!<%H%m!<%@!<$O!"%m!<%I$H<B9T$,@.8y$9$k$^$G!"0J2<$N%U%!%$%k$r=g$K(
 <a href="#netbsd">NetBSD</a> $B$G$N;E>e$2(B<br>
 <a href="#openbsd">OpenBSD</a> $B$G$N;E>e$2(B<br>
 <a href="#freebsd">FreeBSD</a> $B$G$N;E>e$2(B<br>
+<a href="#macosx">MacOS X $B$H(B Darwin</a> $B$G$N;E>e$2(B<br>
 <a href="#linux">Linux</a> $B$G$N;E>e$2(B<br>
 <a href="#sunos">SunOS</a> $B$G$N;E>e$2(B<br>
 <a href="#solaris">Solaris</a> $B$G$N;E>e$2(B<br>
@@ -230,6 +231,75 @@ mountd_flags="<b>-[2]r</b>"</pre>
 *.*                                             /var/log/bootlog
 !rarpd  
 *.*                                             /var/log/bootlog</b></pre>
+</ol>
+<p>
+
+$B$*$a$G$H$&$4$6$$$^$9!"$3$l$G=*$o$j$G$9(B !
+</dd></dl>
+
+<hr>
+
+<h3><a name="macosx">MacOS X $B$H(B Darwin</a></h3>
+<dl><dt><dd>
+MacOS X $B$H(B Darwin $B$G$O!"%7%9%F%`5/F0%9%/%j%W%H72$O(B
+<tt>/System/Library/StartupItems/</tt> $B$KCV$+$l$^$9!#%f!<%6!<5/F0%9%/%j%W%H72(B
+$B$3$N$h$&$J%9%/%j%W%H72$r:n$j!"%M%C%H%V!<%H%5!<%S%9$N5/F0$N$?$a$K!"(B
+<tt>/Library/StartupItems</tt> $BFb$KCV$-$?$$$H$3$m$G$7$g$&!#(B NFS $B%5!<%S%9$O!"(B
+<tt>/exports</tt> $B$H$$$&(B NetInfo $B%G%#%l%/%H%j!<$,B8:_$7$F$$$l$P>o$K5/F0$7$^$9!#(B
+<p>
+<tt>/etc/hostconfig</tt> $B$G$O!"AH$_9~$^$l$F$$$k%5!<%S%9$N$&$A$I$l$,<+F0E*$K(B
+$B5/F0$9$k$+$r5-=R$7$^$9!#%M%$%F%#%V$N(B <tt>bootpd</tt> $B$,5/F0$7$J$$$h$&$K$9$k$?$a(B
+($B$3$l$O%M%C%H%V!<%H$K;H$($^$;$s$7(B <tt>dhcpd</tt> $B$H>WFM$7$^$9(B)$B!"(B
+$B0J2<$N9T$r@_Dj$7$F$*$-$^$9(B:
+<pre>CONFIGSERVER=-NO-
+NETBOOTSERVER=-NO-</pre>
+<p>
+<a href="http://www.darwinfo.org/howto/SystemStarter_HOWTO.shtml">SystemStarter
+HOWTO</a> $B$,!"%9%?!<%H%"%C%W%U%!%$%k72$N:n@.J}K!$r3X$V$&$($G$N(B
+$B$h$$;29M;qNA$H$J$k$G$7$g$&!#(B
+<p>
+<ol>
+<li>
+<tt># <b>mkdir -p /Library/StartupItems/NetBSDNetBoot</b></tt>
+<p><li>$B2<5-$NFbMF$N(B
+   <tt>/Library/StartupItems/NetBSDNetBoot/StartupParameters.plist</tt>
+   $B%U%!%$%k$r:n@.$7$^$9(B:
+<pre>{
+  Description     = "NetBoot services for NetBSD clients";
+  Provides        = ("DHCPD",
+                     "bootparams",
+                     "rbootd");
+  Requires        = ("NetInfo",
+                     "Network");
+  OrderPreference = "None";
+  Messages =
+  {
+    start = "Starting NetBSD NetBoot services";
+    stop  = "Stopping NetBSD NetBoot services";
+  };
+}</pre>
+<p><li>$B2<5-$NFbMF$N(B
+   <tt>/Library/StartupItems/NetBSDNetBoot/NetBSDNetBoot</tt>
+   $B%U%!%$%k$r:n@.$7$^$9(B:
+<pre>#!/bin/sh
+
+. /etc/rc.common
+
+##
+# Start up NetBSD NetBoot services
+##
+
+ConsoleMessage "Starting NetBSD NetBoot Services"
+
+##
+# Start NetBSD NetBoot services
+##
+/usr/libexec/rbootd
+bootparamd
+dhcpd -q</pre>
+<p><li>
+  <tt># <b>chown -R root /Library/StartupItems/NetBSDNetBoot</b></tt><br>
+  <tt># <b>chmod a+rx /Library/StartupItems/NetBSDNetBoot/NetBSDNetBoot</b></tt>
 </ol>
 <p>
 
@@ -771,7 +841,7 @@ fi</pre>
   ($BO"Mm@h(B - <a href="../../../Misc/feedback.html">$B1Q8l(B</a>,
        <a href="mailto:www@JP.NetBSD.ORG">$BF|K\8l(B:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: finish.html,v 1.20 2002/03/06 06:16:07 mbw Exp $<br>
+  $NetBSD: finish.html,v 1.21 2002/05/10 21:32:59 mbw Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
