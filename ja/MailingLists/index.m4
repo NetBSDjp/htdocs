@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.92 2001/02/27 14:09:19 soda Exp $
+#	$NetBSD: index.m4,v 1.94 2001/03/09 22:22:18 soda Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -258,13 +258,25 @@ PORTLIST(port-arc)
   MIPS ベースのすべてのポートに関する質問のための
   <a href="#port-mips">port-mips</a> リストもあります。
 ENDLIST
+LIST(port-arm)
+  ARM ベースの NetBSD ポートすべてに関する事項の議論用です。
+  ポート別のリストがありますので、各ポートに固有の質問や情報は
+  そちらをご利用ください:
+  <a href="#port-arm26">port-arm26</a>、
+  <a href="#port-arm32">port-arm32</a>、
+  <a href="#port-hpcarm">port-hpcarm</a>。
+ENDLIST
 PORTLIST(port-arm26)
   ARM2 と ARM3 ベースのマシン上の NetBSD (NetBSD/arm26)
   固有の事項の議論用です。
+  ARM ベースのすべてのポートに関する質問のための
+  <a href="#port-arm">port-arm</a> リストもあります。
 ENDLIST
 PORTLIST(port-arm32)
   ARM と StrongARM 系マイクロプロセッサー上の NetBSD (NetBSD/arm32)
   固有の事項の議論用です。
+  ARM ベースのすべてのポートに関する質問のための
+  <a href="#port-arm">port-arm</a> リストもあります。
 ENDLIST
 PORTLIST(port-atari)
   NetBSD on Atari の TT030、 Falcon、 Hades マシン上の NetBSD (NetBSD/atari)
@@ -302,6 +314,8 @@ ENDLIST
 PORTLIST(port-hpcarm)
   ARM ベースの Windows CE PDA マシン上の NetBSD (NetBSD/hpcarm)
   固有の事項の議論用です。
+  ARM ベースのすべてのポートに関する質問のための
+  <a href="#port-arm">port-arm</a> リストもあります。
 ENDLIST
 PORTLIST(port-hpcmips)
   MIPS ベースの Windows CE PDA マシン上の NetBSD (NetBSD/hpcmips)
@@ -533,7 +547,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.92 2001/02/27 14:09:19 soda Exp $<br>
+  $NetBSD: index.m4,v 1.94 2001/03/09 22:22:18 soda Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
