@@ -1,10 +1,14 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.114 2002/10/25 16:38:09 grant Exp $
-#	Copyright (c) 1994-2001
+#	$NetBSD: index.m4,v 1.117 2003/01/06 03:09:51 jschauma Exp $
+#	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
 
 undefine(`index')
+
+define(`LISTNEWS',
+`  <a href="http://news.netbsd.org/'`patsubst(patsubst(patsubst($1, `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
+</td><td valign=top>', `-', `.')
 
 define(`LISTARCHIVE',
 `  <a href="http://mail-index.netbsd.org/$1/"><img src="../../images/misc/tape.gif" origlink="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
@@ -34,6 +38,7 @@ define(`LIST',
 LISTPREHEADER
 LISTSUBSCRIBE($1)
 LISTARCHIVE($1)
+LISTNEWS($1)
 LISTHEADER($1)')
 
 define(`PORTLIST',
@@ -41,12 +46,14 @@ define(`PORTLIST',
 LISTPREHEADER
 LISTSUBSCRIBE($1)
 LISTARCHIVE($1)
+LISTNEWS($1)
 PORTLISTHEADER($1)')
 
 define(`OLDLIST',
 `    <li><a href="#$1">$1</a>
 LISTPREHEADER
 LISTARCHIVE($1)
+LISTNEWS($1)
 LISTHEADER($1)')
 
 define(`ENDLIST', `</td></tr></table>
@@ -59,7 +66,7 @@ divert(0)dnl
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <meta http-equiv="Content-Type" content="text/html; charset=iso-2022-jp">
 <link rev="made" href="mailto:www@JP.NetBSD.ORG">
@@ -117,6 +124,13 @@ href="http://mail-index.netbsd.org/">mail-index.netbsd.org</a>
 このほか、メーリングリストのアーカイブは、
 <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>
 にもあります。
+<p>
+
+<b>メーリングリストをニュースフロントエンドで読むには</b>、
+このページの説明の部分にあるリスト名の後のリンク
+<img src="../../images/misc/news.gif" origlink="../images/misc/news.gif" width="29" height="29"
+alt="[Newsgroup]"> をクリックします。これで <a
+href="http://news.netbsd.org">news.netbsd.org</a> のニュースアーカイブを利用できます。
 <p>
 
 NetBSD のメーリングリストの多くは、普通の unmoderated なものですが、
@@ -648,8 +662,8 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.114 2002/10/25 16:38:09 grant Exp $<br>
-  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  $NetBSD: index.m4,v 1.117 2003/01/06 03:09:51 jschauma Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
