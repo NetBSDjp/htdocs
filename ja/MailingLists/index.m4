@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.113 2002/06/07 20:25:47 soda Exp $
+#	$NetBSD: index.m4,v 1.114 2002/10/25 16:38:09 grant Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -66,8 +66,7 @@ divert(0)dnl
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>Gateway to the <img src="../images/NetBSD-flag.gif"
-align="middle" width="91" height="42" alt="NetBSD"> Mail Server</h1>
+<h2>NetBSD mailing lists</h2>
 
 The NetBSD Project provides a variety of public mailing lists to
 facilitate communication between the users and developers of NetBSD.
@@ -77,7 +76,7 @@ the NetBSD Project's Majordomo by mailing <i>majordomo@NetBSD.ORG</i>
 with an empty message body.
 <p>
 
-Using this WWW page, you can find out what the various mailing
+Using this page, you can find out what the various mailing
 lists are for, look at the mailing list archives, and even subscribe to
 the mailing lists themselves.  This page is broken up into three sections:
 this introductory section; an
@@ -122,9 +121,26 @@ cause a mailing list to be moderated by its manager.
 
 Indexes and archives are provided on
 <a href="http://mail-index.netbsd.org/">http://mail-index.netbsd.org/</a>
-and <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>; to
-search the mailing lists archives, go to <a
-href="../Misc/search.html">http://www.netbsd.org/Misc/search.html</a>.
+and <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>.
+<p>
+
+Quick search the mailing lists with Google (<a
+href="../Misc/search.html">other NetBSD searches</a>)<br>
+<blockquote>
+  <table border=0><tr><td valign=top>
+  <img src="../images/links/google.gif" width="120" height="42" alt="" border="0">
+  </td>
+  <td valign="top">
+  <form method="get" action="http://www.google.com/custom">
+    <input type="text" name="q" size=30 maxlength="255" value="">
+    <input type="hidden" name="cof" value="LW:247;L:http://www.netbsd.org/images/NetBSD-smaller.jpg;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
+    <input type="hidden" name="domains" value="mail-index.netbsd.org">
+    <input type="hidden" name="sitesearch" value="mail-index.netbsd.org">
+    <br>
+    <input type="submit" value="Google Search">
+    </form>
+  </td></tr></table>
+</blockquote>
 
 <h2><a name="index">The NetBSD Project's mailing lists</a></h2>
 
@@ -635,7 +651,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.113 2002/06/07 20:25:47 soda Exp $<br>
+  $NetBSD: index.m4,v 1.114 2002/10/25 16:38:09 grant Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
