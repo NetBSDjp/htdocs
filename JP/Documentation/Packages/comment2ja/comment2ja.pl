@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.17 1999/11/08 13:58:03 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.18 1999/11/08 14:07:53 sakamoto Exp $
 #
 
 $|=1;
@@ -175,7 +175,7 @@ foreach $dir (readdir(TOPDIR)) {
 			s/ftp:\/\/ftp.netbsd/ftp:\/\/ftp.jp.netbsd/;
 			s/\"(pkg\/DESCR)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/$1\"/;
 			s/http:\/\/cvsweb.netbsd.org\/bsdweb.cgi\/pkgsrc/http:\/\/cvsweb.netbsd.org\/cgi-bin\/cvsweb.cgi\/pkgsrc/;
-			s/>history<\/A>/>歴史<\/A>/;
+			s/>history<\/A>\./>歴史<\/A>をご覧ください。/;
 			s/<A HREF=\"\.\">/<A HREF=\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/\">/;
 			s/no precompiled binaries available/コンパイル済みのパッケージは現在用意されていません/;
 			if (/<p>.*:<br>/) {
