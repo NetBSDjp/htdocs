@@ -1,0 +1,280 @@
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>IPv6 Networking FAQ</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>NetBSD IPv6 Networking
+
+This page is developing, and we welcome any
+<a href="../../../Misc/feedback.html">comments or suggestions</a>.
+
+<LIST>
+<h2>Other links</h2>
+<ul>
+  <li><a href="http://www.kame.net/">KAME project</a>,
+	where the IPv6 implementation come from
+  <li><a href="http://www.6bone.net/">
+	6bone: worldwide IPv6 experimental network</A>
+  <li><a href="http://www.freenet6.net/">Freenet6.net</A>
+  <li><a href="http://www.ipv6.org/">ipv6.org</A>
+  <li><a href="http://faq.v6.wide.ad.jp/">IPv6 FAQs by WIDE project</A>
+  <li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/netinet6/IMPLEMENTATION">src/sys/netinet6/IMPLEMENTATION</a>:
+	detailed informtaion on the implementation
+</ul>
+
+<SECTION>IPv6 Networking FAQ
+
+<ENTRY>getting_started Getting Started
+IPv6 code is merged into the NetBSD distributions (NetBSD-current
+after June 1999, and NetBSD 1.5 or later).
+IPv6 configuration is mostly the same as IPv4 configuration,
+so you may want to check the documentations for IPv4 networking.
+<P>
+
+At this moment you will need to rebuild the kernel,
+with configuration lines included in 
+<TT>GENERIC.v6</TT> enabled.
+Userland code includes IPv6 support where possible, by default,
+so no rebuild of userland is necessary.
+<P>
+
+If you are using NetBSD 1.4, you may want to visit
+<A HREF="http://www.kame.net/">KAME project</A> webpage
+for IPv6 support patches.
+
+<ENTRY>configuration_files  Network Configuration Files
+The network configuration is defined in a set of text
+configuration files.
+Note that you do not need to edit some of those if you are configuring a host
+(not a router), by using autoconfiguration.
+<ul>
+  <li>/etc/rc.conf - rc.conf(5) specifies system services,
+      including the the network services, to be automatically
+      started at system initialisation.
+  <li>/etc/hosts - hosts(5) can include mapping between FQDN name
+	and IPv6 numeric addresses.
+  <li>/etc/ifconfig.{<em>IF</em>}. - you can include IPv6 network setup,
+	using ifconfig(8), into here.
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>router_or_host  Is the machine a router, or a host
+In IPv6, routers and hosts are clearly separated.
+Nodes that forward packet for others are called <EM>routers</EM>.
+Nodes that does not are called <EM>hosts</EM>.
+Routers needs to be configured manually.
+Routers will advertise information about subnet using rtadvd(8) daemon.
+Hosts usually have only one external network interface
+(some part of document assumes this),
+and will be autoconfigured using the advertised subnet information.
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>setup_router  Setting up an IPv6 router
+First, you may want to get an IPv6 global address from upstream provider.
+If you have one, you'll need to perform the following steps.
+<ul>
+	<li>Add manual configuration for network interfaces,
+		into rc.conf(8) or rc.net.
+	<li>Configure the following lines in rc.conf(8).<br>
+<SAMP>
+ipv6forwarding="YES"<br>
+rtsol="NO"<br>
+rtadvd="YES"		rtadvd_flags="sm1 ne2"	# set interfaces to advertise
+</SAMP>
+	<li>You may want to edit /etc/rtadvd.conf for fine-tuning
+		router advertisement timers.
+	<li>If you would like to announce routes by using RIPng,
+		configure rc.conf(8) to run route6d(8).
+	<li>Perform a reboot.
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>setup_host  Setting up an IPv6 host
+If you have an IPv6 router on the network, all you have to do is as follows.
+After the reboot, the host will be autoconfigured by using
+Router Advertisements from rtadvd(8) on the adjacent router.
+<ul>
+	<li>Configure the following lines in rc.conf(8).<br>
+<SAMP>
+ipv6forwarding="NO"<br>
+rtsol="YES"	rtsol_flags="sm1"	# set your interface here
+</SAMP>
+	<li>Perform a reboot.
+</ul>
+<P>
+
+If you do not have an IPv6 router on the network,
+you'll need to configure manually.
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>setup_manual  Manual Configuration
+If you need to configure a node manually,
+two important network configuration programs can be used
+in the network startup script (/etc/netstart).
+
+<ul>
+  <li>ifconfig(8) - change or view the characteristics of a network interface.
+  <li>route(8) - manipulate the network routing tables.
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>naming_a_node  Naming a New Node on the Network
+String hostname will be resolved to IPv6 numeric addresses, by using
+/etc/hosts(5), and DNS.
+This is much like the same as IPv4 case.
+yp(8) may be used, however, the author have no experience using yp(8)
+with IPv6 addresses.
+
+<ol>
+  <li>/etc/hosts: hosts(5) For small networks of a few nodes, the
+      hostname/IP maps can be manually duplicated in the /etc/hosts
+      files of each node.
+      <p>
+      <em>/etc/hosts:</em><br>
+      <samp>
+      fec0::a:b:c:d  host2.mydomain.org.au host2<br>
+      </samp>
+      <p>
+  <li>DNS: The hostname maps can be centralised into zone-files which
+      are accessed by the name-server, named(8).
+      (there are many documents at
+      <a href="http://www.dns.net/dnsrd/docs/">www.dns.net</a>
+      dealing with setting up and maintaining DNS files).
+      <p>
+      <em>Forward zone file entry</em><br>
+      <samp>
+      host2  IN AAAA     fec0::a:b:c:d
+      </samp>
+      <p>
+      <em>Reverse zone file entry</em><br>
+      <samp>
+      d.0.0.0.c.0.0.0.b.0.0.0.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.c.e.f.ip6.int.
+	IN PTR   host2.mydomain.org.au.
+      </samp>
+</ol>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>upstream  Connecting to IPv6 upstream
+You can hook your machine up to experimental IPv6 network,
+called <A HREF="http://www.6bone.net/">"6bone"</A>.
+You will need to talk with nearest 6bone site, to get your IPv6 prefix address.
+Note that you'll need to have fixed IPv4 global address for this.
+<P>
+
+If you do not have fixed IPv4 global address (if you are using dialup ISP
+connection), don't panic.
+You can hook yourself up to <A HREF="http://www.freenet6.net/">Freenet6</A>.
+They provide a web interface to hook up your home network whenever you
+reconnect to the Internet.
+<P>
+
+In both cases, you will need to set up an IPv6-over-IPv4 tunnelling interface
+onto your router.
+Consult gif(4) for details.
+<ul>
+  <li>Setting up gif tunnel: add a line into netstart or rc.local.<br>
+      <samp>
+      gifconfig gif0 x.x.x.x. y.y.y.y
+      </samp>
+      <p>
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+	<li><a href="http://www.6bone.net/">6bone</A>
+	<li><a href="http://www.freenet6.net/">Freenet6.net</A>
+      </ul>
+</ul>
+
+<ENTRY>maintenance  Maintenance
+<ul>
+  <li>Monitoring activity - useful tools
+      <ul>
+        <li>ifconfig(8) - configure and display network interface parameters.
+        <li>route(8) - manipulate the routing tables.
+        <li>ping6(8) - send ICMPv6 ECHO_REQUEST packets to network nodes
+        <li>traceroute6(8) - print the route packets take to reach a network node
+        <li>tcpdump(1) - selectively view traffic on a network interface
+        <li>netstat(1) - show network status
+        <li>systat(8) 'systat netstat' - dynamically display network connections
+      </ul>
+  <li>Routing daemons
+      <ul>
+        <li>route6d(8) - RIPng routing daemon, just like routed(8)
+        <li>pim6dd(8) - PIMv6 dense mode multicast routing daemon
+        <li><A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/net/zebra/README.html">zebra</A>
+		- zebra routing daemon, supports RIPng, BGP4+, and OSPFv6
+      </ul>
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+	<li><a href="http://www.kame.net/">KAME project</a>
+      </ul>
+</ul>
+
+<ENTRY>userland  Userland applications
+Some of <A HREF="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/README.html">package</A>
+directories are now IPv6 ready.
+Check <TT>USE_INET6</TT> settings in mk.conf.
+<P>
+
+If you want an IPv6-ready third-party software, you may need to get an
+IPv6 patch for the software.
+There are collections of IPv6 patches on the net.
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+	<li><a href="ftp://ftp.kame.net/pub/kame/misc/">ftp://ftp.kame.net/pub/kame/misc/</a>
+	<li><a href="http://www.ipv6.org/">ipv6.org</A>
+      </ul>
+</ul>
+
+<ENDLIST>
+
+<BASELINKS>
+
+<hr>
+<address>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.6 1999/07/27 12:56:17 itojun Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD DHCP HOWTO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+<h1><a name="top">NetBSD DHCP HOWTO</a></h1>
+
+<h2>Dan McMahill, <code>mcmahill@alum.mit.edu</code></h2>v1.0, June 6, 1998
+<p><hr><em>This document shows how to set up a Dynamic Host Configuration
+Protocol (DHCP) client under NetBSD.</em><hr></p>
+<p>
+<h2>1. <a name="toc1" href="#s1">Introduction and Purpose</a></h2>
+<ul>
+<li><a href="#ss1.1">1.1 What is DHCP?</a>
+<li><a href="#ss1.2">1.2 Who needs to use DHCP?</a>
+<li><a href="#ss1.3">1.3 Sources of More Detailed Information</a>
+<li><a href="#ss1.4">1.4 Copyright and Disclaimers</a>
+<li><a href="#ss1.5">1.5 Additions and Corrections</a>
+<li><a href="#ss1.6">1.6 Contributors</a>
+<li><a href="#ss1.7">1.7 Version History</a>
+</ul>
+
+<p>
+<h2>2. <a name="toc2" href="#s2">Setting up a DHCP client</a></h2>
+<ul>
+<li><a href="#ss2.1">2.1 Enable DHCP</a>
+<li><a href="#ss2.2">2.2 Configure DHCP</a>
+<li><a href="#ss2.3">2.3 Update dhclient-script</a>
+</ul>
+
+<p>
+<h2>3. <a name="toc3" href="#s3">Setting up a DHCP server</a></h2>
+<em>this section isn't done.  If anyone has done this, feel free to
+tell me how.</em>
+</p>
+
+<p>
+Return to the <a href="#top">top</a>.
+<hr>
+<h1>1. <a name="s1">Introduction and Purpose</a></h1>
+<hr>
+<p>This document attempts to explain how to setup DHCP clients and
+servers for the NetBSD operating system. </p>
+<p>
+<h2>1.1 <a name="ss1.1">What is DHCP?</a></h2>
+   
+<p>
+DHCP stands for Dynamic Host Configuration Protocol.  It allows dynamic
+configuration of the network configuration of a host computer.  The basic
+idea is this:  When a DHCP client is turned on, it initially doesn't have
+an IP address assigned to it.  It issues a broadcast message to any DHCP
+servers which are on the network.  An exchange takes place during which the
+DHCP server assigns an IP address to the client and tells the client certain
+key network configuration parameters (such as name server addresses for example).
+</p>
+<p>
+<h2>1.2 <a name="ss1.2">Who needs to use DHCP?</a></h2>
+</p>
+<p>
+Many internet service providers (ISP's) require the use of DHCP.
+Another use is for laptop computers which may be connected to more
+than one network.  For example a laptop may be connected to a network
+in the office and also at home.  This is an ideal use for DHCP as the
+laptop doesn't need to be manually reconfigured for use in the 2
+different networks.
+</p>
+
+<p><h2>1.3 <a name="ss1.3">Sources of More Detailed Information</a></h2>
+</p>
+<p>
+I don't claim to be an expert (or anything resembling an expert for that
+matter) on DHCP.  There is, however, detailed information available on the
+web.  The defining document is
+<a href="http://www.cis.ohio-state.edu/htbin/rfc/rfc1541.html"><b>RFC 1541</b></a>, 
+Request for Comments document for the Dynamic Host Configuration Protocol (DHCP).
+In addition there is a comprehensive 
+<a href="http://web.syr.edu/~jmwobus/comfaqs/dhcp.faq.html">DHCP FAQ</a>.
+</p>
+
+<p><h2>1.4 <a name="ss1.4">Copyright and Disclaimers</a></h2>
+</p>
+<p>
+Although I try to verify that the information contained within this HOWTO
+is correct, I accept no responsibility for loss or damage caused by the   
+use of the information contained within this HOWTO.
+</p>
+<p>this HOWTO is Copyright (c), 1998 by Dan McMahill.</p>
+
+<p><h2>1.5 <a name="ss1.5">Additions and Corrections</a></h2>
+</p>
+<p>
+Please send all additions, suggestions, and corrections to Dan McMahill
+<a href="mailto:mcmahill@alum.mit.edu">&lt;mcmahill@alum.mit.edu&gt</a>.
+If making a correction, please do not send a copy of 
+the entire HOWTO.  Just send the relevant text from the HOWTO plus the 
+corrected text.
+</p>
+
+<p><h2>1.6 <a name="ss1.6">Contributors</a></h2>
+</p>
+<p>The following people have contributed to the DHCP HOWTO:
+<ul>
+<li>several, unfortunately I've lost their names.  If you're
+    one of them, let me know and I'll put your name here.</li>
+</ul>
+</p>
+
+<p><h2>1.7 <a name="ss1.7">Version History</a></h2>
+</p>
+<p>
+<ul>
+<li>June 6, 1998 - Original HOWTO written by Dan McMahill
+<a href="mailto:mcmahill@alum.mit.edu">&lt;mcmahill@alum.mit.edu&gt</a></li>
+</ul>
+</p>
+
+<p>Return to the <a href="#top">top</a>.
+</p>
+
+<hr>
+<h1>2. <a name="s2">Setting up a DHCP client</a></h1>
+<hr>
+<p>
+This section attempts to explain how to setup DHCP clients
+under NetBSD.  This document was written for NetBSD-1.3.
+</p>
+
+<p><h2>2.1 <a name="ss2.1">Enable DHCP</a></h2>
+</p>
+<p>
+Edit <code>/etc/netstart.local</code> and add the line '<code>dhclient
+<em>interface</em></code>', where <code><em>interface</em></code>
+is your network interface, such as <code>ae0</code> or <code>sn0</code>
+under NetBSD/mac68k.  You should be able to see what driver you
+have during the NetBSD boot sequence or by looking at the output
+of <code>dmesg</code>.  This causes the DHCP client software to be
+automatically started during the boot sequence.
+</p>
+
+<h2>2.2 <a name="ss2.2">Configure DHCP</a></h2>
+<ul>
+<li>Create a <code>/etc/dhclient.conf</code> file. Remember to customize
+this as needed, ie: change the hostname stuff and the ethernet interface. 
+A typical <code>/etc/dhclient.conf</code> is shown below.
+
+<pre>
+Send host-name "myname.my.domain";                 &lt;=== Put your
+                                                        hostname here.
+send dhcp-client-identifier "myident";             &lt;=== Put your host
+                                                        identifier here.
+							(this is often times
+							 the same as myname).
+request subnet-mask, broadcast-address, routers,
+    domain-name-servers;
+
+timeout 30;
+retry 60;
+select-timeout 5;
+
+script "/etc/dhclient-script";
+
+lease {
+  interface "sn0";                               &lt;=== put your interface
+                                                      device here.
+  option host-name "myname.my.domain";           &lt;=== put your 
+                                                      hostname here
+  option subnet-mask 255.255.255.0;
+  option domain-name "my.domain";                &lt;=== put your
+                                                      domain name here
+  option domain-name-servers 127.0.0.1;
+  renew 2 2000/1/12 00:00:01;
+  rebind 2 2000/1/12 00:00:01;
+  expire 2 2000/1/12 00:00:01;
+}
+</pre>
+
+<p>
+See <code><a href="http://www.flame.org/cgi-bin/uncgi/hman/dhcp-options;5">
+dhcp-options(5)</a></code> and <code><a
+href="http://www.flame.org/cgi-bin/uncgi/hman/dhclient.conf;5">
+dhclient.conf(5)</a></code> for more information.
+</p>
+</ul>
+
+<h2>2.3 <a name="ss2.3">Update dhclient-script</a></h2>
+<p>
+If you have more than 1 network card in your machine, you need to
+edit the <code>/etc/dhclient-script</code> file to avoid a bug which
+generates a large log file.  Basically, the idea is to make 
+dhclient-script exit without doing anything when called on the network
+card which doesn't have DHCP running on it.
+</p>
+
+<p> 
+For example, on my machine, I have two network cards.  I run DHCP on 
+the <code>ae1</code> network card and do not run DHCP on 
+<code>ae0</code>.  For this example, add the following lines to
+<code>/etc/dhclient-script</code> immediately after the 
+<code>#!/bin/sh</code> line at the beginning of the file.
+</p>
+
+<pre>
+  # don't run DHCP on ae0 
+  if [ $interface = "ae0" ]; then
+    exit 0
+  fi
+</pre>
+
+<p>
+After configuring DHCP, you must reboot your machine to make the
+changes take effect.
+</p>
+
+<p>
+Return to the <a href="#top">top</a>.
+</p>
+
+<hr>
+<h1>3. <a name="s3">Setting up a DHCP server</a></h1>
+<hr>
+<p>
+This section maybe will attempt to explain how to setup DHCP servers
+under NetBSD.  This document may get written for NetBSD-1.3.  I've
+never done this so if anyone wants to add this section, feel free.
+A good starting point would be the <a
+href="http://www.flame.org/cgi-bin/uncgi/hman/dhcpd;8"> dhcpd(8)</a>
+manpage.
+</p>
+
+<p>
+Return to the <a href="#top">top</a>.
+</p>
+
+<hr>
+<a href="index.html">Back to <em>NetBSD Documentation: Network</em></a>
+
+<hr>
+<table width="100%"><tr>
+  <td>
+    <table><tr>
+      <td>
+	<a href="../../index.html">
+	<img src="../../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
+      </td><td>
+	<a href="../../index.html">Home Page</a>
+      </td>
+    </tr></table>
+  </td><td>
+    <table><tr>
+      <td>
+	<a href="../index.html">
+	<img src="../../images/NetBSD-banner.gif"
+	alt="NetBSD&nbsp;Documentation"></a>
+      </td><td>
+	<a href="../index.html">Documentation top level</a>
+      </td>
+    </tr></table>
+  </td>
+</tr></table>
+
+<hr>
+<address>
+  www@NetBSD.ORG<br>
+  $NetBSD: dhcp.html,v 1.2 1999/02/14 19:01:06 abs Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
