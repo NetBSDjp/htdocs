@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.90 2003/12/07 17:44:11 jschauma Exp $
+# $NetBSD: list2html.pl,v 1.91 2003/12/16 03:50:16 jschauma Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -69,7 +69,7 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.90 $';
+$version = '$Revision: 1.91 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -446,8 +446,8 @@ sub makelist
 	    $ignore = undef;
 	    ++$entry_num;
 	    $_ = $1;
-	    if (! /^([-a-z0-9_.+,]+)\s+(.*)/)
-		{ &fail("Invalid <ENTRY> ($_), not ([-a-z0-9_.+,]+)\s+(.*)"); }
+	    if (! /^([-a-zA-Z0-9_.+,]+)\s+(.*)/)
+		{ &fail("Invalid <ENTRY> ($_), not ([-a-zA-Z0-9_.+,]+)\s+(.*)"); }
 	    $href = $1;
 	    $header = $2;
 	    if (defined($tags{$href}))
