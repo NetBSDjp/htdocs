@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.18 1999/11/08 14:07:53 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.19 1999/12/08 03:57:47 sakamoto Exp $
 #
 
 $|=1;
@@ -129,6 +129,9 @@ foreach $dir (readdir(TOPDIR)) {
 	while (<SRC>) {
 		s/You are now in the directory (".*")./$1 ディレクトリー/;
 		s/\"..\/(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
+		s/Here are the one-line descriptions for each of the items (/このカテゴリーに含まれるパッケージ (/;
+		s/) in this directory:/) の一行コメント/;
+
 		if (/^<TR><TD VALIGN=TOP><a href=\"([^\/]+)/) {
 			my ($p) = "$dir/$1";
 			my ($pkg) = $packages{$p};
@@ -174,7 +177,6 @@ foreach $dir (readdir(TOPDIR)) {
 			s/Please note that this package has a (.*) license./このパッケージは $1 ライセンスであることに注意してください。/;
 			s/ftp:\/\/ftp.netbsd/ftp:\/\/ftp.jp.netbsd/;
 			s/\"(pkg\/DESCR)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/$1\"/;
-			s/http:\/\/cvsweb.netbsd.org\/bsdweb.cgi\/pkgsrc/http:\/\/cvsweb.netbsd.org\/cgi-bin\/cvsweb.cgi\/pkgsrc/;
 			s/>history<\/A>\./>歴史<\/A>をご覧ください。/;
 			s/<A HREF=\"\.\">/<A HREF=\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/\">/;
 			s/no precompiled binaries available/コンパイル済みのパッケージは現在用意されていません/;
