@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 2003
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <title>Updating a stable NetBSD release</title>
+  </head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>Updating a stable NetBSD release
+
+<LIST>
+
+<ENTRY>update-src Updating the sources
+
+If you are running a stable NetBSD release (such as <a
+href="../Releases/formal-1.6/">NetBSD 1.6.1</a>), in a production environment,
+you should occasionally update your sources and rebuild the system or the
+kernel, in order to incorporate any security fixes that have been applied to
+the branch since its release.
+<p>
+You can retrieve or update the sources for your release using <a
+href="current/#using-anoncvs-over-ssh">anoncvs over ssh</a> by specifying the
+correct branch tag.  For example, to checkout the sources for the NetBSD 1.6.1 
+release, you could use<br>
+<pre><tt>
+	$ cd /usr/src
+	$ cvs co -r netbsd-1-6 -dP
+</tt></pre>
+<p>
+To update an existing source tree:
+<pre><tt>
+	$ cd /usr/src
+	$ cvs update -dP
+</tt></pre>
+
+<ENTRY>kernel Building a new kernel
+
+Building a new kernel pretty much follows the steps as described in <a
+href="kernel/#how_to_build_a_kernel">this document</a>, but please note the
+differences in the syntax of the <tt>build.sh</tt> script.  <tt>build.sh</tt>
+has changed significantly between NetBSD 1.6 and -current; if you are not
+using -current, you can <em>not</em> use <tt>build.sh</tt> to build the new
+kernel!
+
+<ENTRY>userland Updating the userland
+
+Please always refer to <tt>build.sh -h</tt> and the files <em>UPDATING</em>
+and <em>BUILDING</em> for details -- it's worth it, there are <em>many</em>
+options that can be set on the command line or in <tt>/etc/mk.conf</tt>.  In
+the end, it all boils down to a single command: <tt><b>build.sh -d</b></tt>.
+<p>
+Note that this will update the <em>entire</em> userland!
+
+<ENTRY>parts Updating only parts of the source tree
+
+If a security advisory has been issued, and you want to just rebuild the
+necessary libraries and applications, your best bet is to follow the
+instructions provided in the advisory.  An example is given below:
+<p>
+<pre><tt>
+	$ cd src                                                        
+	$ cvs update -d -P -r netbsd-1-6 gnu/dist/sendmail/sendmail
+	$ cd gnu/usr.sbin/sendmail
+	$ make USETOOLS=no cleandir dependall
+	$ su
+	# make USETOOLS=no install
+</tt></pre>
+
+<ENTRY>summary Terse summary
+
+<ul>
+	<li>Update the sources:<br>
+	<pre><tt>
+	$ cd /usr/src
+	$ cvs update -dP
+	</pre></tt>
+	</li>
+	<li>Build a new kernel:<br>
+	<pre></tt>
+	$ cd /usr/src/sys/arch/&lt;ARCH&gt;/conf
+	$ config &lt;KERNEL&gt;
+	$ cd /usr/src/sys/arch/&lt;ARCH&gt;/compile/&lt;KERNEL&gt;
+	$ make depend all
+	$ su
+	# mv /netbsd /netbsd.old
+	# mv /usr/src/sys/arch/&lt;ARCH&gt;/compile/&lt;KERNEL&gt;/netbsd /
+	</pre></tt>
+	</li>
+	<li>Update the userland:<br>
+	<pre></tt>
+	$ cd /usr/src
+	$ ./build.sh -h
+	$ su
+	# ./build.sh -d &lt;other options&gt;
+	</pre></tt>
+	</li>
+</ul>
+
+<ENTRY>current Tracking -current
+
+See <a href="current/">this document</a> for our documentation on how to track
+-current.
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: updating.list,v 1.1 2003/06/10 14:22:38 jschauma Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
