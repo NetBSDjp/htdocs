@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.105 2001/12/30 21:34:25 gendalia Exp $
+#	$NetBSD: index.m4,v 1.107 2002/01/16 04:11:21 perry Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -191,7 +191,9 @@ LIST(tech-embed)
   組み込みシステム上の NetBSD の使用に関する議論用です。
 ENDLIST
 LIST(tech-install)
-  インストールの過程に関する技術的事項の議論用です。
+  NetBSD のインストールソフトウェアの改良についての技術的事項の議論用です。
+  注意: このメーリングリストは NetBSD のインストールの手助け用ではありません。
+  NetBSD のインストールで問題がある場合は、ここではなく netbsd-help を見てください。
 ENDLIST
 LIST(tech-kern)
   カーネル全般に関する技術的事項の議論用です。
@@ -588,7 +590,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.105 2001/12/30 21:34:25 gendalia Exp $<br>
+  $NetBSD: index.m4,v 1.107 2002/01/16 04:11:21 perry Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
