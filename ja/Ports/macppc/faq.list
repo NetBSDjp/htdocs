@@ -4,270 +4,268 @@
 <head>
 <!-- Copyright (c) 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-2022-jp">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD/macppc Frequently Asked Questions</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>NetBSD/macppc Frequently Asked Questions</h1>
+<h1>NetBSD/macppc よくある質問</h1>
 
-Here are some frequently asked questions about NetBSD/macppc.
+NetBSD/macppc に関するよくある質問をいくつか掲げます。
 <p>
 
-This FAQ is very much a work in progress. If you have additional
-information, questions, or answers, send mail to <a
-href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a>.
+この FAQ は作成作業中です。さらなる情報、質問、回答があれば、
+<a href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a> までメールを
+(訳註: 英語で) 送ってください。
 <p>
 
-See also the following related FAQ's:
+関連する次の FAQ も見てください:
 <ul>
-    <li><a href="../../Documentation/elf.html">The NetBSD ELF FAQ</a>.
-    <li><a href="../../Documentation/wscons/">The wscons
-	FAQ</a>, for NetBSD's platform-independent workstation console
-	driver.
+    <li><a href="/Documentation/elf.html" origlink="../../Documentation/elf.html">The NetBSD ELF FAQ</a>.
+     <li>NetBSD のプラットフォーム独立なワークステーションコンソールドライバー
+ 	についての <a href="../../Documentation/wscons/">The wscons
+ 	FAQ</a>
 </ul>
 
 <LIST>
 
-<SECTION>General Questions
+<SECTION>一般的な質問
+<ENTRY>usb-mouse-bug USB マウスが認識されません。
 
-<ENTRY>usb-mouse-bug My USB mouse is not recognized.
-
-Try plugging it into the back of the Mac instead of into the keyboard.
-
-
-<ENTRY>mouse-buttons How can I emulate a 3-button mouse with a 1-button mouse in X?
-
-At the moment, you can't.
+キーボードでなく、 Mac 本体背面に直接接続してみてください。
 
 
-<ENTRY>usb-keyboard-problems USB keyboard problems
-There is a problem in some kernels that causes the first keypress
-from a USB keyboard to be repeated over and over again. A symptom
-of this would be the install system continually asking "<tt>(I)nstall,
-(S)hell or (H)alt ?</tt>" To avoid this problem, press the
-shift key before anything else.
+<ENTRY>mouse-buttons X で 1 ボタンマウスを使って 3 ボタンマウスをエミュレートする方法は ?
+
+今のところ、できません。
+
+
+<ENTRY>usb-keyboard-problems USB キーボードの問題
+カーネルによっては、 USB キーボードの最初の打鍵が何度も繰り返される
+という問題があります。このため、インストールのさい
+"<tt>(I)nstall, (S)hell or (H)alt ?</tt>" という質問が繰り返されます。
+この問題を回避するため、最初に shift キーを押してください。
 <p>
-On some newer machines, NetBSD will hang after configuring the devices but
-before entering single-user mode.  The recommended solution is to unplug
-all USB devices (especially hubs) and plug the mouse into the keyboard and
-the keyboard directly into the back of the mac.
+最近の機種では、 NetBSD がデバイスを設定後にシングルユーザーモードに入る前に
+ハングすることがあります。
+おすすめの回避策は、 USB デバイス (特にハブ) をすべて外し、
+マウスをキーボードに挿し、キーボードを Mac 本体背面に直接つなぐことです。
 
 <ENTRY>cannot-allocate-vm-panic <tt>panic: startup: cannot allocate VM for buffers</tt>
-On some machines with large quantities of RAM the kernel will run out of
-kernel VM when it tries to allocate the buffer cache.
-You can avoid this by either of:
+RAM をたくさん積んだマシンでは、カーネルがバッファーキャッシュを
+割り当てようとする際、カーネルがカーネル VM から逸脱することがあります。
+次のいずれかで回避できます:
 <ol>
-<li>Removing some RAM
-<li>Adding <tt>"options BUFPAGES=800"</tt> to the <a
-    href="../../Documentation/kernel/#how_to_build_a_kernel">kernel
-    configuration</a>
+<li>RAM をいくつか外す
+<li><a href="../../Documentation/kernel/#how_to_build_a_kernel">カーネルコンフィグレーション</a>に
+    <tt>"options BUFPAGES=800"</tt> を加える
 </ol>
 
 <ENTRY>pciide-lost-interrupt <tt>pciide0:0:0: lost interrupt</tt>
-The NetBSD initialization code for the CMD 646 IDE controller doesn't
-correctly undo some of the settings that Open Firmware sets.  What happens
-is that Open Firmware sets the IDE controller up in 0646U2 mode and
-changes some of the interrupt settings.  The MI pciide driver doesn't know
-how to deal with this situation and you get a lot of "lost
-interrupt" messages.
+NetBSD の CMD 646 IDE コントローラーの初期化コードは、
+Open Firmware による設定のいくつかを完全に解除しません。
+Open Firmware は IDE コントローラーを 0646U2 モードに設定し、
+いくつかの割り込みの設定を変更しているのです。
+MI pciide ドライバーは、このような状況に対処できず、
+"lost interrupt" というメッセージがたくさん出るのです。
 <p>
-What this means is that if you use Open Firmware to load the bootloader
-(i.e. <tt>ofwboot.elf</tt>) or the kernel from your hard drive, NetBSD
-cannot use that drive.
+この場合、 Open Firmware を使ってブートローダー (<tt>ofwboot.elf</tt>) 
+やカーネルをそのハードドライブからロードすると、
+NetBSD ではそのドライブを使えません。
 <p>
-A workaround is to place the kernel on another bootable
-bus and then use that to mount the drive with your NetBSD filesystem 
-on the drive connected to the CMD 646 IDE bus.  The
-key phrase here is "another bootable bus".  On the G3 and G4 machines which
-have this problem, they have more than one IDE bus (in addition to add-on
-SCSI busses).  The hard drive is typically on the bus which we have
-troubles with, but the CD-ROM and Zip drive are typically on a different
-IDE bus which works just fine.
-<p>
-What you may want to do is move your hard drive to the bus the CD-ROM is
-attached to (paying attention to the master/slave jumpers), and all your
-problems will go away, although your drive is using a slower IDE bus
-protocol.
+次善策としては、カーネルを別のブート可能なバスに移し、
+それから CMD 646 IDE バスにつないだドライブを
+NetBSD ファイルシステムにマウントするという方法があります。
+キーフレーズは「別のブート可能なバス」です。
+この問題を持つ G3 や G4 の機種には、もうひとつの IDE バス
+(と追加の SCSI バス) があります。
+通常は、ハードドライブはこの問題があるバスにつながれており、
+一方、CD-ROM や Zip のドライブは別のバスにつながれていて問題なく動作します。
 
+<p>
+遅い IDE バスのプロトコルを使うことにはなりますが、
+ハードドライブを CD-ROM がつながっているバスに移し
+(マスター / スレーブのジャンパーに注意してください) 、
+この問題を回避するという方法もあります。
 
 <ENTRY>mesh-fifo <tt>Panic: mesh: FIFO != 0</tt>
-This bug is not present in NetBSD 1.5 and later.
+このバグは NetBSD 1.5 以降では現れません。
 <p>
-This is usually caused by bad SCSI cabling or devices.  Check your
-internal and external termination.  Check the length and quality of your
-cables.  Disconnect all devices that are not critical.
+これは、 SCSI ケーブルやデバイスに問題がある場合に起こります。
+内蔵と外付けの終端抵抗を確認してください。
+ケーブルの長さと品質を確認してください。
+不要なデバイスを全部外してみてください。
 <p>
-More often than not, this is caused by having a Zip drive on your MESH
-SCSI bus, as these devices do not behave like good SCSI citizens.
+この問題は、 SCSI の世界のよい住人とはいえない
+MESH SCSI バス上の Zip ドライブがある場合、しばしば起こります。
 <p>
-One person
-suggested that the MESH driver is more reliable if you don't reboot
-from MacOS into NetBSD. (That is, if you're running MacOS, shut down
-rather than rebooting, and then power it back on and boot to NetBSD.)
+MacOS からリブートして NetBSD をブートするのでなければ、
+MESH ドライバーはより信頼できるようになるという人もいます。
+(つまり、 MacOS を動かしている場合、再起動ではなくシステム終了をしてから、
+電源を入れて NetBSD をブートしてください。)
 <p>
-M L Riechers posted a very thorough 
+M L Riechers はこのトピックに関して、たいへん徹底的な
 <a href="http://mail-index.netbsd.org/port-macppc/2000/08/02/0029.html">
-message</a> on this topic.
+記事</a>を投稿しています。
 <p>
-Good luck.
+健闘を祈ります。
 
 
-<ENTRY>mesh-too-big Weird SCSI hangs, timeouts, and misc problems
-See <a href="#ofw-real-base">below</a>.
+<ENTRY>mesh-too-big SCSI の不可解なハング、タイムアウトといった問題
+<a href="#ofw-real-base">下記</a>を見てください。
 
-<ENTRY>bm0-device-timeouts I'm getting device timeouts on bm0
-This problem has been fixed in NetBSD 1.5 and later.
+<ENTRY>bm0-device-timeouts device timeouts on bm0 と言われます
+この問題は NetBSD 1.5 以降では修正済です。
+
 <p>
-Inserting a 10Mb Hub (forcing bm0 to 10Mb/s instead of 100Mb/s) seems
-to prevent this problem.
+10Mb のハブを介す (bm0 を強制的に 100Mb/s から 10Mb/s にする) と、
+この問題を回避できるようです。
 
-<ENTRY>non-sync-monitor My monitor doesn't sync up sometimes
-This is a problem with the PowerMacintosh 7300 - 8600 machines, 
-wherein the video
-signals do not settle quickly enough.  You should apply the <a
-href="SystemDisk-tutorial/of105patch.html">patches</a> for OF 1.0.5.
+<ENTRY>non-sync-monitor ときどき、モニターが同期しません
+これは PowerMacintosh 7300 - 8600 の機種での問題で、
+ビデオ信号が十分早く決定されないために起こります。
+OF 1.0.5 用の<a href="SystemDisk-tutorial/of105patch.html">パッチ</a>を当てるべきです。
 
-<ENTRY>changing-resolution How do I change the resolution or the number of colors?
-You can't do this from within NetBSD.  These settings need to be changed
-in Open Firmware.  Also, NetBSD/macppc does not yet support color depths
-of more than 8 bpp.
+<ENTRY>changing-resolution 解像度や色数を変える方法は ?
+NetBSD 上では変更できません。 Open Firmware 上で変更しなければなりません。
+また、 NetBSD/macppc は 8 bpp を超える色数には対応していません。
 <p>
-Older machines (7300 - 8600) cannot change resolutions from within
-OF.  They are fixed to 640x480 at 67 Hz (after applying the <a
-href="SystemDisk-tutorial/of105patch.html">patch</a>).  Without this
-patch, the frequency is undetermined (usually 60 Hz or 120 Hz, but could
-be just about anything).
+古い機種 (7300 - 8600) は OF で解像度を変更できません。
+これらの機種では (<a href="SystemDisk-tutorial/of105patch.html">パッチ</a>適用後) 640x480 、 67 Hz に固定されます。
+パッチを当てない場合は周波数が決まりません
+(たいてい 60 Hz か 120 Hz ですが、そうとも限らないのでなんとも) 。
 <p>
-<!-- On newer machines OF &gt;= 2.0, you can type (at the OF prompt):
+<!-- OF &gt;= 2.0 の新しい機種では、 (OF プロンプトで) 次のようにタイプすると:
 (pre)0 &gt; (b)dev screen(/b)
 0 &gt; (b)show-modes(/b)
 0 &gt; (b)mode#(/b)
 1 &gt; (b).(/b)(/pre)
 (p)
-This will list the resolutions available on your system.  If you set your
-system to one of these resolutions from within MacOS, then Open FIrmware
-should keep that setting. -->
+その機種で有効な解像度がリストされます。
+もし、 MacOS 上で解像度をこのいずれかに設定すれば、
+Open Firmware はその設定を保持するはずです。 -->
 
-On newer machines, you need to set the resolution you want from within
-MacOS.  Open Firmware should then keep that setting.
+最近の機種では、 MacOS で必要な解像度を設定する必要があります。
+Open Firmware はその設定を保持します。
 <p>
-Chris Tribo reports that his XClaimVR 64 card ignores the MacOS monitor
-setting and always comes up at the same resolution.
+Chris Tribo によれば、彼の XClaimVR 64 カードは MacOS のモニターの設定を
+無視して、いつも同じ解像度を使うとのことです。
 
 <!-- ======================================== -->
-<SECTION>Supported Hardware
+<SECTION>対応ハードウェア
 
-<ENTRY>nubus Does NetBSD/macppc support NuBus-based Power Macs (7100, 8100, etc)?
+<ENTRY>nubus NetBSD/macppc は NuBus ベースの Power Mac (7100, 8100 等) をサポートしていますか ?
 
-No. NetBSD/macppc doesn't support NuBus. In addition,the NuBus-based
-Power Macs don't have Open Firmware, which NetBSD/macppc depends on
-heavily.
+いいえ。 NetBSD/macppc は NuBus に対応していません。
+さらに、 NuBus ベースの Power Mac は Open Firmware を持っていませんが、
+NetBSD/macppc は Open Firmware に強く依存しています。
 
 <p>
-There are four groups of NuBus based Power Macintosh machines:
+NuBus ベースの Power Macintosh マシンは、 4 グループに分類されます:
 <ul>
 <li><b>Apple PDM</b><br>
-    Any x1xx machine, e.g. 6100, 6150, 7100, 8100
+    あらゆる x1xx なマシン、たとえば 6100, 6150, 7100, 8100
 <li><b>Apple PERFORMA class</b><br>
-    52xx, 53xx, 62xx, 63xx (except 6360)
-<li><b>Apple POWERBOOK (or 'M2') class</b><br>
+    52xx, 53xx, 62xx, 63xx (6360 は除く)
+<li><b>Apple POWERBOOK ('M2') class</b><br>
     1400, 2300, 5300
-<li><b>Power Computing "Power" series</b><br>
-    Such as the "Power 100" and "Power 120"
+<li><b>Power Computing "Power" シリーズ</b><br>
+    "Power 100" と "Power 120"
 </ul>
 
-<p> These systems won't work even if you upgrade the processor to a
-G3, because the remaining hardware is still unsupported. (But if you
-get a complete logic board upgrade, they will work, because they then
-essentially become a new machine)
+<p>これらの機種では、たとえプロセッサーを G3 にアップグレードしても、
+他の部分が未サポートなので、動作しません。
+(しかし、ロジックボードを完全にアップグレードすれば、
+新しい機種と同等になるので、動作するでしょう)
 
-<p> At the current time, we don't know of anyone working on supporting
-these systems. If you are interested in trying to get one of them
-working, <a href="mailto:port-macppc@NetBSD.org">send mail</a>.
-
-
-<ENTRY>68k-upgrade Does NetBSD/macppc support PowerPC processor upgrades for 68k-based Macs?
-
-No, for the same reasons as above. (This applies only to
-<em>processor</em> upgrades. If you upgrade the whole motherboard, it
-essentially becomes a new machine, in which case it may be supported.)
+<p>現在、これらの機種に対応するための作業をしている人を私たちは知りません。
+もし、この作業に興味があれば、 (訳註: 英語で)
+<a href="mailto:port-macppc@NetBSD.org">メールを送ってください</a>。
 
 
-<ENTRY>601 Does NetBSD/macppc support the Power Macintosh 7200 or 7500?
+<ENTRY>68k-upgrade NetBSD/macppc は PowerPC プロセッサーにアップグレードした 68k ベースの Mac に対応していますか ?
 
-These machines have PCI and Open Firmware, but use the PowerPC 601
-processor, which is not currently supported. However, the 7500's
-processor is upgradable, so if you buy a 603/604/G3/G4 upgrade for it,
-NetBSD will work.
+いいえ。上記と同じ理由からです。
+(これは<em>プロセッサー</em>だけをアップグレードした場合の話です。
+マザーボードをすべてアップグレードすれば、
+新しい機種と同等になるので、動作するでしょう。)
 
 
-<ENTRY>powerbook Does NetBSD/macppc support PowerPC-based PowerBooks?
+<ENTRY>601 NetBSD/macppc は Power Macintosh 7200 や 7500 に対応していますか ?
 
-Some of them. The PowerBook 2400 and the new G3 PowerBooks are known
-to be supported. The PowerBook 1400, 2300, and 5300 are not supported,
-because they are not PCI-based. Other models may work out of the box,
-or may need a small additional amount of driver work before they work.
+これらの機種は PCI と Open Firmware を持っていますが、 PowerPC 601
+プロセッサーを使っているため、今のところ非対応です。しかし、
+7500 のプロセッサーはアップグレード可能なので、 603/604/G3/G4 へ換装すれば
+NetBSD が動作するでしょう。
 
-<p> It has been reported that on some G3 Powerbooks, booting off an
-install floppy only works if the floppy drive is mounted in the left
-MediaBay slot.
 
-<p> Note that power management is not yet supported, so it is not
-possible to suspend and resume a PowerBook while running NetBSD.
+<ENTRY>powerbook NetBSD/macppc は PowerPC ベースの PowerBooks に対応していますか ?
 
-<ENTRYLINK>models.html NetBSD/macppc supported models list
+機種によります。 PowerBook 2400 と新しい G3 PowerBook は
+PowerBook 1400, 2300, 5300 は、 PCI ベースでないため、非対応です。
+他の機種では、そのままで動くかもしれませんし、
+若干のドライバーの追加が必要かもしれません。
 
-<ENTRY>peripherals What peripherals does NetBSD/macppc support?
+<p>いくつかの G3 Powerbook では、
+左側のメディアベイにフロッピードライブがないと、
+インストールフロッピーからのブートはできないと報告されています。
+
+<p>パワーマネージメントは未サポートですので注意してください。
+NetBSD の動作中は PowerBook のサスペンド、レジュームはできません。
+
+<ENTRYLINK>models.html NetBSD/macppc 対応機種の一覧
+
+<ENTRY>peripherals NetBSD/macppc どんな周辺機器に対応していますか ?
 
 <p>
-(XXX Need more information about what chips are in which models)
+(XXX 機種別の使用チップについて、さらなる情報を必要としています)
 
 <p>
 <ul>
-  <li> <strong>Ethernet</strong>
+  <li> <strong>イーサネット</strong>
   <ul>
-    <li> On-board 79C950 (MACE) ethernet
-    <li> On-board bmac ethernet, 10Base-T only
-    <li> On-board gmac ethernet
-    <li> Tulip-compatible, 3Com, and NE2000-compatible PCI cards (de,
-	ep, and ne drivers)
+    <li> オンボード 79C950 (MACE) イーサネット
+    <li> オンボード bmac イーサネット: 10Base-T のみ
+    <li> オンボード gmac イーサネット
+    <li> Tulip-compatible, 3Com, NE2000 互換 PCI カード (de,
+	ep, ne ドライバー)
   </ul>
 
-  <li> <strong>Disks</strong>
+  <li> <strong>ディスク</strong>
 
   <ul>
-    <li> On-board 53c94 SCSI controller
-    <li> On-board MESH SCSI controller
-    <li> Advansys 1200[A,B] 9xx[U,UA] PCI SCSI (cannot use as boot device)
-    <li> Adaptec / Future Domain PCI SCSI (can use as a boot device if
-	it has Macintosh firmware)<br>
-	<i>See <a href="#boot-pci">below</a></i>
-    <li> BusLogic PCI SCSI (not quite supported in mainline yet)
+    <li> オンボード 53c94 SCSI コントローラー
+    <li> オンボード MESH SCSI コントローラー
+    <li> Advansys 1200[A,B] 9xx[U,UA] PCI SCSI (ブートデバイスとしては使用不可)
+    <li> Adaptec / Future Domain PCI SCSI (Macintosh firmware を持つものは
+	ブートデバイスとして使用可)<br>
+	<i><a href="#boot-pci">下記</a>参照</i>
+    <li> BusLogic PCI SCSI (正式には未対応)
 
-    <li> On-board IDE hard drives and CD-ROM drives<br>
-	<i>See <a href="#pciide-lost-interrupt">above</a></i>
+    <li> オンボード IDE ハードドライブと CD-ROM ドライバー<br>
+	<i><a href="#pciide-lost-interrupt">上記</a>参照</i>
 
-    <li> USB mass-storage devices (such as Zip drives)
+    <li> USB の大容量記録デバイス (Zip ドライブなど)
   </ul>
 
-  <li> <strong>Serial</strong>
+  <li> <strong>シリアル</strong>
   <ul>
-    <li> On-board RS-422 serial (modem/printer) port
-    <li> On-board USB controller (iMac and Blue G3s)
-    <li> USB-based serial and parallel ports
+    <li> オンボード RS-422 シリアル (モデム / プリンター) ポート
+    <li> オンボード USB コントローラー (iMac と青い G3)
+    <li> USB ベースのシリアル・パラレルポート
   </ul>
 
-  <li> <strong>Video</strong> (see <a href="#ofw-boot-serial">below</a>)
+  <li> <strong>ビデオ</strong> (<a href="#ofw-boot-serial">下記</a>参照)
   <ul>
-    <li> On-board video on almost all models
-    <li> PCI video cards with Open Firmware drivers
+    <li> ほぼ全機種のオンボードビデオ
+    <li> Open Firmware ドライバーを持った PCI ビデオカード
   </ul>
 
-  <li> <strong>Input</strong>
+  <li> <strong>入力</strong>
   <ul>
-    <li> ADB keyboards and mice
-    <li> USB keyboards and mice
+    <li> ADB キーボードとマウス
+    <li> USB キーボードとマウス
   </ul>
 
   <li> <strong>PCMCIA/CardBus</strong>
@@ -275,50 +273,48 @@ possible to suspend and resume a PowerBook while running NetBSD.
 </ul>
 
 <p>
-For more information about specific add-on cards and devices that are
-supported, see the <a href="../../Hardware/pci.html">Machine-independent
-PCI drivers</a>, <a href="../../Hardware/usb.html">Machine-independent
-USB drivers</a>, <a href="../../Hardware/pcmcia.html">Machine-independent
-PCMCIA drivers</a>, and
-<a href="../../Hardware/cardbus.html">Machine-independent Cardbus
-drivers</a> pages. (There is not currently a list of specific ADB
-devices which are known to work with NetBSD.)
-
+個々の拡張カードやデバイスの対応について、詳しくは、
+<a href="../../Hardware/pci.html">機種独立の PCI ドライバー</a>、
+<a href="../../Hardware/usb.html">機種独立の USB ドライバー</a>、
+<a href="../../Hardware/pcmcia.html">機種独立の PCMCIA ドライバー</a>、
+<a href="../../Hardware/cardbus.html">機種独立の Cardbus ドライバー</a>
+のページを見てください。
+(今のところ、 NetBSD で動作する個々の ADB デバイスのリストはありません。)
 <p>
-NetBSD/macppc does not yet support
+NetBSD/macppc で未対応のものは、
 
 <ul>
-  <li> Built-in Audio
-  <li> Floppy drives (built-in or USB), other than for booting
+  <li> 内蔵オーディオ
+  <li> ブート用として以外の (内蔵や USB の) フロッピードライブ
   <li> FireWire (IEEE 1394)
-  <li> Power management
+  <li> パワーマネージメント
   <li> Airport
-  <li> Use of more than one processor (the extra CPUs sit idle)
+  <li> 複数のプロセッサー (2 個目以降の CPU は動作しません)
 </ul>
 
 
 <!-- ======================================== -->
 <SECTION>Open Firmware
 
-<ENTRY>ofw What is Open Firmware?
+<ENTRY>ofw Open Firmware って何ですか ?
 
-Open Firmware, as specified by "IEEE Std 1275-1994: IEEE Standard
+Open Firmware は、 "IEEE Std 1275-1994: IEEE Standard
 for Boot Firmware (Initialization Configuration) Firmware: Core
-Requirements and Practices" and its supplements, is a
-platform-independent boot firmware. It is based on Sun's OpenBoot
-firmware, and uses ANS Forth as a processor-independent interface
-language.
+Requirements and Practices" とその補遺で仕様が定められた、
+プラットフォーム独立のブートファームウェアです。
+Sun の OpenBoot firmware を元にしており、
+プロセッサー独立のインターフェース言語である ANS Forth を使っています。
 
-You can find more about Open Firmware at the <a
-href="http://playground.sun.com/1275/home.html">Open Firmware Working
-Group home page</a>.
+Open Firmware のより詳しい情報は、
+<a href="http://playground.sun.com/1275/home.html">Open Firmware
+ワーキンググループホームページ</a>にあります。
 
 
-<ENTRY>ofw-version Which version of Open Firmware is my machine?
+<ENTRY>ofw-version 私の機種の Open Firmware のバージョンは ?
 
-Look at the <a href="models.html">Model Support</a> page.  If your machine
-isn't listed, you can find out from within Open Firmware.  From the OF
-prompt, type:
+<a href="models.html">対応機種</a>ページを見てください。
+あなたの機種が載っていなければ、 Open Firmware を使って確かめられます。
+OF プロンプトで次のようにタイプします:
 <pre>0 &gt; <b>dev /openprom</b>
 0 &gt; <b>.properties</b>
 name                    openprom
@@ -329,519 +325,527 @@ supports-bootinfo
 
  ok</pre>
 <p>
-Alternatively, any machine which did not ship with a G3 or G4 processor is
-either OF 1.0.5 or 2.0.x.  "Translucent" models all have OF 3.
+ちなみに、 G3 や G4 プロセッサーを積んでいない機種は OF 1.0.5 か 2.0.x です。
+"トランスルーセント" な機種はすべて OF 3 です。
 
-<ENTRY>ofw-bugs Are there bugs in my machine's Open Firmware implementation?
+<ENTRY>ofw-bugs 私の機種の Open Firmware の動作にバグはありますか ?
 
-Probably.  
+ありえます。
 <p>
 
-If you have a mac with Open Firmware 3.0 or higher, you might be able to
-download a new Firmware for your machine on the <a
-href="http://asu.info.apple.com/">Apple Software Updates</a> web site.  
-Search for <tt>firmware</tt> and download the most recent file appropriate
-for your model. 
+Open Firmware 3.0 以降の mac では、<a href="http://asu.info.apple.com/">Apple
+Software Updates</a>ウェブサイトから、
+その機種用の新しいファームウェアをダウンロードできるかもしれません。
+<tt>firmware</tt> を探して、
+その機種用の最新のファイルをダウンロードしてください。
 <p>
 
-If you have an older model mac (i.e. one that does not have a flash
-upgradable firmware), you can still patch your system.  Open Firmware
-provides a small nvram to patch problems found after
-the machine was built.  Apple has kindly published a MacOS utility which
-will patch most known problems and will allow you to set various Open
-Firmware variables.  People have found the patches from this utility will
-allow them to use Open Firmware to boot from otherwise unbootable drives.
+古い (ファームウェアを更新できない) mac でも、
+システムにパッチを当てることができます。
+Open Firmware には、開発後に見付かった問題を修正するための小さな
+nvram があります。ありがたいことに、 Apple は多くの既知の問題を修正して
+Open Firmware の変数を変えるための MacOS 用のユーティリティーを作っています。
+このユーティリティーによるパッチから、 Open Firmware
+を使ってブート可能でないデバイスからのブートができることがわかりました。
 <p>
 
-To patch your system, merely download 
+システムにパッチを当てるには、
 <a href="ftp://ftp.apple.com/developer/macosxserver/utilities/SystemDisk2.3.1.smi.bin">
-SystemDisk</a>, run the <tt>System Disk</tt> program from the disk
-image, then click on <tt>Power User (Open Firmware)</tt>, and click on
-<tt>Save</tt>.
+SystemDisk</a> をダウンロードして、
+ディスクイメージ中の <tt>System Disk</tt> プログラムを実行して、
+<tt>Power User (Open Firmware)</tt> をクリックして、
+<tt>Save</tt> をクリックするだけです。
 
-<p>Note: <i>zapping your PRAM <tt>Command-Option-P-R</tt>
-will erase these nvram patches.</i>
-<p>Note 2: <i>Booting your OF 1.0.5 system into MacOS will erase these
-nvram patches.</i>
+<p>Note: <i><tt>Command-Option-P-R</tt> で PRAM をクリアすると、
+nvram のパッチは消えます。</i>
+<p>Note 2: <i>OF 1.0.5 の機種で MacOS を起動すると、
+nvram のパッチは消えます。</i>
 <p>
 
-If you have a system with OpenFirmware 1.0.5, there are a few additional 
-<a href="SystemDisk-tutorial/of105patch.html">patches</a> that you may
-wish to apply that are <i>not</i> included in the System Disk utility.  
+OpenFirmware 1.0.5 の機種では、追加の
+<a href="SystemDisk-tutorial/of105patch.html">パッチ</a>があり、
+System Disk ユーティリティーには<i>ない</i>修正を施すことができます。
 
-<ENTRY>ofw-access How do I access Open Firmware?
+<ENTRY>ofw-access Open Firmware にアクセスする方法は ?
 
-You can use Apple's <tt>System Disk</tt> to set your machine to always
-boot into Open Firmware.  See the brief 
-<a href="SystemDisk-tutorial/">tutorial</a> on how to do this.
+Apple の <tt>System Disk</tt> を使って、ブート時は常に Open Firmware
+に入るようにできます。この方法については、簡単な
+<a href="SystemDisk-tutorial/">チュートリアル</a>を見てください。
 <p>
-To manually access Open Firmware, 
-hold down Command-Option-O-F while booting (on PowerBooks, you should hold
-down these keys on the built-in keyboard). The firmware checks the
-state of the keys some time after the startup chime--exactly when
-varies from model to model. The G3 PowerBooks seem to be the pickiest
-about timing. If you're having problems, try waiting until the startup
-chime starts, then quickly press the keys before it finishes (and hold
-them down until you see the Open Firmware screen). It's also been
-reported that it's easier to get into Open Firmware from a powered-off
-state than it is from a reboot.
+手動で Open Firmware にアクセスするには、
+ブートの間 Command-Option-O-F を押し続けます
+(PowerBooks では、内蔵キーボードを使う必要があります) 。
+起動音が鳴った少し後─これは機種によってばらつきがあり、
+G3 PowerBooks は最もタイミングが難しいようです─に、
+ファームウェアはキーの状態をチェックします。
+もし、うまくいかなければ、起動音が鳴り始めるまで待ち、
+鳴り終わらないうちに素早くキーを押してみてください
+(そして、 Open Firmware の画面が出るまで押し続けてください) 。
+また、再起動するよりは、電源を切った状態から起動したほうが、
+Open Firmware に入りやすいとの報告もあります。
 <p>
-To permanently boot into the Open Firmware prompt, type (at the OF
-prompt):
+ブート時は常に Open Firmware プロンプトに入るようにするためには、
+(OF プロンプトで) 次のようにタイプします:
 <pre>setenv auto-boot? false</pre>
-Now, each time you boot or reboot your PowerMacintosh, you will get an OF
-prompt.
+これで、 PowerMacintosh はブートやリブートの際、
+いつも OF プロンプトに入るようになります。
 
 
-<ENTRY>ofw-boot-serial I tried to get into Open Firmware, but it just stopped booting, and my monitor isn't showing anything.
+<ENTRY>ofw-boot-serial Open Firmware に入ろうとすると、ブートが止まり、モニターに何も表示されなくなります。
 
-Older versions of Open Firmware default to communicating over the modem
-port, not via the connected keyboard and monitor. If you have an old
-PowerPC 601-based machine that you have upgraded to a supported processor
-(such as some of the old PowerComputing clones or Performas), there might
-not be anything you can do to change this. But most other machines can be
-told to use the keyboard and video instead of a serial console.
+古いバージョンの Open Firmware は、
+デフォルトではキーボードやモニターではなくモデムポートを使って通信します。
+(いくつかの古い PowerComputing の互換機や Performa など)
+古い PowerPC 601 ベースの機種を対応プロセッサーにアップグレードしている場合、
+この仕様を変更することはできません。
+ですが、他の多くの機種では、
+シリアルコンソールでなくキーボードとビデオを使うようにできます。
 
-<p>The easiest way to deal with this is to use Apple's System Disk
-utility (see the <a href="SystemDisk-tutorial/">tutorial</a>).  
-When you run this program, click on <tt>Power User (Open Firmware)</tt>, 
-then click on the <tt>Save</tt> button, it will set
-your Open Firmware to use the built-in display and keyboard if possible.
+<p>最も簡単にこれを行う方法は、 Apple の System Disk を使うことです
+(<a href="SystemDisk-tutorial/">チュートリアル</a>を見てください) 。
+このプログラムを実行して、 <tt>Power User (Open Firmware)</tt> を
+クリックしてから <tt>Save</tt> ボタンをクリックすると、
+Open Firmware は使用可能な内蔵ディスプレイとキーボードを使うようになります。
 
-<p>Alternately, you can set up a serial console as follows: connect
-another computer (or terminal) to the modem port, and set the baud
-rate of its serial port to 38400, 8 bit bytes, 1 stop bit and no
-parity. (If you're connecting a non-Mac, you will need a converter
-from the MiniDIN8 connector on the Mac to a standard DB9/DB25 connector
-that everyone else uses.) Use kermit or some other terminal program.
+<p>あるいは、シリアルコンソールで設定することもできます:
+他のコンピューター (または端末) をモデムポートに接続し、
+このシリアルポートを 38400 ボー、 8 ビット/バイト、ストップビット 1 、
+パリティなしに設定します。
+(Mac 以外を使う場合は、 Mac のミニ DIN 8 ピンから標準的な
+DB9/DB25 への変換が必要です。)
+kermit などの端末プログラムを使います。
 
-<p>Start your machine and press Command-Option-O-F on the Mac keyboard
-immediately after you hear the startup sound. You should see the
-prompt `<tt>0&nbsp;ok&gt;</tt>' on the (serial) console within a few
-seconds.
+<p>マシンを起動し、起動音が鳴ったらすぐに
+Mac のキーボードの Command-Option-O-F を押し続けます。
+しばらくすると (シリアル) コンソールに `<tt>0&nbsp;ok&gt;</tt>'
+というプロンプトが出るはずです。
 
-<p>To switch the machine to using the monitor and keyboard instead of the
-serial console, type:
+<p>マシンがシリアルコンソールのかわりにモニターとキーボードを使うように
+切替えるため、次のようにタイプします:
 
 <pre>
 	" screen" output
 	" kbd" input
 </pre>
 
-<p>Note that Open Firmware is based on the language Forth, and has
-unusual syntax for strings: The initial quote has a space after it,
-which is not part of the string it is quoting. The final quote does
-not have a space before it, but does have a space after it to separate
-it from the next word.
+<p>Open Firmware は Forth 言語を元にしており、
+変わった文法を持っていることに注意:
+最初の引用符はそれに続くスペースを伴っており、
+このスペースは引用符で囲まれた文字列の一部ではありません。
+最後の引用符はその前にスペースを伴いませんが、
+次の語との区切りのスペースが後にあります。
 
-<p>Not all machines have a "screen" device alias, in which case you
-will need to figure out what the full Open Firmware path to the video
-device is. Also note that Open Firmware will <i>not</i> complain if you
-specify an output device that doesn't exist.
-On the 7x00 and 8x00 models and some 9x00, and some G3 models, this
-is "<tt>/chaos/control</tt>". 
+マシンによってはデバイスの別名 "screen" がないため、
+ビデオデバイスの Open Firmware でのフルパスを確かめなければなりません。
+さらに Open Firmware は、指定した出力デバイスが存在しないものであっても
+文句を<i>言わない</i>ことに注意してください。
+7x00 、 8x00 の機種と、 9x00 や G3 の一部の機種の出力デバイス名は
+"<tt>/chaos/control</tt>" です。
 <p>
-If <tt>screen</tt> and <tt>/chaos/control</tt> don't work on your
-machine, look in the device tree for a PCI device that contains the
-name of your video card (preceded by "ATY," for an ATI card, or "IMS,"
-for a Twin Turbo card), for example
-"<tt>/bandit/ATY,mach64</tt>" and
-"<tt>/bandit@F4000000/IMS,tt128mb8A</tt>".  To get a list of the devices
-available to Open Firmware, type <tt>dev / ls</tt>.
-
-<p>To make your machine always start up using the keyboard and monitor
-for Open Firmware, type:
+<tt>screen</tt> でも <tt>/chaos/control</tt> でもうまくいかない場合は、
+デバイスツリーからビデオカード名 (ATI のカードは "ATY," で始まり、
+Twin Turbo カードは "IMS," で始まります) を含む PCI デバイス、
+たとえば "<tt>/bandit/ATY,mach64</tt>" や
+"<tt>/bandit@F4000000/IMS,tt128mb8A</tt>" のようなものを探します。
+<tt>dev / ls</tt> とタイプすると、
+Open Firmware で使えるデバイスのリストが得られます。
+<p>起動の際 Open Firmware が常にキーボードとモニターを使うようにするためには、
+次のようにタイプします:
 
 <pre>
 	setenv input-device kbd
 	setenv output-device screen
 </pre>
 
-<p>(Or whatever the name of your screen device is.) This will last
-until you change it, or reset the machine's PRAM.
+<p>(screen は機種によって適宜変えてください。)
+これは、設定を変更するか PRAM をリセットするまで有効です。
 
 
-<ENTRY>systemdisk Configuring the Open Firmware boot variables and nvram
+<ENTRY>systemdisk Open Firmware のブート変数と nvram の設定
 
-You can use a handy utility provided by <a href="http://www.apple.com">Apple</a>
-to do this.  See the brief <a href="SystemDisk-tutorial/">tutorial</a>
-for details.
+<a href="http://www.apple.com">Apple</a> による便利なユーティリティーを使って
+設定することができます。詳細は簡単な
+<a href="SystemDisk-tutorial/">チュートリアル</a>を見てください。
 <p>
-Alternatively, you can change the parameters from the Open Firmware
-prompt, using <tt>setenv</tt> commands.  Use <tt>printenv</tt> to see what
-variables are available.
+あるいは、 Open Firmware のプロンプトで <tt>setenv</tt> コマンドを使って
+変数を変更することもできます。
+利用可能な変数を調べるには <tt>printenv</tt> を使います。
 <p>
-To edit the contents of the <tt>nvramrc</tt> startup script, you can
-hack System Disk with ResEdit.  Look in the <tt>OFtc</tt> resource
-to determine which ID System Disk uses for your model.  Then edit the
-appropriate <tt>OFpt</tt> resource.
+<tt>nvramrc</tt> スタートアップスクリプトの内容を編集するために、
+System Disk を ResEdit で改造することができます。 <tt>OFtc</tt>
+リソースを見て System Disk が使っている機種 ID を調べてください。
+それから対応する <tt>OFpt</tt> リソースを編集します。
 <p>
-Alternatively (and more dangerously), you can hand-edit the
-<tt>nvramrc</tt>.  This is dangerous, because the forth syntax is
-<i>very</i> picky (particularly about white space presence or
-absence).  If you're planning to edit your <tt>nvramrc</tt> you might want
-to temporarily change to using a serial console so you can just paste in
-whatever patches you want.  Look at the <a href="nvedit.html"><tt>nvedit</tt>
-HOW-TO</a> for a list of commands available.
+あるいは (危険でもありますが) <tt>nvramrc</tt> を直接編集することもできます。
+forth の文法は (特にスペースの有無について) <i>大変</i>厳格なので、
+これは危険な方法です。
+<tt>nvramrc</tt> を編集して一時的にシリアルコンソールを使いたいのであれば、
+パッチをペーストするだけです。
+使用可能なコマンドのリストについては、
+<a href="nvedit.html"><tt>nvedit</tt> HOW-TO</a> を見てください。
 <p>
-Note that some systems appear to be worse off with the System Disk patches
-than without them.  If you think this is the case, then disable the
-<tt>nvramrc</tt>:
+いくつかの機種では、 System Disk のパッチを当てると、
+当てない状態より状況が悪化することに注意してください。
+もしこうなった場合は、 <tt>nvramrc</tt> を無効にします:
 <pre>0 &gt; <b>setenv use-nvramrc? false</b></pre>
 <p>
-Note: <i>zapping your PRAM <tt>Command-Option-P-R</tt> will erase any
-settings you have made to Open Firmware.</i>
+Note: <i><tt>Command-Option-P-R</tt> で PRAM をクリアすると、
+Open Firmware 上で行ったすべての設定は消えます。</i>
 <p>
-Note 2: <i>Booting your OF 1.0.5 system into MacOS will erase any settings
-you have made to Open Firmware.</i>
+Note 2: <i>OF 1.0.5 の機種で MacOS をブートすると、
+Open Firmware 上で行ったすべての設定は消えます。</i>
 <p>
-Note 3: <i>In some extreme cases, you may have messed up your Open
-Firmware settings such that your system won't boot anymore.  Zapping the
-PRAM doesn't fix it.  In this case, you will need to unplug your system
-and remove the battery from your motherboard for about 10 minutes.  On a
-PowerBook, the equivalent is to reset your power manager.</i>
+Note 3: <i>極端な場合、 Open Firmware の設定によって
+マシンが起動しなくなることもあります。これは PRAM クリアでは直りません。
+この場合は、電源を抜き、 10 分間ほどマザーボードから電池を外します。
+PowerBook の場合は power manager をリセットします。</i>
 
-<ENTRY>ofw-claim-failed Open Firmware reports "CLAIM failed" when trying to boot.
+<ENTRY>ofw-claim-failed ブートしようとすると Open Firmware が "CLAIM failed" と言います
 
-This is a general message from Open Firmware to the effect that it failed
-to allocate some memory.  There are several known causes for this to
-happen.
+これは Open Firmware がメモリーの割り当てに失敗したときに出る
+一般的なメッセージです。
+原因はいくつかあります。
 <p>
-This often means that the memory is messed up.  If you tried something and
-it failed, then you tried another and got a "CLAIM failed" message, then
-this is an indication that you should reboot between attempts (the OF
-command is "reset-all").
+これはしばしばメモリーに問題があることを意味します。
+もし、何か試したことが失敗したのちに再度何かを試して
+"CLAIM failed" とのメッセージが出たのであれば、
+これは一旦リブート (OF コマンドは "reset-all") すべき
+であるとの指示です。
 <p>
-If your machine is Open Firmware version 1.0.5 or 2.X, this error
-does sometimes appear randomly.  You might try the boot command a second
-time (this is
-known to work on some models).  Otherwise, if you are not
-using a serial console, there might be a conflict between the screen
-driver and Open Firmware which prevents OF from loading
-ofwboot.xcf.  There are several models that cannot be booted while
-using the screen and keyboard.  The
-only known workaround is to use a serial console (i.e. set your input and
-output devices to ttya or ttyb).  You can use the System
-Disk utility (see the <a href="SystemDisk-tutorial/">tutorial</a>)
-to set the input and output to ttya, or in Open Firmware,
-type: 
+Open Firmware のバージョンが 1.0.5 か 2.X のマシンでは、
+このエラーは、ときどきランダムに現れます。
+かまわずに boot コマンドを試してみてもよいでしょう
+(いくつかの機種では、これで動作することが知られています) 。
+また、シリアルコンソールを使っていない場合は、
+スクリーンドライバーと Open Firmware のコンフリクトによって
+OF が ofwboot.xcf をロードできないのかもしれません。
+いくつかの機種では、スクリーンとキーボードを使ってはブートできません。
+唯一の回避策はシリアルコンソールを使う
+(入出力デバイスを ttya か ttyb にする) ことです。
+System Disk ユーティリティーを使って (<a href="SystemDisk-tutorial/">チュートリアル</a>参照)
+input と output を ttya に設定するか、
+Open Firmware で次のようにタイプします:
 <pre>setenv input-device ttya
 setenv output-device ttya
 reset-all</pre>
 <p>
-This will reset the machine and send console messages out the modem port
-at 38400 bits per second, 8 bit bytes, 1 stop bit and no parity.
+これはマシンをリセットし、モデムポートに 38400 ビット毎秒、 8 ビット/バイト、
+ストップビット 1 、 パリティなしでメッセージを送ります。
 
-<ENTRY>ofw-load-base What's the deal with the "load-base" setting?
-The Open Firmware environment variable <tt>load-base</tt> is the address
-at which an XCOFF binary will be loaded into memory.  The default value in Open
-Firmware 1.0.5 and 2.X is 4000.  If this address is used, then
-<tt>ofwboot.xc</tt>f will overwrite Open Firmware and will not load
-NetBSD.  We reccommend a <tt>load-base</tt> of 600000 for Open Firmware
-1.0.5 and 2.X machines, which is in a safe address range.  Apple realized
-they have the same problem with MacOS X, and running the <a
-href="SystemDisk-tutorial/">System Disk</a> utility will automatically set
-OF 1.0.5 and 2.X machines to use a <tt>load-base</tt> of 600000.  Note
-that mkLinux uses a different <tt>load-base</tt>, don't try their setting.
+<ENTRY>ofw-load-base "load-base" の設定の問題
+Open Firmware の環境変数 <tt>load-base</tt> は、
+XCOFF バイナリーがメモリー上にロードされるアドレスです。
+Open Firmware 1.0.5 と 2.X でのデフォルト値は 4000 です。
+このアドレスが使われていると、
+<tt>ofwboot.xcf</tt> で Open Firmware が上書きされ、 NetBSD をロードしません。
+Open Firmware 1.0.5 や 2.X の機種では、 <tt>load-base</tt> を
+安全なアドレスの範囲である 600000 にすることをおすすめします。
+Apple は MacOS X に同じ問題があることを知っており、 <a
+href="SystemDisk-tutorial/">System Disk</a> ユーティリティーは
+OF 1.0.5 and 2.X の機種では自動的に <tt>load-base</tt> を
+600000 に設定します。
+mkLinux では異なる <tt>load-base</tt> 値を使いますが、
+この値を使ってはいけませんので注意してください。
 <p>
-Open Firmware 3 machines have re-writable firmware, and users have found
-that setting the <tt>load-base</tt> to 600000 will overwrite their firmware,
-rendering their machines dead (requiring an expensive trip back to
-Apple).  <b>Do not change the <tt>load-base</tt> on an Open Firmware 3
-machine.</b>  Apple has also chosen a more reasonable default value of
-<tt>load-base</tt> in Open Firmware 3, so it's not necessary to change it
-anyways.
+Open Firmware 3 の機種は書き換え可能なファームウェアを持っていますが、
+<tt>load-base</tt> を 600000 に設定すると、ファームウェアを上書きして
+マシンを壊してしまう (Apple での高価な修理が必要になる) ことがわかりました。
+<b> Open Firmware 3 な機種で <tt>load-base</tt> を変更してはなりません。</b>
+Apple は、 Open Firmware 3 では、 <tt>load-base</tt> のデフォルト値を
+最適な値にしたので、どんな場合でも変更する必要はありません。
 <p>
-You should only need to set the load-base when you are booting ofwboot.xcf
-directly from Open Firmware.  Note that installboot and the NetBSD
-installer do <i>not</i> set up filesystems to contain
-<tt>ofwboot.xcf</tt>.  These filesystems have a fake Apple Partition Map
-entry with <tt>ofwboot</tt> in the partition map.  This variant of the
-bootloader does not have any of these problems associated with
-<tt>ofwboot.xcf</tt>.  So, when you are using, for example,
-<tt>scsi/sd@0:0</tt> or <tt>fd:0</tt> as a boot device, you are not using
-<tt>ofwboot.xcf</tt> and do not need to set your <tt>load-base</tt>.
+load-base を設定する必要があるのは、 Open Firmware から直接に
+ofwboot.xcf をブートしようとする場合だけです。
+installboot や NetBSD のインストーラーは、ファイルシステムが
+<tt>ofwboot.xcf</tt> を含むようには設定<i>しない</i>ことに注意してください。
+この場合、ファイルシステムは、パーティションマップにおいて、
+細工された Apple パーティションマップのエントリーと ofwboot を持つようになります。
+これら別種のブートローダーには、 <tt>ofwboot.xcf</tt> のような問題はありません。
+このため、ブートデバイスとして、たとえば
+<tt>scsi/sd@0:0</tt> や <tt>fd:0</tt> を使う場合、
+<tt>ofwboot.xcf</tt> は使わないので、 <tt>load-base</tt> を設定する必要は
+ありません。
 <p>
-Once you are entirely positive that your machine has Open Firmware 1.0.5
-or 2.X (see <a href="#ofw-version">above</a>), run the following command
-to set your <tt>load-base</tt> properly
-(remember, System Disk will do this automatically):
+その機種の Open Firmware が 1.0.5 か 2.X であるかを確認してから
+(<a href="#ofw-version">上記</a>参照) 、下記のコマンドを実行して
+<tt>load-base</tt> を適切に設定します
+(System Disk はこれを自動的に行うことを、覚えておいてください):
 
 <pre>0 &gt; <b>setenv load-base 600000</b></pre>
 
-You should double-check that this value has been set using the
-<tt>printenv</tt> command.
+正しく設定されたか、 <tt>printenv</tt> コマンドで再確認すべきです。
 
-<ENTRY>ofw-real-base What's the deal with the "real-base" setting
-The Open Firmware environment variable <tt>real-base</tt> is the address
-at which <tt>ofwboot</tt> loads the kernel into memory.  Many users have
-reported that the default value of <tt>real-base</tt> causes problems that
-manifest themselves as strange SCSI problems, or <tt>ofwboot</tt> hanging
-while loading a large kernel (typically over 3 MB in size).
-Makoto Fujiwara
-<a href="http://mail-index.netbsd.org/port-macppc/2000/08/13/0004.html">reports</a>
-that changing the <tt>real-base</tt> will fix this problem.
+<ENTRY>ofw-real-base "real-base" の設定の問題
+Open Firmware の環境変数 <tt>real-base</tt> は、
+<tt>ofwboot</tt> がカーネルをメモリー上にロードするアドレスです。
+多くのユーザーからの報告によれば、
+<tt>real-base</tt> のデフォルト値では、
+あたかも SCSI に妙な問題があるような挙動を示したり、
+大きな (通常 3 MB を超える) カーネルのロード中に
+<tt>ofwboot</tt> がハングしたりするとのことです。
+藤原誠氏の
+<a href="http://mail-index.netbsd.org/port-macppc/2000/08/13/0004.html">報告</a>によれば、 
+この問題は <tt>real-base</tt> を変えると修正できます。
 <p>
-Open Firmware 3 machines have re-writable firmware, and users have found
-that changing the <tt>real-base</tt> will overwrite their firmware,
-rendering their machines dead (requiring an expensive trip back to
-Apple).  <b>Do not change the <tt>real-base</tt> on an Open Firmware 3
-machine</b>.  In any case, OF 3 does a much better job of dealing with
-large kernels, so this is not really an issue.
+Open Firmware 3 の機種は書き換え可能なファームウェアを持っていますが、
+<tt>real-base</tt> を変更すると、ファームウェアを上書きして
+マシンを壊してしまう (Apple での高価な修理が必要になる) ことがわかりました。
+<b> Open Firmware 3 な機種で <tt>real-base</tt> を変更してはなりません。</b>
+いずれにせよ、 OF 3 は、大きなカーネルに関してもうまく動作するので、
+この件は問題にはなりません。
 <p>
-Once you are entirely positive that your machine has Open Firmware 1.0.5
-or 2.X (see <a href="#ofw-version">above</a>), run the following commands
-to set your <tt>real-base</tt> properly (note, System Disk will <b>not</b>
-set this variable properly -- you will need to re-set your
-<tt>real-base</tt> after each use of System Disk):
+その機種の Open Firmware が 1.0.5 か 2.X であるかを確認してから
+(<a href="#ofw-version">上記</a>参照) 、下記のコマンドを実行して
+<tt>real-base</tt> を適切に設定します (注意: System Disk はこの変数を
+適切に設定<b>しません</b> ─ System Disk を使うたびに、 <tt>real-base</tt>
+を設定しなおす必要があります):
 <pre>0 &gt; <b>setenv real-base F00000</b>
 0 &gt; <b>reset-all</b></pre>
 <p>
-You should double-check that this value has been set using the
-<tt>printenv</tt> command.
+正しく設定されたか、 <tt>printenv</tt> コマンドで再確認すべきです。
 <p>
-A workaround for this problem is that you can build a kernel that is less
-than 3 MB in size.  Since none of the OF 1.0.5 or 2.X models have
-built-in USB, and unless you have a PCI USB interface, you can 
-build a kernel without any USB drivers.
+この問題への次善策は、カーネルを再構築して、サイズを 3 MB より
+小さくすることです。 OF 1.0.5 や 2.X の機種には内蔵 USB がないため、
+PCI USB インターフェースがなければ、 USB ドライバーを含めずに
+カーネルを作れます。
 
 
-<ENTRY>ofw-auto-boot How can I make my machine enter Open Firmware automatically at startup without having to type anything?
+<ENTRY>ofw-auto-boot 起動の際、何もしなくても勝手に Open Firmware に入るようにする方法は ?
 
-In Open Firmware, type:
+Open Firmware で次のようにタイプします:
 
 <pre>
 	setenv auto-boot? false
 </pre>
 
-<p>This will last until you change that variable back to "true", or
-reset the machine's PRAM.
+<p>これは、変数値を "true" に戻すか、
+PRAM をリセットするまで有効です。
 
 
-<ENTRY>ofw-boot-keys Are there any other magic keys to change the boot sequence?
+<ENTRY>ofw-boot-keys ほかに、ブートシーケンスを変更する特殊なキーはありますか ?
 
-Besides the familiar Command-Option-P-R to reset the PRAM (which will
-erase your Open Firmware settings), and the
-slightly-less-familiar Command-Option-Shift-Delete to boot from the
-first bootable device other than the normal boot device, on some
-machines you can also hold down "C" to boot off the internal CD-ROM
-drive, "N" to net boot, "Z" to boot from an internal Zip drive, or "D"
-for force booting from the internal disk if the default boot device
-has been set to something else. (These are referred to as "snag keys"
-in Apple's literature.)
+よく知られた、 PRAM をクリアするための Command-Option-P-R (これは
+Open Firmware の設定も消します) や、
+若干知名度が劣る、最初のブートデバイスからブートするための
+Command-Option-Shift-Delete のほか、
+いくつかの機種では次のようなキーが有効です。
+内蔵 CD-ROM ドライブからブートする "C" 、
+ネットブートする "N" 、内蔵 Zip ドライブからブートする "Z" 、
+デフォルトのブートデバイスを無視して強制的に内蔵ディスクからブートする "D" 。
+(これらは Apple の文献で "snag keys" として参照されています。)
 
-<p>These actually use the "cd", "enet", "zip", and "hd" devaliases in
-Open Firmware, respectively, so changing the aliases will change the
-effects of these keys. Some models do not support all of the keys.
+<p>実際には、これらはそれぞれ Open Firmware のデバイスの別名
+"cd", "enet", "zip", "hd" を使っているので、デバイスの別名を変えると
+これらのキーの効果も変わります。機種によっては使えないキーもあります。
 
 
-<ENTRY>ofw-misc What else can I do in Open Firmware?
+<ENTRY>ofw-misc このほか、 Open Firmware で何ができますか ?
 
-A few useful commands are:
+いくつか有用なコマンドを挙げます:
 
 <table>
-<tr><td><code>bye</code></td><td>Boot Mac OS (on OF &lt; 3.0)</td></tr>
-<tr><td><code>mac-boot</code></td><td>Boot Mac OS (on OF &gt; 3.0)</td></tr>
-<tr><td><code>boot</code></td><td>Boot the default OS</td></tr>
+<tr><td><code>bye</code></td><td>Mac OS をブートする(OF &lt; 3.0 の場合)</td></tr>
+<tr><td><code>mac-boot</code></td><td>Mac OS をブートする(OF &gt; 3.0 の場合)</td></tr>
+<tr><td><code>boot</code></td><td>デフォルトの OS をブートする</td></tr>
 <tr><td><code>boot&nbsp;...</code></td><td>Specify what to boot</td></tr>
 <tr><td><code>reset-all</code></td><td>Reset, as though you'd pressed the reset button</td></tr>
-<tr><td><code>shut-down</code></td><td>Power down the machine</td></tr>
+<tr><td><code>shut-down</code></td><td>マシンの電源を切る</td></tr>
 </table>
 
-<p> For more details on basic Open Firmware commands, see
+<p>基本的な Open Firmware のコマンドについて、詳しくは
 
 <a
 href="http://developer.apple.com/technotes/tn/tn1061.html">"Technote
 1061 - Fundamentals of Open Firmware, Part I: The User Interface"</a>
-and <a
+と <a
 href="http://developer.apple.com/technotes/tn/tn1062.html">"Technote
 1062 - Fundamentals of Open Firmware, Part II: The Device Tree"</a>
+を見てください。
 
 
-<SECTION>Booting
+<!-- ======================================== -->
+<SECTION>ブート
 
-<ENTRY>boot-support What are the supported ways of booting NetBSD/macppc?
+<ENTRY>boot-support NetBSD/macppc をブートするにはどんな方法がありますか ?
 
-NetBSD/macppc uses Open Firmware to boot, so you can boot NetBSD
-from any device that you can boot MacOS from. This includes all variety of
-SCSI
-and IDE drives (with supported controllers), internal floppies, and
-CD-ROMs. (The <a href="../../Sites/cdroms.html#netbsdmissionrelease">NetBSD
-Mission 1.5 Release CD-ROM</a> is macppc-bootable.)
+NetBSD/macppc は Open Firmware を使ってブートするので、
+MacOS がブートできるすべてのデバイスからブートできます。
+これには、あらゆる SCSI や IDE ドライブ (コントローラーが対応しているもの) 、
+内蔵フロッピー、 CD-ROM が含まれます。
+(<a href="../../Sites/cdroms.html#netbsdmissionrelease">NetBSD
+Mission 1.5 Release CD-ROM</a> は macppc でブート可能です。)
 
-<p>You can also boot NetBSD (or MacOS for that matter) off the network,
-if your ethernet hardware supports Open Firmware booting. The built-in
-ethernet on all supported models is capable of netbooting.
-Asante makes an Open Firmware-compliant PCI
-ethernet card (the 10NIC PCI), but it's not clear that this card is
-supported by NetBSD after you boot it.  There are some Adaptec PCI SCSI
-cards with which can boot NetBSD.  See 
-<a href="#boot-pci">below</a> for info on booting from a PCI card.
+<p>イーサネットハードウェアが Open Firmware のブートに対応していれば、
+NetBSD (MacOS でも) をネットワーク経由でブートすることもできます。
+すべての対応機種の内蔵イーサネットはネットブートに対応しています。
+Asante は Open Firmware 対応の PCI イーサネットカード (10NIC PCI)
+を製造していますが、ブート後の NetBSD が対応しているかは不明です。
+NetBSD のブートに対応した Adaptec の PCI SCSI カードがいくつかあります。
+PCI カードからのブートについては<a href="#boot-pci">下記</a>
+を参照してください。
 
-<p>You cannot boot from SCSI drives attached to non-Macintosh SCSI
-cards, or non-bootable Macintosh SCSI cards, even if the SCSI card is
-supported by NetBSD. Open Firmware also does not support booting off
-any USB devices on the earlier machines with built-in USB.  It should be
-possible to boot from a USB hard drive on the newer machines, although no
-one has tried.
+
+<p>Macintosh 用でない SCSI カードやブート可能でない Macintosh 用 SCSI カード
+に接続された SCSI ドライブからは、
+たとえその SCSI カードが NetBSD でサポートされていても、ブートはできません。
+また、 Open Firmware は内蔵 USB を持つ初期の機種では
+あらゆる USB デバイスからのブートに対応しません。
+誰も試していませんが、最近の機種では USB ハードドライブからのブートが可能なはずです。
 
 <p>
-To add to the confusion, the NetBSD kernel is loaded in anywhere from one
-to three stages, each requiring additional setup.
+さらにややこしいことに、
+NetBSD カーネルは 3 段階を経てロードされ、各段階について設定が必要です。
 
 <table border=1>
-<tr><td>stage name</td><td>OF 1.0.5 and 2.0.X</td><td>OF 2.4</td><td>OF 3</td>
-<td>function</td></tr>
+<tr><td>段階名</td><td>OF 1.0.5 and 2.0.X</td><td>OF 2.4</td><td>OF 3</td>
+<td>機能</td></tr>
 
 <tr><td><tt>bootxx</tt></td>
 <td>yes (optional)</td>
 <td>yes (optional)</td>
 <td>no</td>
-<td>simple first stage bootloader placed in partition "zero" of a disk to
-load <tt>ofwboot.xcf</tt><br>
-In its current incarnation, this takes the place of the Apple
-Partition Map, meaning you can't share a MacOS and NetBSD drive
-using <tt>bootxx</tt></td></tr>
+<td>単純な初期段階のブートローダーで、ディスクのパーティション "zero"
+に置かれ、 <tt>ofwboot.xcf</tt> をロードする。<br>
+この実体は Apple Partition Map のあるべき場所に置かれるため、
+<tt>bootxx</tt> を使うドライブでは MacOS と NetBSD は共存できない。</td></tr>
 
 <tr><td><tt>ofwboot.xcf</tt></td>
 <td>yes</td>
 <td>yes</td>
 <td>no</td>
-<td>necessary bootloader (loaded from filesystem OF understands,
-<tt>bootxx</tt>, or over ethernet) that understands NetBSD filesystem and
-disklabel and can load the ELF kernel (or a gzip'ed kernel)</td></tr>
+<td>必須のブートローダー (OF が扱えるファイルシステムから、または
+<tt>bootxx</tt> によって、またはイーサネット経由でロードされる) で、
+NetBSD ファイルシステムとディスクラベルを扱え、
+ELF カーネル (gzip されていてもよい) をロードできる</td></tr>
 
 <tr><td><tt>ofwboot.elf</tt></td>
 <td>no</td>
 <td>no</td>
 <td>yes (optional)</td>
-<td>optional bootloader (loaded from filesystem OF understands or
-over ethernet) that understands NetBSD filesystem and disklabel and
-can load the ELF kernel (or a gzip'ed kernel)</td></tr>
+<td>オプショナルなブートローダー (OF が扱えるファイルシステムまたは
+イーサネット経由でロードされる) で NetBSD ファイルシステムやディスクラベルを扱え、
+ELF カーネル (gzip されていてもよい) をロードできる</td></tr>
 
 <tr><td><tt>netbsd</tt></td>
 <td>yes</td>
 <td>yes</td>
 <td>yes</td>
-<td>the kernel, needed to run NetBSD.  Loaded by
-<tt>ofwboot.xcf</tt> or <tt>ofwboot.elf</tt>.  On OF 3 machines, OF can
-load the kernel directly from any filesystem it understands or over
-ethernet</td></tr>
+<td>NetBSD の動作に必要なカーネル。
+<tt>ofwboot.xcf</tt> または <tt>ofwboot.elf</tt> によりロードされる。
+OF 3 の機種では、 OF が扱えるファイルシステムから直接、
+またはイーサネット経由でカーネルをロード可能</td></tr>
 </table>
 
 <p>
-What makes all this necessary is that no version of Open Firmware
-understands the filesystem that NetBSD uses.  This means that you need to
-have your system set up such that the necessary files are placed in
-filesystems that Open Firmware understands.
-<p>
+いずれにせよ重要なことは、どのバージョンの Open Firmware も、
+NetBSD が使うファイルシステムを扱えないということがです。
+このため、 Open Firmware が扱えるファイルシステム上に必要なファイルを
+置かねばなりません。<p>
 <table border=1>
-<tr><td>filesystem type</td><td>OF 1.0.5 and 2.0.X</td><td>OF 2.4</td><td>OF 3</td>
-<td>comment</td></tr>
+<tr><td>ファイルシステムの種類</td><td>OF 1.0.5 and 2.0.X</td><td>OF 2.4</td><td>OF 3</td>
+<td>解説</td></tr>
 
 <tr><td>"partition zero"</td>
 <td>yes</td>
 <td>yes</td>
 <td>yes</td>
-<td>This is where <tt>bootxx</tt> is placed.  Currently, <tt>bootxx</tt>
-doesn't support OF 3 machines</td></tr>
+<td><tt>bootxx</tt> の置き場。現在、 <tt>bootxx</tt>
+は OF 3 マシンに非対応。</td></tr>
 
 <tr><td>ethernet</td>
 <td>yes</td>
 <td>yes</td>
 <td>yes</td>
-<td>See <a href="../../Documentation/network/netboot/">The Diskless
-HOW-TO</a> for more info</td></tr>
+<td>詳しくは <a href="../../Documentation/network/netboot/">The Diskless
+HOW-TO</a> 参照</td></tr>
 
 <tr><td>ISO 9660</td>
 <td>yes</td>
 <td>yes</td>
 <td>no</td>
-<td>Standard CD-ROM format.  See <a href="#boot-cd">below</a> for more
-info</td></tr>
+<td>標準的な CD-ROM フォーマット。詳しくは<a href="#boot-cd">下記</a>参照。
+</td></tr>
 
 <tr><td>floppy</td>
 <td>yes</td>
 <td>maybe</td>
 <td>no</td>
-<td>OF 3 machines don't ship with floppy drives.  OF 2.4 machines
-have been reported to have problems booting from floppies.
-See <a href="#write-floppy">below</a> for tips on how to write a
-floppy image.</td></tr>
+<td>OF 3 の機種にはフロッピードライブがない。
+OF 2.4 の機種ではフロッピーからのブートに問題があると報告されている。
+フロッピーイメージの書き込み方は<a href="#write-floppy">下記</a>参照。
+</td></tr>
 
 <tr><td>MS-DOS</td>
 <td>yes</td>
 <td>yes</td>
 <td>yes</td>
-<td>Note, however, that the bootloaders <tt>ofwboot.xcf</tt> and
-<tt>ofwboot.elf</tt> do not understand MS-DOS filesystems and can't load a
-kernel on a MS-DOS filesystem.</td></tr>
+<td>ただし、ブートローダーは <tt>ofwboot.xcf</tt> も
+<tt>ofwboot.elf</tt> も MS-DOS ファイルシステムを扱えず、
+カーネルを MS-DOS ファイルシステムからロードできないことに注意。
+</td></tr>
 
 <tr><td>HFS and HFS+</td>
 <td>no</td>
 <td>yes</td>
 <td>yes</td>
-<td>Note, however, that NetBSD doesn't understand HFS filesystems, and if
-you place a bootloader or kernel there, you can't upgrade it without using
-MacOS or <a
+<td>ただし、 NetBSD は HFS ファイルシステムを扱えず、
+ブートローダーやカーネルを HFS 上に置いた場合は、これらのアップグレードには
+MacOS や<a
 href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
-hfsutils</a></td></tr>
+hfsutils</a> が必要なことに注意。
+</td></tr>
 </table>
 <p>
 
 
-Hopefully this clarifies it for you.
+この説明で、あなたの疑問を解消できれば幸いです。
 
 
 
-<ENTRY>boot-disk How do I make a disk bootable, and what are the Open Firmware commands to boot from it?
+<ENTRY>boot-disk ディスクをブート可能にする方法と、それをブートさせるための Open Firmware のコマンドは ?
 
-This depends entirely on what version of Open Firmware your machine
-has.  See <a href="#ofw-version">above</a> for info on determining which
-version of OF your machine has.
+これは Open Firmware のバージョンに完全に依存します。
+OF バージョンの調べ方は<a href="#ofw-version">上記</a>を見てください。
 <p>
 
 <ul>
-<li><h4>OF 1.0.5 and 2.0.X:</h4> These versions of OF only support booting
-an XCOFF binary from the following:  ISO 9660 disks, MS-DOS disks,
-network, and
-"whole" disks (partition "0").  For the latter option, there is a very
-simple <tt>bootxx</tt> program that will load the second stage bootloader 
-(<tt>ofwboot.xcf</tt>).  The <tt>bootxx</tt> bootloader must be installed
-in the same
-location as the MacOS partition table.  This, of course, makes it
-impossible to use share NetBSD "whole" disks with MacOS.
+<li><h4>OF 1.0.5 と 2.0.X:</h4> このバージョンの OF では、
+ISO 9660 ディスク、 MS-DOS ディスク、ネットワークと、
+"whole" disks (partition "0") からの XCOFF バイナリーによるブートのみ可能です。
+"whole" disks 用として、第二段階のブートローダー (<tt>ofwboot.xcf</tt>) をロードするだけの大変シンプルな <tt>bootxx</tt> プログラムがあります。
+<tt>bootxx</tt> ブートローダーは MacOS パーティションテーブルと同じ場所にインストールする必要があります。
+このため、当然ながら、 NetBSD が MacOS とともに "whole" disks を共有して使うことは不可能です。
 <p>
-NetBSD/macppc has a special XCOFF bootloader to load the ELF kernel.  
-You need to make sure that OF uses the same "load-base" as the XCOFF
-bootloader is expecting.  This is set by typing (in OF)
-"<tt>setenv&nbsp;load-base&nbsp;600000</tt>".
-To get OF to load this XCOFF program, you need to do one of the following:
+NetBSD/macppc には、 ELF カーネルをロードするため、専用の
+XCOFF ブートローダーがあります。
+この XCOFF ブートローダーが前提としている "load-base" 値を使うように
+OF が設定されているか、確認してください。
+この設定は (OF で)
+"<tt>setenv&nbsp;load-base&nbsp;600000</tt>" とします。
+OF にこの XCOFF プログラムをロードさせるため、次のいずれかが必要です:
 <p>
 
 <ul>
-<li>Follow the <a href="../../Documentation/network/netboot/">Diskless
-HOW-TO</a> and load <tt>ofwboot.xcf</tt> over the network<br>
+<li><a href="../../Documentation/network/netboot/">Diskless
+HOW-TO</a> に従い、 <tt>ofwboot.xcf</tt> をネットワーク経由でロードする<br>
 <tt>boot&nbsp;enet</tt>
 <p>
 
-<li>Install <tt>bootxx</tt> and <tt>ofwboot</tt> using the
-<tt>installboot</tt> program (the
-NetBSD/macppc installer will do this automatically).  To do this
-manually from within NetBSD/macppc:<br>
+<li><tt>installboot</tt> プログラムを使い、 <tt>bootxx</tt> と <tt>ofwboot</tt>
+をインストールする (NetBSD/macppc インストーラーはこれを自動的に行います) 。
+これを NetBSD/macppc 上で手動で行うには次のようにします:<br>
 <tt>cp /usr/mdec/ofwboot </tt><em>bootfile</em><br>
 <tt>/usr/mdec/installboot </tt><em>bootfile</em><tt> /usr/mdec/bootxx
 </tt><em>bootdev</em>
 <p>
 
-where <em>bootfile</em> is a path to the file "<tt>/boot</tt>" on
-the root filesystem of the disk you want to make bootable, and
-<em>bootdev</em> is the raw device node for the device containing that
-file.
+ここで、 <em>bootfile</em> は、ブート可能とするディスクの
+ルートファイルシステム上の "<tt>/boot</tt>" ファイルのパス、
+<em>bootdev</em> は、このファイルを含むデバイスの raw デバイスノードです。
 <p>
 
-So if you have booted off floppy or network, and have the
-filesystem (say it's sd0) mounted on /mnt, you would do:
+そして、フロッピーかネットワークからブートするのでなく、
+ファイルシステム (sd0 とします) が /mnt にマウントされている場合、次のようにします:
 
 <pre>
 	cp /usr/mdec/ofwboot /mnt/boot
@@ -849,357 +853,354 @@ filesystem (say it's sd0) mounted on /mnt, you would do:
 </pre>
 <p>
 
-Note that since installboot needs access to both the raw device and
-the mounted filesystem, it is only possible to run it in single-user
-mode, or from an "options INSECURE" kernel.
+installboot が raw デバイスとマウントされたファイルシステムの双方に
+アクセスする必要があるため、この作業はシングルユーザーモードで、または
+"options INSECURE" としたカーネルの下でしかできないことに注意してください。
 <p>
 
-<li>Copy <tt>ofwboot.xcf</tt> to the top level of an ISO 9660 format
-CD-R.  To load it from an ISO 9660-formatted SCSI
-CD-ROM drive, you might use something like:<br>
+<li><tt>ofwboot.xcf</tt> を ISO 9660 フォーマットの CD-R の最上層に置きます。
+これを SCSI CD-ROM ドライブを使って ISO 9660 フォーマットからロードするには、
+次のようにします:<br>
 <tt>boot&nbsp;scsi/sd@3:0,ofwboot.xcf</tt>
 <p>
 
-See <a href="#boot-cd">below</a> for more detail.
+詳しくは<a href="#boot-cd">下記</a>を見てください。
 <p>
 
-<li>Have <tt>bootxx</tt> and <tt>ofwboot.xcf</tt> located on a floppy
-disk (such as the NetBSD/macppc install floppy)<br>
+<li><tt>bootxx</tt> と <tt>ofwboot.xcf</tt> を
+(NetBSD/macppc インストールフロッピーのように) フロッピーディスクに置いて、<br>
 <tt>boot fd:0</tt>
 
-<li>Have <tt>ofwboot.xcf</tt> located on a DOS format floppy disk<br>
+<li><tt>ofwboot.xcf</tt> をDOS フォーマットのフロッピーディスクに置く<br>
 <tt>boot fd:1,ofwboot.xcf -a</tt><br>
-Note that ofwboot does <i>not</i> know how to load files from a
-DOS filesystem (such as the kernel).
+ofwboot は (カーネルと違って)
+DOS ファイルシステムからファイルをロード<i>できない</i>ことに注意。
 </ul>
 <p>
 </li>
 
-<li><h4>OF 2.4:</h4> This version of OF only supports booting and XCOFF
-image from the following: HFS and HFS+ disks, ISO 9660 disks, MS-DOS
-disks, and
-network.  You cannot use the same <tt>installboot</tt> program that is
-used for earlier versions of OF.
-<p>NetBSD/macppc has a special XCOFF bootloader that will load the ELF
-kernel.  
-You need to make sure that OF uses the same "load-base" as the XCOFF
-bootloader is expecting.  This is set by typing (in OF)
-"<tt>setenv&nbsp;load-base&nbsp;600000</tt>".
-To get OF to load this XCOFF program, you need to do one of the
-following:
+<li><h4>OF 2.4:</h4> このバージョンの OF は、
+HFS や HFS+ ディスク、 ISO 9660 ディスク、 MS-DOS ディスクと、
+ネットワーク経由での XCOFF イメージでのブートにのみ対応しています。 
+旧バージョンの OF 用の <tt>installboot</tt> プログラムは使えません。
+<p>NetBSD/macppc には、 ELF カーネルをロードするための専用の
+XCOFF ブートローダーがあります。
+XCOFF ブートローダーが前提としている "load-base" 値を
+OF が使うようにしなければなりません。
+この設定は (OF で)
+"<tt>setenv&nbsp;load-base&nbsp;600000</tt>" とします。
+OF にこの XCOFF プログラムをロードさせるため、次のいずれかが必要です:
 <p>
 
 <ul>
-<li>Follow the <a href="../../Documentation/network/netboot/">Diskless
-HOW-TO</a> and load <tt>ofwboot.xcf</tt> over the network<br>
+<li><a href="../../Documentation/network/netboot/">Diskless
+HOW-TO</a> に従い、 <tt>ofwboot.xcf</tt> をネットワーク経由でロードする<br>
 <tt>boot&nbsp;enet:0</tt>
 <p>
 
-<li>Copy <tt>ofwboot.xcf</tt> to the top level of a MacOS formatted
-drive on a HFS or HFS+ format partition (make sure you transfer it in
-binary mode).
+<li><tt>ofwboot.xcf</tt> を MacOS フォーマットのドライブの
+HFS または HFS+ フォーマットのパーティションの最上層に置く
+(バイナリーモードで転送するよう注意) 。
 <p>
 
-<li>Copy <tt>ofwboot.xcf</tt> to the top level of an ISO 9660 format
-CD-R.
+<li><tt>ofwboot.xcf</tt> を、 ISO 9660 フォーマットの CD-R の最上層に置きます。<p>
+
+詳しくは<a href="#boot-cd">下記</a>を見てください。
 <p>
 
-See <a href="#boot-cd">below</a> for more detail.
-<p>
-
-<li>Have <tt>ofwboot.xcf</tt> located on a DOS format floppy disk<br>
+<li><tt>ofwboot.xcf</tt> を DOS フォーマットのフロッピーディスクに置く<br>
 <tt>boot fd:1,ofwboot.xcf -a</tt><br>
-Note that ofwboot does <i>not</i> know how to load files from a
-DOS filesystem (such as the kernel).
+ofwboot は (カーネルと違って)
+DOS ファイルシステムからファイルをロード<i>できない</i>ことに注意。
 </ul>
 <p>
 </li>
 
-<li><h4>OF 3.0 and later:</h4> This version of OF only supports
-loading ELF binaries from the following: HFS and HFS+ disks,
-MS-DOS disks, and network.  
+<li><h4>OF 3.0 以降:</h4> このバージョンの OF は、
+次のいずれかからの ELF バイナリーのロードのみに対応しています:
+HFS と HFS+ のディスク、 MS-DOS のディスク、ネットワーク
 <p>
-NetBSD/macppc has a special ELF bootloader that will load the kernel.  
-Also, these machines support support loading the ELF kernel directly, To
-get OF to load this ELF program, you need to do one of the following:
+NetBSD/macppc には、カーネルをロードするための専用の ELF ブートローダーがあります。
+また、これらの機種では ELF カーネルを直接ロードすることもできますので、
+OF にこれら ELF プログラムをロードさせるため、次のいずれかが必要です:
 <p>
 
 <ul>
-<li>Follow the <a href="../../Documentation/network/netboot/">Diskless
-HOW-TO</a> and load <tt>ofwboot.elf</tt> or <tt>netbsd</tt> over the
-network<br>
+<li><a href="../../Documentation/network/netboot/">Diskless
+HOW-TO</a> に従い、 <tt>ofwboot.elf</tt> か <tt>netbsd</tt> をネットワーク経由で
+ロードします。<br>
 <tt>boot&nbsp;enet:0</tt>
 <p>
 
-<li>Copy <tt>ofwboot.elf</tt> or <tt>netbsd</tt> to the top level of a
-MacOS formatted
-drive on a HFS or HFS+ format partition (make sure you transfer it in
-binary mode)<br>
+<li><tt>ofwboot.elf</tt> か <tt>netbsd</tt> を MacOS でフォーマットした
+ドライブの HFS か HFS+ のパーティションの最上位にコピーします。
+(バイナリーモードで転送する必要があることに注意)<br>
 <tt>boot hd:,ofwboot.elf</tt>
 <p>
 
-<li>Copy <tt>ofwboot.elf</tt> and <tt>netbsd</tt> to the top level of a
-hybrid HFS/ISO 9660 format CD-R<br>
+<li><tt>ofwboot.elf</tt> と <tt>netbsd</tt> を
+HFS/ISO 9660 ハイブリッド CD-R の最上層にコピーします。<br>
 <tt>boot cdrom:ofwboot.elf</tt>
 <p>
-See <a href="#boot-cd">below</a> for more detail.
+詳しくは<a href="#boot-cd">下記</a>を見てください。
 </ul>
 </li>
 
 </ul>
 
-<ENTRY>autoboot How do I set up Open Firmware to always boot into NetBSD?
-First, you need to figure out what Open Firmware commands you need to boot
-NetBSD.  Next you need to set up the Open Firmware variables with those
-commands.  Lastly, you need to test it.
+<ENTRY>autoboot Open Firmware が常に NetBSD をブートするようにする方法は ?
+まず、 NetBSD をブートするための Open Firmware コマンドを調べておきます。
+次に、そのコマンドを使って Open Firmware の変数に設定します。
+最後にテストします。
 <p>
-See <a href="#boot-support">above</a> or the INSTALL notes to figure out
-your OF commands.
+<a href="#boot-support">上記</a>またはインストールノートを見て OF コマンドを調べてください。
 <p>
-You can set the OF variables either from the OF command line or from a
-MacOS utility such as System Disk.  See the <a
-href="SystemDisk-tutorial/">System Disk Tutorial</a> for info on setting
-that up.  If you're manually setting up your variables from the OF command
-line, you'll need to use the "<tt>setenv</tt>" command to set the
-following variables with the appropriate values (not all of which you
-will need):
+OF の変数は OF コマンドラインででも System Disk のような MacOS ユーティリティーでも設定できます。設定の方法は <a
+ href="SystemDisk-tutorial/">System Disk Tutorial</a> を見てください。
+OF コマンドラインで変数を手動で設定する場合、
+"<tt>setenv</tt>" コマンドを使って下記の変数 (すべてが必要とは限りません) を適切に設定します:
 <p>
 <table border=1>
 <tr><td><tt>auto-boot?</tt></td><td><tt>true</tt></td></tr>
-<tr><td><tt>boot-device</tt></td><td>the device to boot from
-  (e.g. <tt>enet:0</tt>)</td></tr>
-<tr><td><tt>load-base</tt></td><td><tt>600000</tt> (see <a
-  href="#ofw-load-base">above</a>, <strong>Do not set for OF
-  3</strong>)</td></tr>
-<tr><td><tt>real-base</tt></td><td><tt>F00000</tt> (see <a
-  href="#ofw-real-base">above</a>, <strong>Do not set for OF
-  3</strong>)</td></tr>
-<tr><td><tt>boot-file</tt></td><td>file OF loads,
-  such as <tt>ofwboot.xcf</tt><br>
-  if using "whole disk" <tt>bootxx</tt> method, use <tt>netbsd</tt></td></tr>
-<tr><td><tt>use-nvramrc?</tt></td><td><tt>true</tt>, if you have 
-  created a nvram script</td></tr>
-<tr><td><tt>boot-command</tt></td><td><tt>wBoot</tt>, if you
-  have set up a delayed boot for your HD to spin up</td></tr>
-<tr><td><tt>input-device</tt></td><td><tt>kbd</tt>, if you
-  didn't set it up before</td></tr>
-<tr><td><tt>output-device</tt></td><td><tt>screen</tt>, if you
-  didn't set it up before</td></tr>
+<tr><td><tt>boot-device</tt></td><td>ブートしようとするデバイス
+  (たとえば <tt>enet:0</tt>)</td></tr>
+<tr><td><tt>load-base</tt></td><td><tt>600000</tt> (<a
+  href="#ofw-load-base">上記</a>参照。<strong>OF 3 では設定してはいけません
+  </strong>)</td></tr>
+<tr><td><tt>real-base</tt></td><td><tt>F00000</tt> (<a
+  href="#ofw-real-base">上記</a>参照。<strong>OF 3 では設定してはいけません
+  </strong>)</td></tr>
+<tr><td><tt>boot-file</tt></td><td>OF がロードするファイル、
+  たとえば <tt>ofwboot.xcf</tt><br>
+  "whole disk" で <tt>bootxx</tt> を使う場合は <tt>netbsd</tt></td></tr>
+<tr><td><tt>use-nvramrc?</tt></td><td><tt>true</tt>
+   (nvram スクリプトを用意した場合)</td></tr>
+<tr><td><tt>boot-command</tt></td><td><tt>wBoot</tt>
+  (HD が動き出すまでブートを遅らせるよう設定した場合)</td></tr>
+<tr><td><tt>input-device</tt></td><td><tt>kbd</tt> (他の値を設定しない場合)
+  </td></tr>
+<tr><td><tt>output-device</tt></td><td><tt>screen</tt> (他の値を設定しない場合)
+  </td></tr>
 </table>
 <p>
-When you're done, you should check that your values are correct with the
-"<tt>printenv</tt>" command.  Now type <tt>reset-all</tt>, and if
-everything's right, it will reboot into NetBSD, otherwise it'll fail and
-drop into Open Firmware.
+設定が済んだら、正しく設定できたか "<tt>printenv</tt>" コマンドで
+確かめてください。ここで <tt>reset-all</tt> とタイプすると、
+うまく設定できていればリブートして NetBSD に入るでしょうし、
+そうでなければ Open Firmware に落ちるでしょう。
 
-<ENTRY>write-floppy How do I write the floppy image?
-There are a number of ways to write a raw image to floppy disk:
+<ENTRY>write-floppy フロッピーイメージを書き込む方法は ?
+raw イメージをフロッピーディスクに書き込む方法はいくつかあります:
 <ul>
-<li>Use dd(1) under NetBSD or another unix.
-<li>Use rawrite.exe (as supplied with <a href="../i386/">NetBSD/i386</a>) on a DOS/Windows machine.
-<li>Use <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/floppy/README.rawdisk">suntar</a> under MacOS.
+ <li>NetBSD などの unix 環境下で dd(1) を使う。
+ <li>DOS/Windows マシンで (<a href="../i386/">NetBSD/i386</a> と共に配布されている) rawrite.exe を使う。
+ <li>MacOS で <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/floppy/README.rawdisk">suntar</a> を使う。
 </ul>
 
-<p>Note that you can't just boot off this floppy like you would boot
-off a MacOS floppy: you must boot into Open Firmware and then type
-"<tt>boot fd:0</tt>".
 
-<ENTRY>boot-pci How do I boot from a PCI card?
-Some PCI cards have Open Firmware drivers and you can boot from them.  In
-particular, Asante makes some ethernet cards with OF drivers and
-most of Adaptec's SCSI cards have OF drivers.  Note, that just because a
-card works in Open Firmware does not mean it's supported by NetBSD (and
-vice versa).
+<p>このフロッピーは、 MacOS のフロッピーブートのような使い方は
+できないことに注意: Open Firmware に入って
+"<tt>boot fd:0</tt>" とタイプしなければなりません。
+
+<ENTRY>boot-pci PCI card からブートする方法は ?
+いくつかの PCI カードは Open Firmware のドライバーを持っており、
+そのカード経由でブートできます。
+特に、 Asante は OF ドライバーを持つイーサネットカードを作っており、
+また、ほとんどの Adaptec の SCSI カードは OF ドライバーを持っています。
+注意すべきは、あるカードが Open Firmware で動作することは、
+そのカードが NetBSD でサポートされていることを意味しない (その逆も同様)
+ということです。
 <p>
-The first step is to figure out what the PCI card is called in terms of
-Open Firmware names.  Apple created aliases for the common devices
-built-into their machines (such as scsi, hd, and enet).  Third parties
-(i.e. makers of PCI cards) cannot do this.  You can get a list of all of
-the devices with Open Firmware drivers by typing at the OF prompt:<br>
+まず最初に、 PCI カードの Open Firmware での名前を確認します。
+Apple は、各機種共通の内蔵デバイスには (scsi, hd, enet のように)
+別名を付けています。
+サードパーティー (つまり PCI カードのメーカー) はそういうことができません。
+Open Firmware のドライバーを持つすべてのデバイスのリストを得るには、
+OF プロンプトで次のようにタイプします:<br>
 <tt>0 &gt; <b>dev / ls</b></tt>
-<p>Now, it's just a matter of figuring out what your device is
-called.  Usually the vendor name is embedded in the name of the device,
-such as <tt>/pci/pci-bridge@d/ADPT,2930@3</tt> (which has ADPT signifying
-this is an Adaptec product, and the model number is 2930).
+ここで、デバイス名がどうなっているかが問題です。
+普通、ベンダー名はデバイス名に含まれていて、
+<tt>/pci/pci-bridge@d/ADPT,2930@3</tt> のようになります
+(ADPT は Adaptec 製品を表し、機種は 2930 です) 。
 <p>
-Next, you need to make sure your device is bootable.  It needs the
-Open Firmware "word" <tt>open</tt>.  You can find this out by looking at
-the OF "words" this device supports:<br>
+次に、そのデバイスがブート可能かどうか確認する必要があります。
+ブートするには Open Firmware の "word" で <tt>open</tt> が必要です。
+このデバイスがサポートする OF "words" から調べることができます:<br>
 <tt>0 &gt; <b>dev /pci/pci-bridge@d/ADPT,2930@3</b><br>
 0 &gt; <b>words</b></tt>
 <p>
-If the "open" word is present in this list, then your device should be
-bootable from Open Firmware.  You'd need to boot with something like the
-following:<br>
+リスト中に "open" があれば、
+そのデバイスは Open Firmware からブート可能のはずです。
+ブートするには、次のようにします:<br>
 <tt>0 &gt; <b>boot /pci/pci-bridge@d/ADPT,2930@3/@5:0</b></tt><br>
-where the 5 is the SCSI ID of the drive you're attempting to boot from,
-and 0 is the partition number.
+ここで 5 はブートしようとしているドライブの SCSI ID 、
+0 はパーティション番号です。
 <p>
-Note, you can shorten the name <tt>/pci/pci-bridge@d/ADPT,2930@3</tt> to
-<tt>/pci/@d/@3</tt> all that really matters is the address behind the at
-sign.
+注意: 実質的にはアットマーク以降のアドレスがすべてであり、
+<tt>/pci/pci-bridge@d/ADPT,2930@3</tt> は <tt>/pci/@d/@3</tt> のように
+短縮することができます。
 
-<ENTRY>boot-net How do I set up netbooting?
+<ENTRY>boot-net netboot の設定は ?
 
-See the <a
-href="../../Documentation/network/netboot/">Diskless NetBSD
-HOW-TO</a>.
+<a href="../../Documentation/network/netboot/">Diskless NetBSD
+HOW-TO</a> を見てください。
 
-<p>Mitchell Spector has also created a page containing a concise <a
-href="http://www.enchantedlearning.com/tech/netbsd_imac.shtml">iMac-specific
-netbooting information</a>.
+<p>Mitchell Spector も、簡単な<a
+href="http://www.enchantedlearning.com/tech/netbsd_imac.shtml">iMac 向け
+netboot 情報</a>を含んだページを作っています。
 
-<ENTRY>boot-cd How do I set up a bootable CD-ROM?
-Create an ISO 9660 image with <tt>ofwboot.xcf</tt> and/or
-<tt>ofwboot.elf</tt>
-(depending on which version of Open Firmware your machine is) and a
-<i>gunzip</i>ed kernel.  Be careful with some of the MacOS gunzip
-programs, as they may extract the kernel as an ASCII file.  Place both the
-ofwboot and kernel files are at the top level of the CD
-(i.e. <tt>/</tt>).  You may also wish to place the other distribution
-files on the CD for installation (such as base.tgz, etc.tgz, and so on).
+<ENTRY>boot-cd ブート可能な CD-ROM の作り方は ?
+<tt>ofwboot.xcf</tt> と <tt>ofwboot.elf</tt> のいずれか一方あるいは両方
+(その機種の  Open Firmware のバージョンによる) と、
+<i>gunzip で伸長した</i>カーネルを含む ISO 9660 イメージを作ります。
+MacOS 用の gunzip プログラムには、カーネルを ASCII ファイルとみなして
+伸長するものがあるので注意してください。
+ofwboot とカーネルのファイルを CD の一番上の階層 ( <tt>/</tt> ) に置きます。
+インストールに必要な他の配布物 (base.tgz, etc.tgz など)
+を一緒に含めることもできます。
 <p>
-Burn the CD.  Boot into Open Firmware.  From Open Firmware, boot your
-machine from the CD.  Depending on which OF version, you may need a
-different boot command.  For example:
+CD を焼きます。ブートして Open Firmware に入ります。
+Open Firmware から CD でマシンをブートします。
+OF のバージョンによって、ブート用のコマンドは異なります。
+例を示します:
 
 <table cellpadding=5>
 <tr><td><tt>boot scsi/sd@3:0,ofwboot.xcf -a</tt></td>
-<td>for an OF 1.0.5 machine with CD on the "scsi" Open Firmware bus<br>
-<i>Note: OF 1.0.5 cannot load <tt>ofwboot.xcf</tt> from a hybrid 
-ISO/HFS CD, only pure ISO</i></td></tr>
+<td>CD が "scsi" Open Firmware バス上にあるOF 1.0.5 の機種<br>
+<i>Note: OF 1.0.5 は <tt>ofwboot.xcf</tt> を、 ISO/HFS ハイブリッド CD
+からロードできません。純粋な ISO CD でなければなりません。</i></td></tr>
 <tr><td><tt>boot ata/atapi-disk:0,ofwboot.xcf -a</tt><br>
 <tt>boot ide1/disk@0:0,ofwboot.xcf -a</tt></td>
-<td> for an OF 2.0.X machine without a <tt>cd</tt> devailas</td></tr>
+<td><tt>cd</tt> デバイスがない OF 2.0.X の機種</td></tr>
 <tr><td><tt>boot cd:ofwboot.xcf -a</tt></td>
-<td>for an OF 2.0.X or 2.4 machine</td></tr>
+<td>OF 2.0.X や 2.4 の機種</td></tr>
 <tr><td><tt>boot cd:netbsd</tt><br>
 <tt>boot cd:ofwboot.elf -a</tt></td>
-<td>for an OF 3.0 machine<br>
-<i>Note: OF 3 can only load from a hybrid HFS/ISO CD</i></td></tr>
+<td>OF 3.0 の機種<br>
+<i>Note: OF 3 は HFS/ISO ハイブリッド CD からしかロードできません。</i></td></tr>
 </table>
 <p>
-When it prompts you for a kernel, type in <tt>netbsd</tt>
+カーネルの名前を尋ねられたら <tt>netbsd</tt> とタイプします。
 <p>
-Alternatively, if this ends up being problematic, you can just burn the
-boot floppy image directly to CD-ROM.  Note, this will only work with
-machines that have Open Firmware 1.0.5 or 2.X (i.e. not OF 3.0 or
-greater).  If you take this route, then do not specify
-<tt>ofwboot.xcf</tt> as the filename.  Instead, you'll be using the zeroth
-partition, as the bootxx bootloader has already been installed in this
-filesystem image.  You'd use something like <tt>boot&nbsp;scsi/sd@3:0</tt>
-or <tt>boot&nbsp;cd:0</tt>.
+この方法で問題がある場合、単にブートフロッピーのイメージをそのまま
+CD-ROM に焼くという方法もあります。ただし、この方法が使えるのは
+Open Firmware 1.0.5 か 2.X の機種だけです (OF 3.0 以降では使えません) 。
+この方法を使ってブートする場合、ファイル名 <tt>ofwboot.xcf</tt>
+を指定してはいけません。このファイルシステムのイメージは、
+bootxx ブートローダーがインストールされている状態なので、
+0 番目のパーティションを使うことになります。
+<tt>boot&nbsp;scsi/sd@3:0</tt> や <tt>boot&nbsp;cd:0</tt> のようにします。
 <p>
 
 
 
-<ENTRY>grey-screen Why does the screen turn grey with a flashing question-mark when I try booting?
-This means that your Open Firmware boot command is misformed and the
-machine tries booting from the Open Firmware <tt>boot-device</tt>
-environment variable.  The default value of this variable is to boot
-MacOS.  The grey screen with the
-flashing question-mark means that your machine is looking for a bootable
-MacOS filesystem, but can't find one.
+<ENTRY>grey-screen ブートしようとすると、画面がグレーになってクエスチョンマークが点滅するのはなぜですか ?
+これは、 Open Firmware のブートコマンドが間違っており、
+マシンが  Open Firmware の <tt>boot-device</tt> 環境変数値をもとに
+ブートしようとしていることを意味します。
+この変数のデフォルト値は、 MacOS をブートするようになっています。
+クエスチョンマークが点滅するグレーの画面は、
+マシンがブート可能な MacOS のファイルシステムを探しているが
+見付からないことを意味します。
 <p>
-Reboot, re-enter Open Firmware and check your syntax carefully.
+リブートして Open Firmware に入り直し、コマンドをよく確認してください。
 
 
-<ENTRY>black-lcd Why did my screen turn black during boot?
-This is a bug.  The NetBSD kernel has turned off your backlight.  Turn up
-the brightness on your PowerBook screen to fix this.
+<ENTRY>black-lcd ブートの間、画面が真っ暗になってしまうのはなぜですか ?
+バグです。 NetBSD カーネルはバックライトを消してしまいます。
+回避するため、 PowerBook の画面の明るさを上げてください。
 <p>
-If you don't have a PowerBook, then your system has defaulted to using a
-serial console.  See <a href="#ofw-boot-serial">above</a>.
+もし PowerBook を使っているのでなければ、
+その機種はデフォルトでシリアルコンソールを使うようになっています。
+<a href="#ofw-boot-serial">上記</a>を見てください。
 
 
-<ENTRY>dash-a Why does the kernel always prompt me for the root device?
-Various people have reported that they can't get their NetBSD/macppc
-systems to boot unattended.  What happens is that Open Firmware loads the
-kernel just fine, but the kernel can't seem to find the root device
-(i.e. where the / filesystem is located).
+<ENTRY>dash-a カーネルがいつもルートデバイスを尋ねてくるのはなぜですか ?
+多くの人が、 NetBSD/macppc システムを無人でブートさせられないと報告しています。
+Open Firmware はカーネルを正しくロードするものの、
+カーネルはルートデバイス (つまり / ファイルシステムの所在)
+を見つけられていないようです。
 <p>
-Until this situation is fixed, there is a workaround.  You need to 
-<a href="../../Documentation/kernel/#how_to_build_a_kernel">
-build a kernel</a> with the following setting:
+これが修正されるまでの次善策があります。次のような設定で
+<a href="../../Documentation/kernel/#how_to_build_a_kernel">カーネルを
+コンパイル</a>する必要があります:
 <pre>#config		netbsd	root on ? type ? #to automatically detect root device
 config		netbsd	root on sd0 type ffs #for SCSI disk
 #config		netbsd	root on wd0 type ffs #for IDE disk
 #config		netbsd	root on ? type nfs #for netboot
 </pre>
 
-where <tt>sd0</tt> is the name of the device with your root filesystem.
+ここで <tt>sd0</tt> はルートファイルシステムのあるデバイス名です。
 
 
-<ENTRY>bootx Can I use the Linux BootX utility to boot NetBSD/macppc?
-No, although the BootX maintainer has said he will accept patches for
-NetBSD support if someone else writes them. (See the <a
-href="http://mail-index.netbsd.org/port-macppc/1999/03/12/0002.html">port-macppc
-mail archives</a>.)
+<ENTRY>bootx Linux の BootX ユーティリティーは NetBSD/macppc のブートに使えますか ?
+いいえ。ですが、 BootX のメンテナーは、
+誰かが NetBSD 用のパッチを書けば取り込むと言っています。 (<a
+href="http://mail-index.netbsd.org/port-macppc/1999/03/12/0002.html">port-macppc メーリングリストのアーカイブ</a>を見てください。)
 
 
 
 
 <!-- ======================================== -->
-<SECTION>Misc
+<SECTION>その他もろもろ
 
-<ENTRY>elf Where is <tt>ldconfig</tt>/<tt>ld.so.conf</tt>?
+<ENTRY>elf <tt>ldconfig</tt>/<tt>ld.so.conf</tt> はどこにありますか ?
 
-NetBSD/macppc uses ELF, so it does not have <tt>ldconfig</tt> or
-<tt>ld.so.conf</tt>. See the <a
-href="../../Documentation/elf.html">NetBSD ELF FAQ</a> for more
-details.
+NetBSD/macppc は ELF を使っているので、
+<tt>ldconfig</tt> や <tt>ld.so.conf</tt> はありません。
+より詳しくは、<a href="/Documentation/elf.html" origlink="../../Documentation/elf.html">NetBSD ELF FAQ</a>
+を見てください。
 
 
-<ENTRY>cross-compile How can I cross-compile from another NetBSD architecture?
+<ENTRY>cross-compile 他の NetBSD アーキテクチャーでクロスコンパイルする方法は ?
 
-First, build and install the cross/powerpc-netbsd package in the
-packages collection.
+まず、パッケージコレクションから
+cross/powerpc-netbsd パッケージをコンパイル、インストールしてください。
 
-To build a kernel, configure it as you normally would, and then build
-it with:
+カーネルの構築のため、通常にコンフィグレーションしてから、
+次のようにしてコンパイルします:
 
 <pre>
 	make PATH=/usr/pkg/cross/powerpc-netbsd/bin:$PATH \ 
 		MACHINE=macppc MACHINE_ARCH=powerpc depend all
 </pre>
 
-Cross-compiling userland is slightly more complicated. (XXX finish)
+クロスコンパイルユーザーランドは若干複雑になります。 (XXX 以上)
 
-(XXX this should move to an MI FAQ)
-
-
-<ENTRY>linux Can NetBSD/macppc run MkLinux or LinuxPPC binaries?
-Not currently. There's no reason they couldn't, it's just that no one
-has done the work.
+(XXX この項目は MI FAQ に移すべきです)
 
 
-<ENTRY>macos Can NetBSD/macppc run MacOS binaries?
-Ha! Well, actually, here's an interesting link to a program called <a
-href="http://www.ibrium.se/linux/mac_on_linux.html">Mac-on-linux</a>
-for LinuxPPC. So maybe this could happen some day.
+<ENTRY>linux NetBSD/macppc で MkLinux や LinuxPPC のバイナリーが動きますか ?
+今のところ動きません。不可能なわけではなく、単に誰も作業していないからです。
 
-<ENTRY>keys What do the <img src="../../images/ports/macppc/icon-command.gif" width="13" height="13" alt="command key"> and <img src="../../images/ports/macppc/icon-option.gif" width="17" height="13" alt="option key"> icons mean (i.e. which are the "command" and "option" keys)?
-Apple has some unusual keys on its keyboards that may confuse some people
-(particularly with non-US keyboards).  The key with the
-<img src="../../images/ports/macppc/icon-command.gif" width="13" height="13"
-alt="command key"> symbol on it is commonly
-referred to as the "Command" key.  Some keyboards also have an "open apple"
-(<img src="../../images/ports/macppc/icon-open-apple.gif" width="13" height="15"
-alt="open apple key">) on the
-command key as well.  On non-US keyboards, the key with the
-<img src="../../images/ports/macppc/icon-option.gif" width="17" height="13"
-alt="option key"> symbol on
-it is labeled as the "option" key on US keyboards.
+
+<ENTRY>macos NetBSD/macppc で MacOS のバイナリーが動きますか ?
+ほえ ! 実は、 LinuxPPC 用の
+<a href="http://www.ibrium.se/linux/mac_on_linux.html">Mac-on-linux</a>
+という興味深いリンクがあります。
+ですから、いずれできるようになるかもしれません。
+
+<ENTRY>keys <img src="/images/ports/macppc/icon-command.gif" origlink="../../images/ports/macppc/icon-command.gif" width="13" height="13" alt="command key"> や <img src="/images/ports/macppc/icon-option.gif" origlink="../../images/ports/macppc/icon-option.gif" width="17" height="13" alt="option key"> のアイコンの意味は (あるいは、 "command" や "option" キーはどれ) ?
+Aplle はキーボードに特別なキーを用意しており、
+(特に US キーボード以外では) 混乱する人がいるかもしれません。
+<img src="/images/ports/macppc/icon-command.gif" origlink="../../images/ports/macppc/icon-command.gif" width="13" height="13"
+alt="command key"> 印の付いたキーは、普通、 "Command" キーとして参照されます。
+キーボードによっては、コマンドキーに "open apple"
+(<img src="/images/ports/macppc/icon-open-apple.gif" origlink="../../images/ports/macppc/icon-open-apple.gif" width="13" height="15"
+alt="open apple key">) 印も付いています。
+
+US キーボード以外では、 US キーボードで "option" キーとして印のあるキーに
+<img src="/images/ports/macppc/icon-option.gif" origlink="../../images/ports/macppc/icon-option.gif" width="17" height="13"
+alt="option key"> 印の付いたキーがあります。
 <p>
-Often, when you read Mac documentation, you'll see the instruction to hold
-down "C-O-p-r" or some other variation.  This means you should hold down
-the command and option keys in addition to the letters "p" and "r". 
+しばしば、 Mac のドキュメントでは、 "C-O-p-r" などを押すよう指示しています。
+これは、 command キーと option キーを "p" と "r" とともに押すことを
+意味しています。
 
 
 <!-- ======================================== -->
 </LIST>
 
-<a href="">Up to <em>NetBSD/macppc Port Page</em></a>
+<a href="./">Up to <em>NetBSD/macppc Port Page</em></a>
 <hr>
 
 <DOCLINK>
@@ -1207,7 +1208,9 @@ the command and option keys in addition to the letters "p" and "r".
 <hr>
 <address>
   <small>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
+  (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
   $NetBSD: faq.list,v 1.55 2000/12/06 13:48:30 dent Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
