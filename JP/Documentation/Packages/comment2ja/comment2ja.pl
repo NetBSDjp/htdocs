@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.6 1999/08/23 11:31:46 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.7 1999/08/23 11:53:28 sakamoto Exp $
 #
 
 $|=1;
@@ -170,6 +170,6 @@ foreach $dir (readdir(TOPDIR)) {
 	closedir(CATEGORY);
 }
 closedir(TOPDIR);
-unlink("$tmpfile", "$tmpfile.orig", "$tmpdile.rej");
+unlink("$tmpfile", "$tmpfile.orig", "$tmpfile.rej", "$tmpfile.rej.orig");
 
 0;
