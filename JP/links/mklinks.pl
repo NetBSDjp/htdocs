@@ -1,6 +1,6 @@
 #!/usr/pkg/bin/perl
 #
-# $Id: mklinks.pl,v 1.1 1999/02/12 08:47:48 sakamoto Exp $
+# $Id: mklinks.pl,v 1.2 1999/02/22 08:46:51 sakamoto Exp $
 #
 # <ITEM>
 # <TITLE>
@@ -23,7 +23,7 @@ $itemf = 0;
 
 foreach $p (@P) {
 	local ($tag, $content) = split(/>/, $p);
-	$tag =~ y/A-Z/a-z/;
+	$tag =~ tr/A-Z/a-z/;
 	$content =~ s/[ \t]+/ /g;
 	$content =~ s/^[ ](.*)/$1/;
 	$content =~ s/(.*)[ ]/$1/;
@@ -68,8 +68,13 @@ foreach $p (@P) {
 	}
 }
 
-&makelist_by_register(STDOUT);
+open(LIST_REGISTER, '>links.html') || die "Can't open links.html $!";
+&makelist_by_register(LIST_REGISTER);
+close(LIST_REGISTER);
 
+open(LIST_ARCH, '>arch.html') || die "Can't open arch.html $!";
+&makelist_by_arch(LIST_ARCH);
+close(LIST_ARCH);
 
 
 
@@ -77,18 +82,74 @@ foreach $p (@P) {
 sub makelist_by_register {
 	local($FD) = @_;
 
-	&print_head($FD, "NetBSD-related LINKS",
-		"<h1>NetBSD 関連リンク</h1>\n" .
-		"NetBSD 関連のリンク集です。<br>\n" .
-		"NetBSDに関するコンテンツの情報は " .
-		"<a href=\"mailto:www-changes-ja\@jp.netbsd.org\">" .
-		"www-changes-ja\@jp.netbsd.org</a>" .
-		"までお寄せください。" .
+	&print_head($FD, "NetBSD-related LINKS (by registered)",
+		"<h1>NetBSD 関連リンク(登録順)</h1>\n" .
 		"<hr>\n");
 	for ($i = 0; $i < $item; $i++) {
 		&print_item($FD, $i,
 			$item_title[$i], $item_url[$i],
 			$item_keyword[$i], $item_description[$i]);
+	}
+	&print_tail($FD);
+}
+
+sub makelist_by_arch {
+	local($FD) = @_;
+	local($i, $j);
+	local(%arch_index);
+	local(@arch_num);
+	local(@arch_name) = (
+		'I386',
+		'MAC68K',
+		'MACPPC',
+		'PC98',
+		'X68K',
+		'SUN3',
+		'NEWSMIPS',
+		'BEBOX'
+	);
+
+	&print_head($FD, "NetBSD-related LINKS (by architecture)",
+		"<h1>NetBSD 関連リンク(アーキテクチャー別)</h1>\n");
+
+	for ($j = 0; $j <= $#arch_name; $j++) {
+		local($an);
+		($an = $arch_name[$j]) =~ tr/A-Z/a-z/;
+		print $FD <<EOF;
+<dt><a href="#$arch_name[$j]">$an</a><br>
+EOF
+	}
+
+	for ($i = 0; $i < $item; $i++) {
+		local(@k) = split(/,/, $item_keyword[$i]);
+		local($kw);
+
+		foreach $kw (@k) {
+			for ($j = 0; $j <= $#arch_name; $j++) {
+				if ($kw eq $arch_name[$j]) {
+					$arch_index{$j, $arch_num[$j]++} = $i;
+				}
+			}
+		}
+	}
+
+	for ($j = 0; $j <= $#arch_name; $j++) {
+		local($an, $num);
+		($an = $arch_name[$j]) =~ tr/A-Z/a-z/;
+		print $FD <<EOF;
+</dl>
+<hr>
+<h2><a name="$arch_name[$j]">$an</a></h2>
+<dl>
+EOF
+
+		for ($num = 0; $num < $arch_num[$j]; $num++) {
+			$i = $arch_index{$j, $num};
+			&print_item($FD, $i,
+				$item_title[$i], $item_url[$i],
+				$item_keyword[$i],
+				$item_description[$i]);
+		}
 	}
 	&print_tail($FD);
 }
