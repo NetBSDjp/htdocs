@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>Notes on porting FreeBSD network drivers to NetBSD</title>
+</head><body bgcolor="#FFFFFF" text="#000000">
+
+<table><tr><td>
+<a href="../../Misc/daemon-copy.html">
+<img align="middle" src="../../images/BSD-daemon.jpg" border=0
+width=146 height=129 alt="BSD daemon"></a>
+</td><td align=center>
+<h1>NetBSD Documentation:</h1>
+<h1>Notes on porting FreeBSD network drivers to NetBSD</h1>
+</td></tr></table>
+<p>
+
+<h2>Introduction</h2>
+Matthias Drochner has collected these notes of differences
+encountered while porting FreeBSD network drivers to NetBSD,
+in the hope that it will be helpful.
+<p>
+
+<h2>Simple include file and definition stuff</h2>
+<ul><li>
+#include file names/locations are quite different
+</li><li>
+packetfilter<br>
+FreeBSD: "BPF"<br>
+NetBSD: "BPFILTER"<br>
+[Looks gratuitous; seems to differ a lot between OSes (DEC: "packetfilter")]
+</li><li>
+NetBSD needs to include "opt_inet.h" and "opt_ns.h"
+</li><li>
+Global variable "bootverbose" doesn't exist on NetBSD</li><li>
+NetBSD has central PCI ID database and PCI register definitions</li><li>
+if_media: FreeBSD: IFM_1000_SX, NetBSD: IFM_1000_FX<br>
+[There is nothing like 1000_FX - NetBSD is wrong]
+</li><li>
+Different stuff in &lt;sys/queue.h&gt;<br>
+(Nothing like SLIST in NetBSD)<br>
+[Name differences gratuitous, but an SLIST-like thing could be
+useful for NetBSD (less overhead than SIMPLEQ)]
+</li></ul>
+
+<h2>Framework, not network specific</h2>
+<ul><li>
+Different autoconfiguration framework
+</li><li>
+Printouts with device name<br>
+FreeBSD: name:unit<br>
+NetBSD: xname<br>
+(Similar in "struct ifnet")
+</li><li>
+Interrupt handler void on FreeBSD, int on NetBSD<br>
+[Detection of stray interrupts???]
+</li><li>
+bus.h: access to virtual address for mapped range<br>
+(it is usually best to just avoid linear mappings,
+since not all hardware supports it, but when absolutely
+necessary, BUS_SPACE_MAP_LINEAR should provide this)<br>
+[Missing in NetBSD's bus_space framework. Potential source
+of inportability, use bus_space_xxx if feasible.]
+</li><li>
+bus_dma issues (FreeBSD has still old functions)
+</li></ul>
+
+<h2>Network stuff</h2>
+<ul><li>
+External mbuf storage handling<br>
+FreeBSD: no argument to xxxfree()<br>
+NetBSD: opaque argument to xxxfree()<br>
+FreeBSD: driver implements reference counting<br>
+NetBSD: automatic reference counting<br>
+</li><li>
+FreeBSD has common ether_ioctl()<br>
+[Good - eliminates common code]
+</li><li>
+"struct ether_addr" member for address bytes<br>
+FreeBSD: "octet"<br>
+NetBSD: "ether_addr_octet"<br>
+[Gratuitous]
+</li><li>
+"ethercom" vs. "arpcom" in softc<br>
+[Technically, NetBSD is right]
+</li><li>
+Access to ethernet address<br>
+FreeBSD: in "arpcom", accessed there<br>
+NetBSD: passed to ether_ifattach(), accessed through ifp
+(LLADDR() - watch out for alignment problems!)<br>
+[NetBSD can't deal with address changes at runtime]
+</li><li>
+Multicast address list<br>
+FreeBSD: plain list at ifp-&gt;if_multiaddrs<br>
+NetBSD: special framework, part of "struct ethercom"
+</li><li>
+Differing members in "struct ifnet", and different
+initialization (if_attach, ether_ifattach)<br>
+-xname vs name:unit<br>
+-FreeBSD: xxxinit() - for use by ether_ioctl()<br>
+-Ethernet address
+</li><li>
+Arguments to bpf functions<br>
+FreeBSD: ifp<br>
+NetBSD: ifp-&gt;if_bpf<br>
+</li><li>
+Passing of received packets to upper layer<br>
+FreeBSD: ether header separate, to ether_input()<br>
+NetBSD: whole packet, indirectly through ifp-&gt;ifp_input<br>
+[Recent change in NetBSD]
+</li><li>
+NetBSD has an MII framework; drivers provide register access only
+</li></ul>
+<p>
+
+<hr>
+<a href="">Up to <em>NetBSD Documentation: Kernel</em></a>
+<hr>
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../"><img
+        src="../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../"><img
+        src="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td>
+    <a href="../../Documentation/"><img
+        src="../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td> 
+    <a href="../../Documentation/"><img
+        src="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: porting-freebsd-net.html,v 1.8 2000/10/19 05:21:54 dent Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
+
