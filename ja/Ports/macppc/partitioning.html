@@ -38,17 +38,36 @@ swap partitions.</i>
 This document describes in depth how to partition a disk for use with 
 NetBSD/macppc and MacOS.  Whether you can boot your machine from a 
 particular disk into a particular operating system depends on your 
-machine's version of <a href="faq.html#ofw-version">Open Firmware</a>.
+machine's version of <a href="faq.html#ofw-version">Open Firmware</a>.  
+The overall goal is to create an Apple Partition Map that Open Firmware 
+can understand (and thus boot from) and that the NetBSD kernel can 
+understand and use to find its root partition.
 
 <p>There are four tools to partition a disk: Apple's Drive Setup (MacOS
 9), Apple's Disk Utility (MacOS X), NetBSD's 
 <a href="http://man.netbsd.org/man/pdisk+8.macppc+NetBSD-current">
 <tt>pdisk(8)</tt></a> (all OSes), and NetBSD's 
 <a href="http://man.netbsd.org/man/disklabel+8.macppc+NetBSD-current">
-<tt>disklabel(8)</tt></a> (NetBSD/macppc only).  The first three tools
-create an Apple Partition Map.  <tt>disklabel</tt> (the partition tool
-that is used in the NetBSD installer) creates a <tt>disklabel</tt> with a
-fake Apple Partition Map. 
+<tt>disklabel(8)</tt></a> (NetBSD/macppc only).  The first two tools 
+(Drive Setup and Disk Utility) are distributed by Apple with MacOS and 
+are located on bootable MacOS installation CDs.  You can use them to 
+partition a disk, create the filesystems, and to install MacOS 
+bootloaders (called disk drivers in MacOS terminology).
+
+<p>The <tt>pdisk</tt> program is a command-line program which can be 
+compiled and run on most unix-like systems (particularly the ones that 
+run on PowerPC-based Macintosh and clone machines).  This program can 
+only partition a disk -- it can't install bootloaders or create 
+filesystems.
+
+<p>NetBSD's <tt>disklabel</tt> creates a NetBSD-style 
+<a href="http://man.netbsd.org/man/disklabel+5.macppc+NetBSD-current">
+<tt>disklabel(5)</tt></a>.  Unlike the other three tools, it can only
+create a fake Apple Partition Map (thus you can't use it to create a disk
+that's bootable by MacOS).  That's OK, since some versions of Open
+Firmware require you to use <tt>disklabel</tt> to install the bootloader. 
+Additionally, <tt>disklabel</tt> is the partition tool that is used in the
+NetBSD installer. 
 
 <p>In the tables below, "yes" means the disk is bootable, "mount only" 
 means that the OS can mount partitions on the disk, but cannot boot from 
@@ -83,7 +102,7 @@ it, and "no" means the OS can't mount partitions or boot from the disk.
 
 <tr><td><b>Linux</b></td>
 <td>yes</td>
-<td>?</td>
+<td>yes?</td>
 <td>yes</td>
 <td>no</td></tr>
 </table>
@@ -117,7 +136,7 @@ it, and "no" means the OS can't mount partitions or boot from the disk.
 
 <tr><td><b>Linux</b></td>
 <td>yes</td>
-<td>?</td>
+<td>yes?</td>
 <td>yes</td>
 <td>no</td></tr>
 </table>
@@ -145,11 +164,23 @@ the partitions fill in the remainder of the letters.
 <p>See the section on <a href="#nomenclature">Partition nomenclature</a> 
 below for a more thorough discussion. 
 
+<p>There are a whole slew of filesystem types you may encounter.  Briefly,
+HFS is Apple's old filesystem which has been in use since the '80s.  HFS+
+(also known as "extended") is an enhanced version of HFS which allows
+larger file (and filesystem) size, storage of unix-style owner and
+permissions.  HFS+ is the recommended filesystem type for MacOS &gt;  8.1,
+including MacOS X.  UFS is Apple's NeXT-derived version of good old BSD
+FFS.  MS-DOS (also known as FAT) is the filesystem standardized on the
+MS-DOS/Windows platform.  BSD FFS is the standard filesystem used by most
+BSD unix-like OSes since the '80s (including NetBSD).  ext2fs is the most
+common linux filesystem. 
+
 <p>You may want to consider whether to include a partition that will be
 shared among your OSes.  The most compatible format is MS-DOS FAT, but it
 lacks features (such as permissions and good repair tools). 
 Unfortunately, NetBSD doesn't yet support the Macintosh HFS and HFS+ file
-systems natively.  Here's the quick breakdown: 
+systems natively.  NetBSD-current has full support for Apple's UFS.  Here's 
+the quick breakdown: 
 
 <p><table border=1 cellpadding=5>
 <tr><td>format</td>
@@ -163,17 +194,17 @@ systems natively.  Here's the quick breakdown:
  <td>
 <a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">hfstools</a>
  </td>
- <td>yes?</td></tr>
+ <td>yes&nbsp;(1)</td></tr>
 <tr><td>Apple HFS+</td>
  <td>yes</td>
  <td>yes</td>
  <td>no</td>
- <td>?</td></tr>
+ <td>read-only&nbsp;(2)</td></tr>
 <tr><td>Apple UFS</td>
  <td>no</td>
  <td>yes</td>
  <td>-current</td>
- <td>?</td></tr>
+ <td>read-only</td></tr>
 <tr><td>MS-DOS FAT</td>
  <td>File Exchange</td>
  <td>yes</td>
@@ -183,13 +214,25 @@ systems natively.  Here's the quick breakdown:
  <td>no</td>
  <td>no</td>
  <td>yes</td>
- <td>?</td></tr>
+ <td>read-only</td></tr>
 <tr><td>Linux ext2fs</td>
  <td>no</td>
- <td>no</td>
+ <td>yes&nbsp;(3)</td>
  <td>yes</td>
  <td>yes</td></tr>
 </table>
+
+<p>1 - Either use the stable
+<a href="http://www.mars.org/home/rob/proj/hfs/">hfsutils</a> or the 
+experimental in-kernel support.
+<br>2 - Either use the experimental 
+<a href="http://ftp.penguinppc.org/projects/hfsplus/">hfsplus</a> utils
+or the experimental
+<a href="http://sourceforge.net/projects/linux-hfsplus">linux-hfsplus</a>
+kernel module.
+<br>3 - Use the highly experimental 
+<a href="http://sourceforge.net/projects/ext2fsx/">Ext2 Filesystem</a> kernel
+extension.
 
 <p>If you want to create a partition you can share with MacOS 9, you
 should create an HFS partition which you will later convert to MS-DOS
@@ -619,8 +662,8 @@ Useful partition types you might want to create are:
 <p><li>Create new filesystems.
 <p><ul>
 <p><li>NetBSD can only create its own filesystem (FFS) for the root and user 
-partitions.  It can't create UFS, HFS, HFS+, or non-floppy sized MS-DOS 
-filesystems.  You can use <a
+partitions.  It can't directly create UFS, HFS, HFS+, or non-floppy sized 
+MS-DOS filesystems.  You can use <a
 href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
 hfstools</a> to create an HFS filesystem.<br>
 <tt># <b>newfs /dev/sd2a</b></tt><br>
@@ -639,7 +682,14 @@ unless you intend to use it with MacOS 8.0 or earlier.<br>
 <tt># <b>newfs_hfs /dev/disk2s2</b></tt> (for HFS+)<br>
 <tt># <b>newfs /dev/disk2s5</b></tt> (for UFS)
 
-<p><li>Linux needs more info here.
+<p><li>Linux can only create its own filesystem (ext2fs) for the root, swap 
+and user partitions and MS-DOS filesystems.  It can't directly create UFS, 
+HFS, or HFS+.  You can use <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
+hfstools</a> to create an HFS filesystem.<br>
+<tt># <b>mkfs -t ext2 /dev/hdc2</b></tt><br>
+<tt># <b>mkdosfs /dev/hdc3</b></tt><br>
+<tt># <b>hformat /dev/hdc5</b></tt>
 </ul>
 
 <p><li>Mount your new filesystems.
@@ -660,7 +710,18 @@ unless you intend to use it with MacOS 8.0 or earlier.<br>
   disk2s5    ???    ufs      yes   yes   untitled         /Volumes/untitled 1
   disk0s10   ???    hfs      yes   yes   OSX              /</pre>
 
-<p><li>Linux needs more info here.
+<p><li>Linux:<br>
+<tt># <b>mount -t ufs -o ufstype=44bsd,ro /dev/hdc1 /mnt/netbsd</b></tt> 
+ (BSD FFS)<br>
+<tt># <b>mount -t ufs -o ufstype=openstep,ro /dev/hdc2 /mnt/macosx</b></tt>
+ (OSX UFS)<br>
+<tt># <b>hmount /dev/hdc3</b></tt> (virtual hfsutils mount)<br>
+<tt># <b>mount -t hfs /dev/hdc3 /mnt/macos</b></tt> 
+ (experimental in-kernel HFS)<br>
+<tt># <b>hpmount /dev/hdc4</b></tt> (virtual hfsplus utils mount)<br>
+<tt># <b>mount -t hfsplus -o ro /dev/hdc4 /mnt/macosx</b></tt> 
+ (experimental in-kernel HFS+)<br>
+<tt># <b>mount -t ext2 /dev/hdc5 /mnt/linux</b></tt> (linux ext2fs)
 </ul>
 
 <p><li>If you are using an Open Firmware 1.0.5 or 2.0.x model, you may
@@ -939,7 +1000,7 @@ the following command to boot:
 <address>
   <small>
   www@NetBSD.ORG<br>
-  $NetBSD: partitioning.html,v 1.9 2003/05/04 05:57:07 mbw Exp $<br>
+  $NetBSD: partitioning.html,v 1.12 2003/05/22 18:58:10 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1998-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

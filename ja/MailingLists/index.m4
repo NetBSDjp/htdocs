@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.127 2003/04/27 09:57:17 fvdl Exp $
+#	$NetBSD: index.m4,v 1.137 2003/06/08 02:13:10 heinz Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -188,6 +188,9 @@ LIST(netbsd-help)
   This list provides a general help forum where users can ask
   questions.
 ENDLIST
+LIST(netbsd-java)
+  This is a forum for discussing issues related to Java on NetBSD.
+ENDLIST
 LIST(netbsd-jobs)
   This mailing list is for job advertisements relevant to NetBSD users
   and developers.
@@ -224,6 +227,33 @@ LIST(source-changes)
   href="http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=source-changes-digest">digest
   form</a>, meaning one message daily containing all commit messages for changes
   to the source tree in that 24 hour period.
+ENDLIST
+LIST(regional-au)
+  Discussion relevant to users in Australia.
+ENDLIST
+LIST(regional-boston)
+  Discussion relevant to users in Boston.
+ENDLIST
+LIST(regional-cs)
+  Discussion relevant to users in Czech Republic &amp; Slovak Republic.
+ENDLIST
+LIST(regional-fr)
+  Discussion relevant to users in France.
+ENDLIST
+LIST(regional-london)
+  Discussion relevant to users in London.
+ENDLIST
+LIST(regional-nl)
+  Discussion relevant to users in the Netherlands.
+ENDLIST
+LIST(regional-nyc)
+  Discussion relevant to users in New York City.
+ENDLIST
+LIST(regional-pl)
+  Discussion relevant to users in Poland.
+ENDLIST
+LIST(regional-sfba)
+  Discussion relevant to users in the San Francisco Bay Area.
 ENDLIST
 LIST(tech-embed)
   Discussions of the use of NetBSD in embedded systems.
@@ -669,7 +699,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.127 2003/04/27 09:57:17 fvdl Exp $<br>
+  $NetBSD: index.m4,v 1.137 2003/06/08 02:13:10 heinz Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
