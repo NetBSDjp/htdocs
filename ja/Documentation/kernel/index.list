@@ -2,9 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<link rel="shortcut icon" href="../../../favicon.ico" origlink="/favicon.ico" type="image/x-icon">
 <title>NetBSD Documentation: Kernel</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -33,7 +34,7 @@
 <li><a href="config-torek.ps">4.4BSD のデバイスコンフィギュレーション</a>
 <li><a href="http://www.mckusick.com/softdep/index.html">Soft Updates に関する情報 (Soft Dependencies、softdep) とスナップショット</a>
 <li><a href="http://www.ccrc.wustl.edu/pub/chuck/">ATM ネットワーキングの BSD への統合</a>
-<li><a href="http://www.pdl.cs.cmu.edu/PUBLICATIONS/publications.html#RAID">RAID と RAIDframe 関連の多くのドキュメント</a>
+<li><a href="http://www.pdl.cs.cmu.edu/RAID/index.html">RAID と RAIDframe 関連の多くのドキュメント</a>
 <li><a href="http://dinsen.net/netbsd/kernel.html">Anders Dinsen の
     カーネルドキュメンテーションの概要</a>
 </ul>
@@ -44,11 +45,11 @@
 <h4><a name="official_release_kernel_source">公式リリース</a></h4>
 すでにインストールされているものと同じリリースのカスタマイズしたカーネルを
 コンパイルするには、カーネルの <tt>syssrc.tgz</tt> ファイルだけあれば十分です。
-特定のリリースに対して、このファイルは、そのリリースのメインディレクトリーの中の
+特定のリリースに対して、このファイルは、そのリリースのメインディレクトリの中の
 gzip された tar ファイル 'source/sets/syssrc.tgz' にあります。
-たとえば、NetBSD 1.5 のカーネルソースは次のファイルにあります:
+たとえば、NetBSD 1.5.2 のカーネルソースは次のファイルにあります:
 <pre>   <a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5/source/sets/syssrc.tgz">/pub/NetBSD/NetBSD-1.5/source/sets/syssrc.tgz</a></pre>
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5.2/source/sets/syssrc.tgz">/pub/NetBSD/NetBSD-1.5.2/source/sets/syssrc.tgz</a></pre>
 もし <a href="../../Sites/cdroms.html">NetBSD CD-Rom</a>を持っていたら、
 'source/sets/syssrc.tgz' も含まれています。ソースはどこでも展開できますが、
 習慣的に /usr/src に置かれます。
@@ -83,6 +84,10 @@ href="#official_release_kernel_source">公式リリース</a> のソースを
 を用いた NetBSD-current の追跡</a>の方法に従ってください。
 
 <ENTRY>how_to_build_a_kernel カーネルの作り方
+
+<a name="building_a_kernel"></a>
+<!-- Don't change the above targets - SAs reference them. -->
+
 <ol>
     <li>あなたのベースシステムに付属していたコンパイラーセット(<tt>comp.tgz</tt>)を
         インストールしたことを確認してください。
@@ -159,7 +164,7 @@ GENERIC という言葉はマシンアーキテクチャーでサポートされている
 することを示す行に由来します。このオプションと設定行の書式は
 すでに用いられていませんが、この名称はしばらく残ることでしょう。
 <p>
-このため、GENERIC カーネルは、全てのデバイスドライバーとたくさんの
+このため、GENERIC カーネルは、全てのデバイスドライバとたくさんの
 マシンモデルをサポートするコードを含んでいます。
 多くはあなたにとって必要ないものなので,
 <a href="#how_to_build_a_kernel">あなた用のカスタム化したカーネルを
@@ -169,38 +174,42 @@ GENERIC という言葉はマシンアーキテクチャーでサポートされている
 これはカーネルが、mbuf クラスターにマップした空間を使い果たしたことを意味します。
 mbuf クラスターはネットワークコードでパケットやその他の
 ネットワーク関係のデータを格納するのに使用されています。
-これを解決するには
+<p>
+デフォルトの NMBCLUSTERS の設定は 1024 (NetBSD 1.5 以前では 256) なので、
+もしこの問題が起きたならば、エラーメッセージが出なくなるまで、
+この値を倍に増やしていってください。現在の NMBCLUSTERS の値は、以下のように
+sysctl(8) を使って表示できます:
+<blockquote><code>
+	# sysctl kern.mbuf.nmbclusters
+</code></blockquote>
+または、以下のようにすることもできます
+<blockquote><code>
+	# echo 'print nmbclusters' | gdb -q /netbsd
+</code></blockquote>
+カーネル設定に関するオプションについてのより詳しい情報は
+options(4) を参照して下さい。
+<p>
+この値を変更するには、
 <blockquote>
-      options NMBCLUSTERS=1024<br>
+	options NMBCLUSTERS=2048<br>
 </blockquote>
 を<a href="#how_to_build_a_kernel">カーネル設定ファイル</a>に加えるか、
 カーネルを直接変更してください:
 <blockquote>
         # <strong>gdb --write /netbsd</strong><br>
-        (gdb) <strong>set nmbclusters=1024</strong><br> 
+        (gdb) <strong>set nmbclusters=2048</strong><br> 
         (gdb) <strong>quit</strong><br>
 </blockquote>
 カーネルを直接変更した場合は、変更が有効になるようにするためにリブートが必要です。
-もし、使用中のプラットフォームがサポートしていれば、次のコマンドを用いて
+もし、使用中のプラットホームがサポートしていれば、次のコマンドを用いて
 値を設定することもできます。
 <blockquote>
-	# <strong>sysctl -w kern.mbuf.nmbclusters=1024</strong><br>
+	# <strong>sysctl -w kern.mbuf.nmbclusters=2048</strong><br>
 </blockquote>
 この方法はすぐに有効になりますが、次回のリブート時には設定されません。
 この方法とカーネルの変更を組み合わせれば、新しくカーネルを作る必要も
 リブートする必要もありません。
 <p>
-デフォルトの NMBCLUSTERS の設定は 256 なので、もしこの問題が起きたならば、
-例えば 1024 にしてみるといいでしょう。ビジーなサーバーマシンならばもっと
-大きな値が必要かもしれません。  次のコマンドは現在の NMBCLUSTERS の
-値を示します:
-<blockquote>
-	# <strong>echo 'print nmbclusters' | gdb -q /netbsd</strong><br>
-</blockquote>
-
-<p>
-カーネル設定に関するオプションについてのより詳しい情報は
-options(4) を参照して下さい。
 
 <ENTRY>spl_not_lowered <tt><b>WARNING: SPL NOT LOWERED ON SYSCALL EXIT</b></tt> ってどういう意味ですか?
 このカーネルメッセージはカーネル中に 
@@ -218,6 +227,33 @@ int x = splfoo(); したのに復帰する前に splx(x); を実行しなかった sys
 send-pr(1) する方がいいでしょう。
 <p>
 spl 関数についてのより詳しい情報は spl(9) を参照して下さい。
+
+<ENTRY>stray-ir7 <tt><b>Stray interrupt on IRQ 7</b></tt> ってどういう意味ですか?
+    このカーネルメッセージ "Stray interrupt on IRQ 7" は、割り込み
+    コントローラーが、 IRQ 7 上のマスク解除された割り込みを報告したが、
+    その IRQ で要求されたドライバーがないことを意味しています。
+    <p>
+    これが起きうる原因は、ふたつあります:
+    <p>
+    <ol> 
+      <li>PC 以外では、ほとんどの場合は、その IRQ にドライバーがアタッチされたが、
+        そのドライバーが不適切だったことを
+        (この場合のほかは、その IRQ がマスクされていたことを) 意味します。
+        <p>
+      <li>PC では、もっとやっかいな 'default IR7' の問題があります。
+	これは、デバイスがある IRQ をアサートした時に、
+	PIC が割り込みを検知した後に CPU がそれを知る前にその IRQ がデアサートされたため、
+	その IRQ が何だったかについて PIC が公然と嘘をつくのです。
+	<p>
+	'default IR7' を前提にするという方法もありますが、
+	古いマシンの中にはかえって状況が悪化するものもありますし、
+	一般論としても、まず第一にドライバーを改良してこれを出さないようにした方がよいです。
+	とはいえ、エッジトリガーな割り込みを使っていると、
+	完全な予防は困難な場合もありますが。
+    </ol>
+    <p>
+    なお、このカーネルメッセージは、 DEBUG
+    オプション付きのカーネルを走らせているときにしか出ません。
 
 <ENTRY>why_msoft_float なぜカーネルを <tt><b>-msoft-float</b></tt> 付きでコンパイルするのですか
 <p>
@@ -270,12 +306,24 @@ spl 関数についてのより詳しい情報は spl(9) を参照して下さい。
 <a href="../../MailingLists/#current-users">current-users</a>
 メーリングリストに参加した方がよいということです。
 current-users を読まずに -current を追うことはライトを灯けずに夜道を
-ドライブしているようなものです。警告しましたよ :)<p>
+ドライブしているようなものです。警告しましたよ :)
+<p>
 最新の
 <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</a>
 をダウンロードし、コンパイル、インストールし、あなたの
 コンフィグファイルに対して再度 config を実行してください。
  (config コマンドはリリースごとにかなり頻繁に変更されますから)
+<p>
+時々、あらかじめバイナリーやライブラリーをアップグレードしておかないと、
+リリース版で -current の構築ができなくなることがあります。このような場合、
+それらをバイナリースナップショットからインストールした上で
+-current を構築したほうが簡単かもしれません。 i386 の -current
+スナップショットは、 (たとえば) 
+<a
+href="ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/snapshot/">/pub/NetBSD/arch/i386/snapshot/</a> にあります。
+<CURRENTSRC>src/UPDATING
+ファイルには、このような、 -current や -current カーネルの構築に際して
+知っておくべき重要な変更点に関する情報が載っています。
 
 <ENTRY>debugging_a_kernel_crash_dump カーネルクラッシュダンプのデバッグの方法
 <ol>
@@ -377,9 +425,9 @@ RAID や <tt>ccd</tt> を使う場合には使用することをお勧めします。
 <ul><li><p>
 このメッセージがシステムブートの autoconfiguration の出力中に
 現れたのならば、それはカーネルがシステム中に、あるハードウェアを
-検出したがそれに対応するデバイスドライバーが無いことを意味します。
-これにはデバイスドライバーは存在するがブートに使用したカーネルには
-含まれていない場合と、デバイスドライバーが本当に存在しない場合の
+検出したがそれに対応するデバイスドライバが無いことを意味します。
+これにはデバイスドライバは存在するがブートに使用したカーネルには
+含まれていない場合と、デバイスドライバが本当に存在しない場合の
 両方の可能性があります。
 (後者の場合、優しい開発者に連絡を取り、テスト用のハードウェアを
 提供してデバイスドライバーを書いてもらいましょう)
@@ -433,13 +481,13 @@ gdb が <code>wdcdebug_atapi_mask</code> と <code>wdcdebug_mask</code
 </ul>
 
 <ENTRY>usb-debugging USB デバイスのデバッグ
-USB デバイスの問題が起きた場合、USB ドライバーのメッセージを冗長にすることが
+USB デバイスの問題が起きた場合、USB ドライバのメッセージを冗長にすることが
 できます。
 <ul>
 <li><tt>USB_DEBUG</tt> と <tt>DDB</tt> を含むカーネルをコンパイルする。
 <li><tt><b>-d</b></tt> をつけてブートし、ddb(4) に入る。
-<li>ddb で変数 usbdebug と uhcidebug を 5 にセットする。 ("<b>set
-usbdebug=5</b>" と "<b>set uhcidebug=5</b>")
+<li>ddb で変数 usbdebug と uhcidebug を 5 にセットする。 ("<b>write
+usbdebug=5</b>" と "<b>write uhcidebug=5</b>")
 <li>デバイスを挿入して<b><tt>continue</tt></b> と入力する。
 </ul>
 
@@ -468,7 +516,7 @@ usbdebug=5</b>" と "<b>set uhcidebug=5</b>")
 デバイス ID が認識されないだけである時のみ有効です。
 動作の異なるデバイスを加えるにはソースコードを書く必要があります。
 <ol>
-<li>カーネルを options(4) <tt>PCMCIA_VERBOSE</tt> を有効にしてコンパイルします。
+<li>カーネルを options(4) <tt>PCMCIAVERBOSE</tt> を有効にしてコンパイルします。
 <li>ブートメッセージをチェックします - 該当のカードは '<tt>not configured</tt>' と
     レポートされているはずです。製造元(Manufacturer) とプロダクトコード(例題では
     <tt><b>0x143</b></tt> と <tt><b>0x201</b></tt>です)を記録します:
@@ -506,21 +554,27 @@ config を再実行する必要がありますが、その前に "BUFCACHE", "NBUF" や
 "BUFPAGES" の設定を消去して、バッファーキャッシュのサイズをデフォルトに
 戻した方が良いかもしれません。UBC のもとでは、伝統的な
 バッファーキャッシュは通常ファイルのデータの格納には用いられず、
-metadata だけに用いられますので、物理メモリーのほとんどを
+metadata だけに用いられますので、物理メモリのほとんどを
 仮想記憶システムに任せてしまった方が良いでしょう。デフォルトの
-バッファーキャッシュサイズはマシンのメモリー量に関わらず、
+バッファーキャッシュサイズはマシンのメモリ量に関わらず、
 ほとんどの場合、最適となります。ブートメッセージ中の
-メモリー量を示している "using X buffers containing Y memory" は
-ファイルデータのキャッシュ用のメモリー量を示していませんので
+メモリ量を示している "using X buffers containing Y memory" は
+ファイルデータのキャッシュ用のメモリ量を示していませんので
 数字が変わらなくても心配しないでください。
 <p>
 
 重要な変更点はより多くのメモリーを通常ファイルデータのキャッシュに
 用いることができるということです。このためアクセスしようとした
-ファイルのデータがすでにメモリー中に存在することが多くなり、結果として
+ファイルのデータがすでにメモリ中に存在することが多くなり、結果として
 ファイルシステムの入出力が速くなります。速くなる割合は何をするかにも
 よりますが、多くの場合その違いに気付くことができるでしょう。<p>
 <p>
+
+以下も参照してください:
+Chuck Silvers の論文
+<a href="http://www.usenix.org/publications/library/proceedings/usenix2000/freenix/full_papers/silvers/silvers_html/">UBC: An Efficient Unified I/O and
+Memory Caching Subsystem for NetBSD</a>
+
 
 </LIST>
 
@@ -532,8 +586,8 @@ metadata だけに用いられますので、物理メモリーのほとんどを
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.list,v 1.51 2001/03/16 15:05:14 dent Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  $NetBSD: index.list,v 1.65 2002/12/30 21:59:17 keihan Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
