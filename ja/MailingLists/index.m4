@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.149 2004/01/25 18:52:45 christos Exp $
+#	$NetBSD: index.m4,v 1.150 2004/02/06 07:12:08 gendalia Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -240,6 +240,9 @@ LIST(regional-ca)
 ENDLIST
 LIST(regional-cs)
   チェコ共和国とスロバキア共和国在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-de)
+  ドイツ在住のユーザー向けの議論用です。
 ENDLIST
 LIST(regional-fr)
   フランス在住のユーザー向けの議論用です。
@@ -705,7 +708,7 @@ divert(9)
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.149 2004/01/25 18:52:45 christos Exp $<br>
+  $NetBSD: index.m4,v 1.150 2004/02/06 07:12:08 gendalia Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
