@@ -40,8 +40,8 @@ href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a>.
 <h2>Additional information is also available:</h2>
 <ul>
 <li><a
-href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6/macppc/INSTALL.html">
-    NetBSD 1.6 install notes</a> - supported hardware and how to install.
+href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">
+    NetBSD 1.6.1 install notes</a> - supported hardware and how to install.
 <li><a href="../../MailingLists/#port-macppc"> port-macppc mail list</a>
     - if you have any additional questions please subscribe.
 <li><a
@@ -89,7 +89,10 @@ href="#ofw-access">How do I get to the Open Firmware prompt?</a>.  If your
 screen stays black and you have an older mac, see <a
 href="#ofw-boot-serial">it just stopped booting, and my monitor isn't
 showing anything</a>. If your screen is all weird, then see how to fix the
-<a href="#non-sync-monitor">monitor sync problems</a>. 
+<a href="#non-sync-monitor">monitor sync problems</a>.  If you entered 
+some bad Open Firmware settings and it doesn't enter Open Firmware or 
+boot MacOS anymore, you may need to read <a href="#ofw-clear">How do I 
+clear a corrupt Open Firmware?</a>.
 
 <p>OK, now Open Firmware has started and is ready for user commands if you
 set it to stop at the Open Firmware prompt (the "<tt>0&nbsp;&gt;</tt>").
@@ -130,7 +133,9 @@ If there are memory addressing issues, it might stop and print
 
 If it hangs here, then you need to set the 
 <a href="#ofw-real-base"><tt>real-base</tt></a> of your Open Firmware 1.0.5
-or 2.0.x machine. If you get past this point, then your kernel has started
+or 2.0.x machine. If you get several <a href="#ofw-read-timeout"><tt>READ 
+TIMEOUT@</tt></a> messages, then Open Firmware is having trouble reading 
+your floppy disk. If you get past this point, then your kernel has started
 to load.  Now, if you have problems, it is most likely no longer an Open
 Firmware problem, but a NetBSD problem. 
 
@@ -192,9 +197,42 @@ the INSTALL notes are aimed at people with MacOS experience and minimal unix
 background.  
 
 <p><h3>If you have an Open Firmware 3 system</h3>
-MacOS is briefly unavoidable if you want NetBSD entirely contained on one
-hard drive.  You'll need to use a MacOS utility to repartition your disk,
-then copy the bootloader <tt>ofwboot.xcf</tt> to an HFS partition.  If you're
+If you want NetBSD entirely contained on one hard drive, there are two
+approaches.  By far the easiest is to briefly boot MacOS, use a MacOS
+utility or pdisk to repartition your disk, then copy the bootloader
+<tt>ofwboot.xcf</tt> to an HFS partition.  See the 
+<a href="partitioning.html">Partitioning HOW-TO</a>.
+
+<p>For those unable or unwilling to use MacOS, you still must boot an
+operating system to partition your disk.  There are at present three open
+source OSes you could use (NetBSD, Darwin, and Linux).  Partition using
+the NetBSD <tt>pdisk</tt>, create the HFS filesystem, and copy
+<tt>ofwboot.xcf</tt> to the HFS partition. 
+
+<ul>
+<p><li>Boot NetBSD, use <a href="partitioning.html#pdisk">pdisk</a> to 
+partition, and use
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
+hfstools</a> to format the partition and copy the bootloader.
+
+<p><li>Boot 
+<a href="http://developer.apple.com/darwin/projects/darwin/">Darwin</a>
+(Apple's open source BSD), partition with the NetBSD 
+<a href="partitioning.html#pdisk">pdisk</a> (not the native Darwin 
+pdisk), and run the following commands (using the correct disk and 
+partition numbers, ofcourse): 
+<pre># <b>newfs_hfs /dev/disk0s3</b>
+# <b>mkdir -p /mnt</b>
+# <b>mount /dev/disk0s3 /mnt</b>
+# <b>cp ofwboot.xcf /mnt</b></pre>
+<p><li>Boot Linux and partition using the NetBSD 
+<a href="partitioning.html#pdisk">pdisk</a> (not the native Linux pdisk).  
+Some distributions come with HFS filesystem capabilities built-in.  Mail 
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>  if you 
+can provide a little more detail here.
+</ul>
+
+<p>If you're
 willing to compromise a bit, you can permanently keep <tt>ofwboot.xcf</tt> on
 a netboot server, an ISO 9660 CD-R, or an MS-DOS disk (you'd set your
 <tt>boot-device</tt> to the bootloader location, and your <tt>boot-file</tt>
@@ -226,248 +264,15 @@ Once you do this, you should be golden.
 
 
 <ENTRY>disk-sharing How do I share files between the OSes on my machine?
-Unfortunately, NetBSD doesn't yet support the Macintosh file systems natively
-(i.e. HFS, HFS+, and UFS), so we must use a workaround.  Install
-<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">hfstools</a>
-and/or 
-<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">xhfs</a>
-from the NetBSD package 
-collection.  These utilities allow you to read and write files to an HFS
-(<i>not</i> HFS+ or UFS) file system using command line tools or a graphical
-browser.  If this is too much trouble for you, keep reading.
+Integrated into the <a href="partitioning.html">Partitioning HOW-TO</a>.
 
-<p>Create an MS-DOS format partition.  Classic MacOS will automatically 
-mount it, and the unix-like OSes (NetBSD, linuxppc, Darwin, and MacOS X) can 
-mount it using the <tt>mount_msdos</tt> command.  The steps below outline
-the most straightforward technique.
-
-<p><ol>
-<li>Partition your hard drive from within MacOS using Drive Setup.  <i>This 
-will erase all information on your hard drive.</i>
-
-<p><li>Next, grab a copy of 
-<a href="http://hyperarchive.lcs.mit.edu/cgi-bin/NewSearch?key=disk+charmer&amp;search=&amp;sp=sp">
-Disk Charmer</a> or
-<a href="http://www.versiontracker.com/moreinfo.fcgi?id=1253">DiskCharmer</a>,
- and set it up to create an
-MS-DOS file system.  Your settings should look something like this:
-<p>
-<img src="../../images/ports/macppc/diskcharmer.gif" width="405" height="251"
-alt="screenshot of DiskCharmer">
-
-<p><li>Drag the partition onto DiskCharmer's window and it will prompt you
-before erasing it and creating an MS-DOS file system in place of the HFS 
-file system you created in the first step.
-
-<p><li>Now, when you boot Classic MacOS, this partition will automatically 
-mount using PC Exchange or File Exchange (depending on what it's called in your 
-version of MacOS).  
-
-<p>When you boot into MacOS X, linuxppc, or NetBSD, run the following command:
-<pre>mkdir -p /msdos.filesystem;/sbin/mount_msdos -m 777 /dev/disk0s11 /msdos.filesystem</pre>
-
-where <tt>/msdos.filesystem</tt> is the mount point you'd like, and 
-<tt>/dev/disk0s11</tt> is the device name for your partition.  Alternatively,
-for NetBSD and linuxppc, you can add an entry to your <tt>/etc/fstab</tt>
-to always mount this filesystem.  
-
-<p><li>To get MacOS X and Darwin to automatically mount your MS-DOS file system,
-you need to create a System Startup bundle.  The 
-<a href="http://www.darwinfo.org/howto/SystemStarter_HOWTO.shtml">SystemStarter
-HOWTO</a> is a good reference if you want to learn more about creating your
-own startup bundles.  There's probably a way to do this using 
-<tt>autodiskmount</tt>, but this technique works fine.  The only downside is
-that the MSDOS filesystem is unavailable to the Classic environment.
-Here's an example of what to do:
-<p>
-<ol>
-<li><tt># <b>mkdir -p /Library/StartupItems/MountMSDOS</b></tt>
-<p><li>Create 
-   <tt>/Library/StartupItems/MountMSDOS/StartupParameters.plist</tt> with
-   the following contents:
-<pre>{
-  Description     = "Mount MSDOS partitions";
-  Provides        = ("Manual MSDOS partitions");
-  Requires        = ("Disks");
-  OrderPreference = "None";
-  Messages =
-  {
-    start = "Mounting MSDOS partitions";
-    stop  = "Unmounting MSDOS partitions";
-  };
-}</pre>
-<p><li>Create
-   <tt>/Library/StartupItems/MountMSDOS/MountMSDOS</tt> with
-   the following contents:
-<pre>#!/bin/sh
-
-. /etc/rc.common
-
-##
-# Manually mount HFS partition with MSDOS filesystem
-##
-
-ConsoleMessage "Mount MSDOS partitions"
-
-##
-# Mount your filesystems manually.
-##
-mount_msdos /dev/disk0s11 /Volumes/Thingies</pre>
-<p><li>
-  <tt># <b>chown -R root /Library/StartupItems/MountMSDOS</b></tt><br>
-  <tt># <b>chmod a+rx /Library/StartupItems/MountMSDOS/MountMSDOS</b></tt>
-</ol>
-</ol>
-
-<ENTRY>partitions I'm confused by all these contradicting partition notations
-And you have a right to be.  We get confused too.
-
-<p>There are <i>three</i> partition identification schemes you'll run across
-when using NetBSD/macppc.  To make things more confusing, the order of
-the partitions gets shuffled around, and some have more than others.  Most of
-the users with Open Firmware 1.0.5, 1.1.22, or 2.0.x models need not be
-concerned with these issues, since NetBSD insists on writing its own
-partition map over the contents of your drive, and that's the only partitioning
-scheme you will encounter.  This section is primarily to describe the
-situation on Open Firmware 3 systems.
-
-<p>See also the <a href="partitioning.html">NetBSD/macppc Partitioning 
-HOW-TO</a>
-
-<p><ol>
-<li><b>MacOS-visible partitions (by partition name in Finder):</b><br>
-While you may have created a bunch of partitions in Drive Setup, only
-those partitions visible to MacOS will show up in the Finder.
-
-<p>The only partitions visible to MacOS 9 and earlier are those formatted in
-HFS, HFS+, or MS-DOS formats.  The only partitions visible to MacOS X and later
-are those formatted in HFS, HFS+, and UFS (<i>not</i> NetBSD's 4.2BSD FFS).
-The user can manually mount MS-DOS format partitions as well.
-
-<li><b>Open Firmware's scheme (0 thru max partition number, as seen by
-  Open Firmware, also visible using pdisk):</b><br>
-Additionally, these are the partition numbers used by MacOS X and Darwin.
-The order of partitions is directly related to the order you selected 
-in Drive Setup or the NetBSD partitioning tools.
-<p><table border=1 cellpadding=5>
- <tr><td>0</td>
- <td>a special "partition" reserved for a first stage bootloader</td></tr>
- <tr><td>1 thru ~8</td>
- <td>often reserved for MacOS drivers if the drive is formatted with a MacOS
-  tool, not visible from MacOS</td></tr>
- <tr><td>~9 thru ~15</td>
- <td>user created partitions, placed in order of their physical location on
-  disk (i.e. HFS, A/UX, and UFS partitions are in whatever order the user
-  created them in).</td></tr>
- </table>
-
-<p><li><b>NetBSD-visible partitions (letters a thru h, as seen by 
- <tt>disklabel</tt>):</b><br>
-NetBSD shuffles the partitions around such that things work out better for 
-itself.  The <tt>fstype</tt> reported by <tt>disklabel(8)</tt> is set
-by the Apple Partition Map flags, and does not depend on the actual
-type of filesystem on that partition (be it NetBSD FFS, Apple HFS, or MS-DOS).
-In particular, MS-DOS formatted partitions show up as <tt>HFS</tt> partitions.
-
-<p><table border=1 cellpadding=5>
- <tr><td>a</td>
- <td>Your "A/UX Root" partition, regardless of its order on the disk</td></tr>
- <tr><td>b</td>
- <td>Your "A/UX Swap" partition, regardless of its order on the disk</td></tr>
- <tr><td>c</td>
- <td>This is the entire disk (first sector to last sector)</td></tr>
- <tr><td>d-f</td>
- <td>First few non-A/UX partitions (usually the user HFS(+) partitions)</td></tr>
- <tr><td>g</td>
- <td>Your "A/UX User" partition (if present), regardless of its order on the disk</td></tr>
- <tr><td>h</td>
- <td>Additional non-A/UX partitions (usually user HFS(+) partitions)</td></tr>
-</table>
-</ol>
-
-<p>So, for example the following is what Drive Setup created on my PowerBook 
-(FireWire):
-<p><table border=1 cellpadding=5>
-<tr><td><b>MacOS</b></td><td><b>OF/OSX</b></td><td><b>NetBSD</b></td> 
-  <td><b>Comment</b></td><td><b>Apple Partition Map type</b></td>
-  <td><b>disklabel fstype</b></td></tr>
-
-<tr><td><br></td>        <td>0</td>  <td><br></td>    
-  <td>bootloader</td>               <td><br></td>
-  <td><br></td></tr>
-
-<tr><td><br></td>        <td>1</td>  <td><br></td>    
-  <td>MacOS driver</td>             <td>Apple_partition_map Apple</td>
-  <td>unknown</td></tr>
-
-<tr><td><br></td>        <td>2</td>  <td><br></td>    
-  <td>MacOS driver</td>             <td>Apple_Driver43*Macintosh</td>
-  <td>unknown</td></tr>
-
-<tr><td><br></td>        <td>3</td>  <td><br></td>    
-  <td>MacOS driver</td>             <td>Apple_Driver43*Macintosh</td>
-  <td>unknown</td></tr>
-
-<tr><td><br></td>        <td>4</td>  <td><br></td>    
-  <td>MacOS driver</td>             <td>Apple_Driver_ATA*Macintosh</td>
-  <td>unknown</td></tr>
-
-<tr><td><br></td>        <td>5</td>  <td><br></td>    
-  <td>MacOS driver</td>             <td>Apple_Driver_ATA*Macintosh</td>
-  <td>unknown</td></tr>
-
-<tr><td><br></td>        <td>6</td>  <td><br></td>    
-  <td>MacOS driver</td>             <td>Apple_FWDriver Macintosh</td>
-  <td>unknown</td></tr>
-
-<tr><td><br></td>        <td>7</td>  <td><br></td>    
-  <td>MacOS driver</td>             <td>Apple_Driver_IOKit Macintosh</td>
-  <td>unknown</td></tr>
-
-<tr><td><br></td>        <td>8</td>  <td><br></td>    
-  <td>MacOS driver</td>             <td>Apple_Patches Patch Partition</td>
-  <td>unknown</td></tr>
-
-<tr><td>Untitled</td>   <td>9</td>  <td>d</td>    
-  <td>MacOS 9 boot partition</td>   <td>Apple_HFS untitled</td>
-  <td>HFS</td></tr>
-
-<tr><td>Untitled 2</td> <td>10</td> <td>e</td>    
-  <td>MacOS X boot partition</td>   <td>Apple_HFS untitled 2</td>
-  <td>HFS</td></tr>
-
-<tr><td>Untitled 3</td> <td>11</td> <td>f</td>    
-  <td>MS-DOS shared partition</td>  <td>Apple_HFS untitled 3</td>
-  <td>HFS</td></tr>
-
-<tr><td><br></td>        <td>12</td> <td>a</td>      
-  <td>NetBSD boot partition</td>    <td>Apple_UNIX_SVR2 A/UX Root</td>
-  <td>4.2BSD</td></tr>
-
-<tr><td><br></td>        <td>13</td> <td>b</td>      
-  <td>NetBSD swap</td>              <td>Apple_UNIX_SVR2 Swap</td>
-  <td>swap</td></tr>
-
-<tr><td><br></td>        <td>14</td> <td>g</td>      
-  <td>unused disk space</td>        <td>Apple_Free Extra</td>
-  <td>unknown</td></tr>
-
-<tr><td><br></td>        <td><br></td> <td>c</td>      
-  <td>NetBSD whole disk</td>         <td><br></td>
-  <td>unused</td></tr>
-</table>
-
-<p>After installation, one of the HFS partitions, "Untitled" (which is
-partition 9 to Open Firmware, and partition d to NetBSD) has 
-<tt>ofwboot.xcf</tt>, and one of the A/UX partitions (which is partition 12
-to Open Firmware, and partition a to NetBSD) has my NetBSD kernel, so I use 
-the following command to boot:
-<pre>boot hd:9,ofwboot.xcf hd:12</pre>
+<ENTRY>partitions Explaining the partition naming schemes
+Moved to the <a href="partitioning.html#nomenclature">Partitioning HOW-TO</a>.
 
 <ENTRY>scroll-speed Why does the screen scroll text so slowly?
 The text console code is not optimized in the GENERIC kernel.  There is
-accelerated text console code in NetBSD 1.6, but it is not enabled by
-default.
+accelerated text console code in NetBSD 1.6 and later, but it is not 
+enabled by default.
 <p>
 You will need to build a new kernel.  Add the following line to your 
 <a href="../../Documentation/kernel/#how_to_build_a_kernel">
@@ -642,7 +447,7 @@ The solution is to use <tt>date(1)</tt> to set the time correctly.
 <ENTRY>power-off Woah, my machine just powered off!
 
 Well, that's probably because you're using a recent laptop (iBook,
-PowerBook (FireWire), or a PowerBook G4) and NetBSD 1.5 or 1.5.1.
+PowerBook (FireWire), and some later models) and NetBSD 1.5 or later.
 <p>
 The page up key sequence (<tt>FN-uparrow</tt>) will panic a NetBSD 1.5.1 or
 1.5 kernel.  This is fixed in NetBSD 1.5.2 and later.
@@ -685,12 +490,12 @@ Until this situation is fixed, there is a workaround.  You need to
 <a href="../../Documentation/kernel/#how_to_build_a_kernel">
 build a kernel</a> with the following setting:
 <pre>#config		netbsd	root on ? type ? #to automatically detect root device
-config		netbsd	root on sd0 type ffs #for SCSI disk
-#config		netbsd	root on wd0 type ffs #for IDE disk
+config		netbsd	root on sd0a type ffs #for SCSI disk
+#config		netbsd	root on wd0a type ffs #for IDE disk
 #config		netbsd	root on ? type nfs #for netboot
 </pre>
 
-where <tt>sd0</tt> is the name of the device with your root filesystem.
+where <tt>sd0a</tt> is the name of the partition with your root filesystem.
 
 
 <!-- ======================================== -->
@@ -757,13 +562,13 @@ matter of sharing this code between rs6000 and macppc.
 
 <ENTRY>powerbook Are PowerPC-based PowerBooks supported?
 
-Some of them.  See the <a href="models.html">NetBSD/macppc supported
+Many of them.  See the <a href="models.html">NetBSD/macppc supported
 models list</a>. 
 
 <p>The PowerBook 1400, 2300, and 5300 are not supported,
 because they do not have Open Firmware.
 
-<p>Some of the most recent models (iBook. iBook SE, iBook (Dual USB), PowerBook 
+<p>Some of the more recent models (iBook. iBook SE, iBook (Dual USB), PowerBook 
 (FireWire), and PowerBook G4 (Titanium)) have keyboards that were first 
 supported in NetBSD 1.5.1.  Versions of NetBSD prior to this required a 
 kernel patch.
@@ -821,12 +626,16 @@ then you should follow the directions in this
 and this
 <a href="http://mail-index.netbsd.org/port-macppc/2001/01/05/0007.html">post</a>.
 
+<p>If your L3 cache is not enabled by default, then follow the directions 
+in this 
+<a href="http://mail-index.netbsd.org/port-macppc/2003/02/27/0000.html">post</a>
+
 <ENTRY>peripherals What peripherals are supported?
 The 
-<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6/macppc/INSTALL.html">
-NetBSD/macppc 1.6 Install Notes</a> have a full list of supported hardware
+<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">
+NetBSD/macppc 1.6.1 Install Notes</a> have a full list of supported hardware
 in the section "Supported devices".
-<br>Unless otherwise specified, third-party devices (such as PCI and cardbus 
+Unless otherwise specified, third-party devices (such as PCI and cardbus 
 cards) cannot be used to boot NetBSD/macppc.
 
 <p>
@@ -846,8 +655,8 @@ cards) cannot be used to boot NetBSD/macppc.
   <ul>
     <li> On-board 79C950 (MACE) ethernet (<i>mc</i>)
     <li> On-board bmac ethernet, 10Base-T only (<i>bm</i>)
-    <li> On-board gmac ethernet (<i>gm</i>)
-    <li> On-board AirPort (<i>wi</i>)<br>
+    <li> On-board gmac ethernet (<i>gem</i>)
+    <li> On-board AirPort (a.k.a. AirMac) (<i>wi</i>)<br>
      <i>See <a href="#airport">How do I use my AirPort or AirMac network?</a></i>
     <li> PCI, PCMCIA, cardbus, and USB ethernet devices
         (<i>tlp</i>, <i>epic</i>, <i>ex</i>, <i>fxp</i>, <i>rtk</i>, <i>vr</i>,
@@ -899,7 +708,7 @@ cards) cannot be used to boot NetBSD/macppc.
       Some <a href="models.html#no.ofw.fb">models</a> are not able to
       boot NetBSD/macppc when using their on-board video.
     <li> PCI video cards with Open Firmware support (<i>ofb</i>)<br>
-      ATI, IMS, Matrox, and NVIDIA all have models that support Open Firmware
+      ATI, IMS, Matrox, and NVIDIA have models that support Open Firmware
   </ul>
 
   <p><li> <strong>Audio</strong>
@@ -952,8 +761,7 @@ cards) cannot be used to boot NetBSD/macppc.
   <li> Power management
   <li> Full <a href="../../Documentation/wscons/">wscons</a> capabilities 
        such as virtual terminals and color text
-  <li> Use of more than one processor (the extra CPUs sit idle)
-  <li> Common FireWire (IEEE 1394)devices, such as disks, CD-RWs, and scanners
+  <li> Common FireWire (IEEE 1394) devices, such as disks, CD-RWs, and scanners
   <li> On-board video capture
 </ul>
 
@@ -1048,16 +856,16 @@ floppy drive have Open Firmware 3.  All laptop models without built-in SCSI
 have Open Firmware 3.
 
 <p><i>Note:</i> Open Firmware 3 systems have a rewritable "firmware", also
-called the <em>BootROM</em>. When you use an Apple firmware updater, it
-updates the BootROM. This will <b>not</b> change the version of Open
+called the <em>BootROM</em>. It's easy to get the BootROM version confused
+with the Open Firmware version.  When you use an Apple firmware updater,
+it updates the BootROM. This will <b>not</b> change the version of Open
 Firmware in your machine - it will still be Open Firmware 3. The BootROM
 is what is first executed when you power on or reset your system. The
-BootROM then loads Open Firmware, which boots your operating system.
-<p>
-This BootROM 
-version can be found using Apple System Profiler in MacOS.  Often, it is 
-listed on the first line of your screen when you first boot into Open 
-Firmware.  For example, my PowerBook (FireWire) prints:
+BootROM then loads Open Firmware, which boots your operating system. 
+
+<p>This BootROM version can be found using Apple System Profiler in MacOS. 
+Often, it is listed on the first line of your screen when you first boot
+into Open Firmware.  For example, my PowerBook (FireWire) prints: 
 
 <p><pre>Apple PowerBook3,1 2.1f1 BootROM built on 01/29/00 at 22:38:07
 Copyright 1994-2000 Apple Computer, Inc.
@@ -1071,8 +879,8 @@ Welcome to Open Firmware.
 <ENTRY>ofw-bugs Are there bugs in my machine's Open Firmware implementation?
 
 Probably.  The
-<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6/macppc/INSTALL.html">
-NetBSD/macppc 1.6 Install Notes</a>
+<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">
+NetBSD/macppc 1.6.1 Install Notes</a>
 describe how to patch or upgrade your Open Firmware to work around these
 bugs.  See the section on "Updating your BootROM" for Open Firmware 3 systems,
 and the section "Older Open Firmware System Preparation" for systems with
@@ -1081,8 +889,8 @@ Open Firmware 1.0.5, 2.0.x, and 2.4.
 <ENTRY>ofw-access How do I get to the Open Firmware prompt?
 
 Read the 
-<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6/macppc/INSTALL.html">NetBSD 
-1.6 install notes</a>.  In particular, scroll down to the section on
+<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">NetBSD 
+1.6.1 install notes</a>.  In particular, scroll down to the section on
 "Getting to the Open Firmware Prompt" for your particular version of Open 
 Firmware.
 
@@ -1093,8 +901,8 @@ href="SystemDisk-tutorial/">tutorial</a> on how to do this.
 <ENTRY>ofw-boot-serial I tried to get into Open Firmware, but it just stopped booting, and my monitor isn't showing anything.
 
 You didn't read the
-<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6/macppc/INSTALL.html">NetBSD 
-1.6 install notes</a>.  In particular, scroll down to the section on
+<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">NetBSD 
+1.6.1 install notes</a>.  In particular, scroll down to the section on
 "Getting to the Open Firmware Prompt on Older Models".  It's a bit lengthy, 
 but very clear in describing the proper steps to set up Open Firmware.
 
@@ -1204,6 +1012,25 @@ devices to <tt>ttya</tt> with
 <a href="SystemDisk-tutorial/">System Disk</a> and connecting a serial
 cable to another machine running a terminal emulator.
 
+
+<ENTRY>ofw-clear How do I clear a corrupt Open Firmware?
+If you have an Open Firmware 3 model and you've changed settings such 
+that you can't even get to the Open Firmware prompt or boot MacOS, then you 
+may have corrupted the BootROM (such as with a bad 
+<a href="#ofw-load-base"><tt>load-base</tt></a> or
+<a href="#ofw-real-base"><tt>real-base</tt></a>).  You may need to get Apple
+to re-flash your BootROM firmware.
+
+<p>If you have an earlier model (Open Firmware 1.0.5, 1.1.22, 2.0.x, 
+2.4), then you will need to unplug your machine from the AC mains (110 or 
+220 V) and remove the battery from the motherboard.  It may take some 
+time (hours) for the charge stored in the power supply to drain and the 
+NVRAM to clear.  To speed up the process you might try pressing the power 
+button.  More riskily (i.e. do at your own risk) you can try 
+connecting the battery backwards in the socket or shorting the terminals 
+with a resistor.
+
+<p>Don't forget to set the date!
 
 <ENTRY>ofw-use What can I do at the Open Firmware prompt?
 <a name="ofw-misc">
@@ -1439,8 +1266,7 @@ reported that the default value of <tt>real-base</tt> causes problems that
 manifest themselves as strange SCSI problems, or <tt>ofwboot</tt> hanging
 while loading a large kernel (typically over 3 MB in size).
 Makoto Fujiwara
-<a href="http://mail-index.netbsd.org/port-macppc/2000/08/13/0004.html">
-reports</a> that changing the <tt>real-base</tt> will fix this problem.
+reportsthat changing the <tt>real-base</tt> will fix this problem.
 <p>
 Open Firmware 3 machines have re-writable firmware, and users have found
 that changing the <tt>real-base</tt> will overwrite their firmware,
@@ -1562,6 +1388,11 @@ listing of.  If you do not specify the partition number, Open Firmware
 will try to find the first partition it understands.  The comma separates
 the device and partition from the directory or files. 
 
+<p>Unfortunately, there's no method of listing the partition map from 
+within Open Firmware.  You can, however, use the NetBSD 
+<a href="partitioning.html#pdisk">pdisk</a> on any OS to list your 
+partitions.
+
 <p>Open Firmware uses backslash characters to separate directories, and
 you must specify the top level of a device with an "<tt>\</tt>".  You can also
 get directory listings of individual files or files in folders using backslash
@@ -1569,10 +1400,14 @@ characters to separate directories.
 
 <p>Keep in mind that the Open Firmware <tt>dir</tt> command can only list 
 the contents of file systems that Open Firmware understands.  For Open Firmware 
-1.0.5, 1.1.22, and 2.0.x, you can use ISO 9660 (<i>not hybrid</i>) and 
-MS-DOS.  For Open Firmware 2.4, you can use ISO 9660, HFS, HFS+, and 
-MS-DOS.  For Open Firmware 3, you can use hybrid ISO 9660/HFS (<i>not</i>
+1.0.5, 1.1.22, and 2.0.x, you can list ISO 9660 (<i>not hybrid</i>) and 
+MS-DOS.  For Open Firmware 2.4, you can list ISO 9660, HFS, HFS+, and 
+MS-DOS.  For Open Firmware 3, you can list hybrid ISO 9660/HFS (<i>not</i>
 pure ISO 9660), HFS, HFS+, and MS-DOS.
+
+<p>The official NetBSD install CD-R image and floppy images are a bit 
+funky (i.e. they have a "partition zero" bootloader).  You won't be able to 
+get a listing of the files from within Open Firmware.
 
 <p>For example,
 to get a listing of the files on a floppy, type:
@@ -1594,8 +1429,8 @@ To get your client's dhcp or bootp information from ethernet, type:
 <ENTRY>boot-support What are the supported ways of booting NetBSD/macppc?
 
 See the
-<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6/macppc/INSTALL.html">
-NetBSD/macppc 1.6 Install Notes</a> and read the section entitled
+<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">
+NetBSD/macppc 1.6.1 Install Notes</a> and read the section entitled
 "Available Boot Media".
 
 <ENTRY>boot-disk How do I make a disk bootable, and what are the Open Firmware commands to boot from it?
@@ -1603,8 +1438,8 @@ NetBSD/macppc 1.6 Install Notes</a> and read the section entitled
 This depends entirely on what version of Open Firmware your machine has,
 and what you're trying to boot from. Read the "Preparing the Bootable
 Media" and "Open Firmware boot syntax" sections of the 
-<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6/macppc/INSTALL.html">
-NetBSD/macppc 1.6 Install Notes</a>. 
+<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">
+NetBSD/macppc 1.6.1 Install Notes</a>. 
 
 <p>See also <a href="#ofw-version">Which version of Open Firmware does my 
 machine have?</a>, the <tt>ofwboot(7)</tt> man page, the 
@@ -1677,7 +1512,9 @@ specify the partition number and the bootloader filename.  Typically,
 Open Firmware 1.0.5, 2.0.x, and 2.4 systems use a "partition zero" bootloader, 
 and thus <tt>:0</tt> is appended to the path.  Open Firmware 3 systems
 load <tt>ofwboot.xcf</tt> from an HFS partition (usually 9 or higher), so
-you'd append something like <tt>:9,\ofwboot.xcf</tt> to the path.
+you'd append something like <tt>:9,\ofwboot.xcf</tt> to the path.  Use
+the NetBSD <a href="partitioning.html#pdisk">pdisk</a> to list the 
+partition map.
 
 <p><li>Now, you'd want to type the following to set up a hard drive with
 <tt>ofwboot.xcf</tt> on the 9th partition of a SCSI ID 5 drive attached to
@@ -1719,8 +1556,8 @@ closest to you, download the image, and burn it to a CD-R.
 
 <p>See the section titled <a name="cdr151">"Boot off the
 NetBSD/macppc CD-R image"</a> in the
-<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6/macppc/INSTALL.html">
-NetBSD/macppc 1.6 Install Notes</a>.
+<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">
+NetBSD/macppc 1.6.1 Install Notes</a>.
 
 <p><i>Note: The install kernel on the 1.5.1 and 1.5.2 CDs will not
 recognize the IDE bus in the PowerMacintosh G3 (Blue & White) systems.</i>
@@ -1735,6 +1572,11 @@ href="http://mail-index.netbsd.org/port-macppc/1999/03/12/0002.html">port-macppc
 mail archives</a>.)
 <p>
 Note, this is entirely different than the Darwin BootX bootloader.
+
+<ENTRY>yaboot Can I use the Linux yaboot bootloader to boot NetBSD/macppc?
+Yes.  See this <a 
+href="http://mail-index.netbsd.org/port-macppc/2003/04/22/0009.html">post</a>
+for some suggestions.
 
 <ENTRY>bootx-darwin Can I use the Darwin/MacOS X BootX bootloader to boot NetBSD/macppc?
 No, although it should be easier to port to NetBSD/macppc than the linuxppc
@@ -1846,8 +1688,10 @@ present or the device path is mistyped) or the file you specified. Check
 your typing and check to make sure that the media has the files you think
 it has. 
 
-<p>Use the <a href="#ofw-dir-listing"><tt>dir</tt></a> command to get a listing 
-of the files. 
+<p>Use the NetBSD <a href="partitioning.html#pdisk">pdisk</a> to get a
+listing of the partition map and the Open Firmware
+<a href="#ofw-dir-listing"><tt>dir</tt></a> command to get a listing of the
+files on that partition.
 
 <ENTRY>formatstate-not-valid <tt>unrecognized Client Program formatstate not valid</tt>
 This is a general Open Firmware error message indicating that the filename
@@ -1861,6 +1705,16 @@ a kernel).
 You tried booting an Open Firmware 1.x or 2.0.x machine from a device
 which has an HFS filesystem on it (such as a hybrid CD-R or a hard drive
 with MacOS partitions). 
+
+<ENTRY>ofw-read-timeout <tt>READ TIMEOUT@</tt>
+Open Firmware is having trouble reading your floppy disk.  Things to try:
+<ul>
+<li>Try booting from the floppy again
+<li>Try a different floppy disk
+<li>Try writing the floppy on the same machine you're trying to boot
+<li>Clean the floppy drive
+<li>Use another boot method
+</ul>
 
 <ENTRY>drive-spinup My hard drive doesn't spin up before Open Firmware tried booting
 To add a delay before trying to boot (to allow a hard drive to spin up),
@@ -1903,7 +1757,7 @@ boot command is different, so at the Open Firmware prompt, type:
 
 
 <ENTRY>pb418 PowerBook (FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8
-This problem is fixed in NetBSD 1.6.
+This problem is fixed in NetBSD 1.6 and later.
 <p>
 The two models listed above will fail to boot NetBSD 1.5.x and earlier if 
 they have have <a href="#ofw-version">BootROM</a> version 4.1.8 or later.
@@ -2017,7 +1871,7 @@ Cross-compiling userland is slightly more complicated. (XXX finish)
 
 <ENTRY>linux Can NetBSD/macppc run MkLinux or LinuxPPC binaries?
 Yes. Linux binary compatibility for PowerPC ports is supported in 
-NetBSD 1.6, but is not enabled by default.  You will need to 
+NetBSD 1.6 and later, but is not enabled by default.  You will need to 
 <a href="../../Documentation/kernel/#how_to_build_a_kernel">build a kernel</a>
 with <tt>options        COMPAT_LINUX</tt> uncommented.
 Applications that are reported to work include 
@@ -2115,8 +1969,8 @@ On NetBSD-current (1.6A or later),
 <hr>
 <address>
   <small>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.118 2003/02/21 17:55:49 manu Exp $<br>
+  <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: faq.list,v 1.120 2003/05/04 06:03:28 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1998-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
