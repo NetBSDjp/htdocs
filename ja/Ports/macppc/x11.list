@@ -4,189 +4,190 @@
 <head>
 <!-- Copyright (c) 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD/macppc X11 FAQ</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
 <h1>NetBSD/macppc X11 FAQ</h1>
 
-This page describes the various issues related to the X Window System on
-NetBSD/macppc systems.
+このページでは、 NetBSD/macppc システム上の X Window System に関する
+様々なことがらを説明します。
 
 <LIST>
 
-<h2>See also the following related information:</h2>
+<h2>関連する下記の情報も参照してください:</h2>
 <ul>
-<li>NetBSD Documentation: <a href="../../Documentation/x/">X Window System</a>
+<li>NetBSD ドキュメンテーション: <a href="../../Documentation/x/">X Window System</a>
 <li><a href="http://www.xfree86.org">The Xfree86 Project Home Page</a>
 </ul>
 
-<SECTION>General Questions
+<SECTION>全般的な質問
 
-<ENTRY>which-x Which X Window System package should I use?
-Xmacppc or XFree86?  There are two complete X Window System packages
-available for the macppc platform.  
+<ENTRY>which-x どの X Window System パッケージを使えばよいですか?
+Xmacppc ですか? それとも XFree86 ですか? macppc プラットフォームで使える完全な
+X Window System パッケージは、二つあります。
 <p>
-The <a href="#xmacppc-support">Xmacppc</a> package uses the raw
-device that is set up by Open Firmware.  It is very limited in capability,
-but runs on almost all supported macppc models.  It cannot change the
-resolution of your screen or use more than 8 bpp color depth.  It does not
-have any acceleration of any sort.
+<a href="#xmacppc-support">Xmacppc</a> パッケージは、 Open Firmware によって
+セットアップされた raw デバイスを使います。これは機能が非常に限られますが、
+NetBSD でサポートしている macppc の機種のほとんどすべてで動きます。
+画面解像度の変更や 8 bpp を超える色数の使用はできません。
+これは、いかなる種類のアクセラレーションも持っていません。
 <p>
-The <a href="#xfree-support">XFree86</a> package uses
-its own knowledge about the video card's chipset, but there are no
-drivers for the older macppc models which used Apple-developed video
-chipsets (as opposed to newer systems which use video cards from ATI or
-NVIDIA).  Thus, XFree86 supports a small subset of all supported macppc
-models, but it is a much more capable X server -- it handles resolution
-switching and more than 8 bpp color depth, in addition to some
-acceleration.
+<a href="#xfree-support">XFree86</a> パッケージは、
+ビデオカードのチップセットに関して自身のもつ知識を使いますが、
+(ATI や NVIDIA 製のビデオカードを使っている最近の機種とは対照的に)
+Apple 開発のビデオチップセットを持つ古い macppc の機種には
+ドライバーがありません。このため、 XFree86 は NetBSD/macppc
+対応機種の一部しかサポートしていませんが、より高機能の X サーバーです
+-- 解像度切り替えや 8 bpp を超える色数を扱えるほか、
+いくらかのアクセラレーションもあります。
 
-<ENTRY>delete How come the delete key produces a tilde (<tt>~</tt>) instead of deleting?
-Actually, it produces the proper VT100 delete key, not the delete escape
-sequence (which is what just about every other VT100 emulator does).
+<ENTRY>delete delete キーが消去でなくチルダ (<tt>~</tt>) になるのはなぜ?
+実は、 delete キーは delete エスケープシーケンス (他のすべての VT100
+エミュレーターが使っている) ではなく、本来の VT100 の delete
+キーを出しています。
 <p>
-You will need to run the following command each time you start the X
-server:
+これを変えるには、下記のコマンドを
+X サーバーを起動するたびに実行する必要があります:
 <pre># <b>xmodmap -e "keycode 59 = BackSpace"</b></pre>
-Of course, you can place this command into your <tt>xdm/Xsetup_0</tt> file
-or in each users' <tt>.xinitrc</tt>.
+もちろん、このコマンドを <tt>xdm/Xsetup_0</tt> ファイルや各ユーザーの
+<tt>.xinitrc</tt> ファイルに書いておいてもかまいません。
 
 <p>
-To get only xterm to recognize this, insert the following line into one of
-the default setting locations:
+単に xterm をこのようにしたいだけなら、次の 1 行をデフォルト設定として
+どこかに書いておきます:
 <pre>XTerm*VT100*deleteIsDEL: true</pre>
 
 <p>
-While the most universal location would be
-<tt>/usr/X11R6/lib/X11/app-defaults/XTerm</tt>, this might cause problems
-if you or one of your users runs an xterm on a remote X server without
-the correct VT100 delete key.  Less intrusively, you could put it into
-the <tt>.Xdefaults</tt> file in the home directory of each user that will
-be using X from the console.
+これのもっとも一般的な場所は
+<tt>/usr/X11R6/lib/X11/app-defaults/XTerm</tt> ですが、ここに書くと、
+あなたやユーザーが、本来の VT100 delete キーとなっていないリモート
+X サーバーで xterm を実行した場合に問題を起こします。
+最も無難には、 X をコンソールから使うユーザー全員のホームディレクトリーの
+<tt>.Xdefaults</tt> ファイルに書いておくことができます。
 
 <ENTRY>root-console <tt>Cannot open kbd/mouse : no such file or directory</tt>
-This happens when a non-root user tries to run <tt>startx</tt> or
-<tt>xinit</tt>.  The default behavior of NetBSD/macppc is for the console
-devices to belong only to root.  We suggest you run something like xdm,
-which will change the permissions when a user sucessfully logs in.
+これは、 root 以外のユーザーが <tt>startx</tt> や <tt>xinit</tt>
+を実行しようとしたときに起こります。 NetBSD のデフォルトでは、
+コンソールデバイスは root だけのものになっています。
+xdm などを使ってはどうでしょうか。
+xdm は、ユーザーがうまくログインするとパーミッションを変更します。
 <p>
-Alternatively, you can use ttyaction(5) which changes the permissions when 
-the user logs in.  For example, create <tt>/etc/ttyaction</tt> with the 
-following contents:
+このほか、 ttyaction(5) を使って、ユーザーのログイン時にパーミッションを
+変えることもできます。たとえば、下記の内容をもつ <tt>/etc/ttyaction</tt>
+を作ります。
 <pre>console * /usr/sbin/chown ${USER} /dev/wskbd0 /dev/wsmouse0
 ttyE0   * /usr/sbin/chown ${USER} /dev/wskbd0 /dev/wsmouse0</pre>
 
 
-<ENTRY>mouse-buttons How can I emulate a 3-button mouse with a 1-button mouse in X?
+<ENTRY>mouse-buttons X で 1 ボタンマウスを使って 3 ボタンマウスをエミュレートする方法は ?
 
-At the moment, you can only set up keys on your keyboard to be mouse 
-keys.  We suggest trying to find a cheap 3 button mouse, as most ADB
-and USB mice are supported.
+今のところ、キーボードのキーをマウスのキーとして設定することができるだけです。
+安価な 3 ボタンマウスを探してみてください。ほとんどの
+ADB と USB マウスはサポートされています。
 <p>
-You will be using xmodmap(1)
-to remap keys on your keyboard to mouse buttons.
-Create an <tt>.xmodmaprc</tt> file in each users' home directory, and have
-their <tt>.xinitrc</tt> run `<tt>xmodmap .xmodmaprc</tt>'. The contents of
-the <tt>.xmodmaprc</tt> will specify which key enables/disables the keyboard
-pointer buttons, and which keys correspond to which mouse buttons.  For
-example, on an Apple Extended Keyboard II, I use:
+キーボードのキーをマウスのキーとして割り当てるには、
+xmodmap(1) を使います。
+各ユーザごとのホームディレクトリーに <tt>.xmodmaprc</tt> ファイルを作り、
+<tt>.xinitrc</tt> で `<tt>xmodmap .xmodmaprc</tt>' を実行するようにします。
+<tt>.xmodmaprc</tt> の内容は、どのキーをキーボードでのマウスボタンの有効/
+無効化に使うか、また、どのキーをマウスをどのボタンに割り当てるか、によって
+変わります。たとえば、 Apple Extended Keyboard II で、筆者は次のように
+しています:
 <pre>keycode  79 = Pointer_EnableKeys
 keycode 113 = Pointer_Button1
 keycode 115 = Pointer_Button2
 keycode 121 = Pointer_Button3</pre>
-where keycode 79 is the `<tt>Num Lock</tt>' key (which enables/disables
-mouse keys), and 113, 115, and 121 correspond to F13, F14, and F15.
+ここで、 keycode 79 は `<tt>Num Lock</tt>' キー (マウスキーを有効/
+無効化する) 、 113、 115、 121 は F13、 F14、 F15 キーです。
 <p>
-On my PowerBook (FireWire), I use F8 (108) to enable and F10 (117), F11
-(111), and F12 (119) for the mouse keys.
+PowerBook (FireWire) では、筆者は F8 (108) を有効化に、 F10 (117)、 F11
+(111)、 F12 (119) をマウスキーとして使っています。
 <p>
-To figure out what keys correspond to which keycodes, use the 
+キーとキーコードの対応を調べるには、
 xev(1)
-command.  You may also want to put your keymap for the <a
-href="#delete">delete key</a> into your <tt>.xmodmaprc</tt> as well.
+コマンドを使います。このほか、同様にして <a
+href="#delete">delete キー</a> を <tt>.xmodmaprc</tt> に
+入れたいと思うかもしれません。
 
 
-<SECTION>XFree86 Questions
+<SECTION>XFree86 の質問
 
-<ENTRY>xfree-support Which models can run XFree86?
-Only models that have supported video cards with appropriate Open Firmware
-initialization.  In general, this means only recent models (i.e. Open
-Firmware 3) or a supported video card (such as an ATI Rage 128).
+<ENTRY>xfree-support XFree86 が使える機種は?
+サポートされているのは Open Firmware の初期化に対応しているビデオカード
+だけです。言いかえれば、最近の機種 (つまり Open Firmware 3) または
+サポートされているビデオカード (ATI Rage 128 など) だけということです。
 <p>
-To install Xfree86, you will need to:
+Xfree86 のインストールは、以下のことが必要です:
 <ol>
-<li>download the pre-compiled XFree86 distribution:<br>
+<li>コンパイル済 XFree86 の配布物のダウンロードdistribution:<br>
   <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/X-4.0.1-1.5/">
   ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/X-4.0.1-1.5/</a>
-<li>remove your existing X WIndow System package in <tt>/usr/X11R6</tt>
-  and extract the XFree86 distribution
-<li>Create an <a href="#xfconfig"><tt>/etc/X11/XF86Config</tt></a> file
-  which describes your hardware and settings
-<li><a href="http://www.netbsd.org/Documentation/kernel/index.html#how_to_build_a_kernel">
-Compile and install a kernel</a> with `<tt>options INSECURE</tt>'.
+<li><tt>/usr/X11R6</tt> 以下にもとからある X WIndow System パッケージを消去し、
+  XFree86 の配布物を展開する
+<li><a href="#xfconfig"><tt>/etc/X11/XF86Config</tt></a> ファイルを作り、
+  ここにハードウェアと設定について記述する
+<li>`<tt>options INSECURE</tt>' を付けて
+<a href="http://www.netbsd.org/Documentation/kernel/index.html#how_to_build_a_kernel">カーネルをコンパイル・インストールする</a>。
 </ol>
 
-<ENTRY>xfconfig How do I create an XF86Config file?
-Coming soon.
+<ENTRY>xfconfig XF86Config ファイルの作り方は ?
+準備中。
 
 <ENTRY>insecure <tt>Fatal server error: ppcPciInit: /dev/kmem</tt>
-Unfortunately, at present, the XFree86 X server requires direct access to
-<tt>/dev/kmem</tt> which is typically something you only want root
-programs to have access to.  By doing the following, you are opening up a
-security hole (albeit a small one).
+残念ながら、今のところ XFree86 X サーバーは、通常は root
+プログラムだけがアクセス可能とすべき <tt>/dev/kmem</tt>
+への直接のアクセスを必要とします。下記のようにすることで、
+(小さなものとはいえ) セキュリティーホールを作ることになります。
 <p>
-You will need to <a
-href="http://www.netbsd.org/Documentation/kernel/index.html#how_to_build_a_kernel">
-compile a new kernel</a> with `<tt>options INSECURE</tt>', as
-this is not enabled in the default GENERIC kernel shipped with
-distributions of NetBSD.
+`<tt>options INSECURE</tt>' を指定して <a
+href="../../Documentation/kernel/index.html#how_to_build_a_kernel">
+新たにカーネルをコンパイル</a>する必要があります。これは NetBSD
+で配布されているデフォルトの GENERIC カーネルでは有効になっていないからです。
 
-<ENTRY>xkb My keymap is all screwed up.
-You may need to create (as root) the following directory for XFree86 to store
-keyboard mapping information:
+<ENTRY>xkb keymap に失敗します。
+XFree86 がキーボードマッピング情報を保持するために、
+(root で) 下記のディレクトリーを作る必要があるかもしれません。
 <pre>mkdir -p /var/db/xkb;chmod 755 /var/db/xkb</pre>
 
-<SECTION>Xmacppc Questions
+<SECTION>Xmacppc の質問
 
-<ENTRY>xmacppc-support Which models can run Xmacppc?
-Every model that can boot with console support and models with supported
-video cards (that have proper Open Firmware initialization code).  Models
-which require you to use a serial console can not run any X servers.
+<ENTRY>xmacppc-support どの機種で Xmacppc が動きますか ?
+コンソールでのブートが可能な全機種と、サポートされたビデオカードを持つ
+(そのビデオカードが適切な Open Firmware 初期化コードを持つ) 機種です。
+シリアルコンソールを使う必要のある機種では、どの X サーバーも動きません。
 <p>
-While it supports almost every NetBSD/macppc model, the downside is that
-the color depth is limited to 8 bpp, there is no way to change screen
-resolution, and there is no graphics acceleration.
+ほとんどすべての NetBSD/macppc 機種をサポートしますが、制限としては
+色数が 8bpp に制限されることと、画面解像度を変更する方法がないこと、
+グラフィックアクセラレーションがまったくないことです。
 <p>
-This is the standard X server which is distributed with NetBSD 1.5.x.
+これは、 NetBSD 1.5.x とともに配布されている標準的な X サーバーです。
 
-<ENTRY>changing-resolution How do I change the resolution or the number of colors?
-You can't do this from within NetBSD.  These settings need to be changed
-in Open Firmware.  Also, NetBSD/macppc does not yet support color depths
-of more than 8 bpp.
+<ENTRY>changing-resolution 解像度や色数を変える方法は ?
+NetBSD 上では変更できません。 Open Firmware 上で変更しなければなりません。
+また、 NetBSD/macppc は 8 bpp を超える色数には対応していません。
 <p>
-Older machines (7300 - 8600) cannot change resolutions from within
-OF.  They are fixed to 640x480 at 67 Hz (after applying the <a
-href="SystemDisk-tutorial/of105patch.html">patch</a>).  Without this
-patch, the frequency is undetermined (usually 60 Hz or 120 Hz, but could  
-be just about anything).
+古い機種 (7300 - 8600) は OF で解像度を変更できません。
+これらの機種では (<a href="SystemDisk-tutorial/of105patch.html">パッチ</a>適用後) 640x480 、 67 Hz に固定されます。
+パッチを当てない場合は周波数が決まりません
+(たいてい 60 Hz か 120 Hz ですが、そうとも限らないのでなんとも) 。
 <p>
-<!-- On newer machines OF &gt;= 2.0, you can type (at the OF prompt):
+<!-- OF &gt;= 2.0 の新しい機種では、 (OF プロンプトで) 次のようにタイプすると:
 (pre)0 &gt; (b)dev screen(/b)
 0 &gt; (b)show-modes(/b)
 0 &gt; (b)mode#(/b)
 1 &gt; (b).(/b)(/pre)
 (p)
-This will list the resolutions available on your system.  If you set your
-system to one of these resolutions from within MacOS, then Open FIrmware
-should keep that setting. -->
+その機種で有効な解像度がリストされます。
+もし、 MacOS 上で解像度をこのいずれかに設定すれば、
+Open Firmware はその設定を保持するはずです。 -->
 
-On newer machines, you need to set the resolution you want from within
-MacOS.  Open Firmware should then keep that setting.
+最近の機種では、 MacOS で必要な解像度を設定する必要があります。
+Open Firmware はその設定を保持します。
 <p>
-Chris Tribo reports that his XClaimVR 64 card ignores the MacOS monitor
-setting and always comes up at the same resolution.
+Chris Tribo によれば、彼の XClaimVR 64 カードは MacOS のモニターの設定を
+無視して、いつも同じ解像度を使うとのことです。
 
 
 <!-- ======================================== -->
@@ -200,7 +201,9 @@ setting and always comes up at the same resolution.
 <hr>
 <address>
   <small>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
+  (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
   $NetBSD: x11.list,v 1.6 2001/09/13 22:04:19 tv Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
