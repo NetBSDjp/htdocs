@@ -2,4 +2,4 @@
 #	XXX
 
 index.html:	index.m4
-	m4 index.m4 > index.html
+	nkf -e < index.m4 | m4 | nkf -j > index.html
