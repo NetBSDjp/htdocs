@@ -11,6 +11,7 @@
   <LI><A HREF="#mailinglist">Mailing List</A></LI>
   <LI><A HREF="#ftp">ftp</A></LI>
   <LI><A HREF="#rsync">rsync</A></LI>
+  <LI><A HREF="#sup">sup</A></LI>
   <LI><A HREF="#news">news</A></LI>
   <LI><A HREF="#anoncvs">anoncvs</A></LI>
   <LI><A HREF="#httpd">httpd</A></LI>
@@ -37,7 +38,7 @@
  <LI>Mailing List 作成方法
     <UL>
     <LI>オープンなmlの場合(設定が異なる場合は、ezmlm-makeのoptionを変更する)
-    <PRE>
+<PRE>
 su; csh;
 setenv NEWML メーリングリスト名
 ~ezmlm/ezmlm-make -aiklnpr -5 staff@jp.netbsd.org \
@@ -57,15 +58,18 @@ echo "|/usr/local/bin/nkf -mlj | /usr/local/bin/mlist2html /var/mlist/html ${NEW
 mkdir /var/mlist/html/${NEWML}
 chmod 755 /var/mlist/html/${NEWML}
 cp /var/mlist/html/.[fh]* /var/mlist/html/${NEWML}
-    </PRE>
+</PRE>
     <LI>投稿者を参加者に制限する場合<BR>
 この場合はenvelope-fromを見て制限するので使用に注意すること。
-    <PRE>
+<PRE>
 ~ezmlm/ezmlm-make -aiklnpru /var/mlist/ml/${NEWML} \
 	/var/qmail/alias/.qmail-${NEWML} \
 	${NEWML} jp.netbsd.org
+</PRE>
 すでに作成されたMLの場合はoptionに'e'を加える。
+<PRE>
 ~ezmlm/ezmlm-make -eaiklnpru /var/mlist/ml/${NEWML}
+</PRE>
     <LI>htdocs/JP の ml.html と search.html、
         localsrc/namazu-index の NMZ.foot.ja と etc/daily.sh に
 	作成したmailing listを追加する。
@@ -81,6 +85,90 @@ cp /var/mlist/html/.[fh]* /var/mlist/html/${NEWML}
 <H2><A NAME="rsync">[rsync]</A></H2>
 <UL>
  <LI>
+</UL>
+
+<H2><A NAME="sup">[sup]</A></H2>
+<UL>
+ <LI>概要
+   <P>
+   現在 ftp/sup/rsync で提供している内容のうち、cvsリポジトリを除く全
+   ては、sup で取得しています。(cvsリポジトリはrsyncで取得しています。)
+   </P>
+
+ <LI>クライアント設定
+   <P>
+   <DL>
+   <DT><STRONG>/etc/supfiles/coll.list</STRONG><DD>
+<PRE>
+mirror	release=all-export host=sup.NetBSD.ORG hostbase=/ftp/pub base=/etc/supfiles prefix=/ftp/pub/NetBSD use-rel-suffix old delete
+</PRE>
+   </DL>
+   この設定で、「sup -s」を使って sup しています。
+   <P>
+   sup のクライアントの運用には、注意が必要です。sup が失敗した場合、
+   /etc/supfiles/sup/mirror/last.all-export の内容が obsolete になるので、
+   再生成してやる必要があります (ほとんどバグ)。
+   ftp/sup サーバーの場合、本家と同一の内容であり、ローカルに生成したファ
+   イルはない筈ですから、下記のコマンドで再生成できます。
+<PRE>
+cd /ftp/pub/NetBSD
+find . -print | sed 's:^\./::' >/etc/supfiles/sup/mirror/last.all-export
+</PRE>
+
+   /etc/supfiles/sup の下は、かなり大きくなるので、実体は /var の下に
+   持ってます。
+   </P>
+ 
+ <LI>サーバー設定
+   <P>
+   <DL>
+   <DT><STRONG>/etc/supfiles/coll.dir</STRONG><DD>
+<PRE>
+anoncvs		/ftp/pub
+current		/ftp/pub
+release		/ftp/pub
+mirror		/ftp/pub
+</PRE>
+
+   <DT><STRONG>/etc/supfiles/coll.host</STRONG><DD>
+<PRE>
+anoncvs		サーバーのホスト名
+current		サーバーのホスト名
+release		サーバーのホスト名
+mirror		サーバーのホスト名
+</PRE>
+   </DL>
+   <P>
+   この設定の場合、SUP サーバーの list ファイルの設定は
+   <UL>
+   <LI> /ftp/pub/sup/コレクション名/releases
+   <LI> /ftp/pub/sup/コレクション名/list/リリース名
+   </UL>
+   を参照することになります（上述の coll.dir ファイルの設定の結果です）。
+   これらの設定ファイルに関しては、下記のようにして、本家から ftp で
+   ミラーしています。
+<PRE>
+supconf=ftp://ftp.netbsd.org/pub/sup
+hostbase=/ftp/pub
+
+cd $hostbase &&
+wget --no-host-directories --cut-dirs=1 --mirror \
+	$supconf/mirror/releases \
+	$supconf/mirror/list \
+	$supconf/mirror/list.export \
+	$supconf/anoncvs/releases \
+	$supconf/anoncvs/list \
+	$supconf/current/releases \
+	$supconf/current/list \
+	$supconf/release/releases \
+	$supconf/release/list
+</PRE>
+   <P>
+   「sup -s -v」および上記の releases/list 設定ファイルのミラー後、
+   「supscan -s」を実行して、ファイルの更新時刻情報をキャッシュして
+   います。キャッシュは、上記の releases ファイルの設定の結果、
+	/ftp/pub/sup/コレクション名/scan/リリース名
+   に生成されます。
 </UL>
 
 <H2><A NAME="news">[news]</A></H2>
@@ -148,7 +236,7 @@ cp /var/mlist/html/.[fh]* /var/mlist/html/${NEWML}
 </UL>
 
 <H5>
-$Id: server-log.html,v 1.14 2000/03/21 14:38:49 sakamoto Exp $
+$Id: server-log.html,v 1.15 2000/06/26 10:42:20 soda Exp $
 </H5>
 </BODY>
 </HTML>
