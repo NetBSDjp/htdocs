@@ -1,0 +1,101 @@
+#!/bin/sh -x
+#
+# $NetBSD: smbprint,v 1.3 2000/08/25 04:19:42 dent Exp $
+(
+PATH=/usr/local/bin:/usr/pkg/sbin:/usr/pkg/bin:/usr/sbin:/usr/bin:/bin:/sbin
+
+# This script is an input filter for printcap printing on a unix machine. It
+# uses the smbclient program to print the file to the specified smb-based 
+# server and service.
+# For example you could have a printcap entry like this
+#
+#lp|lufer|hplj4:\
+#        :mx#0:sh:lp=/dev/null:sd=/var/spool/lpd/lufer:\
+#        :af=/etc/lpd/lufer/acct:if=/usr/local/bin/smbprint:
+#
+#
+# which would create a unix printer called "lp", "lufer", and "hplj4"
+# that will print via this script. You will need to create the spool
+# directory /var/spool/lpd/lufer with appropriate permissions and
+# ownerships for your system.
+#
+# In order for this to work, you'll need to put some printer-related
+# info into /etc/lpd/lufer/config. Here's what mine contains:
+#
+# server=lufer
+# service=hp
+# password=
+# device=ljet4
+# gs_options=-r300x300
+#
+# meanings:
+#
+# "server" - the smb name of the machine connected to the printer. This will
+#            be given to nmblookup to find the IP address of the machine, so
+#            the machine can be configured for DHCP. Note that it must be on
+#            the same subnet, as nmblookup only uses broadcast WINS packets
+#            unless otherwise instructed
+#
+# "service" - name of the printer service on the remote machine.
+#
+# "password" - usually this can be blank. On some systems you might
+#            need a password
+#
+
+# "device" - which GhostScript device driver to use. This assumes
+#            input is PostScript. If you don't give a device=, or if
+#            you give the device as "ps", no translation will be done
+#            (useful if the printer really is a PostScript device, or
+#            if you want to send straight ASCII text to the printer)
+#
+# "gs_options" - Any extra options you need to give to GhostScript. In
+#            my case, I have to force it to 300x300 resolution, since the
+#            ljet4 device driver defaults to 600x600, but my Laserjet 4L
+#            only supports 300x300.
+#
+#
+# Debugging log file, change to /dev/null if you like. Useful when things
+# aren't working.
+#
+logfile=/tmp/smb-print.log
+#logfile=/dev/null
+
+echo $0 $*
+#
+# The last parameter to the filter is the accounting file name.
+#   Extract the directory name from the file name.
+#   Concat this with /config to get the config file.
+#
+eval acct_file=\$$#
+spool_dir=`dirname $acct_file` 
+config_file=$spool_dir/config
+
+# Should read the following variables set in the config file:
+#   server
+#   service
+#   password
+#   device (for GhostScript. If none given, or "ps", don't use GhostScript)
+#   gs_options  (extra gs options, eg -r300x300)
+
+eval `cat $config_file`
+
+echo "server $server, echo server IP $sIP service $service device $device options $gs_options"
+
+(
+# NOTE You may wish to add the line `echo translate' if you want
+# automatic CR/LF translation when printing.
+#       echo translate
+if [ "$device" = "" -o "$device" = "ps" ]
+then
+    cat
+else
+    echo Command: gs -q -sDEVICE=$device $gs_options -sOutputFile=- - -c quit >> $logfile
+    gs -q -sDEVICE=$device $gs_options -sOutputFile=- - -c quit
+fi
+) | smbclient "\\\\$server\\$service" $password -U $server -N -c 'print -' >> $logfile
+
+# Change the filename below to /dev/null if you don't want the handy
+# session log kept around. I find it handy for debugging problems, and
+# it doesn't take up much space
+
+) >/tmp/smb-print.log 2>&1
