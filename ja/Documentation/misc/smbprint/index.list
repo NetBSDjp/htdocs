@@ -1,0 +1,102 @@
+<html>
+<head>
+<!-- Copyright (c) 2000
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>Printing to a remote SMB printer from NetBSD</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>Printing to a remote SMB printer from NetBSD
+
+How to print from a NetBSD machine to a printer connected to an MS
+Windows machine (or other machine using SMB to share a printer)
+
+<LIST>
+
+<SECTION>Printing to a remote SMB printer from NetBSD
+
+<ENTRY>introduction Introduction
+The setup described below has been used for several years to print
+PostScript documents from a NetBSD machine to an HP Laserjet 4L
+connected to a MS Windows PC. This gives an example of both
+1) calling GhostScript to translate PS output into something a non-PS
+(in this case HP-PCL) printer understands, and 2) setting up
+/etc/printcap so that things printed with lpr will go to a remote
+printer that speaks SMB.
+
+<ENTRY>prerequisites Prerequisites
+The following steps, if you haven't done them already, are necessary before
+you can set up printing to a remote SMB printer from NetBSD:
+<p>
+<ol>
+<li>Install the <PKGSRC>net/samba package.
+<p>
+<li>If your printer is not PostScript, and you'll be wanting
+to print PostScript files (ie, your application produces
+PostScript output), install the <PKGSRC>print/ghostscript package.
+</ol>
+
+<ENTRY>setting-up Setting up remote printing using samba
+The following steps should allow you to print to a remote printer from
+NetBSD, using samba to share it.
+<p>
+<ol>
+<li>Put the file "<A HREF="smbprint">smbprint</A>" in /usr/local/bin,
+and make it executable.
+<p>
+<li>Create a printcap entry for each remote printer similar to the
+example in the file "<A HREF="printcap">printcap</A>" included here.
+<p>
+<li>Create a directory /etc/lpd/PRINTERNAME for each remote printer,
+and put a config file there similar to the one in the example
+file "<A HREF="config">config</A>" here.
+<p>
+<li>Create the spool directories you specified in your printcap
+entries.
+<p>
+<li>Make sure you can connect to the printer on the remote machine
+manually with:
+<p><pre>
+	smbclient //machinename/printername
+</pre><p>
+If you receive the smb: \&gt; prompt, you're probably good to go. If not,
+you may need to add a "-I ip-addr" argument to the smbclient command
+in /usr/local/bin/smbprint. It is recommended that you figure out how to
+derive the ip address from the remote machine's SMB name with
+nmblookup, so that you won't have to hardcode the address (thus making
+the script useful for only a single printer).
+<p>
+<li>Try printing something. Remember, if you've specified a gs device
+in the config file, you <i>must</i> call lpr with a PostScript file. Either
+pipe the output of some program like a2ps to lpr, or print out
+one of the PostScript examples included in the Ghostscript distribution.
+<p>
+<li>Note that you can specify two different entries in your printcap,
+one that translates through Ghostscript, and one that sends the output
+untranslated (point them at different config directories, and give the
+same "server=" option, but different "device=" options). This way you
+can send things in the printer's native language (eg; PCL) or plain
+ASCII when needed, and still have a print device to give to programs
+that produce PostScript output.
+</ol>
+
+</LIST>
+
+<a href="../">Up to <em>NetBSD Documentation: Miscellaneous</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.2 2000/07/28 17:29:24 dent Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
