@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.146 2003/10/20 13:14:29 perry Exp $
+#	$NetBSD: index.m4,v 1.147 2003/11/27 13:37:46 heinz Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -603,7 +603,7 @@ PORTLIST(port-sh3)
   <a href="#port-hpcsh">port-hpcsh</a>。
 ENDLIST
 PORTLIST(port-sh5)
-  SH5 ベースの NetBDS ポートすべてに関する事項の議論用です。
+  SH5 ベースの NetBSD ポートすべてに関する事項の議論用です。
 ENDLIST
 PORTLIST(port-sparc)
   Sun の 32 ビット Sparc ベースのマシン上の NetBSD (NetBSD/sparc)
@@ -699,7 +699,7 @@ divert(9)
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.146 2003/10/20 13:14:29 perry Exp $<br>
+  $NetBSD: index.m4,v 1.147 2003/11/27 13:37:46 heinz Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
