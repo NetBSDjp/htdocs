@@ -66,7 +66,7 @@ divert(0)dnl')
 divert(0)dnl
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<html>
+<html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
 <!-- Copyright (c) 1994-2004
