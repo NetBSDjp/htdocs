@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.92 2004/02/28 04:41:22 grant Exp $
+# $NetBSD: list2html.pl,v 1.95 2004/02/28 08:50:51 grant Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -70,16 +70,17 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.92 $';
+$version = '$Revision: 1.95 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
-if (!&getopts('a:c:dm:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
+if (!&getopts('a:c:dm:qhV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
     {
     print "list2html.pl [opts] infile outfile
 [opts]	-a xxx	Define 'arch=xxx' when linking to manpages
 	-c xxx	Define 'collection=xxx' when linking to manpages
 	-d      Supress listing of first N date entries on stdout
 	-m xxx	Set months to display for <DATE> (default $months_previous)
+	-q 	Suppress all output except errors
 	-h	This help.
 	-V	Display version and exit ($version - David Brownlee/abs)
 
@@ -92,10 +93,13 @@ as FAQs, and change logs. More details given at the start of list2html.pl.
 if ($opt{'V'})
     { print "$version\n"; exit; }
 
-$verbose = 1;
 if ($opt{'m'})
     { $months_previous = $opt{'m'}; }
 $months_previous = &get_minmonth($months_previous);
+
+$verbose = 1;
+if ($opt{'q'})
+    { $verbose = 0; }
 
 %extras = (
 
@@ -604,19 +608,19 @@ sub makelist
     open(FILE, "|nkf -j >$outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data, %extras);
     close(FILE);
-    if ($date_num)
-	{
-	print "$date_num date entr", ($date_num == 1)?'y':'ies';
-	if ($date_num_used != $date_num)
-	    { print " ($date_num_used used)"; }
-	print ".\n";
-	if (@date_links && !$opt{'d'})
-	    {
-	    print "First $list_date_links date links (for main index.html):\n",
-								@date_links;
+    if ($date_num) {
+	if ($verbose) {
+	    print "$date_num date entr", ($date_num == 1)?'y':'ies';
+	    if ($date_num_used != $date_num)
+		{ print " ($date_num_used used)"; }
+	    print ".\n";
+	    if (@date_links && !$opt{'d'}) {
+		print "First $list_date_links date links (for main index.html):\n",
+		@date_links;
 	    }
 	}
-    if ($entry_num)
+    }
+    if ($entry_num && $verbose)
 	{ print "$entry_num entr", ($entry_num == 1)?'y':'ies', ".\n"; }
     }
 
@@ -717,4 +721,4 @@ sub verbose
     { $verbose && print @_; }
 
 sub warn
-    { print "WARNING: ", @_; }
+    { $verbose && print "WARNING: ", @_; }
