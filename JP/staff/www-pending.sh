@@ -17,6 +17,7 @@ _EOF_
 awk '/^[^#]/ && $3 == "NOT-YET" {
     printf "<LI><A HREF=\"../../../ja/%s\">%s</a>\n", $1, $1
     printf "   (<A HREF=\"http://www.jp.netbsd.org/%s\">原文</A>)\n", $1
+    printf "   - 翻訳: %s\n", $2
 }' translation-assign.txt
 
 sed 's/^X	//' << '_EOF_'
@@ -29,7 +30,7 @@ _EOF_
 awk '/^[^#]/ && $3 != "" && $3 != "NOT-YET" {
     printf "<LI><A HREF=\"../../../ja/%s\">%s</a>\n", $1, $1
     printf "   (<A HREF=\"http://www.jp.netbsd.org/%s\">原文</A>)\n", $1
-    printf "   - 査読: %s\n", $3
+    printf "   - 翻訳: %s, 査読: %s\n", $2, $3
 }' translation-assign.txt
 
 sed 's/^X	//' << '_EOF_'
