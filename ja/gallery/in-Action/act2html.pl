@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: act2html.pl,v 1.4 2002/05/30 02:47:53 grant Exp $
+# $NetBSD: act2html.pl,v 1.5 2002/10/22 15:04:17 wiz Exp $
 # Process index.act file into index.html for the in-Action
 # gallery.  Customized version of DKBrownlee's list2html.pl.
 #
@@ -29,7 +29,7 @@ my($version,%opt,%pkgname);
 
 $months_previous=9;	# previous months to display for DATE entries
 
-$version='$Revision: 1.4 $';
+$version='$Revision: 1.5 $';
 $version =~ /([\d.]+)/ && ($version=$1);
 
 if (!&getopts('a:c:m:hV',\%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -199,7 +199,7 @@ sub sub_external_links
         my($page, $section, $arch, $collection) = ($1, $2, $4, $6);
         my($link);
 
-        $link = 'http://man.netbsd.org/cgi-bin/man-cgi?';
+        $link = 'http://man.netbsd.org/man/';
 
         $link .= "$page+$section";
 
