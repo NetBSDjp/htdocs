@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.110 2002/03/13 04:41:35 simonb Exp $
+#	$NetBSD: index.m4,v 1.113 2002/06/07 20:25:47 soda Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -152,7 +152,8 @@ LIST(netbsd-bugs)
   All bug reports sent with <i>send-pr(1)</i> appear here.
 ENDLIST
 LIST(netbsd-docs)
-  This mailing list is for discussing NetBSD docs.
+  This mailing list is for discussing NetBSD docs.  Information regarding
+  mailing lists for translators is available from <a href="../developers/translate.html#ml">this page</a>.
 ENDLIST
 LIST(netbsd-help)
   This list provides a general help forum where users can ask
@@ -429,8 +430,8 @@ LIST(port-mips)
   <a href="#port-mipsco">port-mipsco</a>,
   <a href="#port-newsmips">port-newsmips</a>,
   <a href="#port-playstation2">port-playstation2</a>,
-  <a href="#port-pmax">port-pmax</a>, and
-  <a href="#port-sbmips">port-sbmips</a>.
+  <a href="#port-pmax">port-pmax</a>,
+  <a href="#port-sbmips">port-sbmips</a>. and
   <a href="#port-sgimips">port-sgimips</a>.
 ENDLIST
 PORTLIST(port-mipsco)
@@ -477,6 +478,10 @@ ENDLIST
 PORTLIST(port-pc532)
   Discussion of issues specific to NetBSD on the rather rare PC532 computer
   (NetBSD/pc532).
+ENDLIST
+PORTLIST(port-pdp10)
+  Discussion of issues specific to NetBSD on DEC PDP-10 computer
+  (NetBSD/pdp10).
 ENDLIST
 PORTLIST(port-playstation2)
   Discussion of issues specific to NetBSD on Sony's Playstation 2
@@ -630,7 +635,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.110 2002/03/13 04:41:35 simonb Exp $<br>
+  $NetBSD: index.m4,v 1.113 2002/06/07 20:25:47 soda Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
