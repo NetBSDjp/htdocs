@@ -62,6 +62,649 @@ NetBSDのソースツリーへの各々の変更に興味がある方は、
 
 <LIST>
 
+<DATE>ipfilter-020127 27 Jan 2002 - IPFilter upgraded to 3.4.23 in -current
+<p>
+Martti Kuparinen has upgraded IPFilter to the latest version (3.4.23) in 
+<a href="../Releases/current.html">NetBSD-current</a>. This version supports
+IPv6. If IPFilter is enabled at boot time (by putting <tt>ipfilter=YES</tt> 
+in /etc/rc.conf), then IPv4 filtering rules are read from /etc/ipf.conf and 
+IPv6 filtering rules are read from /etc/ipf6.conf.
+<p>
+In order to use the new version, update your NetBSD-current source tree, 
+recompile your kernel and recompile the userland IPFilter tools. For 
+example, to rebuild the userland part:
+<blockquote><tt>
+cd /usr/src/sys && make includes<br>
+cd /usr/src/usr.sbin/ipf && make dependall install
+</tt></blockquote>
+<p>
+After rebooting a new kernel with IPFilter 3.4.23 enabled, you should see
+<blockquote><tt>
+IP Filter: v3.4.23 initialized.  Default = pass all, Logging = enabled
+</tt></blockquote>
+in your boot messages.
+<p>
+The new version has been tested on i386 and sparc64 systems. If you have 
+any problems with it, please report them with send-pr(1).
+
+<DATE>syspkgs-020126 26 Jan 2002 - NetBSD System Packages supported in -current
+<p>
+Jim Wise has committed changes to 
+<a href="../Releases/current.html">NetBSD-current</a> for a 
+packaging system for the NetBSD base install. This will
+allow for binary components of the NetBSD base system to be easily
+installed, removed and upgraded. It is hoped that these changes will 
+be included in the next major release of NetBSD.
+<p>
+For example, it will be possible to cleanly remove large
+components (e.g. the compilers, named(8), sendmail(8), etc) from 
+a NetBSD system without affecting system integrity. It allows the
+user to have a finer control over what is installed on their
+system. Security updates and bug fixes can now be provided as 
+package upgrades, which will make maintaining NetBSD systems 
+a lot easier.
+<p>
+You can read more about the system <a 
+href="http://cvsweb.netbsd.org/bsdweb.cgi/basesrc/distrib/syspkg/notes/NOTES?rev=1.1.1.1&content-type=text/x-cvsweb-markup">here</a> 
+or in src/distrib/syspkg/notes in an up to date 
+NetBSD-current source tree.
+
+<DATE>xfree-4.2 26 Jan 2002 - XFree86 v4.2.0 imported into NetBSD xsrc tree
+<p>
+Matthias Scheler has imported the latest 
+<a href="http://www.xfree86.org/">XFree86</a> release
+(version 4.2.0) into the NetBSD xsrc source tree. It has
+been successfully built and tested on an i386 
+<a href="../Releases/current.html">NetBSD-current</a>
+system. The release notes can be found in
+xsrc/xfree/xc/RELNOTES or can be <a
+href="http://cvsweb.netbsd.org/bsdweb.cgi/xsrc/xfree/xc/RELNOTES?rev=1.1.1.5&con
+tent-type=text/x-cvsweb-markup">
+viewed on the web</a>.
+<p>
+Please submit any problems related to building the X Windows
+system from these new sources using send-pr(1) with the
+category "xsrc". The XFree86 organisation also has a
+<a href="http://www.xfree86.org/support.html">support page</a>. 
+
+<DATE>ntp-020114 26 Jan 2002 - Ntpd security enhancement
+<p>
+Recently, Emmanuel Dreyfus has committed some work on a pseudo-device
+named clockctl to <a href="../Releases/current.html">NetBSD-current</a>. 
+This driver offers 
+alternative entry points to the time setting related system calls 
+settimeofday(2), clock_settime(2), adjtime(2) and ntp_adjtime(2) via a 
+device file called /dev/clockctl. The access to these calls are
+dependent on the permissions on the /dev/clockctl file; that
+is, if a user can write to it, then the user is allowed to
+change the system time. As a result, daemons such as ntpd(8)
+can be run chrooted and under a non-root UID.
+<p>
+In order to use this new functionality, make sure you have
+an up to date NetBSD-current source tree and add the
+following to your kernel config file and rebuild it:
+<blockquote>
+<tt>pseudo-device       clockctl</tt>
+</blockquote>
+If you don't have an ntpd user and group on your system, you
+need to add this to your passwd and group files. In future
+releases of NetBSD, this will be UID 15, GID 15 and with
+/var/chroot/ntpd for the home directory.
+<p>
+To create the clockctl device file, make sure that you
+MAKEDEV file is up to date, change to the /dev directory and run:
+<blockquote><tt>./MAKEDEV clockctl</tt></blockquote>
+<p>
+This file is made mode 660 root/ntpd. Once you have done
+this you can run ntpd as a non-root user:
+<blockquote><tt>ntpd -u ntpd:ntpd</tt></blockquote>
+This is also a -t chrootdir option.
+<p>
+There are more details in <a
+href="http://mail-index.netbsd.org/current-users/2002/01/14/0001.html">
+Emmanuel's announcement</a>.
+
+<DATE>sa-020116 16 Jan 2002 - New Security Advisory released
+    <p>
+    NetBSD Security Advisory <a
+    href="ftp://ftp.netbsd.org/pub/NetBSD/security/advisories/NetBSD-SA2002-001.txt.asc">SA2002-001</a>
+    has been released.  More details,
+    including information on solutions and workarounds, are located
+    in the security advisory.
+    <p>
+    <ul>
+     <li><b><a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/security/advisories/NetBSD-SA2002-001.txt.asc">NetBSD
+       Security Advisory SA2002-001</a></b> -
+       Close-on-exec, SUID and ptrace(2)
+       <p>
+<pre>Fixed: NetBSD-current:    January 14, 2002
+       NetBSD-1.5 branch: January 14, 2002
+       NetBSD-1.4 branch: January 14, 2002</pre>
+       <p>
+    </ul>
+    <p>
+    More information on previous <a
+    href="../Security/advisory.html">Security Advisories</a> is
+    available in the <a href="../Security/">NetBSD Security</a> pages.
+
+<DATE>mips20010105 05 Jan 2002 - MIPS-based NetBSD ports switched to the new toolchain
+    Jason Thorpe has recently switched the NetBSD MIPS-based ports to use
+    the new GCC 2.95.3/Binutils 2.11.2-based toolchain. Rafal Boni has put
+    a great deal of effort into making the toolchain work on the MIPS ports. 
+    The change has been tested on an
+    Algorithmics P-5064 and also on some SGI machines.
+    <p>
+    If you use these ports and you are about to update to a recent version 
+    of <a href="../Releases/current.html">NetBSD-current</a>, it is vital 
+    that you install the new ld.elf_so first to cope with an ABI change 
+    in the new toolchain. The build.sh
+    script supplied with the NetBSD-current sources can be used to build the
+    system. If you use a MIPS-based port and you encounter problems with the 
+    change, please send a bug report with send-pr(1).
+
+
+<DATE>acorn32wscons 04 Jan 2002 - NetBSD/acorn32 X server support for wscons
+    Ben Harris has made modifications to Xarm32VIDC (the X server used by
+    <a href="../Ports/acorn32">NetBSD/acorn32</a>) so that it works 
+    with wscons(4). This means that it works on the Acorn NC. 
+
+    There is a binary snapshot of the modified <a 
+    href="ftp://ftp.netbsd.org/pub/NetBSD/arch/acorn32/misc/Xarm32VIDC-wscons.gz">Xarm32VIDC 
+    server</a> which should be compatible with NetBSD 1.5 or above. 
+    The support is also available in source form 
+	(<a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/xsrc/xc.tar.gz">xc.tar.gz</a>). 
+    <p>
+    It should be noted that this work is in its early stages. In particular,  
+    keyboard support needs to be improved and there is no proper screen
+    blanking or DPMS support. However the software is usable.
+    <p>
+    Eventually Ben hopes to add VIDC/wscons support into the modular XFree86
+    4 server.
+
+<DATE>newdev200101 04 Jan 2002 - New developer
+    The NetBSD project is pleased to welcome a new developer:  
+    <p>
+    <ul>
+    <li>Mark Davies <markd@netbsd.org>, who will be working on the NetBSD  
+    packages collection. Mark has recently been doing some good work  
+    on the KDE packages in pkgsrc.  
+    </ul>
+
+<DATE>report2001 04 Jan 2002 - NetBSD in 2001 - A Report
+    This month's DaemonNews magazine contains a report about <a href="http://ezine.daemonnews.org/200201/netbsd2001.html">NetBSD 
+    in 2001</a>. It covers 
+    ports, people, products, technical
+    advance on the development branch and other project related events and
+    facts.
+
+<DATE>011230-new-ml 30 Dec 2001 - New port mailing lists created
+    Three new mailing lists have been created.
+    <ul>
+    <li><a href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-acorn32">port-acorn32</a>
+    to discuss issues specific to
+    <a href="http://www.netbsd.org/Ports/acorn32">NetBSD/acorn32</a>, the port
+    to ARM6 and newer Acorn RiscPC machines.
+    <li><a href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-playstation2">port-playstation2</a>
+    to discuss issues specific to
+    <a href="http://www.netbsd.org/Ports/playstation2">NetBSD/playstation2</a>,
+    the port to the Sony Playstation 2.
+    <li><a href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-sun2">port-sun2</a>
+    to discuss issues specific to
+    <a href="http://www.netbsd.org/Ports/sun2">NetBSD/sun2</a>, the port to the
+    Sun Microsystems sun2 machines.
+    </ul>  
+<DATE>011219-acorn-nc 19 Dec 2001 - Improvements in Acorn NC support
+    Ben Harris has modified the "<tt>ne at podulebus</tt>" driver to work
+    around a bug in the MX98905 chip used on EtherI and EtherN cards, so they
+    can now be used on NetBSD.  He has also tweaked the <tt>vidcvideo</tt>
+    driver to find screen modes correctly on the ARM7500.  Between them, these
+    allow an <tt>NC_WSCONS</tt> kernel to come up multi-user, with a proper
+    display.
+    <p>
+    Ben is now working on getting X up and running on his Acorn NC.
+    <p>
+    More information on NetBSD/acorn32 can be found at the <a
+    href="../Ports/acorn32/">NetBSD/acorn32 port page</a>.
+
+<DATE>011219-amiga 19 Dec 2001 - NetBSD/amiga now has two-stage booter
+    Michael L. Hitch has updated NetBSD/amiga <a
+    href="../Releases/current.html">-current</a> to have a two-stage booter.
+    <p>
+    The first stage is <tt>bootxx_ffs</tt> (for ffs boot partitions) or
+    <tt>bootxx_fd</tt> (for bootable floppy disk).  These locate, load,
+    and execute the second stage loader <tt>boot.amiga</tt>.  The console
+    screen is created and passed to the second stage loader.
+    <p>
+    The second stage loader uses loadfile() to load the kernel image,
+    which can be either <tt>a.out</tt> or </tt>ELF</tt> format, and can
+    also be compressed (via gzip(1)).  It will load a kernel file from
+    <tt>ffs</tt> file systems or the <tt>ustarfs</tt> used on floppy disks.
+    <p>
+    More information on NetBSD/amiga is available at the <a
+    href="../Ports/amiga/">NetBSD/amiga port page</a>.
+
+<DATE>011218-softdep 18 Dec 2001 - Recent softdep changes
+    Frank van der Linden has pulled over some recent fixes from <a
+    href="http://www.freebsd.org/">FreeBSD</a> by <a
+    href="http://www.mckusick.com/">Kirk McKusick</a> to the
+    softdep code. One of them is to correctly track the numbers
+    of free blocks/inodes, taking the pending softdeps into account.
+    For this, two new fields (previously spare ones) were added.
+    <p>
+    This means that if you're using the <tt>FFS_EI</tt> option, you should
+    recompile and install fsck_ffs(8) before booting a new kernel,
+    in order to have these fields correctly swapped in the case
+    of fsck repairing the superblock.
+    <p>
+    If the kernel mutters a little when it mounts filesystems for
+    the first time with a new kernel, don't worry about it.  If it
+    continues to do that, please <a
+    href="../Misc/send-pr.html">file a problem report</a>.
+    <p>
+    Also, in an unrelated change to the fixes mentioned above, the
+    '<tt>softdep_write_complete: lock is held</tt>' panics (for
+    people who used <tt>DEBUG</tt> kernels) should be history now.
+
+<DATE>011217-m68k 17 Dec 2001 - ELF m68k-based ports switched to new-toolchain
+    Steve Woodford has just switched all ELF m68k-based ports over to
+    new-toolchain.
+    <p>
+    When you next update your NetBSD source tree and attempt to rebuild
+    the world, you should read /usr/src/<CURRENTSRC>BUILDING, then use the
+    <tt>build.sh</tt> shell script instead of "make build".
+    <p>
+    As usual, if you find any problems, please report them via the lists
+    and/or send-pr(1).
+
+<DATE>011217-newdev 17 Dec 2001 - New developers
+    The NetBSD project is pleased to welcome six new developers:
+    <p>
+    <ul>
+    <li>Grant Beattie <grant@netbsd.org>, who will be joining the NetBSD 
+    www team. Grant has been working on web pages for the project and 
+    has been helping out with NetBSD www-team tasks for some time.
+    <p>
+    <li>John Darrow <jdarrow@netbsd.org>, who is an old-time pkgsrc user and
+    contributor, and will help us out with his expertise in pkgsrc. Amongst
+    other things, John was the first to perform xpkgwedge-based bulk builds,
+    and his experience will help us greatly. 
+    <p>
+    <li>John Klos <jklos@netbsd.org>, who has been doing the bulk-package 
+    builds for the m68k systems on his collection of Amiga and Mac68k 
+    machines.  He is currently working on scripts to allow a cluster of 
+    systems to co-operate in doing bulk-package builds, which is a 
+    tremendous aid for slower machines supported by NetBSD.
+    <p>
+    <li>Jared D. McNeill <jmcneill@netbsd.org>, who has been working on audio 
+    drivers and pkgsrc. Jared is currently working on  ESS 
+    Allegro-1/Maestro 3 and dbri audio drivers for NetBSD. 
+    <p>
+    <li>Guillain Seuillot <guillain@netbsd.org>, who will be working on
+    NetBSD documentation.
+    <p>
+    <li>Maria Zevenhoven <maria7@netbsd.org>, who will be looking after 
+    the administration of the NetBSD Project's main CVS server.
+    </ul>
+
+<DATE>011216-promise 16 Dec 2001 - Newer Promise controllers support in NetBSD-current
+    Manuel Bouyer has added support to <tt>pciide</tt> in <a
+    href="../Releases/current.html">NetBSD-current</a> for the following
+    Promise controllers:
+    <p>
+    <ul>
+      <li>Ultra100/TX2
+      <li>Ultra100/TX2v2
+      <li>Ultra133
+    </ul>
+    <p>
+    If you have any of these, please report how they work for you to the
+    <current-users@netbsd.org> mailing list.
+
+<DATE>pppoe-011216 16 Dec 2001 - Integrated PPPoE support in NetBSD-current complete
+    Martin Husemann has completed in-kernel support for PPP over Ethernet
+    in <a href="../Releases/current.html">NetBSD-current</a>.  Changes
+    include rc.d support, ip-up/ip-down scripts, and new documentation.
+    The pppoe<b></b>(8) man page has more details.
+    <p>
+    Due to several requests, it is planned to backport in-kernel PPPoE support
+    to the <tt>netbsd-1-5</tt> branch.  This means that it should also be
+    available in the NetBSD 1.5.3 release.
+    <p>
+    This support has been tested thoroughly by many people and on multiple
+    architectures.  No problems are expected, but if you do run into one
+    please report it with send-pr(1).
+
+<DATE>agc0112 14 Dec 2001 - Changes to the NetBSD Packages Collection in November 2001
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in November 2001 is
+    available in the <a
+    href="http://mail-index.netbsd.org/tech-pkg/2001/12/14/0000.html">tech-pkg
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>mi-build 09 Dec 2001 - MI kernel build machinery done
+    Andrew Brown has finished rolling all ports over to the new MI
+    kernel build machinery.
+    <p>
+    Kernel makefiles are now mostly assignments to make variables that get
+    digested by <tt>sys/conf/Makefile.kern.inc</tt>, which provides the glue
+    that makes it into a kernel.  Redundancy is
+    now gone from kernel makefiles, meaning that development drift of one
+    kernel makefile (instead of over all) is no longer that much of a
+    problem.  Additionally, new "features" for kernels and kernel
+    builds can now be added, modified, or removed much more easily.
+    <p>
+    Everyone should make sure their config(8) is up to date (you should do
+    this anyway).  It is also a good idea to rerun <tt>config</tt> for any
+    <a href="../Releases/current.html">-current</a> kernels you've been
+    building lately.
+    <p>
+    Extensive testing was done before these changes, so no problems are
+    anticipated.  If you <i>do</i> have any problems, please report them
+    with send-pr(1).
+
+<DATE>sysctl-uvm 08 Dec 2001 - New sysctl tunables for UVM page-replacement 
+    Chuck Silvers has committed changes to create three new sysctl tunables
+    that enforce a maximum amount of memory used for the different types
+    of page allocations (anonymous process memory, cached file data,
+    and cached executable data).  He has also renamed some of the old sysctl
+    tunables to have less obscure names.
+    <p>
+    The old tunables are now named:
+    <p>
+<pre><tt>      vm.anonmin
+      vm.filemin      (instead of vm.vnodemin)
+      vm.execmin      (instead of vm.vtextmin)</tt></pre>
+    <p>
+    The new tunables are: 
+    <p>
+<pre><tt>      vm.anonmax
+      vm.filemax
+      vm.execmax</tt></pre>
+    <p>
+    The values for the new tunables are percentages of RAM, just like the
+    old ones.  The "max" limits in this context are only enforced when there
+    isn't enough memory to satisfy all requests, so the usage for a given
+    type can exceed the maximum if there is no demand for the other types.
+    <p>
+    More information can be found in Chuck's announcement in the <a
+    href="http://mail-index.netbsd.org/tech-kern/2001/12/08/0006.html">tech-kern
+    mail archive</a>.
+
+<DATE>irda 05 Dec 2001 - Initial IrDA support
+        Lennart Augustsson has added initial support for IrDA
+        communication to the kernel.  It presents IrDA frames to
+        userland; the kernel has all the knowledge of how to talk to
+        the actual hardware and presents a uniform interface to the
+        userland protocol stack.
+        <p>
+        More information can be found in <a
+        href="http://mail-index.netbsd.org/current-users/2001/12/05/0008.html">Lennart's
+        post to the current-users mailing list</a>.
+
+<DATE>pkgsysconfdir 03 Dec 2001 - Customizable Location of NetBSD Package Configuration files
+	Johnny Lam has committed some changes to NetBSD 
+	<a href="../Documentation/software/packages.html">pkgsrc</a> 
+	to implement a variable <tt>PKG_SYSCONFDIR</tt> used to specify
+	the location of configuration files for NetBSD packages. 
+	<p>
+	The idea of this change is to cater for various tastes of the user
+	community. For example, some people like to keep all of their
+	configuration files in /etc. Some feel that all package files
+	should reside in /usr/pkg, whilst others wish to share /usr/pkg between
+	several machines. 
+	<p>
+	The variable can be set in /etc/mk.conf so that future packages use the
+	facility. Furthermore, the configuration file directory can be set on a 
+	per-package basis. For example, setting
+	<blockquote>
+	<tt>PKG_SYSCONFDIR.apache=/etc/apache</tt>
+	</blockquote>
+	in /etc/mk.conf will 
+	result in the Apache package using the directory /etc/apache to 
+	hold its configuration files. 
+	<p>
+	Naturally for this change to work across pkgsrc, relevant packages 
+	need to be converted to use the new variable. This process has been 
+	started.
+
+<DATE>atapist 03 Dec 2001 - ATAPI tape drive support
+    Manuel Bouyer has committed some final touches to NetBSD's ATAPI tape
+    drive driver in <a href="../Releases/current.html">NetBSD-current</a>.
+    The driver has been tested with an
+    OnStream ATAPI drive and has been reported to work with Seagate
+    ATAPI drives. If you have a different ATAPI tape drive and the
+    driver works with it, please report it to <current-users@netbsd.org>.
+
+<DATE>curses-011202 02 Dec 2001 - Updated curses in tree
+    Brett Lymn has committed changes to curses in <a
+    href="../Releases/current.html">NetBSD-current</a> to implement the
+    newterm and set_term functions.  The changes are quite extensive at a
+    fundamental level.
+    <p>
+    One thing to look out for is that you must update your <tt>vi</tt>
+    source and recompile that after installing the new libcurses
+    otherwise <tt>vi</tt> will fail.  This is NOT a bug with curses; this
+    is a problem with <tt>vi</tt> stealing library function names in certain
+    configurations.  In this case <tt>vi</tt> defines it's own newterm if
+    it has been told there is not one in libcurses.  I have committed the
+    config file change for this to the <tt>vi</tt> sources so you should
+    be ok.
+    <p>
+    If anyone has any problems with curses after this change please report
+    them with send-pr(1).
+
+<DATE>usbv2 26 Nov 2001 - USB v2.0 support added to NetBSD-current
+    Lennart Augustsson has added support for USB v2.0 devices into <a
+    href="../Releases/current.html">NetBSD-current</a>. The new <i>ehci</i> 
+    driver is still in
+    development but is in a working state for some mass storage
+    devices, such as CD-RW drives. USB v2.0 offers a vast speed
+    improvement (480Mb/s instead of 12Mb/s) over the original USB
+    specification, and retains a good level of compatibility.
+    <p>
+    For more details, see <a 
+    href="http://mail-index.netbsd.org/current-users/2001/11/22/0000.html">Lennart's 
+    announcement</a> in the mailing list archives.
+
+<DATE>bsdfreak 22 Nov 2001 - BSDFreak web site returns
+    The <a href="http://bsdfreak.org/">BSDFreak site</a> has been restored. 
+    Its purpose is to deliver original articles on BSD written from the 
+    users' perspective. There is also an IRC gateway at the site.
+    <p>
+    BSDFreak is an Arlington, Virginia, US based non-profit division of 
+    Black Hat Networks, LLC. Its editors and authors are Alexander Chamandy
+    and Sean Davis.
+
+<DATE>sa-011122 22 Nov 2001 - New Security Advisory released
+    <p>
+    NetBSD Security Advisory <a
+    href="ftp://ftp.netbsd.org/pub/NetBSD/security/advisories/NetBSD-SA2001-018.txt.asc">SA2001-018</a>
+    has been released.  More details,
+    including information on solutions and workarounds, are located
+    in the security advisory.
+    <p>
+    <ul>
+     <li><b><a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/security/advisories/NetBSD-SA2001-018.txt.asc">NetBSD
+       Security Advisory SA2001-018</a></b> -
+       Remote Buffer Overflow Vulnerability in BSD Line Printer Daemon
+       <p>
+<pre>Fixed: NetBSD-current:    August 28, 2001
+       NetBSD-1.5 branch: September 30, 2001</pre>
+       <p>
+    </ul>
+    <p>
+    More information on previous <a
+    href="../Security/advisory.html">Security Advisories</a> is
+    available in the <a href="../Security/">NetBSD Security</a> pages.
+
+<DATE>acorn32 20 Nov 2001 - NetBSD/acorn32 port gets its own homepage
+    In the effort to split up NetBSD/arm32 into several ports <a
+    href="../Ports/acorn32/">NetBSD/acorn32</a>
+    saw the light approximately a month ago, but, until now, had lacked a
+    proper homepage and mailing list.
+
+<DATE>mca 18 Nov 2001 - NetBSD/i386 on IBM PS/2 (MCA) machines
+    Jaromir Dolecek <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2001/11/17/0000.html">announced</a>
+    the IBM PS/2 (MCA) machine
+    support in <a href="../Releases/current.html">NetBSD-current</a> has
+    reached the point where it's usable for general work and should
+    provide stable multiuser service.  The system installation tool
+    (sysinst) was also changed to support installation on this class of
+    i386 machines.  See the INSTALL documents for exact details, like
+    which boot floppies to use for installation, etc.
+    Until the next major release (NetBSD 1.6), PS/2 support will only
+    be available via NetBSD/i386 -current <a
+    href="ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/snapshot/">binary
+    snapshots</a>.
+    <p>
+    The development on this support will, of course, continue, with more
+    device drivers to be written as well as expanded documentation.
+    <p>
+    NetBSD/i386 port page:<br>
+    <a href="../Ports/i386/">http://www.netbsd.org/Ports/i386/</a>
+    <p>
+    NetBSD/i386 on IBM PS/2:<br>
+    <a href="../Ports/i386/ps2.html">http://www.netbsd.org/Ports/i386/ps2.html</a>
+    <p>
+    NetBSD/i386 -current binary snapshots:<br>
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/snapshot/">ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/snapshot/</a>
+
+<DATE>autri 18 Nov 2001 - Driver for Trident 4DWAVE based AC'97 sound cards
+    Yoshihiko Someya has committed a new driver, to <a
+    href="../Releases/current.html">NetBSD-current</a>, for Trident 4DWAVE
+    based (4DWAVE DX/NX, SiS 7018, ALi M5451) sound cards.
+
+<DATE>pkgsrc-speedups 08 Nov 2001 - Speed-ups committed to pkgsrc
+    Alistair G. Crooks has committed changes to bsd.pkg.mk to improve
+    the speed of source builds.
+    <p>
+    The first stage was committed last week, when the scripts directory
+    was removed along with the logic to look in the scripts directory for a
+    script named pre-&lt;target&gt; or post-&lt;target&gt;, or configure,
+    and was replaced by explicit calling of the scripts from a package
+    Makefile's corresponding target.  Please note this if you have
+    locally-produced or maintained packages.
+    <p>
+    The next step was to remove the .USE macro, and replace it with
+    explicit make(1) targets, and specify the dependencies on those
+    targets in a normal Makefile way.
+    <p>
+    More details are available in Alistair's message in the <a
+    href="http://mail-index.netbsd.org/tech-pkg/2001/11/08/0001.html">tech-pkg
+    mail archive</a>.
+
+<DATE>agc0111 08 Nov 2001 - Changes to the NetBSD Packages Collection in October 2001
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in October 2001 is
+    available in the <a
+    href="http://mail-index.netbsd.org/tech-pkg/2001/11/08/0004.html">tech-pkg
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>trm 03 Nov 2001 - Driver for Tekram DC-395U/UW/F and DC-315/U SCSI host adapters
+    Izumi Tsutsui has committed a driver for the Tekram DC-395U/UW/F and 
+    DC-315/U PCI SCSI host adapters, which have the Tekram TRM-S1040
+    ASIC.  This driver is written by Rui-Xiang Guo, with some minor changes
+    by Izumi.
+
+<DATE>pkgsrc-darwin 01 Nov 2001 - Darwin support added to pkgsrc
+    Alistair G. Crooks has added initial support for Darwin (1.4) to
+    the <a href="../Documentation/software/packages.html">NetBSD Packages
+    Collection</a>.  Many thanks to Bill Coldwell for his help into
+    providing Alistair the opportunity to do so.
+    <p>
+    While this support is in very new, Alistair has been able to
+    install packages on Darwin.
+    <p>
+    Details are available in Alistair's announcement in the <a
+    href="http://mail-index.netbsd.org/tech-pkg/2001/10/30/0007.html">tech-pkg
+    mail archive</a>.
+
+<DATE>xf4-snap-i386-20011030 30 Oct 2001 - New XFree86 4.1.0 snapshot for 1.5.2 available
+Stoned Elipot has made a new snapshot for NetBSD/i386 1.5.2 of XFree86 4.1.0
+made from NetBSD's xsrc/xfree sources as of 2001/10/30.  The new snapshot
+is available at
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/XF86-4.1.0-1.5.2/xfree410-152.tgz">ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/XF86-4.1.0-1.5.2/xfree410-152.tgz</a>.
+The README file in the same directory contains instructions and MD5 checksum.
+
+<DATE>man9 22 Oct 2001 - Kernel Subsystems Documentation available
+Gregory McGary has documented various interfaces of the NetBSD kernel in
+section 9 of the manual pages. New pages we are happy to provide include:
+</p>
+<ul>
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?mca+9+NetBSD-current">mca(9)</a>: MicroChannel Architecture bus
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?namecache+9+NetBSD-current">namecache(9)</a>: name lookup cache
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?namei+9+NetBSD-current">namei(9)</a>: pathname lookup
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?rasops+9+NetBSD-current">rasops(9)</a>: raster display operations
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?tc+9+NetBSD-current">tc(9)</a>: TurboChannel bus
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?vattr+9+NetBSD-current">vattr(9)</a>: vnode attributes
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?vfs+9+NetBSD-current">vfs(9)</a>: kernel interface to file systems
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?vfsops+9+NetBSD-current">vfsops(9)</a>: kernel file system interface
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?vnode+9+NetBSD-current">vnode(9)</a>: kernel representation of a file or directory
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?vnodeops+9+NetBSD-current">vnodeops(9)</a>: vnode operations
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?vnsubr+9+NetBSD-current">vnsubr(9)</a>: high-level convenience functions for vnode operations
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?wscons+9+NetBSD-current">wscons(9)</a>: machine-independent console support
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?wsdisplay+9+NetBSD-current">wsdisplay(9)</a>: wscons display support
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?wsfont+9+NetBSD-current">wsfont(9)</a>: wscons font support
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?wskbd+9+NetBSD-current">wskbd(9)</a>: wscons keyboard support
+<li> <a href="http://www.tac.eu.org/cgi-bin/man-cgi?wsmouse+9+NetBSD-current">wsmouse(9)</a>: wscons mouse support
+</ul>
+
+<DATE>sblive 17 Oct 2001 - Creative Labs SBLive! driver in NetBSD-current
+    Yannick Montulet's driver for <a
+    href="http://www.creative.com/">Creative Labs</a>' popular series of
+    "<tt>Sound Blaster Live</tt>" sound cards has been committed to
+    <a href="../Releases/current.html">NetBSD-current</a>.
+    As of now, the MIDI port is not yet supported -- this support won't be
+    difficult to add later.
+    <p>
+<pre>emuxki0 at pci0 dev 15 function 0: Creative Labs SBLive! EMU 10000 \ \
+ 
+  (audio multimedia, revision 0x08)
+emuxki0: interrupting at irq 5
+emuxki0: SigmaTel STAC9721/23 codec; 18 bit DAC, 18 bit ADC, Rockwell 3D
+audio0 at emuxki0: full duplex, mmap, independent</pre>   
+    <p>
+    If you have any problems, please send a bug report with send-pr(1).
+
+<DATE>dump-011015 15 Oct 2001 - Timestamp capability added for dump's messages
+    Brett Lymn has committed changes to dump(8), in <a 
+    href="../Releases/current.html">NetBSD-current</a>, that allows one
+    to add timestamps to the informational messages it prints.
+    Timestamps are enable using the -t flag.  The default timestamp is in
+    %H:%M:%S %Z format (e.g. 13:50:25 UTC).  The <tt>TIMEFORMAT</tt>
+    environment variable, a customary format string containing commands
+    for strftime(3), can be used to change the format of dump's timestamp
+    to your own tastes.
+    <p>
+<pre>[09:44:10 CST] DUMP: 2.13% done, finished in 3:50 (at 13:34:16 CST)
+[09:49:10 CST] DUMP: 9.82% done, finished in 1:31 (at 11:21:01 CST)
+[09:54:10 CST] DUMP: 16.89% done, finished in 1:13 (at 11:07:57 CST)
+[09:59:10 CST] DUMP: 23.62% done, finished in 1:04 (at 11:03:51 CST)
+[10:04:10 CST] DUMP: 30.18% done, finished in 0:57 (at 11:02:00 CST)</pre>
+    <p>
+    More details are in the updated dump(8) manual page.
+
+<DATE>audit-011013 12 Oct 2001 - Major overhaul of NetBSD's security audit system
+    Luke Mewburn and Andrew Brown have finished some major changes to
+    NetBSD's built-in security auditing system. The system watches a
+    configurable number of files, and reports changes to them. Reports can
+    include the changes made for text-based configuration files or general
+    notifications of changed files e.g. for binary files. Subsystems audited
+    include the system's network configuration, user authentication
+    information, disk configuration and many others. Of course, users can
+    always add more data to monitor if the need arises. See the <a
+    href="http://mail-index.netbsd.org/source-changes/2001/10/12/0000.html">commit  
+    log entry</a>.
+
 <DATE>agc0110 01 Oct 2001 - 2001年9月のNetBSDパッケージコレクションの変更
     Alistair G. Crooksは、毎月、NetBSDパッケージコレクションの変更の
     サマリーを送ってくれています。2001年9月の変更が、<a
@@ -202,7 +845,7 @@ NetBSDのソースツリーへの各々の変更に興味がある方は、
 
 <DATE>ffs_dirpref 06 Sep 2001 - 最近のFFSの変更
     Luke Mewburn has incorporated the enhanced <tt>ffs_dirpref()</tt>
-    from Gregoriy Orlov (as found in other open source BSD variants),
+    from Grigoriy Orlov (as found in other open source BSD variants),
     with minor changes.
     <p>
     The new algorithm has a marked performance increase, especially when
@@ -736,7 +1379,7 @@ gentbi0: 1000baseSX, 1000baseSX-FDX, auto</pre>
 <DATE>usenix-2001 30 Jun 2001 - USENIX Annual Technical Conference 2001におけるNetBSD
     <b>07/02更新:</b> Luke Mewburn が、BSD BoFでの会話を元に作った NetBSD
     のスライドが、<a
-    href="http://www.cs.rmit.edu.au/~lukem/talks/usenix-2001-bof/">http://www.cs.rmit.edu.au/~lukem/talks/usenix-2001-bof/</a>
+    href="http://www.mewburn.net/luke/talks/usenix-2001-bof/">http://www.mewburn.net/luke/talks/usenix-2001-bof/</a>
     にあります。
     <p>
     NetBSD は、<a
@@ -750,7 +1393,7 @@ gentbi0: 1000baseSX, 1000baseSX-FDX, auto</pre>
     href="http://unix.oreilly.com/news/usenixchuck_0601.html">BSD Super BoF 
     からこんにちは</a>」の記事に掲載されています。
     このプレゼンテーションのスライドが、<a
-    href="http://www.cs.rmit.edu.au/~lukem/talks/usenix-2001-bof/">http://www.cs.rmit.edu.au/~lukem/talks/usenix-2001-bof/</a>
+    href="http://www.mewburn.net/luke/talks/usenix-2001-bof/">http://www.mewburn.net/luke/talks/usenix-2001-bof/</a>
     にあります。
     <p>
     Luke Mewburn はテクニカルセッションもおこないました。
@@ -765,6 +1408,15 @@ gentbi0: 1000baseSX, 1000baseSX-FDX, auto</pre>
     href="http://unix.oreilly.com/news/usenixellen_0601.html">Usenix
     テクニカルセッション Wrap-Up</a>」という記事の中で、彼女は Luke の
     プレゼンテーションについて簡単に述べています。
+    Luke の論文は<a href="http://www.usenix.org/events/usenix01/"
+    >Usenix 2001</a>のwebサイトの<a
+    href="http://www.usenix.org/events/usenix01/freenix01/mewburn.html">FREENIX
+    Track Refereed Papers</a>
+    のところから、HTML形式やPDF形式で手に入れることができます。
+    (USENIXの会員資格が必要です。)
+    この論文は、Luke自身のwebサイトでも<a
+    href="http://www.mewburn.net/luke/papers/rc.d.pdf">PDF</a>
+    形式で手に入れることができます。
     <p>
     最後にもう一度、来てくださった方々に感謝します。
 
@@ -3137,7 +3789,7 @@ for two packages.
     <b>Update:</b> Erik Berls <cyber@netbsd.org> and Luke Mewburn
     <lukem@netbsd.org> gave the "NetBSD: Platform for the Future" talk since
     Charles wasn't available.  Slides from this talk are available at
-    <a href="http://www.cs.rmit.edu.au/~lukem/talks/bsdcon-2000/">http://www.cs.rmit.edu.au/~lukem/talks/bsdcon-2000/</a>.
+    <a href="http://www.mewburn.net/luke/talks/bsdcon-2000/">http://www.mewburn.net/luke/talks/bsdcon-2000/</a>.
     <p>
     Also, a transcript of Jun-ichiro itojun Hagino's talk on NetBSD 1.5 is
     available at <a
@@ -5103,7 +5755,7 @@ href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.1/source/patches/diff-1.4-to-1.
 	work such as writing doco, cleaning up Makefiles, ...
 	<p>
 	More information is available at <a
-	href="http://www.cs.rmit.edu.au/~lukem/">http://www.cs.rmit.edu.au/~lukem/</a>.
+	href="http://www.mewburn.net/luke/">http://www.mewburn.net/luke/</a>.
 
     </dl>
 
@@ -5233,19 +5885,20 @@ href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.1/source/patches/diff-1.4-to-1.
     <a href="ftp://ftp.netbsd.org:/pub/NetBSD/NetBSD-current/"
     >/pub/NetBSD/NetBSD-current</a>ディレクトリーと同じような方法で作成されています。
     <p>
-    「release」と呼ばれる新しいsupコレクションが作成されました。
+    「release」という新しいsupコレクションが作成されました。
     このコレクションには、「current」コレクションにあるSUPリリースのうち
     「doc」「pkgsrc」「xsrc」SUPリリース以外のリリースが全て含まれています。
+    過去のNetBSDのリリースではこれらのソース(「doc」「pkgsrc」「xsrc」)は
+    ブランチされていなかったからです。
     <p>
     <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/doc/README.sup"
     >doc/README.sup</a>ファイルがそれに応じて更新されています。
     <p>
     FTPまたはSUPサーバーで見つけた問題は、どんな問題でもぜひレポートして下さい。
-    (正常に夜通し更新した後の短い時間に、
-    SUPサーバーが「current」コレクションのために
-    「release」ファイルを使ってしまうのですが、
-    この不具合はよく報告されます。)
-    <!-- ここ全然違うかも -->
+    (毎晩に普通に更新した後の短い時間だけ
+    SUPサーバーが「current」コレクションのかわりに
+    「release」ファイルを使ってしまうことがありましたが、
+    この不具合は修正されました。)
 
 <DATE>cvschanges 23 Jun 1999 - CVS変更参照をHTMLフォーマットで
     最近9か月間のCVS変更のメールアーカイブが、月別でモジュール/タグごとに
@@ -6619,7 +7272,7 @@ please send them to
 <!-- This comment ease an rcsmerge.
   <a href="../Misc/feedback.html">(Contact us)</a>
 -->
-  $NetBSD: index.list,v 1.508 2001/10/05 02:11:23 dent Exp $<br>
+  $NetBSD: index.list,v 1.562 2002/01/28 11:31:43 cjep Exp $<br>
 <!-- This comment ease an rcsmerge.
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
 -->
