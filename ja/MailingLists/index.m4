@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.153 2004/02/06 23:53:33 lukem Exp $
+#	$NetBSD: index.m4,v 1.154 2004/02/21 15:03:33 minskim Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -66,9 +66,9 @@ divert(0)dnl
 
 <html>
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
 <!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<meta http-equiv="Content-Type" content="text/html; charset=iso-2022-jp">
 <link rev="made" href="mailto:www@JP.NetBSD.org">
 <title>NetBSD Mailing Lists</title>
 </head>
@@ -712,7 +712,7 @@ divert(9)
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.153 2004/02/06 23:53:33 lukem Exp $<br>
+  $NetBSD: index.m4,v 1.154 2004/02/21 15:03:33 minskim Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
