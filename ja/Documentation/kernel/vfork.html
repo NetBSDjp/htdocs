@@ -2,8 +2,8 @@
 <head>
 <!-- Copyright (c) 1998
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>Why implement traditional vfork()</title>
+<link rev="made" href="mailto:www@jp.NetBSD.ORG">
+<title>なぜ伝統的な vfork()を実装したのか</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
@@ -11,85 +11,99 @@
 <a href="../../Misc/daemon-copy.html">
 <img align="center" src="../../images/BSD-demon.gif" alt="BSD demon"></a>
 </td><td align=center>
-<h1>Why implement traditional <code>vfork()</code></h1>
+<h1>なぜ伝統的な <code>vfork()</code>を実装したのか</h1>
 </td></tr></table>
 <p>
 
 <hr>
-<code>vfork()</code> is designed to be used in the specific case where
-the child will <code>exec()</code> another program, and the parent can
-block until this happens. A traditional <code>fork()</code> required
-duplicating all the pages of the parent process in the child - a
-significant overhead.
+<code>vfork()</code>
+は、子プロセスがいずれ他のプログラムを <code>exec()</code>し、
+かつ親プロセスはそれが起きるまで待っているという、特別な状況で
+用いるために設計されたものです。
+伝統的な <code>fork()</code> では、子プロセスに親プロセスの
+すべてのページを複製するという著しいオーバーヘッドが生じます。
 
 <p>
-The Mach VM system added COW (Copy On Write), which made
-<code>fork()</code> much cheaper, and in BSD 4.4, <code>vfork()</code>
-was made synomymous to <code>fork()</code>.  After NetBSD 1.3 a
-traditional <code>vfork()</code> was reimplemented.
+COW (コピーオンライト)が追加された
+Mach VM システムでは
+<code>fork()</code> の負荷が大変軽くなり、
+BSD 4.4では <code>vfork()</code>は <code>fork()</code> と
+同義のものとされました。
+NetBSD 1.3 以降では、伝統的な <code>vfork()</code> が再実装されました。
 
 <p>
-A good amount of effort was directed at making COW better in <a
-href="uvm.html"><strong>UVM</strong></a>, but an address
-space-sharing <code>vfork()</code> <em>still</em> turns out to be a win.  It shaves
-several seconds off a build of libc on a 200MHz PPro.
+ <a href="uvm.html"><strong>UVM</strong></a>で COWが
+ うまく動くようにするにはかなりの努力が必要と思われ、
+  しかしアドレス空間を共有する <code>vfork()</code>が <em>いまだに</em>
+勝ることが分かったのです。
+ これにより、200MHz PPro での libcのビルドの所要時間を
+ 数秒削ることができます。
+ 
 
 <p>
-<strong><code>vfork()</code>/<code>exec()</code> using the 4.4BSD
-<code>vfork()</code> and COW:</strong>
+<strong>
+4.4BSDの
+<code>vfork()</code>/<code>exec()</code> を使った
+<code>vfork()</code> と COW の処理
+:
+</strong>
 
 <ul>
-<li>	Traverse parent's vm_map, marking the writable portions of the
-        address space COW.  This means invoking the pmap, modifying PTEs,
-        and flushing the TLB.
+<li>
+	親の vm_map をたどって、アドレス空間の書き込み可能な部分を COW とマークする。これは、 pmapを呼び出し、 PTEを修正し、 TLBをフラッシュすることを意味します。
 
-<li>    Create a vm_map for the child, copy the parent's vm_map entries
-        into the child's vm_map.  Optionally, invoke the pmap to copy
-        PTEs from the parent's page tables into the child's page tables.
+<li> 子プロセスの vm_map を生成し、親の vm_map エントリーを子の vm_mapにコピーします。
+	場合によっては、 pmapを呼び出して親のページテーブルから
+	このページテーブルに PTE をコピーします。
 
-<li>    Block parent.
+<li>    親をブロックします。
 
-<li>    Child runs.  If PTEs were <em>not</em> copied, take page fault to get
-        a physical mapping for the text page at the current program counter.
+<li>    子が走ります。 PTEがコピー <em>されてない</em>場合には、
+	ページフォルトが起きて現在プログラムカウンタのある
+	テキストページの物理マッピングが得られます。
 
-<li>    Child execs, and unmaps the entire address space that was just
-        created, and creates a new one.  This implies that the parent's
-        vm_map has to be traversed to mark the COW portions not-COW.
+<li>    子は exec し、そして 作られたばかりのアドレス空間全体を unmapして
+	新しく作ります。
+	これは、親の vmapを辿って COWとマークされた部分を
+	非COWにする作業を伴います。
+	
+<li>    親のブロックを解きます.
 
-<li>    Unblock parent.
-
-<li>    Parent runs, takes page fault when modifying previously R/W
-        data that was marked R/O for COW (no data is copied at this
-        time
+<li>    親が走り、以前には R/W であって COWにするために R/Oとマークしたデータを
+	変更するとページフォルトを起こします(この時点ではデータのコピーは行なわれません
 
 </ul>
-<strong>The 3.0BSD/NetBSD <code>vfork()</code>, using address space
-sharing:</strong>
+アドレス空間共有を用いた
+<strong>3.0BSD/NetBSD の <code>vfork()</code>
+の処理
+:</strong>
 
 <ul>
-<li>    Take reference to parent's vmspace structure.
+<li>   親プロセスの vmspace構造体への参照を得ます。
 
-<li>    Block parent.
+<li>    親をブロックします。
 
-<li>    Child runs.  No page faults occur because the parent's page
-        tables are being used, and the PTEs are already valid.
+<li>    子が走ります。 親のページテーブルが用いられるので、 PTEは既に
+	有効でありページフォルトは起こりません。
 
-<li>    Child execs, deletes the reference it had to the parent's,
-        and creates a new one.
+<li>    子が exec し、親のもの(vmspace構造体)に対して持っていた参照を削除し、
+	新しいものを作ります。
 
-<li>    Unblock parent.
+<li>    親のブロックを解きます。
 
-<li>    Parent runs.  (No page faults occur because the parent's
-        vm_map was not modified.)
+<li>	親が走ります。(親の vm_mapは変更されていないので、
+	ページフォルトは起こりません。)
 
 </ul>
 
-So, in the case where you're going to fork and then exec, the latter
-case is clearly faster. Even if your COW algorithms are good, you still
-have to do a lot more work compared to the vmspace-sharing case!
+このように、fork してさらに execするような場合には、
+明らかに後者がより高速です。
+たとえ
+たとえ良い COWアルゴリズムを使っているとしても、仮想空間を共有する
+場合と比べて大変多くの作業を行なわねばなりません!
 
 <hr>
-<a href="index.html">Back to <em>NetBSD Documentation: Kernel</em></a>
+<a href="index.html"> <em>NetBSD Documentation: Kernel</em>に戻る</a>
 
 <hr>
 <table width="100%"><tr>
@@ -117,7 +131,7 @@ have to do a lot more work compared to the vmspace-sharing case!
 
 <hr>
 <address>
-  www@NetBSD.ORG<br>
+  www@jp.NetBSD.ORG<br>
   $NetBSD: vfork.html,v 1.3 1998/10/19 07:30:04 abs Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1998
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
