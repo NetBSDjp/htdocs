@@ -1,7 +1,8 @@
-#	$NetBSD: Makefile,v 1.5 1999/04/23 01:53:05 abs Exp $
+#	$NetBSD: Makefile,v 1.6 2002/02/14 03:22:23 jschauma Exp $
 #       Process .list files into .html files
 
 all:	index.html
+	cd ..; make index; cd Changes;
 
 .SUFFIXES:	.list .html
 
