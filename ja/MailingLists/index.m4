@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.127 2003/04/27 09:57:17 fvdl Exp $
+#	$NetBSD: index.m4,v 1.137 2003/06/08 02:13:10 heinz Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -191,6 +191,9 @@ ENDLIST
 LIST(netbsd-help)
   ユーザーが質問を寄せる一般的な場としてのメーリングリストです。
 ENDLIST
+LIST(netbsd-java)
+  NetBSD 上の Java に関連することがらの公開討論の場です。
+ENDLIST
 LIST(netbsd-jobs)
   NetBSD ユーザーや開発者と関連のある求人広告のための
   メーリングリストです。
@@ -225,6 +228,33 @@ LIST(source-changes)
   毎日、 24 時間分のすべての commit メッセージをまとめて送る、<a
   href="http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=source-changes-digest">ダイジェスト
   版</a>もあります。
+ENDLIST
+LIST(regional-au)
+  オーストラリア在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-boston)
+  ボストン在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-cs)
+  チェコ共和国とスロバキア共和国在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-fr)
+  フランス在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-london)
+  ロンドン在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-nl)
+  オランダ在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-nyc)
+  ニューヨークシティー在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-pl)
+  ポーランド在住のユーザー向けの議論用です。
+ENDLIST
+LIST(regional-sfba)
+  サンフランシスコ湾岸在住のユーザー向けの議論用です。
 ENDLIST
 LIST(tech-embed)
   組み込みシステム上の NetBSD の使用に関する議論用です。
@@ -666,7 +696,7 @@ divert(9)
   (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.127 2003/04/27 09:57:17 fvdl Exp $<br>
+  $NetBSD: index.m4,v 1.137 2003/06/08 02:13:10 heinz Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
