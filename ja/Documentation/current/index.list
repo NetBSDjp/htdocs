@@ -2,9 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1998-2002
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-    <link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title>Tracking NetBSD-current</title>
   </head>
 
@@ -36,47 +37,52 @@ and that helps find and fix bugs.  Because people are testing the
 software soon after it's written, more bugs can be found and
 eliminated.
 
-<ENTRY>why-difficult Why is it so difficult
--current is in the ultimate state of flux. On a day to day basis any of the
-tools used to compile the source tree could be improved, and the new
-facilities used. This means in order to compile the -current tree that tool
-must first compiled and installed.
-<p>
-This does not happen too frequently, but the net result is someone upgrading
-from a previous release may have to compile and install a seemingly arbitrary
-set of tools before they can compile the complete tree.
-<p>
-See <a href="#starting">Starting to track -current</a> for details on how to
-reduce this pain.
-
-<ENTRY>starting Starting to track -current
-The best starting point is to check if a recent snapshot is available
-for your port. Snapshots are compiled from -current and distributed in
-the standard release(7) format.
-<p>
-They are available in <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/">
-ftp://ftp.netbsd.org/pub/NetBSD/arch/</a><em>ARCH</em>/snapshot, and
-can be installed as in a normal release.  Also see the web pages for
-the individual <a href="../../Ports/">NetBSD ports</a> for
-pointers to and information on these snapshots.
-<p>
-The next stage is to download the -current source, either using <a
+<ENTRY>downloading Downloading current
+Download the -current source, either using <a
 href="#using-anoncvs">anoncvs</a>, via ftp from <a
 href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/">
-ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/</a>, or
-using <a href="ftp://ftp.netbsd.org/pub/NetBSD/README.sup">sup</a>.
+ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/</a>,
+or using <a href="ftp://ftp.netbsd.org/pub/NetBSD/README.sup">sup</a>.
 You may also want to check for a <a href="../../mirrors/">NetBSD
-mirror site</a> near to you.
-<p>
-When you actually compile -current, make sure you read the UPDATING
-file -- see the entry on <a href="#error">What if I get an error?</a>.
+mirror site</a> near to you. To update an exsting download run
+'<code>cvs -q update -d -P</code>' in the root of the source tree.
 <p>
 If you wish to track local changes to the NetBSD source you might want
 to setup a local CVS tree, and then <a href="#using-sup-into-cvs">import the
 sup changes</a>.
+
+<ENTRY>building Building a distribution
+From the root of the source tree run '<code>./build.sh -d -d DESTDIR
+-R RELEASEDIR</code>', where DESTDIR has enough space for a full
+install, and RELEASEDIR has enough for a set of tarfiles.  When
+completed you should have a complete set of everything you need to
+install including install media and notes.
 <p>
-Also be sure to read the next section for a list of things you need to
-remember when tracking -current.
+If you wish to cross compile
+for a different architecture, append '<code>-a ARCH</code>'. For more
+details see the <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/BUILDING">BUILDING</a> file, or run '<code>./build.sh -h</code>'.
+
+<ENTRY>updating Updating an existing system
+This involves building and installing a new kernel first, then updating the
+userland to match.
+If you have any problems, see the <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/UPDATING">UPDATING</a> file.
+<ul>
+<li>Build the toolchain.<br>
+    From the root of the source tree, run '<code>./build.sh</code>
+    -t'. This will build a toolchain in
+    <code>tools/obj/tools.&lt;hostplatform&gt;/bin</code>.
+<li>Build and install the kernel.
+    <ul>
+    <li><code>cd sys/arch/ARCH/conf</code>
+    <li><code>.../tools/obj/tools.&lt;hostplatform&gt;/bin/nbconfig GENERIC</code>
+    <li><code>cd ../compile/GENERIC</code>
+    <li><code>.../tools/obj/tools.&lt;hostplatform&gt;/bin/nbmake-ARCH</code>
+    <li><code>make install</code> (this will rename /netbsd to /onetbsd and
+    install the new kernel as /netbsd).
+    </ul>
+<li>Reboot into the new kernel
+<li>Run <code>./build.sh</code>
+</ul>
 
 <ENTRY>what-to-do Things you need to remember
 <ul>
@@ -189,15 +195,44 @@ You should now have a full set of NetBSD sources in /usr/src.
 
 <tt><b>cd /usr/src</b></tt><br>
 <tt><b>cvs update -d -P</b></tt>
+<p>
+<b>Note:</b> Running <tt>cvs co -d dir src</tt> (or similar commands with the
+other src* modules) does not work.  You will get error messages saying
+"existing repository ... does not match ...; ignoring module _gnusrc-cmp" etc.
+The workaround is to drop the <tt>-d</tt> option and let cvs create the
+default directory.
+<p>
 
 <h4>To check out the sources from a certain date</h4>
 <tt><b>cvs checkout -D 19991223-UTC src</b></tt>
 
 <h4>To check out the sources from a certain branch</h4>
 <tt><b>cvs checkout -rnetbsd-1-5 src</b></tt>
+<p>
+See <a
+href="http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/doc/BRANCHES?content-type=text/plain">doc/BRANCHES</a>
+for a description of the branches in the CVS repository.
 
 <h4>Useful hints</h4>
 <p>
+<ul>
+<li>If you want to check out a certain branch of the tree, you may
+want to take caution not to overwrite any existing directories by creating a
+new directory for this branch:
+
+<tt>
+<pre>
+	cd /parent/dir/to/checkout/into                                                   
+	mkdir NewName-temp                                                                
+	cd NewName-temp                                                                   
+	cvs co ... src                                                                    
+	mv src ../NewName                                                                 
+	cd ..                                                                             
+	rmdir NewName
+</pre>
+</tt>
+</li>
+<li>
 You will have to use objdirs in order for cvs updates to work
 correctly.  If you happen to get errors from cvs saying things like:
 <pre>
@@ -205,8 +240,8 @@ correctly.  If you happen to get errors from cvs saying things like:
 </pre>
 you should do a <b>"make cleandir"</b> and try again.  Make sure to
 run <b>"make obj"</b> after the cvs update.
-<p>
-
+</li>
+<li>
 If you're on a very low bandwidth line, you may want to add -z5
 (or some other number from 1 to 9) to your commandline <em>before</em> the
 command (eg "<tt><b>cvs -z5 update -d -P</b></tt>"); this turns on
@@ -223,7 +258,8 @@ directory, and they will be automatically used. A sample .cvsrc would be:
    checkout -P
    diff -u
 </pre>
-<p>
+</li>
+</ul>
 
 <h4>Building NetBSD from source</h4>
 
@@ -626,9 +662,8 @@ You should copy a current MAKEDEV from the appropriate etc.<i>port</i> directory
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.36 2002/05/08 13:33:22 martti Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy;
-    1998, 1999, 2000
+  $NetBSD: index.list,v 1.39 2002/07/19 15:49:50 abs Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
