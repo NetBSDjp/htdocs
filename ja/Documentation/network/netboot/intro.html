@@ -4,22 +4,22 @@
 <head>
 <!-- Copyright (c) 1998, 1999, 2000, 2001
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>Introduction, Diskless NetBSD HOW-TO</title>
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<title>Diskless NetBSD HOW-TO 序説</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="./">Table of Contents</a>
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Introduction, Diskless NetBSD HOW-TO</h1>
+<h1>Diskless NetBSD HOW-TO 序説</h1>
 
-<h2>Overview</h2>
+<h2>あらまし</h2>
 <dl><dt><dd>
-This guide is intended to aid you in setting up a diskless NetBSD workstation.
-If your client isn't one of the following architectures, you can stop reading
-now:
+この手引きは、ディスクレス NetBSD ワークステーションの設定の一助となることを
+目指しています。もし下記のアーキテクチャーにお使いのクライアントが
+含まれていなければ、ここで読むのをやめて結構です:
 <ul>
    <li><a href="../../../Ports/alpha/">alpha</a>
    <li><a href="../../../Ports/arm32/">arm32</a>
@@ -42,231 +42,232 @@ now:
 </ul>
 <p>
 
-It covers from start to finish all of the steps necessary to configure and
-set up the server(s) and some basic information on setting up the client.
+この手引きでは、サーバーの設定と立ち上げに必要な手順の始めから終わりまですべてと、
+クライアントの設定に関する基本的な情報のいくらかを網羅しています。
 <p>
 
-This document only covers the steps to boot a NetBSD system from the
-network.  It does not describe how to set up a local hard drive to boot
-NetBSD.  That information is covered in the INSTALL notes for your
-platform.  The procedure described here can be used to either netboot a
-NetBSD installer (to configure a local hard drive), or to netboot a
-complete NetBSD distribution on a system with no local storage.
+この文書では、 NetBSD システムをネットワークからブートする手順についてのみを
+扱います。 NetBSD をブートするためのローカルハードドライブのセットアップ方法は
+説明しません。そういった情報は、お使いのプラットフォーム用の INSTALL ノートに
+あります。この文書で説明する手順は、 NetBSD インストーラーのネットブート
+(ローカルハードドライブの設定のため) と、ローカルストレージのないシステム上での
+完全な NetBSD 配布物のネットブートのいずれにも使えます。
 <p>
 
-If you are only netbooting an installer, follow the directions for your
-architecture until you reach the NFS set upage.  There is a link to
-instructions on installation tools.  If your client system does not
-support local console <i>and</i> does not support serial console (such as 
-an hp425e or iBook), then you can still netboot a working system.  Follow
-the directions for your architecture until you reach the filesystem
-page.  There is a link to a page describing extra steps you must perform.
+インストーラーをネットブートするだけの場合は、お使いのアーキテクチャー用の指示に従いながら、
+NFS の設定ページまで読み進んでください。 NFS の設定ページに、
+インストールツールの説明へのリンクがあります。お使いのクライアントシステムが
+(hp425e や iBook のように) ローカルコンソール<i>と</i>シリアルコンソールの
+いずれもサポートしていない場合であっても、動作するシステムのネットブートが
+可能です。お使いのアーキテクチャー用の指示に従いながら、
+ファイルシステムのページまで読み進んでください。ファイルシステムのページに、
+やらなければならない特別な手順の説明ページへのリンクがあります。
 <p>
 
-This document is very long in an attempt to be thorough.  If you are already
-comfortable with most of these concepts, you should still skim the 
-Introduction pages.  Feel free to skip this page and go straight to your
-<a href="#platformspecific">platform-specific introduction page</a>.
+この文書は、完全なものを目指したため、非常に長いものになっています。
+ネットブートのことを概ね知っている方でも、序説ページは斜め読みすべきです。
+その場合、このページは飛ばして、お使いの
+<a href="#platformspecific">プラットフォーム別の序説ページ</a>に直行してもかまいません。
 <p>
 
-Each of the architectures listed above use a different proprietary scheme of 
-loading the initial bootloader code.  Here is a general overview of the 
-netbooting process:
+上記の各アーキテクチャーでは、それぞれ異なる方法で、最初の
+ブートローダーのコードをロードします。
+ここで、ネットブート手順の概観を説明します:
 <p>
 
 <ol>
-<li>The client-specific bootloader is retrieved from the server
+<li>クライアント用のブートローダーがサーバーから呼び出されます
 <p>
   <ul>
-  <li>For hp300 and hp700, <tt>rbootd</tt> loads the NetBSD bootprogram
+  <li>hp300 と hp700 では、 <tt>rbootd</tt> が NetBSD ブートプログラムをロードします
     <ol>
-    <li>HP bootrom does a search for bootable system and takes first one found,
-        unless there is user intervention.
-    <li>As part of the search for bootable systems, the bootrom sends a 
-        RMP request (HP Remote Maintenance Protocol).  The <tt>rbootd</tt>
-	server responds with the name of the bootprogram.
-    <li>The HP bootrom retrieves the bootprogram from the server and starts
-        running it.
+    <li>HP bootrom は、ユーザーからの指定が特になければ、
+        ブート可能なシステムを探して最初に見つかったものを使います。
+    <li>ブート可能なシステムを探す過程の中で、 bootrom は RMP
+        (HP Remote Maintenance Protocol) 要求を送出します。 rbootd サーバーは
+        これに応えて、ブートプログラムの名前を返します。
+    <li>HP bootrom は、そのブートプログラムをサーバーから取り寄せて、
+        実行を開始します。
     </ol>
   </li>
   </ul>
 
   <ul>
-  <li>For i386, Windows is set up to load the kernel from a FAT partition.
+  <li>i386 では、 Windows がカーネルを FAT パーティションからロードするよう設定されます。
     <ol>
-    <li>The appropriate bootup files must be installed, and Windows will offer
-        a choice of OSes.
-    <li>The kernel is loaded from disk.
+    <li>適切な bootup ファイルをインストールしておく必要があり、これにより
+        Windows が OS の選択を提示します。
+    <li>カーネルがディスクからロードされます。
     </ol>
   </li>
   </ul>
 
   <ul>
-  <li>For alpha, macppc, next68k, or pmax, <tt>bootpd</tt> or
-  <tt>dhcpd</tt>
-  sets up <tt>tftp</tt> to load the NetBSD bootprogram.
+  <li>alpha、 macppc、 next68k、 pmax では、 NetBSD ブートプログラムを
+  ロードするために、 <tt>bootpd</tt> または <tt>dhcpd</tt>
+  が <tt>tftp</tt> をセットアップします。
     <ol>
-    <li>Manually set up the firmware (the first time) to load the bootprogram
-        via <tt>bootp</tt> and <tt>tftp</tt>.
-    <li>The firmware sends a <tt>bootp/dhcp</tt> request, and gets the 
-        necessary information from the <tt>bootpd/dhcp</tt> server.
-    <li>The firmware uses <tt>tftp</tt> to retrieve the bootprogram
-        from the machine which responded to the <tt>bootp/dhcp</tt> request 
-	and starts running it.
+    <li>ファームウェアが (最初に) <tt>bootp</tt> と <tt>tftp</tt> を使って
+        ブートプログラムをロードするよう、手動で設定しておきます。
+    <li>ファームウェアが、 <tt>bootp/dhcp</tt> 要求を送出して、
+        必要な情報を <tt>bootpd/dhcp</tt> サーバーからもらいます。
+    <li>ファームウェアが、 <tt>bootp/dhcp</tt> の結果知らされたサーバーから、
+        <tt>tftp</tt> を使ってブートプログラムを取り寄せ、
+	それの実行を開始します。
     </ol>
   </li>
   </ul>
 
   <ul>
-  <li>For sun2, <tt>ndbootd</tt> loads the NetBSD bootprogram
+  <li>sun2 では、 <tt>ndbootd</tt> が NetBSD ブートプログラムをロードします
     <ol>
-    <li>If your machine is truly diskless, the firmware will always attempt
-	to load the bootprogram via Network Disk (ND, served by 
-	<tt>ndbootd</tt>).  Otherwise, you must explicitly break into
-	the monitor and issue the netboot command each time.
-    <li>The firmware uses ND to retrieve the bootprogram
-        from the machine which responded to the ND request and 
-	starts running it.
+    <li>お使いのマシンに本当にディスクが付いていない場合、ファームウェアは
+	ネットワークディスク (ND、 <tt>ndbootd</tt> によってサービスされます)
+	からブートプログラムをロードしようとします。そうでない場合は、
+	毎回モニターに入ってネットブートコマンドをいちいち打つ必要があります。
+    <li>ファームウェアは上記 ND の結果知らされたマシンから、
+        ND を使ってブートプログラムを取り寄せ、
+	それの実行を開始します。
     </ol>
   </li>
   </ul>
 
   <ul>
-  <li>For sparc and sun3, <tt>rarpd</tt> sets up <tt>tftp</tt> to load the
-  NetBSD bootprogram
+  <li>sparc と sun3 では、 NetBSD ブートプログラムをロードするために、
+  <tt>rarpd</tt> が <tt>tftp</tt> をセットアップします
     <ol>
-    <li>Manually set up the firmware (the first time) to load the bootprogram
-        via <tt>tftp</tt>.
-    <li>The firmware sends a <tt>rarp</tt> request, and gets the necessary 
-        information from the <tt>rarp</tt> server.
-    <li>The firmware uses <tt>tftp</tt> to retrieve the bootprogram
-        from the machine which responded to the <tt>rarp</tt> request and 
-	starts running it.
+    <li>ファームウェアが (最初に) <tt>tftp</tt> を使ってブートプログラムを
+        ロードするよう、手動で設定しておきます。
+    <li>ファームウェアが <tt>rarp</tt> 要求を送出して、必要な情報を
+        <tt>rarp</tt> サーバーからもらいます。
+    <li>ファームウェアが、 <tt>rarp</tt> の結果知らされたサーバーから、
+        <tt>tftp</tt> を使ってブートプログラムを取り寄せ、
+	それの実行を開始します。
     </ol>
   </li>
   </ul>
 
   <ul>
-  <li>For vax, <tt>mop</tt> downloads the NetBSD bootprogram
+  <li>vax では、 <tt>mop</tt> が NetBSD ブートプログラムをダウンロードします
     <ol>
-    <li>Manually set up the firmware to load the bootprogram
-        via <tt>mop</tt>.
-    <li>The firmware sends a <tt>mop</tt> request, and gets the necessary 
-        information from the <tt>mop</tt> server.
-    <li>The firmware uses <tt>mop</tt> to retrieve the bootprogram
-        from the machine which responded to the <tt>mop</tt> request and 
-	starts running it.
+    <li>ファームウェアが <tt>mop</tt> を使ってブートプログラムを
+        ロードするよう、手動で設定しておきます。
+    <li>ファームウェアが <tt>mop</tt> 要求を送出して、必要な情報を
+        <tt>mop</tt> サーバーからもらいます。
+    <li>ファームウェアが、 <tt>mop</tt> の結果知らされたサーバーから、
+        <tt>mop</tt> を使ってブートプログラムを取り寄せ、
+	それの実行を開始します。
     </ol>
   </li>
   </ul>
 </li>
 
-<li>The bootloader gets the kernel from the server.<p>
-    There are four schemes used by the various platforms at this stage.
+<li>ブートローダーがサーバーからカーネルを入手します。<p>
+    この段階では、プラットフォームによって 4 種類の方法が使われます。
 <p>
   <ul>
-  <li><tt>rarpd</tt>, <tt>bootparamd</tt>, and <tt>nfsd</tt>,<br>
+  <li><tt>rarpd</tt>、 <tt>bootparamd</tt> と <tt>nfsd</tt> の場合<br>
     <ol>
-    <li>The NetBSD bootprogram sends out a RARP request (Reverse ARP (Address 
-       Resolution Protocol)) to determine its IP address.  The
-       server sends a RARP response mapping the ethernet hardware address to 
-       an IP address.
-    <li>The NetBSD bootprogram then broadcasts a RPC/BOOTPARAMS/WHOAMI request 
-        to the server asking for the client name and IP address.
-    <li>The NetBSD bootprogram then requests a RPC/BOOTPARAMS/GETFILE to
-        determine the nfs server and root directory, using the client name 
-	specified in the RPC/BOOTPARAMS/WHOAMI request.
-    <li>The NetBSD bootprogram mounts the root directory from the nfs server.
-    <li>The NetBSD bootprogram loads the specified kernel using NFS read calls
-    <li>The NetBSD bootprogram then transfers control to the kernel.
+    <li>NetBSD ブートプログラムは、自分自身の IP アドレスを知るために RARP
+       (Reverse ARP (AddressResolution Protocol)) 要求を送出します。
+       サーバーは、イーサネットハードウェアアドレスを IP アドレスに対応させる
+       RARP 応答を返します。
+    <li>NetBSD ブートプログラムは、クライアント名と IP アドレスをサーバーに
+        尋ねるために RPC/BOOTPARAMS/WHOAMI 要求をブロードキャストします。
+    <li>NetBSD ブートプログラムは、 nfs サーバーとルートディレクトリーを
+        知るために、上記 RPC/BOOTPARAMS/WHOAMI 要求で決まったクライアント名を
+	使い、 RPC/BOOTPARAMS/GETFILE 要求をします。
+    <li>NetBSD ブートプログラムは、ルートディレクトリーを nfs サーバーからマウントします。
+    <li>NetBSD ブートプログラムは、指定されたカーネルを、 NFS read コール群を使ってロードします
+    <li>その後、 NetBSD ブートプログラムは制御をカーネルに移します。
     </ol>
   </li>
 
-  <li><tt>bootp</tt> and <tt>tftp</tt>,<br>
+  <li><tt>bootp</tt> と <tt>tftp</tt> の場合<br>
     <ol>
-    <li>The NetBSD bootloader sends out a bootp request to determine 
-       various bits of information, namely its IP address, subnet mask,
-       TFTP server, kernel name, and NFS path.
-    <li>The NetBSD bootprogram then connects to the TFTP server and downloads
-       the kernel.
-    <li>The NetBSD bootprogram then transfers control to the kernel.
+    <li>NetBSD ブートローダーは、各種の情報 (具体的には、 自分自身の
+       IP アドレス、サブネットマスク、 TFTP サーバー、カーネル名と
+       NFS パス) を知るために bootp 要求を送出します。
+    <li>その情報をもとに NetBSD ブートプログラムは TFTP サーバーに接続して
+       カーネルをダウンロードします。
+    <li>その後、 NetBSD ブートプログラムは制御をカーネルに移します。
     </ol>
   </li>
 
-  <li><tt>dhcp</tt> and <tt>tftp</tt>,<br>
+  <li><tt>dhcp</tt> と <tt>tftp</tt> の場合<br>
     <ol>
-    <li>The NetBSD bootloader sends out a dhcp request to determine 
-       various bits of information, namely its IP address, subnet mask,
-       TFTP server, kernel name, and NFS path.
-    <li>The NetBSD bootprogram then connects to the TFTP server and downloads
-       the kernel.
-    <li>The NetBSD bootprogram then transfers control to the kernel.
+    <li>NetBSD ブートローダーは、各種の情報 (具体的には、 自分自身の
+       IP アドレス、サブネットマスク、 TFTP サーバー、カーネル名と
+       NFS パス) を知るために dhcp 要求を送出します。
+    <li>その情報をもとに NetBSD ブートプログラムは TFTP サーバーに接続して
+       カーネルをダウンロードします。
+    <li>その後、 NetBSD ブートプログラムは制御をカーネルに移します。
     </ol>
   </li>
 
-  <li><tt>rboot</tt>,<br>
+  <li><tt>rboot</tt> の場合<br>
     <ol>
-    <li>The NetBSD bootloader uses the firmware to send out <tt>rboot</tt>
-       requests to download the kernel.
-    <li>The NetBSD bootprogram then transfers control to the kernel.
+    <li>NetBSD ブートローダーは、ファームウェアを使って <tt>rboot</tt>
+       要求を送出し、カーネルをダウンロードします。
+    <li>その後、 NetBSD ブートプログラムは制御をカーネルに移します。
     </ol>
   </li>
   </ul>
 </li>
 
-<li>The kernel takes control and begins mounting the nfs filesystem and
-    switches to multi-user.
+<li>カーネルに制御が移り、 nfs ファイルシステムのマウントを始め、
+    マルチユーザーへ移行します。
 <p>
-    The kernel needs to repeat the work of the bootloader, since there is 
-    currently no standard method of transfering that information.  This
-    means that it will use the one of the methods above to determine its
-    IP address and the NFS path on the NFS server.
+    カーネルは、ブートローダーがしたことをまた行う必要があります。すでに
+    ブートローダーが得た情報をカーネルに渡すための標準的な方法がないからです。
+    つまり、 IP アドレス、 NFS サーバー上の NFS パスを知るために、上記の方法
+    のいずれかを使うということです。
 <p>
-   Typically the kernel is configured to use the same protocols as the 
-   bootloader, however, this can be configured differently when compiling
-   a new kernel.
+    普通はブートローダーと同じ手順を使うようカーネルを設定しますが、
+    カーネル構築時に別の方法を使うよう設定することも可能です。
+   
 </ol>
 </dd></dl>
 
-<h2>Server hardware/OS requirements</h2>
+<h2>サーバーハードウェア/OS に必要なもの</h2>
 <dl><dt><dd>
-The server must have ethernet support and enough disk space to store
-the necessary files for an installation of NetBSD.  See your platform's
-INSTALL guide for details on which packages are necessary and how
-much space they require.
+サーバーは、イーサネットに対応していることと、 (クライアント用の) NetBSD
+ファイル一式を置けるだけのディスクスペースの余裕があることが必要です。
+必要なパッケージとその容量について詳細は、お使いのプラットフォーム向けの
+INSTALL 手引き書を見てください。
 <p>
 
-If the server has the same architecture (e.g. Motorola 680X0 microprocessor
-for NetBSD/hp300 and next68k, Sparc microprocessor for NetBSD/sparc, and Vax 
-microprocessor for NetBSD/vax), and is
-running NetBSD, then the client will be able to use the <tt>/usr</tt> directory
-structure from the server, saving a significant amount of disk space.
+サーバーがクライアントと同じアーキテクチャー (例えば、 NetBSD/hp300 や next68k
+なら Motorola 680X0 マイクロプロセッサー、 NetBSD/sparc なら Sparc
+マイクロプロセッサー、 NetBSD/vax なら Vax マイクロプロセッサー) で、しかも
+NetBSD が動いている場合は、クライアントはサーバーの <tt>/usr</tt>
+ディレクトリー構造を利用して、ディスク容量を相当量節約することができます。
 <p>
 
-If the server is the same port (not just the same microprocessor), then you
-can set up a pseudo-clustered environment where almost everything is
-shared between the client(s) and the server.
+サーバーがクライアントと (同じマイクロプロセッサーというだけでなく) 同じポート
+の場合は、クライアントとサーバーでほとんどを共用した疑似クラスター環境を
+作り上げることができます。
 <p>
 
-It is worth noting, that each stage of the netbooting process can be
-handled by a different server, running a different OS.  This means,
-you can use HP-UX to handle the <tt>rbootd</tt> requests (e.g. for
-NetBSD/hp300), SunOS to respond to the <tt>rarp</tt> and
-<tt>bootparams</tt> request, and NeXTSTEP to deal with the nfs
-filesystem.  This lends quite a bit of flexibility to the process, and
-is the reason these pages are broken up by daemon and not by OS.
+特筆すべきは、ネットブート手順の各段階は、それぞれ別のサーバーや別の OS
+で行うことが出来るということです。つまり、 <tt>rbootd</tt> 要求の処理
+(例えば NetBSD/hp300 向け) には HP-UX を使い、 <tt>rarp</tt> と
+<tt>bootparams</tt> 要求には SunOS が応答し、 nfs ファイルシステムは
+NeXTSTEP が担当する、といったこともできます。このため、
+非常に柔軟性を持たせることができます。また、このページが OS
+ではなくデーモン別に分かれた構成になっているのはこのためです。
 <p>
 
-<big><b><a name="platdaemon">Platform/daemon chart</a></b></big>
+<big><b><a name="platdaemon">プラットフォーム/デーモン対応表</a></b></big>
 <p>
 
-Here's a quick and dirty breakdown of which client architectures require
-which daemons to be running on the server.
+この表は、クライアントアーキテクチャー別に、どのデーモンがサーバーで走っている
+必要があるかを示した、汚い早見表です。
 <p>
 
 <table border="1" cellspacing="1" cellpadding="5">
 <tr><td><h3>
-Platform\daemon
+プラットフォーム \ デーモン
 </h3></td><td><h4>
 <tt>rbootd</tt>
 </h4></td><td><h4>
@@ -531,34 +532,34 @@ yes
 </table>
 <p>
 
-(1) <tt>dhcpd</tt> can act as a <tt>bootpd</tt> server.<br>
-(2) newer models of hp700 workstations need tftp instead of rbootd.<br>
-(3) some versions of the JavaStation need dhcp instead of rarp and
-bootparams.<br>
+(1) <tt>dhcpd</tt> は <tt>bootpd</tt> サーバーとして機能します。<br>
+(2) hp700 ワークステーションの最近の機種では、 rbootd ではなく tftp が必要です。<br>
+(3) 一部のバージョンの JavaStation では、 rarp と bootparams ではなく
+dhcp が必要です。<br>
 <p>
 
-<big><b><a name="servdaemon">Server/daemon compatability chart</a></b></big>
+<big><b><a name="servdaemon">サーバー/デーモン対応表</a></b></big>
 <p>
 
-Here's a breakdown of what daemons are available on which server OSes.
-Unless otherwise specified, the software will work on any architecture
-the server OS supports (e.g. for Solaris, it is assumed to work on both
-sparc and i386 architecture).
+この表は、どのデーモンがどのサーバー OS で利用可能かをまとめたものです。
+これらのソフトウェアは、特に指定がなければ、サポート OS のどのアーキテクチャー
+でも動作します (例えば Solaris では、 sparc と i386 アーキテクチャーの
+どちらでも動作するはずです) 。
 <p>
 
-There are two additional pieces of software required on the server: 
-<tt>gzip</tt> and <tt>gnutar</tt>.  Now would be a good time to get and 
-compile <tt><a href="ftp://ftp.gnu.org/pub/gnu/gzip/gzip-1.2.4a.shar">gzip
-</a></tt> and 
-<tt><a href="ftp://ftp.gnu.org/pub/gnu/tar/tar-1.13.tar.gz">gnutar</a></tt> if
-there is a <tt>(c)</tt> next to them for your server operating system in the 
-table below.  <tt>gnutar</tt> is necessary to preserve the proper <tt>uid</tt> 
-and <tt>gid</tt> numbers when extracting the client's filesystem.
+サーバー側に必要なソフトウェアを、 2 個追加しています:
+<tt>gzip</tt> と <tt>gnutar</tt> です。以下の表で、お使いのサーバーの
+オペレーティングシステムの欄に <tt>(c)</tt> とある場合は、ここで
+<tt><a href="ftp://ftp.gnu.org/pub/gnu/gzip/gzip-1.2.4a.shar">gzip
+</a></tt> と
+<tt><a href="ftp://ftp.gnu.org/pub/gnu/tar/tar-1.13.tar.gz">gnutar</a></tt>
+を入手してコンパイルしておくとよいでしょう。 <tt>gnutar</tt> は、クライアントの
+ファイルシステムを展開する際に、 <tt>uid</tt> と <tt>gid</tt> 番号を適切なままで展開してくれます。
 <p>
 
 <table border="1" cellspacing="1" cellpadding="5">
 <tr><td><h3>
-OS\daemon
+OS\デーモン
 </h3></td><td><h4>
 <tt>rbootd</tt>
 </h4></td><td><h4>
@@ -899,299 +900,300 @@ yes (c)
 </table>
 <p>
 
-(1) means that Solaris has bootparamd, but it doesn't interact well with
-   the NetBSD bootloader, but there is a workaround<br>
-(2) MacOS X and Darwin have a native <tt>bootpd</tt>, but it is unable to
-   netboot NetBSD systems<br>
-(3) MacOS X and Darwin have <tt>gnutar</tt> and old <tt>tar</tt> -- make sure
-   you run <tt>gnutar</tt> to extract the files<br>
-(c) means you have to compile the program from sources<br>
-(k) means you have to compile a new kernel and reboot<br>
-(?) means there is a native version of this daemon, but its functionality
-    is unknown
+(1) Solaris には bootparamd がありますが、 NetBSD ブートローダーとは
+   うまく協調しません。ただしこれは回避策があります<br>
+(2) MacOS X と Darwin にはネイティブの <tt>bootpd</tt> がありますが、
+   NetBSD システムのネットブートには使えません<br>
+(3) MacOS X と Darwin には <tt>gnutar</tt> と古い <tt>tar</tt> があります
+   ─ ファイルの展開には <tt>gnutar</tt> を使うようにしてください<br>
+(c) のものは、プログラムをソースからコンパイルする必要があります<br>
+(k) のものは、カーネルを再構築して再起動する必要があります<br>
+(?) のものは、ネイティブ版のデーモンがありますが、
+    それが使えるかどうかは不明です
 </dd></dl>
 
-<h2>Network Configuration</h2>
+<h2>ネットワークの構成</h2>
 <dl><dt><dd>
-There are three types of ethernet media you'll need to know about.  Each type 
-has several names, so to make things clear:
+知っておくべきイーサネットメディアは 3 種類あります。
+いずれも複数の名前がありますので、ここではっきりさせておきます:
 <p>
 
 <table border="1" cellspacing="1" cellpadding="5"><tr>
-  <td><i>Names</i></td>
-  <td><i>Description</i></td>
+  <td><i>名前</i></td>
+  <td><i>説明</i></td>
 </tr><tr>
   <td>10Base2,<br><b>Thin&nbsp;LAN</b>,<br>Thin&nbsp;net,<br>Coax</td>
-  <td>Daisy-chained connection of coaxial cables with BNC connectors.
-      Each end of the chain must have a 50 Ohm terminator, and machines in
-      the middle of the chain use a Tee to conect.  
+  <td>同軸ケーブルを数珠繋ぎに接続するもので、 BNC コネクターを使います。
+      チェーンの各末端には 50 オームの終端抵抗が必要で、チェーン内のマシンは
+      T 字型コネクターを使って接続します。
 </tr><tr>
    <td>10Base5,<br><b>Thick</b>,<br>AUI</td>
-   <td>Daisy-chain/Star configuration (i.e. every workstation connects
-       either to the backbone or to a "fan out" box which is connected
-       to the backbone) using DB 15 connectors (D shaped connectors
-       with 15 pins).  The actual topology of a Thick network can be rather
-       complicated.<p>
-       Most importantly, can purchase for about US$30 a transciever that
-       will allow you to plug a Thick connector into other types of
-       ethernet (including Thin, 10BaseT, FDDI, and several others).
+   <td>数珠繋ぎ/スター型接続 (つまり、どのワークステーションも、
+       バックボーンまたはバックボーンに接続された「ファンアウト」箱に接続)
+       で、 DB 15 コネクター (15 ピンの D 型コネクター) を使います。
+       Thick ネットワークのトポロジーは、
+       実際にはもっと複雑なものにもなります。<p>
+       最も重要なことは、 US$30 ほどで買えるトランシーバーを使って、
+       Thick コネクターを他の種類のイーサネット
+       (Thin、 10BaseT、 FDDI、その他いろいろ) に接続できることです。
 </tr><tr>
    <td><b>10BaseT</b>,<br>UTP,<br>Twisted&nbsp;Pair</td>
-   <td>Star configuration, using RJ45 connectors (like US phone jack, except
-       with more pins).  You may also run across 10Base-T "T"s, such
-       that workstations might be daisy-chained. 
+   <td>スター型の構成で、 RJ45 コネクター (ピン数が多いほかは米国の電話線のジャックと同様)
+       を使います。また、 10Base-T のネットワークには "T" 字型分岐があってもよく、
+       そこからワークステーションを数珠繋ぎに接続できます。
 </tr></table>
 <p>
 
-Now that that's settled, you'll need to make sure that your client is 
-connected to the same <i>subnet</i> as the server.  In other words, it 
-absolutely <b>must not</b> go through a router.  Connection through a hub
-or switch will
-cause no problems.  If you are unsure of this, contact your network 
-administrator.  The exception to this is that the <tt>nfs</tt> server does not
-need to be on the same subnet.
+これでメディアがはっきりしましたが、クライアントはサーバーと同じ
+<i>サブネット</i>に繋げなければならないので注意してください。
+ルーターを越えることは<b>絶対にできない</b>からです。
+ハブやスイッチを介して接続することは問題ありません。
+これについて不安があれば、ネットワーク管理者に相談してください。
+ただし、 <tt>nfs</tt> サーバーだけはこの限りでなく、
+同じサブネットにいる必要はありません。
 <p>
 
-Some things to note:
-<p>
-
-<ul>
-<li>Many 10BaseT hubs have Thin and Thick ethernet connectors on them.  
-    If this is the case with a hub near your workstation, you can
-    probably connect to the network here.
-<p>
-
-<li>If your client has Thick ethernet, you can purchase, for about US$30,
-    a transciever that will connect you to a 10BaseT network.
-<p>
-
-<li>If your server has more than one type of ethernet on a card, it will
-    only be able to use one of those ports at a time (e.g. a PCI ethernet
-    card for Mac or Intel hardware often has 10Base-T and AUI, but only
-    one can be used at a time).  See below.
-</ul>
-<p>
-
-<big><b>Changing ethernet media on your server</b></big>
-<p>
-
-You may need to change the ethernet media on your server's ethernet
-card, if your network connection is wrong (i.e. it's using the wrong
-ethernet media type).  This is briefly how to do it.  More detail can
-be found in the documentation that came with your ethernet card (or
-with your computer if the ethernet is built-in).  If you are
-uncomfortable with these procedures, ask your network administrator
-for help.  Briefly, what's involved is:
+注意事項:
 <p>
 
 <ul>
-<li>Many new ethernet cards or built-in ethernet (for Mac or Intel
-   hardware) will automatically use 10Base-T if there is a
-   10Base-T cable plugged in.  Simply unplug the 10Base-T cable and reboot
-   to see if it defaults to the other ethernet media type.
+<li>10BaseT ハブの多くは、 Thin や Thick のコネクターも付いています。
+    お使いのワークステーションの近くにハブさえあれば、
+    おそらくそのハブでネットワークに接続できることでしょう。
 <p>
 
-<li>If that fails, your ethernet card may have come with a floppy disk
-   with a utility program that will change the media.  For Intel machines,
-   you may need to boot off that floppy.  You can also probably download
-   the utility program from the vendor's website.
+<li>お使いのクライアントが Thick イーサネットを装備していれば、 US$30
+    ほどのトランシーバーを買って、 10BaseT のネットワークに接続できます。
 <p>
 
-<li>If that fails, you will need to open your computer up and find
-   the ethernet card.  Be sure to use proper static-prevention
-   measures, you could fry your computer.  If you aren't comforatable
-   with this, ask a friend who is comfortable to help you.  There will
-   probably be jumpers that you need to move around. Typically, either
-   the jumper positions will be clearly labeled or will correspond to
-   the port (i.e. if the 10Base-T is on the left, selecting the left
-   jumper position will select 10Base-T).
+<li>お使いのサーバーで、1枚のカードに複数種類のイーサネットタイプを持っている場合、
+    そのポートのうち同時に使えるのは1種類だけです (例えば、 Mac や Intel ハードウェア用の
+    PCI イーサネットカードには、 10Base-T と AUI 両方を持っているものがよくありますが、
+    同時に使えるのはどちらか一方だけです) 。下記を参照してください。
 </ul>
 <p>
 
-Alternatively, if your server has a second ethernet card, you can create your
-own private network, consisting of the server and your client.  Information
-on how to configure the server OS to give your client access to the
-internet is beyond the scope of this HOW-TO.
+<big><b>サーバーのイーサネットメディアを変更する</b></big>
+<p>
+
+お使いのネットワーク接続に問題がある場合 (つまり、イーサネットメディアの
+種類がまずい場合) 、お使いのサーバーのイーサネットカードが使っている
+イーサネットメディアを変える必要があるかもしれません。
+その方法を簡単に説明します。詳細は、イーサネットカード (内蔵イーサネットの
+場合はコンピューター) の附属ドキュメントに書いてあるかもしれません。
+この手のことに詳しくない方は、ネットワーク管理者に相談してください。
+簡単にまとめると、以下のとおりになります:
+<p>
+
+<ul>
+<li>最近の (Mac または Intel ハードウェア向けの) イーサネットカードや
+   内蔵イーサネットの多くは、 10Base-T ケーブルが挿されると自動的に
+   10Base-T を使うようになっています。単に 10Base-T ケーブルを外して再起動し、
+   デフォルトが他のイーサネットメディアタイプになるかどうかを見てください。
+<p>
+
+<li>そうならない場合、メディア変更用のプログラムが入ったフロッピーディスクが
+   イーサネットカードに附属しているかもしれません。そして Intel
+   マシンでは、そのフロッピーからブートする必要があるかもしれません。
+   あるいは、メディア変更用ユーティリティープログラムがベンダーの web サイトからダウンロードできるかもしれません。
+<p>
+
+<li>上記のどちらもできない場合、コンピューターを開腹してイーサネットカードを
+   調べる必要があります。コンピューターを壊すおそれがありますので、
+   適切な静電気予防策をとるようにしてください。自信がなければ、
+   詳しい友人に手助けを頼みましょう。カードにはおそらくジャンパーがあり、
+   それを切り替える必要があります。普通は、ジャンパーは何も印の付いていない側か、
+   ポートの位置に対応する側 (つまり、左側に 10Base-T がある場合は、
+   ジャンパーを左側にすれば 10Base-T を選んだことになります)
+   に切り替えます。
+</ul>
+<p>
+
+別の方法として、もしサーバーに 2 枚目のイーサネットカードが付いていれば、
+そのサーバーとクライアントだけの専用のネットワークを作ってしまうという方法も
+あります。こうしたときにクライアントがアクセスできるように
+サーバーを設定する方法については、この HOW-TO の管轄外です。
 </dd></dl>
 
-<h2>Before starting</h2>
+<h2>始める前に</h2>
 <dl><dt><dd>
-Here are the naming conventions used in this HOW-TO, you will probably want
-to use your own names and addresses when following the instructions:
+以下に示すのは、この HOW-TO で例示される名前の書き方です。実際に設定する際は、
+それぞれ適切な名前やアドレスに置き換えることになるでしょう:
 <p>
 
 <table>
 <tr><td><tt>
 le0
 </tt></td><td>
-device name of the ethernet interface (common on sun, hp, and dec hardware)
+イーサネットインターフェースのデバイス名 (sun、 hp、 dec のハードウェアで共通)
 </td></tr>
 
 <tr><td><tt>
 192.168.1.10
 </tt></td><td>
-IP address (decimal) of the diskless client.
+ディスクレスクライアントの IP アドレス (10 進数) 。
 </td></tr>
 
 <tr><td><tt>
 client.test.net
 </tt></td><td>
-Internet canonical name of the diskless client.
+ディスクレスクライアントのインターネット規準名。
 </td></tr>
 <tr><td>
 
 <tr><td valign=top><tt>
 C0A8010A
 </tt></td><td>
-IP address (hexadecimal) of the diskless client.<br>
-Only used for SunOS, Solaris, and the <tt>sun-rbootd</tt> daemon.
+ディスクレスクライアントの IP アドレス (16 進数) 。<br>
+SunOS、 Solaris および <tt>sun-rbootd</tt> デーモンでのみ使います。
 </td></tr>
 
 <tr><td><tt>
 CCCCCCCCCCCC<br>
 CC:CC:CC:CC:CC:CC
 </tt></td><td>
-Ethernet hardware address of the diskless client.
+ディスクレスクライアントのイーサネットハードウェアアドレス。
 </td></tr>
 
 <tr><td><tt>
 192.168.1.5
 </tt></td><td>
-IP address (decimal) of the diskless server.
+ディスクレスサーバーの IP アドレス (10 進数) 。
 </td></tr>
 
 <tr><td valign=top><tt>
 rbootdserver.test.net
 </tt></td><td>
-Internet canonical name of the diskless <tt>rbootd</tt> server.<br>
-(<i>hp300 only</i>)
+ディスクレス <tt>rbootd</tt> サーバーのインターネット規準名。<br>
+(<i>hp300 でのみ使用</i>)
 </td></tr>
 
 <tr><td valign=top><tt>
 mopserver.test.net
 </tt></td><td>
-Internet canonical name of the diskless <tt>mop</tt> server.<br>
-(<i>vax only</i>)
+ディスクレス <tt>mop</tt> サーバーのインターネット規準名。<br>
+(<i>vax でのみ使用</i>)
 </td></tr>
 
 <tr><td><tt>
 SSSSSSSSSSSS<br>
 SS:SS:SS:SS:SS:SS
 </tt></td><td valign=top>
-Ethernet hardware address of the bootloader server.<br>
+ブートローダーサーバーのイーサネットハードウェアアドレス。<br>
 </td></tr>
 
 <tr><td><tt>
 tftpserver.test.net
 </tt></td><td>
-Internet canonical name of the diskless <tt>tftp</tt> server.
+ディスクレス <tt>tftp</tt> サーバーのインターネット規準名。
 </td></tr>
 
 <tr><td><tt>
 rarpserver.test.net
 </tt></td><td>
-Internet canonical name of the diskless <tt>rarp</tt> server.
+ディスクレス <tt>rarp</tt> サーバーのインターネット規準名。
 </td></tr>
 
 <tr><td><tt>
 bootparamserver.test.net
 </tt></td><td>
-Internet canonical name of the diskless <tt>bootparams</tt> server.
+ディスクレス <tt>bootparams</tt> サーバーのインターネット規準名。
 </td></tr>
 
 <tr><td><tt>
 bootpserver.test.net
 </tt></td><td>
-Internet canonical name of the diskless <tt>bootp</tt> server.
+ディスクレス <tt>bootp</tt> サーバーのインターネット規準名。
 </td></tr>
 
 <tr><td><tt>
 dhcpserver.test.net
 </tt></td><td>
-Internet canonical name of the diskless <tt>dhcp</tt> server.
+ディスクレス <tt>dhcp</tt> サーバーのインターネット規準名。
 </td></tr>
 
 <tr><td><tt>
 nfsserver.test.net
 </tt></td><td>
-Internet canonical name of the diskless <tt>nfs</tt> server.
+ディスクレス <tt>nfs</tt> サーバーのインターネット規準名。
 </td></tr>
 
 <tr><td><tt>
 /export/client/root
 </tt></td><td>
-Path to client's filesystem, as specified on the <tt>nfsserver</tt>.
+クライアント用ファイルシステムの、 <tt>nfsserver</tt> 上でのパス。
 </td></tr>
 
 <tr><td><tt>
 dns.test.net
 </tt></td><td>
-Internet canonical name of the domain name server (DNS).
+ドメインネームサーバー (DNS) のインターネット規準名。
 </td></tr>
 
 <tr><td><tt>
 router.test.net
 </tt></td><td>
-Internet canonical name of the router for the client's subnet.
+クライアントの属するサブネットのルーターのインターネット規準名。
 </td></tr>
 
 <tr><td><tt>
 255.255.255.0
 </tt></td><td>
-Subnet mask used by the client (may be set with <tt>bootpd</tt> and
-<tt>dhcpd</tt>).
+クライアントが使うサブネットマスク (<tt>bootpd</tt> や <tt>dhcpd</tt>
+の設定に使います) 。
 </td></tr>
 
 <tr><td><tt>
 192.168.1.255
 </tt></td><td>
-Broadcast address used by the client (may be set with <tt>bootpd</tt> and
-<tt>dhcpd</tt>).
+クライアントが使うブロードキャストアドレス (<tt>bootpd</tt> や
+<tt>dhcpd</tt> の設定に使います) 。
 </td></tr>
 </table>
 <p>
 
-Here are few things worth noting:
+いくつか注意しておきます:
 <p>
 
 <ul>
-<li>You don't need to run all of the daemons on one server, they may each
-   be handled by a different server.  There are various reasons you may want
-   to do this (e.g. using HP-UX for <tt>rbootd</tt> and some other platform 
-   for the rest).  This is why the names of the servers are distinguished 
-   throughout this HOW-TO.  If you plan to run all of your daemons on one
-   machine, then simply equate the names, e.g. for a hp300 diskless server:<br>
+<li>すべてのデーモンを同じサーバーで動かす必要はありません。各デーモンは
+   別々のサーバーで動かすことができます。そうしなければならない理由は
+   いろいろありうるでしょう (例えば、 <tt>rbootd</tt> 用に HP-UX を、
+   それ以外は別のプラットフォームを使うなど) 。この HOW-TO で、サーバー名を
+   デーモン別に付けているのは、このためです。もし同じマシンでデーモンを
+   全部動かすのであれば、サーバー名は同一視してください。
+   例えば、 hp300 一台だけがディスクレスサーバーなら以下のようになります:
    <tt>rbootdserver = rarpserver = bootparamserver = nfsserver</tt>.
 <p>
 
-<li>If the attempt to boot the client fails at any stage, the wisest move is
-   to reset the client.  I've seen some weird things happen on the second try.
-   <p>For hp300 machines, this is accomplished by
-   hitting Shift-Reset, pressing the
-   reset button on a Series 400 workstation, or power-cycling a Series 300
-   workstation.
+<li>クライアントをブートしようとして失敗する場合、それがどの段階であっても、
+   最善の対処はクライアントをリセットすることです。二度目の試行で妙な現象が起きるのを、何度か経験しました。
+   <p>hp300 マシンでは、 Shift-Reset を押すか、
+   シリーズ 400 ワークステーションではリセットボタンを押すか、
+   シリーズ 300 ワークステーションでは電源を入れ直すことで、
+   リセットすることができます。
 <p>
 
-<li>And lastly, a recommendation: Each daemon can be set up and
-   tested one at a time.  This helps narrow down where a problem may
-   be, as you can be sure that the previous step worked.  So, it is
-   probably best if you set up the client-specific bootloader daemon,
-   test to see that it worked, then move on to <tt>rarp</tt> (unless 
-   <tt>rarp</tt> <i>is</i> your client-specific bootloader daemon).  Make
-   sure that <tt>rarp</tt> and the client-specific bootloader daemon
-   work, then set up <tt>bootparamd</tt>, and so on.  Once you're sure
-   that everything works (i.e. the kernel starts loading), then you
-   should go about setting up the daemons to start automatically and
-   installing the necessary diskless filesystem.
+<li>結局、以下のとおり推奨します: 各デーモンは個別に設定・試験することが可能です。
+   そのようにすれば、前の段階まではうまくいっていることを確認することで、
+   問題を切り分けやすくなります。よって、おそらく一番よいやり方は、
+   クライアント固有のブートローダーデーモンを用意して、その動作を確認してから
+   <tt>rarp</tt> の用意に移ることでしょう (<tt>rarp</tt> が
+   クライアント固有のブートローダーデーモン<i>でなければ</i>ですが) 。
+   <tt>rarp</tt> とクライアント固有のブートローダーの動作を確認し、
+   しかるのちに、 <tt>bootparamd</tt> その他をセットアップします。
+   すべて動作する (つまりカーネルがロードを始める) ことがわかってから、
+   デーモンが自動で起動するよう設定し、
+   必要なディスクレスファイルシステムのインストールを行うべきです。
 </ul>
 </dd></dl>
 
-<h2>Download NetBSD</h2>
+<h2>NetBSD をダウンロードする</h2>
 <dl><dt><dd>
-OK, now make some room on your server -- it's time to download NetBSD.  It is
-best to do this from an actual ftp program and not a browser, since you can 
-download multiple items at once.  NetBSD 1.5.3 is the latest release,
-as of 2002/08.
+OK 。ここで、サーバー側に、 (クライアントが利用する) ファイルを用意しましょう
+─ NetBSD をダウンロードします。ここでは web ブラウザーではなく ftp
+プログラムそのものを使うのが一番です。 ftp プログラムなら複数のファイルを
+まとめてダウンロードできるからです。 NetBSD 1.5.3 が 2002/08 の時点で最新のリリースです。
 <p>
 
 <ol>
@@ -1199,8 +1201,8 @@ as of 2002/08.
 <p>
 
 <li><tt>#&nbsp;<b>mkdir&nbsp;-p&nbsp;/export/client/NetBSD-1.5.3/binary/security</b></tt><br>
-       Note, you may not perform this step if you don't meet the requirements
-       for US Export Control
+       注意: 米国の暗号輸出規制に抵触する場合は、
+       これを行なってはいけません。
 <p>
 
 <li><tt>#&nbsp;<b>mkdir&nbsp;-p&nbsp;/export/client/NetBSD-1.5.3/binary/sets</b></tt>
@@ -1210,8 +1212,8 @@ as of 2002/08.
 <p>
 
 <li><tt># <b>ftp ftp.netbsd.org</b></tt><br>
-       Replace <tt>ftp.netbsd.org</tt> with the nearest 
-       <a href="../../../mirrors/">ftp mirror</a>
+       この <tt>ftp.netbsd.org</tt> は、最寄りの
+       <a href="../../../mirrors/">ftp ミラー</a>で読み替えてください。
 <p>
 
 <li><tt>ftp&gt; <b>bin</b></tt>
@@ -1224,85 +1226,85 @@ as of 2002/08.
 <p>
 
 <li><tt>ftp&gt; <b>mget *</b></tt><br>
-       This should download everything, including files in subdirectories.
-       If the ftp program on your server doesn't download subdirectories,
-       you will need to manually <tt>cd</tt> and <tt>lcd</tt> to the 
-       directories and <tt>mget</tt> everything.
+       これで、サブディレクトリーのファイルも含め、全ファイルをダウンロード
+       できるはずです。お使いの ftp プログラムがサブディレクトリーを
+       ダウンロードしてくれない場合は、手動で各サブディレクトリーに
+       <tt>cd</tt> や <tt>lcd</tt> して <tt>mget</tt> する必要があります。
        <p>
-       If your server doesn't have enough space for everything, fear not.
-       All you <i>really</i> need to get a minimally functional NetBSD is 
-       (starting from <tt>/pub/NetBSD/NetBSD-1.5.3/&lt;client-arch&gt;/)</tt>:
+       サーバー側に全ファイルを置けるだけの容量がなくても心配は無用です。
+       NetBSD の最低限の機能を使うために <i>本当に</i> 必要なのは、以下のものだけです
+       (<tt>/pub/NetBSD/NetBSD-1.5.3/&lt;client-arch&gt;/</tt> からの相対パス) :
 <pre>INSTALL.txt
 binary/sets/kern.tgz
 binary/sets/base.tgz
 binary/sets/etc.tgz
-installation/misc/SYS_UBOOT.gz <i>(for hp300)</i>
-installation/misc/rbootd.tgz  <i>(for hp300)</i>
+installation/misc/SYS_UBOOT.gz <i>(hp300 の場合)</i>
+installation/misc/rbootd.tgz  <i>(hp300 の場合)</i>
 </pre>
 <p>
 
 <li><tt>ftp&gt; <b>exit</b></tt>
 <p>
 
-<li><b>Please</b> take the time to read the official 
-      <tt><i>INSTALL</i></tt> notes, located in
-      <tt>/export/client/NetBSD-1.5.3/INSTALL</tt>
+<li><tt>/export/client/NetBSD-1.5.3/INSTALL</tt>
+      にある公式 <tt><i>INSTALL</i></tt> ノートを、
+      <b>くれぐれも</b> よくお読みください。
 </ol>
 </dd></dl>
 
-<h2><A name="platformspecific">Platform-specific Introduction</a></h2>
+<h2><A name="platformspecific">プラットフォーム固有の序説</a></h2>
 <dl><dt><dd>
-Now, read the introduction with details on your client's platform:
+では、お使いのクライアントプラットフォームの詳細についての導入をお読みください:
 <ul>
   <li><a href="intro.alpha.html">alpha</a>
-  <li>arm32 (coming soon)
-  <li>cobalt (see the <a href="../../../Ports/cobalt/faq.html">FAQ</a>)
+  <li>arm32 (近日公開)
+  <li>cobalt (<a href="../../../Ports/cobalt/faq.html">FAQ</a> 参照)
   <li><a href="intro.hp300.html">hp300</a>
   <li><a href="intro.hp700.html">hp700</a>
   <li><a href="intro.i386.html">i386</a>
-  <li>luna68k (see the 
-     <a href="../../../Ports/luna68k/install.html">Installation notes</a>)
+  <li>luna68k (
+     <a href="../../../Ports/luna68k/install.html">Installation notes</a> 参照)
   <li><a href="intro.macppc.html">macppc</a>
-  <li>mvme68k (coming soon)
+  <li>mvme68k (近日公開)
   <li><a href="intro.next68k.html">next68k</a>
-  <li>ofppc (coming soon)
+  <li>ofppc (近日公開)
   <li><a href="intro.pmax.html">pmax</a>
-  <li>sgimips (see the <a href="../../../Ports/sgimips/faq.html">FAQ</a>)
+  <li>sgimips (<a href="../../../Ports/sgimips/faq.html">FAQ</a> 参照)
   <li><a href="intro.sun.html">sparc</a>
   <li><a href="intro.sun2.html">sun2</a>
   <li><a href="intro.sun.html">sun3</a>
-  <li>sparc64 (see the 
-     <a href="../../../Ports/sparc64/faq.html#netbooting">FAQ</a>) 
+  <li>sparc64 (
+     <a href="../../../Ports/sparc64/faq.html#netbooting">FAQ</a> 参照) 
   <li><a href="intro.vax.html">vax</a>
-  <li>Alternatively, you may have a <a href="local.html">local</a> bootloader
-    and run diskless otherwise.
+  <li>このほか、<a href="local.html">ローカル</a>でブートローダーを用意し、
+    それ以外の部分はディスクレスで動かすということもできます。
 </ul>
 </dd></dl>
 
 <hr>
 
-<a href="./">Table of Contents</a>
+<a href="./">目次</a>
 
 <hr> 
 
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
+        src="../../../../images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a> 
   </td><td>
     <a href="../../../"><img
-        src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        src="../../../../images/empty.gif" origlink="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
+        src="../../../../images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
-        src="../../../images/empty.gif" border="0"
+        src="../../../../images/empty.gif" origlink="../../../images/empty.gif" border="0"
         width="1" height="1" alt="NetBSD ">Documentation top level</a>
   </td></tr></table>
 </td></tr></table>
@@ -1310,7 +1312,9 @@ Now, read the introduction with details on your client's platform:
 <hr>
 <address>
   <small>
-  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  (連絡先 - <a href="../../../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
   $NetBSD: intro.html,v 1.48 2002/08/09 16:37:33 jschauma Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000, 2001
