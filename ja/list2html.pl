@@ -153,11 +153,11 @@ width=146 height=129 alt="BSD demon"></a>
 </td><td>
   <table><tr>
   <td>
-    <a href="$DOCUMENTATION">
+    <a href="$DOCUMENTATION/">
     <img src="/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
     <font>
-    <a href="$DOCUMENTATION">
+    <a href="$DOCUMENTATION/">
     <img src="/images/empty.gif" border=0
      alt="NetBSD ">Documentation top level</a>
     </font>
