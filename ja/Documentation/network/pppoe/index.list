@@ -1,0 +1,315 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2002
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Documentation: Steps to connect via PPPoE (DSL)</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>Steps to connect via PPPoE (DSL)
+
+<LIST>
+
+<SECTION>Steps to connect via PPPoE (DSL)
+
+<ENTRY>intro Introduction
+This document will describe a simple setup to connect via PPPoE
+(often used by DSL providers) to the internet.
+<p>
+We will assume you run a NetBSD-1.5Z or newer kernel (i.e. a kernel from the
+1.5 release branch will <em>not</em> do). If you are using an older NetBSD
+version without in-kernel PPPoE support, we suggest you install the
+net/rp-pppoe package from pkgsrc. This includes a command called
+<pre>adsl-setup</pre> that will set everything up for you.
+<p>
+PPPoE is an acronym for <b>P</b>oint-to-<b>P</b>oint <b>P</b>rotocol 
+<b>o</b>ver <b>E</b>thernet. The typical setup is a DSL modem (which talks
+via the DSL line to your providers router, called <i>Access Concentrator</i>)
+and connects to your machine via a standard Ethernet. So you need an Ethernet
+interface, dedicated to talk to your DSL modem. Over this Ethernet interface
+a PPP connection is established.
+<p>
+At closer look this is weird. You got an Ethernet connection - why does your
+provider not run IP on top of it? Some do this (similar to cable modem 
+connections), using DHCP to assign IP numbers to your system. Most providers
+do not do it, as PPPoE makes their lives a bit easier. It will make your live
+a bit harder, since PPPoE has an unusual small MTU, which prevents many 
+systems behind misconfigured firewalls on the internet to connect to you.
+A workaround is described <a href="#clamping">below</a>.
+<p>
+For the following examples we pick <i>ne0</i> as the interface name for our
+Ethernet interface connecting to the DSL modem. Any other interface will
+do, of course.
+
+<ENTRY>check-kernel Check your kernel
+Before you can use PPPoE, you will need support for it in your kernel.
+To check it is there, run
+<pre>
+  ifconfig -C
+</pre>
+and look for pppoe in the output. If it is not there, you need to add
+<pre>
+  pseudo-device pppoe
+</pre>
+to your kernel config file.
+
+<ENTRY>manual-test Do a manual test connection
+Before setting up your machine to automatically connect, you should do
+a manual test connection. If anything fails, this will be the easy way
+to debug your setup.
+<p>
+First we create the pppoe interface itself and assign dummy IP numbers to it,
+which will be replaced later during PPP negotiation. For now we keep the
+interface marked down, as it is not ready yet.
+<pre>
+  ifconfig pppoe0 create
+  ifconfig pppoe0 inet 0.0.0.0 0.0.0.1 down
+</pre>
+Next we attach the pppoe interface to the Ethernet interface used to connect
+the DSL modem. This interface needs to be marked UP, but it does not need
+an IP address assigned.
+<pre>
+  ifconfig ne0 up
+  pppoectl -e ne0 pppoe0
+</pre>
+Now you need your authentication data. Most providers offer some documentation
+how that data has to be formatted for Linux users, as the windows software
+often plays tricks and ask for provider specific things. If you are using
+t-online, please see <a href="#t-online-usernames">this side note</a>.
+Enter the authentication data via a command like this (note that you may need
+to protect special characters from the shell by using single quotes):
+<pre>
+  pppoectl pppoe0 myauthproto=pap 'myauthname=XXX' 'myauthsecret=XXX' hisauthproto=none
+</pre>
+where <tt>XXX</tt> is your username and <tt>YYY</tt> is your password.
+The <tt>hisauthproto=none</tt> prevents PPP from forcing the peer to 
+authenticate, something many providers will refuse to do. If your provider
+supports the CHAP protocol, you may set <tt>myauthproto=chap</tt>.
+<p>
+We are now ready to test a first connection. Since something may be wrong,
+we will restrict retries for now:
+<pre>
+  pppoectl pppoe0 max-auth-failure=1
+</pre>
+Now activate the interface:
+<pre>
+  ifconfig pppoe0 up
+</pre>
+Nothing will happen (we have not enabled extended debugging messages). If 
+everything works your PPPoE session will get connected, which you can verify
+with:
+<pre>
+  # pppoectl -d pppoe0
+  pppoe0: state = session
+          Session ID: 0x254f
+          PADI retries: 0
+          PADR retries: 0
+</pre>
+This example output shows a working setup. The PPPoE session has been 
+established and is still in use (state = session). If the output shows
+non session state, you either have your authentication data wrong (see
+below) or the access concentrator did not answer or establish a session,
+which will show up as PADI or PADR retries. This means either your DSL
+setup is not working at all, or you need to specify a service name (via
+the <tt>-s</tt> option to pppoectl) or an access concentrator name (via
+the <tt>-a</tt> option to pppoectl). Your provider should have documented
+this need. See pppoectl(8) for details.
+<p>
+Assuming your PPPoE session got up, we can now check the IP negotiation
+of PPP:
+<pre>
+  # ifconfig pppoe0
+  pppoe0: flags=8851<UP,POINTOPOINT,RUNNING,SIMPLEX,MULTICAST> mtu 1492
+          inet 117.80.111.85 -> 118.5.113.169 netmask 0xff000000
+</pre>
+This is a working connection, as we got a local (118.80.111.85) and a 
+remote (117.5.113.169) IP address assigned (of course you will see different
+IP numbers). If you do not get a similar display, your PPP authentication
+data are wrong. Double check them and possibly correct them, by repeating
+the pppoectl setting them and starting again from there.
+
+<ENTRY>permanent-setup Setup a permanent connection
+Now that you verified it works, you will want to configure the machine
+to start the connection automatically.
+<p>
+To have your machine connect automatically on boot, the things you tried
+before in the manual setup need to be encoded in some scripts and configuration
+files.
+<p>
+Depending on the contract you have you will choose a connection that is always
+on, used if you have a <a href="#stay-connected">flatrate</a> charging model.
+<p>
+If you pay for connection time, you will prefer an <a href="#connect-on-demand">
+on demand</a> connection.
+
+<ENTRY>stay-connected Setup a line that is always connected
+The aim of this setup is to keep the line open as long as possible, and in
+the event of disconnections (for whatever reason) to reconnect as soon as
+possible. This is the default mode of operation. Filling in the authentication
+data you used in the manual test connection above, create this files:
+<p>
+In <tt>/etc/ifconfig.pppoe0</tt> put:
+<pre>
+create
+# Mark the physical interface used by this PPPoE interface up
+! /sbin/ifconfig ne0 up
+# Let $int use ne0 as its Ethernet interface
+! /sbin/pppoectl -e ne0 $int
+# Configure authentication
+! /sbin/pppoectl $int myauthproto=pap 'myauthname=XXX' 'myauthsecret=XXX' hisauthproto=none
+# Configure the PPPoE interface itself. These addresses are magic
+# meaning we don't care about either address and let the remote
+# ppp choose them.
+0.0.0.0 0.0.0.1 up
+</pre>
+Make sure this file is only readable by root.
+<p>
+In <tt>/etc/ppp/ip-up</tt> put:
+<pre>
+#! /bin/sh
+/sbin/route add default $4
+</pre>
+and make this file executable by root.
+<p>
+In <tt>/etc/ppp/ip-down</tt> put:
+<pre>
+#! /bin/sh
+/sbin/route delete default
+</pre>
+and make this file executable by root too.
+<p>
+Finally, add this line to <tt>/etc/rc.conf</tt>:
+<pre>
+ifwatchd=YES
+</pre>
+<p>
+You are done. Due to the missing <tt>link1</tt> flag of the pppoe0
+interface the connection will be established as soon as possible, and 
+reestablished immediately after failure. Every time the connection comes
+up, the script <tt>/etc/ppp/ip-up</tt> will be executed, and every time it
+goes down <tt>/etc/ppp/ip-down</tt>. You can use these scripts for further
+cleanup (i.e., pruning stale NAT connections after the line dropped and you
+will be assigned a new dynamic IP number on reconnect) or kicking servers
+that need to know about that the connection is working again (i.e., a
+forwarding and caching named).
+<p>
+Note that on system boot the ifwatchd daemon (which executes the ip-up
+and ip-down scripts) is probably run quite late. The PPPoE connection will
+be established as soon as the ifconfig.pppoe0 file is run, early on network
+startup. The connection will come up immediately, but the <tt>/etc/ppp/ip-up</tt>
+script will not yet be run. When ifwatchd(8) starts, it will execute the
+ip-up script if the connection is already up. Many network daemons will
+start in between, and due to the missing default route not be able to connect
+to the outside internet. Kicking these daemons in the ip-up script is a
+good idea (and will take care of most problems those daemons cause when
+using dynamic IP addresses as well). A typical example is to flush all
+NAT connections and restart named and ntpd:
+<pre>
+#! /bin/sh
+/sbin/route add default $4
+/etc/rc.d/ntpd restart
+/etc/rc.d/named restart
+</pre>
+
+<ENTRY>connect-on-demand Setup a line connecting only on demand
+This connection setup will establish the PPPoE connection only when traffic
+tries to use it. It will disconnect automatically after a configurable idle
+period.
+<p>
+The main differences to a permanent connection configuration are
+<ul>
+<li>The <tt>link1</tt> flag on the pppoe0 interface
+<li>The idle timeout (set to 60 seconds in the example below) to make
+the line drop after some time without traffic
+<li>The routing configuration, as you need to root packets to the pppoe0
+interface even when the connection is not established.
+</ul>
+<p>
+Put this in <tt>/etc/ifconfig.pppoe0</tt>:
+<pre>
+create
+# Mark the physical interface used by this PPPoE interface up
+! /sbin/ifconfig ne0 up
+# Let $int use ne0 as its Ethernet interface
+! /sbin/pppoectl -e ne0 $int
+# Configure authentication
+! /sbin/pppoectl $int idle-timeout=60 myauthproto=pap 'myauthname=XXX' 'myauthsecret=XXX' hisauthproto=none
+# Configure the PPPoE interface itself. These addresses are magic
+# meaning we don't care about either address and let the remote
+# ppp choose them.
+0.0.0.0 0.0.0.1 link1 up
+! /sbin/route add default -iface 0.0.0.1
+</pre>
+<p>
+It is not necessary to use ifwatchd in this configuration, as the default route
+is a permanent one already set by above config file. If you need notifications
+of changing IP addresses or the connection dropping or reestablishing, you
+may configure ifwatchd and use <tt>/etc/ppp/ip-up</tt> and </tt>/etc/ppp/ip-down</tt>.
+See the <a href="#stay-connected">permanent connection</a> case for an
+example (but do not change the default route).
+
+<ENTRY>clamping Setup NAT with MSS-clamping
+Some systems behind misconfigured firewalls try to use Path-MTU-Discovery,
+while their firewall blocks all ICMP messages. This is an illegal, but not
+uncommon, setup. Typically you will have no chance to fix this (remote,
+outside of your controll) setup. And sometimes you will have to use such
+remote systems (to download data from them, or to do your online banking).
+<p>
+Without special care systems as described above will not be able to send
+larger chunks of data to a system connected via PPPoE. But there is a
+workaround (some may call it cheating): pretend to not be able to handle large
+packets, by sending a small MSS (maximum segment size) option during initial
+TCP handshake.
+<p>
+For connections originating from your PPPoE connected machines, this is 
+accomplished by setting the sysctl variable net.inet.tcp.mss_ifmtu to 1,
+i.e. by adding this 
+
+<PRE>
+# Obey interface MTUs when calculationg MSS
+net.inet.tcp.mss_ifmtu=1
+</PRE>
+
+to /etc/sysctl.conf. For connections originating from systems behind your
+PPPoE router, you need to set the mssclamp options in your NAT rules,
+like in this example of /etc/ipnat.conf:
+
+<PRE>
+map pppoe0 192.168.1.0/24 -> 0/32 portmap tcp/udp 44000:49999 mssclamp 1452
+map pppoe0 192.168.1.0/24 -> 0/32 mssclamp 1452
+</PRE>
+
+If you do not use NAT, you need to setup a 1:1 NAT rule, just to get the
+clamping:
+
+<PRE>
+map pppoe0 x.x.x.x/24 -> 0/0 mssclamp 1452
+</PRE>
+
+</LIST>
+
+<H2><a name="t-online-usernames">Side note for t-online users</a></H2>
+If you have used an ISDN connection to t-online before, note that T-DSL 
+usernames differ from the ISDN ones. The DSL usernames need an additional
+<tt>@t-online.de</tt> suffix, so the complete structure is
+<tt>000XXXXXXXXXYYYYYYYYYYYY#0001@t-online.de</tt> (where the <tt>#</tt> is
+rumored to be optional, and <tt>0001</tt> is your sub-user number).
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.5 2002/03/14 22:27:01 wiz Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
