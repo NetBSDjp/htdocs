@@ -4,109 +4,108 @@
 <head>
 <!-- Copyright (c) 1994-2001
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD/sun3 Frequently Asked Questions</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>NetBSD/sun3 Frequently Asked Questions</h1>
+<h1>NetBSD/sun3 よくある質問</h1>
 
 <LIST>
 
-<h2>Other sources of information</h2>
+<h2>他の情報源</h2>
 
 <ul>
-<li><a href="http://www.sunhelp.com/">SunHELP</a> - much sun related information
+<li><a href="http://www.sunhelp.com/">SunHELP</a> - sun 関連の膨大な情報
 <li><a href="http://www.mso.anu.edu.au/~kim/faq/hardfaq.html">Sun
-    Hardware Reference FAQ</a> - overview of Sun hardware over the years
+    Hardware Reference FAQ</a> - 数年にわたる Sun のハードウェアの概観
 <li><a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">Sun
-    NVRAM/Hostid FAQ</a> - if your machine PROM's battery has gone dead
+    NVRAM/Hostid FAQ</a> - あなたのマシンの PROM のバッテリーがきれた時に
 <p>
 
 <li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5/sun3/INSTALL.html">
-    NetBSD 1.5 install notes</a> - supported hardware and how to install.
-<li><a href="../../MailingLists/#port-sun3"> port-sun3 mail list</a>
-    - if you have any additional questions please subscribe.
-<li><a href="../../Documentation/network/netboot/intro.sun.html">Netbooting
-    NetBSD/sparc and NetBSD/sun3</a>.
-<li>The <a href="http://sun3arc.krupp.net/">Sun3 Archive</a>
-    has lots of information about Sun3 hardware, PROM images, etc.
+    NetBSD 1.5 インストールノート</a> - 対応ハードウェアとインストール方法。
+<li><a href="../../MailingLists/#port-sun3"> port-sun3 メーリングリスト</a>
+    - もし、何か質問があれば、ぜひ講読してください。
+<li><a href="../../Documentation/network/netboot/intro.sun.html">NetBSD/sparc
+     と NetBSD/sun3 のネットワークからの起動</a>。
+<li><a href="http://sun3arc.krupp.net/">Sun3 Archive</a>
+    には、 Sun3 ハードウェア、 PROM イメージその他の多くの情報があります。
 <li><a href="http://www.obsolyte.com/sun3/">Techrat's Sun 3/160
-    pages</a> contains information on Techrat's 3/160, hardware
-    information, lots of pictures of old Sun hardware, and links to
-    various FAQs and things.
+    pages</a> には、Techrat 3/160 の情報、ハードウェア情報、沢山の古い Sun
+    ハードウェアの写真、様々な FAQ などへのリンクがあります。
 <p>
 
-<li><a href="../../Documentation/">General NetBSD Documentation</a>
-    - for questions not specific to NetBSD/sun3.
+<li><a href="../../Documentation/">一般的な NetBSD ドキュメンテーション</a>
+    - NetBSD/sun3 固有でない質問。
 </ul>
 
-<SECTION>General Questions
+<SECTION>全般的な質問
 
-<ENTRY>le0-not-multicast-capable No multicast or IPv6 - \
+<ENTRY>le0-not-multicast-capable マルチキャストや IPv6 が使えない - \
 	"<tt>le0: not multicast capable</tt>"
-The LANCE revsision C chips used in some sun3s (not the sun3x) have
-a bug which sometimes results in garbage inserted where the first
-bits should be, with the correct bits shifted later.  So instead
-of the destination MAC address at the beginning, you get something
-random looking.
+一部の sun3s (sun3x は含まず) で使われている LANCE revsision C
+チップにはバグがあり、最初のビットにゴミを入れ、
+本来のビットを後ろにずらしてしまうことがあります。このため、
+MAC アドレスが本来の行き先のものではなく、
+デタラメに見えることがあります。
 <p>
 
-The work-around is to examine the beginning of the packet and
-throw away anything that's not for us (my MAC or broadcast).
-Unfortunately this prevents the use of multicast.
+次善策として、パケットの冒頭を検証して、自分宛 (自分の MAC
+またはブロードキャスト) 以外のものは捨てるという手があります。
+困ったことに、こうするとマルチキャストが使えなくなります。
 <p>
 
-The LANCE Rev. C chip was probably only used in the 3/50, so on
-other sun3 machines you should be able to <a
-href="../../Documentation/kernel/#how_to_build_a_kernel">build
-a kernel</a> without the line:  <pre>options LANCE_REVC_BUG</pre>
+おそらく、 LANCE Rev. C チップは 3/50 だけで使われていますので、
+他の sun3 マシンでは、次の行を外して<a
+href="../../Documentation/kernel/#how_to_build_a_kernel">カーネルを
+構築</a>することができるはずです: <pre>options LANCE_REVC_BUG</pre>
 
-<ENTRY>3-80-esp-endless-reset Running diskless 3/80 with ESP driver - \
+<ENTRY>3-80-esp-endless-reset ESP ドライバーを使った 3/80 をディスクレスで動かす - \
 	<tt>"esp: SCSI bus reset."</tt>
-This message is a symptom of a bug in the esp driver on diskless systems.
-The ESP (Emulex SCSI Processor) driver in NetBSD/sun3x has a bug that causes
-it to enter an endless loop when it probes an empty SCSI bus.
-To work around this problem, use a kernel which does not have the esp device
-driver, or plug in at least one powered SCSI device into the bus.
-(Sorry, we don't have a pre-compiled esp-less kernel for you yet!)
+このメッセージは、ディスクレスシステムでの esp ドライバーのバグの症状です。
+NetBSD/sun3x の ESP (Emulex SCSI Processor) ドライバーにはバグがあり、
+空の SCSI バスをプルーブすると無限ループに陥ります。
+この問題を回避するためには、 esp デバイスドライバーを含まないカーネルを使うか、
+または何か動いている SCSI デバイスをバスに挿します。
+(すみません。コンパイル済みの esp なしカーネルは、まだ用意していません !)
 
-<ENTRY>sunos_compat SunOS 4.1 Compatibility
-NetBSD/Sun3 features extensive binary compatibility with
-SunOS 4.1.x programs.  Static SunOS executables will run without any
-extra setup.
+<ENTRY>sunos_compat SunOS 4.1 互換機能
+NetBSD/Sun3 には、 SunOS 4.1.x のプログラムの実行バイナリーとの
+互換機能があります。スタティックな実行バイナリーは特別な設定なしに
+動作します。
 <p>
 
-To run dynamic executables, you'll need to provide the
-dynamic libraries that came with your SunOS installation.
-SunOS programs that will <i>not</i> work include those that use the
-SunOS kvm library, certain (low-level) disk manipulation utilities,
-and programs making explicit use of Sun's STREAMS subsystem.
-Check the compat_sunos(8) manual page for more details.
+ダイナミックな実行バイナリーの実行には、
+SunOS からダイナミックライブラリーを持ってくる必要があります。
+動作<i>しない</i> SunOS プログラムとしては、SunOS kvm ライブラリーを
+使うものや、ある種の (低レベルの) ディスク操作ユーティリティーや、
+Sun STREAMS サブシステムを明示的に使うプログラムなどがあります。
+より詳しくは、 compat_sunos(8) マニュアルページを確認してください。
 
-<ENTRY>sun3x-history History of NetBSD/sun3x
-The sun3x port of NetBSD was initiated by two independent groups of
-developers.  The first group, headed by Gordon Ross and Jeremy Cooper,
-began work in March of 1996 with the (then) current sun3 port and the
-intent to create a new pmap system that was not based on the hp300 m68k
-code.  Their work is the officially supported version of NetBSD/sun3x.
+<ENTRY>sun3x-history NetBSD/sun3x の歴史
+NetBSD の sun3x ポートは、二つの独立した開発者グループによって始まりました。
+第一のグループは Gordon Ross と Jeremy Cooper らによるもので、
+1996 年 3 月に current (当時) の sun3 ポートをもとに作業を始め、 hp300 m68k
+コードに基づかない新しい pmap システムの作成に集中しました。
+彼らの成果は、公式にサポートされた NetBSD/sun3x のバージョンとなりました。
 <p>
 
-The second group, headed by Tsubai Masanari, also began with the sun3
-distribution but instead choose to use the traditional hp300 m68k pmap.
-This approach allowed them to get a fully running system in a matter
-of weeks.  They were the first to successfully integrate the SPARC
-Enhanced SCSI Processor driver into the kernel, proving that the Sun3x
-was indeed half SPARC, half Sun3.
+第二のグループは椿井政成らによるもので、こちらも sun3 をもとにしていましたが、
+こちらは伝統的な hp300 m68k pmap を採用しました。
+この手法により、彼らは数週間で完全に動作するシステムを作ることができました。
+彼らは、 SPARC 拡張 SCSI プロセッサードライバーをカーネルに統合することに
+初めて成功し、 Sun3x が確かに SPARC と Sun3 の中間的存在であることを
+証明しました。
 <p>
 
-Although the currently supported NetBSD/sun3x is based on Gordon and
-Jeremy's work, they are indebted to the second group for their innovation.
+現在のサポートされている NetBSD/sun3x は Gordon と Jeremy らの作業をもとに
+していますが、彼らの前進は第二のグループの恩恵によるものです。
 <p>
 
-Between NetBSD 1.3 and 1.4 NetBSD/sun3x was merged into NetBSD/sun3.
-They build separate kernels, but share the same userland, and kernel
-build tree.
+NetBSD 1.3 から 1.4 の間に、 NetBSD/sun3x は NetBSD/sun3 にマージされました。
+これらは別々にカーネルを構築しますが、ユーザーランドとカーネルビルドツリーは
+同じものを共有しています。
 
 </LIST>
 
@@ -118,7 +117,9 @@ build tree.
 <hr>
 <address>
   <small>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
+  (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
   $NetBSD: faq.list,v 1.20 2001/02/07 19:51:34 dent Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
