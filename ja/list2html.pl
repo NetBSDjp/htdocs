@@ -1,32 +1,40 @@
 #!/usr/bin/env perl
 #
-# NetBSD Id: list2html.pl,v 1.33 1999/11/25 16:50:23 abs Exp $
+# NetBSD Id: list2html.pl,v 1.41 2000/01/24 15:23:35 soren Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
 #	<SECTION>Text		Introduces new section
-#	</LIST> or <ENDLIST>	Mark end of all special entries
+#	</LIST>			Mark end of all special entries
 #
 # Plus these optional tags: (You will probably want to use <DATE> or <ENTRY>)
 #	<DATE>tag date Text	Change entry, expanded to title & added to list
 #	<ENTRY>tag Text		New entry, expanded to title and added to list
 #	<ENTRYLINK>url Text	Link added to list, removed from main text
 #	<HEADING>Text		Standard heading at top of document
-#	<BASELINKS>		Standard links at base of document
 #	<TROW>Text: Text	Table row, with two text fields
+#				NOTE: <TROW> will automatically continue
+#				until a link containing </table>
+#	<HOMELINK>		Add flag link to NetBSD home page
+#	<DOCLINK>		Add flag links to NetBSD home page & docs top
+#	<DEVLINK>		Add flag links to NetBSD home page & developers
 #
 # Continuation lines are understood (useful for the special tags)
 #
 # Additional links:
-#	([\w.+]+)\((\d)\) -> manpages		eg: ls(1)
-#	<([-\w.]+@[-\w.]+)> -> email address	eg: <user@host>
-#	<PKGSRC>category/name -> link to pkgsrc README.html
+#	([\w.+]+)\((\d)\)	-> manpages		eg: ls(1)
+#	<([-\w.]+@[-\w.]+)>	-> email address	eg: <user@host>
+#	<PKGSRC>category/name	-> link to pkgsrc README.html
+#	<CURRENTSRC>path	-> link to source file/dir in -current
+#	<URL>[^\s<]+[^<\s.]	-> Insert link to URL
 #
-# (c) 1999 DKBrownlee. All rights reserved. This file may be used to update
-# the information on the NetBSD website. If you want to use it for any other
-# purpose, ask me first.. abs@mono.org
+# NOTE: Update htdocs/developers/htdocs.list when adding features.
+#
+#   (c) 1999, 2000 DKBrownlee. All rights reserved. This file may be used to
+#	update the information on the NetBSD website. If you want to use it
+#	for any other purpose, ask me first.. abs@mono.org
 #
 
 use strict;
@@ -40,7 +48,7 @@ my($version,%opt,%pkgname);
 
 $months_previous=9;	# previous months to display for DATE entries
 
-$version='$Revision: 1.33 $';
+$version='$Revision: 1.41 $';
 $version =~ /([\d.]+)/ && ($version=$1);
 
 if (!&getopts('a:m:hV',\%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -67,42 +75,98 @@ if ($opt{'m'})
 $months_previous=&get_minmonth($months_previous);
 
 %extras=(
-	'<HEADING>\s*(.*)','
+
+'<HEADING>\s*(.*)','
 <table><tr><td>
 <a href="$HOME/Misc/daemon-copy.html">
 <img align="center" src="$HOME/images/BSD-demon.jpg" border=0
 width=146 height=129 alt="BSD demon"></a>
 </td><td align=center>
 <h1>NetBSD ドキュメンテーション:</h1>
-<h1>$TITLE</h1>
+<h1>$SUB1</h1>
 </td></tr></table>
 <p>
-',	'<BASELINKS>','
-<table width="100%"><tr>
+',
+
+'<HOMELINK>', '
+<table><tr>
   <td>
-    <table><tr>
-      <td>
-	<a href="$HOME/">
-        <img src="$HOME/images/NetBSD-banner.jpg" width=91 height=42
-	    border="0" alt="NetBSD&nbsp;Home"></a>
-      </td><td>
-	<a href="$HOME/">ホームページ</a>
-      </td>
-    </tr></table>
+    <a href="$HOME/">
+    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
-    <table><tr>
-      <td>
-	<a href="$DOCUMENTATION/"> <img
-	    src="$HOME/images/NetBSD-banner.jpg" width=91 height=42
-	    alt="NetBSD&nbsp;Documentation"
-        border="0"></a>
-      </td><td>
-	<a href="$DOCUMENTATION/">ドキュメントと FAQ</a>
-      </td>
-    </tr></table>
+    <!--<font face="helvetica, arial">-->
+    <a href="$HOME/">
+    <img src="$HOME/images/empty.gif" border=0
+	    alt="NetBSD ">ホームページ</a>
+    </font>
   </td>
 </tr></table>
+',
+
+'<DEVLINK>', '
+<table width="100%"><tr>
+<td>
+  <table><tr>
+  <td>
+    <a href="$HOME/">
+    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+  </td><td>
+    <!--<font face="helvetica, arial">-->
+    <a href="$HOME/">
+    <img src="$HOME/images/empty.gif" border=0
+     alt="NetBSD ">ホームページ</a>
+    </font>
+  </td>
+  </tr></table>
+</td><td>
+  <table><tr>
+  <td>
+    <a href="$DEVELOPERS">
+    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+  </td><td>
+    <font face="helvetica, arial">
+    <a href="$DEVELOPERS">
+    <img src="$HOME/images/empty.gif" border=0
+     alt="NetBSD ">開発者ドキュメント</a>
+    </font>
+  </td>
+  </tr></table>
+</td>
+</table>
+',
+
+'<DOCLINK>', '
+<table width="100%"><tr>
+<td>
+  <table><tr>
+  <td>
+    <a href="$HOME/">
+    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+  </td><td>
+    <font face="helvetica, arial">
+    <a href="$HOME/">
+    <img src="$HOME/images/empty.gif" border=0
+     alt="NetBSD ">ホームページ</a>
+    </font>
+  </td>
+  </tr></table>
+</td><td>
+  <table><tr>
+  <td>
+    <a href="$DOCUMENTATION">
+    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+  </td><td>
+    <font face="helvetica, arial">
+    <a href="$DOCUMENTATION">
+    <img src="$HOME/images/empty.gif" border=0
+     alt="NetBSD ">Documentation top level</a>
+    </font>
+  </td>
+  </tr></table>
+</td>
+</table>
 '
+
 );
 
 # XXX Should DTRT with faqs not under Documentation
@@ -152,14 +216,17 @@ sub extract_tags
 sub extras_generate
     {
     my(%extras)=@_;
-    my($pathtodoc,$str);
+    my($pathtodoc, $pathtodev, $str, $home);
 
     if ($0 !~ m#(.*)/[^/]+.pl#)
 	{ &fail("Unable to extract path from '$0'"); }
-    $pathtodoc="$1/Documentation";
+    $home="$1";
+    $pathtodoc="$home/Documentation";
+    $pathtodev="$home/developers";
     foreach $str ( keys %extras )
 	{
-	$extras{$str} =~ s#\$HOME#$pathtodoc/..#g;
+	$extras{$str} =~ s#\$HOME#$home#g;
+	$extras{$str} =~ s#\$DEVELOPERS#$pathtodev#g;
 	$extras{$str} =~ s#\$DOCUMENTATION#$pathtodoc#g;
 	}
     (%extras);
@@ -167,19 +234,19 @@ sub extras_generate
 
 sub extras_process
     {
-    my($data,%extras)=@_;
-    my($key,$title,$value);
+    my($data, %extras)=@_;
+    my($key, $sub1, $sub2, $value);
 
     foreach $key ( keys %extras )
 	{
 	$value=$extras{$key};
 	if ($data =~ /$key/)
 	    {
-	    if (defined($1))
-		{
-		$title=$1;
-		$value=~s#\$TITLE#$title#g;
-		}
+	    ($sub1, $sub2) = ($1, $2);
+	    if (defined($sub1))
+		{ $value=~s#\$SUB1#$sub1#g; }
+	    if (defined($sub2))
+		{ $value=~s#\$SUB2#$sub2#g; }
 	    $data=~s/$key.*/$value/;
 	    }
 	}
@@ -221,7 +288,7 @@ sub makelist
     my($title_font) = "<font face=\"helvetica, arial, sans-serif\">";
     my($end_title_font) = "</font>";
     my(%rcsmap)=&extract_tags($outfile,'\$NetBSD.*\$');
-    my($rcstag);
+    my($rcstag, $in_trow);
 
     $list='';
 
@@ -287,7 +354,7 @@ sub makelist
 		}
 	    }
 
-	elsif (m#^<ENTRY>\s*(.+\S)#)
+	if (m#^<ENTRY>\s*(.+\S)#)
 	    {
 	    if (! $in_section )
 		{ $list.="$title_font<ul>\n"; }	# Start title list
@@ -320,7 +387,7 @@ sub makelist
 	    &verbose("\t$href\n");
 	    }
 
-	elsif (m#^<ENTRYLINK>\s*(.+\S)#)
+	if (m#^<ENTRYLINK>\s*(.+\S)#)
 	    {
 	    if ( ! $in_section )
 		{ $list.="$title_font<ul>\n"; }	# Start title list
@@ -338,7 +405,7 @@ sub makelist
 	    &verbose("\t$href\n");
 	    }
 
-	elsif (m#^<SECTION>\s*(.+\S)#)
+	if (m#^<SECTION>\s*(.+\S)#)
 	    {
 	    if ($in_entry)
 		{
@@ -365,16 +432,28 @@ sub makelist
 	    $in_section = 1;
 	    &verbose("    $section\n");
 	    }
-	elsif (m#^<TROW>\s*(.*)#)
+
+	if (m#^<TROW>\s*(.*)#)
 	    {
 	    $_=$1;
 	    if (! m#^([^:]+:)\s+(.*)#)
 		{ &fail("<TROW> should match ([^:]+:)\s+(.*)"); }
 	    $ignore=undef;
-	    $_ = "<tr><th valign=top align=right>$1</th>\n    <td>$2</td></tr>";
+	    $_ = "<tr><th valign=top align=right>$1</th>\n  <td>$2</td></tr>\n";
+	    $in_trow = 1;
+	    }
+	elsif ($in_trow)
+	    {
+	    if (m#</table>#i)
+		{ $in_trow = 0; }
+	    else
+		{			# Append to last <TROW>
+		substr($data, -11, 0) = ' '.&sub_external_links($_);
+		$_ = '';
+		}
 	    }
 
-	elsif (m#^(</LIST>|<ENDLIST>)#)
+	if (m#^</LIST>#)
 	    {
 	    if ($in_entry)
 		{
@@ -382,14 +461,12 @@ sub makelist
 		$in_entry=undef;
 		}
 	    if ($endlist)
-		{ &fail("Duplicate </LIST> or <ENDLIST>"); }
+		{ &fail("Duplicate </LIST>"); }
 	    $endlist=1;
 	    $ignore=undef;
 	    $_="<hr>\n";
 	    }
 
-	# Foul hack to avoid incorrect installboot(8) references
-	# May fail valid links also. Only until i386 vs alpha manpage resolved.
 	if (! $ignore)
 	    { $data.=&sub_external_links($_); }
 	}
@@ -432,6 +509,26 @@ sub sub_external_links
     #
     $text =~
 	s#([a-zA-Z_][-\w.+]*[\w+])\((\d)\)#<a href="${link}page=$1&amp;sect=$2">$1($2)</a>#g;
+
+    # Expand <CURRENTSRC>path
+    #
+    if ($text =~ m#<CURRENTSRC>([^\s<>]+\w)#)
+	{
+        my($path);
+
+	$path = $1;
+	$path =~ s#^/##;
+	$path =~ s#^usr/##;
+	$path =~ s#^src/##;
+	if ($path =~ m#^(sys|share|gnu)#)
+	    { $path = $1."src/$path"; }
+	elsif ($path !~ m#^(doc|xsrc)#)
+	    { $path = "basesrc/$path"; }
+	$text =~ s#<CURRENTSRC>([^\s<>]+\w)#<a href="http://cvsweb.netbsd.org/bsdweb.cgi/$path?rev=HEAD&content-type=text/x-cvsweb-markup">$1</a>#;
+	}
+
+    # Expand <URL>[^\s<]+[^<\s.]
+    $text =~ s#<URL>([^\s<]+[^<\s.])#<a href="$1">$1</a>#g;
 
     # Expand <PKGSRC>category/name entries
     #
