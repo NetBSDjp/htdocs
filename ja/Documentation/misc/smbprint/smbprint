@@ -4,23 +4,23 @@
 (
 PATH=/usr/local/bin:/usr/pkg/sbin:/usr/pkg/bin:/usr/sbin:/usr/bin:/bin:/sbin
 
-# This script is an input filter for printcap printing on a unix machine. It
-# uses the smbclient program to print the file to the specified smb-based 
-# server and service.
-# For example you could have a printcap entry like this
+# このスクリプトは unix マシンから印刷する printcap 用の入力フィルター
+# です。smbclient プログラムを使い、指定された smb ベースのサーバーと
+# サービスでファイルの印刷をおこないます。
+# 例えば、以下のようなエントリーを printcap に定義している場合、
 #
 #lp|lufer|hplj4:\
 #        :mx#0:sh:lp=/dev/null:sd=/var/spool/lpd/lufer:\
 #        :af=/etc/lpd/lufer/acct:if=/usr/local/bin/smbprint:
 #
 #
-# which would create a unix printer called "lp", "lufer", and "hplj4"
-# that will print via this script. You will need to create the spool
-# directory /var/spool/lpd/lufer with appropriate permissions and
-# ownerships for your system.
+# 上のエントリーは、このスクリプトを使い印刷をおこなう unix プリンター
+# 「lp」、「lufer」、「hplj4」を定義しています。適切なパーミションと
+# オーナーでスプールディレクトリ /var/spool/lpd/lufer を作成する必要
+# があります。
 #
-# In order for this to work, you'll need to put some printer-related
-# info into /etc/lpd/lufer/config. Here's what mine contains:
+# これを動作させるために、いくつかのプリンター関連の情報を 
+# /etc/lpd/lufer/config に設定する必要があります。以下は、私の設定です:
 #
 # server=lufer
 # service=hp
@@ -28,62 +28,63 @@ PATH=/usr/local/bin:/usr/pkg/sbin:/usr/pkg/bin:/usr/sbin:/usr/bin:/bin:/sbin
 # device=ljet4
 # gs_options=-r300x300
 #
-# meanings:
+# 意味:
 #
-# "server" - the smb name of the machine connected to the printer. This will
-#            be given to nmblookup to find the IP address of the machine, so
-#            the machine can be configured for DHCP. Note that it must be on
-#            the same subnet, as nmblookup only uses broadcast WINS packets
-#            unless otherwise instructed
+# "server" - プリンターが接続されているマシンの smb 名。マシンの IP アドレス
+#            を調べるために nmblookup にわたされます。したがって、マシンが
+#            DHCP を使用するように設定されていても問題ありません。特に設定
+#            していなければ、nmblookup は、ブロードキャスト WINS パケット
+#            だけを使用するので、マシンは同じサブネット上に存在しなければ
+#            ならない事に注意してください。
 #
-# "service" - name of the printer service on the remote machine.
+# "service" - リモートマシン上のプリンターサービスの名前。
 #
-# "password" - usually this can be blank. On some systems you might
-#            need a password
+# "password" - 通常は設定する必要がありませんが、パスワードが必要なシステムも
+#              あるかもしれません。
 #
 
-# "device" - which GhostScript device driver to use. This assumes
-#            input is PostScript. If you don't give a device=, or if
-#            you give the device as "ps", no translation will be done
-#            (useful if the printer really is a PostScript device, or
-#            if you want to send straight ASCII text to the printer)
+# "device" - GhostScript のデバイスドライバーが使用するデバイス。入力は
+#            ポストスクリプトだと仮定されています。もし、device= を設定
+#            しない、あるいは ps を指定した場合は、変換はおこなわれません。
+#            (プリンターが本当の PostScrip デバイスの場合、あるいは ASCII
+#            テキストをそのままプリンターに送信したい場合に役に立ちます)
 #
-# "gs_options" - Any extra options you need to give to GhostScript. In
-#            my case, I have to force it to 300x300 resolution, since the
-#            ljet4 device driver defaults to 600x600, but my Laserjet 4L
-#            only supports 300x300.
+# "gs_options" - その他の GhostScript のオプション。私の場合、強制的に
+#            300x300 の解像度を指定する必要があります。これは、ljet4 
+#            デバイスドライバーのデフォルトが 600x600 なのに、私の 
+#            Laserjet 4L が 300x300 の解像度しかサポートしていないからです。
 #
 #
-# Debugging log file, change to /dev/null if you like. Useful when things
-# aren't working.
+# ログファイルのデバッグをおこなう時は、/dev/null を適当なファイルに
+# 変更してください。うまく動作しない時には役に立ちます。
 #
 logfile=/tmp/smb-print.log
 #logfile=/dev/null
 
 echo $0 $*
 #
-# The last parameter to the filter is the accounting file name.
-#   Extract the directory name from the file name.
-#   Concat this with /config to get the config file.
+# このフィルターにわたされる最後のパラメーターは、アカウンティング
+#   ファイル名です。ファイル名からディレクトリ名をとりだします。
+#   設定ファイルを取得するために、それと /config を連結します。
 #
 eval acct_file=\$$#
 spool_dir=`dirname $acct_file` 
 config_file=$spool_dir/config
 
-# Should read the following variables set in the config file:
+# 以下の変数を設定ファイルから読みこむ必要があります:
 #   server
 #   service
 #   password
-#   device (for GhostScript. If none given, or "ps", don't use GhostScript)
-#   gs_options  (extra gs options, eg -r300x300)
+#   device (GhostScript用。未指定、又は「ps」の場合、GhostScript を使いません)
+#   gs_options  (その他の gs オプション、例えば -r300x300 のような)
 
 eval `cat $config_file`
 
 echo "server $server, echo server IP $sIP service $service device $device options $gs_options"
 
 (
-# NOTE You may wish to add the line `echo translate' if you want
-# automatic CR/LF translation when printing.
+# 注意 印刷時に自動的に CR/LF の変換をおこないたい場合は、「echo translate」
+# という行を追加してください。
 #       echo translate
 if [ "$device" = "" -o "$device" = "ps" ]
 then
@@ -94,8 +95,8 @@ else
 fi
 ) | smbclient "\\\\$server\\$service" $password -U $server -N -c 'print -' >> $logfile
 
-# Change the filename below to /dev/null if you don't want the handy
-# session log kept around. I find it handy for debugging problems, and
-# it doesn't take up much space
+# 便利なセッションログを保存したくない場合は、以下のファイル名を /dev/null
+# に変更してください。このファイルは問題のデバッグに役に立ちますし、
+# ディスク容量もそれほど必要としません。
 
 ) >/tmp/smb-print.log 2>&1
