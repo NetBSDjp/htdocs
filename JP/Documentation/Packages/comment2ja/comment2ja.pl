@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.9 1999/08/25 11:31:57 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.10 1999/08/26 01:43:17 sakamoto Exp $
 #
 
 $|=1;
@@ -190,17 +190,17 @@ if ($#pkgs > 0) {
 <html>
 <head><title>NetBSD Packages</title></head>
 <body>
-<table border=1>
+<pre>
 EOF
 
 	my ($pkg);
 	foreach $pkg (sort keys %nodata) {
-		print DST "<tr><td>$pkg <td>$nodata{$pkg}\n";
+		print DST "$pkg|$nodata{$pkg}\n";
 		print "$pkg	$nodata{$pkg}\n";
 	}
 
 	print DST <<EOF;
-</table>
+</pre>
 </body>
 </html>
 EOF
