@@ -2,9 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<link rel="shortcut icon" href="../../../favicon.ico" origlink="/favicon.ico" type="image/x-icon">
 <title>NetBSD/next68k: Frequently Asked Questions</title>
 </head>
 <body bgcolor="#ffffff" text="#000000" link="#2020cc" vlink="#700080">
@@ -22,166 +23,87 @@
     <li><a href="../../Documentation/wscons/">The wscons
 	FAQ</a>、NetBSD のプラットフォーム独立な
 	ワークステーションコンソールドライバーについて
-    <li><a href="/Documentation/network/netboot/intro.next68k.html" origlink="../../Documentation/network/netboot/intro.next68k.html">NetBSD/next68k
-	のネットワークからの起動について</a>
+    <li><a href="../../Documentation/network/netboot/">Diskless
+	NetBSD HOW-TO</a>
+    <li><a href="../../Documentation/Hardware/Misc/serial.html">NetBSD
+       シリアルポート入門</a>
 </ul>
 
 <SECTION>起動
 
-<ENTRY>rom-monitor どうすれば私はファームウェア(即ち ROM モニター)に入れますか?
-あなたは、<b>COMMAND</b> キーと数字キーパッドの'7'キーの上にある"~"キーを
-同時に押せばいつでも ROM モニターに入る (或いはデバッガーに割り込む)
-ことが出来ます。
+<ENTRY>rom-monitor どうすればファームウェア(即ち ROM モニター)に入れますか?
+<b>COMMAND</b> キーと数字キーパッドの <tt>7</tt> キーの上にある逆引用符
+(<tt>`</tt>) キーを同時に押せばいつでも ROM モニターに入る
+(或いはデバッガーに割り込む) ことが出来ます。
 
-<ENTRY>netboot-command どうすれば私はネットワークから起動することをマシンに通知出来ますか?
+<ENTRY>reset プラグを抜く以外の方法でシステムをリセットするにはどうすればいいですか?
+ハードリセットでリセットできます─これはファイルシステムを sync しません。
+<i>左側の</i> <b>COMMAND</b>-<b>ALTERNATE</b>-<b><tt>*</tt></b> の各キーを
+同時に押します (<tt>*</tt> キーは、数字キーパッドの <tt>/</tt> キーの右にあるものです) 。
 
-<a href="#rom-monitor">ROM monitor</a> から次のコマンドを打って下さい。
-<pre>ben()netbsd</pre>
-これは接続されたイーサネット上に bootp 要求を送信します。
+<ENTRY>netboot-how どうすればネットワークから起動出来ますか?
+これについては INSTALL ノートで扱うようになりました。
+<a
+href="../../Documentation/network/netboot/">Diskless NetBSD HOW-TO</a> にも、
+<a
+href="../../Documentation/network/netboot/intro.next68k.html">NetBSD/next68k
+のネットブート</a>に特化した節があります。
 
-<ENTRY>netboot-how どうすれば私はネットワークから起動出来ますか?
-<em>[注: 関連するセクションが有ります。新しい <a
-href="../../Documentation/network/netboot/">Diskless NetBSD HOW-TO</a> devoted
-to <a
-href="/Documentation/network/netboot/intro.next68k.html" origlink="../../Documentation/network/netboot/intro.next68k.html">Netbooting
-NetBSD/next68k</a>.  これらの情報は、ここの記述と併せて用いることで
-あなたの助けになるでしょう。]</em>
+<ENTRY>monitor-commands ROM モニターに入って、何ができますか?
+ROM モニターのプロンプトで <tt><b>?</b></tt> とタイプすると利用可能なコマンドの
+一覧が出ます。 <tt><b>p</b></tt> とタイプするとシステムを設定できます。
+このほか、 <tt>Power</tt> キーを押すと、システムの電源が
+落とせます。
 <p>
-
-あなたが適切な呪文を知っているならネットワークからの起動は簡単です。この例
-では私達は二つのサーバーを使用しますが、あなたは必ずしも二つのサーバーを必要
-としません。あなたは、同様のことを行うのに好きなだけ多くの方法が使えます。
+SCSI ディスクからブートするには <tt><b>bsd()</b></tt> とタイプします。
+イーサネット経由でブートするには <tt><b>ben()netbsd</b></tt> とタイプします。
 <p>
-
-<em>Sulafat</em> は私達の新しい NeXT です。起動されるのを待っています。
-<p>
-
-<em>Rigel</em> は私達の bootpd、そして tftpd サーバーです。
-これらは共に私達のルートパーティションに置かれます。
-<p>
-
-<em>Giauzar</em> は、同一ネットワークに置かれてディスクスペースを貸してくれる
-NFS サーバーです。
-<p>
-
-最初に私達は、私達のマシンにルートパーティションを作成する必要が有ります。
-私達は、 rigel 上 (の恐らく usr 以下) に、 root のための十分なスペースを
-持っているとします。ここの例では <i>/next</i> と命名する約90MBのディレクトリー
-を作成します。そして、NetBSD の配布物の中のバイナリーをこのディレクトリーに
-入れます。スペースを節約するために、このディレクトリーから /usr/share
-を削除します。以下に詳細を示します。
-<p>
-
-ルートディレクトリーを作成したら、ここで <code>/next/dev</code> に入って
-<code>sh ./MAKEDEV all</code> を実行します。
-これは dev ディレクトリーに適正なデバイスノードを作成するでしょう。
-ここで私は /next/etc に入り、etc を目的の状態に修正できます。
-ここでのいくつかの修正はこの段階において重要です。:
-<p>
-
-nfs ファイルシステムをマウントする際のホスト名解決及びその他の
-ネットワーキングの動作のために <code>etc/hosts あるいは etc/resolv.conf</code>
-が必要とされます。
-<p>
-
-<code>etc/rc.conf</code> を修正しなければなりません。 
-他のNetBSD システムと同様です。
-<p>
-
-<code>etc/myname</code> には、あなたがネットワークからの起動を試みる
-マシンの名前を入れなければなりません。
-<p>
-
-<code>etc/fstab</code> はあなたのマシンの fstab です。例:
-
 <pre>
-rigel:/next / nfs rw,auto 0 0
-giauzar:/usr/share /usr/share nfs ro 0 0
-giauzar:/usr/src/sulafat.swap none swap sw,nfsmntpt=/swap 0 0
-giauzar:/sulafat.pkg /usr/pkg nfs rw 0 0
+                        NeXT ROM Monitor 2.5 (v66)
+
+CPU MC68040 25 MHz, memory 100 nS
+Backplane slot #0
+Ethernet address:  0:0:f:0:fb:90
+Memory size 40 MB
+NeXT&gt;<b>?</b>
+NeXT ROM monitor commands:
+        p  inspect/modify configuration parameters
+        a [n]  open address register
+        m  print memory configuration
+        d [n]  open data register
+        r [regname]  open processor register
+        s [systemreg]  open system register
+        e [lwb] [alist] [format]  examine memory location addr
+        ec  print recorded system error codes
+        ej [drive #]  eject optical disk (default = 0)
+        eo  (same as above)
+        ef [drive #]  eject floppy disk (default = 0)
+        c  continue execution at last pc location
+        b [device[(ctrl,unit,part)] [filename] [flags]]  boot from device
+        S [fcode] open function code (address space)
+        R [radix]  set input radix
+Notes:
+        [lwb] select long/word/byte length (default = long).
+        [alist] is starting address or list of addresses to cyclically examine
+        Examine command, eith no arguments, uses last [alist]
+Copyright (c) 1988-1990 NeXT Inc.
+
+NeXT&gt;<b>p</b>
+boot command: sd()? <b>en()netbsd</b>
+DRAM tests:  yes? <b>yes</b>
+perform power-on system test:  yes? <b>yes</b>
+        sound out tests:  yes? <b>yes</b>
+        SCSI tests:  yes? <b>yes</b>
+        loop until keypress:  no?  <b>no</b>
+        verbose test mode:  no?  <b>yes</b>
+boot extended diagnostics:  no?  <b>no</b>
+serial port A is alternate console:  no?  <b>yes</b>
+allow any ROM command even if password protected:  no?  <b>no</b>
+allow boot from any device even if password protected:  no?  <b>no</b>
+allow optical drive #0 eject even if password protected:  yes?  <b>yes</b>
+enable parity cehcking if parity memory is present:  no?  <b>no</b>
+
 </pre>
-
-これはネットワークからの起動に最低限必要なことより多くのことを行っています。
-私の設定では root 及び usr を rigel の /next に置いています。私は giauzar から
-/usr/share をマウントしました。と言うのも "share" は正に共有するためにあるからです。
-<p>
-
-スワップファイルの設定はとても簡単です。上記の例では次の様になります:
-
-<pre>
-giauzar# cd /usr/src
-giauzar# dd if=/dev/zero of=sulafat.swap bs=512 count=64000
-</pre>
-
-sulafat が使うために 32MB のスワップファイルを作成しています。
-これは上記の fstab でマウントしています。
-<p>
-
-あなたはここで、 /tftpboot と呼ばれるディレクトリーを
-あなたの bootpd サーバーに作成する必要が有ります。例:
-
-<pre>
-rigel# mkdir /tftpboot
-rigel# cp /next/usr/mdec/boot /tftpboot/boot
-</pre>
-
-私は NeXT のための起動ファイルを tftpboot ディレクトリーの中にコピーしました。
-<p>
-
-ここで bootpd サーバーの設定をします。<br><Br>
-サーバー上の /etc/bootpd ファイルを編集します。この例では rigel です。
-
-<pre>
-sulafat:sm=255.255.255.0:gw=192.168.10.1:ht=ethernet:ha=00000f00c8fa:
-        ip=192.168.10.14:vm=auto:rp=/next:bf=boot
-</pre>
-
-上記の例で、私は次の様にしました: サブネットマスク (sm) を 255.255.255.0 に、
-デフォルトゲートウェイ (gw) を 192.168.10.1 に、
-ハードウェアタイプ (ht) を "ethernet" に、
-ハードウェアアドレス (ha) を "00000f00c8fa" に、
-sulafat の IP アドレス (ip) を 192.168.10.14 に、
-リモートルートマウントポイント (rp) を/next に、
-起動ファイル (bf) を "boot" に設定しました。
-<p>
-
-私はまた "vm" フィールドを "auto" に設定しました。
-これは NeXT をネットワークから起動する時に要求されます。
-<p>
-
-あなたはあなたの NeXT から <a href="#rom-monitor">ROM モニター</a>
-に入ることでハードウェアアドレスを取得出来ます。
-モニターが起動する時、ハードウェアアドレスが表示されます。
-<p>
-
-ここであなたはサーバーから適切なファイルシステムを送り出すでしょう。
-この例では、 rigel は NeXT に対して送り出します。
-この時、rigel の /etc/exports は次の様になっていなければなりません:
-
-<pre>
-/next -maproot=0:10 192.168.10.14
-</pre>
-
-あなたは、これらの操作を行ったらすぐに、全ての適切なデーモンが走っていることを
-確認する必要が有ります。リモートでルートの nfs マウントをサポートするために、
-nfsd と mountd が rigel 上で走っていなくてはなりません。
-あなたは "tftp" と "bootps" を可能にするために、bootpd サーバー(rigel )上で、
-/etc/inetd.conf ファイルも編集するべきです。あなたは、<code>bootpd -d 9</code>
-コマンドをマニュアル操作で入力することにより、
-bootpd をデバッグモードで開始することが出来ます。
-これはあなたが問題を持っている場合に有用です。
-<p>
-
-ここで、全てが設定され、そして全ての適正なデーモンがサーバー上で
-走っているなら、あなたは NeXT に対して <code>ben()netbsd</code>
-コマンドによりネットワークからの起動を通知する準備が出来ているでしょう。
-
-<ENTRY>auto-boot どの様にすれば私は自動的にネットワークから起動出来る様に設定出来ますか?
-<a href="#rom-monitor">ROM モニター</a> に入った後、あなたは、あなたの NeXT
-を設定するために "p" コマンドを打ちます。最初に答える質問は起動デバイスです。
-標準では "sd?" になっています。あなたはこれを、電源 ON 時にネットワークからの
-起動を自動で試みる様に "en()netbsd" に変更します。
-
 <SECTION>ハードウェア
 
 <ENTRY>no-monitor どうすれば私はモニター無しで私の NeXT を走らせられますか?
@@ -197,11 +119,11 @@ bootpd をデバッグモードで開始することが出来ます。
 のユーザーズリファレンスマニュアルの中の DB-19 におけるピン配置図が有ります。
 <p>
 
-もしあなたが古い型の Cube を持っているなら、それの電源から、030(及び 040?
+もしあなたが古い型の Cube を持っているなら、それの電源から、030 (及び 040?)
 ボードが平常使用するより大きな出力を無理やり引き出さなくてはなりません。
 それで: DB-19 上の12番ピンと GND との間にパワー抵抗器(20オーム、
 少なくとも20ワット以上)を接続します。 (12番ピンは -12V です。
-13番ピンは GND として動作します。)
+13番ピンは GND として動作します)。
 それから、あなたは上述の470オーム抵抗器を正しく "瞬間的接触" させます。
 20オームの抵抗器は満足な出力を引き出し続けてくれます。　
 ─　触ってはいけません。(*熱いです!*)
@@ -229,77 +151,9 @@ href="http://www.peanuts.org/faq-serve/cache/189.html">The Peanut's Archive
 FAQ</a> の中で論じられています。
 
 <ENTRY>serial-console どの様に私はシリアルコンソールケーブルを作成すれば良いですか?
-大抵の他のマシンや端末が DTE 装置であるのに対して、NeXT は DCE 装置で
-あることが分かります。
-<p>
 
-最初に、あなたはいずれのピンが何であるか知る必要があります。
-頭のてっぺんから足の先まで、左から右までマシンの裏側を見て下さい:
-
-<pre>
- 8 7 6
- 5 4 3
-  2 1
-</pre>
-
-<img src="/images/ports/next68k/serial.gif" origlink="../../images/ports/next68k/serial.gif" width="64" height="65"
-     alt="Image of the NeXT serial port">
-<p>
-
-各ピンは次の通りです:
-<p>
-
-<ol>
-	<li> DTR
-	<li> DCD
-	<li> TxD
-	<li> GND
-	<li> RxD
-	<li> RTS
-	<li> RTxC
-	<li> CTS
-</ol>
-<p>
-
-PC のシリアルポートあるいは端末から NEXT に話をするための適切なケーブルを作る
-目的で、あなたは正確に互いのピンを配線する必要があります。
-TxD -&gt; TxD、その他。。。
-
-<pre>
-PC は 9pin/25pin のオス型 SUB-D コネクターです。
-(あなたの PC の外側から見た)ピン配置図を次に示します:
-
-        1                         13         1         5
-      _______________________________      _______________
-      \  . . . . . . . . . . . . .  /      \  . . . . .  /
-       \  . . . . . . . . . . . .  /        \  . . . .  /
-        ---------------------------          -----------
-        14                       25           6       9
-
-Name (V24)  25pin  9pin  Dir  Full name              Remarks
------------------------------------------------------------------------
-   TxD         2     3    o   Transmit Data          Data
-   RxD         3     2    i   Receive Data           Data
-   RTS         4     7    o   Request To Send        Handshaking
-   CTS         5     8    i   Clear To Send          Handshaking
-   DTR        20     4    o   Data Terminal Ready    Status
-   DSR         6     6    i   Data Set Ready         Status
-   RI         22     9    i   Ring Indicator         Status
-   DCD         8     1    i   Data Carrier Detect    Status
-   GND         7     5    -   Signal ground          Reference level
-    -          1     -    -   Protective ground      Don't use this one
-                                                     as signal ground!
-</pre>
-
-私は、 Mac プリンターケーブルを購入することによって、私のケーブルを作りました。
-そしてそれは8本全てのピンが完全にストレート配線されるようにしました。
-私はケーブルを半分に切って、私の端末サーバーのための RJ45 コネクターを
-終わりに付けました。シリアルポートを使うためには、(<a href="#rom-monitor">ROM
-モニター</a>から "p" を打つことでアクセスした)設定メニューで、
-あなたは次の様に変数を設定しなければなりません:
-"Port A as alternate console?" to "Y" 。
-マルチメーターまたは導通テスターを持つことは、"これに供されるケーブル"
-を切って開いた後に、どのピンがどのワイアか確認するのに恐らく有用です。
+詳しくは、<a href="../../Documentation/Hardware/Misc/serial.html">NetBSD
+シリアルポート入門</a>を参照してください。
 
 <ENTRY>monitor-pinout モニターケーブルのピン配置はどうなっていますか?
 NeXT のモニターケーブルはとても妙な DB19 コネクターです。
@@ -350,8 +204,8 @@ NeXT のモニターケーブルはとても妙な DB19 コネクターです。
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: faq.list,v 1.16 2001/07/12 14:38:34 dent Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  $NetBSD: faq.list,v 1.19 2002/12/24 17:02:38 jschauma Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
