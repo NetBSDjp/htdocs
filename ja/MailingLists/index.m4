@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.150 2004/02/06 07:12:08 gendalia Exp $
+#	$NetBSD: index.m4,v 1.153 2004/02/06 23:53:33 lukem Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -62,7 +62,7 @@ divert(0)dnl')
 
 # here we go!!!
 divert(0)dnl
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
 <html>
 <head>
@@ -182,7 +182,11 @@ LIST(netbsd-announce)
 ENDLIST
 LIST(netbsd-bugs)
   NetBSD のバグに関する議論のためのメーリングリストです。
-  <i>send-pr(1)</i> で送られたバグレポートはすべてここに流れます。
+  <i>send-pr(1)</i> で送られた NetBSD のバグレポートはすべてここに流れます。
+ENDLIST
+LIST(pkgsrc-bugs)
+  pkgsrc のバグに関する議論のためのメーリングリストです。
+  <i>send-pr(1)</i> で送られた 'pkg' カテゴリーのバグレポートはすべてここに流れます。
 ENDLIST
 LIST(netbsd-docs)
   NetBSD の文書に関する議論のためのメーリングリストです。翻訳者用メーリングリスト
@@ -242,7 +246,7 @@ LIST(regional-cs)
   チェコ共和国とスロバキア共和国在住のユーザー向けの議論用です。
 ENDLIST
 LIST(regional-de)
-  ドイツ在住のユーザー向けの議論用です。
+  ドイツおよびドイツ語圏域在住のユーザー向けの議論用です。
 ENDLIST
 LIST(regional-fr)
   フランス在住のユーザー向けの議論用です。
@@ -269,7 +273,7 @@ LIST(regional-pl)
   ポーランド在住のユーザー向けの議論用です。
 ENDLIST
 LIST(regional-pt)
-  ポルトガル在住のユーザー向けの議論用です。
+  ポルトガルおよびポルトガル語圏域在住のユーザー向けの議論用です。
 ENDLIST
 LIST(regional-sfba)
   サンフランシスコ湾岸在住のユーザー向けの議論用です。
@@ -708,7 +712,7 @@ divert(9)
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.150 2004/02/06 07:12:08 gendalia Exp $<br>
+  $NetBSD: index.m4,v 1.153 2004/02/06 23:53:33 lukem Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
