@@ -2,70 +2,71 @@
 <head>
 <!-- Copyright (c) 2000
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>How to Debug the NetBSD kernel with GDB</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<HEADING>How to Debug the NetBSD kernel with GDB
+<HEADING> GDB を使い NetBSD カーネルをデバッグする方法
 
 <LIST>
 
-<SECTION>Using KGDB
+<SECTION>KGDB の使用方法
 
-<ENTRY>introduction Introduction
+<ENTRY>introduction 概要
 
-Although the DDB debugger that can be included with the NetBSD kernel is
-useful for gathering crash tracebacks, examining the values of
-variables, and other minor debugging tasks, if you're doing serious
-kernel hacking you'll want to setup to work with the remote debugger,
-KGDB, instead.
+NetBSD カーネルに含まれている DDB デバッガーは、クラッシュ・トレースバック
+を入手したり、変数の値の検査、その他のこまかいデバッグのために、役に立ちま
+す。しかしながら、もし、真剣にカーネルをハックしているのであれば、DDB のか
+わりに、リモートデバッガー KGDB が動作するように設定したいと思うでしょう。
 <p>
-The advantage of KGDB over DDB is that you can step through the *source
-code* of the kernel, rather than through disassembled machine code. As a
-matter of fact, nearly all GDB facilities work, including any of the
-various graphical frontends for gdb (eg - <PKGSRC>devel/ddd).
 
-<ENTRY>prerequisites Prerequisites
+DDB に対する KGDB の利点は、ディスアセンブルされたマシンコードでなく
+カーネルの *ソースコード* を見ることができることです。実際のところ、
+ほとんどすべての GDB の機能が使用可能で、gdb のいくつかのグラフィカル
+インターフェースを使うこともできます(例えば <PKGSRC>devel/ddd など)。
 
-* Two machines of the same architecture (including object code format)
-both running NetBSD:<p><p>
+<ENTRY>prerequisites 事前に準備しておくこと
+
+* 同一アーキテクチャーで NetBSD の動作しているマシン二台(オブジェクトコード
+のフォーマットも同一であること)<p><p>
 
 <PRE>
-    TARGET - the machine that will be running the debug kernel
-    REMOTE - the machine that will run/display gdb
+    TARGET - デバッグするカーネルを実行するマシン
+    REMOTE - gdb を実行、表示するマシン
 </PRE>
 
-It is possible to build gdb hosted on one architecture and targeted for
-another, but I'll leave that for someone else to describe.<p><p>
+あるアーキテクチャーのホストで、他のアーキテクチャーのターゲット用の gdb 
+を構築することも可能です。しかし、これについてはここではふれません。きっと
+誰かが書いてくれることでしょう。<p><p>
 
-* A free serial port on each machine.<p>
-* A null modem cable<p>
-* Knowledge of how to build and install a kernel, and how to use gdb.<p>
+* 空きのシリアルポートが両方のマシンに存在すること<p>
+* null モデムケーブル<p>
+* カーネルの構築とインストール、そして gdb の使用法についての知識<p>
 
-<ENTRY>instructions Instructions
+<ENTRY>instructions 手順
 
-(In the following, I assume that you'll be using tty01 on the REMOTE
-machine (the one running gdb) and tty00 on the "target" (the one being
-debugged). This should hopefully straighten out any confusion about
-which serial port is being referenced in the instructions)<p><p>
+(以下の文中では、REMOTE マシン上(gdb が動作している)で tty01 を、TARGET 
+マシン(デバッグされる)では tty00 を使用していると仮定して説明します。
+これで、以下の手順の中で、どのシリアルポートについてのべているのか混乱する
+ことはないでしょう。<p><p>
 
 
-1) Build a kernel with KGDB enabled.<p><p>
+1) KGDB を有効にしたカーネルの構築<p><p>
 
-(NOTE: I find it's best to build the kernels on the REMOTE machine.
-That way all the proper source and symbol files are already there when
-it comes time to debug.)<p><p>
+(注意: 私は、これがリモートマシン上でカーネルを構築する最良の方法だと
+思います。これで、デバッグする時には、すべての必要なソースファイルと
+シンボルファイルはすでに準備されています。)<p><p>
 
-1.1) Comment out the following lines in the kernel config file for the
-TARGET machine:<p><p>
+1.1) TARGET マシンのためにカーネルのコンフィグファイル内の以下の行を
+コメントアウトしてください。<p><p>
 
 <PRE>
   #options 	DDB		# in-kernel debugger
   #options 	DDB_HISTORY_SIZE=100	# enable history editing 
 </PRE>
 
-and uncomment (or add) the following three lines:<p><p>
+以下の三行をアンコメントアウト(あるいは追加)してください。<p><p>
 
 <PRE>
   options 	KGDB		# remote debugger
@@ -73,90 +74,94 @@ and uncomment (or add) the following three lines:<p><p>
   makeoptions	DEBUG="-g"	# compile full symbol table
 </PRE>
 
-Change KGDBADDR to match the IO address of the serial port you will use
-on the TARGET (0x3f8 is tty00, 0x2f8 is tty01), and KGDBRATE to match
-the serial bitrate you want to use.<p><p>
+TARGET マシン上で使用するシリアルポートの IO アドレス(0x3f8 は tty00、
+0x2f8 は tty01 用です)に一致するように、KGDBADDR を変更してください。
+それから、KGDBRATEを、使用するビットレートに一致させてください。<p><p>
 
-1.2) Configure and build the kernel for the TARGET. <insert link here to "How to build a kernel"><p><p>
+1.2) TARGET マシンのカーネルの設定と構築をおこなってください。
+<ここに "How to build a kernel" へのリンクを挿入する><p><p>
 
-2) Prepare the TARGET machine - copy the file "netbsd" from the kernel
-build directory to the root directory of the TARGET machine. *DO NOT*
-INSTALL THIS KERNEL ON THE REMOTE MACHINE (especially if you're using
-the same tty on both machines!)<p><p>
+2) TARGET マシンの準備。- ファイル「netbsd」を、カーネルを構築したディレクトリ
+から TARGET マシンのルートディレクトリにコピーしてください。このカーネルを
+リモートマシンにインストールしてはいけません。(特に、両方のマシンで同じ tty 
+を使っている時には注意してください!)<p><p>
 
-3) Prepare the REMOTE machine.<p><p>
+3) REMOTE マシンの準備<p><p>
 
-3.1) If you built the kernel on the TARGET machine, make a copy of all
-of /usr/src/sys from there to the REMOTE machine. (*Note: you can't just
-NFS-mount the directory from the TARGET! When gdb hits a breakpoint,
-*everything* on the TARGET will stop, including nfsd!)<p><p>
-	
-3.2) Change the line in /etc/ttys for the tty you plan to use on the
-REMOTE machine (and *only* the REMOTE) to something like:<p><p>
+3.1) TARGET マシンでカーネルを構築したのであれば、/usr/src/sys すべてを、
+REMOTE マシンにコピーしてください。(*注意: TARGET マシンのディレクトリ
+を 単に NFS マウントしてはいけません。gdb がブレークポイントで停止した
+時に、TARGET マシン上の nfsd を含むすべてのプロセスは停止します。)<p><p>
+
+3.2) REMOTE マシン上で使う予定の(そして REMORE マシンでだけ使う) tty の
+ために /etc/ttys を変更してください。例えば以下のように。<p><p>
 
 <PRE>
    tty01 "/usr/libexec/getty std.9600" unknown off local
 </PRE>
 
-The important parts here are "off" (so that init won't run getty on the
-port) and "local" - ttyflags sets up the defaults for the port according
-the /etc/ttys at boottime, and gdb requires "local" to be set so that it
-doesn't wait for DTR. (*Note: the "local" setting shouldn't be necessary
-for NetBSD-current after Dec 21, 1999, or for NetBSD 1.5 when it is
-released. See PR6547 for details.)<p><p>
+ここで重要なのは、「off」(これで、init がこのポートで getty を起動する
+ことはありません)と「local」です。ttyflags は、/etc/ttys に従ってブート
+時にポートのデフォルトを設定します。そして、gdb を使うには、DTR を待た
+ないようにするために「local」が設定されていなければなりません
+(*注意: 「local」の設定は、1999 年 12 月 21 日以降の NetBSD-current、
+そして、NetBSD 1.5 リリース後には必要ありません。詳細は PR6547 を参照して
+ください。)<p><p>
 
-You may also want to change the "std.9600" to a different bitrate - it
-should match the rate you set in the kernel options for the TARGET as
-well as the remotebaudrate you set in gdb (below). Make sure there is
-actually an entry in /etc/gettytab to match the name you give here.<p><p>
+「std.9600」を別のビットレートに変更したい場合もあるかもしれません。この
+場合、ビットレートは、gdb で設定する remotebaudrate (後で説明します)と
+同様に、TARGET 用のカーネルオプションで設定したレートと一致していなけ
+ればなりません。/etc/gettytab の中に、あなたが使う名前と一致するエントリー
+があることを確認してください。<p><p>
 
-3.3) Reboot the REMOTE machine, or otherwise cause ttyflags to run and
-reread /etc/ttys. ("kill -1 1" may be sufficient, although I've seen
-init get confused by a change in the ordering of items in /etc/ttys).<p><p>
+3.3) REMOTE マシンをリブートするか、ttyflags を起動し /etc/ttys を再
+読み込みさせてください。(「kill -1 1」で十分かもしれません。しかし、
+/etc/ttys の項目の順番を変更したことにより、init が混乱したのを見た
+経験があります。)<p><p>
 
-4) Connect the serial ports with the null modem cable.<p><p>
+4) null モデムケーブルを使い、シリアルポートに接続してください。<p><p>
 
-5) Reboot the TARGET, and hit the space bar as soon as the boot loader
-message comes up. Enter the following command:<p><p>
+5) TARGET マシンをリブートし、ブートローダーのメッセージが表示されたら
+すぐに、スペースキーを押してください。そして、次のコマンドを入力して
+ください。<p><p>
 
 <PRE>
 	boot -d
 </PRE>
 
-This will cause the kernel to load, after which the message "waiting for
-kgdb" will be printed, and the TARGET will stop.<p><p>
+これによりカーネルがロードされます。「waiting for kgdb」というメッセージ
+が表示された後、TARGET は停止します。<p><p>
 
-6) On the REMOTE machine, cd to the directory where you built the kernel
-(usually /usr/src/sys/arch/<something>/compile/<config-name>) and run
-gdb:<p><p>
+6) REMOTE マシン側で、カーネルを構築したディレクトリ
+(一般的には /usr/src/sys/arch/<something>/compile/<config-name>) 
+に移動し、gdb を起動します。
 
 <PRE>
 	gdb netbsd.gdb
 </PRE>
 
-After a couple seconds of churning, you will get the (gdb) prompt.<p><p>
+数秒後、(gdb) プロンプトが表示されるはずです。
 
-7) setup a couple gdb flags:<p><p>
+7) gdb のいくつかのフラグを設定する<p><p>
 
 <PRE>
-	# this one lets you stop the TARGET any time with Ctrl-C
+	# いつでも Ctrl-C により TARGET を停止させることができるようにする。
 	(gdb) set remotebreak 1
-	# this sets the baudrate gdb will use (default 9600, 
-	# MUST match the setting in the kernel installed on the TARGET)
+	# gdb の使用するボーレートを設定する。(デフォルトは 9600、
+	# TARGET にインストールされたカーネルの設定と一致していること)
 	(gdb) set remotebaud 9600
-	# this one speeds up retransmissions of debugger
-	# commands when there is a line error on the serial
+	# シリアル上でラインエラーが発生した場合の再送速度を速くする。
 	(gdb) set remotetimeout 3
 </PRE>
 
-8) Connect to the REMOTE machine (assuming you're using tty00 on the
-REMOTE):<p><p>
+8) REMOTE マシンに接続します(REMOTEマシン側で tty00 を使用していると
+仮定しています)<p><p>
 
 <PRE>
 	target remote /dev/tty00
 </PRE>
 
-You should be greeted with something like the following:<p><p>
+以下のようなメッセージが表示されます。<p><p>
 
 <PRE>
 	Remote debugging using /dev/tty01
@@ -165,17 +170,19 @@ You should be greeted with something like the following:<p><p>
 	(gdb)
 </PRE>
 
-If GDB instead appears to "hang", you may have something wrong with your
-serial hardware, cable, or settings. See the troubleshooting section below.<p><p>
+もし、これらのメッセージが表示されるかわりに、GDB が 「hang」しているよう
+なら、シリアルハードウェア、ケーブル、あるいは設定に何か間違いがあります。
+トラブルシューティングのセクションを参照してください。<p><p>
 
-9) If you did get a prompt back, then you're ready to hack - you can set
-breakpoints, examine data, single step, etc, just like gdb'ing a
-userlevel application running on the local machine! To continue with the
-kernel boot process, use "cont", and to pop back into the debugger at a
-later time, hit Ctrl-C.<p><p>
+9) さて、プロンプトが表示されれば、ハックする準備はできています。
+ブレークポイントを設定したり、データを確認したり、一ステップ毎に実行する
+ことができます。ちょうど、ローカルマシン上で動作しているユーザーレベル
+アプリケーションを gdb でデバッグするのと同じです。カーネルのブートプロ
+セスを続行させるには、「cont」を使ってください。後でデバッガーにもどるため
+には、Ctrl-C を押してください。<p><p>
 
-10) To automate steps 5 - 7, create a file called .gdbinit in the kernel
-build directory containing the following lines:<p><p>
+10) 5 から 7 の手順を自動化するためには、カーネルを構築するディレクトリに
+以下の内容のファイル .gdbinit を作成してください。<p><p>
 
 <PRE>
       file netbsd.gdb
@@ -184,74 +191,74 @@ build directory containing the following lines:<p><p>
       target remote /dev/tty00
 </PRE>
 
-Now you can start debugging by just typing "gdb".<p><p>
+さて、これで「gdb」とタイプするだけで、デバッグを始めることができます。<p><p>
 
-<ENTRY>troubleshooting Troubleshooting
+<ENTRY>troubleshooting トラブルシューティング
 
-If things don't work, try some of these:<p><p>
+もし、うまく動作しない場合は、以下の事を試してみてください。<p><p>
 
-1) Reboot the TARGET without specifying "-d". You should see a message
-similar to the following one displayed in the device probes. If you
-don't see the second line, either you didn't get KGDB enabled in the
-kernel you built, or you're running the wrong kernel:<p><p>
+1) -d を指定せずに TARGET マシンをリブートしてください。デバイスの
+プローブ時に以下のようなメッセージが表示されるはずです。二行目が表示
+されていなければ、構築したカーネルでは KGDB が有効になっていないか、
+間違ったカーネルを使用しています。
 
 <PRE>
 	com0 at isa0 port 0x3f8-0x3ff irq4: ns16550a, working fifo
 	com0: kgdb
 </PRE>
 
-2) Make sure the serial ports and cable work with a "normal"
-application: boot the TARGET with a non-KGDB kernel and try running
-"tip" between the two machines. If you don't know about tip, here's a
-quick rundown on what to do:<p><p>
+2) シリアルポートとケーブルが「通常」のアプリケーションで動作すること
+を確認してください。KGDB を無効にしたカーネルで TARGET マシンをリブート
+し、二つのマシン間で「tip 」を実行してみてください。もし、tip について
+知らないのであれば、以下の簡単な手順を参考にしてください。<p><p>
 
-* put the following lines in /etc/remote on both the TARGET and the
-REMOTE machines:<p><p>
+* 以下の行を、TARGET と REMOTE 両マシンの /etc/remote に追加してください。
 
 <PRE>
 	tty00-9600:dv=/dev/tty00:br#9600:pa=none:dc:
 	tty01-9600:dv=/dev/tty01:br#9600:pa=none:dc:
 </PRE>
 
-* on the TARGET, give the command "tip tty00-9600", and
-on the REMOTE do "tip tty01-9600".<p><p>
+* TARGET マシン上で「tip tty00-9600」を、REMOTE マシン上で「tip tty01-9600」
+を実行してください。<p><p>
 
-* type characters at the keyboard of each machine - the characters
-should echo to *the other* machine's display.<p><p>
+* 両方のマシンのキーボードで適当な文字を入力してください。文字は
+他のマシンのディスプレイに表示されるはずです。
 
-3) Doublecheck the line for your tty in /etc/ttys, and reboot to make
-sure it has taken effect.<p><p>
+3) /etc/ttys の中の、自分が使っている tty の行を再度確認し、それが有効
+かどうかを確認するためにリブートしてください。<p><p>
 
-4) In all the above discussion, I've assumed you were running as
-root. tip and gdb may not work if you're running as a normal user
-(depending on the permissions of /dev/tty0*). Of course, running as root
-is not an advisable "normal" strategy. Instead, you should do this:<p><p>
+4) 今まで書いてた文章の中では、root で作業している事を仮定していました。
+一般ユーザーの場合、tip と gdb は動作しません。(/dev/tty0* のパーミッション
+に依存します)。もちろん、root での作業は、一般的にはおすすめできません。
+かわりに、以下のようにしてください。<p><p>
 
-   * put /dev/tty0* in group "wheel" (if it isn't already)<p>
-   * add your username to the "wheel" line in /etc/group<p>
-   * add your username to the "dialer" line in /etc/group<p>
+   * /dev/tty0* のグループを「wheel」にしてください(そうなっていなければ)<p>
+   * あなたのユーザー名を、/etc/group の「wheel」行に追加してください<p>
+   * あなたのユーザー名を、/etc/group の「dialer」行に追加してください<p>
 
-(2) will allow your gdb process (and other processes run by you) to open
-the tty, (3) will allow you to run tip.<p><p>
+(2) により、gdb のプロセスが(そして、あなたが起動している他のプロセスも)、
+tty をオープンできるようになる。(3) により、tip を起動することができる
+ようになる。<p><p>
 
-<ENTRY>general_caveats General Caveats
+<ENTRY>general_caveats 一般的な注意
 
-1) You may sometimes notice a long pause after you've entered a command
-until you get a response back - this seems to be due to bad data on the
-serial connection; after a short pause and a retransmit, everything is
-back on track. setting "remotetimeout" to a value lower than the default
-20 seconds helps immensely. (This was reported by one person to be
-caused (in his case) by having a kernel printf() executed between
-commands; this apparently somehow corrupted the gdb data).
+1) コマンドを入力してから反応が返ってくるまでに、時々長い時間がかかる
+ことがあります。これは、おそらくシリアルコネクション上の不正なデータの
+せいです。みじかい休止と再送の後、すべて正常にもどります。
+「remotetimeout」の値をデフォルトの 20 秒より短かく設定するとよいでしょう。
+(これはある人から報告がありました。(彼の場合は)カーネルのsprintf() が
+コマンドの間に実行されたことが原因でした。これにより gdb のデータがこわれ
+たようです)。
 <p>
-2) Ctrl-C may not work if the kernel has lock some high priority
-interrupts (depending on the port), ie you can't break an endless
-loop in splimp() on the i386, but if you place a breakpoint before
-the loop you can single-step through it.
+2) カーネルが高優先度の割り込み(機種依存)ロック中は、Ctrl-C は動作しません。
+例えば、i386 では、splimp() の中の永久ループを停止させることはできません。
+しかし、ブレークポイントを、そのループの前にセットすれば、そこを一ステップ
+ずつ実行することができます。
 
 </LIST>
 
-<a href="">Up to <em>NetBSD Documentation: Kernel</em></a>
+<a href=""><em>NetBSD Documentation: Kernel</em>にもどる</a>
 <hr>
 
 <DOCLINK>
