@@ -140,9 +140,11 @@ to date been noticed on all machines in which a cgsix board is installed.
 The memory management hardware on sun4c machines (SPARCstation
 1, 1+, 2, IPC, IPX, SLC, ELC and clones) is not handled
 particularly well by Linux. Until Linux reworks their MMU code
-NetBSD will be very much faster on this hardware.  The exceptions are 
-SPARCStation 1, 1+, and IPC models running NetBSD 1.6 and 1.6.1 (see
-<a href="#sun4c-sw-cache"><tt>sw flush: cache enabled</tt></a>).
+NetBSD will be significantly faster on this hardware.  There was a 
+longstanding bug prior to NetBSD 1.6.2 on SPARCstation/server 1, 
+SPARCstation/server 1+, and Sun IPC models.  We recommend updating these 
+models to the latest version of NetBSD to for improved stability and 
+speed.  See <a href="#sun4c-sw-cache"><tt>sw flush: cache enabled</tt></a>.
 
 <ENTRY>illegal-reloc I get a <tt><b>ld: /usr/lib/c++rt0.o: illegal reloc type mix</b></tt> when compiling
 For versions older than 1.4.3, the default NetBSD/sparc /usr/lib/c++rt0.o
@@ -178,44 +180,48 @@ Bootable CD ROM HOWTO</a>.
 <ENTRY>nell Using the <i>nell</i> sbus-to-PCMCIA bridge
 NetBSD 1.6 and later support cardbus and PCMCIA cards with the SPARCstation 
 Voyager's on-board interface and with the nell sbus-to-PCMCIA bridge card.
-All PCMCIA devices listed on the
+Support was dramatically improved in NetBSD 2.0, fixing many longstanding 
+bugs.  All PCMCIA devices listed on the
 <a href="../../Hardware/pcmcia.html">Machine-independent PCMCIA drivers</a>
-page should work in -current. Some have been tested. On 1.6, there is a
-byte endian issue which currently prevents 16 bit devices from working.
-See the 
+page should work in NetBSD 2.0.  Some have been tested.  The GENERIC 
+kernel has the nell interface disabled by default.  You'll need to build a 
+kernel with the nell and various pcmcia interfaces uncommented.
+
+<p>In NetBSD 1.6.x, there is a byte endian issue which currently prevents 
+16 bit devices from working.  See the 
 <a href="http://mail-index.NetBSD.org/port-sparc/2002/03/10/0002.html">post</a>
 by Martin Husemann on nell support. 
+This problem is fixed in NetBSD 2.0 and later.  
 
-<p>There is a conflict between the <i>audioamd</i> device in sun4c and some 
-sun4m models and the (nell) device.  The 1.6 GENERIC kernel has the nell 
-interface disabled by default.  You'll need to build a kernel with the nell
-and various pcmcia interfaces uncommented.
+<p>In NetBSD 1.6.x, There is a conflict between the <i>audioamd</i> device 
+in sun4c and some sun4m models and the (nell) device.  
+This problem is fixed in NetBSD 2.0 and later.  
 
-<p>If your system has the audioamd device on-board and you want to use
-it and the nell interface, you need to build a new kernel with
+<p>If your 1.6.x system has the audioamd device on-board and you want to 
+use it and the nell interface, you need to build a new kernel with
 the following option:
 <pre>
 options 	AUDIO_C_HANDLER
 </pre>
+This problem is fixed in NetBSD 2.0 and later.  
 
-<p>If you wish to use the Lucent WaveLAN card on 1.6, you will need to
+<p>If you wish to use the Lucent WaveLAN card on 1.6.x, you will need to
 add the following hack to your kernel configuration:
 <pre>
 options	WI_AT_BIGENDIAN_BUS_HACK
 wi*	at pcmcia? function ?		# Lucent WaveLan IEEE (802.11)
 </pre>
 
-Note that this is not required in -current.
-<p>
-
 <SECTION>Hardware Questions
 
 <ENTRY>smp-cpus What CPU modules are capable of running multiprocessor
-The only NetBSD/sparc models capable of SMP are the Sun 
+<i>Note:  This capability was added in NetBSD 2.0.  NetBSD 1.6.x and 
+earlier will only use one CPU if more than one is present.</i>
+
+<p>The only NetBSD/sparc models capable of SMP are the Sun 
 4/600, SPARCstation/server 10, SPARCstation/server 20, and clones of these
-models.  Most SuperSPARC-I and SuperSPARC-II MBus CPU modules can be used 
-in an SMP system.  Unfortunately, multiple hyperSPARC CPUs are not yet 
-supported.  Briefly, two
+models.  Most SuperSPARC-I, SuperSPARC-II, and hyperSPARC MBus CPU modules 
+can be used in an SMP system.  Briefly, two
 modules with the same speed and (non-zero) cache size will have no problems. 
 Modules with different cache sizes and speeds have been reported to work,
 but you run into trouble when using older (i.e. slower) modules and
@@ -272,7 +278,8 @@ The only options are to replace the chip, which requires exceptionally
 delicate soldering work, or the entire motherboard.
 
 <ENTRY>ross-mbus Are hyperSPARC mbus modules supported?
-Yes.  All Ross hyperSPARC modules should work.
+Yes.  All Ross hyperSPARC modules should work.  See also
+<a href="#smp-cpus">What CPU modules are capable of running multiprocessor</a>.
 
 <ENTRY>ross-memory What is the memory configuration in a Ross sparc 20 clone?
 Ben Cottrell reports that:
@@ -325,18 +332,18 @@ once the kernel is loaded for normal operations.
 FAQ</a>.
 
 <ENTRY>sun4c-sw-cache <tt>sw flush: cache enabled</tt>
-Prior to July 2003, there has been a longstanding MMU bug in the sun4c 
-architecture.  This is fixed in future releases of NetBSD (1.6.2 and 
-2.0).  NetBSD 1.6 and 1.6.1 attempted to work around this bug by using a 
-slower caching mechanism on the SPARCstation/server 1, 
-SPARCstation/server 1+, and Sun IPC.  Read Paul Kranenburg's 
+Prior to NetBSD 1.6.2, there was a longstanding MMU bug in the sun4c 
+architecture.  NetBSD 1.6 and 1.6.1 attempted to work around this bug by 
+using a slower caching mechanism on the SPARCstation/server 1, 
+SPARCstation/server 1+, and Sun IPC.  All known problems are fixed in 
+1.6.2 and later.  Read Paul Kranenburg's 
 <a href="http://mail-index.NetBSD.org/port-sparc/2003/07/18/0002.html">post</a>
 for more information.
 
 <ENTRY>no-kernel-1-6-install <tt>open netbsd: no such file or directory</tt>
 D'oh.  The NetBSD 1.6 installer does not install a kernel if you select 
-the default install.  This is, of course, corrected in the NetBSD 1.6.1 
-installer.
+the default install.  This is, of course, corrected in NetBSD 1.6.1 and 
+later.
 
 <p>The easy fix is to run the installer again and select <tt>Re-install 
 sets or install additional sets</tt> and chose the 
@@ -572,8 +579,8 @@ The Fox is probably best described as a brick sized SS4. Among it's features:
 
 <ul>
 <li> one SBus and one AFX slot side by side so you can only use one
-<li> Crystal Semiconductor 4231(sp?) audio
-<li> stp4020 (PCMCIA)
+<li> Crystal Semiconductor 4231 audio <i>(audiocs)</i>
+<li> stp4020 (PCMCIA) <i>(nell)</i>
 <li> the usual onboard serial a/b, SCSI, 10BaseT
 </ul>
 <p>
@@ -623,7 +630,6 @@ not work for SunOS emulation.
 <p>
 
 See compat_sunos(8) and compat_svr4(8) for more information.
-<p>
 </ul>
 
 <ENTRY>netscape Can NetBSD/sparc run Netscape
@@ -679,7 +685,7 @@ exec $MOZILLA_HOME/netscape $* </pre>
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: faq.list,v 1.95 2003/12/14 21:20:43 mbw Exp $<br>
+  $NetBSD: faq.list,v 1.97 2004/06/17 07:52:44 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

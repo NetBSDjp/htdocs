@@ -376,7 +376,9 @@ effort is working on the 601 microprocessor support.  We have support
 for the motherboard chipsets in <a href="../mac68k/">NetBSD/mac68k</a>.  
 It's just a matter of sharing these drivers and figuring out a bootloader
 that's compatible with the Open Firmware method of booting the currently
-supported macppc models.
+supported macppc models.  See David A Gatwood's 
+<a href="http://mail-index.NetBSD.org/port-macppc/2002/01/14/0021.html">post</a> 
+for suggestions on where to start and what needs to be done.
 
 
 <ENTRY>68k-upgrade Are 68k-based Macs with PowerPC processor upgrades supported?
@@ -480,9 +482,8 @@ cards) cannot be used to boot NetBSD/macppc.
   <ul>
     <li>PowerPC 603, 604, G3, and G4 (and variants of each)<br>
      See <a href="#cpu-upgrade">Are PowerPC CPU upgrades supported?</a>
-    <li>Experimental support for multiprocessor CPU cards is available
-    in -current.  It is known to work on PowerMacintosh 9500/180MP and 
-    G4 systems and should work on 9600/200MP and Xserve systems as well.
+    <li>Support for multiprocessor CPU cards is available
+    in NetBSD/macppc 2.0 and later.
     You will need to use a <tt>GENERIC.MP</tt> kernel or add
     "<tt>options MULTIPROCESSOR</tt>" to your kernel configuration.
     Without these options, NetBSD will only use one CPU.
@@ -556,7 +557,9 @@ cards) cannot be used to boot NetBSD/macppc.
   </ul>
 
   <p><li> <strong>Serial</strong>
-  <ul>
+  <br>NetBSD/macppc refers to the on-board serial ports as <i>tty00</i> 
+  and <i>tty01</i>.  Open Firmware uses the names listed below.
+  <p><ul>
     <li> On-board RS-422 serial ports (modem port is <i>ttya</i> and 
       printer port is <i>ttyb</i>)<br>
       On-board Serial support is very poor and may cause your system to hang.  
@@ -670,7 +673,8 @@ language.
 href="http://playground.sun.com/1275/home.html">Open Firmware Working
 Group home page</a> or at the
 <a href="http://bananajr6000.apple.com">Apple Computer Open Firmware Home 
-Page</a>.
+Page</a>.  Also, Apple has some nice Technical Notes available, such as
+<a href="http://developer.apple.com/technotes/tn/tn1061.html">1061</a>.
 
 <ENTRY>ofw-version Which version of Open Firmware does my machine have?
 
@@ -906,6 +910,8 @@ This table merely lists the common commands you might be using and their syntax.
 <tr><th>command name</th><th>comment</th></tr>
 <tr><td><tt>dev&nbsp;<i>device</i></tt></td><td>changes to current <i>device</i> in 
   Open Firmware device tree (similar to <tt>cd</tt> in a filesystem)</td></tr>
+<tr><td><tt>unselect-dev</tt></td><td>returns to original state of having
+  no device selected (usually not necessary)</td></tr>
 <tr><td><tt>ls</tt></td><td>lists the devices below the current node in the 
   device tree (similar to <tt>ls</tt> in a filesystem)</td></tr>
 <tr><td><tt>pwd</tt></td><td>lists the location of the current node in 
@@ -960,8 +966,8 @@ use:
 <tr><td>^h</td><td>delete back one character</td></tr>
 <tr><td>^d</td><td>delete forward one character</td></tr>
 <tr><td>Enter</td><td>send line to FORTH parser</td></tr>
-<tr><td>^b</td><td>move back one character</td></tr>
-<tr><td>^f</td><td>move forward one character</td></tr>
+<tr><td>^b</td><td>move back one character (same as left arrow key)</td></tr>
+<tr><td>^f</td><td>move forward one character (same as right arrow key)</td></tr>
 <tr><td>ESC b</td><td>move back one word</td></tr>
 <tr><td>ESC f</td><td>move forward one word</td></tr>
 <tr><td>^a</td><td>move back to beginning of line</td></tr>
@@ -974,11 +980,11 @@ use:
 <tr><td>^r</td><td>retype line</td></tr>
 <tr><td>^q</td><td>quote next character</td></tr>
 <tr><td>^y</td><td>insert saved characters before cursor</td></tr>
-<tr><td>^p</td><td>previous line in history</td></tr>
-<tr><td>^n</td><td>next line in history</td></tr>
+<tr><td>^p</td><td>previous line in history (same as up arrow key)</td></tr>
+<tr><td>^n</td><td>next line in history (same as down arrow key)</td></tr>
 <tr><td>^l</td><td>display history</td></tr>
-<tr><td>^space</td><td>if word so far has a unique completion, complete it
-if word so far has several completions, fill in as many characters as possible
+<tr><td>^space</td><td>if word so far has a unique completion, complete it<br>
+if word so far has several completions, fill in as many characters as possible<br>
 if word so far has no completions, erase characters until there is at least 
 one completion
 <tr><td>^/</td><td>show completions (maybe none) for word so far</td></tr>
@@ -1154,6 +1160,12 @@ Briefly, you'll want to run the following three commands (where
 <pre>0 &gt; <b>setenv input-device </b><i>in-device</i>
 0 &gt; <b>setenv output-device </b><i>out-device</i>
 0 &gt; <b>reset-all</b></pre>
+
+<p>Alternately, to immediately change your input and output devices 
+without permanently storing the changes, run the following two commands 
+(make sure to put the space after the first quotation mark):
+<pre>0 &gt; <b>" </b><i>out-device</i><b>" output</b>
+0 &gt; <b>" </b><i>in-device</i><b>" input</b></pre>
 
 <p><h3>Open Firmware 1.0.5, 2.0.x, or 2.4 using a keyboard and monitor 
 (or built-in LCD)</h3>
@@ -1690,6 +1702,14 @@ FAQ entries about problems with NetBSD versions prior to the 1.6
 release have been moved to the <a href="oldfaq.html">Old FAQ</a>.
 
 
+<ENTRY>lang-kbd How do I use an alternate keyboard mapping?
+See the <a href="../../Documentation/wscons/index.html#keyboard-maps">WSCONS
+FAQ</a> for a description of how to set up keyboards in non-US languages 
+or alternate layouts (such as Dvorak).  For X, read Hauke Fath's <a 
+href="http://mail-index.NetBSD.org/port-macppc/2001/12/05/0001.html">post</a>.
+See also <a href="#no-swapctrlcaps">Why there's no wscons mapping 
+"us.swapctrlcaps" for ADB keyboard?</a>
+
 <ENTRY>elf Where is <tt>ldconfig</tt>/<tt>ld.so.conf</tt>?
 
 NetBSD/macppc uses ELF, so it does not have <tt>ldconfig</tt> or
@@ -1724,11 +1744,7 @@ Binaries that have known problem are:
 <a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/www/opera/README.html">Opera</a>, 
 which will crash on first startup. On the second startup, if you go to the 
 advanced settings dialog and uncheck "asynchronous DNS", it should work 
-without troubles. The other troublesome application is RealPlayer, which
-is just unusable, due to a machine independent bug in Linux kernel threads 
-emulation 
-(<a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=10101">PR 
-#10101</a>).
+without troubles.
 <p>
 It is probably worth mentioning that the JDK works quite
 well. Java applications such as 
@@ -1794,6 +1810,9 @@ On NetBSD-current (1.6A or later),
 <tt>options CAPS_IS_CONTROL</tt> will hardcode capslock key into control key.
 (even with weird LED behavior it should be useful)
 
+<ENTRY>keyboard-ddb How do I enter DDB from the console?
+<tt>command-option-power</tt> on ADB keyboards.
+
 <!-- ======================================== -->
 </LIST>
 
@@ -1806,7 +1825,7 @@ On NetBSD-current (1.6A or later),
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: faq.list,v 1.133 2004/08/26 14:11:25 tsutsui Exp $<br>
+  $NetBSD: faq.list,v 1.135 2004/11/01 06:29:08 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1998-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
