@@ -1,0 +1,308 @@
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+    <title>Tracking NetBSD-current</title>
+  </head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>NetBSD-currentの追跡
+
+<LIST>
+
+<SECTION>よくある質問
+
+<ENTRY>why_track なぜNetBSD-currentを追跡するのか
+NetBSDの開発者はそのときどきの開発中のソースをいくつかの理由から一般に
+公開してきました。まず、NetBSD-currentを用意することで、より安定した、
+利用しやすいシステムを作ることができます。
+<p>
+これにより、NetBSDの開発に熱中するのが容易になります。最新の開発中ソー
+スを配布することで、システムが今どうなっているのかが多くの人に明らかに
+なりますし、新機能が実装されればすぐにそれを試してみることができます。
+また、利用者からの変更を統合するのも楽になります。もし利用者が最新の開
+発中ソースに対して変更を加えたならば、その変更をマスターソースツリーに
+取り込むための作業は事実上要らなくなります。
+<p>
+また、そうすることでソフトウェアが開発されてすぐに広い範囲のテストをす
+ることができます。NetBSD-currentの利用者は最新のソースについての<a
+href="/Documentation/Misc/send-pr.html" origlink="../Misc/send-pr.html">バグレポート</a>を出すことが奨励されます。
+これはバグを見つけたり修正したりする助けになります。ソフトウェアが書か
+れてからすぐに多くの人がそれをテストするために、より多くのバグを見つけ
+出して退治することができます。
+
+<ENTRY>why_difficult なぜそんなに難しいのか
+-currentはその流れを一瞬も止めることがありません。ソースツリーをコンパ
+イルするために使われるツールは毎日のように改良されていますし、新機能も
+追加されていきます。これは-currentのソースツリーをコンパイルするために
+はそのためのツールをまずにコンパイルしてインストールしなくてはならない
+ことを意味します。
+<p>
+これはそう頻繁ではありませんが、その結果、以前のリリースからアップグレー
+ドしようとする利用者は、ソースツリー全体をコンパイルする前に、一見任意
+のいくつかのツールをコンパイルし、インストールしておかなければならない
+こともあり得ます。
+<p>
+この苦労を少なくするための詳細は<a href="#starting">-currentの追跡を始
+める</a>を御覧ください。
+
+<ENTRY>starting -currentの追跡を始める
+スタート地点としてはあなたが利用しているポートに最近のスナップショット
+が出ているかどうか調べるのが一番いいでしょう。スナップショットは
+-currentからコンパイルされて標準のrelease(7)形式で配布されています。
+<p>
+
+これは<a href="ftp://ftp.jp.netbsd.org/pub/NetBSD/arch/">
+ftp://ftp.jp.netbsd.org/pub/NetBSD/arch/</a><em>ARCH</em>/snapshotから
+手に入り、通常のリリースと同様にインストールできます。これ以上の情報や
+そのスナップショットについては個々の<a
+href="/Documentation/Ports/index.html" origlink="../Ports/index.html">NetBSDポート</a>のウェブページを御覧くださ
+い。<p>
+
+次のステージはftpで<a
+href="ftp://ftp.jp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/">
+ftp://ftp.jp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/</a>か
+ら、もしくは<a
+href="ftp://ftp.jp.netbsd.org/pub/NetBSD/README.sup">SUP</a>を使って
+-currentのソースをダウンロードすることです。最寄りの<a
+href="/Sites/net.html" origlink="../../Sites/net.html">NetBSDミラーサイト</a>も調べた方がいいでしょ
+う。<p>
+
+より新しいバージョンの-currentにアップグレードするときは、どれかの新し
+いライブラリー(<a href="#star">*</a>)をインストールする前に<em>必ず
+</em>新しいカーネルをコンパイルし、それで起動していなければなりません。
+
+一般的にもっともよいのは他のどれよりも先に新しいカーネルを試し、何か問
+題にぶつかったら(<a
+href="../kernel/index.html#problems_compiling_a_current_kernel">カーネ
+ルFAQ</a>にある項目を見てください)新しいカーネルをインストールするのに
+必要な最小限のツールをコンパイルしてインストールするやりかたです。カー
+ネルが動き出したらソースツリーの一番上で<tt>make build</tt>を実行する
+といいでしょう。<p>
+
+NetBSD-currentを使っている人は<b><a
+href="/Documentation/MailingLists/index.html#current-users" origlink="../MailingLists/index.html#current-users">current-users</a></b>
+メーリングリストを購読することを強く薦めます。<b><a
+href="/Documentation/MailingLists/index.html#source-changes" origlink="../MailingLists/index.html#source-changes">source-changes</a></b>
+を読むのも興味深いでしょう。<p>もしもNetBSDのソースへの手元の変更を追
+跡するつもりなら、手元にCVSツリーを構築したくなると思います。それなら
+<a href="#using_cvs">SUPの変更を取り込む</a>といいでしょう。<p>
+
+<a name="star">*</a> :もし新たなシステムコールが追加されていないことが
+確かでなければ、とりあえずこうしてください。それがより安全です。
+
+<ENTRY>build_targets Makefileのいろいろなターゲットは何ですか
+もっとも明らかなターゲットは<a
+href="ftp://ftp.jp.netbsd.org/pub/NetBSD/NetBSD-current/src/Makefile">/usr/src/Makefile</a>
+の'make build'です。これは更新された'mk'ファイル、インクルードファイル、
+ライブラリーをインストールして、それからシステムを再構築します。もしソー
+スツリーを更新していれば、新しいシステムコールが追加されていたときのた
+めに備えて、他のどれよりも<em>先に</em>カーネルをコンパイルしてインス
+トールするべきです。他の便利なターゲットは<a
+href="ftp://ftp.jp.netbsd.org/pub/NetBSD/NetBSD-current/src/share/mk/bsd.README">/usr/src/share/mk/bsd.README</a>
+に記述されています。これは<tt>/usr/share/mk/</tt>にインストールされま
+す。
+
+<ENTRY>using_cvs CVSによるNetBSD-currentの追跡
+    <h4>概要</h4>
+    <p>currentは次の方法により追跡できます。基準となるソースのコピーを、
+       標準的にはほぼ週に一回SUPを使い最新の状態に維持します。そして、
+       この基準となるソースツリーを、ローカルのCVSリポジトリーにインポー
+       トします。そして、リポジトリーのコピーをチェックアウトし、それ
+       からcurrentを作成します。
+
+    <p>このアプローチには3つの主要な理由があります。
+    <ol>
+      <li>いつどのようにcurrentが更新されたか追跡するため。</li>
+      <li>ローカルの変更をほとんど自動的に更新されたcurrentソースにマー
+        ジできるようにするため。</li>
+      <li>構築するときの問題に備えて、いつもまったく変更していない
+	NetBSD-currentのソースツリーがあることを保証するため。</li>
+    </ol>
+
+    <p>このアプローチの短所は、3つの独立のソースツリーのために、実際の
+      currentの構築に必要な空きを含めないで、およそ150MBのディスクスペー 
+      スが必要なところです。
+
+    <h4>必要なもの</h4>
+    <ul>
+      <li>CVS 1.9かそれ以降(pkgsrcか、ソースから構築のどちらでも)。マー
+      ジが上手なのでCVS 1.10かそれ以降が望ましい。</li>
+      <li>SUP</li>
+      <li>Perl 5(任意)附属スクリプトのため</li>
+    </ul>
+    <h4>詳説</h4>
+    <p>currentの追跡と構築は、6つの段階からなります:
+    <ol>
+      <li>マスターソースツリーにSUPでソースを更新します。</li>
+      <li>SUPしたファイルをCVSにインポートし、ソースの作業用コピーを更
+        新します。</li>
+      <li>作業用ソースとSUPしたソースとをマージします。</li>
+      <li>currentを構築してインストールします。</li>
+      <li>構築に成功したソースにタグをつけます。</li> 
+    </ol>
+    <h3>ソースのSUP</h3>
+    <p>ソースは、どのNetBSD SUPサーバーからもSUP可能です。またSUPの出
+      力は後の参照のためにファイルに保存するべきです。
+
+    <h3>ソースのインポートとマージ</h3>
+    <p>ソースのインポートは次のように行ないます:
+    <pre>
+cvs -d /misc/cvsrep import -I '!' netbsd netbsd current-<i>date</i>
+    </pre>
+    <p><i>date</i>は追跡のためにSUP時の日付と置き換えます。
+      <code>-I '!'</code>オプションは、 ソースツリー中のどのファイルも
+      無視されないことを保証します。これはNetBSDのソースファイルに、通
+      常CVSにより無視される拡張子のものがいくつかあるからです。もしロー
+      カルのパッチと衝突がある場合、importコマンドはそれらを出力し、衝
+      突をマージするためのコマンドを次のように出力します:
+    <pre>
+cvs checkout -jnetbsd:yesterday -jnetbsd netbsd
+    </pre>
+    <p>このマージコマンドは、インポートされたNetBSDソースを正確にマー
+      ジするためのものですが、SUPにより削除されたファイルは、ローカル
+      に反映されません。これを行なうためのマージコマンドはこうなるでしょ
+      う:
+    <pre>
+cvs update -j<i>previous import tag</i> -j current-<i>date</i>
+    </pre>
+    <p><i>previous import tag</i>は前回のCVSインポートで使用したタグ名
+      と置き換えます。<i>date</i>は、今マージしたばかりのcurrentのイン
+      ポートに使用したタグ名を利用できるようにするために、現在の日付と
+      置き換えます。
+    <p>importコマンドにより表示される衝突は、衝突の可能性のあるもので
+      す。これらは、通常updateコマンドによりマージされますが、いくつか
+      の場合、実際に衝突を引き起こします。この場合、衝突行を手動でマー
+      ジすることが必要です。実際に衝突がある場合、cvs update時に、
+      <code>C</code>に続きファイルネームが表示されます。
+    <p>手作業による衝突のマージは単純作業ではありませんが、多くの場合、
+      ファイルへ行なったローカルの変更を削除し、元のNetBSDソースコード
+      に似せてやることで解決します。
+    <p>CVSは衝突を次のように表します:
+<pre>
+&lt;&lt;&lt;&lt;&lt;&lt;
+  <i>ローカルファイルのコード</i>
+======
+  <i>インポートしたファイルのコード</i>
+&gt;&gt;&gt;&gt;&gt;&gt; <i>新たにインポートされるリビジョンのローカルリビジョン番号</i>
+</pre>
+
+    <p>もしimportコマンドが何の衝突を表示しない場合でも、チェックアウ
+      トしたツリーのコピーは衝突した場合と同じ方法で更新できます。
+    <p>updateとcheckoutコマンドはすべて、チェックアウトしたソースのディ
+      レクトリーで行なってください。私のシステムでは、これは
+      <code>/usr/src/netbsd</code>です。
+    <p>もし、これが最初のインポートならば、チェックアウトしたソースは
+      ないでしょう。'<code>/usr/src/netbsd</code>'にソースツリーを作り
+      たいと仮定すると、次のコマンドでソースをチェックアウトします。マー
+      ジ作業は必要ありません。
+    <pre>
+cd /usr/src
+cvs -d/misc/cvsrep checkout netbsd
+    </pre>
+    <h3>currentの構築</h3>
+    <!-- Insert reference to build instructions here -->
+
+    <h3>構築に成功したものへのタグ付け</h3>
+
+    <p>もし、構築がうまくいって動作するバイナリーセットを作成できたの
+      ならば、動作するソースにタグ付けすることで使いやすくできます。こ
+      れは、万一なにかの原因で構築できないcurrentツリーになっても、ひ
+      とつのCVSコマンドで、構築できるツリーに巻き戻すことを可能にしま
+      す。タグ付けは次のコマンドで行えます:
+    <pre>
+cvs tag successful-build-<i>build date</i>
+    </pre>
+    <h4>註</h4>
+    <ul>
+      <li>もし、ファイル中の$NetBSD: index.faq,v 1.6 2000/02/24 13:53:21 jun Exp $
+        マーカーを認識するNetBSDカスタムバージョンのCVSを使用しない場
+        合、ファイルのNetBSDリビジョン番号を、構築時に問題が起きた場合
+        に参照の目的に使用することができます。</li>
+      <li>上記のSUP/インポート/マージの作業は、まったく簡単に自動化で
+        きます。以下のPerlスクリプトがこの作業を自動的に行ないます。
+<pre>
+#!/usr/local/bin/perl
+#
+# NetBSD-currentをSUPしてそれをCVSに取り込み、手元の変更とマージするス
+# クリプト
+#
+# 原註:
+# このスクリプトはエラー処理をしていないので、対話的でない用途には向い
+# ていない。
+#
+# このスクリプトはcvs-1.10.1とcvs-1.9.18でのみテストされている。
+#
+$SRCROOT="/usr/src/netbsd";
+$IMPORTROOT="/misc/import";
+$CVSROOT="/misc/cvsrep";
+# supを実行してその標準出力をperlに取り込む
+system "/usr/sbin/sup -zsv" ; # ここは最新のシステム以外では変更する必
+                              # 要がある
+
+# 新しいファイルをCVSに取り込む
+
+chdir $IMPORTROOT or die "Could not cd to $IMPORTROOT\n";
+
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;
+$date = localtime;
+$shortdate = sprintf "%02d%02d%04d",$mday,$mon+1,1900+$year;
+system "/usr/local/bin/cvs -d$CVSROOT import -I ! -m\"SUP Import $date\" netbsd netbsd current-$shortdate ";
+
+# 作業ディレクトリーを手元のNetBSDソースツリーにする
+chdir $SRCROOT or die "Could not change to $SRCROOT diectory\n";
+
+# 取り込みを始める
+$lastimport = `cat /usr/src/netbsd/.tag`; # `はバッククォート
+$lastimport =~ s/\n//; # 文字列の終りの改行をすべて取り去る
+system "/usr/local/bin/cvs update -j $lastimport  -j
+current-$shortdate ";
+# tag保存ファイルに最新のファイルを書き込む
+open TAG,"&gt;$SRCROOT/.tag" or die "Could not open new tag file";
+ print TAG "current-$shortdate";
+close TAG;
+    </pre> 
+    <p>このスクリプトは作者がもっともよく使っているスクリプティングツー
+          ルであるという理由からPerlでかかれていますが、同じことをする
+          shellスクリプトを書くのはとても簡単でしょう。</li>
+      <li>CVSを用いてcurrentを追跡するテクニックについてはNetBSDの
+        current-usersメーリングリストで何度か議論されています。他のテ 
+        クニックについてはNetBSDメーリングリストを検索してみてください。
+        </li>
+    </ul>
+    <p>
+    何かコメントや提案があれば、この部分を担当しているMike Pumford <a
+    href="mailto:mpumford@black-star.demon.co.uk">
+    mpumford@black-star.demon.co.uk</a>(訳註:英語で)、または<a
+    href="mailto:www@jp.netbsd.org">www@jp.netbsd.org</a>までメイルし
+    てください。
+
+<SECTION>特定の問題
+
+<ENTRY>wscons wsconsにアップデートした後コンソールが使えない
+以下の手順が必要です。<a
+href="ftp://ftp.jp.netbsd.org/pub/NetBSD/NetBSD-current/src/etc/">src/etc</a>
+にある適切なetc.<i>port</i>ディレクトリーから最新のMAKEDEVファイルを
+<tt>/dev</tt>にコピーしてシングルユーザーで起動してください。そのあと
+以下をタイプします:
+
+<ul>
+<li>fsck -p
+<li>mount -vt nonfs
+<li>cd /dev
+<li>./MAKEDEV wscons
+</ul>
+
+<BASELINKS>
+
+<hr>
+<address>
+    www@JP.NetBSD.ORG<br>
+    $NetBSD: index.faq,v 1.6 2000/02/24 13:53:21 jun Exp $<br>
+    <a href="/Documentation/Misc/disclaimer.html" origlink="../Misc/disclaimer.html">Copyright &copy; 1998, 1999
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
