@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2003
+<!-- Copyright (c) 1994-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <!--
   ==  Originally by Chris Jones
@@ -51,7 +51,7 @@ Ctrl-Alt-{F1,F2,F3,F4}を使用し、仮想端末を切りかえることができます。
 
 <ENTRY>keyboard-maps キーボードのマッピングを 'US' 以外のものに変更する
    "<tt>wsconsctl</tt>" を使用してください。例えば、フランスのキーボード
-   マッピングを選択する場合、"<b><tt>wsconsctl -w encoding=fr</tt></b>" 
+   マッピングを選択する場合、"<b><tt>wsconsctl -w encoding=fr</tt></b>"
    を実行してください。キーボードのマッピングの一覧は、
    <CURRENTSRC>/sys/dev/wscons/wsksymdef.h にあります。一般的なマッピング
    を以下にあげておきます。
@@ -134,25 +134,95 @@ Ctrl-Alt-{F1,F2,F3,F4}を使用し、仮想端末を切りかえることができます。
 
 <ENTRY>screen0 "WSDISPLAYIO_ADDSCREEN: Device busy"
 普通、このエラーメッセージは、wsconscfg がすでに存在するスクリーンを
-追加しようとした時に表示されます。この現象は /etc/wscons.conf に 
+追加しようとした時に表示されます。この現象は /etc/wscons.conf に
 <code> screen 0 </code>という行が存在する時にだけおこります。なぜなら
 カーネルは、screen 0 を常にコンソールデバイスとして割り当てるからです。
 このメッセージは無害ですが、<code>screen 0</code> の行を削除(または、
 コメントアウト)すれば表示されなくなります。
 
 <ENTRY>colors どうしたらテキストの表示色を変更できますか?
-カーネルの警告とエラーメッセージ、そしてカーネルのコンフィギュレーション
-コードのメッセージはコンソールに表示されます。カーネルメッセージは、普通
-別の色で表示されます。この色はカスタマイズ可能です。カーネルのコンフィグ
-ファイルの <code>WS_KERNEL_FG</code> と <code>WS_KERNEL_BG</code>を見てく
-ださい。それらを自分の好みに変更し、カーネルを再コンパイルしてください。
-<p>
-両方とも <code>WSCOL_BLACK</code> に設定して、
-カーネルメッセージを見えなくするという秘技もあります。
+
+<p>カーネルメッセージのテキストの色と背景色は、
+カーネルコンフィグファイルで以下のように設定することで変更できます。
+</p> 
+
+<pre>
+options WS_KERNEL_FG=WSCOL_xxx
+options WS_KERNEL_BG=WSCOL_xxx
+</pre>
+
+<p>この色の値 <tt>WSCOL_xxx</tt> は、
+src/sys/dev/wscons/wsdisplayvar.h で定義されています。</p>
+
+<p>NetBSD 2.0G (NetBSD 2.0 より後の -current) からは、
+表示の見た目のいろいろなカスタマイズが簡単にできるようになりました:
+通常のメッセージ表示の色、カーネルメッセージ表示の色や、
+画面周囲の縁取りの色を変えられます。</p>
+
+<p>これらの詳細はすべて、カーネルオプションと wsconsctl(8)
+ユーティリティーのどちらからでも変えられます; デフォルトの GENERIC
+カーネルのオプションでは、 wsconsctl(8) による方法が使えるようになっているので、
+カーネルの再構築をしたくなければこちらを使うのがよいでしょう。</p>
+
+<p>以下に示すオプションを wsconsctl(8) を通じて設定可能です:</p>
+
+<ul>
+<li><b>border</b>: 画面の縁取りの色です。対応するカーネルオプションは
+<code>WSDISPLAY_BORDER_COLOR</code> です。</li>
+
+<li><b>msg.default.attrs</b>: 通常のコンソールメッセージ表示の属性です。
+対応するカーネルオプションは <code>WS_DEFAULT_COLATTR</code>
+と <code>WS_DEFAULT_MONOATTR</code> です
+(前者はカラーディスプレイ用、後者はモノクロディスプレイ用です)。</li>
+
+<li><b>msg.default.bg</b>: 通常のコンソールメッセージ表示の背景色です。
+対応するカーネルオプションは <code>WS_DEFAULT_BG</code> です。
+
+<li><b>msg.default.fg</b>: 通常のコンソールメッセージ表示の色です。
+対応するカーネルオプションは <code>WS_DEFAULT_FG</code> です。
+
+<li><b>msg.kernel.attrs</b>: カーネルメッセージおよび警告表示の属性です。
+対応するカーネルオプションは
+<code>WS_KERNEL_COLATTR</code> と <code>WS_KERNEL_MONOATTR</code> です
+(前者はカラーディスプレイ用、後者はモノクロディスプレイ用です)。</li>
+
+<li><b>msg.kernel.bg</b>: カーネルメッセージおよび警告表示の背景色です。
+対応するカーネルオプションは
+<code>WS_KERNEL_BG</code> です。
+
+<li><b>msg.kernel.fg</b>: カーネルメッセージおよび警告表示の色です。
+対応するカーネルオプションは
+<code>WS_KERNEL_FG</code> です。
+</ul>
+
+<p>色として指定できるのは、 black, red, green, brown, blue,
+magenta, cyan, white です。属性は、 reverse, hilit, blink, underline
+のいずれか一つまたは複数をコンマで区切ります。</p>
+
+<p>たとえば、古い Amstrad マシンの一つの表示をエミュレートするには、
+以下のようにします:</p>
+
+<dl>
+    <dd>wsconsctl -d -w border=blue msg.default.bg=blue
+    msg.default.fg=white msg.default.attrs=hilit</dd>
+</dl>
+
+<p>あるいは、カーネルメッセージを赤にするには、以下のようにします:</p>
+
+<dl>
+    <dd>wsconsctl -d -w msg.kernel.fg=red</dd>
+</dl>
+
+<p>なお、これより前のバージョンの NetBSD では、これらの機能の一部しか使えませんので注意してください;
+具体的には、カーネルメッセージの表示色を、
+上述のカーネルオプションを使った方法で変えられるだけです。
+さらに、すべてのドライバーがこの機能に対応しているわけではありませんので、
+どのアーキテクチャーででも意図どおりの結果が得られるとは限りません。</p>
+
 
 <ENTRY>muxdevices どうすれば wscons の "mux" デバイスを使えるようになりますか?
 wscons の "mux" デバイスは、一つ以上の wskbd、wsmouse デバイスからの入力
-ストリームを多重化します。多重化された wsmouse デバイスのためのデバイスは 
+ストリームを多重化します。多重化された wsmouse デバイスのためのデバイスは
 /dev/wsmouse です。そして、wskbd デバイスのためには /dev/wskbd が用意されて
 います。もし、X サーバーが hardwiring なポインティングデバイスでなく、
 /dev/wsmouse を使用するように設定されている場合、wsmouse 互換のすべての
@@ -282,8 +352,8 @@ wsmoused(8) を使うための手順は以下のとおりです
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
-  $NetBSD: index.list,v 1.23 2004/03/20 22:25:09 snj Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  $NetBSD: index.list,v 1.26 2004/09/02 00:39:04 hubertf Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
