@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
 <html>
 <head>
@@ -237,7 +237,7 @@ CVS リポジトリーに含まれる各ブランチの説明については、
 	cvs checkout ... src
 	mv src ../NewName
 	cd ..
-	rmdir NewName
+	rmdir NewName-temp
 </pre>
 </tt>
 </li>
@@ -479,7 +479,7 @@ $shortdate = sprintf "%02d%02d%04d",$mday,$mon+1,1900+$year;
 system "/usr/local/bin/cvs -d$CVSROOT import -I ! -m\"SUP Import $date\" netbsd netbsd current-$shortdate ";
 
 # 作業ディレクトリーを手元のNetBSDソースツリーにする
-chdir $SRCROOT or die "Could not change to $SRCROOT diectory\n";
+chdir $SRCROOT or die "Could not change to $SRCROOT directory\n";
 
 # 取り込みを始める
 $lastimport = `cat /usr/src/netbsd/.tag`; # `はバッククォート
@@ -667,6 +667,26 @@ href="ftp://ftp.jp.NetBSD.org/pub/NetBSD/NetBSD-current/src/etc/">src/etc</a>
 <li>./MAKEDEV wscons
 </ul>
 
+<ENTRY>rebuild-nbmake build.sh が常に nbmake を最初に再構築するのは、なぜか?
+
+たとえ、 <code>./build.sh tools</code> を実行しておき、その後に <code>-u</code>
+フラグを使ったり <code>/etc/mk.conf</code> で <em>TOOLDIR</em> を指定していたとしても、
+<tt>nbmake</tt> は常に <code>build.sh</code> によって再構築されます。これは正常な挙動です。
+その理由は <code>./build.sh</code> 自体の中の <code>rebuildmake</code>
+関数に書いてあります:
+<blockquote><code><pre>
+        # なお、ここでは "mk.conf" に TOOLDIR が設定されていても、
+        # それに従おうとは *しません* 。なぜなら、ここに設定されている make
+        # 変数の展開その他のことは、 ${toolprefix}make を行なった *後に* のみ、
+        # パース可能となるからです。このため、このような TOOLDIR 指定が有効となるのは、
+        # ユーザーが環境変数 TOOLDIR をあらかじめ設定しているか、 build.sh に
+        # -T オプションが使われたときだけです。
+        #               
+</pre></code></blockquote>
+よって、 <tt>nbmake</tt> を再構築したくない場合は、
+<code>-T tooldir</code> を build.sh へ渡すか、環境変数 <em>TOOLDIR</em>
+を設定しておく必要があります。
+
 </LIST>
 
 <DOCLINK>
@@ -677,7 +697,7 @@ href="ftp://ftp.jp.NetBSD.org/pub/NetBSD/NetBSD-current/src/etc/">src/etc</a>
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.list,v 1.58 2003/07/23 16:29:40 keihan Exp $<br>
+  $NetBSD: index.list,v 1.61 2004/03/28 16:05:50 heinz Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

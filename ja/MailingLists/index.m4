@@ -1,6 +1,6 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.154 2004/02/21 15:03:33 minskim Exp $
-#	Copyright (c) 1994-2003
+#	$NetBSD: index.m4,v 1.157 2004/04/24 04:44:06 yyamano Exp $
+#	Copyright (c) 1994-2004
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
 
@@ -67,7 +67,7 @@ divert(0)dnl
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
-<!-- Copyright (c) 1994-2003
+<!-- Copyright (c) 1994-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@JP.NetBSD.org">
 <title>NetBSD Mailing Lists</title>
@@ -456,7 +456,7 @@ PORTLIST(port-i386)
   固有の事項の議論用です。
 ENDLIST
 PORTLIST(port-luna68k)
-  68k ベースの OMROM LUNA マシン上の NetBSD (NetBSD/luna68k)
+  68k ベースの OMRON LUNA マシン上の NetBSD (NetBSD/luna68k)
   固有の事項の議論用です。
   Motorola 68k ベースのすべてのポートに関する質問のための
   <a href="#port-m68k">port-m68k</a> リストもあります。
@@ -654,6 +654,11 @@ PORTLIST(port-x68k)
   Motorola 68k ベースのすべてのポートに関する質問のための
   <a href="#port-m68k">port-m68k</a> リストもあります。
 ENDLIST
+PORTLIST(port-xen)
+  <a href="http://www.cl.cam.ac.uk/Research/SRG/netos/xen/">Xen 仮想マシンモニター</a>
+  上の NetBSD (NetBSD/xen)
+  固有の事項の議論用です。
+ENDLIST
   </ul>
 
 </td><td valign=top>
@@ -712,8 +717,8 @@ divert(9)
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.154 2004/02/21 15:03:33 minskim Exp $<br>
-  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  $NetBSD: index.m4,v 1.157 2004/04/24 04:44:06 yyamano Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
