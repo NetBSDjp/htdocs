@@ -13,15 +13,143 @@
 
 <LIST>
 
+<h2>Other sources of information</h2>
+
+<ul>
+<li> The <a href="http://www.reputable.com/indytech.html">Indy tech</a>
+     site has a lot of information on the SGI Indy hardware.
+</ul>
+
+
 <SECTION>General Questions
 
+<ENTRY>serialconsole Things worth knowing about the Indy serial console
+Note this information may apply to other models too. To get the machine
+boot up with a serial console, make sure the keyboard is unplugged when
+turning on the machine. The serial console runs on serial #1, at 9600,
+8N1 by default.
+<p>
+
+It is also possible to do a "<tt>setenv console d</tt>" in the PROM
+monitor to get the console to serial #1, or a "<tt>setenv console d2</tt>"
+to get it to serial #2 (default is "<tt>g</tt>"). Optionally, the console's
+speed can be set with "<tt>setenv dbaud &lt;bps&gt;</tt>". After setting
+these PROM variables either do an "<tt>init</tt>" or a reboot of the machine
+is needed.
+<p>
+
+When booting up Irix on the console, logins on the serial console
+might be disabled. You can enable them by editing /etc/inittab
+and adding the following line:
+<p>
+
+<pre>
+st:23:respawn:/sbin/getty systty co_9600        # serial console - HF
+</pre>
+
+Don't forget to re-read the inittab then with "<tt>init q</tt>".
+<p>
+
+The serial port pinouts are the same as Mac's serial ports, so Mac
+serial cables work great for serial-console cables. 
+For those needing to build a serial-console cable on their own
+(it's a bit hard to buy cables now that Apple switched to USB some
+years ago!), the following links may be useful for the pinouts:
+<p>
+
+<ul>
+<li> <a href="http://www.mindspring.com/~jc1/serial/Basics/DIN8.html">DIN 8</a>
+<li> <a href="http://www.mindspring.com/~jc1/serial/Basics/DB9.html">DB 9</a>
+<li> <a href="http://www.mindspring.com/~jc1/serial/Basics/DB25.html">DB 25</a>
+</ul>
+<p>
+
+Also check out the wiring instructions for connector cables:
+<p>
+
+<ul>
+<li> <a href="http://www.mindspring.com/~jc1/serial/Resources/DIN8toDB25.html">DIN 8 to DB 25</a> 
+<li> <a href="http://www.mindspring.com/~jc1/serial/Resources/DB9toDB25.html">DB 9 to DB 25</a>
+</ul>
+<p>
+
 <ENTRY>bootstrapping How to bootstrap NetBSD/sgimips?
-To bootstrap the port, you need to netboot the kernel using the SGI's
-ARCS firmware, then prepare a second hard disk with NetBSD's FFS and
-disklabel. You then tell the kernel to use root/swap on the second
-disk. The firmware can't currently boot the kernel from an FFS
-filesystem, though, and you'll need to boot that via the net for
-now.
+<ul>
+<li> To bootstrap the port, you need to netboot the kernel using the SGI's
+     ARCS firmware. See the <a href="../../Documentation/network/netboot/">Diskless NetBSD HOW-TO</a> for more information on 
+     setting up netbooting. Some rought steps are:
+     <p>
+
+     <ol>
+     <li> Unpack the etc.tgz and base.tgz e.g. in /home/indy/root.
+          Run "<tt>sh MAKEDEV all</tt>" in the root/dev dir. 
+     <li> Go into the machine's PROM, and retrieve the MAC
+          address. Use "<tt>printenv eaddr</tt>" to do so.
+     <li> Setup DHCP. Put something like this into /etc/dhcpd.conf:
+
+<pre>
+ddns-update-style       none;
+subnet 10.0.0.0 netmask 255.255.255.0 {			# Adjust
+	host indy {
+		hardware ethernet 08:00:69:09:93:78;    # Adjust to your MAC address
+		fixed-address 10.0.0.15;                # Adjust
+		#filename "/netbsd";                    # XXX Do NOT set!
+		option root-path "/home/indy/root";
+		server-name="10.0.0.3";
+	}
+}
+</pre>
+
+     Make sure you don not set the "<tt>filename</tt>", else you
+     cannot specify a different name for the kernel on the PROM's
+     <tt>boot</tt> command later.
+     <p>
+
+     <li> Enter the machine's PROM again, and be sure the IP address
+          is set properly:
+
+<pre>
+>> <b>printenv netaddr</b>
+netaddr=1.2.3.4
+>> <b>setenv netaddr 10.0.0.15</b>
+>> <b>printenv netaddr</b>
+netaddr=10.0.0.15
+</pre>
+
+     <li> Make sure you have tftp enabled in /etc/inetd.conf, then
+          drop a proper kernel into /tftpboot, e.g. netbsd.IP22.
+          <p>
+
+     <li> Tell the PROM to do a netboot, loading the "netbsd.IP22"
+          kernel: 
+
+<pre>
+>> <b>boot -f bootp():/netbsd.IP22</b>
+Setting $netaddr to 10.0.0.15 (from server 10.0.0.3)
+Obtaining /netbsd-IP22 from server 10.0.0.3
+...
+</pre>
+
+     <li> When asked for root device, enter "<tt>?</tt>" to get a list of
+          choices. E.g. "<tt>sq0</tt>" is the Indy's ethernet.
+     <li> Just press RETURN for the dump device
+     <li> Unless you have prepared your disk to boot from it, your
+          root filesystem will most probably be via nfs, so give that
+          for root device: "<tt>nfs</tt>". 
+     </ol>
+
+     If you encounter trouble, use tcpdump(8) or pgksrc/net/ethereal
+     to debug the network traffic. See the Irix
+     <a href="http://www.mcsr.olemiss.edu/cgi-bin/man-cgi?prom">prom</a>
+     manpage for more help on PROM commands.
+     <p>
+
+<li> Then prepare a second hard disk with NetBSD's FFS and
+     disklabel. You then tell the kernel to use root/swap on the second
+     disk. The firmware can't currently boot the kernel from an FFS
+     filesystem, though, and you'll need to boot that via the net for
+     now.
+</ul>
 <p>
 
 To start bootstrapping, the following files are needed:
@@ -33,6 +161,83 @@ To start bootstrapping, the following files are needed:
 <dt>Kernel:   
 <dd><a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/sgimips/netbsd.ip32">ftp://ftp.netbsd.org/pub/NetBSD/arch/sgimips/netbsd.ip32</a>
 </dl>
+
+<ENTRY>crosscompiling How to crosscompile a sgimips kernel from i386?
+
+Here's a receipe on crosscompiling a NetBSD-current kernel for sgimips
+on a NetBSD-current/i386 system. See below if you run a release of
+NetBSD. Here we go:
+<p>
+
+<ol>
+<li> Install the cross-mipseb-netbsd-1.3.0.0 binary package, or build
+     it from pkgsrc/cross/mipseb-netbsd. (the "eb" here is for
+     "endian: big").
+     <p>
+
+<pre>
+# cd /usr/pkgsrc/cross/mipseb-netbsd
+# make install
+</pre>
+
+<li> Make sure you have the crosscompiler first in path. It's
+     installed in /usr/pkg/cross/mipseb-netbsd/bin. (Also, make sure
+     this doesn't lead to confusion later if you want to compile
+     native code again 8-):
+     <p>
+
+<pre>
+# PATH=/usr/pkg/cross/mipseb-netbsd/bin:$PATH
+# export PATH
+</pre>
+
+<li> set the MACHINE environment variable to "sgimips":
+     <p>
+
+<pre>
+# MACHINE=sgimips
+# export MACHINE
+</pre>
+
+<li> set the MAHINE_ARCH environment variable to "mipseb":
+     <p>
+<pre>
+# MACHINE_ARCH=mipseb
+# export MACHINE_ARCH
+</pre>
+
+<li> As usual, change into the kernel config dir, prepare a config
+     file, and run config(8):
+     <p>
+
+<pre>
+# cd /usr/src/sys/arch/sgimips/conf
+# cp TEAL MYMACHINE
+# vi MYMACHINE
+# config MYMACHINE
+</pre>
+
+<li> As usual, change to the compile dir, and let the ball roll:
+     <p>
+
+<pre>
+# cd ../compile/MYMACHINE
+# make depend
+# make
+</pre>
+
+<li> Put the resulting kernel into your /tftpboot dir, or whatever you
+     think is appropriate.
+     <p>
+</ol>
+
+The above instructions work fine for -current sources on a -current
+system. It won't work on a release system (1.5.x), as a
+newer config(8) command is needed.  If you run a release, you can
+setup a -current/i386 system in a seperate dir
+(e.g. /home/i386-current) and use it within a chroot environment.
+<p>
+
 
 <ENTRY>resetting-eaddr How to reset $eaddr on IP22 etc.?
 Here's a method to set the ethernet address that works on at
@@ -70,6 +275,7 @@ Power down, wait one full minute and then power up. All variables
 will have been reset as with the resetenv command, except $eaddr.
 
 <ENTRY>prom-tftp-client-failing PROM tftp client failing with default NetBSD tftpd settings
+
 The PROM tftp client on SGI machines can fail with default NetBSD tftpd
 settings.  The problem is that your current PROM may not support port
 numbers with the sign bit set.  The workaround is to limit the port
@@ -78,6 +284,30 @@ should fix your problem:
 <p>
 <tt># sysctl -w net.inet.ip.anonportmin=20000<br>
 # sysctl -w net.inet.ip.anonportmax=32767</tt>
+
+
+
+<ENTRY>prom-issues Other PROM issues you might encounter
+
+There are a few gotchas depending on your PROM version and the
+OS (SASH) version installed:
+<p>
+
+<ol>
+<li> Old versions of SASH have an issue with incorrectly reporting
+     the memory map... If the kernel panics with a UVM related msg
+     on boot (even before the copyright message), try booting the
+     kernel directly from the PROM rather than via sash (An I2 also
+     had this problem before upgrading to IRIX 6.x -- it was running
+     5.3 before).
+     <p>
+
+<li> Another old PROM issue -- old PROMs don't understand ELF, so
+     you may need an ECOFF kernel.  A workaround for this is to use
+     sash, which seems to understand ELF even in IRIX 5.x, but see
+     problem #2.
+     <p>
+</ol>
 
 </LIST>
 
@@ -90,7 +320,7 @@ should fix your problem:
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.14 2001/07/11 11:45:36 dent Exp $<br>
+  $NetBSD: faq.list,v 1.22 2001/11/09 00:56:36 hubertf Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
