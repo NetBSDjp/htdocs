@@ -1,6 +1,6 @@
 #!/usr/pkg/bin/perl
 #
-# $Id: mkbooks.pl,v 1.1 1999/04/19 07:46:05 sakamoto Exp $
+# $Id: mkbooks.pl,v 1.2 1999/04/20 04:25:13 sakamoto Exp $
 #
 require("jcode.pl");
 
@@ -69,6 +69,7 @@ sub makelist_by_register {
 			$item{$i.'page'},
 			$item{$i.'price'},
 			$item{$i.'url'},
+			$item{$i.'image'},
 			$item{$i.'misc'});
 	}
 	&print_tail($FD);
@@ -123,10 +124,10 @@ sub print_title {
 
 sub print_item {
 	local ($FD, $number, $title, $author, $publisher, $date,
-		$isbn, $page, $price, $url, $misc) = @_;
+		$isbn, $page, $price, $url, $image, $misc) = @_;
 
 	&jcode'euc2jis(*title);
-	$author = &jcode'jis('<tr><th>著者<td>'.$author);
+	$author = &jcode'jis('<th>著者<td>'.$author);
 	$publisher = &jcode'jis('<tr><th>出版社<td>'.$publisher);
 	$date = &jcode'jis('<tr><th>刊行日<td>'.$date);
 	$isbn = "<tr><th>ISBN<td>$isbn";
@@ -135,10 +136,15 @@ sub print_item {
 	$url = "<tr><th>WWW<td><a href=\"$url\">$url</a>";
 	$misc = &jcode'jis('<tr><th>説明等<td>'.$misc.'<br>');
 
+	if ($image eq "") {
+		$image = "/icons/blank.gif";
+	}
+
 	print $FD <<EOF;
 <p>
 <dt><a name="item$number" href="#item$number">$title</a>
 <dd><table border=1>
+  <tr><td rowspan=8><image src="$image" width=100 height=142 alt="">
   $author
   $publisher
   $date
