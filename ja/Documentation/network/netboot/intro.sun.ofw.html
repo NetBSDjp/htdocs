@@ -5,7 +5,8 @@
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.org">
-<title>Introduction (sparc and sun3 specific), Diskless NetBSD HOW-TO</title>
+<title>Introduction (JavaStation and sparc64 specific), Diskless NetBSD 
+HOW-TO</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
@@ -15,32 +16,19 @@
 
 <hr>
 
-<h1>Introduction (sparc- and sun3-specific), Diskless NetBSD HOW-TO</h1>
+<h1>Introduction (JavaStation- and sparc64-specific), Diskless NetBSD 
+HOW-TO</h1>
 
 <h2>Sun Firmware procedures</h2>
 <dl><dt><dd>
 <big><b>Which Sun machines can netboot</b></big>
 <p>
 
-All sparc and sun3 workstations and servers are capable of booting
+All JavaStation and sparc64 workstations and servers are capable of booting
 over a network interface. A network boot-strap procedure can be
-started by entering the appropriate <em>PROM</em> command. The
-exact format of the PROM command that must be used is dependent on
-the PROM's version (see below).
-<p>
-
-There are currently two supported JavaStation models, the JavaStation-1 and
-the JavaStation-NC.  Some JavaStation-1 units have OpenBoot PROM 2, and
-you should follow the directions below.  Some JavaStation-1 and all 
-JavaStation-NC units have Open Firmware.  You should read this separate
-page on <a href="intro.sun.ofw.html">Open Firmware-based 
-JavaStation</a> Diskless NetBSD HOW-TO.
-<p>
-
-sparc64 systems also netboot in a slightly different manner.  Go to the 
-page on <a href="intro.sun.ofw.html">Open Firmware-based 
-sparc64</a> Diskless NetBSD HOW-TO.
-<p>
+started by entering the appropriate <em>OpenFirmware</em> command.  Some 
+JavaStation-1 systems do not have OpenFirmware and should follow the 
+OpenBoot <a href="intro.sun.html">sparc</a> Diskless NetBSD HOW-TO.<p>
 
 <big><b>Determining your ethernet hardware address</b></big>
 <p>
@@ -79,9 +67,7 @@ If the RARP phase is completed successfully, the firmware in the
 workstation expects to be able to download a program via the <a
 href="tftpd.html">TFTP protocol</a>. It will do this by setting up a
 TFTP connection to the server that answered the earlier RARP request,
-and asking for a file named based on the machine's IP address and
-architectural class.  Sun 3's (verified for 3/50's and 3/60's) may 
-omit the architectural class from the file name.
+and asking for a file named based on the machine's IP address.
 <p>
 
 <big><b><a name="naming">Naming the boot loader</a></b></big>
@@ -91,8 +77,6 @@ The netbooting machine will ask via tftp for a file named as follows:
 <ul>
 <li>The first eight characters are obtained by converting the four
     octets of the IP address into hexadecimal representation.
-<li>For a sparc and newer sun3 machines, a dot (`.') is appended, followed
-    by the machine's architectural class, in uppercase. 
 </ul>
 You can use bc(1) to calculate this name as follows:
 <pre>$ <b>bc</b>
@@ -106,110 +90,60 @@ A8
 <b>10</b>
 A
 <b>quit</b></pre>
-Thus, a sun4c machine or a newer sun3 machine which has been assigned 
+Thus, a machine which has been assigned 
 IP address 192.168.1.10, will make an TFTP request for
-`<tt>C0A8010A.SUN4C</tt>', while an older sun3 machine with the same 
-IP address will request `<tt>C0A8010A</tt>'.
-<p>
+`<tt>C0A8010A</tt>'.
 
-Normally, it is arranged on the TFTP server that this file is a symbolic
-link to an appropriate second-stage boot program, which should of course
-be located in a place where the TFTP daemon can find it (remember, many
-TFTP daemons run in a chroot'ed environment).
-You can find the second-stage boot program in 
-<tt>installation/netboot/boot.net</tt> (sparc) or
-<tt>installation/netboot/netboot</tt> (sun3)
-in the NetBSD distribution.
+<p>For sparc64 systems, this file should be a symbolic link to
+<tt>installation/netboot/ofwboot.net</tt> from the NetBSD/sparc64
+distribution.  For OpenFirmware-based JavaStation systems, this file
+should be a link to <tt>installation/netboot/bootjs.net</tt> from the
+NetBSD/sparc distribution. Of course this bootloader should be located in
+a place where the TFTP daemon can find it (remember, many TFTP daemons run
+in a chroot'ed environment).
 
 </dd></dl>
 
 <h2>Firmware commands</h2>
 <dl><dt><dd>
-These depend on the version of the Openboot firmware.
-<ul>
-<li>Version 1 usually has a '<tt><b>&gt;</b></tt>' prompt, and
-<li>Version 2 usually responds with an '<tt><b>ok</b></tt>' prompt
-</ul>
-The kernel to load and other arguments can be passed to the boot loader by
-specifying them on the end of the command line.
 <p>
 
-<big><b>Version 1 Openboot firmware</b></big>
-<p>
-
-Uses the following syntax to initiate a a boot-strap procedure on a
-network device:
+Open Firmware uses a generalized syntax to specify the boot device for use 
+with the `<tt>boot</tt>' command.  By default, the JavaStations will 
+attempt to boot from the net automatically.
 <p>
 
 <ul>
-<li>`<tt><b>b <em>xx</em>()</b></tt>' where <tt><b><em>xx</em></b></tt> is a
-two-letter device specifier, e.g. `<tt><b>b le</b>(,,)</tt>' or `<tt><b>b ie(0,0,0)</b></tt>'
-</ul>
-<p>
-
-The complete syntax is:
-<p>
-
-<ul>
-<li>`<tt><b>b [[!][[<em>device</em>([<em>controller</em>],[<em>unit</em>],[<em>partition</em>])<em>pgm</em>
-	[<em>arg1,...,arg7</em>]]]/?]</b></tt>'
-  Boot <em>pgm</em>
-  using a default boot sequence device, an EEPROM-specified device, or a
-  user-specified device, or view the list of available boot devices
-  ('?').  If argument '!' is present, the system won't be reset prior
-  to booting.  Up to seven optional arguments will then be passed to the 
-  booting program.<br>
-    The
-    <tt><b>(<em>controller</em>,<em>unit</em>,<em>partition</em>)</b></tt>
-    arguments can be used to specify an TFTP server (???) [<em>If
-    anyone has more details on this, <a
-    href="http://www.NetBSD.org/cgi-bin/feedback.cgi">please let us know</a></em>]
-</ul>
-<p>
-
-<big><b>Version 2 Openboot firmware</b></big>
-<p>
-
-Uses a generalized syntax to specify the boot device for use with
-the `<tt>boot</tt>' command:
-<p>
-
-<ul>
-<li>`<tt><b>boot net</b></tt>';<br>
-    this will most likely work in all cases
+<li>`<tt><b>boot net</b></tt>'; this will most likely work in all cases
     where there is a single network interface on the machine. In this
     case `<tt>net</tt>' will have been setup by the firmware as an
-    alias to the full pathname of the on-board network device.
+    alias to the full pathname of the network device.
 
 <p><li>You may want to specify a different kernel name or options.  These 
     are listed after the device name:
-    <p>`<tt><b>boot net netbsd-GENERIC.MP.gz -a</b></tt>'
+    <p>`<tt><b>boot net netbsd-GENERIC_SUN4U.gz -a</b></tt>'
 
 <p><li>You may also need to be explicit about the network device you want
     to use, e.g. because there's more than one interface in the
     machine, possibly connected to different subnets. In this case, use
     the full device path name in the boot command, for instance:
 
-    <p>`<tt><b>boot /iommu/sbus/lebuffer@2,40000/le@2,60000</b></tt>';<br>
-    would select the `<tt>le</tt>' interface located on an "FSBE/S"
-    board in Sbus slot 2; while
-
-    <p>`<tt><b>boot /iommu/sbus/ledma:tpe/le</b></tt>';<br>
-    selects the on-board network interface in twisted-pair mode.
+    <p>`<tt><b>boot /pci@1f,4000/network@1,1</b></tt>';<br>
+    would select the on-board <tt>hme</tt> interface located on an 
+    Ultra 30.
 </ul>
 </dd></dl>
 
 <h2>Begin setting things up (suggested order):</h2>
 <dl><dt><dd>
-Get <tt>installation/netboot/boot.net</tt> from the NetBSD distribution
+Get <tt>installation/netboot/ofwboot.net</tt> (sparc64) or 
+<tt>installation/netboot/bootjs.net</tt> from the NetBSD distribution.
 This is what is sent by TFTP.  Copy this file to an
-appropriately named file in <tt>/tftpboot</tt>, as described above in the
-<a href="#naming">Naming the boot loader</a> section.
+appropriately named file in <tt>/tftpboot</tt>, as described above in 
+the <a href="#naming">Naming the boot loader</a> section.
 <p>
-
 <ol>
 <li><a href="rarp.html"><tt>rarp</tt></a>
-<li><a href="bootparams.html"><tt>bootparams</tt></a> (sun3 only)
 <li><a href="tftpd.html"><tt>tftpd</tt></a>
 <li><a href="nfs.html"><tt>nfs</tt></a>
 <li><a href="files.html">client filesystem</a>
@@ -251,7 +185,7 @@ appropriately named file in <tt>/tftpboot</tt>, as described above in the
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: intro.sun.html,v 1.27 2004/10/30 22:33:31 jschauma Exp $<br>
+  $NetBSD: intro.sun.ofw.html,v 1.3 2004/10/30 22:33:31 jschauma Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
