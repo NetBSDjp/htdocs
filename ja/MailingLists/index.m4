@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.150 2004/02/06 07:12:08 gendalia Exp $
+#	$NetBSD: index.m4,v 1.153 2004/02/06 23:53:33 lukem Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -62,7 +62,7 @@ divert(0)dnl')
 
 # here we go!!!
 divert(0)dnl
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
 <html>
 <head>
@@ -178,7 +178,11 @@ LIST(netbsd-announce)
 ENDLIST
 LIST(netbsd-bugs)
   This mailing list is where you can discuss bugs in NetBSD.
-  All bug reports sent with <i>send-pr(1)</i> appear here.
+  All NetBSD bug reports sent with <i>send-pr(1)</i> appear here.
+ENDLIST
+LIST(pkgsrc-bugs)
+  This mailing list is where you can discuss bugs in pkgsrc.
+  All 'pkg' bug reports sent with <i>send-pr(1)</i> appear here.
 ENDLIST
 LIST(netbsd-docs)
   This mailing list is for discussing NetBSD docs.  Information regarding
@@ -241,7 +245,7 @@ LIST(regional-cs)
   Discussion relevant to users in Czech Republic &amp; Slovak Republic.
 ENDLIST
 LIST(regional-de)
-  Discussion relevant to users in Germany.
+  Discussion relevant to users in Germany and other german speaking countries.
 ENDLIST
 LIST(regional-fr)
   Discussion relevant to users in France.
@@ -268,7 +272,7 @@ LIST(regional-pl)
   Discussion relevant to users in Poland.
 ENDLIST
 LIST(regional-pt)
-  Discussion relevant to users in Portugal.
+  Discussion relevant to users in Portugal and other portuguese speaking countries.
 ENDLIST
 LIST(regional-sfba)
   Discussion relevant to users in the San Francisco Bay Area.
@@ -711,7 +715,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.150 2004/02/06 07:12:08 gendalia Exp $<br>
+  $NetBSD: index.m4,v 1.153 2004/02/06 23:53:33 lukem Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
