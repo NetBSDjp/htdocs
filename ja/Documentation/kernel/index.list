@@ -2,130 +2,135 @@
 <head>
 <!-- Copyright (c) 1996, 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD Documentation: Kernel</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<HEADING>Kernel
+<HEADING>カーネル
 
 <LIST>
 
-<h2>NetBSD specific documentation</h2>
+<h2>NetBSD に特有のドキュメント</h2>
 <ul>
-<li><a href="programming.html">Kernel programming FAQ</a>
-<li><a href="elf-notes.html">Vendor-specific ELF Note Elements</a>
-<li><a href="uvm.html">UVM, the new Virtual Memory system</a>
-<li><a href="vfork.html">Why implement traditional vfork()</a>
+<li><a href="programming.html">カーネルプログラミング FAQ</a>
+<li><a href="elf-notes.html">ベンダー特有の ELF Note Element</a>
+<li><a href="uvm.html">UVM、あたらしい仮想メモリーシステム</a>
+<li><a href="vfork.html">なぜ伝統的な vfork() を実装したか</a>
 </ul>
 
-<h2>Other online documentation</h2>
+<h2>その他のオンライン ドキュメント</h2>
 <ul>
 <li><a href="http://tofu.alt.net/~lk/291.paper/291.paper.html">
     Porting BSD UNIX to a New Platform</a>
 <li><a href="http://www.netapp.com/tech_library/nfsbook.html">
-    Chapter 9 (NFS) from Design and Implementation of 4.4BSD</a>
+    4.4BSD のデザインと実装、第9章 (NFS)</a>
 </ul>
 
-<SECTION>Frequently Asked Kernel Questions
+<SECTION>FAQ - よくある質問
 
-<ENTRY>downloading_kernel_source Where to download the kernel source
-<h4><a name="official_release_kernel_source">Official release source</a></h4>
-To compile a custom kernel for the same release as you already have installed
-you only need the kernel <tt>syssrc.tgz</tt> file.
-For a given release this is held in the gzipped tarfile
-'source/sets/syssrc.tgz' under the main directory for
-that release. For example NetBSD 1.4.1 kernel source is in the file:
+<ENTRY>downloading_kernel_source どこでカーネルソースをダウンロードできますか
+<h4><a name="official_release_kernel_source">公式リリース</a></h4>
+すでにインストールされているものと同じリリースのカスタマイズしたカーネルを
+コンパイルするには、カーネルの <tt>syssrc.tgz</tt> ファイルだけあれば十分です。
+特定のリリースに対して、このファイルは、そのリリースのメインディレクトリの中の
+gzip された tar ファイル 'source/sets/syssrc.tgz' にあります。
+たとえば、NetBSD 1.4.1 のカーネルソースは次のファイルにあります:
 <pre>   <a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.1/source/sets/syssrc.tgz">/pub/NetBSD/NetBSD-1.3.3/source/sets/syssrc.tgz</a></pre>
-If you have a <a href="http://www.netbsd.com/">NetBSD CD-Rom</a>, the
-'source/sets/syssrc.tgz' file should be included. The source can be
-extracted anywhere, though the traditional location is inside /usr/src.
-To extract use "<b><tt>cd / ; tar xvzpf &lt;FILENAME&gt;</tt></b>".
-<p> <h4>'Bleeding edge' -current source, for the adventurous only!</h4>
-The latest kernel sources are available from ftp.netbsd.org or one of
-the mirrors in the directory <a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/">/pub/NetBSD/NetBSD-current/src/sys/</a>.<br>
-To compile a kernel you should download the following from <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.1/source/sets/syssrc.tgz">/pub/NetBSD/NetBSD-1.4.1/source/sets/syssrc.tgz</a></pre>
+もし <a href="http://www.netbsd.com/">NetBSD CD-Rom</a>を持っていたら、
+'source/sets/syssrc.tgz' も含まれています。ソースはどこでも展開できますが、
+習慣的に /usr/src に置かれます。
+展開するには "<b><tt>cd / ; tar xvzpf &lt;ファイル名&gt;</tt></b>" と
+してください。
+<p> <h4>'流血の刃先' -current ソース、冒険好きな人限定!</h4>
+最新のカーネルソースは ftp.netbsd.org かミラーサイトの <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/">/pub/NetBSD/NetBSD-current/src/sys/</a>
+ディレクトリーにあります。<br>
+カーネルをコンパイルするには、以下のものを <a
 href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/">
-/pub/NetBSD/NetBSD-current/tar_files/src</a>:  <ul>
+/pub/NetBSD/NetBSD-current/tar_files/src</a> からダウンロードした方が
+いいでしょう:  <ul>
    <li><a
    href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</a>
-   (Source for the 'config(8)' program) <li><a
+   ('config(8)' プログラムのソース) <li><a
    href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/sys.tar.gz">sys.tar.gz</a>
-   (Complete kernel source for all architectures) </ul> You should
-first build and install the 'config' program, in case it has changed
-since the version you are running. Since -current is on the active edge
-of NetBSD development, there can be <a
-href="#problems_compiling_a_current_kernel">problems compiling a
--current kernel</a>. You are recommended to use source from an <a
-href="#official_release_kernel_source">Official Release</a> until you
-are familiar with the configuration process.
-<p><h4>Downloading the kernel source from a certain date</h4>
-You might need to do this if you have installed a snapshot on your machine
-and need to rebuild the kernel (and the -current kernel is too recent).
-Follow the directions on how to 
-<a href="http://www.netbsd.org/Documentation/current/#using-anoncvs">Track
-NetBSD-current with anoncvs</a>
+   (全てのアーキテクチャーの完全なカーネルソース) </ul> 
+あなたが使っているバージョンから変更があった場合、最初に 'config'
+プログラムをビルドとインストールすべきです。
+-current は NetBSD 開発の最先端なので、<a
+href="#problems_compiling_a_current_kernel">-current カーネルの
+コンパイルに関する問題</a> があるかもしれません。
+あなたがコンフィグの手順に慣れるまでは <a
+href="#official_release_kernel_source">公式リリース</a> のソースを
+使うことをお勧めします。
+<p><h4>特定の日付のカーネルソースをダウンロードするには</h4>
+スナップショットをあなたのマシンにインストールしていて、
+カーネルを作り直したい(でも -current カーネルは新しすぎる)場合に、
+このような事が必要かもしれません。
+<a href="../../Documentation/current/#using-anoncvs">anoncvs
+を用いた NetBSD-current の追跡</a>の方法に従ってください。
 
-<ENTRY>building_a_kernel How to build a kernel
+<ENTRY>building_a_kernel カーネルの作り方
 <ol>
-    <li>Ensure you have installed the Compilers (<tt>comp.tgz</tt>) set
-	that came with your base system.
- <p><li>Download and extract the kernel source (see
-	<a href="#downloading_kernel_source">Where to download kernel
-	source</a>).
- <p><li>If you are following -current, you may need to compile a new version
-	of config. Assuming you have downloaded the complete -current source:
+    <li>あなたのベースシステムに付属していたコンパイラーセット(<tt>comp.tgz</tt>)を
+        インストールしたことを確認してください。
+ <p><li>カーネルソースをダウンロードし展開します(
+	<a href="#downloading_kernel_source">どこからカーネルソースを
+	ダウンロードできますか</a>参照)。
+ <p><li>-current を使っている場合、新しいバージョンの config のコンパイルが
+	必要かもしれません。完全な -current のソースをダウンロードしたら:
 	<br>
 	"<b><tt>cd /usr/src/usr.sbin/config ; make && make install</tt></b>"
  <p><li>"<b><tt>cd /sys/arch/&lt;ARCH&gt;/conf</tt></b>"<br>
-	where &lt;ARCH&gt; is your machine's architecture such as 'i386',
-	'sparc', 'mac68k'.
+	&lt;ARCH&gt; には 'i386', 'sparc', 'mac68k' のような
+	あなたのマシンアーキテクチャーが入ります。
  <p><li>"<b><tt>cp GENERIC &lt;MYCONF&gt;</tt></b>"<br>
-	where &lt;MYCONF&gt; is your name for this configuration. You could use
-	your hostname, the machine type, or even your first name. Keep to
-	letters, numbers, and _ characters.
- <p><li><b>Edit &lt;MYCONF&gt;</b><br>
-	Initially you can skip this stage.
-	You can remove drivers for CPU types, hardware, and devices you do
-	not have or use, or even enable options, such as on i386 commenting out
-	the 'pc0' line and enabling the 'vt0' to gain virtual consoles.
-	A good start to determining what hardware drivers you definitely need to
-	keep is to read the output of "<b><tt>dmesg</tt></b>" or
-	"<b><tt>dmesg | grep ' at '</tt></b>".  For every line containing
-	'&lt;XXX&gt; at &lt;YYY&gt;' you need to keep the entries for both
-	&lt;XXX&gt; and &lt;YYY&gt;. You should also read "<b>options(4)</b>"
-	for information on the different kernel configuration options.
+	&lt;MYCONF&gt; はこの設定にあなたが名づけた名前です。ホスト名や
+	マシンタイプ、あなたの名前を使ってもよいのです。英文字、数字、
+	そして _ 文字が使えます。
+ <p><li><b>&lt;MYCONF&gt;</b> の編集<br>
+	最初はこのステップは飛ばしても構いません。
+	i386 上で仮想コンソールを得るために
+	 'pc0' をコメントアウトして 'vt0' を有効にしたりするように、
+	あなたが持っていなかったり使っていない CPU タイプやハードウェア、
+	デバイスのドライバーを削除することができます。
+	あなたがどのハードウェアドライバーを使い続けるかを決めるよい第一歩
+	となるのは、"<b><tt>dmesg</tt></b>" か
+	"<b><tt>dmesg | grep ' at '</tt></b>" の出力を読むことです。
+	'&lt;XXX&gt; at &lt;YYY&gt;' を含む全ての行について
+	&lt;XXX&gt; と &lt;YYY&gt; の両方のエントリーを残す必要があります。
+	他のカーネル設定のオプションの情報のために、"<b>options(4)</b>"
+	も読んでください。
  <p><li>"<b><tt>config &lt;MYCONF&gt;</tt></b>"<br>
-	This will generate the kernel build directory for &lt;MYCONF&gt;.
+	&lt;MYCONF&gt; のカーネルをビルドするためのディレクトリーを
+	生成します。
  <p><li>"<b><tt>cd ../compile/&lt;MYCONF&gt;</tt></b>"<br>
-	Change to the kernel build directory.
+	カーネルをビルドするためのディレクトリーに移動します。
  <p><li>"<b><tt>make depend</tt></b>"<br>
-	This generates a '.depend' file that enables the make program to see
-	what needs to be rebuilt (at this point it will be everything!).
+	make プログラムがどのファイルをリビルドすればいいのか
+	わかるように(この時点では全て!)、'.depend' ファイルを生成します 。
  <p><li>"<b><tt>make</tt></b>"<br>
-	This will compile the kernel. If all goes well you will be left with a
-	'netbsd' kernel. This may take some significant time if you are on a
-	VAX, very little time on a big Alpha, and somewhere in-between for the
-	rest of us.
+	カーネルをコンパイルします。もし全てがうまくいけば、'netbsd'
+	カーネルができているでしょう。もしあなたが VAX を使っていれば
+	これは相当時間がかかり、大規模な Alpha マシンならとても短い時間であり、
+	残りの人たちはこの中間の時間になります。
  <p><li>"<b><tt>mv /netbsd /netbsd.old ; mv netbsd /</tt></b>"<br>
-	This saves your current kernel, (_very_ important), and moves the new
-	kernel ready to be booted.
+	現在のカーネルを保存し、(_とても_ 重要)、
+	新しいカーネルをブートできるよう移動します。
  <p><li>"<b><tt>reboot</tt></b>"<br>
-	This should reboot using your new kernel - the boot messages should
-	contain a line of the form:
+	これであなたの新しいカーネルを使ってリブートします -
+	ブートメッセージには次の行が含まれているはずです:
 	'NetBSD &lt;VERSION&gt; (&lt;MYCONF&gt;) #0: &lt;COMPILE_DATE&gt;'
- <p><li><b>If you have any problems:</b><br>
-	You should boot your 'netbsd.old' kernel in single user mode. The
-	procedure varies from port to port depending on the boot procedure,
-	but on i386 it would be:
+ <p><li><b>何か問題があったら:</b><br>
+	シングルユーザーモードで 'netbsd.old' カーネルをブートしましょう。
+	変更する手順はブート手順に依存していますが、i386 ではこうでしょう:
 	<ol>
-	    <li><b>Press <tt>SPACE</tt> when the first NetBSD message appears</b></li>
+	    <li><b>最初の NetBSD のメッセージが表示されたら <tt>SPACE</tt> を押す</b></li>
 	    <li>"<b><tt>boot -s netbsd.old</tt></b>"</li>
 	</ol>
 	<p>
-	Then swap your kernel back:
+	次にカーネルを元に戻す:
 	<ol>
 	    <li>"<b><tt>fsck /</tt></b>"</li>
 	    <li>"<b><tt>mount /</tt></b>"</li>
@@ -135,150 +140,169 @@ NetBSD-current with anoncvs</a>
 	</p>
 </ol>
 
-<ENTRY>generic_kernel What exactly is a GENERIC kernel?
+<ENTRY>generic_kernel GENERIC カーネルっていったい何なんですか?
 <p>
-The term GENERIC refers to a kernel that is configured to run on just about
-any machine supported by the machine architecture.  The term
-originated from a line in the kernel configuration file which specified
-that the root device was "generic" as well as a configuration option.  This
-option and that format of the configuration line is no longer used, but
-the name will probably stick for a while.
+GENERIC という言葉はマシンアーキテクチャーでサポートされている
+全てのマシンで実行できるように設定されたカーネルを意味します。
+この言葉はもともとカーネルの設定ファイル中に含まれていた、
+設定オプションでもあるルートデバイスを"汎用(generic)"と
+することを示す行に由来します。このオプションと設定行の書式は
+すでに用いられていませんが、この名称はしばらく残ることでしょう。
 <p>
-Since these kernels tend to include support for all the available device
-drivers and many models of machines that you are not using, you are
-encouraged to <a href="#building_a_kernel">compile your own custom
-kernel</a>.
+このため、GENERIC カーネルは、全てのデバイスドライバとたくさんの
+マシンモデルをサポートするコードを含んでいます。
+多くはあなたにとって必要ないものなので,
+<a href="#building_a_kernel">あなた用のカスタム化したカーネルを
+コンパイルする</a>事をお勧めします。
 
-<ENTRY>mclpool-limit What does <tt><b>mclpool limit reached: increase NMBCLUSTERS</b></tt> mean?
-This means the kernel has run out of space to map mbuf clusters.
-mbuf clusters are used by the network code to store packets and
-other network related data. To fix this you can add 
+<ENTRY>mclpool-limit <tt><b>mclpool limit reached: increase NMBCLUSTERS</b></tt> ってどういう意味ですか?
+これはカーネルが、mbuf クラスターにマップした空間を使い果たしたことを意味します。
+mbuf クラスターはネットワークコードでパケットやその他の
+ネットワーク関係のデータを格納するのに使用されています。
+これを解決するには
 <pre>	options NMBCLUSTERS=<em>value</em></pre>
-to your <a href="#building_a_kernel">kernel configuration</a>.
-The default setting for this is 256, so if you have this problem,
-try with e.g. 1024. Busy server machines sometimes need even more.
+を<a href="#building_a_kernel">カーネル設定ファイル</a>
+に加えて下さい。
+デフォルトの設定は 256 なので、もしこの問題が起きたならば、例えば
+1024 にしてみるといいでしょう。ビジーなサーバマシンならばもっと
+大きな値が必要かもしれません。
 <p>
-See also options(4) for more details on kernel configuration options.
+カーネル設定に関するオプションについてのより詳しい情報は
+options(4) を参照して下さい。
 
-<ENTRY>spl_not_lowered What does <tt><b>WARNING: SPL NOT LOWERED ON SYSCALL EXIT</b></tt> mean?
-This kernel message means that there is a bug in the kernel where a syscall did
-int x = splfoo(); and did not call splx(x); before it returned.  The splx(x);
-function in this example would restore the system priority level to the one
-encoded in x, which was a value previously returned by one of the other spl
-functions (in this case, the made up example of splfoo();).
+<ENTRY>spl_not_lowered <tt><b>WARNING: SPL NOT LOWERED ON SYSCALL EXIT</b></tt> ってどういう意味ですか?
+このカーネルメッセージはカーネル中に 
+int x = splfoo(); したのに復帰する前に splx(x); を実行しなかった syscall が
+あるというバグがあることを意味します。
+この例で splx(x); 関数はシステムの優先度レベルを x にエンコードされた状態、
+つまり他の spl 関数(この場合は splfoo(); という関数)によって返された値に
+レストアします。
 <p>
-If you get this kernel message you should be dropped into ddb(4), the in-kernel
-debugger.  A stack trace in ddb, accomplished by pushing 't', might show you
-the offending syscall().  It is probably a good idea to send-pr(1) the output
-of the trace command (as well as any other relevant information), since you
-should under no circumstances be getting this kernel message.
+このカーネルメッセージが出力された場合、カーネル内デバッガーである ddb(4) に
+入って下さい。ddb 内で 't' を押すことによりスッタクトレースを得ることができ、
+問題の syscall() を確認することができるかもしれません。
+このカーネルメッセージは本来出力されるはずが
+ないものですので、trace コマンドの出力(ほかの関連情報も含めて)を
+send-pr(1) する方がいいでしょう。
 <p>
-See also spl(9) for more information on spl functions.
+spl 関数についてのより詳しい情報は spl(9) を参照して下さい。
 
-<ENTRY>why_msoft_float Why are kernels compiled with <tt><b>-msoft-float</b></tt>
+<ENTRY>why_msoft_float なぜカーネルを <tt><b>-msoft-float</b></tt> 付きでコンパイルするのですか
 <p>
-When a process makes a system call the kernel needs to save the
-processor state, so that it can later switch back to the process.
-Floating point registers tend to be large and relatively plentiful,
-making saving and restoring them an expensive operation. If the FPU is
-in the middle of an operation the CPU will additionally be forced to
-sit and wait for it to finish before it can then copy the registers.
+プロセスがシステムコールを呼び出したとき、
+後でそのプロセスに戻ってこられるように、
+カーネルはプロセッサーの状態を保存する必要があります。
+浮動小数点レジスターは比較的大きくなりがちなので、それらを保存したり
+回復したりすることは高価な操作です。もし FPU がまだ処理を実行途中であっ
+たなら、CPU はその処理が完了するまで待ってからでないと、レジスターのコピー
+を行うことができません。
 <p>
-Avoiding floating point registers in the kernel gives a significant
-performance win for system calls. Some processors, such as sparc,
-can also use lazy FP context switching to sometimes avoid having to 
-save and restore FP registers even when switching between processes.
+カーネル内で浮動小数点レジスターを利用するのを避けることで、システムコール実行
+の効率を、かなり向上させることができます。
+また sparc など、いくつかのプロセッサーでは、浮動小数点コンテキストの切
+り替えを lazy に行うことによって、プロセス切り替えの際の浮動小数点レジ
+スターの保存/回復処理を、場合によっては省略することもできます。
 <p>
-On some architectures the compiler can use floating point registers to
-speed up certain operations (such as block memory copies), breaking
-the above, so '-msoft-float' is required.
+いくつかのアーキテクチャーではコンパイラーは主要な操作 (メモリーブロック転送など)
+のスピードアップのために浮動小数点レジスターを使うことができ、
+上記の動作を止めるためには '-msoft-float' が必要です。
 
-<ENTRY>kernel-compile-slow Kernel compiles on low memory machine seem very slow
-By default NetBSD installs a GENERIC kernel which includes drivers
-for almost every supported item of hardware, network protocol, and
-filesystem. While this allows one kernel to run on virtually every
-machine for a given port, it does result in it using more space
-than is really needed, particularly on a small memory machine.
-This is compounded by kernel compiles using the -O2 optimisation
-level which tells the compiler to use extra memory and time to make
-the kernel as fast as possible.
+<ENTRY>kernel-compile-slow メモリーの少ないマシンでカーネルをコンパイルするとすごい遅いのですが
+デフォルトでは NetBSD はサポートしているほとんど全てのハードウェアに対する
+ドライバー、ネットワークプロトコル、ファイルシステムを含む GENERIC カーネルを
+インストールします。これは、そのポートのいかなる計算機でもそのカーネルが
+実行されることを保証しますが、結果として、特にメモリーが少ない計算機では、
+必要以上の(メモリー)空間を占有します。また、カーネルのコンパイルの際には
+ -O2 最適化が行われています。コンパイラーが、この最適化を行うことにより
+出来上がるカーネルは可能な限り速くなりますが、コンパイルの際には
+通常より多くのメモリーと時間を必要とします。
 <p>
-One option when <a href="#building_a_kernel">building your own
-kernel</a> is to use "<tt><b>make&nbsp;COPTS=-O</b></tt>" which
-instructs the compiler to perform only the most effective optimisations.
-This will result in a fractionally slower kernel, but it will take
-less time to compile.
+<a href="#building_a_kernel">あなた専用のカーネルを構築する</a>
+際のひとつの方法としては、コンパイラーに対して通常の使用にとって
+十分である最適化のみを行うように指示するために
+"<tt><b>make&nbsp;COPTS=-O</b></tt>" を使うことです。この結果として
+できあがったカーネルはほんの少し遅くなりますが、コンパイルにかかる
+時間は短くなります。
 <p>
-If you are intending to take several 'compile and reboot into new
-kernel' passes while customising a kernel on a low memory machine
-it may make sense to make the first few passes using
-"<tt><b>make&nbsp;COPTS=-O</b></tt>", and then switch to
-"<tt><b>make</b></tt>" for the final pass.
+もし、メモリーの少ないマシンを使用していて、カーネルをカスタマイズ
+するために何度も 'コンパイル、新しいカーネルでリブート' を繰り返す
+つもりがあるのならば、始めのの何回かは "<tt><b>make&nbsp;COPTS=-O</b></tt>"
+を使い、最後に "<tt><b>make</b></tt>" を使うのが良いかもしれません。
 <p>
-Of course, generally the fastest way to compile a kernel on a low
-memory machine is to use another machine, or temporarily add some
-more memory!
+もちろん、メモリーが少ししかないマシンでカーネルをコンパイルするのに、
+一般的にもっとも速い方法は、別のマシンを使用すること、または一時的に
+もっとメモリーを増設することです!
 
-<ENTRY>problems_compiling_a_current_kernel Problems compiling a -current kernel
-The first point to note is you should subscribe to the
-<a href="../../MailingLists/#current-users">current-users</a> mail
-list.  Tracking -current without reading current-users is akin to driving
-in the dark without any lights. You have been warned :).<p>
-It is always worth downloading the latest
-<a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</a>, compiling, installing and rerunning on your config
-file - config changes reasonably frequently between releases.
+<ENTRY>problems_compiling_a_current_kernel -current カーネルのコンパイルに関する問題
+最初に注意すべき点は、
+<a href="../../MailingLists/#current-users">current-users</a>
+メーリングリストに参加した方がよいということです。
+current-users を読まずに -current を追うことはライトを灯けずに夜道を
+ドライブしているようなものです。警告しましたよ :)<p>
+最新の
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</a>
+をダウンロードし、コンパイル、インストールし、あなたの
+コンフィグファイルに対して再度 config を実行してください。
+ (config コマンドはリリースごとにかなり頻繁に変更されますから)
 
-<ENTRY>debugging_a_kernel_crash_dump Debugging a kernel crash dump
+<ENTRY>debugging_a_kernel_crash_dump カーネルクラッシュダンプのデバッグの方法
 <ol>
-<li>Ensure you have <a href="#building_a_kernel">built a kernel</a> from the
-    same source with <tt>DEBUG</tt>, and '<tt>makeoptions
-    DEBUG="-g"</tt>' enabled in the config file.
-<li>"<b><tt>gdb netbsd.gdb</tt></b>" (in kernel compile directory).
-<li>"<b><tt>target kcore /var/crash/netbsd.0.core</tt></b>" at the gdb prompt.
+<li>同じソースを用いて設定ファイルの中で <tt>DEBUG</tt> と '<tt>makeoptions
+    DEBUG="-g"</tt>'を有効にして
+    <a href="#building_a_kernel">カーネルの作成</a>をしたことを
+    確認してください。
+<li>"<b><tt>gdb netbsd.gdb</tt></b>"
+    (カーネルをコンパイルしているディレクトリーで)
+<li>gdb プロンプトで "<b><tt>target kcore /var/crash/netbsd.0.core</tt></b>"
 </ol>
-You can use the usual gdb(1) commands, such as '<b><tt>bt</tt></b>' to get a
-backtrace.
+一般の gdb(1) コマンドも使えます。例えばバックトレースを得るには
+'<b><tt>bt</tt></b>' とします。
 
-<ENTRY>backtraces Getting backtraces when debugging a kernel crash dump
-You can get backtraces of an arbitrary process from gdb when debugging a kernel
-crash dump with two easy steps:
+<ENTRY>backtraces カーネルクラッシュダンプをデバッグしているときにバックトレースを得る方法
+カーネルのクラッシュダンプをデバッグしている場合、
+次の簡単な 2ステップで任意のプロセスのバックトレースを gdb から得ることができます。
 <p>
 <ol>
-<li>get the proc addr of the process "<b>ps -ax -O paddr -M netbsd.x.core</b>"
-<li>tell gdb to use id "<b>proc 0x&lt;addr&gt;</b>"
+<li>プロセスの proc addr を調べる "<b>ps -ax -O paddr -M netbsd.x.core</b>"
+<li>gdb に id として "<b>proc 0x&lt;addr&gt;</b>" を使うように指示する
 </ol>
 
-<ENTRY>ddb What is DDB and what can I do in it?
-DDB is the optional in-kernel debugger. It is usually entered via one of
-three methods:
+<ENTRY>ddb DDB ってなんですか、それを使うと何ができるんですか
+DDB はオプションとして提供されるカーネル内部のデバッガーです。
+次の 3通りの方法で起動することができます:
 <ul>
-<li>At any time via a port specific key sequence (see ddb(4) for a list).
-<li>It can be set to be invoked when the kernel panics.
-<li>By specifying '-d' as a boot flag (<tt><b>boot netbsd -d</b></tt>).
+<li>いつでも、ポート特有のキーの組合せで起動する(組合せについては ddb(4) 参照)。
+<li>カーネルがパニックした時に起動するように設定できます。
+<li>'-d' をブートフラグに指定する(<tt><b>boot netbsd -d</b></tt>)。
 </ul>
-Some of the more useful commands are:
+いくつかの有用なコマンドは次の通りです:
 <ul>
-<li><tt><b>trace</b></tt> - Produce a stack trace. Very useful when
-    <a href="../../Misc/send-pr.html#submitting">submitting a PR</a>
-    on a kernel panic.
-<li><tt><b>reboot</b></tt> - Reboot the system.
-<li><tt><b>sync</b></tt> - produce a crashdump and reboot (Introduced
-    <em>after</em> NetBSD 1.4.X)
+<li><tt><b>trace</b></tt> - スタックトレースを作ります。
+    カーネルパニックの
+    <a href="../../Misc/send-pr.html#submitting">問題報告を送る</a>のに
+    とても便利です。
+<li><tt><b>reboot</b></tt> - システムをリブートします。
+<li><tt><b>sync</b></tt> - クラッシュダンプを作った後、リブートします(NetBSD
+    1.4.X <em>より後</em>で導入されました)。
 </ul>
 
-<ENTRY>generating-a-crash-dump Generating a kernel crash dump
-Usually the kernel will automatically generate a crashdump on panic,
-which is then picked up by savecore(8) on reboot. However you can
-force a crashdump in ddb(4) by using <tt><b>'reboot&nbsp;0x100'</b></tt>
-(<tt><b>sync</b></tt> in NetBSD 1.5 and later).  If the kernel
-panics or hangs while attempting to sync the buffer cache you can
-use <tt><b>'reboot&nbsp;0x104'</b></tt> which will bypass the sync.
+<ENTRY>generating-a-crash-dump カーネルのクラッシュダンプを作るには
+通常、カーネルはパニックした時に自動的にクラッシュダンプを生成し、
+リブート時に savecore(8) によって回収されます。
+しかし、 ddb(4) で <tt><b>'reboot&nbsp;0x100'</b></tt>
+(NetBSD 1.5以降では <tt><b>sync</b></tt>) を用いると
+強制的にクラッシュダンプを作る事ができます。もし、
+カーネルが buffer キャッシュをシンク(同期)しようとしている間に panic したり
+ハングするならば、シンクを行わない
+<tt><b>'reboot&nbsp;0x104'</b></tt>を使うことができます。
 
-<ENTRY>adding_a_kernel_to_a_boot_floppy Adding a kernel to a boot floppy
-Some ports are already setup to build a boot floppy by
-"<b><tt>cd /usr/src/distrib/<em>&lt;ARCH&gt;</em>/floppies ; make </tt></b>".
-(You may need to build the INSTALL kernel manually before running this.
-If you have an existing <b>boot.fs</b> image you can replace the kernel with:
+<ENTRY>adding_a_kernel_to_a_boot_floppy ブートフロッピーにカーネルを追加する方法
+いくつかのポートでは既に
+"<b><tt>cd /usr/src/distrib/<em>&lt;ARCH&gt;</em>/floppies ; make </tt></b>"
+としてブートフロッピーを構築することができます。
+これを実行する前に INSTALL カーネルを手動で構築する必要があるかもしれません。
+既に <b>boot.fs</b> ファイルがあるのなら、次の手順でカーネルを置き換え
+ることもできます:
 <ol>
 <li><b><tt>vnconfig -c vnd0 boot.fs</tt></b>
 <li><b><tt>mount /dev/vnd0a /mnt</tt></b>
@@ -286,121 +310,132 @@ If you have an existing <b>boot.fs</b> image you can replace the kernel with:
 <li><b><tt>umount /mnt</tt></b>
 <li><b><tt>vnconfig -u vnd0</tt></b>
 </ol>
-This assumes you have "<tt>pseudo-device vnd</tt>" in your kernel config file,
-and a ready to use kernel.
+この手順は、コンフィグファイルに "<tt>pseudo-device vnd</tt>" を指定して
+作成したカーネルを、現在利用していることを前提としています。
 
-<ENTRY>scsi_device_numbers I'm having trouble mounting the SCSI device for a new partition I've just created.  What's up with this device-numbering scheme?
+<ENTRY>scsi_device_numbers 新しく SCSI デバイスを増設したら、今までマウントできていたデバイスがマウントできなくなってしまいました。いったいどういう規則でデバイスに番号をつけてるんですか?
+<!-- I'm having trouble mounting the SCSI device for a new partition I've just created.  What's up with this device-numbering scheme? -->
+<!-- 今作ったばかりの新しいパーティションを含む SCSI デバイスをマウントしようとしたのにできません。いったいどういう規則でデバイスに番号をつけてるんですか? -->
 <p>
-By default, SCSI devices under NetBSD are numbered starting from
-0 in the order of SCSI ID number.  In other words, you lowest-numbered
-SCSI device will be <tt>/dev/sd0</tt>, the next device will be
-<tt>/dev/sd1</tt>, etc.  Notice that this is the assignment that
-they are given during the boot process.
+デフォルトでは、NetBSD での SCSI デバイスは SCSI ID 番号の順に 0 から
+番号付けされます。いいかえると、一番小さな番号の SCSI デバイスが
+<tt>/dev/sd0</tt> となり、次のデバイスが <tt>/dev/sd1</tt> という
+ふうになります。これはブートプロセスの間に対応づけられる事に
+注意してください。
 </p><p>
-If you compile your own kernels, you can set the SCSI devices to point to
-any SCSI ID number you want with a kernel configuration line like:
+もし、あなた専用のカーネルをコンパイルするならば、
+お好きな SCSI ID 番号を示す SCSI デバイスをセットすることができます。
+そのためのカーネル設定ファイルは次のようになります:
 <blockquote><pre>
 sd0             at scsibus0 target 4 lun 0
 sd*             at scsibus? target ? lun ?
 </pre></blockquote>
-The above lines will make device sd0 point to the disk at SCSI ID#4 and the
-rest of the devices will be assigned as described above. This is often
-referred to as "hardwiring" your SCSI devices, and is recommended if you
-are using RAID or <tt>ccd</tt> so as to avoid the device IDs being changed
-out from under the configuration if one device is powered off or broken.
+上の 2行を用いると sd0 は SCSI ID 番号が 4 のディスクとなり、
+残りのデバイスは上で述べられたルールで対応づけられます。
+これは、しばしば、SCSI デバイスの "hardwiring" と呼ばれ、
+RAID や <tt>ccd</tt> を使う場合には使用することをお勧めします。
+こうしておくと、一つのデバイスの電源が入っていなかったり
+故障した場合にデバイス ID が変わってしまうことを避けることができます。
 
 
-<SECTION>Frequently Asked Hardware Questions
+<SECTION>よくあるハードウェアに関する質問
 
 
-<ENTRY>device-not-configured What does <tt><b>device not configured</b></tt> mean?
+<ENTRY>device-not-configured <tt><b>device not configured</b></tt> ってどういう意味ですか?
 <ul><li><p>
-If this message appears during the autoconfiguration output of
-system boot, it means that the kernel discovered a piece of hardware
-in your system that it doesn't have a device driver for. This means
-that either the device driver exists and has not been compiled into
-the kernel you booted, or the device driver doesn't exist at all
-(in which case, it's time to contact a friendly developer and offer
-him testing hardware in exchange for writing a device driver).
+このメッセージがシステムブートの autoconfiguration の出力中に
+現れたのならば、それはカーネルがシステム中に、あるハードウェアを
+検出したがそれに対応するデバイスドライバが無いことを意味します。
+これにはデバイスドライバは存在するがブートに使用したカーネルには
+含まれていない場合と、デバイスドライバが本当に存在しない場合の
+両方の可能性があります。
+(後者の場合、優しい開発者に連絡を取り、テスト用のハードウェアを
+提供してデバイスドライバーを書いてもらいましょう)
 </p><p>
-Since GENERIC kernels are used for basic installation, it is
-important that they be stable and known to work; as such, device
-drivers that are not yet stable are not compiled into GENERIC
-kernels by default. Examination of a GENERIC kernel configuration file
-for your system may reveal experimental device drivers for your
-device which are "commented out." If you compile a kernel of your own
-(please don't call it GENERIC), you can try experimental device drivers.
+GENERIC カーネルは基本インストールに用いられるので、
+安定で動くことが保証されている事が重要です。そのため、
+まだ安定ではないデバイスドライバーは GENERIC カーネルに含まれていません。
+あなたのシステム用の GENERIC カーネルの設定ファイルを見てみると
+「コメントアウト」されている実験的なデバイスドライバーが見つかるかも
+しれません。もしあなた用のカーネル(それを GENERIC とは呼ばないでください)を
+コンパイルするならば、実験的なデバイスドライバーを試すことができます。
 </p></li>
 <li><p>
-If this message appears when you try to access a device node in
-<tt>/dev</tt> (e.g. a SCSI disk), this means that the driver can't
-find the specific device unit you tried to access, e.g. accessing
-a SCSI disk that isn't there.
+もし、このメッセージが <tt>/dev</tt>にあるデバイスノード
+(例えば SCSI ディスク)へアクセスしようとしたときに出力されたならば、
+それはアクセスしようとしたそのデバイスユニットを見つけられなかった
+事を意味します。例えば、存在しない SCSI ディスクにアクセスしようと
+した場合です。
 </p><p>
-Often, this happens when the device nodes in <tt>/etc/fstab</tt>
-don't match what the kernel found during autoconfiguration at boot
-time, and the "mount" command in <tt>/etc/rc</tt> tries to mount
-all the filesystems. You should double check that the devices you're
-trying to use were actually found by the kernel at boot time, by
-examining <tt>/var/run/dmesg.boot</tt> (a saved copy of the boot
-time autoconfiguration output).
+しばしば、これは <tt>/etc/fstab</tt> に書かれたデバイスノードと
+カーネルがブート時の autoconfiguration で見つけたものが一致しない状態で、
+<tt>/etc/rc</tt>中の "mount" コマンドが全てのファイルシステムを
+マウントしようとした時に起ります。いま一度、使用しようとした
+デバイスがブート時にカーネルによって検出されているかを確認してください。
+確認には <tt>/var/run/dmesg.boot</tt> (ブート時の autoconfiguration の
+出力のコピーが保存されています) を用いることができます。
 </p></li></ul>
 
 
-<ENTRY>atapi_devices Debugging ATAPI or ATA (IDE) devices
-If a kernel is compiled with <tt>WDCDEBUG</tt> defined, then gdb can be used
-to patch <code>wdcdebug_atapi_mask</code> and <code>wdcdebug_mask</code>.
-Setting the appropriate bits in these variables will cause the kernel to
-output verbose information about ATAPI and ATA operations.<br>
-(Currently NetBSD defaults to <tt>WDCDEBUG</tt> enabled.)<p>
-For the maximum level of output, use:
+<ENTRY>atapi_devices ATAPI や ATA (IDE) デバイスのデバッグ
+もしカーネルが <tt>WDCDEBUG</tt> を有効にしてコンパイルされていれば、
+gdb が <code>wdcdebug_atapi_mask</code> と <code>wdcdebug_mask</code> 
+の値の変更に使用できます。
+これらの変数中の適切なビットを設定することで、カーネルは ATAPI と ATA 操作に
+ついての詳しい情報を出力するようになります。<br>
+(現在 NetBSD のデフォルトでは <tt>WDCDEBUG</tt> は有効になっています。)<p>
+最高レベルの出力を得るには次の手順に従ってください:
 <pre>	# <strong>gdb --write /netbsd</strong>
 	(gdb) <strong>set wdcdebug_atapi_mask=0xff</strong>
 	(gdb) <strong>set wdcdebug_mask=0xff</strong>
 	(gdb) <strong>quit</strong>
 </pre>
-Note: This will produce an <em>extremely</em> large quantity of
-output. To select individual options, look for the list of bitflags
-directly above:
+註: この例の設定は<em>非常に</em>大量の出力を行います。
+個々のオプションを選択するためには、次に掲げる行のすぐ上に
+ある、ビットフラグのリストを見てください:
 <ul>
-<li><tt>wdcdebug_atapi_mask</tt> in
-<CURRENTSRC>/sys/dev/scsipi/atapi_wdc.c
-<li><tt>wdcdebug_mask</tt> in 
-<CURRENTSRC>/sys/dev/ic/wdc.c
+<li>
+<CURRENTSRC>/sys/dev/scsipi/atapi_wdc.c 中の <tt>wdcdebug_atapi_mask</tt>
+<li>
+<CURRENTSRC>/sys/dev/ic/wdc.c 中の <tt>wdcdebug_mask</tt> 
 </ul>
 
-<ENTRY>usb-debugging Debugging USB devices
-If you have problems with USB devices, you can enable verbose messages in the
-usb driver:
+<ENTRY>usb-debugging USB デバイスのデバッグ
+USB デバイスの問題が起きた場合、USB ドライバのメッセージを冗長にすることが
+できます。
 <ul>
-<li>Compile a kernel with <tt>USB_DEBUG</tt> and <tt>DDB</tt> defined.
-<li>boot with <tt><b>-d</b></tt> to enter ddb(4).
-<li>In ddb set the variables uhcidebug and ohcidebug to 1.
-<li><b><tt>continue</tt></b>.
+<li><tt>USB_DEBUG</tt> と <tt>DDB</tt> を含むカーネルをコンパイルする。
+<li><tt><b>-d</b></tt> をつけてブートし、ddb(4) に入る。
+<li>ddb で変数 uhcidebug と ohcidebug を 1 にセットする。
+<li><b><tt>continue</tt></b> と入力する。
 </ul>
 
-<ENTRY>new_pnp_device Recognising a new PnP device
-This assumes the device is of a generic type which is already supported, but the
-device ID is not recognised.
+<ENTRY>new_pnp_device あたらしい PnP デバイスを認識させるには
+この手順は対応する汎用のデバイスがすでにサポートされており、
+デバイス ID が認識されないだけである時のみ有効です。
 <ol>
-<li>It should be reported in the boot messages as '<tt>not configured</tt>'.
-Note the device ID (in this case <tt><b>USR3031</b></tt>):
+<li>デバイスは、ブートメッセージ中に '<tt>not configured</tt>' として
+表示されているはずです。出力中に含まれる
+デバイス ID を記録して下さい(この例だと <tt><b>USR3031</b></tt>です):
 <pre>	isapnp0: &lt;U.S. Robotics 56K FAX INT, <b>USR3031</b>, , &gt; port 0x3e8/8 irq 5 not configured</pre>
-<li>Add an appropriate entry to <tt>
-<CURRENTSRC>/sys/dev/isapnp/isapnpdevs</tt>:
+<li>適切なエントリーを<tt>
+<CURRENTSRC>/sys/dev/isapnp/isapnpdevs</tt> に加えて下さい:
 <pre>	devlogic       com     USR3031         USR 56k Faxmodem</pre>
-<li>Regenerate <tt>isapnpdevs.{c,h}</tt>using:
-	'<tt>make -f Makefile.isapnpdevs</tt>'.
-<li><a href="#building_a_kernel">Rebuild the kernel</a>
+<li><tt>isapnpdevs.{c,h}</tt> を
+	'<tt>make -f Makefile.isapnpdevs</tt>'
+として作り直します。
+<li><a href="#building_a_kernel">カーネルの再構築</a>をしてください。
 </ol>
-Note: this only applies for releases after 1.3.X (-current is fine). For 1.3.X
-you will need to add the device ID into the appropriate <tt>/sys/dev/isapnp/*_isapnp.c</tt> file.
+註: この方法は 1.3.X より新しいリリース (-current を含みます)に対するものです。
+1.3.X では、デバイス ID を適切な <tt>/sys/dev/isapnp/*_isapnp.c</tt> ファイルに
+加える必要があります。
 
-<ENTRY>plip_support Is PLIP (Parallel Line IP) supported
-There are patches from Martin Husemann which add PLIP support to
-NetBSD/i386, submitted as <a
-href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=1278">PR 1278</a>.
-The patches at the end of the PR should apply to the NetBSD 1.3.3 source tree.
+<ENTRY>plip_support PLIP (Parallel Line IP) をサポートしていますか
+NetBSD/i386 に PLIP をサポートした Martin Husemann のパッチが
+<a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=1278">
+PR 1278</a> として出ています。
+この PR の末尾にあるパッチは、NetBSD 1.3.3 ソースツリーに対して適用す
+ることができます。
 
 </LIST>
 
