@@ -29,9 +29,13 @@ Network Server 500,700: Open Firmware Read Me</a> Technote
 というプロンプト) から入力されます。 Open Firmware 設定すべてについて、
 設定の変更後は、 <tt>reset-all</tt> コマンドを使ってマシンをリセット
 することをおすすめします。
-<p>
 
-<table border=1 cellpadding=5>
+<p>NVRAMRC の修正は、 FORTH の文法が<i>非常に</i>厳格である (特に
+スペースの有無について) ため、かなり煩わしいものです。
+必要なパッチを適用するためだけに、一時的にシリアルコンソールを
+使うようにするのがよいかもしれません。
+
+<p><table border=1 cellpadding=5>
 <tr><td valign=top><tt>nvedit</tt></td>
 <td>現在の nvramrc の内容の編集を開始します。一時的な
 バッファーにファイルが残されている場合には、そのファイルの編集を
@@ -111,34 +115,6 @@ control キーと <tt>x</tt> キーを同時に押す意味に使います。
 </table>
 <p>
 
-<b>汎用 nvramrc スクリプト</b>
-<p>
-
-ブートする前に (ハードドライブが動くまで) 待つようにするためには、
-<a href="SystemDisk-tutorial/of105patch2.txt">下記のパッチ</a> を
-nvramrc に追加します:
-
-<pre>: wBoot
-begin
- boot-device ['] $boot catch drop
- ." -Waiting for boot-device" cr
- d# 500 ms
-key? until
-;</pre>
-
-それから <tt>nvstore</tt> を実行します。さらに、ブートコマンドの変更を
-指示しなければなりません。 OF プロンプトで次のようにタイプします:<br>
-
-<tt>0 &gt; <b>setenv boot-command wBoot</b></tt>
-<p>
-
-上記のかわりに、次のようにしてブートコマンドを変更することもできます:<br>
-
-<tt>0 &gt; <b>boot-command begin ['] boot catch 999 ms cr again</b></tt>
-<p>
-初期の Open Firmware 1.0.5 の機種の一部では、この一行を使った方法では
-動作しないとの報告があります。
-<p>
 
 <hr>
 <a href="./">Up to <em>NetBSD/macppc Port Page</em></a>
@@ -170,7 +146,7 @@ key? until
 <address>
   <small>
   www@JP.NetBSD.ORG<br>
-  $NetBSD: nvedit.html,v 1.7 2001/08/15 19:02:17 dent Exp $<br>
+  $NetBSD: nvedit.html,v 1.9 2001/12/20 07:09:18 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
