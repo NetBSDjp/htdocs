@@ -34,7 +34,7 @@
 <li>
 <a href="#what-to-do">覚えておくべきこと</a></li>
 <li>
-<a href="#build-targets">Makefileのいろいろなターゲットは何ですか</a></li>
+<a href="#build-targets">Makefileのいろいろなターゲットと実際の構築方法は?</a></li>
 <li>
 <a href="#using-anoncvs">anoncvs を用いた NetBSD-current の追跡</a></li>
 <li>
@@ -161,7 +161,7 @@ href="../../mirrors/">NetBSDミラーサイト</a>も
   からかけはなれていくと互換性のコードが加えられますが、
   このオプションが設定されている時だけ有効になります。
   少なくとも、この互換性のためのコードは、新しいカーネルをブートして、
-  <tt>make build</tt>が終了するまでは必要です。
+  <tt>build.sh</tt> による構築が終了するまでは必要です。
   <p>
 
  <li>
@@ -178,7 +178,7 @@ href="../../mirrors/">NetBSDミラーサイト</a>も
 
 </dd></dl>
 <p><h3>
-<a name="build-targets">Makefileのいろいろなターゲットは何ですか</a>
+<a name="build-targets">Makefileのいろいろなターゲットと実際の構築方法は?</a>
 <font size="-1">(<a href="#top">top</a>)</font>
 </h3><dl><dt><dd>
 もっとも明らかなターゲットは<a
@@ -190,6 +190,11 @@ href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/Makefile">/usr/src/Make
 トールするべきです。他の便利なターゲットは<a
 href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/share/mk/bsd.README">/usr/src/share/mk/bsd.README</a>
 に記述されています。これは<tt>/usr/share/mk/</tt>にインストールされます。
+'make build' を使った構築は、更新された toolchain に制約され続けてきており、
+今はかなり使えなくなっています。
+'build.sh' スクリプト (ソースディレクトリーの最上層にあります) を使った
+新しい toolchain の使用に関する文書は、
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/BUILDING">BUILDING</a> ファイルに書かれています。
 
 </dd></dl>
 <p><h3>
@@ -292,30 +297,33 @@ cvs による更新が正しく実行できるようにするためには objdirs を
 <h4>ソースからの NetBSD の構築</h4>
 
 <I>(すでに、最新の NetBSD バイナリースナップショットと /usr/src に
-ソースがインストールされていると仮定します。):</I><p>
+ソースがインストールされていると仮定します; また、 BSDOBJDIR は
+/usr/obj であると仮定します。):</I><p>
 
 はじめてユーザーランドを構築する場合:<p>
 
 <tt><b>mkdir /usr/obj</b></tt><br>
 <tt><b>cd /usr/src</b></tt><br>
-<tt><b>make obj</b></tt><br>
-<tt><b>make build</b></tt>
+<tt><b>./build.sh -O /usr/obj -T /usr/tools</b></tt><br>
+build.sh を使って初めてシステムの構築をする場合には、
+この先でコンパイルに使うツール一式も構築されますので、
+最初のコンパイルにかかる時間は長くなるでしょう。
+
 <p>
 
 CVS update の後、ユーザーランドのバイナリーを更新する場合:<p>
 
 <tt><b>cd /usr/src</b></tt><br>
-<tt><b>make obj</b></tt><br>
-<tt><b>make UPDATE=1 build</b></tt>
+<tt><b>./build.sh -O /usr/obj -T /usr/tools -u</b></tt>
 <p>
 
 これらによって、新しいバイナリーが実行されたシステムにインストールされます。
 新しいバイナリーが全て有効になるようにリブートしてください。
 バイナリーをどこか他の場所にインストールする(例えば、動作する環境をだいなしに
 するのが嫌な場合)には
-DESTDIR を設定すれば OK です。次のように実行してください:<p>
+DESTDIR を別の値に設定すれば OK です。次のように実行してください:<p>
 
-<tt><b>make DESTDIR=/usr/NetBSD-new-build UPDATE=1 build</b></tt><br>
+<tt><b>./build.sh -D /usr/NetBSD-new-build -O /usr/obj -T /usr/tools -u</b></tt><br>
 
 </dd></dl>
 <p><h3>
@@ -438,7 +446,7 @@ DESTDIR を設定すれば OK です。次のように実行してください:<p>
     <li>configure の後、<a href="../kernel/#how_to_build_a_kernel">
 	カーネルの構築</a>を行ない、できた新しいカーネルでリブートします。
     <li>-current のソースツリーのベースディレクトリに移動し、
-	<tt>"<b>make build</b>"</tt>
+	<tt>"<b>./build.sh -T /usr/tools -O /usr/obj </b>"</tt>
        とタイプします。
     <li>必要ならば、/etc の中のファイルに対する変更を merge します。
     </ol>
@@ -727,7 +735,7 @@ href="ftp://ftp.jp.netbsd.org/pub/NetBSD/NetBSD-current/src/etc/">src/etc</a>
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.list,v 1.35 2002/04/30 13:23:53 martti Exp $<br>
+  $NetBSD: index.list,v 1.36 2002/05/08 13:33:22 martti Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
