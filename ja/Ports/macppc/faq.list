@@ -31,6 +31,112 @@ See also the following related FAQ's:
 
 <SECTION>General Questions
 
+
+<ENTRY>boot-trouble Help, I can't boot NetBSD!
+Unfortunately, there are several causes of this problem.  It's actually rather 
+more common than we'd like, but is primarily due to the variety of machines
+that we support and all the undocumented changes Apple made along the line.
+
+<p>First, check to make sure your <a href="models.html">model</a> is supported.
+Next, did you <i>really</i> read through the INSTALL notes and ignore
+the instructions for Open Firmware versions other than your model? 
+Next, read through this FAQ entry, and if you still can't make your machine
+boot into NetBSD, post to 
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>.
+
+<p>Look at the messages below to determine which problem you are encountering.
+
+<p>
+<pre>     Open Firmware, 1.0.5
+     To continue booting the MacOS type:
+     BYE&lt;return&gt;
+     To continue booting from the default boot device type:
+     BOOT&lt;return&gt;
+      ok
+     0 &gt; </pre>
+
+If you don't see this message on screen (or serial console), then you haven't 
+properly entered Open Firmware.  If your machine starts to boot MacOS (i.e. 
+the screen turns grey and a happy mac or broken folder appears), then see 
+the <a href="SystemDisk-tutorial/">System Disk Tutorial</a>.
+Alternatively, see the instructions on 
+<a href="#ofw-access">how to enter Open Firmware</a>.  If your screen stays 
+black and you have an older mac, see instructions on 
+<a href="#ofw-boot-serial"> how to get around using a serial console</a>.
+If your screen is all weird, then see how to fix the 
+<a href="#non-sync-monitor">monitor sync problems</a>.
+
+<p>OK, now Open Firmware has started and is ready for user commands if you
+set it to stop at the Open Firmware prompt, otherwise, it starts trying to
+boot using the settings you previously supplied. 
+
+<p>The next step is usually the trickiest -- getting Open Firmware to load
+the bootloader from the correct location.  See what 
+<a href="#boot-support">boot methods</a> are supported, Open Firmware 
+<a href="#boot-disk">boot commands</a>, and some 
+<a href="#common-of-probs">common Open Firmware booting problems</a>. 
+Questions related to netbooting are covered in the 
+<a href="../../Documentation/network/netboot">Diskless HOW-TO</a>, 
+particularly in the 
+<a href="../../Documentation/network/netboot/intro.macppc.html">macppc-specific</a>
+section.
+
+<pre>     0 &gt; <b>boot enet</b> file: 192.168.0.11,/ofwboot.xcfloading XCOFF
+     tsize=C280 dsize=14AC bsize=2620 entry=600000
+     SECTIONS:
+     .text    00600000 00600000 0000C280 000000E0
+     .data    0060D000 0060D000 000014AC 0000C360
+     .bss     0060E4B0 0060E4B0 00002620 00000000
+     loading .text, done..
+     loading .data, done..
+     clearing .bss, done..
+     
+     &gt;&gt; NetBSD/macppc OpenFirmware Boot, Revision 1.3
+     &gt;&gt; (tsubai@mint.iri.co.jp, Sun Nov 26 01:41:27 JST 2000) 
+    1701508+177748 [100+68176+55886]=0x1e9468</pre>
+
+If it hangs here, then you need to set the 
+<a href="#ofw-real-base"><tt>real-base</tt></a> of your Open Firmware 1.0.5
+or 2.0.x machine. If you get past this point, then your kernel has started
+to load.  Now, if you have problems, it is most likely no longer an Open
+Firmware problem, but a NetBSD problem. 
+
+<p>If your screen turns black, and you have a laptop, the LCD brightness
+may have been turned down all the way.  See 
+<a href="#black-lcd">below</a>. 
+
+<pre>      start=0x100000
+     Copyright (c) 1996, 1997, 1998, 1999, 2000, 2001
+         The NetBSD Foundation, Inc.  All rights reserved.
+     Copyright (c) 1982, 1986, 1989, 1991, 1993
+         The Regents of the University of California.  All rights reserved.
+     
+     NetBSD 1.5S (AL) #0: Thu Mar 15 00:52:56 PST 2001
+         mw@al:/usr/src/sys/arch/macppc/compile/AL
+     total memory = 192 MB
+     avail memory = 172 MB
+     using 2483 buffers containing 9932 KB of memory
+     [...]
+     boot device: sd0
+     root on sd0a dumps on sd0b
+     root file system type: ffs</pre>
+
+Sometimes the kernel can't figure out where it was booting from.  You may
+need to build a kernel with the boot device hard-wired in.  See 
+<a href="#dash-a">below</a>. 
+
+<p>If your system hangs here, and you're using an USB keyboard, then see
+<a href="#usb-keyboard-problem">below</a>.
+
+<pre>     swapctl: adding /dev/sd0b as swap device at priority 0
+     Automatic boot in progress: starting file system checks.
+     [...]</pre>
+
+OK, now you've started in "multi-user mode" and the boot process is complete.
+If your keyboard doesn't work, see the FAQ entries for 
+<a href="#usb-keyboard-problems">USB keyboards</a> and for 
+<a href="#powerbook">recent laptops</a>.
+
 <ENTRY>usb-mouse-bug My USB mouse is not recognized.
 
 Try plugging it into the back of the Mac instead of into the keyboard.
@@ -38,7 +144,8 @@ Try plugging it into the back of the Mac instead of into the keyboard.
 
 <ENTRY>mouse-buttons How can I emulate a 3-button mouse with a 1-button mouse in X?
 
-At the moment, you can't.
+At the moment, you can't.  Try finding a cheap 3 button mouse, most ADB and 
+USB mice are supported.
 
 
 <ENTRY>usb-keyboard-problems USB keyboard problems
@@ -54,6 +161,11 @@ all USB devices (especially hubs) and plug the mouse into the keyboard and
 the keyboard directly into the back of the mac.
 
 <ENTRY>cannot-allocate-vm-panic <tt>panic: startup: cannot allocate VM for buffers</tt>
+This problem should have been fixed in NetBSD 1.5.  If you still have this
+problem after upgrading, post to 
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>.
+
+<p>
 On some machines with large quantities of RAM the kernel will run out of
 kernel VM when it tries to allocate the buffer cache.
 You can avoid this by either of:
@@ -65,6 +177,11 @@ You can avoid this by either of:
 </ol>
 
 <ENTRY>pciide-lost-interrupt <tt>pciide0:0:0: lost interrupt</tt>
+This problem is fixed in NetBSD-current and NetBSD 1.5.1.  
+If you still have this problem after upgrading, post to 
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>.
+
+<p>
 The NetBSD initialization code for the CMD 646 IDE controller doesn't
 correctly undo some of the settings that Open Firmware sets.  What happens
 is that Open Firmware sets the IDE controller up in 0646U2 mode and
@@ -113,9 +230,6 @@ message</a> on this topic.
 Good luck.
 
 
-<ENTRY>mesh-too-big Weird SCSI hangs, timeouts, and misc problems
-See <a href="#ofw-real-base">below</a>.
-
 <ENTRY>bm0-device-timeouts I'm getting device timeouts on bm0
 This problem has been fixed in NetBSD 1.5 and later.
 <p>
@@ -154,6 +268,16 @@ MacOS.  Open Firmware should then keep that setting.
 <p>
 Chris Tribo reports that his XClaimVR 64 card ignores the MacOS monitor
 setting and always comes up at the same resolution.
+
+<ENTRY>power-off Woah, my machine just powered off!
+
+Well, that's probably because you're using a recent laptop (iBook,
+PowerBook (FireWire), or PowerBook G4 (Titanium)) with an unsupported
+keyboard patch and pressed one of the weird keys (like brightness or page
+up). 
+
+<p>No solution, just don't press those keys until a better keyboard patch
+is made. 
 
 <!-- ======================================== -->
 <SECTION>Supported Hardware
@@ -204,14 +328,18 @@ NetBSD will work.
 
 <ENTRY>powerbook Does NetBSD/macppc support PowerPC-based PowerBooks?
 
-Some of them. The PowerBook 2400 and the new G3 PowerBooks are known
+Some of them.  See the <a href="models.html">NetBSD/macppc supported
+models list</a>. 
+
+<p>The PowerBook 2400 and the older G3 PowerBooks are known
 to be supported. The PowerBook 1400, 2300, and 5300 are not supported,
 because they are not PCI-based. Other models may work out of the box,
 or may need a small additional amount of driver work before they work.
 
-<p> It has been reported that on some G3 Powerbooks, booting off an
-install floppy only works if the floppy drive is mounted in the left
-MediaBay slot.
+<p>Some of the newer models (iBook, PowerBook (FireWire), and PowerBook G4 
+(Titanium)) require a special patch to use their
+keyboards.  There is a recent snapshot of NetBSD with these patches on the
+ftp mirrors.  It is in the <tt>arch/macppc/snapshot</tt> directory. 
 
 <p> Note that power management is not yet supported, so it is not
 possible to suspend and resume a PowerBook while running NetBSD.
@@ -417,48 +545,33 @@ that everyone else uses.) Use kermit or some other terminal program.
 
 <p>Start your machine and press Command-Option-O-F on the Mac keyboard
 immediately after you hear the startup sound. You should see the
-prompt `<tt>0&nbsp;ok&gt;</tt>' on the (serial) console within a few
+prompt `<tt>0&nbsp;&gt;</tt>' on the (serial) console within a few
 seconds.
 
 <p>To switch the machine to using the monitor and keyboard instead of the
 serial console, type:
 
-<pre>
-	" screen" output
-	" kbd" input
-</pre>
+<pre>0 &gt; <b>setenv input-device kbd</b>
+0 &gt; <b>setenv output-device screen</b>
+0 &gt; <b>reset-all</b></pre>
 
-<p>Note that Open Firmware is based on the language Forth, and has
-unusual syntax for strings: The initial quote has a space after it,
-which is not part of the string it is quoting. The final quote does
-not have a space before it, but does have a space after it to separate
-it from the next word.
+The last command reboots your machine with the new settings. 
 
 <p>Not all machines have a "screen" device alias, in which case you
 will need to figure out what the full Open Firmware path to the video
 device is. Also note that Open Firmware will <i>not</i> complain if you
 specify an output device that doesn't exist.
-On the 7x00 and 8x00 models and some 9x00, and some G3 models, this
+On the 7300 through 8600 models, this
 is "<tt>/chaos/control</tt>". 
 <p>
-If <tt>screen</tt> and <tt>/chaos/control</tt> don't work on your
+If <tt>screen</tt> or <tt>/chaos/control</tt> doesn't work on your
 machine, look in the device tree for a PCI device that contains the
 name of your video card (preceded by "ATY," for an ATI card, or "IMS,"
 for a Twin Turbo card), for example
 "<tt>/bandit/ATY,mach64</tt>" and
 "<tt>/bandit@F4000000/IMS,tt128mb8A</tt>".  To get a list of the devices
-available to Open Firmware, type <tt>dev / ls</tt>.
-
-<p>To make your machine always start up using the keyboard and monitor
-for Open Firmware, type:
-
-<pre>
-	setenv input-device kbd
-	setenv output-device screen
-</pre>
-
-<p>(Or whatever the name of your screen device is.) This will last
-until you change it, or reset the machine's PRAM.
+available to Open Firmware, type:
+<pre>0 &gt; <b>dev / ls</b></pre>
 
 
 <ENTRY>systemdisk Configuring the Open Firmware boot variables and nvram
@@ -501,7 +614,7 @@ PRAM doesn't fix it.  In this case, you will need to unplug your system
 and remove the battery from your motherboard for about 10 minutes.  On a
 PowerBook, the equivalent is to reset your power manager.</i>
 
-<ENTRY>ofw-claim-failed Open Firmware reports "CLAIM failed" when trying to boot.
+<ENTRY>ofw-claim-failed <tt>CLAIM failed</tt>
 
 This is a general message from Open Firmware to the effect that it failed
 to allocate some memory.  There are several known causes for this to
@@ -511,7 +624,28 @@ This often means that the memory is messed up.  If you tried something and
 it failed, then you tried another and got a "CLAIM failed" message, then
 this is an indication that you should reboot between attempts (the OF
 command is "reset-all").
+
+<p>If your machine is Open Firmware version 1.0.5 or 2.X, this error
+does sometimes appear randomly.  You might try the boot command a second
+time (this is
+known to work on some models).  Otherwise, if you are not
+using a serial console, there might be a conflict between the screen
+driver and Open Firmware which prevents OF from loading
+ofwboot.xcf.  There are several models that cannot be booted while
+using the screen and keyboard.  The
+only known workaround is to use a serial console (i.e. set your input and
+output devices to ttya or ttyb).  You can use the System
+Disk utility (see the <a href="SystemDisk-tutorial/">tutorial</a>)
+to set the input and output to ttya, or in Open Firmware,
+type: 
+<pre>0 &gt; <b>setenv input-device ttya</b>
+0 &gt; <b>setenv output-device ttya</b>
+0 &gt; <b>reset-all</b></pre>
 <p>
+This will reset the machine and send console messages out the modem port
+at 38400 bits per second, 8 bit bytes, 1 stop bit and no parity.
+
+<ENTRY>default-catch <tt>DEFAULT CATCH!</tt>
 If your machine is Open Firmware version 1.0.5 or 2.X, this error
 does sometimes appear randomly.  You might try the boot command a second
 time (this is
@@ -525,9 +659,9 @@ output devices to ttya or ttyb).  You can use the System
 Disk utility (see the <a href="SystemDisk-tutorial/">tutorial</a>)
 to set the input and output to ttya, or in Open Firmware,
 type: 
-<pre>setenv input-device ttya
-setenv output-device ttya
-reset-all</pre>
+<pre>0 &gt; <b>setenv input-device ttya</b>
+0 &gt; <b>setenv output-device ttya</b>
+0 &gt; <b>reset-all</b></pre>
 <p>
 This will reset the machine and send console messages out the modem port
 at 38400 bits per second, 8 bit bytes, 1 stop bit and no parity.
@@ -572,6 +706,25 @@ to set your <tt>load-base</tt> properly
 You should double-check that this value has been set using the
 <tt>printenv</tt> command.
 
+<ENTRY>cant-open <tt>can't OPEN</tt>
+Open Firmware either can't open the device you specified (because it is not
+present or the device path is mistyped) or the file you specified. Check
+your typing and check to make sure that the media has the files you think
+it has. 
+
+<ENTRY>formatstate-not-valid <tt>unrecognized Client Program formatstate not valid</tt>
+This is a general Open Firmware error message indicating that the filename
+you tried to open either doesn't exist or is in the wrong format. For
+Open Firmware 1 and 2 machines, it must be an XCOFF file (such as
+<tt>ofwboot.xcf</tt>)
+and for Open Firmware 3 machines, it must be either XCOFF or ELF (such as
+a kernel).
+
+<ENTRY>bad-partition <tt>bad partition number, using 0no bootable HFS partition</tt>
+You tried booting an Open Firmware 1.x or 2.0.x machine from a device
+which has an HFS filesystem on it (such as a hybrid CD-R or a hard drive
+with MacOS partitions). 
+
 <ENTRY>ofw-real-base What's the deal with the "real-base" setting
 The Open Firmware environment variable <tt>real-base</tt> is the address
 at which <tt>ofwboot</tt> loads the kernel into memory.  Many users have
@@ -579,8 +732,8 @@ reported that the default value of <tt>real-base</tt> causes problems that
 manifest themselves as strange SCSI problems, or <tt>ofwboot</tt> hanging
 while loading a large kernel (typically over 3 MB in size).
 Makoto Fujiwara
-<a href="http://mail-index.netbsd.org/port-macppc/2000/08/13/0004.html">reports</a>
-that changing the <tt>real-base</tt> will fix this problem.
+<a href="http://mail-index.netbsd.org/port-macppc/2000/08/13/0004.html">
+reports</a> that changing the <tt>real-base</tt> will fix this problem.
 <p>
 Open Firmware 3 machines have re-writable firmware, and users have found
 that changing the <tt>real-base</tt> will overwrite their firmware,
@@ -610,9 +763,7 @@ build a kernel without any USB drivers.
 
 In Open Firmware, type:
 
-<pre>
-	setenv auto-boot? false
-</pre>
+<pre>0 &gt; <b>setenv auto-boot? false</b></pre>
 
 <p>This will last until you change that variable back to "true", or
 reset the machine's PRAM.
@@ -644,9 +795,14 @@ A few useful commands are:
 <tr><td><code>mac-boot</code></td><td>Boot Mac OS (on OF &gt; 3.0)</td></tr>
 <tr><td><code>boot</code></td><td>Boot the default OS</td></tr>
 <tr><td><code>boot&nbsp;...</code></td><td>Specify what to boot</td></tr>
+<tr><td><code>eject&nbsp;fd</code></td><td>Eject the floppy disk</td></tr>
 <tr><td><code>reset-all</code></td><td>Reset, as though you'd pressed the reset button</td></tr>
 <tr><td><code>shut-down</code></td><td>Power down the machine</td></tr>
 </table>
+
+<p>Also, you can use the up and down arrow keys to pick previous Open Firmware 
+commands you've typed in, as well as emacs/tcsh-style control keys for editing
+(such as <tt>^A ^E ^F ^B ^N ^P ^K ^U</tt>).
 
 <p> For more details on basic Open Firmware commands, see
 
@@ -992,12 +1148,25 @@ When you're done, you should check that your values are correct with the
 everything's right, it will reboot into NetBSD, otherwise it'll fail and
 drop into Open Firmware.
 
+<ENTRY>common-of-probs Common Open Firmware Booting Problems
+See info on <a href="#ofw-boot-serial">black monitors</a>,
+<a href="#ofw-claim-failed"><tt>CLAIM failed</tt></a>,
+<a href="#default-catch"><tt>DEFAULT CATCH!</tt></a>,
+<a href="#ofw-load-base"><tt>load-base</tt></a>,
+<a href="#cant-open"><tt>can't OPEN</tt></a>,
+<a href="#formatstate-not-valid"><tt>unrecognized Client Program</tt></a>,
+<a href="#bad-partition"><tt>bad partition number</tt></a>,
+and <a href="#ofw-real-base"><tt>real-base</tt></a>.
+
+
 <ENTRY>write-floppy How do I write the floppy image?
 There are a number of ways to write a raw image to floppy disk:
 <ul>
 <li>Use dd(1) under NetBSD or another unix.
-<li>Use rawrite.exe (as supplied with <a href="../i386/">NetBSD/i386</a>) on a DOS/Windows machine.
-<li>Use <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/floppy/README.rawdisk">suntar</a> under MacOS.
+<li>Use rawrite.exe (as supplied with <a href="../i386/">NetBSD/i386</a>) 
+  on a DOS/Windows machine.
+<li>Use <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/floppy/README.rawdisk">suntar</a> 
+  under MacOS.
 </ul>
 
 <p>Note that you can't just boot off this floppy like you would boot
@@ -1068,7 +1237,7 @@ different boot command.  For example:
 <td>for an OF 1.0.5 machine with CD on the "scsi" Open Firmware bus<br>
 <i>Note: OF 1.0.5 cannot load <tt>ofwboot.xcf</tt> from a hybrid 
 ISO/HFS CD, only pure ISO</i></td></tr>
-<tr><td><tt>boot ata/atapi-disk:0,ofwboot.xcf -a</tt><br>
+<tr><td><tt>boot&nbsp;ata/atapi-disk:0,ofwboot.xcf&nbsp;-a</tt><br>
 <tt>boot ide1/disk@0:0,ofwboot.xcf -a</tt></td>
 <td> for an OF 2.0.X machine without a <tt>cd</tt> devailas</td></tr>
 <tr><td><tt>boot cd:ofwboot.xcf -a</tt></td>
@@ -1117,6 +1286,12 @@ Various people have reported that they can't get their NetBSD/macppc
 systems to boot unattended.  What happens is that Open Firmware loads the
 kernel just fine, but the kernel can't seem to find the root device
 (i.e. where the / filesystem is located).
+
+<p>At the prompt, type in the device name for your root disk (usually
+something like <tt>sd0a</tt> or <tt>wd0a</tt>), swap (usually something
+like <tt>sd0b</tt> or <tt>wd0b</tt>), and filesystem type (usually
+<tt>ffs</tt>, <tt>nfs</tt>, or <tt>cd9660</tt>). 
+
 <p>
 Until this situation is fixed, there is a workaround.  You need to 
 <a href="../../Documentation/kernel/#how_to_build_a_kernel">
@@ -1181,7 +1356,10 @@ Ha! Well, actually, here's an interesting link to a program called <a
 href="http://www.ibrium.se/linux/mac_on_linux.html">Mac-on-linux</a>
 for LinuxPPC. So maybe this could happen some day.
 
-<ENTRY>keys What do the <img src="../../images/ports/macppc/icon-command.gif" width="13" height="13" alt="command key"> and <img src="../../images/ports/macppc/icon-option.gif" width="17" height="13" alt="option key"> icons mean (i.e. which are the "command" and "option" keys)?
+<ENTRY>keys What do the <img src="../../images/ports/macppc/icon-command.gif" width="13" height="13" alt="command key"> and <img src="../../images/ports/macppc/icon-option.gif" width="17" height="13" alt="option key"> icons mean (i.e. which are the "comma
+
+
+nd" and "option" keys)?
 Apple has some unusual keys on its keyboards that may confuse some people
 (particularly with non-US keyboards).  The key with the
 <img src="../../images/ports/macppc/icon-command.gif" width="13" height="13"
@@ -1211,7 +1389,7 @@ the command and option keys in addition to the letters "p" and "r".
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.57 2001/02/24 22:41:32 manu Exp $<br>
+  $NetBSD: faq.list,v 1.58 2001/04/02 17:55:52 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
