@@ -1,6 +1,8 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<!-- Copyright (c) 1996, 1998
+<!-- Copyright (c) 1996, 1997, 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
 <title>NetBSD Documentation: The X Window System</title>
@@ -13,6 +15,75 @@
 
 <SECTION>Running X
 
+<ENTRY>wsmouse How to get the mouse working with XFree?
+<p> Assuming you're using the default wscons console driver, make sure
+you adjust the mouse protocol and device properly in the XF86Config file's
+"Pointer" section:
+</p>
+    
+<PRE>
+Section "Pointer"
+   ###Protocol       "PS/2"                    # Linux
+   ###Device         "/dev/mouse"              # Linux
+   ##Protocol        "busmouse"                # NetBSD 1.4.x
+   ##Device          "/dev/pms0"               # NetBSD 1.4.x
+   Protocol          "wsmouse"                 # NetBSD 1.5 or later
+   Device            "/dev/wsmouse"            # NetBSD 1.5 or later
+EndSection
+</PRE>
+
+<p>If you don't use wscons (as is the default on 1.4.x systems), use /dev/pms0
+and the "busmouse" protocol for a PS/2 mouse.</p>
+
+<p>Protocol "PS/2" is still supported for older kernels, you'll have
+to use Device "/dev/pms0" with the opms mouse driver in the kernel
+for that, though. Useful for X-Servers that don't support the
+wscons protocol (like XFree V4 or Linux/FreeBSD X server binaries).
+</p>
+
+
+
+<ENTRY>x-keyboard-maps Changing the keyboard mapping from 'US' under X
+	XFree 3.x maps the keyboard with an english map per default. To
+	change this to e.g. german, make sure the following is in your
+	XF86Config file:
+
+<PRE>
+#       XkbDisable
+#       XkbKeymap   "xfree86(us)"
+
+        XkbModel        "pc102"
+        XkbLayout       "de" XkbVariant      "nodeadkeys"
+</PRE>
+
+	To get e.g. a german keyboard in XFree 4.x, put the following into
+	your XF86Config's "InputDevices" section:
+
+<pre>
+	Options		"XkbLayout"	"de"
+</pre>
+
+	Configuring the keyboard for the console under wscons is described
+	<a href="../wscons/#keyboard-maps">elsewhere</a>.
+
+<ENTRY>x-keyboard-nocaps How do I make the Caps key another Control key
+
+	For XFree 3.x (as shipped with NetBSD 1.l5), add ``<TT>XkbOptions
+        "ctrl:nocaps"</TT>'' if you want the caps-lock
+	key become a second control-key. If you want to use the "Windows"
+	keys on your keyboard, you can get some useful keysyms for them by
+	using ``<TT>XkbModel "pc105"</TT>'' instead.
+	<P>
+
+	XFree 4.x uses a different config file format. For it, put
+
+<pre>
+	Option "XkbOptions" "ctrl:nocaps"
+</pre>
+
+	into the "InputDevice" section of your XF86Config file.
+	<p>
+	
 <ENTRY>xf86_corrupts_on_rage_128 XF86_SVGA corrupts glyphs on Rage 128 if accelerated
 To fix this make sure you have xsrc of at least 2000-01-13 (otherwise you will
 have to also apply the patch in PR
@@ -101,6 +172,10 @@ You may need to ensure your kernel is compiled with the following enabled:
 <pre>	options  UCONSOLE  # allow anyone to steal the virtual console</pre>
 See <a href="../kernel/#how_to_build_a_kernel">How to build a
 kernel</a> for details on how to build your own kernels.
+<p>
+If you're logged in as root, and get annoying <tt>portmap</tt> notices,
+you may wish to look at the <a href="../misc/#portmap-messup">FAQ entry</a>
+on how to turn those messages off.
 
 <ENTRY>wheel-mouse How to I get my mouse wheel to work?
 If you use a Microsoft IntelliMouse,
@@ -108,24 +183,37 @@ Logitech Wheel Mouse (cordless our not) or something similar that has a
 scroll wheel, and you want to use the wheel under NetBSD, first make
 a kernel that includes the "pmsi" driver, and make sure "wsmouse" uses
 it. Something like this should occur in your dmesg(1) output:
-<PRE>
+<pre>
 pmsi0 at pckbc0 (aux slot)
 wsmouse0 at pmsi0
-</PRE>
-Then, make sure to make the wheel to mouse buttons 4 and 5 in your
-/etc/XF86Config's "Pointer" section:
-<PRE>
+</pre>
+If you are running XFree86 3.x (as shipped with NetBSD 1.5.2 and earlier),
+ensure your <tt>/etc/XF86Config</tt> contains:
+<pre>
 Section "Pointer"
     Protocol    "wsmouse"
-    Device      "/dev/wsmouse0"
+    Device      "/dev/wsmouse"
     ZAxisMapping 4 5
-</PRE>
+EndSection
+</pre>
+If you are running XFree86 4.x, ensure your <tt>/etc/X11/XF86Config</tt>
+contains:
+<pre>
+Section "InputDevice"
+    Identifier  "Mouse0"
+    Driver      "mouse"
+    Option      "Protocol"      "wsmouse"
+    Option      "Device"        "/dev/wsmouse"
+    Option      "Buttons"       "5"
+    Option      "ZAxisMapping"  "4 5"
+EndSection
+</pre>
 That's enough to make xterms scroll. For other apps, you'll need to
 edit your ~/.Xdefaults. See 
-<A HREF="http://www.inria.fr/koala/colas/mouse-wheel-scroll/">Colas Nahaboo X mouse wheel scroll page</A>
+<A HREF="http://www-sop.inria.fr/koala/colas/mouse-wheel-scroll/">Colas Nahaboo X mouse wheel scroll page</A>
 for details on a lot of applications that can be made working.
 
-<ENTRYLINK>http://www.xfree86.org/FAQ/#SectionB XFree86 FAQ
+<ENTRYLINK>http://www.xfree86.org/support.html XFree86 Documentation
 
 <ENTRY>which_version Which version of XFree86 am I running?
 To quickly tell which version of the X server you are running, you
@@ -168,10 +256,13 @@ ensure you link against the necessary X libraries. In this case, add
 
 <hr>
 <address>
+  <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.11 2000/02/15 14:34:47 abs Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1996, 1998
+  $NetBSD: index.list,v 1.27 2001/09/13 22:04:12 tv Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy;
+    1996, 1997, 1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
 
 </body>
