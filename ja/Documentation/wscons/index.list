@@ -1,0 +1,187 @@
+<html>
+<head>
+<!-- Copyright (c) 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+
+<!--
+  ==  By Chris Jones
+  -->
+
+
+<link rev="made" href="mailto:www@NetBSD.ORG">
+		<title>WSCONS FAQ</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>NetBSD wscons FAQ
+
+<LIST>
+
+<SECTION>The wscons console driver
+
+<ENTRY>wscons What is wscons?
+Wscons is the platform-independent workstation console driver for
+NetBSD.  As of this writing, not all platforms support wscons, but
+more are being added as time goes on.  Wscons should have all the
+features (plus some extras) of the old i386 pcvt driver, but its exact
+capabilities are dependent on the underlying hardware.
+
+<ENTRY>enablingwscons How do I enable wscons and virtual terminals?
+The steps involved in this are:
+<ul>
+<li>Edit /etc/rc.conf and change "wscons" to "yes"
+<li>Edit /etc/ttys entries for ttyE{1,2,3} to "on".
+<li>Then either reboot or type the following:
+<blockquote>
+sh /etc/rc.wscons<br>
+kill -1 1<br>
+</blockquote>
+</ul>
+You can then use control-alt-{F1,F2,F3,F4} to switch between the virtual
+terminals.
+
+<ENTRY>keyboard-maps Changing the keyboard mapping from 'US'
+    This is done with "<tt>wsconsctl</tt>", for example selecting
+    a French keyboard map is done via "<b><tt>wsconsctl -w
+    encoding=fr</tt></b>".  A full list of keyboard mappings is in
+    <CURRENTSRC>/sys/dev/wscons/wsksymdef.h, but some of the more
+    common maps are:
+    <ul>
+	<li><tt>de</tt>
+	<li><tt>dk</tt>
+	<li><tt>fr</tt>
+	<li><tt>it</tt>
+	<li><tt>jp</tt>
+	<li><tt>sv</tt>
+	<li><tt>uk</tt>
+	<li><tt>us</tt>
+    </ul>
+    <p>
+    There are also several "variants" that can be used to modify a map:
+    <ul>
+	<li><tt>dvorak</tt>
+	<li><tt>swapctrlcaps</tt>
+        <li><tt>iopener</tt>
+    </ul>
+    <p>
+    "dvorak" uses the Dvorak keyboard layout. "swapctrlcaps" switches
+    the functions of the Caps Lock and Left Control keys. "iopener"
+    is for the nonstandard keyboard layout on the Netpliance i-opener and
+    makes F1 into Escape and F2 through F12 into F1 through F11.
+    These can be combined with another map by appending a dot and then
+    the variant name, for example, "us.iopener". Multiple variants can
+    be combined, such as "us.dvorak.swapctrlcaps". Note that not all
+    combinations are allowed.
+    <p>
+    You can change the compiled in kernel default by adding
+    <pre>options  PCKBD_LAYOUT=KB_<em>encoding</em></pre> where
+    <em>encoding</em> is an uppercase entry from the list above
+    (eg: <tt>PCKBD_LAYOUT=KB_FR</tt>). Variants can be bitwise or'd in
+    (eg: <tt>PCKBD_LAYOUT=KB_US|KB_SWAPCTRLCAPS</tt>).
+    <P>
+
+    If your favourite keymap is not supported, you can start digging
+    in 
+    <a href="http://cvsweb.netbsd.org/cgi-bin/cvsweb.cgi/syssrc/sys/dev/wscons/wsksymdef.h"><tt>sys/dev/wscons/wsksymdef.h</tt></a> and
+    <a href="http://cvsweb.netbsd.org/cgi-bin/cvsweb.cgi/syssrc/sys/dev/pckbc/wskbdmap_mfii.c"><tt>sys/dev/pckbc/wskbdmap_mfii.c</tt></a> 
+    to make your own. Be sure to <a href="http://www.netbsd.org/Misc/send-pr.html#submitting">send-pr</a> a change-request PR with your work, so others can
+    make use of it!
+    <P>
+
+    Configuring the keyboard layout under X is described
+    <a href="../x/index.html#x-keyboard-maps">elsewhere</a>.
+
+<ENTRY>screen0 "WSDISPLAYIO_ADDSCREEN: Device busy"
+This error message usually occurs when wsconscfg tries to add a screen
+which already exists.  One time this occurs is if you have a <code>screen
+0</code> line in your <code>/etc/wscons.conf</code> file, because the
+kernel always allocates a screen 0 as the console device.  The error
+message is harmless in this case, and you can get rid of it by
+deleting (or commenting out) the <code>screen 0</code> line.
+
+<ENTRY>enabling-logins Enabling 'login' on additional virtual terminals
+As root, edit <tt>/etc/ttys</tt> and switch getty 'on' on ttyE1 to
+ttyE3. Change:
+<pre>	ttyE1   "/usr/libexec/getty Pc"         vt220   off secure</pre>
+to
+<pre>	ttyE1   "/usr/libexec/getty Pc"         vt220   on secure</pre>
+Then 'kill -HUP 1'.
+
+<ENTRY>colors How do I change the text display colors?
+Warning and error messages from the kernel, in addition to messages
+from the kernel's configuration code, are printed to the console.
+When kernel messages show up, they are normally displayed in a
+different color, which can be customized.  Look for
+<code>WS_KERNEL_FG</code> and <code>WS_KERNEL_BG</code> in your kernel
+config file.  Change these to taste, and recompile your kernel.
+
+<ENTRY>muxdevices How do I use the wscons "mux" devices?
+The wscons "mux" devices let you multiplex the input streams from more than one
+wskbd/wsmouse device.  The multiplexed device for wsmouse devices is
+/dev/wsmouse, and for wskbd devices it is /dev/wskbd.  If you configure the X
+server to use /dev/wsmouse instead of hardwiring the pointing device, you can
+use any wsmouse-compatible pointing device available, or two or more of them
+at the same time.
+<p>
+The steps involved in this are:
+<p>
+<ol>
+<li>Configure and rebuild your kernel
+    <ul>
+    <li>Add the option "mux 0" to each "wsmouse* at ..." line in your kernel
+        config (example: <b>wsmouse* at ums? mux 0</b>).
+    <li>Add the option "mux 1" to each "wskbd* at ..." line in your kernel
+        config, just like in the example above.
+    <li>Make sure you have "<b>pseudo-device wsmux 2</b>" defined in your kernel
+        config.
+    <li>Build the kernel.  There is a detailed explanation located in the <a
+        href="http://www.netbsd.org/Documentation/kernel/">Kernel FAQ</a> if
+        you're not sure how to do that.
+    </ul>
+
+<p>
+<li>Make /dev/wsmouse and /dev/wskbd
+    <ul>
+    <li>As root, cd to /dev and run "./MAKEDEV wsmux".  If it fails, you can
+        create these devices by hand in the  /dev directory:
+        <dl>
+        <dd>mknod wsmouse c 65 0<br>
+        <dd>mknod wskbd c 65 1<br>
+        <dd>chown root:wheel wsmouse wskbd<br>
+        <dd>chmod 600 wsmouse wskbd<br>
+        </dl>
+    </ul>
+
+<p>
+<li>If you're using X, edit /etc/XF86Config
+    <ul>
+    <li>If the rest of your XF86Config is set up correctly, you can just edit
+    the Protocol and Device lines in the "Pointer" section to match the
+    following:
+    <dl>
+    <dd>Protocol "wsmouse"<br>
+    <dd>Device "/dev/wsmouse"<br>
+    </dl>
+    </ul>
+</ol>
+
+<p>
+After that's done you can do things like use the built-in pointing device on
+your laptop PC while on the go, and hot-plug a USB mouse at any later time and
+and use it without reconfiguring or restarting the X server.
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.1 2000/07/19 20:43:08 dent Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
