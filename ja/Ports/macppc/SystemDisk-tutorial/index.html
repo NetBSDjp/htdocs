@@ -21,7 +21,7 @@ everything you could from the Open Firmware command line, except with less
 effort.  There is an older program called <a
 href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/macos-utils/bootvars/">Boot
 Variables</a> that has some additional options.  Boot Variables
-does not, however, include any patches for buggy OF versions.  We
+does not, however, include any patches for buggy Open Firmware versions.  We
 encourage you to use System Disk, unless your model 
 <a href="../models.html#no.sysdisk">does not support System Disk</a>.
 <p>
@@ -40,10 +40,12 @@ encourage you to use System Disk, unless your model
       <a href="http://til.info.apple.com/techinfo.nsf/artnum/n60353">Disk Copy 6.3.3</a>
       or later to write the Disk Tools image to a floppy (you can use 
       any MacOS 7.0.1 or later system, including pre-PowerPC (i.e. m68k) Macs).
+      You cannot, however, simply dump the boot floppy image to a disk via 
+      <tt>dd(8)</tt> or <tt>rawrite</tt>.
       <p>
       Note, for future reference, that any time you boot an older machine
-      (i.e. OF 1.0.5) into MacOS, all of its Open Firmware settings (including
-      the nvram) will be set to their default values. 
+      (i.e. Open Firmware 1.0.5) into MacOS, all of its Open Firmware settings 
+      (including the nvram) will be set to their default values. 
       <p>
 
   <li><big><b>Download</b></big>
@@ -51,7 +53,9 @@ encourage you to use System Disk, unless your model
       <a href="ftp://ftp.apple.com/developer/macosxserver/utilities/SystemDisk2.3.1.smi.bin">ftp://ftp.apple.com/developer/macosxserver/utilities/SystemDisk2.3.1.smi.bin</a>
       <p>
       You may need to use StuffIt Expander (or some other utility) to
-      convert that file from MacBinary format into the self-mounting disk image
+      convert that file from MacBinary format into the self-mounting disk image.
+      See <a href="http://www.stuffit.com/expander/notes.html">Aladdin Systems'
+      help page</a>.
       <p>
 
   <li><big><b>Mount the Self-Mounting Image and run System Disk</b></big>
@@ -67,11 +71,10 @@ encourage you to use System Disk, unless your model
   <li><big><b>NVRAM Patches</b></big>
       <p>
       When you click the <tt>Save</tt> button, it installs any necessary nvram
-      patches for your
-      machine, except for a few minor fixes for PowerMacintosh 7300 -
-      8600 machines related to
-      video timing.  There are separate instructions for applying these 
-      <a href="of105patch.html">OF 1.0.5 patches</a>.
+      patches for your machine, except for a few minor fixes for 
+      PowerMacintosh 7300 - 8600 machines related to video timing and sync.  
+      There are separate instructions for applying these 
+      <a href="of105patch.html">Open Firmware 1.0.5 patches</a>.
       <p>
 
   <li><big><b>Advanced Options</b></big>
@@ -86,56 +89,62 @@ encourage you to use System Disk, unless your model
 
   <li><big><b>Input Device/Output Device</b></big>
       <p>
-      Note that if your built-in video supports Open Firmware, System Disk
+      Note that if your on-board video supports Open Firmware, System Disk
       automatically determines which device names to use and
       selects those for display (even though your machine may otherwise
       default to using serial ports for Open Firmware).
       <p>
       These settings can manually be entered into Open Firmware by typing at
-      the OF prompt:
+      the Open Firmware prompt:
       <p>
-      <pre>        setenv input-device kbd
-        setenv output-device screen</pre>
+      <pre>        0 &gt; <b>setenv input-device kbd</b>
+        0 &gt; <b>setenv output-device screen</b></pre>
       <p>
-      where <tt>kbd</tt> and <tt>screen</tt> are the appropriate device names
-      or aliases for your particular <a href="../models.html">model</a>.  
+      where<tt>screen</tt> is the appropriate device name
+      or aliase for your particular <a href="../models.html">model</a>'s
+      on-board video or
+      <a href="../faq.html#ofw-boot-video">video card</a>.
       <p>
       If your machine has serial ports (<i>not USB serial adaptors</i>), 
-      you can enter
-      ttya for both <tt>input-device</tt> and <tt>output-device</tt> if you
+      you can enter <tt>ttya</tt> for both <tt>input-device</tt> and 
+      <tt>output-device</tt> if you
       wish to use the modem port on your PowerMacintosh to interact with Open
-      Firmware.
+      Firmware.  Some Performa models have an internal modem, so you'll need
+      to use <tt>ttyb</tt> (the printer port).
       <p>
 
   <li><big><b>Stop Boot at Open Firmware prompt</b></big>
       <p>
-      Click on this button to directly interact with OF each time your
-      machine is rebooted. This would mean
+      Click on this button to directly interact with Open Firmware each time 
+      your machine is rebooted. This would mean
       you don't have to hold Command-Option-O-F every time you want to use
-      Open Firmware.  This is equivalent to typing at the OF prompt:
+      Open Firmware.  This is equivalent to typing at the Open Firmware prompt:
       <p>
-      <pre>        setenv auto-boot? false</pre>
+      <pre>        0 &gt; <b>setenv auto-boot? false</b></pre>
       <p>
 
   <li><big><b>The Boot device entry</b></big>
       <p>
       This entry is, of course, to select which device to boot
-      from.  This is equivalent to typing at the OF prompt, e.g.:
+      from.  Basically, you're telling Open Firmware where to find the 
+      initial bootloader (either the "partition zero" <tt>ofwboot</tt> or
+      the XCOFF <tt>ofwboot.xcf</tt>).  This is equivalent to typing at the 
+      Open Firmware prompt:
       <p>
-      <pre>        setenv boot-device scsi/sd@0:0</pre>
+      <pre>        0 &gt; <b>setenv boot-device scsi/sd@0:0</b></pre>
       <p>
       Typical values to enter are:
       <p>
 
       <table border="2">
 	<tr><th align="left"><tt>fd:0</tt></th>
-	<td>floppy drive</td></tr>
+	<td>floppy drive with NetBSD install floppy</td></tr>
 
-	<tr><th align="left"><tt>enet:0</tt></th>
-	<td>ethernet on &gt;OF 3.0 models</td></tr>
+	<tr><th align="left"><tt>enet:0,\ofwboot.xcf</tt></th>
+	<td>ethernet on &gt; Open Firmware 3.0 models</td></tr>
 
-	<tr><th align="left"><tt>enet</tt></th>
-	<td>ethernet on &lt;OF 3.0 models</td></tr>
+	<tr><th align="left"><tt>enet:,\ofwboot.xcf</tt></th>
+	<td>ethernet on &lt; Open Firmware 3.0 models</td></tr>
 
 	<tr><th align="left"><tt>scsi-int/sd@<font
 	    color="#FF0000">3</font>:<font color="#00FF00">0</font></tt></th>
@@ -163,8 +172,14 @@ encourage you to use System Disk, unless your model
 	    hd:<font color="#00FF00">0</font><br>
 	    cd:<font color="#00FF00">0</font><br>
 	    zip:<font color="#00FF00">0</font></tt></th>
-	<td>IDE drive.  It's unclear whether you can boot from
-	    slave devices on earlier machines with built-in IDE</td></tr>
+	<td>IDE drive with "partition zero" bootloader.  It's unclear whether 
+            you can boot from
+	    slave devices on earlier machines with on-board IDE</td></tr>
+
+	<tr><th align="left"><tt>hd:,\ofwboot.xcf</tt></th>
+	<td>Internal IDE hard drive on Open Firmware 3 system with 
+            <tt>ofwboot.xcf</tt> located on an HFS partition.</td></tr>
+
       </table>
       <p>
 
@@ -174,30 +189,30 @@ encourage you to use System Disk, unless your model
       <p>
       The <font color="#0000FF">0</font> is for IDE entries is the master or
       slave device (master is 0, slave is 1).  It is not clear whether you can
-      boot from slave devices on earlier machines with built-in IDE.
+      boot from slave devices on earlier machines with on-board IDE.
       <p>
       The <font color="#00FF00">0</font> is the partition you're going to
       boot from.  For disks with NetBSD disklabels (such as one created by
-      the 1.4.2 and earlier install tools or the distributed boot floppy), use
-      0 as the "full disk".  For disks with an Apple partition map, use the
-      partition number of your NetBSD partition (usually 5 or higher, as the
+      the NetBSD install tools or the distributed boot floppy), use
+      0 to load the "partition zero" bootloader.  For disks with an Apple 
+      partition map, use the
+      partition number of your NetBSD partition (usually 8 or higher, as the
       first few are reserved for MacOS bootloaders).
       <p>
-      Note that later machines will not boot from a "whole disk" partition,
-      and need to find the bootloader or kernel on a HFS, MS-DOS, or ISO9660
-      partition.
+      Note that machines with Open Firmware 3 will not boot from a "partition 
+      zero" bootloader, and need to find the bootloader or kernel on an HFS, 
+      MS-DOS, or ISO9660 partition or over ethernet.
       <p>
 
   <li><big><b>Boot File</b></big>
       <p>
-      This entry is for the name of the file you'll be booting.  You
-      should almost always be using <tt>ofwboot.xcf</tt>, the
-      NetBSD/macppc bootloader. This is used
-      if you do not use the "whole disk" partition scheme (i.e. your kernel or
-      bootloader is on a HFS, MS-DOS, or ISO9660 format partition).  This
-      is equivalent to typing at the OF prompt:
+      This entry is for the name of the kernel you'll be booting.  You
+      should almost always be using <tt>netbsd</tt>, the NetBSD/macppc kernel.
+      If you are installing NetBSD, you might be using the RAMdisk-based
+      installation kernel <tt>netbsd.ram.gz</tt>.
+      This is equivalent to typing at the Open Firmware prompt:
       <p>
-      <pre>        setenv boot-file ofwboot.xcf</pre>
+      <pre>        0 &gt; <b>setenv boot-file netbsd.ram.gz</b></pre>
       <p>
       
   <li><big><b>Save and reboot</b></big>
@@ -205,6 +220,25 @@ encourage you to use System Disk, unless your model
       Click OK to accept your Advanced Options changes.  Click Save to write
       all your changes to the Open Firmware settings and to write the NVRAM
       patches.  Reboot.
+
+  <li><big><b>Fix some settings</b></big>
+      <p>
+      If your system has Open Firmware 1.0.5, 2.0.x, or 2.4, you need to run
+      the following commands before you boot NetBSD:
+      <p>
+      <pre>        0 &gt; <b>setenv real-base F00000</b>
+        0 &gt; <b>reset-all</b></pre>
+      <p>
+      These commands set the 
+      <a href="../faq.html#ofw-real-base"><tt>real-base</tt></a>, then reboots
+      the computer so the settings are permanently stored.
+
+  <li><big><b>NVRAMRC causing problems</b></big>
+      <p>There are some reports that the System Disk patches cause problems
+      on a handful of models.  If this is the case, run the following commands
+      from the Open Firmware prompt:
+      <pre>        0 &gt; <b>set-default use-nvramrc?</b>
+        0 &gt; <b>reset-all</b></pre>
 
 </ol>
 <p>
@@ -239,7 +273,7 @@ encourage you to use System Disk, unless your model
 <address>
   <small>
   www@NetBSD.ORG<br>
-  $NetBSD: index.html,v 1.13 2001/07/23 04:38:23 mbw Exp $<br>
+  $NetBSD: index.html,v 1.17 2001/12/26 22:09:01 mbw Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
