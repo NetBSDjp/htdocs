@@ -1,0 +1,469 @@
+<html>
+<head>
+<!-- Copyright (c) 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Bootable CD ROM HOWTO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+<HEADING>Bootable CD ROM How-To
+
+<LIST>
+
+<SECTION>Overview
+
+<ENTRY>introduction Introduction and Purpose
+
+This document attempts to explain how to make bootable NetBSD
+CD ROM's.
+
+<SECTION>Creating the CD image
+The first step in making a CD ROM is to create an image of the CD.
+This image will initially be stored as a (rather large, up to 650 Mb)
+file on your hard drive and then later written to the CD.
+
+This section assumes you have access to the program
+<tt>mkhybrid</tt>.  If you are making the CD image on a NetBSD
+machine, you can install the program from the
+<PKGSRC>sysutils/mkhybrid
+package.  The program <tt>mkisofs</tt> can also be used.  There is
+also a 
+<PKGSRC>sysutils/mkisofs
+package available.
+
+It is assumed the directory <tt>/cdsources</tt> exists on your system
+and contains all the files which you want to end up on the CD ROM.
+One suggested layout for making an install CD is to follow the
+directory structure on <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.2">ftp.netbsd.org</a>.  For example:
+<pre>
+  /cdsources/i386/.....
+  /cdsources/sparc/.....
+</pre>
+
+
+<ENTRY>alphaimage NetBSD/alpha
+There are 2 steps involved in making a NetBSD/alpha bootable CD ROM.
+The first is to create an ISO 9660 image of whatever you want
+to put on the CD.  This image must have the secondary boot program and
+kernel in its root directory.  In addition, the primary boot program
+will be needed for the second step.  To put the boot programs and 
+kernel in the right places, do the following:
+<pre>
+  cd /cdsources/alpha/binary/sets
+  tar -zxvf base.tgz ./usr/mdec/boot ./usr/mdec/bootxx_cd9660
+  mv -f ./usr/mdec/boot /cdsources/boot
+  mkdir /tmp/mdec.alpha
+  mv -f ./usr/mdec/bootxx_cd9660 /tmp/mdec.alpha/bootxx_cd9660
+  rmdir ./usr/mdec
+  cd /cdsources/alpha/installation/instkernel
+  cp -f netbsd.gz /cdsources/netbsd.gz
+</pre>
+Now create the ISO 9660 image.
+<pre>
+  mkhybrid -o output.iso -a -l -J -r -L /cdsources
+</pre>
+The second step is to install NetBSD/alpha disk and CD-ROM bootstrap
+software using <tt>installboot(8.alpha)</tt>.  This is done with the
+following command:
+<pre>
+  installboot -v output.iso /tmp/mdec.alpha/bootxx_cd9660 
+</pre>
+Note that this second step must either be performed on a NetBSD/alpha
+machine or you must compile the alpha installboot program for your machine.
+The alpha installboot program should compile and run correctly under
+NetBSD/i386.  
+
+<ENTRY>i386image NetBSD/i386
+This section shows how to make a NetBSD/i386 bootable CD ROM.  The
+particular example is how to make a NetBSD-1.4.2/i386 install CD.  It
+is assumed that the directory <tt>/cdsources/</tt> exists on your system
+and contains all the files and the directory structure from the 
+<a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.2/i386/">NetBSD-1.4.2/i386</a>
+The exact contents depend on what all you want on your CD.  The
+important part is that
+<tt>/cdsources/i386/installation/floppy/boot-big.fs</tt> exists as that will
+be used as the bootable image.
+
+To create the CD image use the following command:
+<pre>
+  mkhybrid -o output.iso -b i386/installation/floppy/boot-big.fs \ 
+           -c boot.catalog -a -l -J -r -L /cdsources
+</pre>
+This will create a file, <tt>output.iso</tt>, which is the CD image.
+The options are:
+<ul>
+<li><tt>-b i386/installation/floppy/boot-big.fs</tt> -- specifies the boot
+image to be used.
+<li><tt>-c boot.catalog</tt> -- creates a boot catalog.
+<li><tt>-a</tt> -- Allow files that contain "~" and "#" in the filename.
+<li><tt>-l</tt> -- Allow long (32 character) file names.
+<li><tt>-J</tt> -- Includes Joliet extensions.
+<li><tt>-r</tt> -- Sets file permissions.
+<li><tt>-L</tt> -- Allows filenames to begin with ".".
+<li><tt>/cdsources</tt> -- Specifies that the directory
+<tt>/cdsources</tt> is the root of the CD image.
+</ul>
+
+<ENTRY>macppcimage NetBSD/macppc
+Open Firmware can read files off ISO 9660 CDs, so just leave
+a kernel and copies of <tt>ofwboot.elf</tt> and <tt>ofwboot.xcf</tt>
+somewhere on the CD, and it can be booted from open firmware with:
+<pre> 
+  boot cd:,/path/to/files/ofwboot.elf
+</pre> 
+(or <tt>.xcf</tt> instead of <tt>.elf</tt> if you have an older machine)
+The path can be left off if the files are in the top level of the CD
+directory hierarchy so it is recommended to put them there:
+<pre>
+  cp -f /cdsources/macppc/binary/kernel/ofwboot.elf /cdsources
+  cd /cdsources/macppc/binary/sets/
+  tar -zxvf kern.tgz 
+  mv -f netbsd /cdsources/netbsd.macppc
+</pre>
+
+Note that ofwboot can read compressed kernels, so the kernel can be
+gzipped if you're tight on space.
+
+The image is created by the following:
+<pre>
+  mkhybrid -o output.iso -a -l -J -r -L /cdsources
+</pre>
+
+<ENTRY>pmaximage NetBSD/pmax
+NetBSD/pmax can boot from either a FFS or ISO 9660 CD ROM.  This
+section assumes you are making an ISO 9660 CD ROM.   Please note that 
+the bootxx_cd9660 program was not added until <em>after</em> NetBSD-1.4.x.
+If you're running NetBSD-1.4.x, you can obtain <tt>boot.pmax</tt>,
+<tt>installboot</tt>, and <tt>bootxx_cd9660</tt> from a -current snapshot.
+Make sure the sources are from <em>after</em> late November, 1999.
+
+There are 2 steps involved in making a NetBSD/pmax bootable CD ROM.
+The first is to create an ISO 9660 image of whatever you want
+to put on the CD.  This image must have the secondary boot program
+and kernel in its root directory.
+In addition, the primary boot program 
+will be needed for the second step.  To put the boot programs and 
+kernel in the right places, do the following:
+<pre>
+  cd /cdsources/pmax/binary/sets
+  tar -zxvf base.tgz ./usr/mdec/boot.pmax ./usr/mdec/bootxx_cd9660
+  mv -f ./usr/mdec/boot.pmax /cdsources/boot.pmax
+  mkdir /tmp/mdec.pmax
+  mv -f ./usr/mdec/bootxx_cd9660 /tmp/mdec.pmax/bootxx_cd9660
+  rmdir ./usr/mdec
+
+  cd /cdsources/pmax/binary/kernel
+  cp -f install.gz /cdsources/netbsd.pmax.gz
+  gunzip /cdsources/netbsd.pmax.gz
+</pre>
+Now create the ISO 9660 image.
+<pre>
+  mkhybrid -o output.iso -a -l -J -r -L /cdsources
+</pre>
+The second step is to install NetBSD/pmax disk and CD-ROM bootstrap
+software using <tt>installboot(8.pmax)</tt>.  The
+<tt>installboot(8.pmax)</tt> command is used in the following way:
+<pre>
+  /usr/mdec/installboot -v output.iso /usr/mdec/bootxx_cd9660 
+</pre>
+Note that this second step must be performed on a NetBSD/pmax machine.
+However, it is acceptable for the ISO image to be NFS mounted on the
+NetBSD/pmax machine from a remote system if the image is not being built
+locally.  Alternatively, starting with NetBSD-1.5, the NetBSD/pmax installboot
+program can be compiled on other NetBSD architectures.  This allows
+the generation of a bootable image using a non-pmax machine.
+
+<ENTRY>sparcimage NetBSD/sparc
+There are 3 steps involved in making a NetBSD/sparc bootable CD ROM.
+Step 1 is to create an "almost" full ISO 9660 image of whatever you want
+to put on the CD.  For example:
+<pre>
+  mkhybrid -o output.iso -a -l -J -r -L /cdsources
+</pre>
+Now get a bootable floppy image.  For NetBSD-1.4.2/sparc, this image
+may be found at <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.2/sparc/installation/bootfs/syboot-142.fs.gz">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.2/sparc/installation/bootfs/syboot-142.fs.gz</a>. 
+
+The final step is to rewrite the ISO image with (a) a sun disklabel at
+the start, (b) the original image at the end, and (c) with the right
+offset/size values in the disklabel for the bootloader.  The program
+<tt>mksunbootcd</tt> will perform this task.  If <tt>mksunbootcd</tt>
+is not installed on your system, it can be installed from the
+<PKGSRC>sysutils/mksunbootcd
+package.  If you're creating the image on a non-NetBSD system, you
+can try compiling <tt>mksunbootcd</tt> on your system.  The sources
+are available at
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/mksunbootcd/">ftp://ftp.netbsd.org/pub/NetBSD/misc/mksunbootcd/</a>.  
+
+To use <tt>mksunbootcd</tt> use the following:
+<pre>
+  mksunbootcd output.iso syboot-142.fs syboot-142.fs syboot-142.fs
+</pre>
+The bootable image is listed 3 times corresponding to what will get
+booted by a sun4, sun4c and sun4m system respectively.  If you have
+different bootable images for the 3 machines, you can do something
+like:
+<pre>
+  mksunbootcd output.iso boot-sun4.fs boot-sun4c.fs boot-sun4m.fs
+</pre>
+
+Note that <tt>mksunbootcd</tt> rewrites the <tt>output.iso</tt> file, so
+don't run it multiple times.
+
+As a note, this step is fine to perform on a NFS mounted directory.  Ie, 
+if your ISO image is on a remote machine, it can be mounted on a NetBSD
+machine for running <tt>mksunbootcd</tt> without requiring extreme amounts
+of data to be transfered over the network.
+
+<ENTRY>sparc64image NetBSD/sparc64
+Currently there is no support for booting NetBSD/sparc64 from CD.  It is
+on the sparc64 TODO list however and the hardware certainly will support
+this.
+
+<ENTRY>sun3image NetBSD/sun3
+<em>This section is not finished.</em>
+
+<ENTRY>vaximage NetBSD/vax
+NetBSD/vax can boot from either a FFS or ISO 9660 CD ROM.  This
+section assumes you are making an ISO 9660 CD ROM.   Please note that
+this capability was not added until NetBSD-1.5
+
+There are 2 steps involved in making a NetBSD/vax bootable CD ROM.
+The first is to create an ISO 9660 image of whatever you want
+to put on the CD.  This image must have the secondary boot program
+and kernel in its root directory.
+In addition, the primary boot program
+will be needed for the second step.  To put the boot programs and
+kernel in the right places, do the following:
+<pre>
+  cd /cdsources/vax/binary/sets
+  tar -zxvf base.tgz ./usr/mdec/boot ./usr/mdec/xxboot
+  mv -f ./usr/mdec/boot /cdsources/boot.vax
+  mkdir /tmp/mdec.vax
+  mv -f ./usr/mdec/xxboot /tmp/mdec.vax/xxboot
+  rmdir ./usr/mdec
+
+  cd /cdsources/pmax/binary/kernel
+  cp -f install.gz /cdsources/netbsd.vax.gz
+  gunzip -f /cdsources/netbsd.vax.gz
+</pre>
+Now create the ISO 9660 image.
+<pre>
+  mkhybrid -o output.iso -a -l -J -r -L /cdsources
+</pre>
+The second step is to install NetBSD/vax disk and CD-ROM bootstrap
+software using <tt>installboot(8.vax)</tt>.  The
+<tt>installboot(8.vax)</tt> command is used in the following way:
+<pre>
+  /usr/mdec/installboot -v output.iso /usr/mdec/xxboot
+</pre>
+Note that this second step must be performed on a NetBSD/vax machine.
+However, it is acceptable for the ISO image to be NFS mounted on the
+NetBSD/vax machine from a remote system if the image is not being built
+locally.  Alternatively, the vax installboot program can be compiled on
+a NetBSD machine of a different architecture.
+
+
+<ENTRY>multiimage Multiple Machine
+This procedure
+has been successfully used to create a single CD which is bootable on
+alpha, i386, pmax, and sparc.  It should be possible to also make the
+CD bootable on vax.
+To create a CD which is bootable by multiple architectures, use the
+following steps in this order.  Please note that the order is critical.
+<ul>
+<li>Make sure you have all the required files including the various
+kernels and boot programs listed in the individual machine
+sections.  
+<li>Include a directory somewhere in the <tt>cdsources</tt> directory called <tt>mdec.pmax</tt>
+and include the pmax <tt>bootxx_cd9660</tt> file there.  For example,
+<tt>/cdsources/usr/mdec.pmax/bootxx_cd9660</tt>.
+<li>Include a directory somewhere in the <tt>cdsources</tt> directory called <tt>mdec.vax</tt>
+and include the vax <tt>xxboot</tt> file there.  For example,
+<tt>/cdsources/usr/mdec.vax/xxboot</tt>.
+<li>Create an i386 bootable image.
+<pre>
+  sh
+  mkhybrid -v -v -o output.iso -b i386/installation/floppy/boot-big.fs \ 
+           -c boot.catalog -a -l -J -r -L /cdsources 2&gt;&1 | tee /tmp/mkhybrid.log
+  exit
+</pre>
+Note that the appearance of the <tt>-v</tt> flag twice is required.
+<li>Run <tt>mksunbootcd</tt> on a NetBSD/sparc machine to install sparc
+bootblocks.  Alternatively, install the 
+<PKGSRC>sysutils/mksunbootcd
+package on your favorite NetBSD machine.
+<pre>
+  mksunbootcd output.iso syboot-142.fs syboot-142.fs syboot-142.fs
+</pre>
+<li>Run the pmax <tt>installboot(8.pmax)</tt> program on a NetBSD/pmax
+machine 
+(or compile and run the pmax installboot program on a different NetBSD-1.5 or newer machine)
+to install 
+pmax bootblocks.  Note that in order to coexist with the NetBSD/alpha boot
+programs, the pmax boot program is installed in the ISO file system.  To tell
+the pmax installboot program where the boot program is, examine the log file
+from running mkhybrid.
+<pre>
+  grep "usr/mdec.pmax/bootxx_cd9660" /tmp/mkhybrid.log
+</pre>
+You should see something like:
+<pre>
+  148017 148020 cdsources/usr/mdec.pmax/bootxx_cd9660
+</pre>
+The first number (148017 in this particular case) is the ISO block you need
+to pass to the installboot program.  Now run the installboot program:
+<pre>
+  installboot -i 148017 -v output.iso /tmp/mdec.pmax/bootxx_cd9660
+</pre>
+<li>Run the vax <tt>installboot(8.vax)</tt> program on a NetBSD/vax
+machine 
+(or compile and run the vax installboot program on a different NetBSD-1.5 or newer machine)
+to install 
+vax bootblocks.  Note that in order to coexist with the NetBSD/alpha boot
+programs, the vax boot program is installed in the ISO file system.  To tell
+the vax installboot program where the boot program is, examine the log file
+from running mkhybrid.
+<pre>
+  grep "usr/mdec.vax/xxbootxx" /tmp/mkhybrid.log
+</pre>
+You should see something like:
+<pre>
+  148017 148020 cdsources/usr/mdec.vax/xxboot
+</pre>
+The first number (148017 in this particular case) is the ISO block you need
+to pass to the installboot program.  Now run the installboot program:
+<pre>
+  installboot -i 148017 -v output.iso /tmp/mdec.vax/xxboot
+</pre>
+<li>Run <tt>installboot(8.alpha)</tt> on a NetBSD/alpha machine to install
+alpha bootblocks.  Be sure to include the <tt>-s</tt> option which synchronizes the
+alpha and sun checksums.
+<pre>
+  installboot -vs output.iso /tmp/mdec.alpha/bootxx_cd9660
+</pre>
+</ul>
+
+<ENTRY>mkisoimage Using mkisofs
+The program <tt>mkisofs</tt> may be used as an alternative to
+<tt>mkhybrid</tt>.  A brief example of its usage and flags is:
+<pre>
+  mkisofs -a -b i386/installation/floppy/boot-big.fs -c boot.catalog \ 
+          -f -l -r -J -o output.iso /cdsources/
+</pre>
+There is a 
+<PKGSRC>sysutils/mkisofs
+package available.
+
+<SECTION>Examining the CD image
+It is possible to mount the cd image to examine the filesystem you
+just created.
+
+<ENTRY>netbsd_mountimage Under NetBSD
+Mount the CD image using the following:
+<pre>
+  vnconfig -c vnd0 output.iso
+  mount -t cd9660 /dev/vnd0a /mnt
+</pre>
+Now you can cd to /mnt and explore your newly created CD image.
+To unmount the image, do the following:
+<pre>
+  umount /mnt 
+  vnconfig -u vnd0
+</pre>
+
+<ENTRY>linux_mountimage Under Linux
+Linux has a similar capability.  To mount the CD image:
+<pre>
+  mount -t iso9660 -o ro,loop=/dev/loop0 output.iso /mnt
+</pre>
+and to unmount the CD image:
+<pre>
+  umount /mnt
+</pre>
+
+<ENTRY>solaris_mountimage Under Solaris
+Solaris-8 and newer is reported to be able to also mount
+the CD image.  See the <tt>lofiadm</tt> manpage on solaris
+for more details on how to do this. 
+<P>
+For older versions of Solaris, you might want to try the
+<tt>fbk</tt> driver written by Joerg Schilling.  The <tt>fbk</tt> driver
+is available from
+<a href="ftp://ftp.fokus.gmd.de/pub/unix/kernel/fbk/">ftp://ftp.fokus.gmd.de/pub/unix/kernel/fbk/</a>
+Please refer to the <tt>fbk</tt> documentation for installation instructions.
+Once the <tt>fbk</tt> driver is installed on your system, you can mount the ISO 9660 image
+with the following command:
+<pre>
+  mount -F fbk -o ro,type=hsfs /dev/fbk0:output.iso  /mnt
+</pre>
+and to unmount the CD image:
+<pre>
+  umount /mnt
+</pre>
+
+<SECTION>Burning the CD
+
+<ENTRY>cdrecord Using cdrecord (U*nix)
+The program <tt>cdrecord</tt> may be used to burn the CD image to the
+CD.  There is a 
+<PKGSRC>sysutils/cdrecord
+package available.
+
+An example of the use of <tt>cdrecord</tt> is the following:
+<pre>
+  cdrecord -v speed=4 dev=/dev/cd1c output.iso
+</pre>
+You will need to substitute the correct speed for your CD writer and
+the correct device for your system (for i386 it would be
+<tt>/dev/cd1d</tt>).
+
+<ENTRY>winrecord Under Windows
+There are several programs available for Windows which will write an
+ISO 9660 image to a CD.  This section is not an endorsement for any of
+these programs in particular, but is intended to at least mention some
+of the alternatives.
+<ul>
+<li><a href="http://www.goldenhawk.com/cdrwin.htm">CDRWIN</a>.
+Commercial software that can create bootable (by i386) ISO 9660 images
+and write them to CD.
+<li><a href="http://www.goldenhawk.com/freeware.htm">FILE2CD</a>.
+Freeware program which can write an ISO 9660 image to CD.
+<li><a
+href="http://www.adaptec.com/products/overview/ecdc.html">
+Adaptec Easy CD Creator Deluxe</a>.  Commercial software.
+<li>Adaptec Easy CD Creator.  Comes with many Windows based CD writers.
+</ul>
+
+<ENTRY>macrecord Under MacOS
+There are several programs available for MacOS which will write an
+ISO 9660 image to a CD.  This section is not an endorsement for any of
+these programs in particular, but is intended to at least mention some
+of the alternatives.
+<ul>
+<li><a
+href="http://www.adaptec.com/products/overview/toast.html">
+Adaptec Toast</a>.  Commercial software.
+</ul>
+
+
+</LIST>
+
+<a href="index.html">Back to <em>NetBSD Documentation</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <a href="../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: bootcd.list,v 1.14 2000/07/05 13:12:05 dmcmahill Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
+
