@@ -31,6 +31,115 @@ NetBSD/macppc に関するよくある質問をいくつか掲げます。
 <LIST>
 
 <SECTION>一般的な質問
+
+
+<ENTRY>boot-trouble NetBSD がブートできません。助けて !
+残念ながら、この問題にはいくつか原因があります。これは実際には、
+私たちの望んだことではなく、大抵は、対応機種の多様さや、
+Apple が発表せずに行なったラインの変更のせいです。
+
+<p>まず最初に、お使いの<a href="models.html">機種</a>が対応しているかどうか
+確かめてください。それから、あなたは<i>実際に</i>インストールノートを
+ひととおり読み、また、あなたの機種のものと違う Open Firmware バージョン向けの
+指示は無視しましたか? さらに、この FAQ 項目をひととおり読んでみて、
+それでもまだ NetBSD をブートできないようなら、
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>
+に投稿してください。
+
+<p>問題を切り分けるため、下記のメッセージを見てください。
+
+<p>
+<pre>     Open Firmware, 1.0.5
+     To continue booting the MacOS type:
+     BYE&lt;return&gt;
+     To continue booting from the default boot device type:
+     BOOT&lt;return&gt;
+      ok
+     0 &gt; </pre>
+
+もしこのようなメッセージが画面 (またはシリアルコンソール) に出ていなければ、
+正しく Open Firmware に入っていません。マシンが MacOS のブートを始めている
+(つまり、画面がグレーに変わり、 happy mac や broken folder が出る)
+場合は、 <a href="SystemDisk-tutorial/">System Disk チュートリアル</a>
+を見てください。
+または、<a href="#ofw-access">Open Firmware に入る方法</a>
+の指示を見てください。古い mac で画面が真っ黒になる場合は、
+<a href="#ofw-boot-serial">シリアルコンソールを使う方法</a>
+の指示を見てください。
+画面がまったくもって妙な場合は、<a href="#non-sync-monitor">モニターの
+同期の問題</a>の修正方法を見てください。
+
+<p>OK、これで、 Open Firmware のプロンプトで止まるように設定していれば、
+Open Firmware が起動してユーザーコマンドが使えるようになりますし、
+そうでなければ、以前に行なった設定をもとにブートしようとするようになります。
+
+<p>ふつうは、次の段階が最もトリッキーです─ Open Firmware がブートローダーを
+正しい場所からロードできるようにします。どのような
+<a href="#boot-support">ブート方法</a>がサポートされているか、 Open Firmware
+の<a href="#boot-disk">ブートコマンド</a>、 <a href="#common-of-probs">Open
+Firmware のブートでのありがちな問題</a>を見てください。
+ネットブートに関連する質問は、
+<a href="../../Documentation/network/netboot">Diskless HOW-TO</a>、
+特に
+<a href="../../Documentation/network/netboot/intro.macppc.html">macppc 固有な部分</a>
+の章でカバーしています。
+
+<pre>     0 &gt; <b>boot enet</b> file: 192.168.0.11,/ofwboot.xcfloading XCOFF
+     tsize=C280 dsize=14AC bsize=2620 entry=600000
+     SECTIONS:
+     .text    00600000 00600000 0000C280 000000E0
+     .data    0060D000 0060D000 000014AC 0000C360
+     .bss     0060E4B0 0060E4B0 00002620 00000000
+     loading .text, done..
+     loading .data, done..
+     clearing .bss, done..
+     
+     &gt;&gt; NetBSD/macppc OpenFirmware Boot, Revision 1.3
+     &gt;&gt; (tsubai@mint.iri.co.jp, Sun Nov 26 01:41:27 JST 2000) 
+    1701508+177748 [100+68176+55886]=0x1e9468</pre>
+
+ここで止まる場合、 Open Firmware 1.0.5 や 2.0.x のマシンの
+<a href="#ofw-real-base"><tt>real-base</tt></a> を設定する必要があります。
+ここを過ぎれば、カーネルのロードが始まります。
+もし、そこで問題があったら、それはもはや Open Firmware の問題ではなく、
+ほとんど NetBSD の問題でしょう。
+
+<p>ラップトップで画面が真っ黒になる場合、途中で LCD の明るさが、
+下げられたのかもしれません。<a href="#black-lcd">下記</a>
+を見てください。
+
+<pre>      start=0x100000
+     Copyright (c) 1996, 1997, 1998, 1999, 2000, 2001
+         The NetBSD Foundation, Inc.  All rights reserved.
+     Copyright (c) 1982, 1986, 1989, 1991, 1993
+         The Regents of the University of California.  All rights reserved.
+     
+     NetBSD 1.5S (AL) #0: Thu Mar 15 00:52:56 PST 2001
+         mw@al:/usr/src/sys/arch/macppc/compile/AL
+     total memory = 192 MB
+     avail memory = 172 MB
+     using 2483 buffers containing 9932 KB of memory
+     [...]
+     boot device: sd0
+     root on sd0a dumps on sd0b
+     root file system type: ffs</pre>
+
+ときどき、カーネルは自身がどこからブートしたかがわからなくなります。
+ブートデバイスを与えてカーネルを再構築するとよいかもしれません。
+<a href="#dash-a">下記</a>を見てください。
+
+<p>USB キーボードを使っていてここでハングする場合、
+<a href="#usb-keyboard-problem">下記</a>を見てください。
+
+<pre>     swapctl: adding /dev/sd0b as swap device at priority 0
+     Automatic boot in progress: starting file system checks.
+     [...]</pre>
+
+OK、これで「マルチユーザーモード」に入り、ブートの過程が終わりました。
+キーボードが機能しない場合は、 FAQ の
+<a href="#usb-keyboard-problems">USB キーボード</a>および
+<a href="#powerbook">最近のラップトップ</a>向けの項目を見てください。
+
 <ENTRY>usb-mouse-bug USB マウスが認識されません。
 
 キーボードでなく、 Mac 本体背面に直接接続してみてください。
@@ -38,7 +147,8 @@ NetBSD/macppc に関するよくある質問をいくつか掲げます。
 
 <ENTRY>mouse-buttons X で 1 ボタンマウスを使って 3 ボタンマウスをエミュレートする方法は ?
 
-今のところ、できません。
+今のところ、できません。安価な 3 ボタンマウスを探してみてください。ほとんどの
+ADB と USB マウスはサポートされています。
 
 
 <ENTRY>usb-keyboard-problems USB キーボードの問題
@@ -53,6 +163,12 @@ NetBSD/macppc に関するよくある質問をいくつか掲げます。
 マウスをキーボードに挿し、キーボードを Mac 本体背面に直接つなぐことです。
 
 <ENTRY>cannot-allocate-vm-panic <tt>panic: startup: cannot allocate VM for buffers</tt>
+この問題は NetBSD 1.5 では修正されているはずです。
+もしアップグレード後も問題があるようでしたら、
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>
+に投稿してください。
+
+<p>
 RAM をたくさん積んだマシンでは、カーネルがバッファーキャッシュを
 割り当てようとする際、カーネルがカーネル VM から逸脱することがあります。
 次のいずれかで回避できます:
@@ -63,6 +179,12 @@ RAM をたくさん積んだマシンでは、カーネルがバッファーキャッシュを
 </ol>
 
 <ENTRY>pciide-lost-interrupt <tt>pciide0:0:0: lost interrupt</tt>
+この問題は NetBSD-current と NetBSD 1.5.1 では修正されているはずです。
+もしアップグレード後も問題があるようでしたら、
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>
+に投稿してください。
+
+<p>
 NetBSD の CMD 646 IDE コントローラーの初期化コードは、
 Open Firmware による設定のいくつかを完全に解除しません。
 Open Firmware は IDE コントローラーを 0646U2 モードに設定し、
@@ -112,9 +234,6 @@ M L Riechers はこのトピックに関して、たいへん徹底的な
 健闘を祈ります。
 
 
-<ENTRY>mesh-too-big SCSI の不可解なハング、タイムアウトといった問題
-<a href="#ofw-real-base">下記</a>を見てください。
-
 <ENTRY>bm0-device-timeouts device timeouts on bm0 と言われます
 この問題は NetBSD 1.5 以降では修正済です。
 
@@ -151,6 +270,16 @@ Open Firmware はその設定を保持します。
 <p>
 Chris Tribo によれば、彼の XClaimVR 64 カードは MacOS のモニターの設定を
 無視して、いつも同じ解像度を使うとのことです。
+
+<ENTRY>power-off ほえ〜、マシンの電源が落ちます!
+
+これは、最近のラップトップ (iBook、 PowerBook (FireWire)、
+PowerBook G4 (Titanium)) を、これらをサポートしないキーボードパッチと
+ともに使っていて、
+(brightness や page up などの) 妙なキーを押したせいかもしれません。
+
+<p>解決法はありませんので、よいキーボードパッチが作られるまでは、
+これらのキーを押さないでください。
 
 <!-- ======================================== -->
 <SECTION>対応ハードウェア
@@ -202,15 +331,19 @@ NetBSD が動作するでしょう。
 
 <ENTRY>powerbook NetBSD/macppc は PowerPC ベースの PowerBooks に対応していますか ?
 
-機種によります。 PowerBook 2400 と新しい G3 PowerBook は、
+機種によります。 <a href="models.html">NetBSD/macppc
+対応機種のリスト</a>を見てください。
+
+<p>PowerBook 2400 と新しい G3 PowerBook は、
 対応していることが知られています。
 PowerBook 1400, 2300, 5300 は、 PCI ベースでないため、非対応です。
 他の機種では、そのままで動くかもしれませんし、
 若干のドライバーの追加が必要かもしれません。
 
-<p>いくつかの G3 Powerbook では、
-左側のメディアベイにフロッピードライブがないと、
-インストールフロッピーからのブートはできないと報告されています。
+<p>いくつかの新しい機種 (iBook、 PowerBook (FireWire)、 PowerBook G4
+(Titanium)) では、キーボードを使うために特別なパッチが必要です。
+このパッチを含んだ最近の NetBSD スナップショットは、 ftp ミラーサイトに
+あります。場所は <tt>arch/macppc/snapshot</tt> ディレクトリー以下です。
 
 <p>パワーマネージメントは未サポートですので注意してください。
 NetBSD の動作中は PowerBook のサスペンド、レジュームはできません。
@@ -418,29 +551,23 @@ kermit などの端末プログラムを使います。
 
 <p>マシンを起動し、起動音が鳴ったらすぐに
 Mac のキーボードの Command-Option-O-F を押し続けます。
-しばらくすると (シリアル) コンソールに `<tt>0&nbsp;ok&gt;</tt>'
+しばらくすると (シリアル) コンソールに `<tt>0&nbsp;&gt;</tt>'
 というプロンプトが出るはずです。
 
 <p>マシンがシリアルコンソールのかわりにモニターとキーボードを使うように
 切替えるため、次のようにタイプします:
 
-<pre>
-	" screen" output
-	" kbd" input
-</pre>
+<pre>0 &gt; <b>setenv input-device kbd</b>
+0 &gt; <b>setenv output-device screen</b>
+0 &gt; <b>reset-all</b></pre>
 
-<p>Open Firmware は Forth 言語を元にしており、
-変わった文法を持っていることに注意:
-最初の引用符はそれに続くスペースを伴っており、
-このスペースは引用符で囲まれた文字列の一部ではありません。
-最後の引用符はその前にスペースを伴いませんが、
-次の語との区切りのスペースが後にあります。
+最後のコマンドによって、マシンがリブートして新しい設定となります。
 
-マシンによってはデバイスの別名 "screen" がないため、
+<p>マシンによってはデバイスの別名 "screen" がないため、
 ビデオデバイスの Open Firmware でのフルパスを確かめなければなりません。
 さらに Open Firmware は、指定した出力デバイスが存在しないものであっても
 文句を<i>言わない</i>ことに注意してください。
-7x00 、 8x00 の機種と、 9x00 や G3 の一部の機種の出力デバイス名は
+7300 から 8600 までの機種の出力デバイス名は
 "<tt>/chaos/control</tt>" です。
 <p>
 <tt>screen</tt> でも <tt>/chaos/control</tt> でもうまくいかない場合は、
@@ -448,18 +575,8 @@ Mac のキーボードの Command-Option-O-F を押し続けます。
 Twin Turbo カードは "IMS," で始まります) を含む PCI デバイス、
 たとえば "<tt>/bandit/ATY,mach64</tt>" や
 "<tt>/bandit@F4000000/IMS,tt128mb8A</tt>" のようなものを探します。
-<tt>dev / ls</tt> とタイプすると、
-Open Firmware で使えるデバイスのリストが得られます。
-<p>起動の際 Open Firmware が常にキーボードとモニターを使うようにするためには、
-次のようにタイプします:
-
-<pre>
-	setenv input-device kbd
-	setenv output-device screen
-</pre>
-
-<p>(screen は機種によって適宜変えてください。)
-これは、設定を変更するか PRAM をリセットするまで有効です。
+Open Firmware で使えるデバイスのリストを得るには、次のようにタイプします:
+<pre>0 &gt; <b>dev / ls</b></pre>
 
 
 <ENTRY>systemdisk Open Firmware のブート変数と nvram の設定
@@ -501,7 +618,7 @@ Note 3: <i>極端な場合、 Open Firmware の設定によって
 この場合は、電源を抜き、 10 分間ほどマザーボードから電池を外します。
 PowerBook の場合は power manager をリセットします。</i>
 
-<ENTRY>ofw-claim-failed ブートしようとすると Open Firmware が "CLAIM failed" と言います
+<ENTRY>ofw-claim-failed <tt>CLAIM failed</tt>
 
 これは Open Firmware がメモリーの割り当てに失敗したときに出る
 一般的なメッセージです。
@@ -512,7 +629,28 @@ PowerBook の場合は power manager をリセットします。</i>
 "CLAIM failed" とのメッセージが出たのであれば、
 これは一旦リブート (OF コマンドは "reset-all") すべき
 であるとの指示です。
+
+<p>Open Firmware のバージョンが 1.0.5 か 2.X のマシンでは、
+このエラーは、ときどきランダムに現れます。
+かまわずに boot コマンドを試してみてもよいでしょう
+(いくつかの機種では、これで動作することが知られています) 。
+また、シリアルコンソールを使っていない場合は、
+スクリーンドライバーと Open Firmware のコンフリクトによって
+OF が ofwboot.xcf をロードできないのかもしれません。
+いくつかの機種では、スクリーンとキーボードを使ってはブートできません。
+唯一の回避策はシリアルコンソールを使う
+(入出力デバイスを ttya か ttyb にする) ことです。
+System Disk ユーティリティーを使って (<a href="SystemDisk-tutorial/">チュートリアル</a>参照)
+input と output を ttya に設定するか、
+Open Firmware で次のようにタイプします:
+<pre>0 &gt; <b>setenv input-device ttya</b>
+0 &gt; <b>setenv output-device ttya</b>
+0 &gt; <b>reset-all</b></pre>
 <p>
+これはマシンをリセットし、モデムポートに 38400 ビット毎秒、 8 ビット/バイト、
+ストップビット 1 、 パリティなしでメッセージを送ります。
+
+<ENTRY>default-catch <tt>DEFAULT CATCH!</tt>
 Open Firmware のバージョンが 1.0.5 か 2.X のマシンでは、
 このエラーは、ときどきランダムに現れます。
 かまわずに boot コマンドを試してみてもよいでしょう
@@ -526,9 +664,9 @@ OF が ofwboot.xcf をロードできないのかもしれません。
 System Disk ユーティリティーを使って (<a href="SystemDisk-tutorial/">チュートリアル</a>参照)
 input と output を ttya に設定するか、
 Open Firmware で次のようにタイプします:
-<pre>setenv input-device ttya
-setenv output-device ttya
-reset-all</pre>
+<pre>0 &gt; <b>setenv input-device ttya</b>
+0 &gt; <b>setenv output-device ttya</b>
+0 &gt; <b>reset-all</b></pre>
 <p>
 これはマシンをリセットし、モデムポートに 38400 ビット毎秒、 8 ビット/バイト、
 ストップビット 1 、 パリティなしでメッセージを送ります。
@@ -576,6 +714,26 @@ installboot や NetBSD のインストーラーは、ファイルシステムが
 
 正しく設定されたか、 <tt>printenv</tt> コマンドで再確認すべきです。
 
+<ENTRY>cant-open <tt>can't OPEN</tt>
+Open Firmware は、指定されたデバイス (それがそもそも存在しなかったり、
+デバイスのパスのミスタイプなどによって) や指定されたファイルを
+オープンできていません。
+タイピングを確認し、また、指定したファイルがメディア上にあるか確認してください。
+
+<ENTRY>formatstate-not-valid <tt>unrecognized Client Program formatstate not valid</tt>
+これは Open Firmware の一般的なエラーメッセージで、オープンしようとしている
+ファイルが存在しないか、あるいはファイルが正しくないフォーマットであることを
+表しています。
+Open Firmware 1 や 2 の機種では、ファイルは (<tt>ofwboot.xcf</tt> のような)
+XCOFF ファイルでなければなりませんし、
+Open Firmware 3 の機種では、ファイルは XCOFF か (カーネルのような) ELF
+でなければなりません。
+
+<ENTRY>bad-partition <tt>bad partition number, using 0no bootable HFS partition</tt>
+これは、 Open Firmware 1.x や 2.0.x の機種で、 HFS ファイルシステムを持つ
+デバイス (ハイブリッド CD-R や MacOS パーティションのあるハードドライブなど)
+からブートしようとしているためです。
+
 <ENTRY>ofw-real-base "real-base" の設定の問題
 Open Firmware の環境変数 <tt>real-base</tt> は、
 <tt>ofwboot</tt> がカーネルをメモリー上にロードするアドレスです。
@@ -615,9 +773,7 @@ PCI USB インターフェースがなければ、 USB ドライバーを含めずに
 
 Open Firmware で次のようにタイプします:
 
-<pre>
-	setenv auto-boot? false
-</pre>
+<pre>0 &gt; <b>setenv auto-boot? false</b></pre>
 
 <p>これは、変数値を "true" に戻すか、
 PRAM をリセットするまで有効です。
@@ -649,9 +805,14 @@ Command-Option-Shift-Delete のほか、
 <tr><td><code>mac-boot</code></td><td>Mac OS をブートする(OF &gt; 3.0 の場合)</td></tr>
 <tr><td><code>boot</code></td><td>デフォルトの OS をブートする</td></tr>
 <tr><td><code>boot&nbsp;...</code></td><td>何をブートするか指定する</td></tr>
+<tr><td><code>eject&nbsp;fd</code></td><td>フロッピーディスクを排出する</td></tr>
 <tr><td><code>reset-all</code></td><td>リセットボタンを押したときのようにリセットする</td></tr>
 <tr><td><code>shut-down</code></td><td>マシンの電源を切る</td></tr>
 </table>
+
+<p>また、上下の矢印キーを使い、これまでに入力した Open Firmware のコマンドを
+出すことができます。さらに、 emacs/tcsh のようなコントロールキーでの編集
+(<tt>^A ^E ^F ^B ^N ^P ^K ^U</tt> など) ができます。
 
 <p>基本的な Open Firmware のコマンドについて、詳しくは
 
@@ -989,12 +1150,25 @@ OF コマンドラインで変数を手動で設定する場合、
 うまく設定できていればリブートして NetBSD に入るでしょうし、
 そうでなければ Open Firmware に落ちるでしょう。
 
+<ENTRY>common-of-probs Open Firmware のブートでのありがちな問題
+<a href="#ofw-boot-serial">black monitors</a>、
+<a href="#ofw-claim-failed"><tt>CLAIM failed</tt></a>、
+<a href="#default-catch"><tt>DEFAULT CATCH!</tt></a>、
+<a href="#ofw-load-base"><tt>load-base</tt></a>、
+<a href="#cant-open"><tt>can't OPEN</tt></a>、
+<a href="#formatstate-not-valid"><tt>unrecognized Client Program</tt></a>、
+<a href="#bad-partition"><tt>bad partition number</tt></a>、
+<a href="#ofw-real-base"><tt>real-base</tt></a>の情報を見てください。
+
+
 <ENTRY>write-floppy フロッピーイメージを書き込む方法は ?
 raw イメージをフロッピーディスクに書き込む方法はいくつかあります:
 <ul>
- <li>NetBSD などの unix 環境下で dd(1) を使う。
- <li>DOS/Windows マシンで (<a href="../i386/">NetBSD/i386</a> と共に配布されている) rawrite.exe を使う。
- <li>MacOS で <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/floppy/README.rawdisk">suntar</a> を使う。
+<li>NetBSD などの unix 環境下で dd(1) を使う。
+<li>DOS/Windows マシンで
+  (<a href="../i386/">NetBSD/i386</a> と共に配布されている) rawrite.exe を使う。
+<li>MacOS で
+  <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/macppc/floppy/README.rawdisk">suntar</a> を使う。
 </ul>
 
 
@@ -1069,7 +1243,7 @@ OF のバージョンによって、ブート用のコマンドは異なります。
 <td>CD が "scsi" Open Firmware バス上にあるOF 1.0.5 の機種<br>
 <i>Note: OF 1.0.5 は <tt>ofwboot.xcf</tt> を、 ISO/HFS ハイブリッド CD
 からロードできません。純粋な ISO CD でなければなりません。</i></td></tr>
-<tr><td><tt>boot ata/atapi-disk:0,ofwboot.xcf -a</tt><br>
+<tr><td><tt>boot&nbsp;ata/atapi-disk:0,ofwboot.xcf&nbsp;-a</tt><br>
 <tt>boot ide1/disk@0:0,ofwboot.xcf -a</tt></td>
 <td><tt>cd</tt> デバイスがない OF 2.0.X の機種</td></tr>
 <tr><td><tt>boot cd:ofwboot.xcf -a</tt></td>
@@ -1120,6 +1294,12 @@ bootxx ブートローダーがインストールされている状態なので、
 Open Firmware はカーネルを正しくロードするものの、
 カーネルはルートデバイス (つまり / ファイルシステムの所在)
 を見つけられていないようです。
+
+<p>プロンプトで、ルートディスク (大抵は <tt>sd0a</tt> か <tt>wd0a</tt>
+のようなもの)、スワップ (大抵は <tt>sd0b</tt> か <tt>wd0b</tt>
+のようなもの)、ファイルシステムの種類 (大抵は <tt>ffs</tt>、 <tt>nfs</tt>
+または <tt>cd9660</tt>) を入力してください。
+
 <p>
 これが修正されるまでの次善策があります。次のような設定で
 <a href="../../Documentation/kernel/#how_to_build_a_kernel">カーネルを
@@ -1215,7 +1395,7 @@ alt="option key"> 印の付いたキーがあります。
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: faq.list,v 1.57 2001/02/24 22:41:32 manu Exp $<br>
+  $NetBSD: faq.list,v 1.58 2001/04/02 17:55:52 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
