@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.107 2002/01/16 04:11:21 perry Exp $
+#	$NetBSD: index.m4,v 1.109 2002/03/02 22:18:41 scw Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -120,9 +120,11 @@ cause a mailing list to be moderated by its manager.
 
 <h2>Searchable mailing list archives</h2>
 
-Searchable indexes are provided on
+Indexes and archives are provided on
 <a href="http://mail-index.netbsd.org/">http://mail-index.netbsd.org/</a>
-and <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>.
+and <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>; to
+search the mailing lists archives, go to <a
+href="../Misc/search.html">http://www.netbsd.org/Misc/search.html</a>.
 
 <h2><a name="index">The NetBSD Project's mailing lists</a></h2>
 
@@ -421,6 +423,12 @@ PORTLIST(port-mvme68k)
   There is also a <a href="#port-m68k">port-m68k</a> list for
   questions related to all Motorola 68k based ports.
 ENDLIST
+PORTLIST(port-mvmeppc)
+  Discussion of issues specific to NetBSD on Motorola's PowerPC VME board
+  computers (NetBSD/mvmeppc).
+  There is also a <a href="#port-powerpc">port-powerpc</a> list for
+  questions related to all PowerPC based ports.
+ENDLIST
 PORTLIST(port-newsmips)
   Discussion of issues specific to NetBSD on MIPS based Sony NEWS systems
   (NetBSD/newsmips).
@@ -465,6 +473,7 @@ LIST(port-powerpc)
   port-specific questions and information:
   <a href="#port-bebox">port-bebox</a>,
   <a href="#port-macppc">port-macppc</a>,
+  <a href="#port-mvmeppc">port-mvmeppc</a>,
   <a href="#port-ofppc">port-ofppc</a>,
   <a href="#port-prep">port-prep</a>, and
   <a href="#port-sandpoint">port-sandpoint</a>.
@@ -592,7 +601,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.107 2002/01/16 04:11:21 perry Exp $<br>
+  $NetBSD: index.m4,v 1.109 2002/03/02 22:18:41 scw Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
