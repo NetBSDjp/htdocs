@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2002
+<!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <!--
   ==  created by Jun-ichiro itojun Hagino
@@ -261,6 +261,143 @@ contactaddress  9876 Foo City, Tokyo 1234567 Japan</pre>
 あなたのミラーをリストから削除し、当該 DNS 名を代替サイトに振り替えますので、
 <mirrors@NetBSD.org> までお知らせください。
 
+<SECTION>CVSweb ミラー FAQ
+
+<ENTRY>cvsweb-overview NetBSD CVSweb ミラー立ち上げのあらまし
+以下は、NetBSD CVSweb ミラーの立ち上げにあたって推奨される手順の
+概観です。
+<p>
+
+<ol>
+  <li>この手順に沿ってミラーを立ち上げる場合、 cvs、 cvsup、 cvsweb CGI
+    スクリプトが必要です。 CVS は 1.5 以降のバージョンの NetBSD に附属しており、また、
+    cvsup と cvsweb CGI スクリプトは <a href="software/packages.html">NetBSD
+    パッケージコレクション</a>から利用可能です (devel/<PKGSRC>devel/cvsup と www/<PKGSRC>www/cvsweb 参照) 。もちろん、 apache
+    のような web サーバーも必要です。
+    <p>
+
+  <li>NetBSD CVS ツリーのコピーを持ってきます。 cvsup
+    を使った取得方法の説明は、「<a
+    href="#cvsweb-retrieve">NetBSD CVS ツリーのコピーを取得する</a>」
+    を見てください。
+    <p>
+
+  <li>あなたのミラーのコンテンツを cvsup サーバーと同期を取るようにします。
+    cron ジョブを使った同期方法の例は「<a
+    href="#cvsweb-sync">NetBSD CVS ツリーコンテンツの同期をとる</a>」
+    を見てください。
+    <p>
+
+  <li>あなたのミラーに関する情報を <mirrors@netbsd.org> へ送ります。
+    これについての詳細は「<a href="#cvsweb-contactinfo">CVSweb ミラー用
+    コンタクトインフォメーションのフォーマット</a>」を見てください。
+</ol>
+
+<ENTRY>cvsweb-retrieve NetBSD CVS ツリーのコピーを取得する
+CVS ツリーのコピーを cvsup を使って取得するには、
+以下のようにします:
+<p>
+
+<pre># su - cvsweb
+# mkdir /home/cvsweb/netbsd
+# cd /home/cvsweb
+
+<b>注意:</b> ここで "/home/cvsweb/netbsd" は CVS ツリーのミラーを
+置こうとしているディレクトリーです。このディレクトリーは、
+たとえば "cvsweb" ユーザーの所有にすべきです。エディターを使って
+"supfile" ファイルを作ります (書き方の例は、
+<a href="ftp://ftp.pasta.cs.uit.no/pub/cvsupd/supfiles/netbsd-supfile">ftp://ftp.pasta.cs.uit.no/pub/cvsupd/supfiles/netbsd-supfile</a> を見てください) 。
+
+# cvsup -g -L 2 netbsd-supfile
+
+<ENTRY>cvsweb-sync NetBSD CVS ツリーコンテンツの同期をとる
+同期をとるための一番よい方法は、 cron ジョブを設定して、たとえば cvsweb
+ユーザーで cvsup を使って定期的に CVS ツリーを更新することです:
+<p>
+
+<pre># crontab -u cvsweb -e
+
+<b>注意:</b> 以下の例示において、 "MAILTO" はミラー関連のメールを
+受け取るユーザーのものに書き換えてください。
+
+SHELL=/bin/sh
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/pkg/bin
+MAILTO=whoever@gets.the.mirror.mail
+0 1 * * * cvsup -g /home/cvsweb/netbsd-supfile</pre>
+
+<ENTRY>cvsweb-cgi cvsweb CGI スクリプトの設定方法
+cvsweb.conf ファイルを見て、以下の各オプションを書き換えておきます:
+<pre>
+@CVSrepositories = (
+        'netbsd'  => ['NetBSD',           '/home/cvsweb/netbsd'],
+);
+
+$mancgi = "http://netbsd.gw.com/cgi-bin/man-cgi?%s+%s+NetBSD-current";
+</pre>
+<p>
+cvsweb.cgi を web サーバーの cgi-bin ディレクトリーに置いて、 cvsweb.conf
+を参照するように cvsweb.cgi を書き換えてください。
+
+<ENTRY>cvsweb-http-1.0 HTTP/1.0 クライアントが適切なページを見られるよう保証する
+NetBSD CVSweb ミラーサイトは、 CVSweb ミラー用の
+バーチャル web サーバーを専用の IP アドレス上で運用することが強く望まれます。
+こうすることで、 HTTP/1.0 を使うクライアントでも正しく web サイトを
+見られるからです。
+<p>
+
+そのように設定することができない場合、 HTTP/1.0 クライアントに対する
+別の解決法は、 NetBSD ミラーをプライマリーのネームベースのバーチャルホスト
+にすることです。
+
+<ENTRY>cvsweb-contactinfo  CVSweb ミラー用コンタクトインフォメーションのフォーマット
+コンタクトインフォメーションを <mirrors@netbsd.org> に提出する必要があります。
+この情報は、内部のミラーデータベースに追加され、このデータベースをもとに
+ミラー関係の文書が作られます。
+"<tt>contact*</tt>" の項目は公開されることはありません。 NetBSD CVSweb
+ミラー用コンタクトインフォメーションは、以下のフォーマットで
+送付してください:
+<p>
+
+<pre>mirror          *マシン名*
+country         *ホストのある場所(国)*
+location        *詳細な場所 (例えば、Foo 大学)*
+cvsweb          *CVSweb URL*
+cvsweb-host     *external CVSweb name*
+organisation    *組織名*
+contactperson   *担当者の名前*
+contactemail    *担当者の電子メールアドレス*
+contactphone    *担当者の電話番号*
+contactaddress  *担当者の郵政省メールアドレス*</pre>
+<p>
+
+たとえば以下のように書きます。
+<p>
+
+<pre>mirror          netbsd.foo-univ.ac.jp
+country         Japan
+location        Department of Computer Science, Foo University
+cvsweb          http://netbsd.foo-univ.ac.jp/cgi-bin/cvsweb.cgi/
+cvsweb-host     cvsweb.netbsd.foo-univ.ac.jp
+organisation    Foo University
+contactperson   Foo Bar
+contactemail    Bar@foo-univ.ac.jp
+contactphone    +81 3 xxxx yyyy
+contactaddress  9876 Foo City, Tokyo 1234567 Japan</pre>
+<p>
+
+あなたのミラーのコンタクトインフォメーションが変わったような場合は、
+お気軽に <mirrors@netbsd.org> までお知らせください。
+
+<ENTRY>cvsweb-cname cvsweb.country-code.netbsd.org の取得方法
+あなたのミラーで cvsweb.country-code のような CNAME (例: cvsweb.jp)
+を使いたい場合は、 <mirrors@netbsd.org> までお尋ねください。
+ただし、通常はサブドメインの委譲をおこなわないので、
+「country-code.netbsd.org」のためのネームサーバーをたちあげる事はできません。
+
+<ENTRY>cvsweb-teardown CVSweb ミラーの提供ができなくなった場合
+あなたのミラーをリストから削除し、当該 DNS 名を代替サイトに振り替えますので、
+<mirrors@NetBSD.org> までお知らせください。
+
 </LIST>
 
 <DOCLINK>
@@ -271,8 +408,8 @@ contactaddress  9876 Foo City, Tokyo 1234567 Japan</pre>
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: mirror.list,v 1.23 2002/10/12 21:57:31 jschauma Exp $<br>
-  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2002
+  $NetBSD: mirror.list,v 1.26 2003/01/09 12:13:21 keihan Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
