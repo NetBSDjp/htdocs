@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.121 2003/03/14 12:31:50 kim Exp $
+#	$NetBSD: index.m4,v 1.122 2003/04/01 20:06:59 jschauma Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -103,7 +103,7 @@ then have to fill out a form, to supply your e-mail address.
 <b>To unsubscribe from a mailing list</b> send an email
 message from the address by which you are subscribed to <a
 href="mailto:majordomo@netbsd.org">majordomo@netbsd.org</a> containing
-only the message <tt><b>unsubscribe <em>listname</em></b></tt>
+only the message <tt><b>unsubscribe <em>listname</em></b>.</tt>
 <p>
 
 <b>To obtain a mailing list archive</b> click on the
@@ -662,7 +662,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.121 2003/03/14 12:31:50 kim Exp $<br>
+  $NetBSD: index.m4,v 1.122 2003/04/01 20:06:59 jschauma Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
