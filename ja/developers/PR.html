@@ -3,207 +3,189 @@
 <!-- Copyright (c) 1998, 1999 The NetBSD Foundation, Inc.
      ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:hubertf@NetBSD.ORG">
-<title>NetBSD Developer Documentation: Handling Problem Reports</title>
+<title>NetBSD 開発者ドキュメント:問題報告の処理</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>NetBSD Developer Documentation: Handling Problem Reports</h1>
+<h1>NetBSD 開発者ドキュメント: 問題報告の処理</h1>
 
-New developers often ask how to handle bug reports sent in by people
-via <TT>send-pr</TT>. This document is intended to give some
-information on the topic.
+新たに開発に加わった人がよく<TT>send-pr</TT>経由で人々から送られてくる
+バグレポートをどう処理したらよいのか質問してきます。
+このドキュメントはこの話題に関する情報を提供しています。
 
 <OL>
-<LI> <A HREF="#1">Accessing the Problem Report Database</A>
-<LI> <A HREF="#2">Handling and closing Problem Reports</A>
-<LI> <A HREF="#3">Changing Problem Report states</A>
-<LI> <A HREF="#4">Useful Aliases</A>
+<LI> <A HREF="#1">問題報告データベースにアクセスする</A>
+<LI> <A HREF="#2">問題報告を処理し、閉じる</A>
+<LI> <A HREF="#3">問題報告の状態を変更する</A>
+<LI> <A HREF="#4">有用なエイリアス</A>
 </OL>
 
 
 <HR>
 
-<h2><A NAME="1">1. Accessing the Problem Report Database</A></h2>
+<h2><A NAME="1">1. 問題報告データベースにアクセスする</A></h2>
 
-Log in to <TT>gnats.netbsd.org</TT> and make sure you have
-<TT>/usr/local/bin</TT> in your $PATH.
+<TT>gnats.netbsd.org</TT>にログインし、$PATHに<TT>/usr/local/bin</TT>が
+設定されているか確認して下さい。
 <P>
 
-For accessing a PR, you need
-its number. You can get that via either the <A
-HREF="../MailingLists/index.html#netbsd-bugs">netbsd-bugs</A> mailing
-list, or by browsing the <A HREF="../Gnats/index.html">online database</A>.
-The database is accessed and manipulated using the <TT>edit-pr</TT>
-command, which takes a PR-number as an argument:
+問題報告へアクセスするには、番号が必要です。
+<A HREF="../MailingLists/index.html#netbsd-bugs">netbsd-bugs</A>メーリングリスト経由か
+<A HREF="../Gnats/index.html">オンラインデータベース</A>を閲覧することで入手できます。
+データベースのアクセスや操作には<TT>edit-pr</TT>コマンドを使用します。
+このコマンドは引数として問題報告番号をとります:
 
 <PRE>
 % edit-pr 6048
 </PRE>
 
-An editor (usually vi, but customisable via the EDITOR/VISUAL environment
-variable) is started, displaying the full PR with all its fields.  Of
-particular interest are:
+エディター (通常viですが、EDITOR/VISUAL環境変数によりカスタマイズ可能)
+が起動し、全てのフィールドが載っている問題報告が表示されます。
+特に重要なのは以下のものです:
 
 <UL>
-<LI> <TT>&gt;Number</TT>: The PR's number, as given to <TT>edit-pr</TT>
-<LI> <TT>&gt;Synopsis</TT>: One-line summary of the problem
-<LI> <TT>&gt;State</TT>: The current state of affairs, see below.
-<LI> <TT>&gt;Description</TT>: Detailed description of the problem
+<LI> <TT>&gt;Number</TT>: 問題報告番号。<TT>edit-pr</TT>に与えられます。
+<LI> <TT>&gt;Synopsis</TT>: 問題の一行要約。
+<LI> <TT>&gt;State</TT>: 現在の状態。下記参照。
+<LI> <TT>&gt;Description</TT>: 問題の詳細な記述。
 </UL>
 
-A more complete list can be found in the
-<A HREF="../Misc/pr-fields.html">NetBSD Problem Report Fields</A>
-document. 
+より完全なリストは
+<A HREF="../Misc/pr-fields.html">NetBSD問題報告フィールド</A>
+ドキュメントで見つけられます。
 <P>
 
-Edit whatever field you think needs modifying - usually only the
-<TT>&gt;State</TT>-field - then save and exit the editor. You will be
-asked to enter a reason for the PR's state change, ending with ^D.
-This reason is then sent (via e-mail) to everyone who has something
-to do with the PR.
-<P>
-
-
-<h2><A NAME="2">2. Handling and closing Problem Reports</A></h2>
-
-Closing problem reports is only the last step in the process of
-handling them correctly.  Before PRs are closed, they should be
-analyzed, they should be solved, the solution should be communicated
-to the submitter of the PR, and the submitter should indicate that
-the solution actually solved
-their problem.  Only after all of those things have occurred
-should the PR actually be closed.
-Not coincidentally, there are
-<A HREF="../Misc/pr-states.html">PR states</A> for each of those
-portions of a PR's lifetime.  They should be used.
-<P>
-
-When you notice a PR, if you have any relevant information to add
-you should do so.  The easiest way to do this is to reply to the
-notification of the PR sent to the netbsd-bugs mailing list.  By
-cc'ing that reply to gnats-bugs@netbsd.org, the PR will have a copy
-of your reply appended.  See the
-<A HREF="../Misc/send-pr.html">NetBSD Problem Reports</A> page
-for <A HREF="../Misc/send-pr.html">more information about
-adding information to an existing PR</A>.  Replies appended to
-PRs via e-mail will only be sent to the
-person noted in the PR (via the <TT>Responsible</TT> field)
-as being responsible for handling the PR.  If you with the PR
-submitter or other interested parties to receive a copy
-of the PR, you must carbon-copy them on your reply.
-<P>
-
-After looking at the PR and adding any relevant information you
-have, if you decide to take a shot at handling it you
-should first set yourself as the responsible party by
-using <TT>edit-pr</TT> to set the PR's <TT>Responsible</TT> field
-to your NetBSD.ORG login name.  This will cause you to get e-mail
-about the PR when it changes state or when users supply more
-information,
-and an occasional reminder that you're responsible for the PR.
-At this time it might also be appropriate to change the PR to
-the ``<TT>analyzed</TT>'' state to indicate that the problem has
-been analyzed.
-<P>
-
-After you have solved the problem and verified that your solution
-is adequate, you should commit your fix.  If the problem is
-present in still-supported formal releases of NetBSD, it often makes
-sense to request that the fix be pulled up to the release branches
-for those releases (but make extra sure that the fix is correct before
-submitting pull-up requests).
-It's worth going to the extra effort to get bug fixes pulled up:
-if somebody found the bug annoying enough that they submitted a PR about
-it, other users will probably run into it as well.  In the long
-run, users' and developers' time is saved by getting fixes pulled up.
-Even if there are likely to be no more releases on a given
-release branch, if the release branch is still considered
-supported it's still worth the effort to get the pullups done to
-help users who track the head of the release branch.
-After all, what's the point of patch releases or stable release
-branches without bug fixes?
-<P>
-
-When you have comitted the fix for the problem, you should send
-e-mail to the submitter of the PR informing them that you think
-you have solved the problem and asking for them to test your solution.
-(This may involve sending them patches, or suggesting
-that they update to the next patch release when it is available and
-check to see if the problem has been solved.)  At this point
-the PR should be placed into the ``<TT>feedback</TT>'' state until
-the user confirms that the problem has been fixed or until
-a large enough amount of time has passed that it seems unlikely
-that the user will ever reply.  (As a guideline for the latter,
-waiting until a few months after the next release which includes
-the fix is shipped seems reasonable.)
-<P>
-
-When the PR's submitter has confirmed that the problem has been
-solved to their satisfaction, the PR should be placed into the
-``<TT>closed</TT>'' state.  (If their problem was not solved, the
-PR should be taken out of the ``<TT>feedback</TT>'' state and placed
-into a more appropriate state.)
-<P>
-
-At each step of the PR handling process, when requesting feedback
-from the submitter make sure that feedback is appended to the PR
-by using a proper e-mail subject line and making sure that the
-messages are copied to gnats-bugs@netbsd.org.  Having a complete
-record of information about the PR can be valuable both while
-hunting down the bug and for future system maintenance.
-<P>
-
-If for some reason you find that you're unable to finish handling
-the PR, reset the <TT>Responsible</TT> field to whoever had
-responsibility before you took the PR over.  (That information
-should be in the PR with the log message indicating that you've
-taken over responsibility.)  Don't prevent others from making
-progress on the PR because they think you're taking care of it.
-As long as you're marked as the responsible person for a PR,
-you'll receive an occasional reminder about it.  Use those reminders
-to drive you to put review PRs and put them into their correct states
-as time passes.
-<P>
-
-In summary, there's a lot more to handling Problem Reports
-than just fixing the bugs and closing the PRs.  That's obviously
-very important, but the rest of the steps, especially making sure
-that the submitters' problems are actually fixed and that fixes get
-wide distribution by being included in patch releases, can make
-NetBSD a better system that's more responsive to users' problems.
+変更する必要があると思われる全てのフィールド - 通常<TT>&gt;State</TT>
+フィールドだけ - を編集し、保存してエディターを抜けます。
+^Dで終わったら、問題報告の状態を変更した理由を入力するように言われるでしょう。
+この理由は (メールを通して) 問題報告に携わっている人全員に送られます。
 <P>
 
 
-<h2><A NAME="3">3. Problem Report states</A></h2>
+<h2><A NAME="2">2. 問題報告を処理し、閉じる</A></h2>
 
-Problem reports can exist in various states, with each PR's state
-being given in the PR's <TT>State</TT> field.
-Please see the <A HREF="../Misc/pr-states.html">documentation of the
-PR states</A> for valid PR states and their meanings.
+問題報告を閉じるのは、正しく問題報告を取り扱う手順で一番最後の段階です。
+問題報告を閉じる前に、分析され、解決され、問題報告の提出者に解決策が連絡され、
+提出者はその解決策で実際に問題が解消することを示すべきです。
+これらが全てすんだ後にはじめて問題報告は実際に閉じられるべきです。
+必ずしも一致しないですが、問題報告の寿命にはそれぞれの段階に
+<A HREF="../Misc/pr-states.html">問題報告の状態</A>があります。
 <P>
 
-At times, such as when handling a PR, it is necessary to change a
-PR's state.  This is done using <TT>edit-pr</TT> to set the PR's
-<TT>State</TT> field to another state.  Be careful to use a
-<A HREF="../Misc/pr-states.html">valid state name</A> and to avoid
-typos, as there is no checking of the spelling of the state name
-given and because applications (e.g. the
-<A HREF="../Gnats/index.html">PR database's Web interface</A>) rely on correct
-state names being used. 
+問題報告に気づいたとき、もし加えるべき適当な情報があれば、加えるべきです。
+netbsd-bugsメーリングリストに送られた問題報告の通知に返信するのが
+もっとも簡単な方法です。
+その返信にgnats-bugs@netbsd.org あてのccをつけると、
+問題報告は返信のコピーを貼り付けます。
+<A HREF="../Misc/send-pr.html">現存する問題報告へ情報を付け加えることについての情報</A>
+がもっと欲しいのであれば、<A HREF="../Misc/send-pr.html">NetBSD 問題報告</A>
+のページをご覧下さい。
+電子メール経由で問題報告に貼り付けられた返信は、問題報告に対処する必要があるとして
+(<TT>責任者</TT>フィールド経由で) 問題報告に書かれている人に送られるだけです。
+もし問題報告の提出者や興味をもっている他の人々に問題報告のコピーを
+送りたいならば、返信にカーボンコピーをしなければいけません。
 <P>
 
-When you use edit-pr to change a PR's state (or other PR fields), after
-saving and leaving your editor you will be prompted for information
-about the reason that you made the changes that you did.  Useful
-information here is as important as it is in, for instance, a commit
-log message, for similar reasons.
+問題報告を見たり、あなたが持っている適当な情報を付け加えた後、
+対処する方法に目星が付いたら、まずはじめに<TT>edit-pr<TT>を使って
+問題報告の<TT>責任者</TT>フィールドをNetBSD.ORGのログイン名にセットして、
+責任者として設定します。
+こうすることで、状態が変わったりユーザーが更に情報を提供するとき、
+PRに関するメールを受け取れ、問題報告に責任があることを時々思い出させてくれます。
+このとき、問題が分析されたことを示すように、問題報告を``<TT>analyzed</TT> (分析済み) ''
+状態に変更するのがよいでしょう。
+<P>
+
+問題を解決し、解決策が適切であると実証したあとに、
+修正をコミットすべきです。
+まだ対象となっているNetBSDの公式リリースの中に問題があれば、
+そのリリース用に修正がリリースの枝へと引き上げられるように要求することが
+重要です (しかし、引き上げ要求を出す前に修正が正しいことを
+確認します) 。
+バグ修正を引き上げるのに更なる努力をする価値があります:
+問題報告を提出するほど困ったバグをだれかが見つければ、
+他のユーザーも多分同じような状態になっているでしょう。
+結局、修正を引き上げることでユーザーや開発者の時間が節約できます。
+例え問題になっているリリースの枝にこれ以上リリースがなさそうでも、
+もしリリースの枝が対象内であると考えられていれば、
+リリースの枝の頭を追うユーザーを助けるために引き上げを行う努力をする
+価値がまだあります。
+最終的に、バグ修正以外でパッチリリースや安定版リリースの枝の
+ポイントになるものは何でしょう?
+<P>
+
+問題の修正をコミットしたら、問題を解決したので解決策をテストして欲しいという
+旨のメールを問題報告を提出した人に送るべきです。
+(パッチを送ったり、入手できるようになったら次のパッチリリースにアップデートして、
+問題が解決しているかチェックするように提案することも含みます。)
+この時点でユーザーが問題が修正された事を確認するか、
+ユーザーが問題を再現しそうもないほど時間が経過するまで、
+問題報告は``<TT>feedback</TT>'' 状態に置き換えるべきです。
+(後者のガイドラインとしては、修正を含んだ次のリリースが出荷されてから
+数カ月待つというのが理に適っていると思われます。)
+<P>
+
+問題報告の提出者は問題が納得いくほど解決されていることを確認したら、
+問題報告は``<TT>closed</TT>'' 状態に置き換えるべきです。
+(もし問題が解決されていなければ、問題報告は``<TT>feedback</TT>'' 状態から
+より適切な状態へと置き換えられるべきです。)
+<P>
+
+問題報告を処理する手順の各段階で提出者からのフィードバックを要求するとき、
+適当なメールの題名を使い、メッセージがgnats-bugs@netbsd.orgへ確実に
+コピーされ、フィードバックが問題報告に追加されるようにして下さい。
+問題報告に関する情報が完全に記録されていれば、バグを追い詰めるのと、
+未来のシステム維持の両方に価値あることになるでしょう。
+<P>
+
+何らかの理由のために、問題報告を対処し終わらないとわかったならば、
+<TT>責任者</TT> フィールドを問題報告を引き継ぐ前に責任を持っていた人に
+セットし直します。
+(この情報は責任を引き継いだことを示すログメッセージとともに問題報告に
+いれるべきです。)
+あなたが対処しているからと言って、他の人が問題報告に進歩を与えることを
+妨げてはいけません。
+問題報告の責任者としてマークされている限り、時々催促を受け取るでしょう。
+これらの催促を利用して、問題報告をよく調べ、時間を追うごとに正しい状態へと
+持っていくようにしましょう。
+<P>
+
+要約すると、バグを修正したり問題報告を閉じたりする以上に、問題報告を対処するのに
+しなければいけないことが多数あります。
+明らかにとても重要ですが、段階の残り、特に提出者の問題が実際に修正され、
+修正がパッチリリースに含まれることで広く配布されることを確認する作業が
+NetBSDをユーザーの問題に対してより敏感にするよりよいシステムにするのです。
 <P>
 
 
-<h2><A NAME="3">3. Problem Report states</A></h2>
+<h2><A NAME="3">3. 問題報告の状態を変更する</A></h2>
 
-I've found the following csh-aliases to be useful, maybe
-you will so, too:
+問題報告は各問題報告の状態が<TT>状態</TT> フィールドで与えられている通り、
+さまざまな状態で存在します。
+有効な問題報告の状態とその意味を知りたいようでしたら、
+<A HREF="../Misc/pr-states.html">問題報告の状態のドキュメント</A> をご覧下さい。
+<P>
+
+たとえば問題報告に対処しているときのように、問題報告の状態を変更する必要があります。
+状態の変更は、問題報告の<TT>状態</TT> フィールドを他の状態へとセットするのに
+<TT>edit-pr</TT> を使用します。
+<A HREF="../Misc/pr-states.html">有効な状態名</A>を使用し、タイプミスを避けるように
+注意して下さい。というのも、状態名のスペルをチェックしていないので (たとえば
+<A HREF="../Gnats/index.html">問題報告データベースのWebインターフェイス</A>のように)
+、アプリケーションが正しい状態名を使っていることに依存しているからです。
+
+<P>
+
+問題報告の状態 (あるいは他の問題報告のフィールド) を変えるために、
+エディターを保存し抜けた後、変更した理由についての情報を催促されるでしょう。
+ここでの有用な情報は同じ理由からたとえばコミットのログメッセージと同じくらい重要です。
+<P>
+
+
+<h2><A NAME="4">4. 有用なエイリアス</A></h2>
+
+以下のような役に立つcshのエイリアスを見つけました。
+あなたの役にも立つことでしょう:
 <P>
 
 <PRE>
@@ -220,11 +202,9 @@ alias edit-pr   ssh -t gnats.netbsd.org edit-pr
 	<a href="../index.html">
 	<img src="../images/NetBSD-banner.gif" alt=""></a>
       </td><td>
-	<font face="helvetica, arial">
 	<a href="../index.html">
 	<img src="../images/empty.gif"
-		alt="NetBSD " border=0>Home Page</a>
-	</font>
+		alt="NetBSD " border=0>ホームページ</a>
       </td>
     </tr></table>
   </td>
@@ -235,11 +215,9 @@ alias edit-pr   ssh -t gnats.netbsd.org edit-pr
 	<img src="../images/NetBSD-banner.gif"
 		alt=""></a>
       </td><td>
-	<font face="helvetica, arial">
 	<a href="index.html">
 	<img src="../images/empty.gif"
-		alt="NetBSD " border=0>Developer Documentation</a>
-	</font>
+		alt="NetBSD " border=0>開発者ドキュメント</a>
       </td>
     </tr></table>
   </td>
