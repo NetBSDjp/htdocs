@@ -1,10 +1,14 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.114 2002/10/25 16:38:09 grant Exp $
-#	Copyright (c) 1994-2001
+#	$NetBSD: index.m4,v 1.117 2003/01/06 03:09:51 jschauma Exp $
+#	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
 
 undefine(`index')
+
+define(`LISTNEWS',
+`  <a href="http://news.netbsd.org/'`patsubst(patsubst(patsubst($1, `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
+</td><td valign=top>', `-', `.')
 
 define(`LISTARCHIVE',
 `  <a href="http://mail-index.netbsd.org/$1/"><img src="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
@@ -34,6 +38,7 @@ define(`LIST',
 LISTPREHEADER
 LISTSUBSCRIBE($1)
 LISTARCHIVE($1)
+LISTNEWS($1)
 LISTHEADER($1)')
 
 define(`PORTLIST',
@@ -41,12 +46,14 @@ define(`PORTLIST',
 LISTPREHEADER
 LISTSUBSCRIBE($1)
 LISTARCHIVE($1)
+LISTNEWS($1)
 PORTLISTHEADER($1)')
 
 define(`OLDLIST',
 `    <li><a href="#$1">$1</a>
 LISTPREHEADER
 LISTARCHIVE($1)
+LISTNEWS($1)
 LISTHEADER($1)')
 
 define(`ENDLIST', `</td></tr></table>
@@ -59,7 +66,7 @@ divert(0)dnl
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
 <title>NetBSD Mailing Lists</title>
@@ -111,6 +118,13 @@ access and rack space for this machine as well as
 maintaining the site..). An alternative index of our mailing lists
 is available at
 <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>.
+<p>
+
+<b>To read the list through a news frontend</b> click on the
+<img src="../images/misc/news.gif" width="29" height="29"
+alt="[Newsgroup]"> link next to its name, in the description section of this
+page.  This will take you to the news-archive at <a
+href="http://news.netbsd.org">news.netbsd.org</a>.
 <p>
 
 Please note that while the majority of the NetBSD mailing lists are
@@ -651,8 +665,8 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.114 2002/10/25 16:38:09 grant Exp $<br>
-  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  $NetBSD: index.m4,v 1.117 2003/01/06 03:09:51 jschauma Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
