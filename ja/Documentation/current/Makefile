@@ -1,9 +1,9 @@
-#	$NetBSD: Makefile,v 1.1 1999/02/15 18:46:45 abs Exp $
-#	Process .faq files into .html files
+#	$NetBSD: Makefile,v 1.2 1999/04/23 07:09:21 abs Exp $
+#	Process .list files into .html files
 
 all:	index.html
 
-.SUFFIXES:	.faq .html
+.SUFFIXES:	.list .html
 
-.faq.html:
-	../makefaq.pl $< $@
+.list.html:
+	../../list2html.pl $< $@
