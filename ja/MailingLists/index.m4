@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.118 2003/02/14 16:02:37 christos Exp $
+#	$NetBSD: index.m4,v 1.119 2003/02/26 22:57:47 gendalia Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -594,6 +594,10 @@ PORTLIST(port-vax)
   Discussion of issues specific to NetBSD on Digital's VAX series of machines
   (NetBSD/vax).
 ENDLIST
+PORTLIST(port-x86_64)
+  Discussion of issues specific to NetBSD on AMD x86-64 based machines
+  (NetBSD/x86_64).
+ENDLIST
 PORTLIST(port-x68k)
   Discussion of issues specific to NetBSD on Sharp's Japanese X68000/X68030
   machines (NetBSD/x68k).
@@ -658,7 +662,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.118 2003/02/14 16:02:37 christos Exp $<br>
+  $NetBSD: index.m4,v 1.119 2003/02/26 22:57:47 gendalia Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
