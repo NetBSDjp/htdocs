@@ -1,36 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
 <html>
 <head>
-<!-- Copyright (c) 1998, 1999
+<!-- Copyright (c) 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
-<title>
-Introduction (i386-specific), Diskless NetBSD HOW-TO
-
-</title>
+<title>Introduction (i386-specific), Diskless NetBSD HOW-TO</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="intro.html">Previous</a> <a href="nfs.html">Next</a>
-<a href="">Table of Contents</a><hr>
+<a href="intro.html">Previous</a> |
+<a href="nfs.html">Next</a> |
+<a href="">Table of Contents</a>
+
+<hr>
 
 <h1>Introduction (i386-specific), Diskless NetBSD HOW-TO</h1>
 
-<dl>
-<dt><h2>There are several ways to load the NetBSD kernel for 'diskless'
+<h2>There are several ways to load the NetBSD kernel for 'diskless'
     operation:</h2>
-<dd>
-
+<dl><dt><dd>
 <ol>
-<li><b>Via netboot rom</b><p>
+<li><b>Via netboot rom</b>
+    <p>
     You will need a BIOS supporting boot from network and a matching
     network card. This is becoming more popular in new PCs, especialy
     ones with build in network adapters. Setup a server on the
     network (see
-    <a href="http://www.flame.org/cgi-bin/uncgi/hman?page=diskless&amp;sect=8">
-    diskless (8)</a>)
+    <a href="http://www.tac.eu.org/cgi-bin/man-cgi?diskless+8">
+    diskless(8)</a>)
     and modify your BIOS settings to try the network boot first.
-    </p><p>
-
+    <p>
     If your BIOS does not support this, but you have a network card
     supported by NetBSD's 'netboot' bootloader, you can boot to
     DOS (see the discussion about <tt>dosboot.com</tt> below) and
@@ -39,9 +39,28 @@ Introduction (i386-specific), Diskless NetBSD HOW-TO
     <tt>/usr/src/sys/arch/i386/stand/netboot</tt>, edit the
     <tt>Makefile</tt> to define the options for your network adapter
     and run "<code>make netboot.com</code>".
+<p>
 
-</p></li>
-<li><b>From floppy disk</b><p>
+<li><b>via GNU GRUB</b>
+    <p>
+    <a href="http://www.gnu.org/software/grub/">GRUB</a> is a boot loader,
+    that is capable of booting different OS types and some of them
+    via network. GRUB itself is loaded from disk or network using a
+    PXE or NBI (such as <a
+    href="http://etherboot.sourceforge.net">Etherboot</a>)
+    loader. GRUB supports many different NICs, more than the NetBSD's 'netboot'
+    bootloader does. If you are using Etherboot and you want to use GRUB version
+    0.5.95 (at the time this text was written version 0.5.95 was the only
+    GRUB release that supported diskless-booting) you need this <a
+    href="ftp://smaug.fh-regensburg.de/incoming/grub-0.5.95.etherboot-patch.gz">patch</a>.
+    GRUB and Etherboot require <a
+    href="http://www.gnu.org/software/gcc/gcc.html">GCC</a> and <a
+    href="http://www.gnu.org/software/binutils/binutils.html">GNU Binutils</a>
+    2.9.1 or later.
+<p>
+
+<li><b>From floppy disk</b>
+    <p>
     The kernel on the floppy may be configured to mount
     the root filesystem over the network by using this in your kernel
     config file:
@@ -50,40 +69,43 @@ Introduction (i386-specific), Diskless NetBSD HOW-TO
     If you have not compiled a kernel before you should see the
     notes on <a href="../../kernel/#how_to_build_a_kernel">how
     to build a kernel</a>.
+<p>
 
-</p></li>
-<li><b>Via "<tt>dosboot.com</tt>" for DOS or Windows (not NT)</b><p>
+<li><b>Via "<tt>dosboot.com</tt>" for DOS or Windows (not NT)</b>
+    <p>
     NetBSD compiles a special version of the bootloader into a
     small DOS program, called "<tt>dosboot.com</tt>".  This is
     located in /usr/mdec on installed systems or in the base.tgz
     set. To use, copy both <tt>dosboot.com</tt> and your kernel
-    onto a FAT (msdos) partition, and boot to DOS.  </p><p>
-
+    onto a FAT (msdos) partition, and boot to DOS.
+    <p>
     <ul>
-    <li>Windows 95 or 98<p>
+    <li>Windows 95 or 98
+	<p>
 	Press F8 while the string "Loading Windows XX" is displayed
 	to enter the boot menu. The menu items displayed there will
-	depend on your installation.  </p><p>
-
+	depend on your installation.
+	<p>
 	You may need to avoid loading the HIMEM.SYS driver and the
 	EMM386.SYS driver. In this case choose "Step-by-step
 	confirmation" and answer all questions with "n" or ESC.
-	</p><p>
-
+	<p>
 	If you don't mind HIMEM.SYS getting loaded, choose "Command
 	prompt only".  
+	<p>
 
-    </p></li>
-    <li>DOS or Windows 3.1<p>
+    <li>DOS or Windows 3.1
+	<p>
 	Hold down the SHIFT key when the computer is booting to
 	skip config.sys and autoexec.bat.
-    </p></li>
+	<p>
     </ul>
 
     At the DOS prompt, change into the directory where you have
     put "dosboot.com" and the kernel. Enter "<tt>dosboot</tt>" to
     boot "netbsd", or "<tt>dosboot filename</tt>" if your kernel
-    file has a different name.  </p><p>
+    file has a different name.
+    <p>
 
     The dosboot utility is able to handle extended memory, as provided by 
     the HIMEM.SYS driver. Unfortunately this gets into the way if NetBSD
@@ -91,76 +113,73 @@ Introduction (i386-specific), Diskless NetBSD HOW-TO
     have an APM BIOS, or your NetBSD kernel does not use it (no 
     "apm0 at mainbus0"). If you are going to use APM, don't load HIMEM.SYS
     when using dosboot.
+    <p>
 
     If you wish to create a customised version of dosboot.com, cd
     to <tt>/usr/src/sys/arch/i386/stand/dosboot</tt>, edit the
     <tt>Makefile</tt> for special options (serial console, ...)
     and run "<tt>make</tt>".
+<p>
+</li>
  
-</p></li>
-<li><b>Via the NT boot selector</b><p>
+<li><b>Via the NT boot selector</b>
+    <p>
     NT's boot selector can be used to directly bootstrap NetBSD.
     For more details see the <a
     href="../../../Ports/i386/faq.html#nt_boot">Adding NetBSD to
     the Windows NT boot menu</a> section in the NetBSD/i386 FAQ.
-
-</p></li>
 </ol>
+</dd></dl>
 
-<dt><h2>Begin setting things up (suggested order):</h2>
-<dd>
+<h2>Begin setting things up (suggested order):</h2>
+<dl><dt><dd>
 <ol>
 <li><a href="nfs.html"><tt>nfs</tt></a>
 <li><a href="files.html">client filesystem</a>
 <li><a href="finish.html">finishing up</a>
 </ol>
-
-
-</dl>
-
-<hr><a href="intro.html">Previous</a> <a href="nfs.html">Next</a>
-<a href="">Table of Contents</a>
+</dd></dl>
 
 <hr>
 
-<table width="100%"><tr>
-<td>
-  <table><tr>
-  <td>
-    <a href="../../../">
-    <img src="../../../images/NetBSD-banner.gif" border=0 alt=""></a>
+<a href="intro.html">Previous</a> |
+<a href="nfs.html">Next</a> |
+<a href="">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a> 
   </td><td>
-    <font face="helvetica, arial">
-    <a href="../../../">
-    <img src="../../../images/empty.gif" border=0
-     alt="NetBSD ">Home Page</a>
-    </font>
-  </td>
-  </tr></table>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
 </td><td>
-  <table><tr>
-  <td>
-    <a href="../../../Documentation/">
-    <img src="../../../images/NetBSD-banner.gif" border=0 alt=""></a>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
   </td><td>
-    <font face="helvetica, arial">
-    <a href="../../../Documentation/">
-    <img src="../../../images/empty.gif" border=0
-     alt="NetBSD ">Documentation top level</a>
-    </font>
-  </td>
-  </tr></table>
-</td>
-</table>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
 
 <hr>
 <address>
+  <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: intro.i386.html,v 1.10 2000/07/14 18:08:28 dent Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998
+  $NetBSD: intro.i386.html,v 1.15 2001/04/08 21:24:21 dent Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
 
 </body>
 </html>
-
