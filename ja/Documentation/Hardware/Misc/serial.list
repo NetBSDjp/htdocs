@@ -1,0 +1,446 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2002
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+<title>NetBSD Serial Port Primer</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1>NetBSD Serial Port Primer</h1>
+
+<LIST>
+
+<h2>Other sources of information</h2>
+
+<ul>
+<li><a href="http://csgrad.cs.vt.edu/~tjohnson/pinouts/">
+  Tommy's pinout collection</a>
+<li>
+<a href="http://www.stokely.com/unix.serial.port.resources/A-B-Ycablepinout.html">
+  Sun Serial Port & Cable Pinouts</a>
+</ul>
+
+<!-- toto:
+sgimips cables?
+get someone to write the device name to /dev name lookup -->
+
+<SECTION>General Information
+
+<p>This document is intended as a supplement to the documentation that
+came with your hardware.  It briefly outlines some of the issues related
+to connecting the serial ports of some of the supported platforms.  Many
+of the supported platforms require or optionally allow use of a serial
+console, and some confusion may arise over how to wire the connectors. 
+
+<p>Briefly, most computers are DTE (Data Terminal Equipment), and most
+modems and dumb terminals are DCE (Data Communication Equipment).  To
+connect a DTE to a DTE (such as to use a PC as a PPP server or a terminal), you
+need to insert a "null modem" cable, which swaps the transmit and receive data
+and handshaking lines.
+
+<p>There are various handshaking, or "modem" lines that are specified in the
+serial protocols.  These allow DTE and DCE equipment to pace the flow of 
+information (such as if the receiving equipment isn't ready to get more data,
+it tells the transmitting equipment to wait until it's ready).  For a more 
+detailed and accurate description, you should read one of the references above.
+
+<p>See your port's FAQ, or a hardware reference to determine how to enable
+serial console on your hardware (if supported).  On many platorms, you only 
+need to remove the keyboard and mouse.  On others, you need to remove
+the framebuffer.  On yet others, you need to set up the bootrom or PROM to
+explicitly use a serial console.  The most common setting is 9600 bps, 8 bits,
+no parity, and one stop bit.  Handshaking requirements vary from platform to
+platform.
+
+<p>Keep in mind, that if your system's bootROM, Firmware, or whatever supports
+serial consoles, NetBSD is smart enough to know about this.  That means, you
+most likely should <i>not</i> enable a separate ttys(5) in <tt>/etc/ttys</tt>.
+You may, however, need to edit the console entry to ensure that it has the
+correct terminal type (for example, change '<tt>sun</tt>' to 
+'<tt>vt100</tt>').
+
+<p>On some platforms, a constant stream of zeros is 
+equivalent to a serial <tt>BREAK</tt>.  For example, on sparc systems,
+this tells the system to drop into the bootrom prompt.  Keep this in mind
+if you find out that disconnecting a serial cable causes your system to stop
+responding.
+
+<ENTRY>connectors Connector types and pinouts
+<p>There are three common connector types:  DB25, DB9, and MiniDIN8.  The pin
+numbering convention is as follows (female connectors are reversed):
+
+<p><h3>MiniDIN8 (male)</h3>
+<pre>   8 7 6
+  5   4 3
+    2 1</pre>
+
+<p><h3>DB25 (male)</h3>
+<pre>  1                         13
+ _______________________________
+ \  . . . . . . . . . . . . .  /
+  \  . . . . . . . . . . . .  /
+   ---------------------------
+   14                       25</pre>
+
+
+<p><h3>DB9 (male)</h3>
+<pre>   1         5
+ _______________
+ \  . . . . .  /
+  \  . . . .  /
+   -----------
+    6       9</pre>
+
+
+<p><h3>RJ-11 (male)</h3>
+<pre> _!=!_
+| | | |
+-------
+1 2 3 4</pre>
+
+<ENTRY>pinouts Serial port pinouts for various platforms
+Unfortunately, not everyone follows a standard set of pin numbers for their
+serial lines.  In particular, the vendors using MiniDIN8 connectors screw
+everything up.  If you're willing to do without the handshaking lines, 
+any MiniDIN8 cable should work on any system (i.e. TxD, RxD, and GND are all
+in the same location).  Be wary of Macintosh "modem" cables, as some vendors
+wire them differently (trying to allow for DTR, DSR, and DCD signaling) --
+you should check their wiring with a multimeter before making any assumptions.
+<p>
+<table border=2>
+<tr>
+  <th align="left">signal<br>name</th>
+  <th align="right">standard<br><font size="2">DB9</font></th>
+  <th align="right">standard<br><font size="2">DB25</font></th>
+  <th align="right"><a href="#mac">mac</a><br>
+      <font size="2">MiniDIN8</font></th>
+  <th align="right"><a href="#next68k">next68k</a><br>
+      <font size="2">MiniDIN8</font></th>
+  <th align="right"><a href="../../../Ports/sgimips/">sgi</a><br>
+      <font size="2">MiniDIN8</font></th>
+  <th align="right"><a href="#sparc">sparc</a><br>
+      <font size="2">MiniDIN8</font></th>
+  <th align="right"><a href="#hp300">hp300</a><br>
+      <font size="2">DB9</font></th>
+  <th align="right">dir</th>
+  <th align="left">full name</th>
+  <th align="left">comment</th></tr>
+<tr>
+  <td align="left">TxD</td>
+  <td align="right">3</td>
+  <td align="right">2</td>
+  <td align="right">3</td>
+  <td align="right">3</td>
+  <td align="right">3</td>
+  <td align="right">3</td>
+  <td align="right">2</td>
+  <td align="right">out</td>
+  <td align="left">Transmit Data</td>
+  <td align="left">data</td></tr>
+<tr>
+  <td align="left">RxD</td>
+  <td align="right">2</td>
+  <td align="right">3</td>
+  <td align="right">5</td>
+  <td align="right">5</td>
+  <td align="right">5</td>
+  <td align="right">5</td>
+  <td align="right">3</td>
+  <td align="right">in</td>
+  <td align="left">Receive Data</td>
+  <td align="left">data</td></tr>
+<tr>
+  <td align="left">RTS</td>
+  <td align="right">7</td>
+  <td align="right">4</td>
+  <td align="right">-</td>
+  <td align="right">6</td>
+  <td align="right">6</td>
+  <td align="right">6</td>
+  <td align="right">4</td>
+  <td align="right">out</td>
+  <td align="left">Request To Send</td>
+  <td align="left">handhsake</td></tr>
+<tr>
+  <td align="left">CTS</td>
+  <td align="right">8</td>
+  <td align="right">5</td>
+  <td align="right">-</td>
+  <td align="right">8</td>
+  <td align="right">2</td>
+  <td align="right">2</td>
+  <td align="right">5</td>
+  <td align="right">in</td>
+  <td align="left">Clear To Send</td>
+  <td align="left">handshake</td></tr>
+<tr>
+  <td align="left">DTR</td>
+  <td align="right">4</td>
+  <td align="right">20</td>
+  <td align="right">-</td>
+  <td align="right">1</td>
+  <td align="right">1</td>
+  <td align="right">1</td>
+  <td align="right">1</td>
+  <td align="right">out</td>
+  <td align="left">Data Terminal Ready</td>
+  <td align="left">status</td></tr>
+<tr>
+  <td align="left">DSR</td>
+  <td align="right">6</td>
+  <td align="right">6</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">6</td>
+  <td align="right">in</td>
+  <td align="left">Data Set Ready</td>
+  <td align="left">status</td></tr>
+<tr>
+  <td align="left">RI</td>
+  <td align="right">9</td>
+  <td align="right">22</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">9</td>
+  <td align="right">in</td>
+  <td align="left">Ring Indicator</td>
+  <td align="left">status</td></tr>
+<tr>
+  <td align="left">DCD</td>
+  <td align="right">1</td>
+  <td align="right">8</td>
+  <td align="right">-</td>
+  <td align="right">2</td>
+  <td align="right">7</td>
+  <td align="right">7</td>
+  <td align="right">8</td>
+  <td align="right">in</td>
+  <td align="left">Data Carrier Detect</td>
+  <td align="left">status</td></tr>
+<tr>
+  <td align="left">RTxC</td>
+  <td align="right">-</td>
+  <td align="right">17</td>
+  <td align="right">-</td>
+  <td align="right">7</td>
+  <td align="right">-</td>
+  <td align="right">8</td>
+  <td align="right">-</td>
+  <td align="right">in</td>
+  <td align="left">Receive Clock</td>
+<tr>
+  <td align="left">HSKo</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">1</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">out</td>
+  <td align="left">Output Handshake</td>
+  <td align="left">mac-specific (usually RTS)</td></tr>
+<tr>
+  <td align="left">HSKi</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">2</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">in</td>
+  <td align="left">Input Handshake</td>
+  <td align="left">mac-specific (usually CTS)</td></tr>
+<tr>
+  <td align="left">TxD+</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">6</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">out</td>
+  <td align="left">RS-422 Transmit Data (+)</td></tr>
+<tr>
+  <td align="left">RxD+</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">8</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">in</td>
+  <td align="left">RS-422 Receive Data (+)</td></tr>
+<tr>
+  <td align="left">GPi</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">7</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">in</td>
+  <td align="left">General Purpose Input may be used for RI or handshaking</td></tr>
+<tr>
+  <td align="left">GND</td>
+  <td align="right">5</td>
+  <td align="right">7</td>
+  <td align="right">4</td>
+  <td align="right">4</td>
+  <td align="right">4,8</td>
+  <td align="right">4</td>
+  <td align="right">7</td>
+  <td align="right">n/a</td>
+  <td align="left">Signal Ground</td>
+  <td align="left"></td></tr>
+<tr>
+  <td align="left">-</td>
+  <td align="right">-</td>
+  <td align="right">1</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">-</td>
+  <td align="right">n/a</td>
+  <td align="left">Protective Ground</td>
+  <td align="left">cable shield (do not use for Signal Ground)</td></tr>
+</table>
+
+<p><a name="mac"><i>Note:</i> Macintosh</a> 
+(<a href="../../../Ports/mac68k/">mac68k</a> and 
+<a href="../../../Ports/macppc/">macppc</a>) systems
+use the RS-422 protocol which has balanced
+pairs (positive and negative lines) for transmit and receive.  To connect
+a balanced RS-422 line to a single-ended RS-232 line, tie the positive
+receive data line (RxD+) to signal ground, and leave the positive transmit
+data line (TxD+) floating.  How you wire HSKo and HSKi depend on
+application, though usually HSKo is used as RTS and HSKi is used as CTS.  
+Additionally, some cable manufacturers try to tie DCD, DTR, and DSR signals
+to various of the MiniDIN8 lines.  See
+<a href="http://www.mindspring.com/~jc1/serial/main.html">Interfacing
+a Mac Serial Port to RS-232 Lab Equipment</a> for more information.
+Beware of truly ancient Apple cables, as the original Mac 128k and 512k models
+used DB9 connectors with non-standard pinouts.
+
+<p><a name="sparc"><i>Note:</i></a> Some <a
+href="../../../Ports/sparc/">sparc</a> systems use MiniDIN8 connectors for
+serial, although others have DB25 connectors.  The MiniDIN8 pinout is
+listed here.  Some of the DB25-based systems have a breakout cable (A/B)
+that supports two serial ports.  See the <a
+href="../../../Ports/sparc/faq.html#serial-port-splitter">FAQ</a> for the
+pinouts of this <a
+href="../../../Ports/sparc/faq/sun_530-1677-01-rev50.txt">cable</a> (the
+first set of serial lines are in standard DB25 locations -- you don't need
+an adapter). 
+
+<p><a name="next68k"><i>Note:</i></a> All <a
+href="../../../Ports/next68k/">next68k</a> systems have two MiniDIN8 serial
+ports.  The NEXTSTEP System Administrator's manual has several examples of
+serial cables for NeXT systems.  See the <a
+href="http://channelu.com/NeXT/NeXTStep/3.3/nsa/ApB_Cabling.htmld/index.html">
+online</a> version, or the
+<a href="http://www.radical.com/TheHome/TheSolutions/RadicalSolution6.html">
+Radical System Solutions: NeXT Serial / Modem Cables</a> page for more 
+information.
+
+<p><a name="hp300"><i>Note:</i></a> All <a
+href="../../../Ports/hp300/">hp300</a> systems which use a 98562 System
+Interface Board have a non-standard DB9 pinout.  This is what's listed
+here.  All Series 400 models have a DB25 breakout cable that supports
+three serial ports.  See the <a
+href="../../../Ports/hp300/faq.html#serialdefs">FAQ</a> for the pinouts of
+this <a href="../../../Ports/hp300/serial.splitter.html">cable</a> (the
+first set of serial lines are in standard DB25 locations -- you don't need
+an adapter).  Additionally, the 948642A card supports four serial ports
+using <a href="../../../Ports/hp300/dcmpinouts.html">RJ-11 jacks</a>. 
+Everything else uses standard DB9 or DB25 connectors. 
+
+<ENTRY>null Common cables with modem signaling
+
+<h3>Null modem DB25 to DB25 cable</h3>
+<pre>DB25                   DB25
+----                   ----
+1 GND  --------------- 1 GND
+2 TxD  --------------- 3 RxD
+3 RxD  --------------- 2 TxD
+4 RTS  --------------- 5 CTS
+5 CTS  --------------- 4 RTS
+7 GND  --------------- 7 GND
+6 DSR  ---+
+          +----------- 20 DTR
+8 DCD  ---+
+                 +---- 6 DSR
+20 DTR ----------+
+                 +---- 8 DCD</pre>
+
+<h3>Null modem DB25 to DB9</h3>
+<pre>DB25        DB9
+----        ---
+1 GND  ---  1 GND
+2 TxD  ---  2 RxD
+3 RxD  ---  3 TxD
+4 RTS  ---  8 CTS
+5 CTS  ---  7 RTS
+7 GND  ---  5 GND
+6 DSR  ---  4 DTR
+20 DTR ---  6 DSR</pre>
+
+<h3>Modem MiniDIN8 to DB25 (Macintosh, non-null modem)</h3>
+Note that RxD+ is shorted to ground, and that TxD+ and GPi are floating.
+<pre>MiniDIN8           DB25
+--------          ----
+1 HSKo ----------- 4 RTS
+2 HSKi ----------- 5 CTS
+3 TxD- ----------- 2 TxD
+5 RxD- ----------- 3 RxD
+4 GND  ---+
+          +------- 7 GND
+8 RxD+ ---+
+6 TxD+ ---x
+7 GPi  ---x</pre>
+
+<h3>Null modem MiniDIN8 to MiniDIN8 (Macintosh "printer" cable)</h3>
+<pre>MiniDIN8   MiniDIN8
+--------   --------
+1 HSKo --- 2 HSKi
+2 HSKi --- 1 HSKo
+3 TxD- --- 5 RxD-
+4 GND  --- 4 GND
+5 RxD- --- 3 TxD-
+6 TxD+ --- 8 TxD+
+7 GPi  --- 7 GPi
+8 RxD+ --- 6 TxD+</pre>
+
+</LIST>
+
+<a href="./">Up to <em>NetBSD Hardware Documentation</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: serial.list,v 1.5 2002/08/16 10:58:11 keihan Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2002
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
+
