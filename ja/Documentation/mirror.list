@@ -84,7 +84,8 @@ href="../MailingLists/#netbsd-users">netbsd-users メーリングリスト</a>
 送付してください:
 <p>
 
-<pre>mirror          *マシン名*
+<pre>
+mirror          *マシン名*
 country         *ホストのある場所(国)*
 location        *詳細な場所(例えば、Foo 大学)*
 ftp             ftp://ftp.foo-univ.ac.jp/pub/NetBSD/
@@ -93,13 +94,15 @@ organisation    *組織名*
 contactperson   *担当者の名前*
 contactemail    *担当者の電子メールアドレス*
 contactphone    *担当者の電話番号*
-contactaddress  *担当者の郵政省メールアドレス*</pre>
+contactaddress  *担当者の郵政省メールアドレス*
+</pre>
 <p>
 
 たとえば以下のように書きます。
 <p>
 
-<pre>mirror          netbsd.foo.com
+<pre>
+mirror          netbsd.foo.com
 country         Japan
 location        Department of Computer Science, Foo University
 ftp             ftp://ftp.foo-univ.ac.jp/pub/NetBSD/
@@ -108,7 +111,8 @@ organisation    Foo University
 contactperson   Foo Bar
 contactemail    Bar@foo-univ.ac.jp
 contactphone    +81 3 xxxx yyyy
-contactaddress  9876 Foo City, Tokyo 1234567 Japan</pre>
+contactaddress  9876 Foo City, Tokyo 1234567 Japan
+</pre>
 <p>
 
 あなたのミラーのコンタクトインフォメーションが変わったような場合は、
@@ -163,12 +167,13 @@ contactaddress  9876 Foo City, Tokyo 1234567 Japan</pre>
 
 <pre># su - nbwww
 # cd /path/to/htdocs
+# env CVS_RSH=ssh CVSROOT=anoncvs@anoncvs.netbsd.org:/cvsroot \
+  cvs co -P htdocs
+</pre>
 
 <b>注意:</b> ここで "/path/to/htdocs" は <tt>www.netbsd.org</tt>
 のミラーを置こうとしているディレクトリーです。このディレクトリーは、
 たとえば "nbwww" ユーザーの所有にすべきです。
-
-# env CVS_RSH=ssh CVSROOT=anoncvs@anoncvs.netbsd.org:/cvsroot \<br>  cvs co -P htdocs</pre>
 
 <ENTRY>www-sync NetBSD WWW サイトコンテンツの同期をとる
 同期をとるための一番よい方法は、 cron ジョブを設定して、たとえば nbwww
@@ -176,19 +181,20 @@ contactaddress  9876 Foo City, Tokyo 1234567 Japan</pre>
 (wget の使い方の詳細は下記のとおり) :
 <p>
 
-<pre># crontab -u nbwww -e
-
-<b>注意:</b> 以下の例示において、 "MAILTO" はミラー関連のメールを
-受け取るユーザーのものに書き換えてください。
-また、 "/path/to/htdocs" は <tt>www.netbsd.org</tt> のミラーの
-置き場所に書き換えます。
-
+<pre>
+# crontab -u nbwww -e
 SHELL=/bin/sh
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/pkg/bin
 MAILTO=whoever@gets.the.mirror.mail
 CVS_RSH=ssh
 CVSROOT=anoncvs@anoncvs.netbsd.org:/cvsroot
-0 1 * * * cd /path/to/htdocs && cvs update -dP && wget -nv -xnH -N -Fi mirrors/fetch.html && wget -nv -xnH -N -r -np http://www.netbsd.org/Gnats/</pre>
+0 1 * * * cd /path/to/htdocs && cvs update -dP && wget -nv -xnH -N -Fi mirrors/fetch.html && wget -nv -xnH -N -r -np http://www.netbsd.org/Gnats/
+</pre>
+
+<b>注意:</b> この例示のなかの "MAILTO" は、ミラー関連のメールを
+受け取るユーザーのものに書き換えてください。
+また、 "/path/to/htdocs" は <tt>www.netbsd.org</tt> のミラーの
+置き場所に書き換えます。
 
 <ENTRY>www-fetch htdocs/mirrors/fetch.html の目的
 この fetch.html ファイルは、 <tt>www.netbsd.org</tt> 上にある、
@@ -298,32 +304,36 @@ CVS ツリーのコピーを cvsup を使って取得するには、
 以下のようにします:
 <p>
 
-<pre># su - cvsweb
-# mkdir /home/cvsweb/netbsd
+<pre>
+# su - cvsweb
+# mkdir -p /home/cvsweb/netbsd
 # cd /home/cvsweb
+</pre>
 
 <b>注意:</b> ここで "/home/cvsweb/netbsd" は CVS ツリーのミラーを
 置こうとしているディレクトリーです。このディレクトリーは、
 たとえば "cvsweb" ユーザーの所有にすべきです。エディターを使って
 "supfile" ファイルを作ります (書き方の例は、
-<a href="ftp://ftp.pasta.cs.uit.no/pub/cvsupd/supfiles/netbsd-supfile">ftp://ftp.pasta.cs.uit.no/pub/cvsupd/supfiles/netbsd-supfile</a> を見てください) 。
-
+<a href="../../Documentation/netbsd-supfile" origlink="netbsd-supfile">netbsd-supfile</a> を見てください) 。
+ファイル中の cvsup-server-hostname は、利用可能な公開 cvsup サーバーの一覧の中から選んで書き換えてください。サーバーの<a href="../mirrors/index.html#cvsup">一覧はこちらにあります</a>。
+<pre>
 # cvsup -g -L 2 netbsd-supfile
-
+</pre>
 <ENTRY>cvsweb-sync NetBSD CVS ツリーコンテンツの同期をとる
 同期をとるための一番よい方法は、 cron ジョブを設定して、たとえば cvsweb
 ユーザーで cvsup を使って定期的に CVS ツリーを更新することです:
 <p>
 
-<pre># crontab -u cvsweb -e
-
-<b>注意:</b> 以下の例示において、 "MAILTO" はミラー関連のメールを
-受け取るユーザーのものに書き換えてください。
-
+<pre>
+# crontab -u cvsweb -e
 SHELL=/bin/sh
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/pkg/bin
 MAILTO=whoever@gets.the.mirror.mail
-0 1 * * * cvsup -g /home/cvsweb/netbsd-supfile</pre>
+0 1 * * * cvsup -g /home/cvsweb/netbsd-supfile
+</pre>
+
+<b>注意:</b> この例のなかの "MAILTO" は、ミラー関連のメールを
+受け取るユーザーのものに書き換えてください。
 
 <ENTRY>cvsweb-cgi cvsweb CGI スクリプトの設定方法
 cvsweb.conf ファイルを見て、以下の各オプションを書き換えておきます:
@@ -358,7 +368,8 @@ NetBSD CVSweb ミラーサイトは、 CVSweb ミラー用の
 送付してください:
 <p>
 
-<pre>mirror          *マシン名*
+<pre>
+mirror          *マシン名*
 country         *ホストのある場所(国)*
 location        *詳細な場所 (例えば、Foo 大学)*
 cvsweb          *CVSweb URL*
@@ -367,13 +378,15 @@ organisation    *組織名*
 contactperson   *担当者の名前*
 contactemail    *担当者の電子メールアドレス*
 contactphone    *担当者の電話番号*
-contactaddress  *担当者の郵政省メールアドレス*</pre>
+contactaddress  *担当者の郵政省メールアドレス*
+</pre>
 <p>
 
 たとえば以下のように書きます。
 <p>
 
-<pre>mirror          netbsd.foo-univ.ac.jp
+<pre>
+mirror          netbsd.foo-univ.ac.jp
 country         Japan
 location        Department of Computer Science, Foo University
 cvsweb          http://netbsd.foo-univ.ac.jp/cgi-bin/cvsweb.cgi/
@@ -382,7 +395,8 @@ organisation    Foo University
 contactperson   Foo Bar
 contactemail    Bar@foo-univ.ac.jp
 contactphone    +81 3 xxxx yyyy
-contactaddress  9876 Foo City, Tokyo 1234567 Japan</pre>
+contactaddress  9876 Foo City, Tokyo 1234567 Japan
+</pre>
 <p>
 
 あなたのミラーのコンタクトインフォメーションが変わったような場合は、
@@ -408,7 +422,7 @@ contactaddress  9876 Foo City, Tokyo 1234567 Japan</pre>
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: mirror.list,v 1.26 2003/01/09 12:13:21 keihan Exp $<br>
+  $NetBSD: mirror.list,v 1.30 2003/01/10 09:31:46 keihan Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
