@@ -1,7 +1,7 @@
-#	$NetBSD: Makefile,v 1.5 1999/12/16 20:32:00 dmcmahill Exp $
+#	$NetBSD: Makefile,v 1.6 2002/03/21 10:10:45 hubertf Exp $
 #	Process .list files into .html files
 
-all::	index.html wavelan.html dhcp.html
+all::	index.html wavelan.html dhcp.html gprs.html
 
 all::
 	@for dir in `echo */Makefile | sed 's:/Makefile::g'` ; do \
