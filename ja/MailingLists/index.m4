@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.107 2002/01/16 04:11:21 perry Exp $
+#	$NetBSD: index.m4,v 1.109 2002/03/02 22:18:41 scw Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -7,11 +7,11 @@ divert(-1)dnl
 undefine(`index')
 
 define(`LISTARCHIVE',
-`  <a href="http://mail-index.netbsd.org/$1/"><img src="/images/misc/tape.gif" origlink="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
+`  <a href="http://mail-index.netbsd.org/$1/"><img src="../../images/misc/tape.gif" origlink="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
 </td><td valign=top>')
 
 define(`LISTSUBSCRIBE',
-`  <a href="http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=$1"><img src="/images/misc/envelope.gif" origlink="../images/misc/envelope.gif" align="bottom" border="0" width="29" height="29" alt="[Subscribe]"></a>
+`  <a href="http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=$1"><img src="../../images/misc/envelope.gif" origlink="../images/misc/envelope.gif" align="bottom" border="0" width="29" height="29" alt="[Subscribe]"></a>
 </td><td valign=top>')
 
 define(`LISTPREHEADER',
@@ -67,7 +67,7 @@ divert(0)dnl
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1><img src="/images/NetBSD-flag.gif" origlink="../images/NetBSD-flag.gif"
+<h1><img src="../../images/NetBSD-flag.gif" origlink="../images/NetBSD-flag.gif"
 align="middle" width="91" height="42" alt="NetBSD"> メールサーバーへのゲートウェイ</h1>
 
 <p>
@@ -93,7 +93,7 @@ NetBSD プロジェクトの Majordomo の使い方がわかるようになっています。
 
 <b>メーリングリストを講読するには</b>、このページの説明の部分にある
 リスト名の後のリンク
-<img src="/images/misc/envelope.gif" origlink="../images/misc/envelope.gif" width="29" height="29"
+<img src="../../images/misc/envelope.gif" origlink="../images/misc/envelope.gif" width="29" height="29"
 alt="[Subscribe]"> をクリックします。
 それからフォームに e-mail アドレスを記入してください。
 <i>注意: この機能は、フォームに対応したブラウザーでのみ使えます。</i>
@@ -106,7 +106,7 @@ href="mailto:majordomo@netbsd.org">majordomo@netbsd.org</a> へ、本文に
 
 <b>メーリングリストのアーカイブを見るには</b>、このページの説明の部分にある
 リスト名の後のリンク
-<img src="/images/misc/tape.gif" origlink="../images/misc/tape.gif" width="29" height="29"
+<img src="../../images/misc/tape.gif" origlink="../images/misc/tape.gif" width="29" height="29"
 alt="[View archive]"> をクリックします。これでメールアーカイブサーバー <a
 href="http://mail-index.netbsd.org/">mail-index.netbsd.org</a>
 を利用できます
@@ -126,10 +126,11 @@ NetBSD のメーリングリストの多くは、普通の unmoderated なものですが、
 
 <h2>メーリングリストアーカイブの検索</h2>
 
-検索可能な索引が、
+索引とアーカイブは
 <a href="http://mail-index.netbsd.org/">http://mail-index.netbsd.org/</a>
 と <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>
-にあります。
+にあります; メーリングリストアーカイブを検索するには、 <a
+href="../Misc/search.html">http://www.netbsd.org/Misc/search.html</a> を使ってください。
 
 <h2><a name="index">The NetBSD Project のメーリングリスト</a></h2>
 
@@ -419,6 +420,12 @@ PORTLIST(port-mvme68k)
   Motorola 68k ベースのすべてのポートに関する質問のための
   <a href="#port-m68k">port-m68k</a> リストもあります。
 ENDLIST
+PORTLIST(port-mvmeppc)
+  Motorola の PowerPC VME ボードコンピューター上の NetBSD
+  (NetBSD/mvmeppc) 固有の事項の議論用です。
+  PowerPC ベースのすべてのポートに関する質問のための
+  <a href="#port-powerpc">port-powerpc</a> リストもあります。
+ENDLIST
 PORTLIST(port-newsmips)
   MIPS ベースの Sony NEWS システム上の NetBSD (NetBSD/newsmips)
   固有の事項の議論用です。
@@ -463,6 +470,7 @@ LIST(port-powerpc)
   そちらをご利用ください:
   <a href="#port-bebox">port-bebox</a>、
   <a href="#port-macppc">port-macppc</a>、
+  <a href="#port-mvmeppc">port-mvmeppc</a>、
   <a href="#port-ofppc">port-ofppc</a>、
   <a href="#port-prep">port-prep</a>、
   <a href="#port-sandpoint">port-sandpoint</a>。
@@ -576,11 +584,11 @@ divert(9)
 
 <table><tr><td>
     <a href="../"><img
-	src="/images/NetBSD-flag.gif" origlink="../images/NetBSD-flag.gif" border=0
+	src="../../images/NetBSD-flag.gif" origlink="../images/NetBSD-flag.gif" border=0
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="../"><img
-	src="/images/empty.gif" origlink="../images/empty.gif" border=0
+	src="../../images/empty.gif" origlink="../images/empty.gif" border=0
 	width="1" height="1" alt="NetBSD ">ホームページ</a>
 </td></tr></table>
 
@@ -590,7 +598,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.107 2002/01/16 04:11:21 perry Exp $<br>
+  $NetBSD: index.m4,v 1.109 2002/03/02 22:18:41 scw Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
