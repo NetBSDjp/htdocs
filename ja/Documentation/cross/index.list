@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 2001
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+    <title>Cross-building NetBSD</title>
+  </head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>Cross-building NetBSD
+
+<LIST>
+
+<h2>Other sources of information</h2>
+<ul>
+<li><a href="../current/">Tracking NetBSD-current</a>
+<li><a href="../../Documentation/">General NetBSD Documentation</a>
+    - for questions not specific to cross building.
+</ul>
+
+<SECTION>Frequently asked questions
+
+<ENTRY>terminology  Terminology
+<ul>
+<li>Host system: the system you are willing to perform cross bulid.
+
+<li>Target system: the system you are willing to perform cross bulid for.
+
+<li>Cross build: if the host system is different from the target system,
+you are running a cross build.
+
+<li>Self build: if the host system is equal to the target system,
+you are runing a self build.
+</ul>
+
+If you are running build on top of NetBSD/i386 to produce NetBSD/sh3 binary,
+you are running a cross build.
+NetBSD/i386 is the "host system", and NetBSD/sh3 is the "target system".
+
+<ENTRY>why  Why cross-build?  When do we need to do cross-builds?
+Here are couple of reasons for cross-builds:
+<ul>
+<li>NetBSD supports <A HREF="../../Ports/">numerous architectures</A>.
+Some of them are not that performant compared to other modern architectures.
+If you would like to build more frequently for older architectures,
+cross build is a good solution.
+
+<li>If the target systems is embedded system products (like cellphones),
+and you would like to port NetBSD onto that, you may not be able to run
+self build on top of the target system.
+
+<li>If you need to build NetBSD binary on top of non-NetBSD host system for
+some reason, you need to run a cross build.
+
+<li>If you are trying to port NetBSD onto new architecture,
+cross compilation would be the only choice.
+</ul>
+
+<ENTRY>caveats  Caveats?
+With cross build, compiler settings get trickier.
+With cross build configuration compiler bugs tend to show up
+more frequently.
+We also need to use different version of compiler from self builds,
+so compiler compatibility issue (like between differet version of GCC, or
+compiler from different vendors) can become a headache.
+<p>
+
+With <tt>pkgsrc/cross</tt>, cross build for a.out PIC is not supported.
+<p>
+
+Use the correct cpp, or you will be in trouble with predefined symbols
+like <tt>__NO_LEADING_UNDERSCORES__</tt> or <tt>__LITTLE_ENDIAN__</tt>.
+<p>
+
+Of course we need to do more about stabilizing cross builds.
+
+<SECTION>Step-by-step
+
+<ENTRY>host-system  Selecting a host system
+If you have no particular reasons, we'd suggest you to use NetBSD
+(probably the latest release, or netbsd-current) as your host system.
+It would be so much easier if you use NetBSD as your host system,
+as you will be able to use the same /usr/bin/make, /usr/share/mk/*, and such.
+
+<ENTRY>cross-compiler Preparing cross compiler
+If you are building for NetBSD target system on top of NetBSD host system,
+NetBSD package system has cross compiler configuration under "cross" directory.
+For example, if your target system is NetBSD/sh3,
+<PKGSRC>cross/sh-netbsdcoff (for big endian) and
+<PKGSRC>cross/shel-netbsdcoff (for little endian) are available.
+<p>
+
+If you are using non-NetBSD as the host system,
+you will need to configure GNU gcc and GNU binutils for cross builds.
+Also, you will need to make NetBSD make(1), config(8), and other build tools
+available on your system.
+
+<ENTRY>build-tree Preparing build tree
+First of all, you need to get the whole NetBSD source code tree.
+See <a href="../current/">"Tracking NetBSD-current"</a> for details.
+In the following descriptions, we assume that the tree is under $TOP/src.
+<p>
+
+Configure /etc/mk.conf correctly for cross builds.
+See options(5) and mk.conf(5) for details.
+<ul>
+<li>Prepare a directory to populate the compiled result.
+Point the directory with <tt>DESTDIR</tt> in /etc/mk.conf.
+<li>You will want to use <tt>OBJMACHINE</tt>, so that you can use the same
+NetBSD source code tree for multiple architectures.
+</ul>
+
+<ENTRY>build-script  Preparing a bulid script
+Prepare a script like below, to use the appropriate compiler, instead of
+normal compiler for the host system.
+The script is for NetBSD/evbsh3, with <PKGSRC>cross/sh-netbsdcoff binaries.
+You need to tweak MACHINE, MACHINE_ARCH and TARGET settings at least.
+<p>
+
+There are couple of other build scripts available:
+<A HREF="../../Ports/hpcmips/hpcmips-make">hpcmips-make</A>
+<p>
+
+<pre>
+#! /bin/sh
+
+# just helping for cross compilation.
+
+MACHINE=evbsh3
+MACHINE_ARCH=sh3eb
+# just in case you forgot to specify this when you built gcc...
+CFLAGS="-D__NetBSD__"
+export MACHINE MACHINE_ARCH CFLAGS
+TARGET=/usr/pkg/cross/bin/sh-netbsdcoff
+CPP=`$TARGET-gcc -print-prog-name=cpp`
+
+make AR=$TARGET-ar AS=$TARGET-as CC=$TARGET-gcc LD=$TARGET-ld NM=$TARGET-nm \ 
+	RANLIB=$TARGET-ranlib SIZE=$TARGET-size \ 
+	STRIP=$TARGET-strip OBJCOPY=$TARGET-objcopy \ 
+	CXX=$TARGET-c++ CPP=$CPP $*
+</pre>
+
+<ENTRY>compile-kernel Actual cross compilation - kernel
+Use the build script to build the kernel.
+NetBSD config(8) is architecture independent, so you can use it on the
+host system.
+<pre>
+% cd $TOP/src/sys/arch/MYARCH/conf
+% cp GENERIC MYCONF
+% vi MYCONF
+% config MYCONF
+% cd ../../compile/MYCONF
+% sh build-script depend
+% sh build-script
+</pre>
+
+<ENTRY>include-lib Getting include files and library files
+To run a cross build for the userland,
+you need to get working library and include file for the target system.
+<p>
+
+First, you need to populate directory structure onto your DESTDIR.
+<pre>
+# (cd $TOP/src; sh build-script beforeinstall)
+</pre>
+<p>
+
+To obtain a full include tree, you need to run "make includes"
+using the build script.
+<pre>
+# (cd $TOP/src; sh build-script includes)
+</pre>
+After this, include files should be ready under <tt>$DESTDIR/usr/include</tt>.
+Copy it (or symlink it) to the directory which cross compiler will be using.
+<p>
+
+To obtain a full library files,
+you need to run the following using the build script.
+<pre>
+# (cd $TOP/src/lib/csu; sh build-script dependall install)
+# (cd $TOP/src/lib; sh build-script dependall install)
+</pre>
+After this, <tt>$DESTDIR/usr/lib</tt> should have the library binary.
+Copy it (or symlink it) to the directory which cross compiler will be using.
+
+<ENTRY>compile-userland Actual cross compilation - userland
+Use the build script to build the whole tree, as documented in
+<a href="../current/">"Tracking NetBSD-current"</a>.
+<pre>
+# (cd $TOP/src; sh build-script obj build)
+</pre>
+
+<SECTION>Common problems
+
+<ENTRY>make  "make" went funny in the middle
+In some of build Makefiles, there can be (mis)use of "make" when we
+invoke sub-make, like:
+<pre>
+foo:
+	(cd subdir; make)
+</pre>
+The problem here is that, by invoking "make", we will lose command
+line arguments you gave on your invocation, also we will use
+different make from what you have used at the start.
+<p>
+
+Solution: Replace "make" with "${MAKE}".
+Also please be sure to
+<a href="../../Misc/send-pr.html#submitting">report it to developers</a>
+so that it won't bite you again.
+<pre>
+foo:
+	(cd subdir; ${MAKE})
+</pre>
+
+<ENTRY>compiler-issue  Compiler died with internal error, or something alike
+Yes, it is a problem.
+With cross compilation internal errors and compiler issues
+show up more frequently.
+Also, as we use different version of compiler from the one we use for
+self build, or we use different compiler, we see interesting issues
+time to time.
+Even for pkgsrc/cross tree, we use different version of GCC (egcs 1.1.1)
+from the NetBSD self builds (egcs 1.1.2).
+Also pkgsrc/cross may not contain some of changes made in NetBSD tree to egcs.
+<p>
+
+There is no magic wand to this:
+<ul>
+<li>Review the content of compilation script.
+	If you mix compilers for different targets (like using /usr/bin/as
+	during cross build) you will be in trouble.
+<li>As workaround, try to decrease optimization level (like -O2 to -O),
+	change compiler settings at runtime.
+<li>Review your compiler settings at cross-compiler generation time.
+<li>If you know how to repeat it, and you are using gcc,
+	<a href="http://www.gnu.org/software/gcc/bugs.html">
+	submit a bug report to gcc guys</a>.
+</ul>
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.12 2001/01/10 00:09:56 itojun Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy;
+    2001
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
