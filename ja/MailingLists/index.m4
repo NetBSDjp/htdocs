@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.103 2001/11/17 01:25:48 wdk Exp $
+#	$NetBSD: index.m4,v 1.105 2001/12/30 21:34:25 gendalia Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -243,6 +243,12 @@ ENDLIST
 LISTSECTION(機種別のリスト)
 
   <ul>
+PORTLIST(port-acorn32)
+  ARM6 およびそれ以降の CPU ベースのマシン上の NetBSD
+  (NetBSD/acorn32) 固有の事項の議論用です。
+  ARM ベースのすべてのポートに関する質問のための
+  <a href="#port-arm">port-arm</a> リストもあります。
+ENDLIST
 PORTLIST(port-algor)
   Algorithmics, Ltd. MIPS ベースの評価ボード上の NetBSD (NetBSD/alpha)
   固有の事項の議論用です。
@@ -271,6 +277,7 @@ LIST(port-arm)
   ARM ベースの NetBSD ポートすべてに関する事項の議論用です。
   ポート別のリストがありますので、各ポートに固有の質問や情報は
   そちらをご利用ください:
+  <a href="#port-acorn32">port-acorn32</a>、
   <a href="#port-arm26">port-arm26</a>、
   <a href="#port-arm32">port-arm32</a>、
   <a href="#port-cats">port-cats</a>、
@@ -367,6 +374,7 @@ LIST(port-m68k)
   <a href="#port-mvme68k">port-mvme68k</a>、
   <a href="#port-news68k">port-news68k</a>、
   <a href="#port-next68k">port-next68k</a>、
+  <a href="#port-sun2">port-sun2</a>、
   <a href="#port-sun3">port-sun3</a>、
   <a href="#port-x68k">port-x68k</a>。
 ENDLIST
@@ -437,6 +445,10 @@ PORTLIST(port-pc532)
   珍しい PC532 コンピューター上の NetBSD (NetBSD/pc532)
   固有の事項の議論用です。
 ENDLIST
+PORTLIST(port-playstation2)
+  Sony Playstation 2 マシン上の NetBSD (NetBSD/playstation2)
+  固有の事項の議論用です。
+ENDLIST
 PORTLIST(port-pmax)
   Digital の MIPS ベースの DECstation および DECsystem マシン上の NetBSD
   (NetBSD/pmax) 固有の事項の議論用です。
@@ -490,10 +502,19 @@ PORTLIST(port-sparc64)
   Sun の 64 ビット Ultrasparc ベースのマシン上の NetBSD (NetBSD/sparc64)
   固有の事項の議論用です。
 ENDLIST
+PORTLIST(port-sun2)
+  Sun の Motorola 68010 ベースのマシン上の NetBSD (NetBSD/sun2)
+  固有の事項の議論用です。より新しい Sun のマシンは、
+  <a href="#port-sun3">port-sun3</a>、
+  <a href="#port-sparc">port-sparc</a>、
+  <a href="#port-sparc64">port-sparc64</a> がカバーします。
+  Motorola 68k ベースのすべてのポートに関する質問のための
+  <a href="#port-m68k">port-m68k</a> リストもあります。
+ENDLIST
 PORTLIST(port-sun3)
-  Sun の Motorola 68k ベースのマシン上の NetBSD (NetBSD/sun3 および
-  NetBSD/sun3x) 固有の事項の議論用です。
-  新しい Sparc ベースの Sun のマシンは、
+  Sun の Motorola 68020 (sun3) および 68030 (sun3x) ベースのマシン上の
+  NetBSD (NetBSD/sun3) 固有の事項の議論用です。
+  より新しい Sparc ベースの Sun のマシンは、
   <a href="#port-sparc">port-sparc</a> と
   <a href="#port-sparc64">port-sparc64</a> がカバーします。
   Motorola 68k ベースのすべてのポートに関する質問のための
@@ -567,7 +588,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.103 2001/11/17 01:25:48 wdk Exp $<br>
+  $NetBSD: index.m4,v 1.105 2001/12/30 21:34:25 gendalia Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
