@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.87 2003/07/17 08:05:44 keihan Exp $
+# $NetBSD: list2html.pl,v 1.89 2003/09/27 09:54:41 dent Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -64,7 +64,7 @@ my($version, %opt, %pkgname);
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.87 $';
+$version = '$Revision: 1.89 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -415,7 +415,7 @@ sub makelist
 		    }
 
 		$_.= "<p><h3>\n$title_font".
-			"<a name=\"$href\">$header</a>$end_title_font\n".
+			"<a name=\"$href\"></a>$header$end_title_font\n".
 			"<font size=\"-1\">".
 			"(<a href=\"#top\">top</a>)</font>\n".
 			"</h3><dl><dt><dd>\n";
@@ -672,12 +672,12 @@ sub sub_external_links
 
     # Expand <PKGSRC>category/name entries
     #
-    while ($text =~ m#<PKGSRC>((\w+/|)([^\s<>]+\w))#)
+    while ($text =~ m#<PKGSRC>(([-\w.]+/|)([^\s<>]+\w))#)
 	{
         my($n) = $3;
 	if (defined($pkgname{$n}))
 	    { $n = $pkgname{$n}; }
-        $text =~ s#<PKGSRC>((\w+/|)([^\s<>]+\w))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
+        $text =~ s#<PKGSRC>(([-\w.]+/|)([^\s<>]+\w))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
 	}
 
     # Expand <RFC>RFCxxxx entries
