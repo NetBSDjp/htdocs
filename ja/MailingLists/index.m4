@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.90 2001/02/06 16:23:09 dent Exp $
+#	$NetBSD: index.m4,v 1.92 2001/02/27 14:09:19 soda Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -303,14 +303,19 @@ PORTLIST(port-hp700)
   Discussion of issues specific to NetBSD on Hewlett-Packard's 9000/700 
   HP-PA RISC machines (NetBSD/hp700).
 ENDLIST
+PORTLIST(port-hpcarm)
+  Discussion of issues specific to NetBSD on ARM based Windows CE PDA machines
+  (NetBSD/hpcarm).
+ENDLIST
 PORTLIST(port-hpcmips)
-  Discussion of issues specific to NetBSD on MIPS based Windows CE PDA machines.
+  Discussion of issues specific to NetBSD on MIPS based Windows CE PDA machines
+  (NetBSD/hpcmips).
   There is also a <a href="#port-mips">port-mips</a> list for
   questions related to all MIPS based ports.
 ENDLIST
 PORTLIST(port-hpcsh)
   Discussion of issues specific to NetBSD on Hitachi Super-H (SH3/4) family 
-  based Windows CE PDA machines.
+  based Windows CE PDA machines (NetBSD/hpcsh).
   There is also a <a href="#port-sh3">port-sh3</a> list for
   questions related to all Hitachi Super-H (SH3/4) based ports.
 ENDLIST
@@ -529,7 +534,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.90 2001/02/06 16:23:09 dent Exp $<br>
+  $NetBSD: index.m4,v 1.92 2001/02/27 14:09:19 soda Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
