@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# NetBSD Id: list2html.pl,v 1.6 1999/05/13 03:23:16 abs Exp $
+# NetBSD Id: list2html.pl,v 1.19 1999/07/18 07:21:14 abs Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -15,24 +15,34 @@
 #	<ENTRYLINK>url Text	Link added to list, removed from main text
 #	<HEADING>Text		Standard heading at top of document
 #	<BASELINKS>		Standard links at base of document
+#	<TROW>Text: Text	Table row, with two text fields
 #
 # Continuation lines are understood (useful for the special tags)
 #
 # Additional links:
 #	([\w.+]+)\((\d)\) -> manpages		eg: ls(1)
 #	<([-\w.]+@[-\w.]+)> -> email address	eg: <user@host>
+#
+# (c) 1999 DKBrownlee. All rights reserved. This file may be used to update
+# the information on the NetBSD website. If you want to use it for any other
+# purpose, ask me first.. abs@mono.org
+#
+# Should probably 'remember' '$NetBSD' tags from output files
 
 use strict;
 require 'getopts.pl';
 $^W=1;
-use vars('$opt_a','$opt_h');
+use vars('$opt_a','$opt_h','$opt_m');
 my($verbose,%extras,$months_previous);
 
-if (!&Getopts('a:h') || $opt_h || @ARGV != 2 )
+$months_previous=9;	# previous months to display for DATE entries
+
+if (!&Getopts('a:m:h') || $opt_h || @ARGV != 2 )
 
     {
     print "list2html.pl [opts] infile outfile
 [opts]	-a xxx	Define 'arch=xxx' when linking to manpages
+	-m xxx	Set months to display for <DATE> (default $months_previous)
 	-h	This help.
 
 list2html.pl processes .list files into .html, parsing various special tags. 
@@ -43,38 +53,41 @@ as FAQs, and change logs. More details given at the start of list2html.pl.
     }
 
 $verbose=1;
-$months_previous=&convert_months_previous(9);	# DATE entries to display
+if ($opt_m)
+    { $months_previous=$opt_m; }
+$months_previous=&get_minmonth($months_previous);
 
 %extras=(
 	'<HEADING>\s*(.*)','
 <table><tr><td>
 <a href="$HOME/Misc/daemon-copy.html">
-<img align="center" src="$HOME/images/BSD-demon.gif" alt="BSD demon"></a>
+<img align="center" src="$HOME/images/BSD-demon.gif" border=0
+width=146 height=129 alt="BSD demon"></a>
 </td><td align=center>
-<h1>NetBSD ¥É¥­¥å¥á¥ó¥Æ¡¼¥·¥ç¥ó:</h1>
+<h1>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B:</h1>
 <h1>$TITLE</h1>
 </td></tr></table>
 <p>
 ',	'<BASELINKS>','
-<hr>
 <table width="100%"><tr>
   <td>
     <table><tr>
       <td>
 	<a href="$HOME/index.html">
-        <img src="$HOME/images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
+        <img src="$HOME/images/NetBSD-banner.gif" width=91 height=42
+	    alt="NetBSD&nbsp;Home"></a>
       </td><td>
-	<a href="$HOME/index.html">¥Û¡¼¥à¥Ú¡¼¥¸</a>
+	<a href="$HOME/index.html">$B%[!<%`%Z!<%8(B</a>
       </td>
     </tr></table>
   </td><td>
     <table><tr>
       <td>
 	<a href="$DOCUMENTATION/index.html"> <img
-	    src="$HOME/images/NetBSD-banner.gif"
+	    src="$HOME/images/NetBSD-banner.gif" width=91 height=42
 	    alt="NetBSD&nbsp;Documentation"></a>
       </td><td>
-	<a href="$DOCUMENTATION/index.html">¥É¥­¥å¥á¥ó¥È¤È FAQ</a>
+	<a href="$DOCUMENTATION/index.html">$B%I%-%e%a%s%H$H(B FAQ</a>
       </td>
     </tr></table>
   </td>
@@ -105,23 +118,6 @@ sub check_date
 	}
     $when=sprintf("%04d%02d",$2,$month);
     ( $when>$months_previous );
-    }
-
-sub convert_months_previous
-    {
-    my($months)=@_;
-    my($year,$month);
-
-    ($month,$year)=(localtime(time))[4,5];
-
-    ++$month;
-    $month-=$months;
-    if( $month<1 )
-	{
-	$month+=12;
-	--$year;
-	}
-    sprintf("%04d%02d",$year+1900,$month);
     }
 
 sub extras_generate
@@ -167,27 +163,45 @@ sub fail
     exit 3
     }
 
+sub get_minmonth
+    {
+    my($monthsback)=@_;
+    my($year,$month);
+
+    ($month,$year)=(localtime(time))[4,5];
+
+    ++$month;
+    $month-=$monthsback;
+    while( $month<1 )
+	{
+	$month+=12;
+	--$year;
+	}
+    sprintf("%04d%02d",$year+1900,$month);
+    }
+
+# Collect $list containing forward links as we go. In general each entry will
+# generate something in $list and some expanded data in the main $data.
+#
 sub makelist
     {
     my($infile,$outfile,%extras)=@_;
     my($data,$section,$href,$header,$list,$pre,%tags,$date_month);
     my($date_num,$date_num_used,$entry_num,$ignore,$in_entry,$endlist);
+    my($title_font) = "<font face=\"helvetica, arial, sans-serif\">";
+    my($end_title_font) = "</font>";
 
-    $list="
-<!-- THIS FILE GENERATED FROM '$infile'.
-     DO _NOT_ EDIT THIS FILE DIRECTLY - EDIT '$infile' AND RUN 'make'.
-     -->
-";
+    $list='';
 
     $data=$date_month='';
     $entry_num=$date_num=$date_num_used=0;
     open(FILE,"nkf -e $infile|") || die("Unable to open '$infile': $!");
     foreach( <FILE> )
 	{
-	if( defined($pre) )
+	if( defined($pre) )		# Handle continuation lines
 	    { $_=$pre.$_; $pre=undef; }
 
-	if( substr($_,-2) eq "\\\n" )
+	if( substr($_,-2) eq "\\\n" )	# Handle continuation lines
 	    {
 	    s/\\\n$//;
 	    $pre=$_;
@@ -224,18 +238,19 @@ sub makelist
 		if( $month ne $date_month )
 		    {
 		    if( $date_month ne '' )
-			{ $list.="</ul>\n"; }
-		    $list.="<h3>$month</h3>\n<ul>\n";
+			{ $list.="</ul>$end_title_font\n"; }
+		    $list.="<h3>$month</h3>\n$title_font<ul>\n";
 		    $_.="<hr><h2>$month</h2><hr>\n";
 		    $date_month=$month;
 		    }
 
-		$_.= "<p><dl><dt>\n".
+		$_.= "<p><dl><dt>\n$title_font".
 			"<h3><a name=\"$href\">$header</a> <font size=\"-1\">".
-			"(<a href=\"#top\">top</a>)</font></h3>\n</dt><dd>";
+			"(<a href=\"#top\">top</a>)</font></h3>\n".
+			"$end_title_font\n</dt><dd>";
 		$list.="<li><a href=\"#$href\">$link</a></li>\n";
+		$in_entry=1;
 		}
-	    $in_entry=1;
 	    }
 
 	elsif( m#^<ENTRY>\s*(.+\S)# )
@@ -259,10 +274,13 @@ sub makelist
 		{ &fail("Duplicate name tag '$href'"); }
 	    $tags{$href}=1;
 
-	    $_ = "<p><dl><dt>\n".
+	    $_ = "<p><dl><dt>\n$title_font".
 		    "<h3><a name=\"$href\">$header</a>\n<font size=\"-1\">".
-		    "(<a href=\"#top\">top</a>)</font></h3>\n</dt><dd>\n";
-	    $list.="<li><a href=\"#$href\">$header</a></li>\n";
+		    "(<a href=\"#top\">top</a>)</font></h3>$end_title_font\n".
+		    "</dt><dd>\n";
+	    $list.="<li><a href=\"#$href\">".
+		    "$header".
+		    "</a></li>\n";
 	    $in_entry=1;
 	    &verbose("\t$href\n");
 	    }
@@ -290,13 +308,31 @@ sub makelist
 		$data.="</dd></dl></p>\n";
 		$in_entry=undef;
 		}
+	    else # In case no entries
+		{ $data =~ s#<hr>\n<h2>.*</h2><hr>\n*$##; }
 	    $ignore=undef;
 	    if( defined($section) )
-		{ $list.="</ul>\n"; }
-	    $section=$1;
-	    $list.="<h2>$section</h2>\n<ul>\n";
+		{
+		$list.="</ul>$end_title_font\n";
+		$section=$1;
+		$list.="<h2>$section</h2>\n$title_font<ul>\n";
+		}
+	    else
+		{	# If we have never seen <SECTION> remember top link!
+		$section=$1;
+		$list.="<h2><a name=\"top\">$section</a></h2>\n".
+			"$title_font<ul>\n";
+		}
 	    $_="<hr>\n<h2>$section</h2><hr>";
 	    &verbose("    $section\n");
+	    }
+	elsif( m#^<TROW>\s*(.*)# )
+	    {
+	    $_=$1;
+	    if( ! m#^([^:]+:)\s+(.*)# )
+		{ &fail("<TROW> should match ([^:]+:)\s+(.*)"); }
+	    $ignore=undef;
+	    $_ = "<tr><th valign=top align=right>$1</th>\n    <td>$2</td></tr>";
 	    }
 
 	elsif( m#^<ENDLIST># )
@@ -320,11 +356,15 @@ sub makelist
 	}
 
     close(FILE);
-    $list.="</ul>\n";
+    $list.="</ul>$end_title_font\n";
     if (!$endlist)
 	{ &fail("Missing <ENDLIST> tag"); }
     if ($data !~ s/<LIST>/$list/)
 	{ &fail("Unable to locate <LIST> tag"); }
+    $_="\n\n<!-- DO NOT EDIT THIS FILE. EDIT '$infile' AND RUN 'make' -->\n";
+    if ($data !~ s/(<head[^>]*>)/$1$_/i)
+	{ &fail("Unable to locate <head> tag"); }
+
     open(FILE,"|nkf -j > $outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data,%extras);
     close(FILE);
@@ -348,11 +388,20 @@ sub sub_external_links
 
     if ($opt_a)
 	{ $link.="arch=$opt_a&amp;"; }
+
+    # Man page references. As of 1.4 matches every page except '[' and 'w'.
+    #
     $text =~
-	s#([\w.+]+)\((\d)\)#<a href="${link}page=$1&amp;sect=$2">$1($2)</a>#g;
-    $text =~ s#<([-\w.]+@[-\w.]+)>#<a href="mailto:$1">&lt;$1&gt;</a>#;
+	s#([a-zA-Z_][-\w.+]*[\w+])\((\d)\)#<a href="${link}page=$1&amp;sect=$2">$1($2)</a>#g;
+    
+    # Expand <user@host> email addresses
+    #
+    $text =~ s#<([-\w.]+@[-\w.]+)>#<a href="mailto:$1">&lt;$1&gt;</a>#g;
     $text;
     }
 
 sub verbose
     { $verbose && print @_; }
+
+sub warn
+    { print "WARNING: ",@_; }
