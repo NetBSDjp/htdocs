@@ -1,8 +1,8 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.138 2003/07/01 13:38:58 lukem Exp $
+#	$NetBSD: index.m4,v 1.140 2003/08/04 12:21:42 soren Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
-# http://mail-index.netbsd.org/
+# http://mail-index.NetBSD.org/
 
 undefine(`index')
 
@@ -146,9 +146,9 @@ href="../Misc/search.html">other NetBSD searches</a>)<br>
   <td valign="top">
   <form method="get" action="http://www.google.com/custom">
     <input type="text" name="q" size=30 maxlength="255" value="">
-    <input type="hidden" name="cof" value="LW:247;L:http://www.netbsd.org/images/NetBSD-smaller.jpg;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
-    <input type="hidden" name="domains" value="mail-index.netbsd.org">
-    <input type="hidden" name="sitesearch" value="mail-index.netbsd.org">
+    <input type="hidden" name="cof" value="LW:247;L:http://www.NetBSD.org/images/NetBSD-smaller.jpg;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
+    <input type="hidden" name="domains" value="mail-index.NetBSD.org">
+    <input type="hidden" name="sitesearch" value="mail-index.NetBSD.org">
     <br>
     <input type="submit" value="Google Search">
     </form>
@@ -248,6 +248,9 @@ LIST(regional-london)
 ENDLIST
 LIST(regional-nl)
   Discussion relevant to users in the Netherlands.
+ENDLIST
+LIST(regional-nordic)
+  Discussion relevant to users in the Nordic countries.
 ENDLIST
 LIST(regional-nyc)
   Discussion relevant to users in New York City.
@@ -701,8 +704,8 @@ divert(9)
 <hr> 
 <address>
   <small>
-  <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.138 2003/07/01 13:38:58 lukem Exp $<br>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: index.m4,v 1.140 2003/08/04 12:21:42 soren Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
