@@ -466,8 +466,8 @@ the following command to boot:
 
 <ENTRY>scroll-speed Why does the screen scroll text so slowly?
 The text console code is not optimized in the GENERIC kernel.  There is
-accelerated text console code in -current, if you build a new
-kernel.  This fix is <em>not</em> in NetBSD 1.5.x.
+accelerated text console code in NetBSD 1.6, but it is not enabled by
+default.
 <p>
 You will need to build a new kernel.  Add the following line to your 
 <a href="../../Documentation/kernel/#how_to_build_a_kernel">
@@ -642,11 +642,10 @@ The solution is to use <tt>date(1)</tt> to set the time correctly.
 <ENTRY>power-off Woah, my machine just powered off!
 
 Well, that's probably because you're using a recent laptop (iBook,
-PowerBook (FireWire), or PowerBook G4 (Titanium)).
+PowerBook (FireWire), or a PowerBook G4) and NetBSD 1.5 or 1.5.1.
 <p>
-The page up key sequence (<tt>FN-uparrow</tt>) will panic a NetBSD 1.5.x
-kernel.  This is fixed in NetBSD-current.  If you're prone to pressing
-page up, you should compile a new kernel.
+The page up key sequence (<tt>FN-uparrow</tt>) will panic a NetBSD 1.5.1 or
+1.5 kernel.  This is fixed in NetBSD 1.5.2 and later.
 <p>
 The "brightness" keys (F1 and F2) will power off your machine and zap your 
 clock.  You will need to build a new kernel without the <tt>abtn</tt> option.
@@ -899,7 +898,8 @@ cards) cannot be used to boot NetBSD/macppc.
 
   <p><li> <strong>Audio</strong>
   <ul>
-    <li>On-board AWACS audio on most models (not well tested) (<i>awacs</i>)
+    <li>On-board AWACS audio on most models (experimental -- disabled by
+        default due to interrupt conflicts with some G4 models) (<i>awacs</i>)
     <li>USB audio (<i>uaudio</i>)
     <li>PCI audio cards, although only the Ensoniq AudioPCI (<i>eap</i>) has 
         been thoroughly tested
@@ -970,10 +970,7 @@ are a few bugs in the ppp drivers that haven't been quashed.
 on how he got his Cyclades PCI card to run ppp.
 
 <ENTRY>airport How do I use my AirPort or AirMac network?
-You will need to 
-<a href="../../Documentation/kernel/#how_to_build_a_kernel">build a
-kernel</a> from -current sources, with the <tt>wi(4)</tt> driver.  NetBSD 1.5.x
-does not support wireless networking.
+Wireless networking was first supported in NetBSD 1.6.
 <p>
 Briefly, what you need to do is set up your wireless card to use DHCP to find
 its IP address, and set up the
@@ -1402,8 +1399,8 @@ set <tt>load-base</tt> to the <i>same</i> address stored in the header of
 <p><tt>ofwboot</tt> has been set to use 600000.  Therefore,
 you should use a <tt>load-base</tt> of 600000.
 
-<p>The NetBSD 1.5.3 <tt>ofwboot.xcf</tt> has been set to use 640000.  Therefore,
-you should use a <tt>load-base</tt> of 600000.
+<p>The NetBSD 1.5.3 and later versions of <tt>ofwboot.xcf</tt> have been set 
+to use 640000.  Therefore, you should use a <tt>load-base</tt> of 600000.
 
 <p>The <tt>ofwboot.xcf</tt> from NetBSD versions prior to 1.5.3 had been
 set to use 600000.  Therefore, if you're trying to boot using this bootloader,
@@ -1883,14 +1880,10 @@ early Open Firmware 1.0.5 models.
 
 
 <ENTRY>pb418 PowerBook (FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8
+This problem is fixed in NetBSD 1.6.
+<p>
 The two models listed above will fail to boot NetBSD 1.5.x and earlier if 
 they have have <a href="#ofw-version">BootROM</a> version 4.1.8 or later.
-<p>
-Unfortunately, you will either need to 
-<a href="../../Documentation/kernel/#how_to_build_a_kernel">build a new 
-kernel</a> from -current to boot
-NetBSD on these models, or send your machine back to Apple to be flashed to an
-earlier BootROM version.
 
 
 <ENTRY>grey-screen Why does the screen turn grey with an icon in the center?
@@ -2001,7 +1994,10 @@ Cross-compiling userland is slightly more complicated. (XXX finish)
 
 <ENTRY>linux Can NetBSD/macppc run MkLinux or LinuxPPC binaries?
 Yes. Linux binary compatibility for PowerPC ports is supported in 
-NetBSD-current. Applications that are reported to work include 
+NetBSD 1.6, but is not enabled by default.  You will need to 
+<a href="../../Documentation/kernel/#how_to_build_a_kernel">build a kernel</a>
+with <tt>options        COMPAT_LINUX</tt> uncommented.
+Applications that are reported to work include 
 <a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/www/communicator/README.html">
 Netscape Communicator</a>, 
 <a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/lang/blackdown-jdk13/README.html">Blackdown's JDK-1.3.0</a>, and 
@@ -2024,10 +2020,6 @@ It is probably worth mentioning that the JDK works quite
 well. Java applications such as 
 <a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/www/cocoon/README.html">Cocoon</a>
 have been reported to work without any problem.
-<p>
-Also note that Linux binary compatibility is <i>not</i> included in NetBSD 
-1.5.x.  You will need to run a <tt>-current</tt> kernel or wait for a future 
-release of NetBSD.
 
 
 <ENTRY>macos Can NetBSD/macppc run MacOS binaries?
@@ -2075,6 +2067,19 @@ warrantee, don't hold us liable, etc.  See Chris Tribo's
 <a href="http://mail-index.netbsd.org/port-macppc/2001/06/09/0002.html">post</a>
 to the mailing list on this topic.
 
+<ENTRY>no-swapctrlcaps Why there's no wscons mapping "us.swapctrlcaps" for ADB keyboard?
+ADB keyboard generates weird key code - it generates a key code when it gets
+pressed then released (= caps lock set),
+and another key code when it gets pressed and released (= caps lock released).
+In the kernel code <CURRENTSRC>sys/arch/macppc/dev/akbd.c the weird key code
+gets translated into wscons key code.
+Because of this weirdness, the best result we will be able to get is,
+unfortunately, a locking control key.
+<p>
+On NetBSD-current (1.6A or later),
+<tt>options CAPS_IS_CONTROL</tt> will hardcode capslock key into control key.
+(even with weird LED behaivor it should be useful)
+
 <!-- ======================================== -->
 </LIST>
 
@@ -2087,7 +2092,7 @@ to the mailing list on this topic.
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.107 2002/05/10 21:44:58 mbw Exp $<br>
+  $NetBSD: faq.list,v 1.110 2002/06/15 03:01:49 itojun Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
