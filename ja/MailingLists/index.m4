@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.157 2004/04/24 04:44:06 yyamano Exp $
+#	$NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $
 #	Copyright (c) 1994-2004
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -147,7 +147,7 @@ href="../Misc/search.html">other NetBSD searches</a>)<br>
   <td valign="top">
   <form method="get" action="http://www.google.com/custom">
     <input type="text" name="q" size=30 maxlength="255" value="">
-    <input type="hidden" name="cof" value="LW:247;L:http://www.NetBSD.org/images/NetBSD-smaller.jpg;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
+    <input type="hidden" name="cof" value="LW:247;L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
     <input type="hidden" name="domains" value="mail-index.NetBSD.org">
     <input type="hidden" name="sitesearch" value="mail-index.NetBSD.org">
     <br>
@@ -215,6 +215,9 @@ LIST(netbsd-users)
   maintenance or design of NetBSD itself, as opposed to issues related
   to using NetBSD, aren't appropriate to this list, and are better voiced
   in a more narrowly focused technical list.
+ENDLIST
+LIST(pkgsrc-bulk)
+  This mailing list receives reports and build logs of pkgsrc bulk builds.
 ENDLIST
 LIST(pkgsrc-changes)
   This list is for those who are interested in getting a
@@ -459,6 +462,11 @@ ENDLIST
 PORTLIST(port-i386)
   Discussion of issues specific to NetBSD on IBM PC clones with i386 or better
   CPUs (NetBSD/i386).
+ENDLIST
+PORTLIST(port-iyonix)
+  Discussion of issues specific to NetBSD on the ARM based
+  <a href="http://www.iyonix.com/">Iyonix pc</a>
+ (NetBSD/iyonix).
 ENDLIST
 PORTLIST(port-luna68k)
   Discussion of issues specific to NetBSD on 68k based OMRON LUNA machines
@@ -709,8 +717,8 @@ divert(9)
 
 <table><tr><td>
     <a href="../"><img
-	src="../images/NetBSD-flag.gif" border=0
-	width="91" height="42" alt=""></a>
+	src="../images/NetBSD-flag.png" border=0
+	width="90" height="90" alt=""></a>
   </td><td>
     <a href="../"><img
 	src="../images/empty.gif" border=0
@@ -721,7 +729,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.157 2004/04/24 04:44:06 yyamano Exp $<br>
+  $NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
