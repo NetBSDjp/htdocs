@@ -4,56 +4,60 @@
 <head>
 <!-- Copyright (c) 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>Setting up the mop server, Diskless NetBSD HOW-TO</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="intro.vax.html">Previous</a> |
-<a href="bootpd.html">Next</a> |
-<a href="./">Table of Contents</a>
+<a href="intro.vax.html">戻る</a> |
+<a href="bootpd.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Setting up the <tt>mop</tt> server, Diskless NetBSD HOW-TO</h1>
+<h1> ディスクレス NetBSD HOW-TO <tt>mop</tt> サーバーの設定</h1>
 
-DEC's proprietary MOP (Maintenance Operations Protocol) was used to handle
-various networking tasks.  MOP is included the the bootroms of many
-VAX workstations and can be used to load a kernel from a diskless server.
+DEC の登録商標 MOP (Maintenance Operations Protocol) 
+はさまざまなネットワークタスクをハンドルするのに使われます。
+ MOP は 多くの VAX ワークステーションの
+ブート ROM に入っていて、ディスクレスサーバーからカーネルをロードするのに使うことができます。
 <p>
 
-Since MOP is not TCP/IP, it cannot be passed through a router (thus the
-stipulation that your client and the server(s) must be on the same
-subnet).  It also means that your server must have device drivers that are
-able to send unspecified data to the ethernet.
+ MOP は TCP/IP ではないので、
+ルーターを超えることができません
+(よって、クライアントとサーバーは同一サブネット上に有る必要があります)。
+これはサーバーが未規定のデータをイーサネットに送信できる
+デバイスドライバーを持っている必要があると言うことを意味します。
 <p>
 
-First, you need to get a copy of the bootloader.
-This can be found in the NetBSD 1.5.1 distribution as:
+最初に、ブートローダーの copy を手に入れる必要があり、
+NetBSD 1.5.1 配布物 として見つけられ:
 <tt><b>ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5.1/vax/installation/netboot/netbsd.ram.gz</b></tt>
 <p>
 
-All of the mop implementations assume that the bootloader to send is
-located in the <tt>/tftpboot/mop/</tt> directory.
+すべての mop の実装は送信するブートローダーが <tt>/tftpboot/mop/</tt> ディレクトリーに
+有ることを想定しています。
+
 <pre># <b>mkdir -p /tftpboot/mop</b>
 # <b>gunzip boot.mop.gz</b>
 # <b>cp boot.mop /tftpboot/mop/MOPBOOT.SYS</b></pre>
 
-Setting up mopd, <a href="#netbsd">NetBSD</a><br>
-Setting up mopd, <a href="#openbsd">OpenBSD</a><br>
-Setting up mopd, <a href="#freebsd">FreeBSD</a><br>
-Setting up mopd, <a href="#linux">Linux</a><br>
+<a href="#netbsd">NetBSD</a> での mopd の設定<br>
+<a href="#openbsd">OpenBSD</a> での mopd の設定<br>
+<a href="#freebsd">FreeBSD</a> での mopd の設定<br>
+<a href="#linux">Linux</a> での mopd の設定<br>
 <p>
 
-[<em>If you have details for any other platform, <a
-href="../../../Misc/feedback.html">please let us know</a></em>]
+[<em>他のプラットホームに関する詳しい情報を <a
+href="../../../Misc/feedback.html">教えてください</a></em>]
 <p>
 
 <hr>
 
-<h3><a name="netbsd">NetBSD</a> and <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="netbsd">NetBSD</a> および <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
-NetBSD and OpenBSD ship with the mop server on all supported platforms.
+NetBSD および OpenBSD では、サポートされているすべてのプラットホームに
+ mop サーバーが搭載されています。
 <p>
 
 <ol>
@@ -61,61 +65,68 @@ NetBSD and OpenBSD ship with the mop server on all supported platforms.
 </ol>
 <p>
 
-This will start <tt>mopd</tt> in debugging mode.  When the <tt>mopd</tt>
-server gets a request, it will print diagnostic information to the
-terminal it was launched from.
+ <tt>mopd</tt> がデバッグモードで実行されます。
+<tt>mopd</tt> サーバーにリクエストがあると、
+実行した端末に診断情報が表示されます。
 <p>
 
-If your <tt>mopd</tt> is working properly, your client will print
-something like:
+<tt>mopd</tt> がきちんと動けば、
+クライアントにこのように表示されます:
 <pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
 : /netbsd</pre>
 <p>
 
-You might take this opportunity to link the <tt>MOPBOOT.SYS</tt> file to
-something that the vax client will find without prompting:
+<tt>MOPBOOT.SYS</tt> ファイルを何かにリンクすることで vax クライアントが
+プロンプトを出さずに見つけ出すことがようになり:
 <pre># <b>cd /tftpboot/mop</b>
 # <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
-Where <tt>cccccccccccc</tt> is the hex ethernet address of your vax
-client.  Make sure that <tt>SYS</tt> is capitalized and that any hex
-digits in the ethernet address are lower case.  If you don't do this, then
-the vax client will <i>not</i> find the correct file.
+
+ここで <tt>cccccccccccc</tt> は vax クライアントの hex イーサネットアドレス です。
+ <tt>SYS</tt> は大文字で書き、イーサネットアドレスの16進数は
+アラビア数字と英小文字にしてください。そうでなければ、
+ vax クライアントは正しいファイルをみつけ <i>られない</i> でしょう。
 <p>
 
-Continue on to setting up <a href="bootpd.html">bootpd</a>
+<a href="bootpd.html">bootpd</a> の設定に続く
 </dd></dl>
 
 <hr>
 
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
-There is now a <tt>mopd</tt> package for FreeBSD, although I have no further 
-information on how to install or configure it.  Feel free to try it out,
+
+FreeBSD には、現在 <tt>mopd</tt> パッケージがあります。ですが私は
+それのインストールや設定についてのより詳しい情報を持っていません。
+
 <a href="http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr">
-http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr</a>.  The 
-instructions listed below are for an older version that is known to work.
+http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr</a>
+は、ご自由にお試しください。
+
+次に示す取り扱い説明書は古いバージョン用で動作確認されているものです。
 <p>
 <ol>
-<li>Get the source code for mopd from this site:<br>
+<li>つぎのサイトから mopd のソースコードを取得します:<br>
  <a href="ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-2.5.3.tar.gz">
  ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-2.5.3.tar.gz</a>
 <p>
 
-<li>Untar the source code.  
+<li>ソースコードを Untar します。
 <p>
 
-<li>If you are running FreeBSD 2.2 or later,
-then you will need to edit one of the source files before compiling it.
-Edit <tt>mopd-2.5.3/common/put.c</tt> and add the following three lines to
-the <tt>#includes</tt> section at the start of the file:
+<li> FreeBSD 2.2 かそれ以降の環境ではコンパイル前にソースファイルの
+1つを編集する必要があります。
+
+<tt>mopd-2.5.3/common/put.c</tt> を編集して
+ファイルの先頭の <tt>#includes</tt> セクション に次の3行
+を加えてください:
 <pre>#ifdef __FreeBSD__
 #include &lt;osreldate.h&gt;
 #endif</pre>
 <p>
-There are also two places within that file where the symbol
-<tt>__FreeBSD__</tt> is checked.  Replace all occurrences of:
+ファイル中の２個所のシンボル
+<tt>__FreeBSD__</tt> をチェックし、全個所を次のように置き換えます:
 <pre>#if !defined(__FreeBSD__)</pre>
-to
+を次のように
 <pre>#if !defined(__FreeBSD__) || __FreeBSD_version &gt;= 220000</pre>
 <p>
 
@@ -123,7 +134,7 @@ to
 <tt># <b>make</b></tt>
 <p>
 
-<li>Install the binary:<br>
+<li>バイナリーをインストールします:<br>
 <tt># <b>cp mopd /usr/local/sbin/</b></tt>
 <p>
 
@@ -131,53 +142,53 @@ to
 </ol>
 <p>
 
-This will start <tt>mopd</tt> in debugging mode.  When the <tt>mopd</tt>
-server gets a request, it will print diagnostic information to the
-terminal it was launched from.
+これで、 <tt>mopd</tt> がデバッグモードで実行されます。
+<tt>mopd</tt> サーバーにリクエストがあると、
+実行した端末に診断情報が表示されます。
 <p>
 
-If your <tt>mopd</tt> is working properly, your client will print
-something like:
+<tt>mopd</tt> がきちんと動けば、クライアントにこのように表示されます:
 <pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
 : /netbsd</pre>
 <p>
 
-You might take this opportunity to link the <tt>MOPBOOT.SYS</tt> file to
-something that the vax client will find without prompting:
+<tt>MOPBOOT.SYS</tt> ファイルを何かにリンクすることで vax クライアントが
+プロンプトを出さずに見つけ出すことがようになり:
 <pre># <b>cd /tftpboot/mop</b>
 # <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
-Where <tt>cccccccccccc</tt> is the hex ethernet address of your vax
-client.  Make sure that <tt>SYS</tt> is capitalized and that any hex
-digits in the ethernet address are lower case.  If you don't do this, then
-the vax client will <i>not</i> find the correct file.
+ここで <tt>cccccccccccc</tt> は vax クライアントの hex イーサネットアドレス です。
+ <tt>SYS</tt> は大文字で書き、イーサネットアドレスの16進数は
+アラビア数字と英小文字にしてください。そうでなければ、
+ vax クライアントは正しいファイルをみつけ <i>られない</i> でしょう。
 <p>
 
-Continue on to setting up <a href="bootpd.html">bootpd</a>
+<a href="bootpd.html">bootpd</a> の設定に続く
 </dd></dl>
 
 <hr>
 
 <h3><a name="linux">Linux</a></h3>
 <dl><dt><dd>
-You may need to compile MULTICAST into your kernel to allow for
-setting your ethernet to promiscuous mode (required for mop to operate
-properly).  You may alternatively use ifconfig with the <tt>allmulti</tt>
-flag to enable promiscuous mode (e.g. <tt><b>ifconfig eth0
+
+イーサネットに promiscuous モード 設定を認めるように(mop がきちんと動くのに必要)、
+カーネルに MULTICAST を入れてコンパイルする必要があるでしょう。
+かわりに、 ifconfig に <tt>allmulti</tt> flag を付けて
+ promiscuous モード を有効にすることができます。(例 <tt><b>ifconfig eth0
 allmulti</b></tt>).
 <p>
 
 <ol>
-<li>Get the source code for mopd from this site:<br>
+<li>つぎのサイトから mopd のソースコードを取得します:<br>
 <a href="ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-linux-2.5.3.tar.gz">
  ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-linux-2.5.3.tar.gz</a>
 <p>
 
-<li>Untar this file and make the mopd:<br>
+<li>これを Untar し mopd を make します:<br>
 <tt># <b>cd /mopd-linux/mopd</b></tt><br>
 <tt># <b>make</b></tt>
 <p>
 
-<li>Install the binary:<br>
+<li>バイナリーをインストールします:<br>
 <tt># <b>cp mopd /usr/local/sbin/</b></tt>
 <p>
 
@@ -185,35 +196,34 @@ allmulti</b></tt>).
 </ol>
 <p>
 
-This will start <tt>mopd</tt> in debugging mode.  When the <tt>mopd</tt>
-server gets a request, it will print diagnostic information to the
-terminal it was launched from.
+これで、 <tt>mopd</tt> がデバッグモードで実行されます。
+<tt>mopd</tt> サーバーにリクエストがあると、
+実行した端末に診断情報が表示されます。
 <p>
 
-If your <tt>mopd</tt> is working properly, your client will print
-something like:
+<tt>mopd</tt> がきちんと動けば、クライアントにこのように表示されます:
 <pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
 : /netbsd</pre>
 <p>
 
-You might take this opportunity to link the <tt>MOPBOOT.SYS</tt> file to
-something that the vax client will find without prompting:
+<tt>MOPBOOT.SYS</tt> ファイルを何かにリンクすることで vax クライアントが
+プロンプトを出さずに見つけ出すことがようになり:
 <pre># <b>cd /tftpboot/mop</b>
 # <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
-Where <tt>cccccccccccc</tt> is the hex ethernet address of your vax
-client.  Make sure that <tt>SYS</tt> is capitalized and that any hex
-digits in the ethernet address are lower case.  If you don't do this, then
-the vax client will <i>not</i> find the correct file.
+ここで <tt>cccccccccccc</tt> は vax クライアントの hex イーサネットアドレス です。
+ <tt>SYS</tt> は大文字で書き、イーサネットアドレスの16進数は
+アラビア数字と英小文字にしてください。そうでなければ、
+ vax クライアントは正しいファイルをみつけ <i>られない</i> でしょう。
 <p>
 
-Continue on to setting up <a href="bootpd.html">bootpd</a>
+<a href="bootpd.html">bootpd</a> の設定に続く
 </dd></dl>
 
 <hr>
 
-<a href="intro.vax.html">Previous</a> |
-<a href="bootpd.html">Next</a> |
-<a href="./">Table of Contents</a>
+<a href="intro.vax.html">戻る</a> |
+<a href="bootpd.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -225,7 +235,7 @@ Continue on to setting up <a href="bootpd.html">bootpd</a>
   </td><td>
     <a href="../../../"><img
         src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -235,7 +245,7 @@ Continue on to setting up <a href="bootpd.html">bootpd</a>
   </td><td>
     <a href="../../../Documentation/"><img
         src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+        width="1" height="1" alt="NetBSD ">ドキュメントのトップレベル</a>
   </td></tr></table>
 </td></tr></table>
 
