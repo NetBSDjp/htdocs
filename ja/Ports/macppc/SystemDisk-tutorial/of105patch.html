@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD/macppc Open Firmware 1.0.5 Patch</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1>NetBSD/macppc Open Firmware 1.0.5 Patch</h1>
+
+<hr>
+<p>
+
+This is describes how to patch Apple's System Disk utility to fix a few
+minor problems on Open Firmware 1.0.5 machines that use 
+<tt><font color="green">output-device</font> /chaos/control</tt>
+(i.e. PowerMacintosh 7300 - 8600).  It is based
+on a <a href="http://lppcfom.sourceforge.net/fom-serve/cache/378.html">
+post</a> by one of the Copland developers, and a <a
+href="http://mail-index.netbsd.org/port-macppc/2000/03/21/0002.html">post</a>
+by Monroe Williams to the port-macppc mailing list.
+<p>
+
+<ol>
+  <li><big><b>Boot into MacOS</b></big>
+      <p>
+      You must be running MacOS 8.0 or higher.
+      <p>
+      If you don't have MacOS 8.0 or higher, you can simply download the <a
+      href="http://download.info.apple.com/Apple_Support_Area/Apple_Software_Updates/English-North_American/Macintosh/System/Mac_OS_8.1_Update/Disk_Tools_PPC.img.bin">Disk
+      Tools PPC.img</a> from Apple's site.  This is a MacOS 8.1 boot
+      floppy.  You can boot from this and swap floppies to get System Disk, or
+      you can copy the files from this floppy onto a partition on your hard
+      drive.
+      <p>
+      Note, for future reference, that any time you boot your machine into
+      MacOS, all Open Firmware settings (including the nvram) will be set to
+      their default values.
+      <p>
+
+  <li><big><b>Download</b></big>
+      <p>
+      <a href="ftp://ftp.apple.com/developer/macosxserver/utilities/SystemDisk2.3.1.smi.bin">ftp://ftp.apple.com/developer/macosxserver/utilities/SystemDisk2.3.1.smi.bin</a>
+      <p>
+      You may need to use StuffIt Expander (or some other utility) to
+      convert this file from MacBinary format.
+      <p>
+
+  <li><big><b>Mount the Self-Mounting Image</b></big>
+      <p>
+      Open the self-mounting image to mount it on your
+      desktop, and locate the <tt>System Disk</tt> utility on the disk image.
+      <p>
+
+  <li><big><b>NVRAM Patches (Easy Method)</b></big>
+      <p>
+      If you're using System Disk 2.3.1, download this ResCompare 
+      <a href="systemdisk-of105-patch.hqx">System Disk 2.3.1 OF105
+      patch.hqx</a>.  This program will patch your System Disk to add some
+      delays to let the video settle properly and always sync up at 680x480 at
+      60 Hz (this is apparently the only resolution Open Firmware supports
+      on these machines).
+      <p>
+
+  <li><big><b>NVRAM Patches (Guru Method)</b></big>
+      <p>
+      Download <a
+      href="http://download.info.apple.com/Apple_Support_Area/Apple_Software_Updates/English-North_American/Macintosh/Utilities/ResEdit_2.1.3.sea.bin">http://download.info.apple.com/Apple_Support_Area/Apple_Software_Updates/English-North_American/Macintosh/Utilities/ResEdit_2.1.3.sea.bin</a>
+      and extract ResEdit.  Drag the System Disk application onto ResEdit
+      and (if you've got System Disk 2.3.1) open <tt>OFpt</tt> resource ID 128.
+      If you have a different version of System Disk, then you need to open
+      the <tt>OFtc</tt>
+      resource and determine which ID corresponds to your model of
+      PowerMacintosh.
+      <p>
+      Once you've found the correct <tt>OFpt</tt> resource, paste the
+      <a href="of105patch.txt">following</a> at the end of the big long
+      string.  Be sure to include a trailing carraige return or else System
+      Disk will complain that the last line ends abruptly.  Also, note the
+      initial <tt>\</tt>, which belongs on the end of the
+      last line of Apple's patches (<tt>unselect-dev</tt>)
+      <p>
+      <pre>        \
+        dev /bandit/gc/via-cuda\
+        ' write value &amp;W\
+        : -&amp;We &amp;W swap - execute ;\
+        : P1 4D8 -&amp;We false 548 -&amp;We ;\
+        &amp;W FC + ' P1 BLpatch\
+        : P2 0C 2 ms ;\
+        &amp;W E0 + ' P2 BLpatch device-end</pre>
+      <p>
+      <cite>Th[is] block fixes a bug in the via-cuda driver in which not
+      enough time is given for the device to settle when it is told to set the
+      video controller's clocks up.</cite>
+      <p>
+      The author of this patch also created a patch for machines that try to
+      boot before their drives have spun up, however, it seems nvram isn't
+      quite big enough to fit both of these patches in addition to the patches
+      that come with System Disk.  It's not clear if this patch is really
+      needed though.  So, instead of the above block, you should paste in the
+      <a href="of105patch2.txt">following</a> at the end of the the big long
+      string.  Be sure to include a trailing carraige return or else Startup
+      Disk will complain that the last line ends abruptly.  Also, note the
+      initial <tt>\</tt>, which belongs on the end of the
+      last line of Apple's patches (<tt>unselect-dev</tt>)
+      <p>
+      <pre>        \
+        : wBoot\
+        begin\
+         boot-device ['] $boot catch drop\
+         ." -Waiting for boot-device" cr\
+         d# 500 ms\
+        key? until\
+        ;</pre>
+      <p>
+      <cite>Th[is] block defines a FORTH word that can be used in place of
+      the normal boot-command contents to wait for the disk to spin up before
+      attempting to really boot.  This avoids the standard "black screen the
+      first time you power on the computer each day" problem.</cite>
+      <p>
+      This means you'll need to make sure your boot command is not
+      <tt>boot</tt>, but <tt>wBoot</tt> (this is set in the Advanced Options
+      panel).
+      <p>
+
+  <li><big><b>Save, Run, Save</b></big>
+      <p>
+      Save your ResEdit changes and quit.  Now, run the modified System Disk
+      program and click on <tt>Power User (Open Firmware)</tt> then click the
+      <tt>Save</tt> button to write the new nvram contents.
+</ol>
+<p>
+
+<hr>
+<a href="../">Up to <em>NetBSD/macppc Port Page</em></a>
+<hr>
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+	src="../../../images/NetBSD-flag.gif" border="0"
+	width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../../"><img
+	src="../../../images/empty.gif" border="0"
+	width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td>
+    <a href="../../../Ports/"><img
+	src="../../../images/NetBSD-flag.gif" border="0"
+	width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../../Ports/"><img
+	src="../../../images/empty.gif" border="0"
+	width="1" height="1" alt="NetBSD ">Supported Architectures</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  www@NetBSD.ORG<br>
+  $NetBSD: of105patch.html,v 1.8 2000/10/22 01:38:21 dent Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
