@@ -2,16 +2,13 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1999, 2000
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-
-
 <!--
   ==  Originally by Chris Jones
   -->
-
-
 <link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 		<title>WSCONS FAQ</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -34,7 +31,7 @@ Currently, virtual terminals are not supported on bitmap-only
 screens, like macppc, mac68k, and alpha to name a few.
 <p>
 For systems on which they are supported, the installation procedure
-will take care to set them up upon installation. The steps involved 
+will take care to set them up upon installation. The steps involved
 to do so manually are:
 <ul>
 <li>Edit /etc/rc.conf and change "wscons" to "yes"
@@ -60,6 +57,7 @@ terminals.
     <ul>
 	<li><tt>de</tt>
 	<li><tt>dk</tt>
+	<li><tt>es</tt>
 	<li><tt>fr</tt>
 	<li><tt>it</tt>
 	<li><tt>jp</tt>
@@ -92,15 +90,15 @@ terminals.
     <P>
 
     If your favourite keymap is not supported, you can start digging
-    in 
+    in
     <a href="http://cvsweb.netbsd.org/cgi-bin/cvsweb.cgi/syssrc/sys/dev/wscons/wsksymdef.h"><tt>sys/dev/wscons/wsksymdef.h</tt></a> and
-    <a href="http://cvsweb.netbsd.org/cgi-bin/cvsweb.cgi/syssrc/sys/dev/pckbc/wskbdmap_mfii.c"><tt>sys/dev/pckbc/wskbdmap_mfii.c</tt></a> 
+    <a href="http://cvsweb.netbsd.org/cgi-bin/cvsweb.cgi/syssrc/sys/dev/pckbc/wskbdmap_mfii.c"><tt>sys/dev/pckbc/wskbdmap_mfii.c</tt></a>
     to make your own. Be sure to <a href="../../Misc/send-pr.html#submitting">send-pr</a> a change-request PR with your work, so others can
     make use of it!
     <p>
-    A different way to implement your own keymap is documented in 
+    A different way to implement your own keymap is documented in
     <a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=10976">PR 10976</a>, which puts the definitions for a russian
-    keymap into a file that's loaded later on. A hungarian keymap is 
+    keymap into a file that's loaded later on. A hungarian keymap is
     available that way in <a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=11457">PR 11457</a>.
     <p>
 
@@ -122,6 +120,9 @@ When kernel messages show up, they are normally displayed in a
 different color, which can be customized.  Look for
 <code>WS_KERNEL_FG</code> and <code>WS_KERNEL_BG</code> in your kernel
 config file.  Change these to taste, and recompile your kernel.
+<p>
+A special trick is to set both variables to
+<code>WSCOL_BLACK</code> which will disable kernel messages.
 
 <ENTRY>muxdevices How do I use the wscons "mux" devices?
 The wscons "mux" devices let you multiplex the input streams from more than one
@@ -190,10 +191,58 @@ an integer between 0 and 100.
 <ENTRY>fontedit Is there a font editor?
 
 There are several fonts in <tt>/usr/share/wscons/fonts</tt> that
-can be loaded as console fonts. If you want to edit any of them, 
+can be loaded as console fonts. If you want to edit any of them,
 you can use the old pcvt utils that are available in the
 <PKGSRC>sysutils/pcvt-utils package.
 <p>
+
+
+<ENTRY>moused How do I use a serial mouse?
+
+The wsmouse device (part of wscons) does not directly support serial
+mice. The moused(8) daemon is provided to read serial mouse data,
+convert it into wsmouse events and inject them in wscons' event queue,
+so the mouse can be used through the abstraction layer provided by
+wsmouse.
+<p>
+
+A typical use can be: <tt>wsmoused -p /dev/tty00</tt>. This will try
+to determine the type of mouse connected to the first serial port and
+start reading its data. The moused(8) manpage contains more examples.
+
+
+<ENTRY>wsmoused How do I enable mouse console support?
+
+Mouse console support is available since NetBSD 1.6B through the
+wsmoused(8) daemon. This program provides <i>copy & paste</i> support
+to the wscons console using the mouse pointer.
+<p>
+
+This is currently available in all architectures that use the vga(1)
+video driver as a backend of wscons, to know: alpha, arc, bebox, cats,
+hp700, i386 and prep.
+<p>
+
+Here is a step by step list of things to do to get wsmoused(8) working
+(note that the manpage contains more information):
+
+<ol>
+  <li>Enable the <code>WSDISPLAY_CHARFUNCS</code> option in your
+  kernel configuration file, recompile and install.</li>
+
+  <li>Edit /etc/ttys: disable /dev/console and enable /dev/ttyE0;
+  wsmoused will use the later.</li>
+
+  <li>Optionally edit /etc/wscons.conf to enable <code>screen 0</code>
+  (/dev/ttyE0) if needed.</li>
+
+  <li>Add <code>wsmoused=yes</code> to your /etc/rc.conf. If you use
+  the X Window System, you may also want to add
+  <code>wsmoused_flags="-X 4"</code> to the file; this tells the
+  daemon which console is X11 running on.</li>
+
+  <li>Reboot and have fun!</li>
+</ol>
 
 </LIST>
 
@@ -203,9 +252,8 @@ you can use the old pcvt utils that are available in the
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.11 2002/02/25 00:07:00 hubertf Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy;
-    1999, 2000
+  $NetBSD: index.list,v 1.13 2002/12/05 20:11:28 jmmv Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
