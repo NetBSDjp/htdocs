@@ -1,3 +1,5 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
 <!-- Copyright (c) 1998, 1999
@@ -86,6 +88,7 @@ remember when tracking -current.
   <p>
   Once the kernel is running, you should run '<tt>make build</tt>'
   from the base of the source tree.
+  <p>
 
  <li>
   When compiling a -current kernel, always remember to include the
@@ -95,6 +98,7 @@ remember when tracking -current.
   bare minimum, you will need this compatibility code for the time
   between booting the new kernel and finishing your <tt>make
   build</tt>.
+  <p>
 
  <li>
   People using NetBSD-current are strongly encouraged to subscribe to
@@ -104,8 +108,9 @@ remember when tracking -current.
   href="../../MailingLists/#source-changes">source-changes</a></b>
   mailing list is also of interest.
 </ul>
+<p>
 
-<a name="star">*</a> : Unless you are certain there have been no new
+<a name="star">*</a>: Unless you are certain there have been no new
 system calls added, but do it anyway, its safer.
 
 <ENTRY>build-targets What are the various Makefile targets
@@ -124,8 +129,11 @@ which is installed in <tt>/usr/share/mk/</tt>.
 <h4>Setting up</h4>
 
 <ol>
-<p><li>Install <PKGSRC>devel/cvs.
-<p><li>Set the CVSROOT environment variable to point to the anoncvs server of your choice, either anoncvs.netbsd.org or any of its <a href="../../Sites/net.html#anoncvs">mirrors</a>:
+<li>Install <PKGSRC>devel/cvs.  <em>If NetBSD is built from -current sources
+past 2000-09-04, cvs is already installed.</em>
+<p>
+
+<li>Set the CVSROOT environment variable to point to the anoncvs server of your choice, either anoncvs.netbsd.org or any of its <a href="../../Sites/net.html#anoncvs">mirrors</a>:
 <ul>
     <li>For csh(1) or <PKGSRC>shells/tcsh users:<br>
     <tt><b>setenv CVSROOT :pserver:anoncvs@anoncvs.netbsd.org:/cvsroot</b>
@@ -133,42 +141,46 @@ which is installed in <tt>/usr/share/mk/</tt>.
     <li>For sh(1), ksh(1), or <PKGSRC>shells/bash2 users:<br>
     <tt><b>CVSROOT=:pserver:anoncvs@anoncvs.netbsd.org:/cvsroot; export CVSROOT
     </b></tt>
-    </ul>
+    </ul><p></li>
 
-<p><li>(As root) "<tt><b>mkdir /usr/src</b></tt>".<br>
-    If you wish for the source tree to be owned by a non root user,
-    "<tt><b>chown <em>user</em> /usr/src</b></tt>".
-
-<p><li>
-    <tt><b>cd /usr/src</b></tt><br>
+<li>
+    <tt><b>cd /usr</b></tt><br>
     <tt><b>cvs login</b></tt>                      (use password "anoncvs")<br>
-<p><li>To checkout only the kernel (you'll need to compile and use
-usr.sbin/config and usr.sbin/dbsym to compile the kernel)<br>
-    <tt><b>cvs checkout _syssrc-cmp</b></tt><br>
-<p><li>Checkout the entire source tree
-    <ul>
-    <li>If you're in the U.S:<br>
-    <tt><b>cvs checkout -P src-crypto-all</b></tt><br>
-    <li>If you're outside the U.S (Please don't get the crypto sources from
-    anoncvs.netbsd.org):<br>
-    <tt><b>cvs checkout -P src-nocrypto</b></tt><br>
-    </ul>
-</ol>
+You have to have write permission on the directory for the initial
+checkout; after that you can just change the owner of the source tree
+to some other user. One of the possible ways is to do the initial
+checkout as root, and then give the source tree to a different user
+for later use.
 <p>
+
+<li>To checkout only the kernel sources<br>
+    <tt><b>cvs checkout -P syssrc</b></tt><br>
+This gives you the kernel sources in <tt>/usr/syssrc</tt>. Information
+on <a href="../kernel/#how_to_build_a_kernel">how to build a
+kernel</a> is also available.
+<p>
+
+<li>Checkout the entire source tree (including kernel)<br>
+    <tt><b>cvs checkout -P src</b></tt><br>
 You should now have a full set of NetBSD sources in /usr/src.
+<p>
+
+<li>Fix permissions<br>
+    If you wish for the source tree to be owned by a non-root user,
+    do (as root):<br>
+	<tt><b>chown -R <em>user</em> /usr/src</b></tt>
+</ol>
 
 <h4>To update the sources</h4>
 
-<pre><b>
-    cd /usr/src
-    cvs update -d -P
-</b></pre>
+<tt><b>cd /usr/src</b></tt><br>
+<tt><b>cvs update -d -P</b></tt>
 
 <h4>To check out the sources from a certain date</h4>
-<pre><b>   cvs checkout -D 19991223-UTC src</b></pre>
+<tt><b>cvs checkout -D 19991223-UTC src</b></tt>
 
 <h4>To check out the sources from a certain branch</h4>
-<pre><b>   cvs checkout -rnetbsd-1-5 src</b></pre>
+<tt><b>cvs checkout -rnetbsd-1-5 src</b></tt>
 
 <h4>Useful hints</h4>
 <p>
@@ -179,17 +191,15 @@ correctly.  If you happen to get errors from cvs saying things like:
 </pre>
 you should do a <b>"make cleandir"</b> and try again.  Make sure to
 run <b>"make obj"</b> after the cvs update.
-</p>
-
 <p>
+
 If you're on a very low bandwidth line, you may want to add -z5
 (or some other number from 1 to 9) to your commandline <em>before</em> the
 command (eg "<tt><b>cvs -z5 update -d -P</b></tt>"); this turns on
 compression of all data. Keep in mind that this will put an extra
 load on the cvs server.
-</p>
-
 <p>
+
 You can put switches for specific commands in a .cvsrc in your home
 directory, and they will be automatically used. A sample .cvsrc would be:
 
@@ -199,7 +209,7 @@ directory, and they will be automatically used. A sample .cvsrc would be:
    checkout -P
    diff -u
 </pre>
-</p>
+<p>
 
 <h4>Building NetBSD from source</h4>
 
@@ -208,29 +218,25 @@ snapshot, and source in /usr/src, on your machine already):</I><p>
 
 To build userland the first time:<p>
 
-<PRE>
-   mkdir /usr/obj
-   cd /usr/src
-   make obj
-   make build
-</PRE>
+<tt><b>mkdir /usr/obj</b></tt><br>
+<tt><b>cd /usr/src</b></tt><br>
+<tt><b>make obj</b></tt><br>
+<tt><b>make build</b></tt>
+<p>
 
 To update userland binaries after a CVS update:<p>
 
-<PRE>
-   cd /usr/src
-   make obj
-   make UPDATE=1 build
-</PRE>
+<tt><b>cd /usr/src</b></tt><br>
+<tt><b>make obj</b></tt><br>
+<tt><b>make UPDATE=1 build</b></tt>
+<p>
 
 These will install the new binaries on the running system - reboot to make
 sure they all take effect. To build the binaries into some other location
 (in case you're paranoid about tromping on a running system), just set
 DESTDIR, eg:<p>
 
-<PRE>
-   make DESTDIR=/usr/NetBSD-new-build UPDATE=1 build
-</PRE>
+<tt><b>make DESTDIR=/usr/NetBSD-new-build UPDATE=1 build</b></tt><br>
 
 <ENTRY>using-sup-into-cvs Tracking NetBSD-current with SUP into CVS
     <h4>Overview</h4>
@@ -242,6 +248,7 @@ DESTDIR, eg:<p>
       the repository.
 
     <p>There are 3 major reasons for this approach
+    <p>
     <ol>
       <li>It keeps track of how current changes over time.</li>
       <li>It allows for local changes to be almost automatically merged
@@ -258,13 +265,16 @@ DESTDIR, eg:<p>
 
     <h4>Requirements</h4>
     <ul>
-      <li>CVS 1.9 or later(either from pkgsrc or just built from
-	source). CVS 1.10 or later is better as it handles merging better. </li>
+      <li>CVS 1.9 or later (either already installed if you're running
+          -current after 2000-09-04, installed from pkgsrc or just
+          built from source). CVS 1.10 or later is preferred as it
+          handles merging better.</li>
       <li>SUP installation</li>
-      <li>Perl 5 installation for supplied script(optional)</li>
+      <li>Perl 5 installation for supplied script (optional)</li>
     </ul>
     <h4>Details</h4>
     <p>Tracking and building current consists of 6 phases:
+    <p>
     <ol>
       <li>Supping updated sources into master source tree.</li>
       <li>Importing supped sources into CVS and updating working copy
@@ -279,27 +289,23 @@ DESTDIR, eg:<p>
       from the SUP should be stored in a file for later reference.
 
     <h3>Importing and merging sources.</h3>
-    <p>Sources are imported as follows:
-    <pre>
-cvs -d /misc/cvsrep import -I ! -I CVS netbsd netbsd current-<i>date</i>
-    </pre>
+    <p>Sources are imported as follows:<br>
+    <tt><b>
+    cvs -d /misc/cvsrep import -I ! -I CVS netbsd netbsd current-<i>date</i>
+    </b></tt><br>
     <p><i>date</i> is replaced by the date of the SUP for tracking
       purposes. The <code>-I ! -I CVS</code> options ensure that no file in
       the source tree is ignored except 'CVS' directories.  This is because
       some NetBSD source files have extensions which are normally ignored by
       CVS. If there are any conflicts with local patches the import command
       will report them and will describe a command to merge the conflicts
-      something like:
-    <pre>
-cvs checkout -jnetbsd:yesterday -jnetbsd netbsd
-    </pre>
+      something like:<br>
+    <tt><b>cvs checkout -jnetbsd:yesterday -jnetbsd netbsd</b></tt><br>
     <p>This merge command will correctly merge the imported NetBSD
       sources but it will not handle the removal of files locally
       which have already been removed by the SUP process. To do this the
-      merge command would be:
-    <pre>
-cvs update -j<i>previous import tag</i> -j current-<i>date</i>
-    </pre>
+      merge command would be:<br>
+    <tt><b>cvs update -j<i>previous import tag</i> -j current-<i>date</i></b></tt><br>
     <p><i>previous import tag</i> should be replaced with the name of
       the tag used for the previous cvs import. <i>date</i> should be
       replaced with the current date to yield the same tag used on
@@ -331,11 +337,9 @@ cvs update -j<i>previous import tag</i> -j current-<i>date</i>
     <p>If this is the first import then there will be no sources
       checked out. Assuming you wish to create the source tree in
       '<code>/usr/src/netbsd</code>' The following commands will check
-      out the source and no merge step is required.
-    <pre>
-cd /usr/src
-cvs -d/misc/cvsrep checkout netbsd
-    </pre>
+      out the source and no merge step is required.<br>
+    <tt><b>cd /usr/src</b></tt><br>
+    <tt><b>cvs -d/misc/cvsrep checkout netbsd</b></tt>
     <h3>Building current.</h3>
     <ol>
     <li>Configure, <a href="../kernel/#how_to_build_a_kernel">
@@ -352,14 +356,12 @@ cvs -d/misc/cvsrep checkout netbsd
       allows rewinding to a working build tree with a single CVS
       command in the event that the current tree becomes unbuildable
       for any reason. This can be performed by issuing the following
-      command:
-    <pre>
-cvs tag successful-build-<i>build date</i>
-    </pre>
+      command:<br>
+    <tt><b>cvs tag successful-build-<i>build date</i></b></tt>
     <h4>Notes</h4>
     <ul>
-      <li>If the NetBSD customised version of CVS which recognises
-	<b>$Net</b><b>BSD$</b> markers in files is not used the
+      <li>If the NetBSD customised version of CVS, which recognises
+	<b>$Net</b><b>BSD$</b> markers in files, is not used, the
 	NetBSD revision number of the file is available for reference
 	purposes when build problems occur.</li>
       <li>The sup/import/merge sequence described above is quite
@@ -439,7 +441,7 @@ You should copy a current MAKDEV from the appropriate etc.<i>port</i> directory 
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.18 2000/09/08 23:29:13 dent Exp $<br>
+  $NetBSD: index.list,v 1.22 2000/10/14 02:26:49 dent Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
