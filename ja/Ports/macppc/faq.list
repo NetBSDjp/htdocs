@@ -137,6 +137,53 @@ If your keyboard doesn't work, see the FAQ entries for
 <a href="#usb-keyboard-problems">USB keyboards</a> and for 
 <a href="#powerbook">recent laptops</a>.
 
+
+<ENTRY>disk-sharing How do I share files between the OSes on my machine?
+Unfortunately, NetBSD doesn't yet support the Macintosh filesystems natively
+(i.e. HFS, HFS+, and UFS), so we must use a workaround.  Install
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">hfstools</a>
+and/or 
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">xhfs</a>
+from the NetBSD package 
+collection.  These utilities allow you to read and write files to an HFS
+(<i>not</i> HFS+ or UFS) filesystem using command line tools or a graphical
+browser.  If this is too much trouble for you, keep reading.
+
+<p>Create an MS-DOS format partition.  Classic MacOS will automatically 
+mount it, and the unix-like OSes (NetBSD, linuxpcc, and MacOS X) can 
+mount it using the <tt>mount_msdos</tt> command.  The steps below outline
+the most straightforward technique.
+
+<p><ol>
+<li>Partition your hard drive from within MacOS using Drive Setup.  <i>This will erase all information on your hard drive.</i>
+
+<p><li>Next, grab a copy of 
+<a href="http://hyperarchive.lcs.mit.edu/cgi-bin/NewSearch?key=disk+charmer&search=&sp=sp">
+Disk Charmer</a> or
+<a href="http://www.versiontracker.com/moreinfo.fcgi?id=1253">DiskCharmer</a>,
+ and set it up to create an
+MS-DOS filesystem.  Your settings should look something like this:
+<br>
+<img src="../../images/ports/macppc/diskcharmer.gif" alt="screenshot of DiskCharmer">
+
+<p><li>Drag the partition onto DiskCharmer's window and it will prompt you
+before erasing it and creating an MS-DOS filesystem in place of the HFS 
+filesystem you created in the first step.
+
+<p><li>Now, when you boot Classic MacOS, this partition will automatically mount 
+using PC Exchange or File Exchange (depending on what it's called in your 
+version of MacOS).  
+
+<p>When you boot into MacOS X, linuxppc, or NetBSD, run the following command:
+<pre>mkdir -p /msdos.filesystem;/sbin/mount_msdos -m 777 /dev/disk0s11 /msdos.filesystem</pre>
+
+where <tt>/msdos.filesystem</tt> is the mountpoint you'd like, and 
+<tt>/dev/disk0s11</tt> is the device name for your partition.  Alternatively,
+for NetBSD and linuxppc, you can add an entry to your <tt>/etc/fstab</tt>
+to always mount this filesystem.  There's probably a way to do this with MacOS
+X, but I don't know how yet.
+</ol>
+
 <ENTRY>usb-mouse-bug My USB mouse is not recognized.
 
 Try plugging it into the back of the Mac instead of into the keyboard.
@@ -1380,6 +1427,11 @@ No, although theoretically it should be possible.  The Darwin binaries are in
 
 <ENTRY>keys What do the <img src="../../images/ports/macppc/icon-command.gif" width="13" height="13" alt="command key"> and <img src="../../images/ports/macppc/icon-option.gif" width="17" height="13" alt="option key"> icons mean (i.e. which are the "comma
 
+
+
+
+
+
 nd" and "option" keys)?
 
 Apple has some unusual keys on its keyboards that may confuse some people
@@ -1411,7 +1463,7 @@ the command and option keys in addition to the letters "p" and "r".
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.61 2001/04/10 07:13:14 mbw Exp $<br>
+  $NetBSD: faq.list,v 1.62 2001/04/15 23:21:51 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
