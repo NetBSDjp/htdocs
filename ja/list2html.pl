@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.78 2002/05/30 01:11:18 grant Exp $
+# $NetBSD: list2html.pl,v 1.79 2002/06/26 18:40:25 abs Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
@@ -52,6 +52,7 @@ use Getopt::Std;
 use Text::Wrap;
 $Text::Wrap::columns = 45;
 $^W = 1;
+umask 022;
 my($verbose, %extras, $months_previous, $list_date_links);
 my($version, %opt, %pkgname);
 
@@ -61,7 +62,7 @@ my($version, %opt, %pkgname);
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.78 $';
+$version = '$Revision: 1.79 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
