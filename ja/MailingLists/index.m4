@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.119 2003/02/26 22:57:47 gendalia Exp $
+#	$NetBSD: index.m4,v 1.121 2003/03/14 12:31:50 kim Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -7,7 +7,7 @@ divert(-1)dnl
 undefine(`index')
 
 define(`LISTNEWS',
-`  <a href="http://news.netbsd.org/'`patsubst(patsubst(patsubst($1, `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
+`  <a href="http://news.netbsd.org/'`patsubst(patsubst(patsubst(patsubst($1, `^port-', `ports-'), `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
 </td><td valign=top>', `-', `.')
 
 define(`LISTARCHIVE',
@@ -124,7 +124,7 @@ is available at
 <img src="../images/misc/news.gif" width="29" height="29"
 alt="[Newsgroup]"> link next to its name, in the description section of this
 page.  This will take you to the news-archive at <a
-href="http://news.netbsd.org">news.netbsd.org</a>.
+href="http://news.netbsd.org/">news.netbsd.org</a>.
 <p>
 
 Please note that while the majority of the NetBSD mailing lists are
@@ -661,8 +661,8 @@ divert(9)
 <hr> 
 <address>
   <small>
-  <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.119 2003/02/26 22:57:47 gendalia Exp $<br>
+  <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: index.m4,v 1.121 2003/03/14 12:31:50 kim Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
