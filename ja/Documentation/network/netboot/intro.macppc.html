@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>Introduction (macppc-specific), Diskless NetBSD HOW-TO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<a href="intro.html">Previous</a> |
+<a href="bootpd.html">Next</a> |
+<a href="">Table of Contents</a>
+
+<hr>
+
+<h1>Introduction (macppc-specific), Diskless NetBSD HOW-TO</h1>
+
+For a concise iMac-specific netboot page, look at Mitchell Spector's 
+<a href="http://www.enchantedlearning.com/tech/netbsd_imac.shtml">
+How to Run NetBSD on an iMac</a>
+
+<h2>Power Macintosh Open Firmware procedures</h2>
+<dl><dt><dd>
+<big><b>Which Power Macintosh machines can netboot</b></big>
+<p>
+
+All NetBSD-supported Power Macs can boot over their built-in network
+interface.  There are no reported cases of people being able to netboot
+over PCI, Cardbus, SCSI, or Airport network interfaces.
+<p>
+
+There are three major revisions of Open Firmware on the supported macppc
+machines.  Each handles booting in a different manner.  OF versions 1.0.5
+and 2.X
+support BOOTP only and expect to load a XCOFF bootloader.  OF version 3.X
+supports only DHCP and expects to load an ELF bootloader or the ELF kernel
+directly.
+<p>
+
+The XCOFF bootloader in the NetBSD/macppc distribution is called
+<tt>ofwboot.xcf</tt> and may not be present in every snapshot.  The ELF
+bootloader is called <tt>ofwboot.elf</tt>.
+<p>
+
+The version of OpenFirmware is printed when you first enter OF.  See the
+macppc <a href="../../../Ports/macppc/faq.html">FAQ</a> if you need help.
+<p>
+
+<big><b>Quirks/problems you may run into</b></big>
+<p>
+
+There have been some reports of some OF 1.0.5 machines not being able to
+netboot at all.  The symptom is that <tt>ofwboot.xcf</tt> fails to mount
+the nfs server with the kernel and attempts to tftp something with no
+filename (it keeps printing the message "TFTP timeout").  See the <a
+href="http://mail-index.netbsd.org/port-macppc/2000/02/20/0007.html">post
+to port-macppc</a> detailing my experience.
+<p>
+
+There have also reports of some OF 2.X machines which don't get all
+of the information properly from the BOOTP server, but a DHCP server
+serving BOOTP requests works.  Keep this in mind later.
+<p>
+
+The first generation of iMacs (Bondi Blue) have a known problem with DHCP
+with their
+original firmware.  You should download the latest firmware for these
+iMacs.  Other early OF 3.X models may have similar problems, and we
+recommend checking the <a href="http://asu.info.apple.com/">Apple Software
+Updates</a> site for firmware updates (just search for "firmware") if you
+encounter problems with DHCP.
+<p>
+
+<big><b>Obtaining an IP address and downloading the boot loader</b></big>
+<p>
+
+Power Macintosh workstations first try to acquire an IP address using
+either the Internet Bootstrap Protocol (BOOTP), or the Dynamic Host
+Configuration protocol (DHCP) depending on which revision of OF they have.
+The bootpd and dhcpd servers use the
+ethernet address of the client machine to determine its IP address and a
+bootloader filename. If this request is successful, Open Firmware
+expects to be able to download a second-stage boot program via the <a
+href="tftpd.html">TFTP protocol</a>. It will do this by setting up a
+TFTP connection to the server that answered the earlier BOOTP or DHCP 
+request,
+and asking for the file name returned by the server. The
+second-stage boot program then loads the kernel using NFS from the server
+and path specified by the BOOTP or DHCP request.
+<p>
+
+The <tt>ofwboot.xcf</tt> and <tt>ofwboot.elf</tt> bootloaders are capable
+of loading gzip'ed kernels which will greatly speed up the process of
+downloading the kernel.
+<p>
+
+OF 3.X machines may alternatively set up the gunzip'ed kernel to be
+downloaded by tftp and skip the bootloader, although this may be less
+flexible.
+<p>
+
+Note, the very early PCI PowerMacintoshes (i.e. early OF 1.0.5
+machines) had a motherboard error which manifests as the ethernet address
+being reversed (e.g. <tt>00:a0:40:0b:77:2c</tt> when corrected
+becomes <tt>00:05:02:d0:ee:34</tt>).  Running certain MacOS utilities will
+correct this.  If
+you find that netbooting suddenly fails to work, double-check your
+ethernet address and see if it has been fixed, or if you zapped the PRAM
+and erased the fix.
+<p>
+To determine the MAC address OF will use for its BOOTP/DHCP request, type
+the following command:
+<pre>0 &gt <b> dev enet .properties</b>
+[...]
+    local-mac-address CCCCCCCC CCCC
+[...]</pre>
+</dd></dl>
+
+<h2>Open Firmware commands</h2>
+<dl><dt><dd>
+On OF 3.X machines (i.e. the translucent models),
+you can make it net boot by holding down the "N" key during startup
+without even entering OF.
+<p>
+
+On other machines (or if you want to set your machine up to net boot
+by default), you can boot from Open Firmware. For more information
+about getting to the Open Firmware prompt at boot time, see the <a
+href="../../../Ports/macppc/faq.html#ofw-access">NetBSD/macppc
+FAQ</a>.
+<p>
+
+The syntax used for netbooting varies depending on Open Firmware
+version. In OF 1.0.5 and 2.X you will need to type either:
+<pre>0 &gt; <b>boot enet</b>
+0 &gt; <b>boot enet enet:,netbsd.alternate</b>     #to specify a kernel other than "netbsd"</pre>
+<p>
+
+In OF 3 you will need to type either:
+<pre>0 &gt; <b>boot enet:0</b>
+0 &gt; <b>boot enet:0,ofwboot.elf enet:0,netbsd.alternate</b>    #to specify a kernel other than "netbsd"</pre>
+Some users have reported trouble with DHCP sending the proper
+information.  The find that it is necessary to specify the kernel name on
+the command line.
+<p>
+
+Other arguments can be passed to the
+boot loader or kernel by specifying them on the end of the command
+line (e.g. <tt>boot&nbsp;enet&nbsp;-a</tt>).
+<p>
+
+To make booting over the network the default, type
+<tt><b>setenv boot-command enet[:0]</b></tt>.
+</dd></dl>
+
+<h2>Begin setting things up (suggested order):</h2>
+<dl><dt><dd>
+<ol>
+<li><a href="bootpd.html"><tt>bootpd</tt></a> (OF 1 and 2) or 
+    <a href="dhcpd.html"><tt>dhcpd</tt></a> (OF 3)
+<li><a href="tftpd.html"><tt>tftpd</tt></a>
+<li><a href="nfs.html"><tt>nfs</tt></a>
+<li><a href="files.html">client filesystem</a>
+<li><a href="finish.html">finishing up</a>
+</ol>
+</dd></dl>
+
+<hr>
+
+<a href="intro.html">Previous</a> |
+<a href="bootpd.html">Next</a> |
+<a href="">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: intro.macppc.html,v 1.12 2000/10/26 03:20:46 mbw Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
