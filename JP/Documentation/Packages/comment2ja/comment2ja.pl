@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.20 1999/12/08 04:08:08 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.21 2002/01/23 17:27:26 sakamoto Exp $
 #
 
 $|=1;
@@ -111,7 +111,7 @@ my ($dir);
 opendir(TOPDIR, "$pkgsrc") || die "$pkgsrc";
 foreach $dir (readdir(TOPDIR)) {
 	if ($dir =~ /^\.$/ || $dir =~ /^\.\.$/ ||
-	    ! -d "$pkgsrc/$dir" || ! -f "$pkgsrc/$dir/pkg/COMMENT" ||
+	    ! -d "$pkgsrc/$dir" || ! -f "$pkgsrc/$dir/Makefile" ||
 	    $dir eq "pkg" || $dir eq "distfiles" || $dir eq "packages" ||
 	    $dir eq "mk" || $dir eq "templates") {next;}
 
@@ -154,7 +154,7 @@ foreach $dir (readdir(TOPDIR)) {
 	foreach $pkgdir (readdir(CATEGORY)) {
 		if ($pkgdir =~ /^\.$/ || $pkgdir =~ /^\.\.$/ ||
 		    ! -d "$pkgsrc/$dir/$pkgdir" ||
-		    ! -f "$pkgsrc/$dir/$pkgdir/pkg/COMMENT" ||
+		    ! -f "$pkgsrc/$dir/$pkgdir/Makefile" ||
 		    ! -f "$pkgsrc/$dir/$pkgdir/README.html" ||
 		    $pkgdir eq "pkg") {next;}
 
@@ -176,7 +176,7 @@ foreach $dir (readdir(TOPDIR)) {
 			s/This package has a home page at/ホームページ:/;
 			s/Please note that this package has a (.*) license./このパッケージは $1 ライセンスであることに注意してください。/;
 			s/ftp:\/\/ftp.netbsd/ftp:\/\/ftp.jp.netbsd/;
-			s/\"(pkg\/DESCR)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/$1\"/;
+			s/\"(DESCR)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/$1\"/;
 			s/>history<\/A>\./>歴史<\/A>をご覧ください。/;
 			s/<A HREF=\"\.\">/<A HREF=\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/\">/;
 			s/no precompiled binaries available/コンパイル済みのパッケージは現在用意されていません/;
