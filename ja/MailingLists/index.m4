@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.123 2003/04/22 15:50:56 lukem Exp $
+#	$NetBSD: index.m4,v 1.125 2003/04/22 16:39:36 grant Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -7,11 +7,11 @@ divert(-1)dnl
 undefine(`index')
 
 define(`LISTNEWS',
-`  <a href="http://news.netbsd.org/'`patsubst(patsubst(patsubst(patsubst($1, `^port-', `ports-'), `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
+`  <a href="http://news.NetBSD.org/'`patsubst(patsubst(patsubst(patsubst($1, `^port-', `ports-'), `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
 </td><td valign=top>', `-', `.')
 
 define(`LISTARCHIVE',
-`  <a href="http://mail-index.netbsd.org/$1/"><img src="../../images/misc/tape.gif" origlink="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
+`  <a href="http://mail-index.NetBSD.org/$1/"><img src="../../images/misc/tape.gif" origlink="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
 </td><td valign=top>')
 
 define(`LISTSUBSCRIBE',
@@ -69,7 +69,7 @@ divert(0)dnl
 <!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <meta http-equiv="Content-Type" content="text/html; charset=iso-2022-jp">
-<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.org">
 <title>NetBSD Mailing Lists</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -83,7 +83,7 @@ divert(0)dnl
 NetBSD プロジェクトでは、 NetBSD ユーザーと開発者が容易にやりとりできるよう、
 さまざまな公開メーリングリストを用意しています。
 メーリングリストはすべて、メーリングリスト管理パッケージ <b>Majordomo</b>
-でサービスされており、 <i>majordomo@NetBSD.ORG</i> に空のメールを出すと、
+でサービスされており、 <i>majordomo@NetBSD.org</i> に空のメールを出すと、
 NetBSD プロジェクトの Majordomo の使い方がわかるようになっています。
 <p>
 
@@ -102,11 +102,10 @@ NetBSD プロジェクトの Majordomo の使い方がわかるようになっています。
 <img src="../../images/misc/envelope.gif" origlink="../images/misc/envelope.gif" width="29" height="29"
 alt="[Subscribe]"> をクリックします。
 それからフォームに e-mail アドレスを記入してください。
-<i>注意: この機能は、フォームに対応したブラウザーでのみ使えます。</i>
 <p>
 
 <b>メーリングリストから脱退するには</b>、講読手続きに使ったアドレスから<a
-href="mailto:majordomo@netbsd.org">majordomo@netbsd.org</a> へ、本文に
+href="mailto:majordomo@NetBSD.org">majordomo@NetBSD.org</a> へ、本文に
 <tt><b>unsubscribe <em>listname</em></b></tt> とだけ書いたメールを送ります。
 <p>
 
@@ -114,7 +113,7 @@ href="mailto:majordomo@netbsd.org">majordomo@netbsd.org</a> へ、本文に
 リスト名の後のリンク
 <img src="../../images/misc/tape.gif" origlink="../images/misc/tape.gif" width="29" height="29"
 alt="[View archive]"> をクリックします。これでメールアーカイブサーバー <a
-href="http://mail-index.netbsd.org/">mail-index.netbsd.org</a>
+href="http://mail-index.NetBSD.org/">mail-index.NetBSD.org</a>
 を利用できます
 (ネットワークアクセスとこのマシンのラックスペースを提供してくださった
 <a href="http://www.isc.org/">ISC</a> と、
@@ -130,7 +129,7 @@ href="http://mail-index.netbsd.org/">mail-index.netbsd.org</a>
 このページの説明の部分にあるリスト名の後のリンク
 <img src="../../images/misc/news.gif" origlink="../images/misc/news.gif" width="29" height="29"
 alt="[Newsgroup]"> をクリックします。これで <a
-href="http://news.netbsd.org/">news.netbsd.org</a> のニュースアーカイブを利用できます。
+href="http://news.NetBSD.org/">news.NetBSD.org</a> のニュースアーカイブを利用できます。
 <p>
 
 NetBSD のメーリングリストの多くは、普通の unmoderated なものですが、
@@ -140,7 +139,7 @@ NetBSD のメーリングリストの多くは、普通の unmoderated なものですが、
 <h2>メーリングリストアーカイブの検索</h2>
 
 索引とアーカイブは
-<a href="http://mail-index.netbsd.org/">http://mail-index.netbsd.org/</a>
+<a href="http://mail-index.NetBSD.org/">http://mail-index.NetBSD.org/</a>
 と <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a> にあります。
 <p>
 
@@ -667,7 +666,7 @@ divert(9)
   (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.123 2003/04/22 15:50:56 lukem Exp $<br>
+  $NetBSD: index.m4,v 1.125 2003/04/22 16:39:36 grant Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
