@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.10 1999/08/26 01:43:17 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.11 1999/08/26 02:36:39 sakamoto Exp $
 #
 
 $|=1;
@@ -96,7 +96,8 @@ close(DST);
 my ($dir);
 opendir(TOPDIR, "$pkgsrc") || die "$pkgsrc";
 foreach $dir (readdir(TOPDIR)) {
-	if ($dir =~ /^\.$/ || $dir =~ /^\.\.$/ || ! -d "$pkgsrc/$dir" ||
+	if ($dir =~ /^\.$/ || $dir =~ /^\.\.$/ ||
+	    ! -d "$pkgsrc/$dir" || ! -f "$pkgsrc/$dir/pkg/COMMENT" ||
 	    $dir eq "pkg" || $dir eq "distfiles" || $dir eq "packages" ||
 	    $dir eq "mk" || $dir eq "templates") {next;}
 
@@ -135,6 +136,7 @@ foreach $dir (readdir(TOPDIR)) {
 	foreach $pkgdir (readdir(CATEGORY)) {
 		if ($pkgdir =~ /^\.$/ || $pkgdir =~ /^\.\.$/ ||
 		    ! -d "$pkgsrc/$dir/$pkgdir" ||
+		    ! -f "$pkgsrc/$dir/$pkgdir/pkg/COMMENT" ||
 		    ! -f "$pkgsrc/$dir/$pkgdir/README.html" ||
 		    $pkgdir eq "pkg") {next;}
 
