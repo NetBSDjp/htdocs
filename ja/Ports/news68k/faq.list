@@ -1,0 +1,336 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 2001
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD/news68k Frequently Asked Questions</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1>NetBSD/news68k Frequently Asked Questions</h1>
+
+<h2>Other sources of information</h2>
+<ul>
+<li><a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.5.2/news68k/INSTALL.html">
+    NetBSD/news68k 1.5.2 install notes</a> - supported hardware and how to
+    install.
+<li><a href="../../MailingLists/#port-news68k">port-news68k mail list</a>
+    (<a href="http://mail-index.netbsd.org/port-news68k/">archive</a>)
+    - if you have any additional questions please subscribe.
+<li><a href="../newsmips/history.html">History of NEWS machines</a>
+    - A brief history of machines running NetBSD/newsmips and NetBSD/news68k.
+<li><a href="../../Documentation/elf.html">The NetBSD ELF FAQ</a>
+    - NetBSD/news68k port has switched to ELF instead of a.out
+      after 1.5 release.
+<p>
+<li><a href="../../Documentation/">General NetBSD Documentation</a>
+    - for questions not specific to NetBSD/news68k.
+</ul>
+
+<LIST>
+
+<SECTION>General Questions
+
+<ENTRY>serial_console How can I set up serial console?
+First, turn off the DIP switches 1-3 to specify to use serial console
+for the PROM monitor.
+(see <a href="#dip_sw">DIP switch descriptions</a> for details)
+<p>
+
+The NEWS machines use CH0 port for serial console, with
+9600bps, 8 bit char, no parity and 1 stop bit.
+<p>
+Serial ports of news1400/1500/1600/1700 use ordinary 25P D-sub connectors,
+so you just need a null modem cable.
+<p>
+
+news1200 uses female 9P D-sub connectors.
+It has the same pin layout with PCs, though they have male 9P connectors.
+<p>
+
+<ENTRY>dead_nvram My NEWS does not print anything to console!
+The NEWS machines use the MK48T02 NVRAM chip, which is also used
+in the SPARCstation machines. If the NVRAM battery is dead,
+they don't boot properly.
+<p>
+
+What you need to do, both with a new NVRAM, or one with a dead battery is
+to press the POWER/RESET buttons in the following order to force
+the PROM monitor to re-initialize the NVRAM:
+<p>
+
+<ul>
+ <li>Press and hold POWER button
+ <li>Press RESET, while still holding POWER
+ <li>Release RESET first
+ <li>And then release POWER
+</ul>
+<p>
+
+Unlike SPARCstations, you don't have to restore any data
+like the ethernet MAC address.
+The MAC address is stored in ROM on NEWS,
+and only thing you have to set is time of the day for the clock.
+<p>
+
+If you are going to replace the dead NVRAM,
+<a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">
+FAQ about Sun NVRAM/hostid page</a> has many useful information about
+the chips. Maybe you could try to
+<a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html#attach">
+attach a new battery onto the NVRAM</a>, but on some NEWS models the NVRAM
+might be soldered to the mainboard without socket <code>:-(</code>
+<p>
+
+<ENTRY>dip_sw How should I set the DIP switches?
+news68k machines have one block of 8 dip switches:
+<p>
+
+<dl>
+<dt>Switch 1,2,3: console settings</dt>
+<dd>
+<table>
+<tr>
+ <td><code>OFF,OFF,OFF</code></td>
+ <td>ANSI terminals (i.e. serial console)</td>
+</tr>
+<tr>
+ <td><code>OFF,OFF,ON </code></td>
+ <td>NWB-512 monochrome bitmap console</td>
+</tr>
+<tr>
+ <td><code>ON ,OFF,OFF</code></td>
+ <td>NWB-225A color bitmap console</td>
+</tr>
+<tr>
+ <td><code>ON ,ON ,ON </code></td>
+ <td>newer framebuffers which support autoselection functions
+     (NWS-251, NWB-514 etc.)</td>
+</tr>
+</table>
+<p>
+
+<dt>Switch 4: boot device</dt>
+<dd>
+<table>
+<tr>
+ <td><code>OFF</code></td>
+ <td>boot from SCSI disk: <code>hd()</code></td>
+</tr>
+<tr>
+ <td><code>ON</code></td>
+ <td>boot from floppy disk: <code>fh()</code></td>
+</tr>
+</table>
+</dd>
+<p>
+
+<dt>Switch 5: autoboot</dt>
+<dd>
+<table>
+<tr>
+ <td><code>OFF</code></td>
+ <td>PROM monitor</td>
+</tr>
+<tr>
+ <td><code>ON</code>
+ <td>auto boot</td>
+</tr>
+</table>
+</dd>
+<p>
+
+<dt>Switch 6: diagnostic (?)</dt>
+<dd>
+<table>
+<tr>
+ <td><code>OFF</code></td>
+ <td>Diag off (default)</td>
+</tr>
+<tr>
+ <td><code>ON</code>
+ <td>Diag on</td>
+</tr>
+</table>
+</dd>
+<p>
+<dt>Switch 7,8: unused</dt>
+<dd>default off</dd>
+
+</dl>
+<p>
+
+<ENTRY>power_off How can I turn off the machine other than to unplug cable?
+Just press the RESET button (without POWER),
+or use <code>"off"</code> command on the PROM prompt.
+<p>
+
+<ENTRY>bootfd NetBSD/news68k install floppy does not boot
+There are some reports that some news1500 machines cannot boot
+the install floppy because of read errors.
+It might be caused by bug of PROM monitor or boot loader,
+or be actual media errors. Workaround is cleanup drives and
+try to boot several times with several disks.
+
+<ENTRY>level_3_int Kernel prints <code>"level 3 interrupt:"</code> forever after boot with power cycle
+Some old version of PROM monitors does not initialize framebuffers
+in expantion slots properly when serial console is specified,
+then the framebuffer causes spurious interrupts.
+<p>
+
+The workaround is resetting the machine (by POWER+RESET method mentioned above)
+with bitmap console settings once, and then reset again with serial console.
+
+<ENTRY>coexist_news_os Can I install both NetBSD and NEWS-OS in the same disk?
+It is not well tested, but not recommended anyway.
+<p>
+
+NetBSD/news68k can recognize NEWS-OS disklabel and mount NEWS-OS disks,
+but once NetBSD modifies the NEWS-OS disklabel, NEWS-OS cannot recognize them.
+It is recommended to install both OS into the separate disks.
+<p>
+
+<SECTION>PROM monitor Questions
+
+<ENTRY>prom_command What command can I use on PROM prompt?
+<code>"help"</code> command would show the all commands.
+On my NWS-1750 it says:
+<pre>
+NEWS&gt; help
+bf [.{b|w|l}] &lt;bgn&gt; {&lt;end&gt;|:&lt;cnt&gt;} &lt;data&gt;               : Block Fill
+bm &lt;bgn&gt; {&lt;end&gt;|:&lt;cnt&gt;} &lt;dest&gt;                          : Block Move
+bo [&lt;dev&gt;]                                              : BOot
+bp [&lt;addr&gt; [:&lt;cnt&gt;]] ...                                : BreakPoint set
+cp &lt;src_dev&gt; &lt;bgn&gt;:&lt;cnt&gt; &lt;dst_dev&gt; &lt;dest&gt;               : CoPy
+format {fd|fh}                                          : FORMAT floppy
+go [&lt;addr&gt; [&lt;bkpt&gt; [:&lt;cnt&gt;]]]                           : GO to user program
+help                                                    : display this
+md [.{b|w|l}] [&lt;bgn&gt; [{&lt;end&gt;|:&lt;cnt&gt;}]]                  : Memory Display
+ms [.{b|w|l}] [&lt;addr&gt; [&lt;data&gt;]]                         : Memory Set
+mu                                                      : Memory Usage
+nobp [&lt;addr&gt;] ...                                       : NO BreakPoint
+off                                                     : turn power OFF
+rc                                                      : Re-assign Console
+rd [{dreg|areg|preg|creg|mreg}] ...                     : Register Display
+rr                                                      : Register Reset
+rs [&lt;reg&gt; [&lt;data&gt;]]                                     : Register Set
+set [&lt;var&gt;[=&lt;value&gt;]]                                   : SET variable
+st [:&lt;cnt&gt;]                                             : Stack back Trace
+tr [:&lt;cnt&gt;] [branch] [{dreg|areg|preg|creg|mreg}]       : instruction TRace
+vers                                                    : VERSion number
+NEWS&gt;
+</pre>
+The other machines might print these messages differently,
+but they should be mostly same.
+<p>
+
+For boot command, you can specify the following options:
+<table border=0 cellpadding=0>
+<tr>
+ <td><code>bo</code></td>
+ <td>boot from default device (usually <code>sd0</code>)</td>
+</tr>
+<tr>
+ <td><code>bo /1</code></td>
+ <td>boot with <code>RB_ASKNAME</code>
+ (i.e. ask root device before mountroot)</td>
+</tr>
+<tr>
+ <td><code>bo /2</code></td>
+ <td>boot with <code>RB_SINGLE</code>
+ (i.e. go to single-user mode)</td>
+</tr>
+<tr>
+ <td><code>bo fh()</code></td>
+ <td>boot from 1.44M floppy</td>
+</tr>
+<tr>
+ <td><code>bo hd</code><code>(1)</code></td>
+ <td>boot from SCSI disk of ID 1</td>
+</tr>
+<tr>
+ <td><code>bo /2 hd()/netbsd.0 </code></td>
+ <td>boot <code>"netbsd.0"</code> on <code>sd0</code> with single-user</td>
+</tr>
+</table>
+
+<ENTRY>netboot Can NetBSD/news68k boot via network?
+No, not yet.
+<p>
+
+The PROM monitor of news68k machines uses "remote disk (rd)" protocol
+for diskless boot, but it is supported by only NEWS-OS and
+there is no document about it.
+<p>
+
+Maybe <code>rd_rpc.h</code> or <code>rd_srq.h</code> in NEWS-OS might be help,
+but currently no one is working on it (yet).
+<p>
+
+<SECTION>Hardware Questions
+
+<ENTRY>spec What is the spec of my NEWS?
+There is a
+<a href="http://www.sra.co.jp/people/katsu/doc/sonynews/model.html">
+page of SONY NEWS specifications</a>.
+This page is written in Japanese, but I guess it is still useful enough.
+<p>
+
+<ENTRY>memory Which type of SIMM can be used for my NEWS?
+For news1600/1700 machines, 30pin 1M SIMMs with 9 chips
+can be used to upgrade to 16M bytes.
+SIMMs with 3 chips or SIMMs without parity cannot be used.
+To upgrade from 16M to 32M, the optional memory board is required.
+<p>
+
+For news1400/1500 machines, 30pin 1M SIMMs with 8 or 9 chips can be used.
+(i.e. these machines don't use parity bit.)
+SIMMs with 2 or 3 chips cannot be used.
+<p>
+
+<ENTRY>news1800 Are there any hope to support NWS-18x0 models?
+Unfortunately, there are many problem to support news1800 machines.
+news1800 models have dual 68030 CPUs. One is a main processor, and another is
+an "I/O Processor". All devices (tty, ethernet, SCSI etc.) are connected to
+the IOP, but there are very few information how to handle them.
+The NEWS-OS provides a special module for the IOP called "MRX",
+and it is loaded by the PROM at boot time from the root directory.
+<p>
+
+Some people had asked the NEWS device information to Sony,
+and they once had planned to open their NEWS-OS sources.
+But there were many problem for it because the sources had many license issues,
+and the NEWS development division in Sony had already been dissolved so
+no one could resolve the issues officially.
+<p>
+
+<ENTRY>news800 Then, what about NWS-8xx and NWS-7xx models?
+The one problem is that news800 models also use an I/O processor,
+which is mentioned in the above entry.
+Another problem is news800 uses m68020 and the Sony own MMU, not Motorola
+m68851 MMU. news700 also has the original MMU like news800.
+There are few information about it, neither.
+<p>
+
+</LIST>
+
+<a href="./">Up to <em>NetBSD/news68k Port Page</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: faq.list,v 1.1 2001/09/21 18:38:08 tsutsui Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy;
+    2001
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
