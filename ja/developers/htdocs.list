@@ -1,22 +1,27 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<!-- Copyright (c) 1996, 1997, 1998, 1999, 2000
+<!-- Copyright (c) 1994-2001
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>htdocsを編集する</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<table>
-<tr><td width=150><img src="/images/NetBSD-banner.gif" alt="NetBSD"></td>
-<td valign=bottom><h2>htdocsを編集する</h2></td></tr>
-</table>
+<DEVHEADING>htdocs を編集する
 
-<p>
-このドキュメントは (NetBSDウェブサーバー用のCVSリポジトリーである) htdocsを編集したいと考えている人が参照できるように作られています。
-</p>
+このドキュメントは (NetBSDウェブサーバー用のCVSリポジトリーである) htdocs
+を編集したいと考えている人が参照できるように作られています。
 
 <LIST>
+
+<h2>関連ドキュメンテーション</h2>
+
+<ul>
+  <li><a href="announce.html">ニュース記事の手引き</a>
+  <li><a href="translate.html">htdocs の翻訳</a>
+</ul>
 
 <SECTION>htdocsに関する一般事項
 
@@ -60,7 +65,7 @@
 <ENTRY>dotlist-files .listファイルとは何者で、どうやって使うのか？
     <tt>.list</tt>ファイルには標準的なHTMLのほかに、簡単に同じ形の文書を
     生成できる特別なタグが書かれています。
-    <tt><a href="/list2html.pl">list2html.pl</a></tt>で目的の
+    <tt><a href="../list2html.pl">list2html.pl</a></tt>で目的の
     .htmlファイルを生成します。
     <p>
     各ディレクトリーにMakefileがあるはずです。これを使って.listファイルから
@@ -69,66 +74,145 @@
     <p>
     改行までの一行で解釈されます (特別なタグには便利です) 。
     <p>
-    CVSにアクセスできないけれども、<tt>.list</tt>ファイルを変更して
-    サブミットしたいときは、通常以下のような手順を踏むのが一番です:
+    CVSにアクセスできないけれども、変更してサブミットしたいときは、
+    anonymous CVS ( <a href="cvs-repos/cvs_intro.html">NetBSD CVS
+    HOWTO</a>参照) を使って htdocs をチェックアウトすることができます。
+    最良の方法は以下のようなものです:
     <ol>
-	<li><tt><a href="/list2html.pl">list2html.pl</a></tt>をダウンロードします。
-	<li><a href="http://www.netbsd.org/">www.netbsd.org</a>から
-	    適当な<tt>.list</tt>ファイルをダウンロードします。
-	    一致する.htmlファイルの場所に行き、URL中の.htmlを.listに
-	    置き換えるとダウンロードできます。
-	    注意すべき点は、FAQでないほとんどのドキュメントには.listファイルが
-	    ないということです。確信が持てない場合は、
-	    ソースの先頭を見ると、.list ファイルなどのファイルから自動的に
-	    .html ファイルを生成していることを示す一文が見つかるはずです。
-	<li><em>ファイル</em>.list を<em>ファイル</em>.list.orig にコピーします。
-	<li><em>ファイル</em>.listを編集します。
-	<li>'./list2html.pl <em>ファイル</em>.list <em>ファイル</em>.html
-	を実行します。
-	<li>HTMLを<a href="#validate-html">チェック</a>します。
-	    (必要に応じてこの4〜6を繰り返して下さい) 。
-	<li>diff(1)を使って差分をサブミットします。<br>
-	    <tt>'<b>diff -u <em>ファイル</em>.list.orig
-	    <em>ファイル</em>.list</b>'</tt>
+	<li><em>htdocs</em> モジュールをチェックアウトします<br>
+	    <tt>'<b>cvs checkout htdocs</b>'</tt>
+	<li>必要なファイルを編集します。 FAQ 形式のドキュメントのほとんどは、
+	     <tt>.list</tt> ファイルを元に生成されていますので、編集前に
+	     確認してください。
+	<li>.list 等のファイルを編集した場合は 'make' を実行します。
+	<li>HTML の妥当性を<a href="#validate-html">検証します</a>
+	    (必要に応じてこの2〜4を繰り返して下さい) 。
+	<li><b>cvs diff</b> して、その差分を <www@netbsd.org> に送ってください。例えば、<br>
+	    <tt>'<b>cvs diff -u <em>htdocs/path/to/file.list</em></b>'</tt>
     </ol>
     <p>
-    コミットする前にmakeを実行すべきです。また
-    <PKGSRC>lang/perl5
-    がインストールされている必要があります。
+    コミットする前に <b>make</b> を実行すべきです。また
+    <PKGSRC>lang/perl5 がインストールされている必要があります。
 
 <p>
-<table>
-<tr><th colspan=2>必須のタグ</th></tr>
-<TROW>&lt;LIST&gt;:             生成するリストの項目を書き込みます。
-<TROW>&lt;SECTION&gt;テキスト:      DATEやENTRYの前に置き、新しい章を導入します。
-<TROW>&lt;/LIST&gt;:            この特殊な項目の終わりを示すタグ。
-<tr><th colspan=2>オプションのタグ</th></tr>
-<TROW>&lt;DATE&gt;タグ 日付 テキスト: 項目を変えます。タイトルに展開され、一覧に追加されます。
-<TROW>&lt;ENTRY&gt;タグ テキスト: テキストは項目のタイトルに展開され、一覧に追加されます。
-<TROW>&lt;ENTRYLINK&gt;url テキスト: リンクが一覧に追加され、メインのテキストからは削除されます。
-<TROW>&lt;HEADING&gt;テキスト: ドキュメントの先頭にある標準的なヘッダー。
-<TROW>&lt;TROW&gt;テキスト: テキスト:   二つのテキストフィールドがあるテーブルの列。 - <b>注意: &lt;TROW&gt; は&lt;/table&gt;がある行まで自動的に続きます。</b>
-<TROW>&lt;HOMELINK&gt;: ドキュメントの最後にある、ホームページへのリンクがはられている標準的な旗。
-<TROW>&lt;DOCLINK&gt;: ドキュメントの最後にある、ホームページとドキュメントの先頭へのリンクがはられている標準的な旗。
-<TROW>&lt;DEVLINK&gt;: ドキュメントの最後にある、ホームページと開発者ドキュメントの先頭へのリンクがはられている標準的な旗。
-</table>
-<p>
-追加のパターンマッチング:<br>
-<table>
-<tr><th align=left>man ページ</th>
-    <td>([a-zA-Z_][-\w.+]*[\w+])\((\d)\)</td><td>例: ls(1)</td></tr>
-<tr><th align=left>email アドレス</th>
-    <td>&lt;([-\w.]+@[-\w.]+)&gt;</td><td>例: <abs@netbsd.org></td></tr>
-<tr><th align=left>packagesrc リファレンス</th>
-    <td>&lt;PKGSRC&gt;((\w+/|)([^\s&lt;&gt;]+\w))</td>
-    <td>例: <PKGSRC>editors/vilearn</td></tr>
-<tr><th align=left>-current ソースファイルやディレクトリ</th>
-    <td>&lt;CURRENTSRC&gt;(パス)</td>
-    <td>例: <CURRENTSRC>Makefile</td></tr>
-<tr><th align=left>文字通りURL</th>
-    <td>&lt;URL&gt;(url)</td>
-    <td>例: <URL>http://www.netbsd.org/</td></tr>
-</table>
+
+<center>
+
+<table border=0 cellpadding=1 cellspacing=0><tr><td bgcolor="#d8d8d8">
+
+<table border=0 cellpadding=4 cellspacing=0 width="550"><tr>
+
+<td colspan=2 align=right bgcolor="#f5f5f5"><big><b>必須の
+タグ&nbsp;</b></big></td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;LIST&gt;:</b></td>
+<td>生成するリストの項目を書き込みます。</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;SECTION&gt;テキスト:</b></td>
+<td>DATEやENTRYの前に置き、新しい章を導入します</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;/LIST&gt;:</b></td>
+<td>この特殊な項目の終わりを示すタグ<br>&nbsp;<br></td>
+</tr><tr>
+
+<td colspan=2 align=right bgcolor="#f5f5f5"><big><b>オプションの
+タグ&nbsp;</b></big></td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;DATE&gt;タグ&nbsp;日付&nbsp;テキスト:</b></td>
+<td>項目を変えます。タイトルに展開され、一覧に追加されます</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;ENTRY&gt;タグ テキスト:</b></td>
+<td>テキストは項目のタイトルに展開され、一覧に追加されます</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;LISTLINK&gt;url テキスト:</b></td>
+<td>リンクが目次に追加され、メインのテキストからは削除されます</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;ENTRYLINK&gt;url テキスト:</b></td>
+<td>リンクが一覧とメインのテキストに追加されます</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;HEADING&gt;テキスト:</b></td>
+<td>ドキュメントの先頭にある標準的なヘッダー</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;DEVHEADING&gt;テキスト:</b></td>
+<td>開発者ドキュメントの先頭にある標準的なヘッダー</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;TROW&gt;テキスト: テキスト:</b></td>
+<td>二つのテキストフィールドがあるテーブルの列 - <b>注意:
+&lt;TROW&gt; は&lt;/table&gt; がある行まで自動的に続きます</b></td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;HOMELINK&gt;:</b></td>
+<td>ドキュメントの最後にある、ホームページへのリンクがはられている標準的な旗</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;DOCLINK&gt;:</b></td>
+<td>ドキュメントの最後にある、ホームページとドキュメントの先頭へのリンクがはられている
+標準的な旗</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;DEVLINK&gt;:</b></td>
+<td>ドキュメントの最後にある、ホームページと開発者ドキュメントの先頭へのリンクがはられている
+標準的な旗</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;PORTLINK&gt;:</b></td>
+<td>ドキュメントの最後にある、ホームページと対応アーキテクチャーの先頭へのリンクがはられている
+標準的な旗</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>&lt;GALLINK&gt;:</b></td>
+<td>ドキュメントの最後にある、ホームページと展示室ページへのリンクがはられている標準的な旗<br>
+&nbsp;<br></td>
+</tr><tr>
+
+<td colspan=2 align=right bgcolor="#f5f5f5"><big><b>追加の
+パターンマッチング;</b></big></td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>man ページ:</b></td>
+<td>([a-zA-Z_][-\w.+]*[\w+])\((\d)(|\.(\w+))(|\+(\W+))\)<br>例: ls(1)<p>
+<i>注意: 特定のアーキテクチャーやコレクションを指定することもできます</i><br>
+例: (8.pmax), (8+1.4.3), (8.pmax+1.4.3)<p>
+<i>デフォルトのコレクションは NetBSD-current です。指定可能なコレクションは、
+"1.3.3"、 "1.4.3"、 "1.5"、 "1.5.1"、 "current" です。</i></td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>email アドレス:</b></td>
+<td>&lt;([-\w.]+@[-\w.]+)&gt;<br>例: <abs@netbsd.org></td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>pkgsrc リファレンス:</b></td>
+<td>&lt;PKGSRC&gt;((\w+/|)([^\s&lt;&gt;]+\w))<br>
+例: <PKGSRC>editors/vilearn</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>-current ソース:</b></td>
+<td>&lt;CURRENTSRC&gt;(パス)<br>例: <CURRENTSRC>Makefile<p>
+<em>注意: ファイルまたはディレクトリーに対して有効です</em></td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>文字通り URL:</b></td>
+<td>&lt;URL&gt;(url)<br>例: <URL>http://www.netbsd.org/</td>
+</tr><tr bgcolor="#ffffff">
+
+<td align=right valign=top><b>RFC:</b></td>
+<td>&lt;RFC&gt;([^\s<>]+\w)<br>例: <RFC>RFC2795</td>
+
+</tr></table>
+
+</td></tr></table>
+
+</center>
 
 <ENTRY>flaglinks 旗がempty.gifへリンクをはるのには、何か理由があるのか？
     各ページの最後にあるNetBSDの'旗' リンクには以下のものがあります:
@@ -149,28 +233,46 @@
     </ul>
     ひどいやり方ではありますが、きちんと表示してくれます。
 
+<ENTRY>webserver ページが web サーバーに反映される方法や時間はどうなっているか?
+    NetBSD の web ページは CVS の "htdocs" リポジトリーに蓄積されます。
+    セキュリティー上の理由から、この htdocs リポジトリーは、毎時間ごとに
+    www.netbsd.org に (rsync を使って) コピーされ、
+    そのコピーからローカルにチェックアウトされています。
+    チェックアウトされたツリーは "<tt>/NetBSD-www</tt>" にあります。
+    このリポジトリーの更新とチェックアウトは、毎時 40 分ごろに行われます。
+    htdocs をコミットすると、
+    それが公開されるまでに最大一時間かかることになります。
+    <p>
+
+    ただし、 Gnats データベース (<URL>http://www.netbsd.org/Gnats/) 、
+    Changes/changes*.html や Changes/pkg-changes*.html にある pkgsrc
+    とソースの変更点、 Changes/rss-*.xml にある RSS ファイルなど、
+    一部のファイルについては htdocs には含まれず、 web サーバー上の
+    cron ジョブディレクトリーで各種スクリプトを使って生成されています。
+    これらのスクリプトへアクセスするには、 "htutils/changes/*"
+    をチェックアウトします。
+    <p>
+
 <SECTION>特定のエリアへ追加する
 
 <ENTRY>adding-gallery-entries 'NetBSDを稼働させているサイト' のギャラリーを追加する
-<a href="/gallery/addsite.html">htdocs/gallery/addsite.html</a>ページから
+<a href="../../gallery/addsite.html" origlink="../gallery/addsite.html">htdocs/gallery/addsite.html</a>ページから
 <tt>NETBSD GALLERY ADDITION</tt> emailを入手するならば、こうします:
 <ol>
 <li>perlがインストールされているか確認します
-<li><tt><em>ファイル</em></tt>にメッセージを保存します
+<li>コピー/ペースト用のバッファーにメッセージを保存します
 <li><tt>cd htdocs/gallery</tt>します
-<li><tt>./addsite.pl &lt <em>ファイル</em></tt>を実行して、
-OKならば'<tt>y</tt>'と答えます
+<li><tt>./addsite.pl を実行して、バッファーの内容をペーストし、それが正しく扱われていれば '<tt>y</tt>'と答えます
 <li><tt>cvs commit</tt>します
 </ol>
 手で<tt>htdocs/gallery/sites.data</tt>を編集し、
 <tt>make</tt>を実行する方法もあります。
 
 <ENTRY>adding-news-items ニュースの項目を追加する
-ほとんどのニュース項目は<a href="../Changes/">htdocs/Changes/</a>にあります
+ほとんどのニュース項目は<a href="../Changes/">htdocs/Changes/index.list</a>にあります
 (<a href="#dotlist-files">.list ファイル</a>に関する記述をごらんください) 。
-重要な変更にはメインの<a href="../">htdocs/</a>からリンクがはられ、
-特定のポートに影響する変更はhtdocs/Port/*/にあるニュースの章から
-リンクがはられます。
+特定のポートに影響する変更はhtdocs/Port/*/にあるニュースの章からも
+リンクをはってください。
 <p>
 重要なコードのニュース項目は
 <CURRENTSRC>doc/CHANGES
@@ -206,28 +308,26 @@ OKならば'<tt>y</tt>'と答えます
 
 <p>
 <h4>メインページからのリンクを追加するには:</h4>
-<ol>
-<li><a href="../">htdocs/</a>を編集して、以下の書式の項目を含んだ
-    'Breaking news' ブロックを見つけます
-<pre>    &lt;li&gt;&lt;i&gt;&lt;a href="Changes/#<em>タグ</em>"&gt;
-	<em>タイトル</em>&lt;/a&gt;&lt;/i&gt;&lt;/li&gt;</pre>
-<li>ブロックの先頭まであと2行というところに移動して、新しい項目にあう
-    <em>タグ</em>と<em>タイトル</em>を付け足します (<em>タイトル</em>は省略できます) 。
-</ol>
-
+htdocs/Changes で <tt>make</tt> を実行すると、
+<a href="../">htdocs/index.html</a> と翻訳されている各言語の index
+ページが自動的に更新されます。それ以上なにかする必要はありません。
 <p>
-<h4>portの特定ページからリンクをはるには:</h4>
+こうするかわりに、 htdocs 最上層のディレクトリーで <tt>make index</tt>
+を実行するという方法も使えます。
+<p>
+<h4>特定のポートのページからリンクをはるには:</h4>
 <ol>
-<li>htdocs/Ports/<em>arch</em>を編集して、'&lt!-- news'ブロックを
+<li>htdocs/Ports/<em>arch</em>/index.html を編集して、'&lt!-- news'ブロックを
     探します。
 <li>新しい項目を以下の形式でリストの後ろに追加します:
-<pre>&lt;p&gt; &lt;dt&gt;&lt;b&gt;<em>日付</em>:&lt;/b&gt; <em>タイトル</em>
-    &lt;dd&gt;<em>テキストの本文</em></pre>
+<pre>&lt;dt&gt;&lt;b&gt;<em>日付</em>:&lt;/b&gt; <em>タイトル</em>
+    &lt;dd&gt;<em>記事の本文</em>
+    &lt;p&gt;</pre>
     それぞれの項目は以下のように書きます
     <ul>
-    <li><em>日付</em> - 通常通りMONTH DAY YEAR
+    <li><em>日付</em> - 通常通り YEAR.MONTH.DATE
     <li><em>タイトル</em> - 自由形式の (短い) テキストタイトル
-    <li><em>テキストの本文</em> - 項目用の自由形式のテキスト。
+    <li><em>記事の本文</em> - 項目用の自由形式のテキスト。
         複数行あけたり、HTMLタグやリンクを使ったりすることもできます。
     </ul>
 </ol>
@@ -236,26 +336,60 @@ OKならば'<tt>y</tt>'と答えます
 <h4>最後に:</h4>
 <ol>
 <li>変更したファイルの<a href="#validate-html">HTMLをチェック</a>します。
-<li>ファイルをチェックインします - <tt>.list</tt>ファイルを更新して一致する
-    <tt>.html</tt>にし忘れないでください。
+<li>ファイルをチェックインします - <tt>.list</tt> ファイルを更新して一致する
+    <tt>.html</tt> にし忘れないでください。 htdocs 最上層のディレクトリーで
+	'make commit' コマンドを実行すると、メインの index ページ、
+	Changes/index.* と翻訳されている各言語の index ページが、
+	デフォルトメッセージ "NEWS; regen" でコミットされます。
+	何かメッセージを追加したければ 'MSG="Added News regarding FooBar" make
+	commit' のようにします。</li>
+</ol>
+
+<ENTRY>adding-events イベントを追加する
+
+メインの index ページには "Upcoming Events" (これからのイベント) というリンクもあります。
+このリンクは <a href="#adding-news-items">News entries</a> 同様に自動的に更新されます:
+
+<ul>
+	<li>cd .../htdocs/gallery</li>
+	<li>$EDITOR events.list</li>
+	<li>make events</li>
+</ul>
+
+このイベントのリンクは翻訳された各言語の index ページにもありますので、
+翻訳ページもすべて生成してコミットする必要があります。これは、
+htdocs ディレクトリーで 'make index' コマンドを使って行なうことができます。
+
+<ul>
+	<li>cd .../htdocs</li>
+	<li>make index</li>
+	<li>MSG="Added Event Foo" make commit</li>
+</ul>
+
+<ENTRY>adding-mailinglists メーリングリストのページへの追加や編集をする
+<a href="../MailingLists">メーリングリスト</a>
+ページに載っていないメーリングリストがある場合の手順:
+<ol>
+<li>htdocs/MailingLists/index.m4 ファイルを編集します。
+<li>htdocs/MailingLists にある makefile を実行します。これで index.html が作られます。
+<li>html ファイルがうまく作られているか確認します。
+<li>index.m4 と index.html ファイルをコミットします。
 </ol>
 
 </LIST>
-
-<a href=""><em>開発者メインページ</em>へ</a>
-<hr> 
 
 <DEVLINK>
 
 <hr>
 <address>
-  (連絡先 - <a href="/Misc/feedback.html">英語</a>,
+  <small>
+  (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: htdocs.list,v 1.22 2000/02/22 11:12:36 abs Exp $<br>
-  <a href="../Misc/disclaimer.html">Copyright &copy;
-    1996, 1997, 1998, 1999, 2000
-    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  $NetBSD: htdocs.list,v 1.48 2002/07/13 17:03:20 jschauma Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
 
 </body>
