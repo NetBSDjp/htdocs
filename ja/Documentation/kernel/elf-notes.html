@@ -2,15 +2,15 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
 <title>NetBSD Documentation: Vendor-specific ELF Note Elements</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
 <table><tr><td>
-<a href="../../Misc/daemon-copy.html">
+<a href="../../Misc/disclaimer.html#bsd-daemon">
 <img align="middle" src="../../images/BSD-daemon.jpg" border=0
 width=146 height=129 alt="BSD daemon"></a>
 </td><td align=center>
@@ -38,12 +38,13 @@ identification.  It contains the following information:
 <li><a href="#note-names">Known ELF Note Names</a>
 <li><a href="#note-contents">Vendor-specific ELF Notes</a>
 <li><a href="#note-creation">Creating ELF PT_NOTE Sections</a>
+<li><a href="#netbsd-note">Creating a NetBSD ELF PT_NOTE Section</a>
 </ul>
 
 <p>
 If your operating system uses vendor-specific note elements to
 mark its binaries and is not listed here, please send mail to
-<a href="mailto:cgd@netbsd.org">Chris Demetriou</a>
+<a href="mailto:cgd@NetBSD.org">Chris Demetriou</a>
 with information about those notes.
 
 
@@ -149,25 +150,20 @@ a binary was built for.  The format of that note is:
 
 <pre>
     Name Size:          4
-    Desc Size:          4
+    Desc Size:          16
     Type:               4-byte integer containing the value 0x01
     Name:               "GNU\0"
-    Desc:               4-byte integer OS/version (see below)
+    Desc:               Four 4-byte integers containing, in order:
+			OS (0 = Linux, 1 = Hurd, 2 = Solaris)
+			Major, Minor, and Teeny (of earliest
+			    OS version that supports this ABI)
 </pre>
 
-The OS/version value is encoded as:
-
-<pre>
-    0xAAMMmmss
-
-    AA = ABI (0 = Linux, 1 = Mach/Hurd)
-    MM = ABI major version number
-    mm = ABI minor version number
-    ss = ABI micro version number
-</pre>
-
-For instance, the OS/version 0x01020304 would indiate that the binary
-needs the ABI of version 2.3.4 of the Mach/Hurd system.
+For more documentation on the GNU C Library's use of ELF notes,
+consult the sources:
+<a href="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/abi-tags?cvsroot=glibc">abi-tags</a>
+and
+<a href="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/csu/abi-note.S?cvsroot=glibc">csu/abi-note.S</a>.
 
 </dl>
 
@@ -191,12 +187,14 @@ during final link is:
 <pre>
     .section ".note.ident", "a"
     .p2align 2
-    .long 5                 # name size (not including padding)
-    .long 8                 # desc size (not including padding)
+    .long 1f - 0f           # name size (not including padding)
+    .long 3f - 2f           # desc size (not including padding)
     .long 0x01234567        # type
-    .ascii "NaMe\0\0\0\0"   # name (padded to a 4-byte boundary)
-    .long 0x76543210        # desc (padded to a 4-byte boundary)
+0:  .asciz "NaMe"	    # name
+1:  .p2align 2
+2:  .long 0x76543210        # desc
     .long 0x89abcdef
+3:  .p2align 2
 </pre>
 
 <p>
@@ -207,6 +205,26 @@ contains a single note.  That note has a type of 0x012345678, has the name
 0x76543210 and 0x89abcdef.
 <p>
 
+<h2><a name="netbsd-note">Creating a NetBSD ELF PT_NOTE Section</a></h2>
+
+The NetBSD kernel will return ENOEXEC if an ELF binary does not contain
+a recognized PT_NOTE section. Normally, <code>crtbegin.c</code>
+contains this section
+for native NetBSD applications. The example below creates such a section
+on NetBSD/alpha. (Other ports may use slightly different assembler syntax,
+but, except for endian variations, they all use the same bits.)
+
+<pre>
+        .section ".note.netbsd.ident", "a"
+        .long   2f-1f
+        .long   4f-3f
+        .long   1
+1:      .asciz "NetBSD"
+2:      .p2align 2
+3:      .long   199905
+4:      .p2align 2
+</pre>
+
 <hr>
 <a href="./">Up to <em>NetBSD Documentation: Kernel</em></a>
 <hr>
@@ -214,8 +232,8 @@ contains a single note.  That note has a type of 0x012345678, has the name
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../"><img
-        src="../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a>
+        src="../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../"><img
         src="../../images/empty.gif" border="0"
@@ -224,8 +242,8 @@ contains a single note.  That note has a type of 0x012345678, has the name
 </td><td>
   <table><tr><td>
     <a href="../../Documentation/"><img
-        src="../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a>
+        src="../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
   </td><td> 
     <a href="../../Documentation/"><img
         src="../../images/empty.gif" border="0"
@@ -236,9 +254,9 @@ contains a single note.  That note has a type of 0x012345678, has the name
 <hr>
 <address>
   <small>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: elf-notes.html,v 1.9 2001/05/18 01:11:19 dent Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: elf-notes.html,v 1.19 2004/10/30 22:33:26 jschauma Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
