@@ -3,7 +3,7 @@
 <html>
 <head>
 <!-- Copyright (c) 1994-2003
-s	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
 <link rev="made" href="mailto:www@JP.NetBSD.org">
 <title>NetBSD Documentation: Vendor-specific ELF Note Elements</title>
@@ -11,7 +11,7 @@ s	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <body bgcolor="#FFFFFF" text="#000000">
 
 <table><tr><td>
-<a href="../../../Misc/daemon-copy.html" origlink="../../Misc/daemon-copy.html">
+<a href="../../Misc/disclaimer.html#bsd-daemon">
 <img align="middle" src="../../../images/BSD-daemon.jpg" origlink="../../images/BSD-daemon.jpg" border=0
 width=146 height=129 alt="BSD daemon"></a>
 </td><td align=center>
@@ -43,10 +43,10 @@ width=146 height=129 alt="BSD daemon"></a>
 <li><a href="#note-names">$BCN$i$l$F$$$k(B ELF $B5-9fL>(B</a>
 <li><a href="#note-contents">$B%Y%s%@!<FCM-$N(B ELF $B5-9f(B</a>
 <li><a href="#note-creation">ELF PT_NOTE $B%;%/%7%g%s$N:n@.(B</a>
+<li><a href="#netbsd-note">NetBSD ELF PT_NOTE $B%;%/%7%g%s$N:n@.(B</a>
 </ul>
 
 <p>
-
 $B$b$7!"$"$J$?$N%*%Z%l!<%F%#%s%0%7%9%F%`$,(B
  $B%Y%s%@!<FCM-5-9fMWAG(B
 $B$r%P%$%J%j!<$N%^!<%/$K;H$C$F$$$F!"$3$3$N0lMw$K:\$C$F$$$J$$$J$i!"(B
@@ -97,12 +97,10 @@ Desc $B%U%#!<%k%I(B $B$O(B $B%Y%s%@!<FCM-$G!"(B $B$?$$$F$$5-9f$N7?$K0MB8$
 <pre>
     Note Name $BJ8;zNs(B                $BAH?%(B
     ----------------            ------------
-    "NetBSD\0"                  <a href="#note-contents-netbsd">The NetBSD 
-Project</a>
+    "NetBSD\0"                  <a href="#note-contents-netbsd">The NetBSD Project</a>
     0x4e 0x65 0x74 0x42 0x53 0x44 0x00 ($B8lD9(B:7)
 
-    "GNU\0"                     <a href="#note-contents-gnu">The GNU 
-Project</a>
+    "GNU\0"                     <a href="#note-contents-gnu">The GNU Project</a>
     0x47 0x4e 0x55 0x00 ($B8lD9(B:4)
 </pre>
 
@@ -161,26 +159,19 @@ OS $B%P!<%8%g%s5-9f$H%(%_%e%l!<%7%g%s(B Name $B5-9f$G$9!#(B
 
 <pre>
     Name Size:          4
-    Desc Size:          4
+    Desc Size:          16
     Type:               4-byte $B@0?t(B 0x01 $B$H$$$&CM$,F~$C$F$$$k(B
     Name:               "GNU\0"
-    Desc:               4-byte $B@0?t(B OS/version ($B2<5-;2>H$N$3$H(B)
+    Desc:               4 $B8D$N(B 4-byte $B@0?t!#=g=x$O0J2<$N$H$*$j(B:
+			OS (0 = Linux, 1 = Hurd, 2 = Solaris),
+			Major, Minor, Teeny ($B$3$N(B ABI $B$r%5%]!<%H$9$k(Bearliest
+			    OS $B%P!<%8%g%s$G:G$b8E$$$b$N$N(B)
 </pre>
 
- OS/version $BCM(B $B$O$3$N$h$&$K%(%s%3!<%I$5$l$F$$$F(B:
-
-<pre>
-    0xAAMMmmss
-
-    AA = ABI (0 = Linux, 1 = Mach/Hurd)
-    MM = ABI major $B%P!<%8%g%sHV9f(B
-    mm = ABI minor $B%P!<%8%g%sHV9f(B
-    ss = ABI micro $B%P!<%8%g%sHV9f(B
-</pre>
-
-$BNc$($P!"(B OS/version $B$,(B 0x01020304 $B$H$$$&$N$O(B
- Mach/Hurd $B%7%9%F%`$N(B ABI $B%P!<%8%g%s(B 2.3.4 $B$,I,MW$J%P%$%J%j!<$@$H8@$&$3$H$r<((B
-$B$7$^$9!#(B
+GNU C $B%i%$%V%i%j!<$G$N(B ELF notes $B$N;H$$J}$K$D$$$F!"$5$i$J$k%I%-%e%a%s%F!<%7%g%s$O!"(B
+<a href="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/abi-tags?cvsroot=glibc">abi-tags</a>
+$B$*$h$S(B
+<a href="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/csu/abi-note.S?cvsroot=glibc">csu/abi-note.S</a> $B$N%=!<%9$rD4$Y$F$/$@$5$$!#(B
 
 </dl>
 
@@ -209,12 +200,14 @@ PT_NOTE $B%;%/%7%g%s$r:n$k$K$O!"(B
 <pre>
     .section ".note.ident", "a"
     .p2align 2
-    .long 5                 # name $B%5%$%:(B ($B5M$aJ*4^$^$:(B)
-    .long 8                 # desc $B%5%$%:(B ($B5M$aJ*4^$^$:(B)
+    .long 1f - 0f           # name $B%5%$%:(B ($B5M$aJ*4^$^$:(B)
+    .long 3f - 2f           # desc $B%5%$%:(B ($B5M$aJ*4^$^$:(B)
     .long 0x01234567        # type
-    .ascii "NaMe\0\0\0\0"   # name (4 byte $B6-3&$G5M$aJ*$r$5$l$?(B)
-    .long 0x76543210        # desc (4 byte $B6-3&$G5M$aJ*$r$5$l$?(B)
+0:  .asciz "NaMe"	    # name
+1:  .p2align 2
+2:  .long 0x76543210        # desc
     .long 0x89abcdef
+3:  .p2align 2
 </pre>
 
 <p>
@@ -226,6 +219,26 @@ PT_NOTE $B%;%/%7%g%s$r:n$k$K$O!"(B
  desc $BCM$O!"(B2$B$D$N(B 4-byte $B@0?t!"(B0x76543210 $B$H(B 0x89abcdef $B$G$9!#(B
 <p>
 
+<h2><a name="netbsd-note">NetBSD ELF PT_NOTE $B%;%/%7%g%s$N:n@.(B</a></h2>
+
+NetBSD $B%+!<%M%k$O!"(B ELF $B%P%$%J%j!<Cf$K(B PT_NOTE $B%;%/%7%g%s$,8+$D$+$i$J$$>l9g$K(B
+ENOEXEC $B$rJV$7$^$9!#DL>o!"%M%$%F%#%V(B NetBSD $B%"%W%j%1!<%7%g%sMQ$N(B
+PT_NOTE $B%;%/%7%g%s$O(B <code>crtbegin.c</code>
+$B$K4^$^$l$F$$$^$9!#0J2<$K<($9Nc$O!"(B  NetBSD/alpha $B$G$3$N%;%/%7%g%s$r:n@.$9$k$b$N$G$9!#(B
+($BB>$N%]!<%H$G$O%"%;%s%V%i!<$NJ8K!$,<c430[$J$k$3$H$,$"$j$^$9$,!"(B
+$B%(%s%G%#%"%s$N0c$$$r=|$1$P!"8D!9$NCGJR$O$9$Y$FF1$8$G$9(B)
+
+<pre>
+        .section ".note.netbsd.ident", "a"
+        .long   2f-1f
+        .long   4f-3f
+        .long   1
+1:      .asciz "NetBSD"
+2:      .p2align 2
+3:      .long   199905
+4:      .p2align 2
+</pre>
+
 <hr>
 <a href="./"><em>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B%+!<%M%k(B</em>$B$K$b$I$k(B</a>
 <hr>
@@ -233,8 +246,8 @@ PT_NOTE $B%;%/%7%g%s$r:n$k$K$O!"(B
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../"><img
-        src="../../../images/NetBSD-flag.gif" origlink="../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a>
+        src="../../../images/NetBSD-flag.png" origlink="../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../"><img
         src="../../../images/empty.gif" origlink="../../images/empty.gif" border="0"
@@ -243,8 +256,8 @@ PT_NOTE $B%;%/%7%g%s$r:n$k$K$O!"(B
 </td><td>
   <table><tr><td>
     <a href="../../Documentation/"><img
-        src="../../../images/NetBSD-flag.gif" origlink="../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a>
+        src="../../../images/NetBSD-flag.png" origlink="../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
   </td><td> 
     <a href="../../Documentation/"><img
         src="../../../images/empty.gif" origlink="../../images/empty.gif" border="0"
@@ -258,7 +271,7 @@ PT_NOTE $B%;%/%7%g%s$r:n$k$K$O!"(B
   ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
        <a href="mailto:www@JP.NetBSD.org">$BF|K\8l(B:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: elf-notes.html,v 1.9 2001/05/18 01:11:19 dent Exp $<br>
+  $NetBSD: elf-notes.html,v 1.19 2004/10/30 22:33:26 jschauma Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
