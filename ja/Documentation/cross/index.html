@@ -48,6 +48,8 @@
 <ul>
 <li>
 <a href="#compiler-issue">コンパイラーが内部エラーか同じような何らかの原因でお亡くなりになります。</a></li>
+<li>
+<a href="#compiler-usage">NetBSD クロスコンパイラーを NetBSD ソースツリー以外で使う方法は?</a></li>
 </ul>
 
 
@@ -230,6 +232,42 @@ NetBSD の <a href="http://man.NetBSD.org/man/config+8+NetBSD-current">conf
 </ul>
 
 </dd></dl>
+<p><h3>
+<a name="compiler-usage">NetBSD クロスコンパイラーを NetBSD ソースツリー以外で使う方法は?</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+$TOOLDIR にクロスコンパイラーツールチェインを構築した後、そのコンパイラーが $TARGETROOT
+にあるターゲットシステムのインクルードファイルやライブラリーを使うようにするにはどうすればいいのでしょうか?
+1.6.x のツールチェインを使い、ターゲットが 'vax' である場合、
+以下のような手順を踏んでください: 
+
+<pre>
+	% cd $TOOLDIR/vax--netbsdelf
+        % mv include include.BAK
+        % ln -s $VAXROOT/usr/include .
+        % mv lib lib.BAK
+        % ln -s $VAXROOT/usr/lib .
+        % set path=($path `pwd`/bin)
+        % rehash
+</pre>
+
+-current および 2.0 システムでは、 /lib 以下のライブラリーについて特段の注意が必要です。
+tech-toolchain メーリングリストのアーカイブの、
+<a href="http://mail-index.netbsd.org/tech-toolchain/2004/02/03/0006.html">この
+記事</a>をご覧ください。
+<p>
+
+しかるのちに、クロスコンパイルした gcc が使えます:
+
+<pre>
+	% which gcc
+	/home/cvs/src-1.6/tools/obj.vax/tools.NetBSD-1.6-vax/vax--netbsdelf/bin/gcc
+	% gcc h.c -o h
+	% file h
+	h: ELF 32-bit LSB executable, Digital VAX, version 1 (SYSV), for NetBSD, dynamically linked (uses shared libs), not stripped
+</pre>
+
+</dd></dl>
 <hr>
 
 <table width="100%"><tr><td>
@@ -260,7 +298,7 @@ NetBSD の <a href="http://man.NetBSD.org/man/config+8+NetBSD-current">conf
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.html,v 1.19 2004/01/08 16:39:41 kano Exp $<br>
+  $NetBSD: index.html,v 1.20 2004/02/04 17:19:26 kano Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
