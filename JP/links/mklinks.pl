@@ -1,6 +1,6 @@
 #!/usr/pkg/bin/perl
 #
-# $Id: mklinks.pl,v 1.3 1999/04/19 07:45:17 sakamoto Exp $
+# $Id: mklinks.pl,v 1.4 1999/04/20 01:15:54 sakamoto Exp $
 #
 # <ITEM>
 # <TITLE>
@@ -73,10 +73,11 @@ sub makelist_by_register {
 
 sub makelist_by_arch {
 	local($FD) = @_;
-	local($i, $j);
+	local($i, $j, $f);
 	local(%arch_index);
 	local(@arch_num);
 	local(@arch_name) = (
+		'COMMON',
 		'I386',
 		'MAC68K',
 		'MACPPC',
@@ -84,7 +85,8 @@ sub makelist_by_arch {
 		'X68K',
 		'SUN3',
 		'NEWSMIPS',
-		'BEBOX'
+		'BEBOX',
+		'SH3'
 	);
 
 	&print_head($FD, "NetBSD-related LINKS (by architecture)",
@@ -102,12 +104,17 @@ EOF
 		local(@k) = split(/,/, $item{$i.'keyword'});
 		local($kw);
 
+		$f = 0;
 		foreach $kw (@k) {
-			for ($j = 0; $j <= $#arch_name; $j++) {
+			for ($j = 1; $j <= $#arch_name; $j++) {
 				if ($kw eq $arch_name[$j]) {
+					$f++;
 					$arch_index{$j, $arch_num[$j]++} = $i;
 				}
 			}
+		}
+		if ($f == 0) {
+			$arch_index{0, $arch_num[0]++} = $i;
 		}
 	}
 
