@@ -1,4 +1,4 @@
-/*	$NetBSD: mkdevht.c,v 1.12 2002/06/15 04:16:23 mason Exp $	*/
+/*	$NetBSD: mkdevht.c,v 1.13 2002/11/02 14:29:46 grant Exp $	*/
 
 char *copyright =
 	"Copyright (c) 2000 Mason Loring Bliss";
@@ -175,7 +175,7 @@ main(int argc, char *argv[])
 			fprintf(dest, " bgcolor=\"#f1f1f1\"");
 		else
 			fprintf(dest, " bgcolor=\"#ffffff\"");
-		fprintf(dest, ">");
+		fprintf(dest, "><nobr>");
 
 		if (url)
 			fprintf(dest, "<a href=\"%s\">", url);
@@ -186,7 +186,7 @@ main(int argc, char *argv[])
 			fputs("</a>", dest);
 
 		fprintf(dest, "\n    <a href=\"mailto:%s\">&lt;%s&gt;</a>"
-		    "</td>\n  <td valign=top", email, email);
+		    "</nobr></td>\n  <td valign=top", email, email);
 		if (shade)
 			fprintf(dest, " bgcolor=\"#eeeeee\"");
 		else
