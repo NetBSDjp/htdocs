@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.66 2001/06/06 22:49:38 kim Exp $
+# $NetBSD: list2html.pl,v 1.72 2001/06/26 05:37:34 dent Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
@@ -32,6 +32,14 @@
 #	<URL>[^\s<]+[^<\s.]	-> Insert link to URL
 #	<RFC>RFC[0-9]+		-> link to RFC (www.normos.org)
 #
+#	([a-zA-Z_][-\w.+]*[\w+])\((\d)(|\.(\w+))(|\+(\W+))\)
+#		-> man pages:	Default collection is NetBSD-current.
+#				Available collections are "1.3.3",
+#				"1.4.3", "1.5", "current"
+#
+#				Usage examples: ls(1), ls(1.i386)
+#				    ls(1+1.4.3), ls(1.i386+1.4.3)
+#
 # NOTE: Update htdocs/developers/htdocs.list when adding features.
 #
 #   (c) 1999, 2000 DKBrownlee. All rights reserved. This file may be used to
@@ -41,6 +49,8 @@
 
 use strict;
 use Getopt::Std;
+use Text::Wrap;
+$Text::Wrap::columns = 45;
 $^W = 1;
 my($verbose, %extras, $months_previous, $list_date_links);
 my($version, %opt, %pkgname);
@@ -49,9 +59,9 @@ my($version, %opt, %pkgname);
 %pkgname = qw(kde KDE gimp GIMP gnome GNOME xsane XSane);
 
 $months_previous = 9;	# Previous months to display for DATE entries
-$list_date_links = 6;	# List the first N date entries on stdout
+$list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.66 $';
+$version = '$Revision: 1.72 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -358,7 +368,7 @@ sub makelist
 
 	if (m#^<DATE>\s*(.+\S)#)	# Changes
 	    {
-	    my($year, $month, $link);
+	    my($year, $month, $link, $linkwrapped);
 
 	    if ($in_entry)
 		{
@@ -401,9 +411,11 @@ sub makelist
 			"$end_title_font</li>\n";
 		if (@date_links < $list_date_links)
 		    {
+
+		    $linkwrapped = wrap("", "  ", $link);
+
 		    push(@date_links, "<li><font face=\"helvetica, arial\" size=\"-1\">\n".
-				      "<a href=\"Changes/#$href\">\n".
-				      "    $link</a>\n".
+				      "  <a href=\"Changes/#$href\">$linkwrapped</a>\n".
 				      "</font></li>\n");
 		    }
 		$in_entry = 1;
@@ -594,9 +606,10 @@ sub sub_external_links
     # 
     $_ = $text; # Output text include match string, so handle in sections
     $text = '';
-    while ( m#([a-zA-Z_][-\w.+]*[\w+])\((\d)(?:\.(\w+))?(?:/([-\w]+))?\)# )
+
+    while ( m#([a-zA-Z_][-\w.+]*[\w+])\((\d)(|\.(\w+))(|\+(\W+))\)# )
 	{
-	my($page, $section, $arch, $collection) = ($1, $2, $3, $4);
+	my($page, $section, $arch, $collection) = ($1, $2, $4, $6);
 	my($link);
 
 	$link = 'http://www.tac.eu.org/cgi-bin/man-cgi?';
@@ -609,9 +622,11 @@ sub sub_external_links
 	    { $link .= ".$opt{'a'}"; }
 
 	if (defined($collection))
-	    { $link .= "+$collection"; }
+	    { $link .= "+NetBSD-$collection"; }
 	elsif ($opt{'c'})
 	    { $link .= "+$opt{'c'}"; }
+	else
+	    { $link .= "+NetBSD-current"; }
 
 	$text .= $` . "<a href=\"$link\">$page($section)</a>";
 	$_ = $';
