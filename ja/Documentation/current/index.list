@@ -1,0 +1,424 @@
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+    <title>Tracking NetBSD-current</title>
+  </head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>Tracking NetBSD-current
+
+<LIST>
+
+<SECTION>Frequently asked questions
+
+<ENTRY>why-track Why track NetBSD-current?
+The developers of NetBSD have made the current development sources
+available to the public for several reasons.  Overall, providing
+NetBSD-current helps us to create a more stable, accessible system.
+<p>
+It makes it easier for people to become involved in the development of
+NetBSD.  Distributing the current development sources allows a greater
+number of people to see where the system is going, and to become
+involved with new features as they are implemented.  It also makes
+changes from users easier to integrate; if users make changes against
+the current development sources, then virtually no integration is
+needed to get them into the master source tree. 
+<p>
+It also allows wider testing of the software as it is developed.  Users
+of NetBSD-current are encouraged to send in <a
+href="../../Misc/send-pr.html">bug reports</a> about the current sources,
+and that helps find and fix bugs.  Because people are testing the
+software soon after it's written, more bugs can be found and
+eliminated.
+
+<ENTRY>why-difficult Why is it so difficult
+-current is in the ultimate state of flux. On a day to day basis any of the
+tools used to compile the source tree could be improved, and the new
+facilities used. This means in order to compile the -current tree that tool
+must first compiled and installed.
+<p>
+This does not happen too frequently, but the net result is someone upgrading
+from a previous release may have to compile and install a seemingly arbitrary
+set of tools before they can compile the complete tree.
+<p>
+See <a href="#starting">Starting to track -current</a> for details on how to
+reduce this pain.
+
+<ENTRY>starting Starting to track -current
+The best starting point is to check if a recent snapshot is available
+for your port. Snapshots are compiled from -current and distributed in
+the standard release(7) format. <p>
+
+They are available in <a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/">
+ftp://ftp.netbsd.org/pub/NetBSD/arch/</a><em>ARCH</em>/snapshot, and
+can be installed as in a normal release.  Also see the web pages for
+the individual <a href="../../Ports/">NetBSD ports</a> for
+pointers to and information on these snapshots. <p>
+
+The next stage is to download the -current source, either via via ftp
+from <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/">
+ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/</a>, or
+using <a href="ftp://ftp.netbsd.org/pub/NetBSD/README.sup">sup</a>.
+You may also want to check for a <a href="../../Sites/net.html">NetBSD
+mirror site</a> near to you.
+<p>
+If you wish to track local changes to the NetBSD source you might want
+to setup a local CVS tree, and then <a href="#using-sup-into-cvs">import the
+sup changes</a>.
+<p>
+Also be sure to read the next section for a list of things you need to
+remember when tracking -current.
+
+<ENTRY>what-to-do Things you need to remember
+<ul>
+ <li>
+  When upgrading to a more recent version of -current you should
+  <em>always</em> compile and boot a new kernel before installing any
+  new libs (<a href="#star">*</a>). In general the best approach is to
+  try the new kernel before anything else, and if you hit any problem
+  (see the entry in the <a
+  href="../kernel/#problems_compiling_a_current_kernel">
+  Kernel FAQ</a>), compile and install the minimum necessary
+  additional tools to complete the kernel installation.
+  <p>
+  Once the kernel is running, you should run '<tt>make build</tt>'
+  from the base of the source tree.
+
+ <li>
+  When compiling a -current kernel, always remember to include the
+  COMPAT_&lt;lastrelease&gt; option (e.g., COMPAT_14).  As current
+  diverges from the last stable release, compatibility code will be
+  added, but it will only be enabled if this option is present.  At a
+  bare minimum, you will need this compatibility code for the time
+  between booting the new kernel and finishing your <tt>make
+  build</tt>.
+
+ <li>
+  People using NetBSD-current are strongly encouraged to subscribe to
+  the <b><a
+  href="../../MailingLists/#current-users">current-users</a></b>
+  mailing list.  The <b><a
+  href="../../MailingLists/#source-changes">source-changes</a></b>
+  mailing list is also of interest.
+</ul>
+
+<a name="star">*</a> : Unless you are certain there have been no new
+system calls added, but do it anyway, its safer.
+
+<ENTRY>build-targets What are the various Makefile targets
+The most obvious target is 'make build' from <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/Makefile">/usr/src/Makefile</a>,
+which will install updated 'mk' files, include files, libs, then
+rebuild the system. If you are updating your source tree you should
+compile and install a new kernel <em>before</em> anything else, in case
+new system calls have been added.  Other useful targets are documented
+in <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/share/mk/bsd.README">/usr/src/share/mk/bsd.README</a>,
+which is installed in <tt>/usr/share/mk/</tt>.
+
+<ENTRY>using-anoncvs Tracking NetBSD-current with anoncvs
+
+<h4>Setting up</h4>
+
+<ol>
+<p><li>Install <PKGSRC>devel/cvs.
+<p><li>Set the CVSROOT environment variable to point to the anoncvs server
+<ul>
+    <li>For csh(1) or <PKGSRC>shells/tcsh users:<br>
+    <tt><b>setenv CVSROOT :pserver:anoncvs@anoncvs.netbsd.org:/cvsroot</b>
+    </tt><br>
+    <li>For sh(1), ksh(1), or <PKGSRC>shells/bash2 users:<br>
+    <tt><b>CVSROOT=:pserver:anoncvs@anoncvs.netbsd.org:/cvsroot; export CVSROOT
+    </b></tt>
+    </ul>
+
+<p><li>(As root) "<tt><b>mkdir /usr/src</b></tt>".<br>
+    If you wish for the source tree to be owned by a non root user,
+    "<tt><b>chown <em>user</em> /usr/src</b></tt>".
+
+<p><li>
+    <tt><b>cd /usr/src</b></tt><br>
+    <tt><b>cvs login</b></tt>                      (use password "anoncvs")<br>
+<p><li>Checkout the source tree
+    <ul>
+    <li>If you're in the U.S:<br>
+    <tt><b>cvs checkout -P src-crypto-all</b></tt><br>
+    <li>If you're outside the U.S (Please don't get the crypto sources from
+    anoncvs.netbsd.org):<br>
+    <tt><b>cvs checkout -P src-nocrypto</b></tt><br>
+    </ul>
+</ol>
+<p>
+You should now have a full set of NetBSD sources in /usr/src.
+
+<h4>To update the sources</h4>
+
+<pre><b>
+    cd /usr/src
+    cvs update -d -P
+</b></pre>
+
+<h4>Useful hints</h4>
+If you're on a very low bandwidth line, you may want to add -z5
+(or some other number) to your commandline <em>before</em> the
+command (eg "<tt><b>cvs -z5 update -d -P</b></tt>"); this turns on
+compression of all data. Keep in mind that this will put an extra
+load on the cvs server.
+
+<p>
+You can put switches for specific commands in a .cvsrc in your home
+directory, and they will be automatically used. A sample .cvsrc would be:
+
+<pre>
+   cvs -q -z5
+   update -d -P
+   checkout -P
+   diff -u
+</pre>
+
+<h4>Building NetBSD from source</h4>
+
+<I>(assuming you have an up-to-date NetBSD binary
+snapshot, and source in /usr/src, on your machine already):</I><p>
+
+To build userland the first time:<p>
+
+<PRE>
+   mkdir /usr/obj
+   cd /usr/src
+   make obj
+   make build
+</PRE>
+
+To update userland binaries after a CVS update:<p>
+
+<PRE>
+   cd /usr/src
+   make obj
+   make UPDATE=1 build
+</PRE>
+
+These will install the new binaries on the running system - reboot to make
+sure they all take effect. To build the binaries into some other location
+(in case you're paranoid about tromping on a running system), just set
+DESTDIR, eg:<p>
+
+<PRE>
+   make DESTDIR=/usr/NetBSD-new-build UPDATE=1 build
+</PRE>
+
+<ENTRY>using-sup-into-cvs Tracking NetBSD-current with SUP into CVS
+    <h4>Overview</h4>
+
+    <p>Current can be tracked in the following way. The baseline copy of
+      the sources is kept up to date using sup approximately once a week.
+      as normal. This baseline source tree is then imported into a local
+      CVS repository. Current is then built from a checked out copy of
+      the repository.
+
+    <p>There are 3 major reasons for this approach
+    <ol>
+      <li>It keeps track of how current changes over time.</li>
+      <li>It allows for local changes to be almost automatically merged
+	into the updated current sources.</li>
+      <li>It ensures there is always a clean unmodified copy of the
+	NetBSD-current source tree is available in case of problems when
+	building.</li>
+    </ol>
+    
+    <p>The only downside to this approach is that 3 independent copies 
+      of the source tree are needed which amounts to about 150MB of
+      disk space not including the space required to actually build
+      current.
+
+    <h4>Requirements</h4>
+    <ul>
+      <li>CVS 1.9 or later(either from pkgsrc or just built from
+	source). CVS 1.10 or later is better as it handles merging better. </li>
+      <li>SUP installation</li>
+      <li>Perl 5 installation for supplied script(optional)</li>
+    </ul>
+    <h4>Details</h4>
+    <p>Tracking and building current consists of 6 phases:
+    <ol>
+      <li>Supping updated sources into master source tree.</li>
+      <li>Importing supped sources into CVS and updating working copy
+	of sources.</li>
+      <li>Merging supped sources with local working sources.
+      <li>Building and installing current.</li>
+      <li>Tagging the sources for a successful build in the
+	repository.</li> 
+    </ol>
+    <h3>Supping sources</h3>
+    <p>Sources can be supped from any NetBSD sup server and the output 
+      from the SUP should be stored in a file for later reference.
+
+    <h3>Importing and merging sources.</h3>
+    <p>Sources are imported as follows:
+    <pre>
+cvs -d /misc/cvsrep import -I ! -I CVS netbsd netbsd current-<i>date</i>
+    </pre>
+    <p><i>date</i> is replaced by the date of the SUP for tracking
+      purposes. The <code>-I ! -I CVS</code> options ensure that no file in
+      the source tree is ignored except 'CVS' directories.  This is because
+      some NetBSD source files have extensions which are normally ignored by
+      CVS. If there are any conflicts with local patches the import command
+      will report them and will describe a command to merge the conflicts
+      something like:
+    <pre>
+cvs checkout -jnetbsd:yesterday -jnetbsd netbsd
+    </pre>
+    <p>This merge command will correctly merge the imported NetBSD
+      sources but it will not handle the removal of files locally
+      which have already been removed by the SUP process. To do this the
+      merge command would be:
+    <pre>
+cvs update -j<i>previous import tag</i> -j current-<i>date</i>
+    </pre>
+    <p><i>previous import tag</i> should be replaced with the name of
+      the tag used for the previous cvs import. <i>date</i> should be
+      replaced with the current date to yield the same tag used on
+      the current import that has just been merged.
+    <p>The conflicts reported by the import command are potential
+      conflicts. These are usually merged by the update command but in
+      some cases a real conflict occurs. In these cases a manual merge
+      of the conflicting lines will be required. A real conflict will
+      be reported in the cvs update output as a <code>C</code>
+      followed by a filename.
+    <p>Merging conflicts manually is not a simple process but in most
+      cases it should be resolved by removing the local changes and
+      making the file like the original NetBSD source code.  
+    <p>CVS marks conflicts as follows:
+<pre>
+&lt;&lt;&lt;&lt;&lt;&lt;
+  <i>code from local file</i>
+======
+  <i>code from imported file</i>
+&gt;&gt;&gt;&gt;&gt;&gt; <i>local revision number of newly imported revision</i>
+</pre>
+
+    <p>If the import reports no conflicts the checked out copy of the
+      tree should be updated in exactly the same way as for the
+      conflicts case.
+    <p> All update and checkout commands should be done in the
+      directory where the sources have been checked out. On my system
+      this is <code>/usr/src/netbsd</code>
+    <p>If this is the first import then there will be no sources
+      checked out. Assuming you wish to create the source tree in
+      '<code>/usr/src/netbsd</code>' The following commands will check
+      out the source and no merge step is required.
+    <pre>
+cd /usr/src
+cvs -d/misc/cvsrep checkout netbsd
+    </pre>
+    <h3>Building current.</h3>
+    <ol>
+    <li>Configure, <a href="../kernel/#building_a_kernel">
+	build</a>, and reboot into a new kernel.
+    <li>cd to the base of your -current source tree and type
+	<tt>"<b>make build</b>"</tt>.
+    <li>You may need to merge in any changes that have been made to files in
+	/etc.
+    </ol>
+
+    <h3>Tagging a successful build</h3>
+    <p> If the build completes successfully and produces a working set 
+      of binaries it can be useful to tag the working sources. This
+      allows rewinding to a working build tree with a single CVS
+      command in the event that the current tree becomes unbuildable
+      for any reason. This can be performed by issuing the following
+      command:
+    <pre>
+cvs tag successful-build-<i>build date</i>
+    </pre>
+    <h4>Notes</h4>
+    <ul>
+      <li>If the NetBSD customised version of CVS which recognises
+	<b>$Net</b><b>BSD$</b> markers in files is not used the
+	NetBSD revision number of the file is available for reference
+	purposes when build problems occur.</li>
+      <li>The sup/import/merge sequence described above is quite
+	easily automatable. The following Perl script automates this
+	process.
+<pre>
+#!/usr/local/bin/perl
+#
+# Script to SUP NetBSD-current, import it into CVS and merge it with
+# any local changes.
+#
+# NOTES:
+# This script does no error handling so is not really suitable for 
+# non-interactive use.
+#
+# This script has only been test with cvs-1.10.1 and cvs-1.9.18.
+#
+$SRCROOT="/usr/src/netbsd";
+$IMPORTROOT="/misc/import";
+$CVSROOT="/misc/cvsrep";
+#run the sup into a perl stream
+system "/usr/sbin/sup -zsv" ; # This may need to change for none
+                              # current systems
+
+# now import the new files into CVS 
+
+chdir $IMPORTROOT or die "Could not cd to $IMPORTROOT\n";
+
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;
+$date = localtime;
+$shortdate = sprintf "%02d%02d%04d",$mday,$mon+1,1900+$year;
+system "/usr/local/bin/cvs -d$CVSROOT import -I ! -m\"SUP Import $date\" netbsd netbsd current-$shortdate ";
+
+# make the working directory the local NetBSD Tree
+chdir $SRCROOT or die "Could not change to $SRCROOT diectory\n";
+
+# Now do the import.
+$lastimport = `cat /usr/src/netbsd/.tag`; # `s are backquotes
+$lastimport =~ s/\n//; # strip off any trailing newline in the string
+system "/usr/local/bin/cvs update -j $lastimport  -j
+current-$shortdate ";
+# Now write the current file into tag save file
+open TAG,"&gt;$SRCROOT/.tag" or die "Could not open new tag file";
+ print TAG "current-$shortdate";
+close TAG;
+    </pre> 
+    <p>This script was written in Perl since it the scripting tool
+	  which the author has the most experient in using. It should
+	  be fairly straightforward to write a shell script to perform 
+      the same task.</li>
+      <li>Techniques for tracking current with CVS have been discuss several
+	times on the NetBSD current-users mailing list. For
+	alternative techniques try searching the NetBSD mailing lists.</li>
+    </ul>
+    <p>
+    If you have any comments or suggestions please send them to
+    Mike Pumford <a href="mailto:mpumford@black-star.demon.co.uk">
+    mpumford@black-star.demon.co.uk</a> (who maintains this entry) or
+    <a href="mailto:www@netbsd.org">www@netbsd.org</a>.
+
+<SECTION>Specific problems
+
+<ENTRY>wscons Console dead after updating to wscons
+You should copy a current MAKDEV from the appropriate etc.<i>port</i> directory in <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/etc/">src/etc</a>, into <tt>/dev</tt>, boot single user, then type:
+<ul>
+<li>fsck -p
+<li>mount -vt nonfs
+<li>cd /dev
+<li>./MAKEDEV wscons
+</ul>
+
+</LIST>
+
+<DOCLINK>
+
+<address>
+    <a href="../../Misc/feedback.html">(Contact us)</a>
+    $NetBSD: index.list,v 1.10 2000/02/29 15:23:13 dent Exp $<br>
+    <a href="../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
