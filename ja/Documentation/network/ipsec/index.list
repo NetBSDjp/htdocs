@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2003
+<!-- Copyright (c) 1994-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -35,10 +35,9 @@ This page is developing, and we welcome any
 <SECTION>IPsec FAQ
 
 <ENTRY>getting_started Getting Started
-IPsec (IP security protocol) code was merged into the NetBSD distributions
-in June 1999,
-it is included NetBSD 1.5 and later.
-IPsec provides per-packet authenticity/confidentiality guarantees between
+
+IPsec (IP security protocol) is part of the NetBSD distributions,
+it provides per-packet authenticity/confidentiality guarantees between
 peers communicate using IPsec.
 IPsec is available for both IPv6 and IPv4.
 <p>
@@ -52,27 +51,6 @@ so no rebuild of userland is necessary even if you switch between kernel
 with IPsec, and without IPsec.
 <p>
 
-If you have pre-1.5 systems, your situation is as follows:
-<ul>
-  <li>If you are using NetBSD 1.4.x, you may want to visit
-      <a href="http://www.kame.net/">KAME project</a> webpage
-      for IPsec support patches.
-      KAME project supplies IPv6/IPsec patches in single tar.gz file.
-      IPsec portion is usable for both IPv4 and IPv6.
-  <li>If you are using NetBSD-current before late November 1999,
-      use of special kernel configuration file
-      (<tt>GENERIC.v6</tt>) is required to use IPsec.
-  <li>If you are using NetBSD-current after November 21 1999,
-      <tt>GENERIC</tt> kernel configuration file includes
-      IPsec support by default, commented out.
-  <li>Before June 2000, crypto source code is distributed separately.
-      Upgrade to more recent tree, or see <A HREF=oldtree.html>
-      how to construct build tree in the old distribution system</A>.
-      If you are using NetBSD-current after June 2000,
-      crypto source code is integrated into the base tree.
-</ul>
-
-<p>
 
 <STRONG>NOTE:</STRONG>
 We sometimes use the word "IP security" in more broader sense,
@@ -228,8 +206,9 @@ Userland tools include IPsec support by default,
 and no userland rebuild is necessary.
 <p>
 
-Additionally, you may want to install <PKGSRC>security/racoon
-and/or <PKGSRC>security/isakmpd.
+Additionally, you may want to use racoon(8), which comes with NetBSD or
+install <PKGSRC>security/isakmpd.
+
 
 <ENTRY>sample_esp  Configuration examples: host-to-host encryption
 If you would like to run host-to-host (transport mode) encryption with
@@ -468,13 +447,12 @@ Statistics by "<tt>netstat -sn</tt>"
 is also useful to know how kernel IPsec portion is working.
 
 <ol>
-  <li>Build and install <PKGSRC>security/racoon, more recent than 20000923a.
-  <li>Copy <tt>/usr/pkg/share/examples/racoon/racoon.conf.sample</tt> into
+  <li>Copy <tt>/usr/share/examples/racoon/racoon.conf.sample</tt> into
 	<tt>/etc/racoon/racoon.conf</tt>.
 	Modify parameters declared in <tt>racoon.conf</tt> as necessary.
 	It is VERY critical that both ends use the same configuration -
 	you will want less differences in racoon.conf.
-  <li><PKGSRC>security/racoon will obey the IPsec policy settings in the
+  <li> racoon will obey the IPsec policy settings in the
 	kernel when it negotiates IPsec keys.
 	Therefore, we need to configure IPsec policy into the kernel by using
 	setkey(8).
@@ -511,26 +489,26 @@ A	spamspamspam
 B# chmod 600 /etc/racoon/psk.txt
 </pre>
 
-  <li>Run <tt>/usr/pkg/sbin/racoon</tt>.
+  <li>Run <tt>racoon</tt>.
 	If you wish see the debug trace, arguments would be like below:
 <pre>
-# /usr/pkg/sbin/racoon -f /etc/racoon/racoon.conf -d 0xffffffff
+# racoon -f /etc/racoon/racoon.conf -d 0xffffffff
 </pre>
 
   <li>Try to exchange packet between A and B.
-	You will see some messages from <PKGSRC>security/racoon to console,
+	You will see some messages from racoon to console,
 	and key will be established.
 <pre>
 A# ping -n B
 (with some delay, you will start seeing replies)
 ^C
 A# setkey -D
-(you will see keys exchanged by <PKGSRC>security/racoon)
+(you will see keys exchanged by racoon)
 </pre>
 
 </ol>
 
-<PKGSRC>security/racoon will negotiate keys based on the policy definition.
+racoon will negotiate keys based on the policy definition.
 By changing policy definition, we can easily configure for other cases.
 Next example configure keys for the following situation:
 <ul>
@@ -540,7 +518,7 @@ Next example configure keys for the following situation:
 	B is a client which wishes to contact A.
   <ol>
     <li>The policy configuration on A avoids of AH for local
-	traffic (note that <PKGSRC>security/racoon cannot negotiate keys with itself).
+	traffic (note that racoon cannot negotiate keys with itself).
 	The order of the policy is highly important.
 	If you reorder them, the configuration will not work.
 <pre>
@@ -586,22 +564,10 @@ NetBSD implements ipf(4), ipfilter by Darren Reed.
 ipf(4) filters packets, and IPsec policy processing is inherently similar
 to packet filter.
 Therefore, they implement conflicting functionality.
-<p>
-
-As of NetBSD 1.5, ipf(4) and IPsec tunnel mode processing do not play nicely.
-Please do not try to configure a single node with ipf(4) filtering rules,
-and IPsec tunnel mode processing (like "NAT and IPsec gateway in one box").
-The problem is that ipf(4) looks at both IPsec tunnel-encapsulated packets,
-as well as decapsulated packets, making it impossible to declare working
-filter rules.
-<p>
-
-Since February 2001, on NetBSD-current, ipf(4)/IPsec interaction was clarified as below:
-<ul>
-<li>ipf(4) looks at packets in native wire format only.
+ipf(4)/IPsec interaction is specified as:
+ipf(4) looks at packets in native wire format only.
 ipf(4) looks at packets before IPsec processing on inbound, and
 after IPsec processing on outbound.
-</ul>
 <p>
 
 Even with the processing order, please aware of the following:
@@ -616,8 +582,6 @@ go through ipf(4).
 You may need to identify these packets by using interface name directive
 in ipf.conf(5).
 </ul>
-
-The improvement will be available in NetBSD 1.6, and 1.5.1 (and beyond).
 <p>
 
 The following diagram summarizes new processing order.
@@ -844,8 +808,8 @@ There are literally tons of books available.
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.list,v 1.69 2004/03/20 21:39:48 snj Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  $NetBSD: index.list,v 1.70 2004/08/28 00:13:48 hubertf Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
