@@ -31,8 +31,9 @@ NetBSDのソースツリーへの各々の変更に興味がある方は、
     (毎晩更新)</li>
 <li><a href="../Security/#patches">セキュリティーパッチ</a></li>
 </ul>
+<p>
 
-<table border=0 cellpadding=1 cellspacing=0><tr><td valign=top>その他のサイト:
+<table border=0 cellpadding=1 cellspacing=0><tr><td valign=top><b>その他のサイト</b>:
 </td><td valign=bottom>
         <a href="http://www.oreillynet.com/bsd/"><img
         src="../images/links/oreillybsd.jpg"
@@ -49,11 +50,347 @@ NetBSDのソースツリーへの各々の変更に興味がある方は、
 	<a href="http://slashdot.org/bsd/"><img
         src="../images/links/slashdot.jpg"                           
         alt="Slashdot - BSD Section" border=0 width="88" height="31" align=bottom></a>
+</td><td valign=bottom>
+	<a href="http://www.onlamp.com/"><img
+	src="../images/links/onlamp.gif"
+	alt="O'Reilly ONLamp.com" border=0 width="79" height="31"
+	align=bottom></a>
 </td></tr></table>
+<p>
 
 <hr>
 
 <LIST>
+
+<DATE>sushi-additions 26 Apr 2001 - sushi の新しいメニュー構成
+    Tim Rightnour has committed new <tt>networking configuration</tt> and
+    <tt>processes</tt> menu structures to sushi.  In addition, a new
+    <tt>sysctl</tt> form has been added to the existing <tt>system
+    menu</tt> structure.
+    <p>
+    Sushi is an interactive, menu-based program that is
+    designed to aid the user or administrator with administrative
+    and complex tasks on their machines.
+    Sushi provides a menu of various functions that the user can perform on
+    his or her machine.  Once the user selects a desired function, the
+    function is either performed outright, or in most cases, the user is
+    asked to fill in a simple form with required and optional information,
+    which is then processed by sushi, and the action occurs.
+    <p>
+    The new networking configuration menu structure allows sushi to do
+    tasks like edit /etc/exports, modify NIC configuration, and setup
+    YP/NIS.  The processes menu structure will allow starting /
+    stopping / showing / restarting of things in /etc/rc.d.  The new
+    sysctl form in the system menu structure allows a user to both set
+    sysctl's interactively, and save them in /etc/sysctl.conf.
+    <p>
+    People running a NetBSD system with sushi already installed can
+    update their menu structures easily by running '<tt>make install</tt>'
+    in '<tt>sharesrc/share/sushi</tt>'.  Of course if you do a '<tt>make
+    build</tt>' or install a snapshot based on <a
+    href="../Releases/current.html">NetBSD-current</a> sources
+    past 2001-04-26, you'll get the updated menus also.
+
+<DATE>thorpej_scsipi 25 Apr 2001 - thorpej_scsipi ブランチの NetBSD-current へのマージ
+    Manuel Bouyer has merged the <tt>thorpej_scsipi</tt> branch in <a
+    href="../Releases/current.html">NetBSD-current</a>.  The
+    <tt>thorpej_scsipi</tt> branch was created for a complete rewrite of
+    the SCSI/ATAPI mid-layer.  After the merge today, that rewrite
+    is now in NetBSD-current.   The following is an overview of the
+    changes and features:
+    <p>
+    <ul>
+      <li>All xfers are queued in the mid-layer, rather than doing so in
+	an ad-hoc fashion in individual adapter drivers.
+      <li>Adapter/channel resource management in the mid-layer, avoids
+	even trying to start running an xfer if the adapter/channel doesn't
+	have the resources.
+      <li>Better communication between the mid-layer and the adapters.
+      <li>Asynchronous event notification mechanism from adapter to
+	mid-layer and peripherals.
+      <li>Better peripheral queue management: freeze/thaw, sorted requeueing
+	during recovery, etc.
+      <li>Clean separation of peripherals, adapters, and adapter channels
+	(no more scsipi_link). 
+      <li>Kernel thread for each scsipi_channel makes error recovery much
+	easier (no more dealing with interrupt context when recovering from
+	an error).
+      <li>Mid-layer support for tagged queueing: commands can have the tag
+	type set explicitly, tag IDs are allocated in the mid-layer (thus
+	eliminating the need to use buggy tag ID allocation schemes in many
+	adapter drivers).  
+      <li>Support for QUEUE FULL and CHECK CONDITION status in mid-layer;
+	the command will be requeued, or a REQUEST SENSE will be sent as
+	appropriate.
+    </ul>
+    <p>
+    The core scsipi is well tested, but a number of HBA drivers need
+    testing. If you encounter any problems please report them with
+    send-pr(1) and they'll get handled as soon as possible.
+
+<DATE>fsmlabs-rtlbsd 21 Apr 2001 - FSMLabs が NetBSD 対応 RTLinux をアナウンス
+    <a href="http://www.fsmlabs.com/">FSMLabs</a> announced that its
+    RTLinux operating system is now available with a NetBSD component.
+    The new RTLinux on BSD (RTL/BSD) uses NetBSD as its general purpose OS.
+    <p>
+    RTLinux is a 'high speed, efficient and small realtime kernel' based
+    on the POSIX 10003.13 PS51 specification.  Using a patented
+    dual-kernel design, RTLinux runs a general purpose OS as the lowest
+    priority thread of the realtime kernel.
+    <p>
+    FSMLabs Princapal Engineer Michael Brabanov stated that "RTLinux
+    applications can transparently make use of either Linux or
+    BSD. We are very happy to be able to be able to give customers this
+    additional choice."
+    <p>
+    RTL/BSD is available from <a href="http://www.fsmlabs.com/">FSMLabs</a>
+    and is provided with source code, under a binary distribution
+    license.
+    <p>
+    See the <a
+    href="http://www.fsmlabs.com/NetBSD_press_release.html#NetBSD">full
+    FSMLabs press release</a> for more information.
+
+<DATE>alpha-mp 20 Apr 2001 - NetBSD-current で NetBSD/alpha MP がマルチユーザーで起動
+    Jason Thorpe はマルチプロセッサーの<a
+    href="../Ports/alpha/">NetBSD/alpha</a> カーネルがマルチユーザーで
+    動作するようにしました。ユーザーとカーネル両方のコードがマルチ
+    プロセッサー上で動作しました。カーネル構築やユーザーランドの完全な
+    構築をおこなっていますが、非常に安定しています。
+    <p>
+    MP に必要な全てのコードは NetBSD-current にコミットされ、AlphaServer 
+    1200 上でテストされています。このマシンは、AlphaServer 4100 と同じ
+    systype なので、MP コンフィギュレーションも同じように動くはずです。
+    <p>
+    <b>MP コンフィギュレーションで動作するシステム:</b>
+    <p>
+    <ul>
+      <li>AlphaServer 1200
+      <li>AlphaServer 4100
+      <li>DEC/Alpha Processor, Inc. DP264
+      <li>DEC/Alpha Processor, Inc. UP2000
+      <li>DEC/Alpha Processor, Inc. UP2000+
+      <li>API CS20
+      <li>Compaq DS20
+    </ul>
+    <p>
+    AlphaServer 8200/8400 は、まだ動作しません。8200 と 8400 が MP 
+    コンフィギュレーションで動作するためには、もうすこし修正が必要
+    でしょう。
+    <p>
+    Jason の dmesg の出力を含む詳細は、<a
+    href="http://mail-index.netbsd.org/tech-smp/2001/04/20/0000.html">tech-smp
+    メールアーカイブ</a>の中の彼の声明を御覧下さい。
+
+<DATE>netwinder 20 Apr 2001 - NetBSD/netwinder がマルチユーザーで安定
+    ARM ベースの <a
+    href="http://www.netwinder.net/products.phtml">netwinder</a> への
+    NetBSD ポートが、マルチユーザーで使用可能な程度に安定してきました。
+    Matt Thomas による <a
+    href="http://mail-index.netbsd.org/tech-ports/2001/04/20/0000.html">
+    tech-ports への投稿</a>を御覧下さい。
+
+<DATE>vmware-compat 19 Apr 2001 - VMware 互換パッケージが利用可能
+    Frank van der Linden は、<a href="../Ports/i386/">NetBSD/i386</a>
+    用の VMware 互換パッケージを作成しました。パッケージは、Linux 
+    バージョンの VMware のオーナーが、NetBSD 上でそれを動かすことの
+    できるカーネルモジュールとスクリプトで構成されています。このソフト
+    ウェアを動かすために、ユーザーは<a
+    href="http://www.vmware.com/support/linux/">VMware for Linux</a>
+    を購入し、VMware 互換パッケージをダウンロード、インストールする
+    必要があります。これは、以下の場所からダウンロードできます:
+    <p>
+    <blockquote>
+    <a href="http://www.wasabisystems.com/vmware-survey.html">http://www.wasabisystems.com/vmware-survey.html</a>
+    </blockquote>
+    <p>
+    詳細は<a
+    href="http://mail-index.netbsd.org/netbsd-announce/2001/04/19/0000.html">netbsd-announce
+    メールアーカイブ</a>を御覧下さい。
+    <p>
+    Frank の VMware 互換パッケージに関する作業は、
+    <a href="http://www.wasabisystems.com/">Wasabi Systems</a>
+    によって後援されています。
+    <p>
+    <b>更新:</b> Matthias Scheler は
+    <PKGSRC>emulators/suse_vmware パッケージを<a
+    href="../Documentation/software/packages.html">NetBSD パッケージ
+    コレクション</a>に追加しました。NetBSD における VMware 互換の設定
+    手順は、以下のように非常に簡単になりました:
+    <p>
+    <ol>
+      <li>suse_vmware パッケージのインストール(例えば pkgsrc ツリーで、
+       「<tt>cd emulators/suse_vmware && make install</tt>」)。これで
+	<tt>/emul/linux</tt> の設定がおこなわれ、準備は完了しました。
+      <li>Wasabi Systems から、<a
+	href="http://www.wasabisystems.com/vmware-survey.html">NetBSD
+	VMware 互換パッケージ</a>をダウンロード、インストールする。 
+	インストール手順は README に記述されています。
+    </ol>
+    <p>
+    もし、NetBSD-current か NetBSD 1.5.1_BETA を使っていないのであれば、
+    1.5 ブランチのカーネル(2001年3月31日以降の netbsd-1-5 ソースを元に
+    した)を使う必要があります。自分でコンパイルすることも、NetBSD/i386 
+    1.5.1_BETA スナップショットのカーネルを使うことも可能です。
+
+<DATE>lukem-interview 18 Apr 2001 - NetBSD の Luke Mewburn へのインタビュー
+    NetBSD <a href="../People/core.html">コアグループ</a> のメンバー、
+    Luke Mewburn への簡単なインタビューが、<a
+    href="http://e-zine.nluug.nl/">European Unix Platform e-zine</a>に
+    掲載されました。インタビューは Daniel de Kok によっておこなわ、<p>
+    <a href="http://e-zine.nluug.nl/hold.html?cid=143">http://e-zine.nluug.nl/hold.html?cid=143</a>
+    <p>で読むことができます。
+
+<DATE>pkg-files 17 Apr 2001 - pkgsrc の改善
+    Alistair Crooks は pkgsrc システムの構造を変更しました。全ての
+    distfile と distpatch のダイジェストは、<tt>files/md5</tt>から
+    <tt>distinfo</tt>という新しいファイルに移行されました。また可能
+    なものは、パッチのダイジェストも <tt>files/patch-sum</tt>から
+    <tt>distinfo</tt>に移行されています。
+    <p>
+    これらの変更は、情報を <tt>distinfo</tt> にまとめて、pkgsrc 内
+    のファイルの数を減らすためにおこなわれました。ほとんどの場合、
+    パッケージには files/ サブディレクトリが存在しません。また、
+    pkgsrc.tar.gz の展開速度が向上し、cvs update も速くなっている
+    はずです。
+    <p>
+    詳細は、<a
+    href="http://mail-index.netbsd.org/current-users/2001/04/17/0004.html">current-users
+    メールアーカイブ</a>内の Alistair の声明を御覧下さい。
+
+<DATE>sandpoint 12 Apr 2001 - NetBSD の Motorola Sandpoint リファレンスプラットフォームへの移植
+    NetBSD/sandpoint は、<a
+    href="http://www.motorola.com/">Motorola</a>の<a
+    href="http://www.mot.com/SPS/PowerPC/teksupport/refdesigns/sandpoint.html">Sandpoint</a>
+    リファレンスプラットフォームに対する NetBSD の新しいポートです。
+    <p>
+    Sandpoint は、さまざまな PowerPC プロセッサー用のハードウェアやソフト
+    ウェアを開発する人々を助けるために、Motorola によって設計されたリファ
+    レンスプラットフォームです。基本システムはATX マザーボード形式の部品です。
+    標準的な PC デバイス(IDE、フロッピー、シリアル、パラレル)、四つのPCI
+    スロット、さまざまな異なるプロセッサーモジュールを取りつけるための 
+    mezzanine スロットを備えています。
+    <p>
+    このポートでは、二つのプロセッサーがテスト済みです。MPC8240 を備えた
+   「Unity」モジュール、MPC7400 (G4) と MPC107 を備えた「Altimus」モジュール。
+    <p>
+    Allen Briggs が NetBSD/sandpoint のポートメインテイナーです。彼の
+    作業は <a
+    href="http://www.wasabisystems.com/">Wasabi Systems</a> によって後援
+    されています。Wasabi Systems は、NetBSD/sandpoint に関する<a
+    href="http://www.wasabisystems.com/news/pr20010404.html">プレス
+    リリース</a>を発表しています。
+
+<DATE>nd-010411 11 Apr 2001 - 新しい開発者達
+    NetBSDプロジェクトは新しい開発者を迎え入れることを喜ばしく思います:
+    <p>
+    <ul>
+    <li>Masanori Kanaoka、<kanaoka@netbsd.org>は CardBus の改善や
+        様々なデバイスドライバーの作業をおこないます。
+        <p>
+    <li>KAWAMOTO Yosihisa、<kawamoto@netbsd.org>は、<a
+	href="http://www.jp.netbsd.org/ja/JP/index.html">日本NetBSD
+	ユーザーグループ</a>と共に、既に多くの日本語への翻訳作業を
+        おこなっています。Yosihisa は、NetBSD web サイトの日本語への
+        翻訳作業をおこないます。
+	<p>
+    <li>Michael Rauch、<mrauch@netbsd.org>は、
+	<a href="../Documentation/software/packages.html">NetBSD
+	パッケージコレクション</a>と<a
+	href="http://www.openoffice.org/">OpenOffice</a>のNetBSDへの<
+	href="http://porting.openoffice.org/">移植作業</a>をおこないます。
+        <p>
+    <li>Yuji Yamano、<yyamano@netbsd.org>は、
+	href="http://www.jp.netbsd.org/ja/JP/index.html">日本NetBSD
+	ユーザーグループ</a>と共に、既に多くの日本語への翻訳作業を
+        おこなっています。Yuji は、NetBSD web サイトの日本語への
+        翻訳作業をおこないます。
+    </ul>
+
+<DATE>sa2001-005 10 Apr 2001 - ftpd のセキュリティ勧告
+    <a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/misc/security/advisories/NetBSD-SA2001-005.txt.asc">NetBSD
+    セキュリティ勧告 SA2001-005</a>がリリースされました。これには、
+    ftpd のリモートバッファーオーバーフロー脆弱性に関する説明と、修正
+    手順が記述されています。
+
+<DATE>lukemftpd1.0 09 Apr 2001 - Luke Mewburn が lukemftpd 1.0 をリリース
+    lukemftpd、拡張された NetBSD ftp サーバーの古いバージョンの NetBSD
+    や他のプラットフォーム(Solaris や Linux のような)への移植版、の最初
+    のリリースが利用可能になりました。lukemftpd は autoconf 設定スクリプト
+    を使用し、NetBSD 固有のライブラリーの機能を持っていないシステムの
+    ライブラリーを置き換えます。
+    <p>
+    詳細な情報は、lukemftpd 1.0 のディストリビューションに含まれる README
+    か、<a
+    href="http://mail-index.netbsd.org/current-users/2001/04/09/0005.html">current-users
+    メールアーカイブ</a>内の Luke Mewburn の声明を御覧下さい。
+    <p>
+    lukemftpd のメインの ftp サイトは <a
+    href="ftp://ftp.netbsd.org/pub/NetBSD/misc/lukemftp/">ftp://ftp.netbsd.org/pub/NetBSD/misc/lukemftp/</a>です。同じ場所に lukemftp、拡張された NetBSD 
+    ftp クライアントの他のシステムへの移植版、もあります。
+
+<DATE>1.5.1releasecycle 06 Apr 2001 - NetBSD 1.5.1 リリースサイクル開始
+    今日、NetBSD 1.5.1 リリースサイクルが始まりました。NetBSD 1.5.1 は、
+    <a href="../Releases/formal-1.5/">NetBSD 1.5</a> の安定性を改善し、
+    不具合を修正する<a href="../Releases/release-map.html">パッチリリース
+    </a>です。
+    <p>
+    NetBSD 1.5 から NetBSD 1.5.1 の間の変更の
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-release-1-5/src/CHANGES-1.5.1">完全な
+    リスト</a>があります。
+    <tt>netbsd-1-5</tt>ブランチは、テスト期間を経て NetBSD 1.5.1
+    となる予定です。
+    <p>
+    テスト期間が始まりました。<a
+    href="../Ports/alpha/">NetBSD/alpha</a> と<a
+    href="../Ports/i386/">NetBSD/i386</a> 
+    用の 1.5.1_BETA スナップショットが ftp で入手できます。そして、
+    その他のポート用のスナップショットも間もなく準備されます。
+    可能であれば、スナップショットをテストし、発見したバグを send-pr(1)
+    で報告してください。 
+    <p>
+    1.5.1 ソースツリー(<tt>netbsd-1-5<tt>ブランチとして存在します)は
+    様々な方法で入手可能です。その内の三つ、anoncvs、ftp、sup による
+    方法を説明します。
+    <p>
+    <ul>
+      <li><b>anoncvs:</b> anoncvs を使用し、NetBSD 1.5.1 ソースコードを
+        入手したい場合は、cvs 「update」コマンドの「-r netbsd-1-5」フラグ
+        を使いソースツリーを更新してください。あるいは、「checkout」コマ
+        ンドに先ほどのフラグを指定し、別のツリーをチェックアウトしてくだ
+        さい。1.5.1 ソースツリーを確実に入手するためには、常に
+        「-r netbsd-1-5」フラグを指定して下さい。
+	<p>
+      <li><b>ftp:</b> FTP サーバー上の<a
+	href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-release-1-5/">/pub/NetBSD/NetBSD-release-1-5/</a>
+        ディレクトリに 1.5.1 ソースツリーは存在します。展開されたソースは
+        毎日、tar ファイルは毎週、更新されます。
+	<p>
+      <li><b>sup:</b> SUP を使い 1.5.1 ソースツリーを追いかけたい場合は、
+        「release-1-5」コレクションを使ってください。
+    </ul>
+    <p>
+    大きな問題が無ければ、NetBSD 1.5.1 のリリースは5月上旬に予定されています。
+    もし、問題があればさらなるテストのために、先に BETA2 がリリースされます。
+    <p>
+    テスト期間中にバグが見つかった時は、1.5.1 ソースツリーにこまかな変更
+    はおこなわれます。<tt>netbsd-1-5</tt>ブランチへのコミットを追いかける
+    ためには、<a href="../MailingLists/#source-changes">source-changes 
+    メーリングリスト</a> (ダイジェスト形式もあります)を読んでください。
+    これらのコミットはブランチに対しておこなわれます。したがって、NetBSD 
+    1.5.1 のための更新は Subject: の「netbsd-1-5」でわかります。
+
+<DATE>comdexspring2001 06 Apr 2001 - Comdex Spring 2001 における NetBSD
+    href="http://www.key3media.com/comdex/chicago2001/">Comdex Spring
+    2001</a> における、NetBSD の 
+    <a href="../gallery/reports/comdex-spring-2001.html">短かい概要</a>が
+    あります。NetBSD プロジェクトのブースを準備、手助けしてくれた
+    Charles Hannum やその他の人々に感謝します。
+
+<DATE>branches 06 Apr 2001 - BRANCHES ファイルができました
+    <CURRENTSRC>doc/BRANCHES ファイルができました。このファイルには NetBSD 
+    CVS ツリーに存在するブランチの一覧と現在の状態が含まれています。必要に
+    応じて更新される予定です。
 
 <DATE>sa_ntp 05 Apr 2001 - NTP セキュリティ勧告
     <a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/misc/security/advisories/NetBSD-SA2001-004.txt.asc">NetBSD セキュリティ勧告 SA2001-004</a> がリリースされました。
@@ -1295,12 +1632,12 @@ for two packages.
     href="pkg-changes.html">Recent packages changes</a> page.
 
 <DATE>riscos2000 23 Oct 2000 - RISC OS 2000 show report
-   A group of NetBSD enthusiasts were one of the exhibitors at <a
-   href="http://www.armclub.org.uk/shows/riscos/">RISC OS 2000</a>.
-   They had CD's, leaflets, and a mixture of hardware running NetBSD
-   on display.  David Brownlee wrote up a report about the <a
-   href="../gallery/reports/riscos-2000.html">NetBSD stand at RISC OS 2000</a>.
-
+    A group of NetBSD enthusiasts were one of the exhibitors at <a
+    href="http://www.armclub.org.uk/shows/riscos/">RISC OS 2000</a>.
+    They had CD's, leaflets, and a mixture of hardware running NetBSD
+    on display.  David Brownlee wrote up a report about the <a
+    href="../gallery/reports/riscos-2000.html">NetBSD stand at RISC OS
+    2000</a>.
 
 <DATE>twe 19 Oct 2000 - Support for 3ware RAID controllers
     Andy Doran <ad@netbsd.org> has committed support for the <a
@@ -4837,7 +5174,7 @@ please send them to
 <!-- This comment ease an rcsmerge.
   <a href="../Misc/feedback.html">(Contact us)</a>
 -->
-  $NetBSD: index.list,v 1.359 2001/04/05 12:49:42 dan Exp $<br>
+  $NetBSD: index.list,v 1.382 2001/04/26 16:03:09 dent Exp $<br>
 <!-- This comment ease an rcsmerge.
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
 -->
