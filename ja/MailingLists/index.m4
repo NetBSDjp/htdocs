@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $
+#	$NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $
 #	Copyright (c) 1994-2004
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -327,7 +327,7 @@ LIST(tech-smp)
   multi-processor support for NetBSD.
 ENDLIST
 LIST(tech-toolchain)
-  Technical discussion of toolchain issues.
+  Technical discussion of toolchain and build system issues.
 ENDLIST
 LIST(tech-userlevel)
   Discussion of non-kernel related technical issues, such
@@ -729,7 +729,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $<br>
+  $NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
