@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.94 2001/03/09 22:22:18 soda Exp $
+#	$NetBSD: index.m4,v 1.95 2001/04/02 13:51:35 fvdl Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -445,6 +445,10 @@ PORTLIST(port-prep)
   There is also a <a href="#port-powerpc">port-powerpc</a> list for
   questions related to all PowerPC based ports.
 ENDLIST
+PORTLIST(port-s390)
+  Discussion of issues specific to NetBSD on IBM S/390 platforms
+  (NetBSD/s390).
+ENDLIST
 PORTLIST(port-sandpoint)
   Discussion of issues specific to NetBSD on Motorola Sandpoint reference
   platform using the MPC8240 processor module (NetBSD/sandpoint).
@@ -548,7 +552,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.94 2001/03/09 22:22:18 soda Exp $<br>
+  $NetBSD: index.m4,v 1.95 2001/04/02 13:51:35 fvdl Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
