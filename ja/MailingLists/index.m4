@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.90 2001/02/06 16:23:09 dent Exp $
+#	$NetBSD: index.m4,v 1.92 2001/02/27 14:09:19 soda Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -299,14 +299,19 @@ PORTLIST(port-hp700)
   Hewlett-Packard の 9000/700 HP-PA RISC マシン上の NetBSD (NetBSD/hp700)
   固有の事項の議論用です。
 ENDLIST
+PORTLIST(port-hpcarm)
+  ARM ベースの Windows CE PDA マシン上の NetBSD (NetBSD/hpcarm)
+  固有の事項の議論用です。
+ENDLIST
 PORTLIST(port-hpcmips)
-  MIPS ベースの Windows CE PDA マシン上の NetBSD 固有の事項の議論用です。
+  MIPS ベースの Windows CE PDA マシン上の NetBSD (NetBSD/hpcmips)
+  固有の事項の議論用です。
   MIPS ベースのすべてのポートに関する質問のための
   <a href="#port-mips">port-mips</a> リストもあります。
 ENDLIST
 PORTLIST(port-hpcsh)
   日立 Super-H (SH3/4) 系ベースの Windows CE PDA マシン上の NetBSD
-  固有の事項の議論用です。
+  (NetBSD/hpcsh) 固有の事項の議論用です。
   日立 Super-H (SH3/4) チップベースのすべてのポートに関する質問のための
   <a href="#port-sh3">port-sh3</a> リストもあります。
 ENDLIST
@@ -528,7 +533,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.90 2001/02/06 16:23:09 dent Exp $<br>
+  $NetBSD: index.m4,v 1.92 2001/02/27 14:09:19 soda Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
