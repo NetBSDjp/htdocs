@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2002
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+<title>The Internet Super Server and NetBSD</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+
+<HEADING>The Internet Super Server and NetBSD
+
+Many systems administrators, users, engineers and the like are familar
+with the internet super server or <b>inetd</b>. Additionally, most are
+also quite familar with the relationship between several key files in
+the <code>/etc</code> directory and inetd.
+
+Suprisingly there is very little documentation on the internet that is easily
+obtainable which explains the basics of inetd and its relation to other
+files and the system as a whole.
+
+<LIST>
+
+<hr>
+
+<SECTION>
+
+<ENTRY>a2 Overview
+
+<p>In this document we will look at a simple definition of inetd,
+how several files that relate to inetd work
+(not that these files are not related to other software),
+how to add a service to inetd and some considerations both to use inetd for 
+a particular service and times when a service might be better off running
+outside of inetd.</p>
+
+<ENTRY>a3 What Is inetd?
+
+<p>The internet super server listens on its own sockets, when it receives
+a request it then determines which server to connect the request to and
+starts an instance of the server program.</p>
+
+<p>Following is a very simple diagram to illustrate inetd:</p>
+
+<pre>
+
+ pop3  ------  |
+               | 
+ ftpd -------  | INETD | ---- Internet / DMZ / Switch / Whatever . . . 
+               |
+ cvspserver -  |
+
+</pre>
+
+<p>In the above diagram you can see the general idea. The inetd server
+receives a request and then starts the appropiate server process. What 
+inetd is doing is software multiplexing.</p>
+
+<p>An important note here, on many other UNIX-like systems, inetd has
+a package called <em>tcpwrappers</em> as a security enhancment, on 
+NetBSD the secure behavoir of tcpwrappers was built in using
+&quot;libwrap&quot;.</p>
+
+<ENTRY>a4 Protocols
+
+<p>The first file is the <em>protocols name data base</em> which is
+<code>/etc/protocols</code>. This file has the information 
+pertaining to DARPA Internet protocols. The format of the protocols
+name data base is:</p>
+
+
+<blockquote>
+protocol name<br>
+number<br>
+aliases
+</blockquote>
+
+<p>Lets look at the second entry in the <code>/etc/protocols</code> db
+as an example:
+
+<pre>
+icmp    1       ICMP            # internet control message protocol
+</pre>
+
+<p>Starting from the left, we see that the <em>protocol name</em> is 
+<b>icmp</b>, the <em>number</em> is <b>1</b> and the only <em>aliases</em>
+listed is <b>ICMP</b>.</p>
+
+<ENTRY>a5 Services
+
+<p>The next file to consider is the <em>service name data base</em> that
+can be found in <code>/etc/services</code>. This db basically contains
+information about services and the mappings from protocol to port number.
+The format of the
+<code>/etc/services</code> file is:</p>
+
+<blockquote>
+service name<br>
+port number<br>
+protocol name<br>
+aliases
+</blockquote>
+
+<p>Lets take a look at the <code>ssh</code> entries as an example:</p>
+
+<pre>
+ssh             22/tcp          # Secure Shell
+ssh             22/udp
+</pre>
+
+<p>As we can see, from the left, the <em>service name</em> is <b>ssh</b>, 
+the <em>port number</em> is <b>22</b>, the <em>protocols</em> are both
+<b>tcp</b> and <b>udp</b>. Notice that there is a separate entry for 
+every protocol a service can use (even on the same port).</p>
+
+<ENTRY>a6 RPC
+
+<p>The rpc <em>program number data base</em> is kept in <code>/etc/rpc</code>
+and contains name mappings to rpc program numbers, the format of the file
+is:</p>
+
+<blockquote>
+server name<br>
+program number<br>
+aliases
+</blockquote>
+
+<p>For example, here is the <code>nfs</code> entry:</p>
+
+<pre>
+nfs             100003  nfsprog
+</pre>
+
+<p>From the left, the <em>server name</em> is <b>nfs</b>, the 
+<em>program number</em> is <b>100003</b> and <em>alias</em> is
+<b>nfsprog</b>.</p>
+
+
+<ENTRY>a7 Inetd
+
+<p>Last and definitely not least of the files we are concerned with is
+the <em>internet super-server</em> file, <code>/etc/inetd.conf</code>.
+The <code>inetd.conf</code> file basically provides enabling and mapping
+of services the systems administrator would like to have multiplexed
+through inetd.</p>
+
+<p>The previous files were very much informational for the system and
+hence their layout was also relatively simple, the <code>inetd.conf</code>
+file, however, is a little more complex (but not too much) and deserves
+a little deeper explanation.</p>
+
+<p>The basic field layout of the <code>inetd.conf</code> file is:</p>
+
+<blockquote>
+service name<br>
+socket type<br>
+protocol<br>
+wait/nowait<br>
+user:group<br>
+server program<br>
+arguments for the server program
+</blockquote>
+
+<dl>
+
+<dt>service-name</dt>
+<dd>
+The service name should match up with the <code>/etc/services</code> file
+for all standard services (it is at least highly recommended), however,
+non-standard services you may be running locally do not, it is important
+that you take care in selecting a non-standard service name so it does
+not clash with a standard one.
+</dd>
+<dt>socket-type</dt>
+<dd>
+The communications socket type, the different types are 
+&quot;stream&quot;
+&quot;dgram&quot;
+&quot;raw&quot;
+&quot;rdm&quot;
+and
+&quot;seqpacket&quot;. 
+The most common socket types are <em>stream</em> and <em>dgram</em>.
+</dd>
+<dt>protocol</dt>
+<dd>
+The protocol used, mostly tcp, tcp6, udp and udp6. It is worth noting that
+tcp and udp mean they are backwards compatible with all previous versions,
+however, tcp4 specifically means communication via ipv4 only. This can be
+taken a step forward by putting ipv46. In additon to those, rpc uses 
+rpc and tcp or <code>rpc/tcp</code>.
+</dd>
+<dt>wait/nowait</dt>
+<dd>
+This field tells inetd if it should wait for a server program to 
+return or to keep processing a connection steadily. 
+Many connections to their server processes require answers after
+data transfers are complete, where other types can keep transmitting
+on a connection continously, the latter is a &quot;nowait&quot; and the
+former &quot;wait&quot;. In most cases, this entry corresponds to the
+socket-type, for example a streaming connection would (<em>most</em> of
+the time) have a &quot;nowait&quot; value in this field.
+</dd>
+<dt>user[:group]</dt>
+<dd>
+This field is pretty obvious, the user and optionally a group that runs
+the server process which inetd starts up.
+</dd>
+<dt>server-program</dt>
+<dd>This field is path to the program that gets started.
+<dt>program arguments</dt>
+<dd>
+This field contains the program and additional arguments the systems administrator may
+need to specifiy for the server program that is started.
+</dd>
+</dl>
+
+<p>That is all a lot to digest and there are other things the systems
+administrator can do with some of the fields. Here is a sample
+line from an <code>inetd.conf</code> file:</p>
+
+<pre>
+ftp            stream  tcp     nowait  root    /usr/libexec/ftpd       ftpd -ll
+</pre>
+
+
+<p>From the left, the <em>service-name</em> is <b>ftp</b>,
+<em>socket-type</em> is <b>stream</b>,
+<em>protocol</em> is <b>tcp</b>,
+<em>wait/nowait</em> is set to <b>nowait</b>,
+the <em>user</em> is <b>root</b>,
+<em>path is</em> <b>/usr/libexec/ftpd</b> and
+<em>program name and arguments</em> is <b>ftpd -ll</b>.
+Notice in the last field, the <em>program name</em> is different from the
+<em>service-name</em>.</p>
+
+
+<ENTRY>a8 Adding a Service
+
+<p>Many times a systems administrator will find that they need to add
+a service to their system that is not already in inetd or they may wish
+to move a service to it because it does not get very much traffic. This
+is usually pretty simple, so as an example we will look at adding a 
+version of pop3 on a NetBSD system.</p>
+
+<p>In this case we have retrieved and installed the cucipop package. 
+This server is pretty simple to use, the only oddities are different
+path locations. Since it is pop3 we know it is a stream oriented
+connection with nowait. Using root will be fine, the only item that is
+different is the location of the program and the name of the program
+itself.</p>
+
+<p>So the first half of the new entry looks like this:</p>
+
+<pre>
+pop3   stream  tcp     nowait  root
+</pre>
+
+<p>After installation, pkgsrc deposited cucipop in /usr/pkg/sbin/cucipop.
+So with the next field we have:</p>
+
+<pre>
+pop3   stream  tcp     nowait  root /usr/pkg/sbin/cucipop
+</pre>
+
+<p>Last, we want to use the Berkeley mailbox format, so our server program
+must be called with the -Y option. This leaves the entire entry looking
+like so:</p>
+
+<pre>
+pop3   stream  tcp     nowait  root /usr/pkg/sbin/cucipop cucipop -Y
+</pre>
+
+<p>Now, to have inetd use the new entry, we simply restart it using the
+rc script:</p>
+
+<pre>
+/etc/rc.c/inetd restart
+</pre>
+
+<p>All done, in most cases, the software you are using has documentation
+that will specify the entry, in the off case it does not, sometimes it
+helps to try and find something similar to the server program you will
+be adding. A classic example of this is a MUD server which has built-in
+telnet. You can pretty much borrow the telnet entry and change parts 
+where needed.</p>
+
+<ENTRY>a9 When to use or not to use inetd
+
+<p>The decision to add or move a service into or out of inetd is usually
+arrived at based on serverload. As an example, on <b>most</b> systems
+the telnet daemon does not require as many new connections as say 
+a mail server. Most of the time the administrator has to feel out 
+if a service should be moved.</p>
+
+<p>A good example I have seen is mail services such as smtp and
+pop. I had setup a mail server in which pop3 was in inetd and
+exim was running in standalone, I mistakenly assumed it would run
+fine since there was a low amount of users, namely myself and
+a diagnostic account.  The server was also setup to act as a backup
+MX and relay in case another heavily used one went down. When I ran
+some tests I discovered a huge time lag for pop connections remotely.
+This was because of my steady fetching of mail and the diagnostic user
+constanty mailing diagnostics back and forth. In the end I had to move
+the pop3 service out of inetd.</p>
+
+<p>The reason for moving the service is actually quite interesting.
+When a particular service becomes heavily used, of course, it causes
+a load on the system. In the case of a service that runs within the inetd
+meta daemon the effects of a heavily loaded service can also harm other
+services that use inetd. If the multiplexor is getting too many requests
+for one particular service, it will begin to affect the performance of
+other services that use inetd. The fix, in a situation like that, is to 
+make the <em>offending service</em> run outside of inetd so the response
+time of both the <b>service</b> and <b>inetd</b> will increase.</p>
+
+<ENTRY>a10 Other Resources
+
+<p>Following is some additional reading and information about topics
+covered in this document:</p>
+
+<h3>NetBSD/i386 Man Pages</h3>
+
+<ul>
+<li><a href="http://man.netbsd.org/cgi-bin/man-cgi?inetd++NetBSD-1.5.1">inetd(8)</a>
+<li><a href="http://man.netbsd.org/cgi-bin/man-cgi?protocols++NetBSD-current">protocols(5)</a>
+<li><a href="http://man.netbsd.org/cgi-bin/man-cgi?rpc+5+NetBSD-1.5.1">rpc(5)</a> 
+<li><a href="http://man.netbsd.org/cgi-bin/man-cgi?services++NetBSD-1.5.1">services(5)</a>
+</ul>
+
+<h3>Misc. Links</h3>
+
+<ul>
+<li><a href="http://www.iana.org/numbers.htm">IANA: Protocol Numbers and Assignment Services</a>
+<li><a href="http://www.isi.edu/in-notes/rfc1700.txt">RFC1700: Assigned Numbers</a>
+</ul>
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.7 2002/07/24 05:12:43 grant Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2002
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
+
