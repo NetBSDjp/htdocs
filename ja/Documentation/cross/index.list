@@ -2,8 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 2001
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title>Cross-building NetBSD</title>
   </head>
 
@@ -63,11 +65,8 @@ With cross build, compiler settings get trickier.
 With cross build configuration compiler bugs tend to show up
 more frequently.
 We also need to use different version of compiler from self builds,
-so compiler compatibility issue (like between differet version of GCC, or
+so compiler compatibility issue (like between different version of GCC, or
 compiler from different vendors) can become a headache.
-<p>
-
-With <tt>pkgsrc/cross</tt>, cross build for a.out PIC is not supported.
 <p>
 
 Use the correct cpp, or you will be in trouble with predefined symbols
@@ -81,65 +80,27 @@ Of course we need to do more about stabilizing cross builds.
 <ENTRY>host-system  Selecting a host system
 If you have no particular reasons, we'd suggest you to use NetBSD
 (probably the latest release, or netbsd-current) as your host system.
-It would be so much easier if you use NetBSD as your host system,
-as you will be able to use the same /usr/bin/make, /usr/share/mk/*, and such.
-
-<ENTRY>cross-compiler Preparing cross compiler
-If you are building for NetBSD target system on top of NetBSD host system,
-NetBSD package system has cross compiler configuration under "cross" directory.
-For example, if your target system is NetBSD/sh3,
-<PKGSRC>cross/sh-netbsdcoff (for big endian) and
-<PKGSRC>cross/shel-netbsdcoff (for little endian) are available.
-<p>
-
-If you are using non-NetBSD as the host system,
-you will need to configure GNU gcc and GNU binutils for cross builds.
-Also, you will need to make NetBSD make(1), config(8), and other build tools
-available on your system.
+Other platforms are supported too, but do not get as much testing.
+For a (semi-)current state of affairs, please refer
+<CURRENTSRC>src/tools/compat/README .
 
 <ENTRY>build-tree Preparing build tree
 First of all, you need to get the whole NetBSD source code tree.
 See <a href="../current/">"Tracking NetBSD-current"</a> for details.
 In the following descriptions, we assume that the tree is under $TOP/src.
 <p>
-
-Configure /etc/mk.conf correctly for cross builds.
-See options(4) and mk.conf(5) for details.
-<ul>
-<li>Prepare a directory to populate the compiled result.
-Point the directory with <tt>DESTDIR</tt> in /etc/mk.conf.
-<li>You will want to use <tt>OBJMACHINE</tt>, so that you can use the same
-NetBSD source code tree for multiple architectures.
-</ul>
-
-<ENTRY>build-script  Preparing a build script
-Prepare a script like below, to use the appropriate compiler, instead of
-normal compiler for the host system.
-The script is for NetBSD/evbsh3, with <PKGSRC>cross/sh-netbsdcoff binaries.
-You need to tweak MACHINE, MACHINE_ARCH and TARGET settings at least.
-<p>
-
-There are couple of other build scripts available:
-<A HREF="../../Ports/hpcmips/hpcmips-make">hpcmips-make</A>
-<p>
-
+<ENTRY>create-toolchain Create the cross-compiler toolchain
+To create a toolchain e.g. for <em>macppc</em> into the directory
+/usr/cross/{bin,include,lib,libexec,...}, do:
 <pre>
-#! /bin/sh
-
-# just helping for cross compilation.
-
-MACHINE=evbsh3
-MACHINE_ARCH=sh3eb
-# just in case you forgot to specify this when you built gcc...
-CFLAGS="-D__NetBSD__"
-export MACHINE MACHINE_ARCH CFLAGS
-TARGET=/usr/pkg/cross/bin/sh-netbsdcoff
-CPP=`$TARGET-gcc -print-prog-name=cpp`
-
-make AR=$TARGET-ar AS=$TARGET-as CC=$TARGET-gcc LD=$TARGET-ld NM=$TARGET-nm \ 
-	RANLIB=$TARGET-ranlib SIZE=$TARGET-size \ 
-	STRIP=$TARGET-strip OBJCOPY=$TARGET-objcopy \ 
-	CXX=$TARGET-c++ CPP=$CPP $*
+	% cd $TOP/src
+	% ./build.sh -m macppc -T /usr/cross -t
+</pre>
+<p>
+For more options (including building a complete NetBSD tree from the
+checked out tree), see
+<pre>
+./build.sh -h
 </pre>
 
 <ENTRY>compile-kernel Actual cross compilation - kernel
@@ -147,84 +108,29 @@ Use the build script to build the kernel.
 NetBSD config(8) is architecture independent, so you can use it on the
 host system.
 <pre>
-% cd $TOP/src/sys/arch/MYARCH/conf
+% cd $TOP/src/sys/arch/macppc/conf
 % cp GENERIC MYCONF
 % vi MYCONF
-% config MYCONF
+% /usr/cross/bin/nbconfig MYCONF
 % cd ../compile/MYCONF
-% sh build-script depend
-% sh build-script
+% /usr/cross/bin/nbmake-macppc depend
+% /usr/cross/bin/nbmake-macppc build-script
 </pre>
-
-<ENTRY>include-lib Getting include files and library files
-To run a cross build for the userland,
-you need to get working library and include files for the target system.
-<p>
-
-First, you need to populate directory structure onto your DESTDIR.
-<pre>
-# (cd $TOP/src; sh build-script beforeinstall)
-</pre>
-<p>
-
-To obtain a full include tree, you need to run "make includes"
-using the build script.
-<pre>
-# (cd $TOP/src; sh build-script includes)
-</pre>
-After this, include files should be ready under <tt>$DESTDIR/usr/include</tt>.
-Copy it (or symlink it) to the directory which cross compiler will be using.
-<p>
-
-To obtain a full library files,
-you need to run the following using the build script.
-<pre>
-# (cd $TOP/src/lib/csu; sh build-script dependall install)
-# (cd $TOP/src/lib; sh build-script dependall install)
-</pre>
-After this, <tt>$DESTDIR/usr/lib</tt> should have the library binary.
-Copy it (or symlink it) to the directory which cross compiler will be using.
 
 <ENTRY>compile-userland Actual cross compilation - userland
 Use the build script to build the whole tree, as documented in
 <a href="../current/">"Tracking NetBSD-current"</a>.
 <pre>
-# (cd $TOP/src; sh build-script obj build)
+# cd $TOP/src
+# ./build.sh -D $DESTDIR -d
 </pre>
 
 <SECTION>Common problems
-
-<ENTRY>make  "make" went funny in the middle
-In some of build Makefiles, there can be (mis)use of "make" when we
-invoke sub-make, like:
-<pre>
-foo:
-	(cd subdir; make)
-</pre>
-The problem here is that, by invoking "make", we will lose command
-line arguments you gave on your invocation, also we will use
-different make from what you have used at the start.
-<p>
-
-Solution: Replace "make" with "${MAKE}".
-Also please be sure to
-<a href="../../Misc/send-pr.html#submitting">report it to developers</a>
-so that it won't bite you again.
-<pre>
-foo:
-	(cd subdir; ${MAKE})
-</pre>
 
 <ENTRY>compiler-issue  Compiler died with internal error, or something similar
 Yes, it is a problem.
 With cross compilation internal errors and compiler issues
 show up more frequently.
-Also, as we use different version of the compiler from the one we use for
-self builds, or we use different compilers, we see interesting issues
-from time to time.
-Even for pkgsrc/cross tree, we use a different version of GCC (egcs 1.1.1)
-from the NetBSD self builds (egcs 1.1.2).
-Also pkgsrc/cross may not contain some of changes made in NetBSD tree to egcs.
 <p>
 
 There is no magic wand for this:
@@ -237,211 +143,8 @@ There is no magic wand for this:
 <li>Review your compiler settings at cross-compiler generation time.
 <li>If you know how to repeat it, and you are using gcc,
 	<a href="http://www.gnu.org/software/gcc/bugs.html">
-	submit a bug report to gcc guys</a>.
+	submit a bug report to the gcc guys</a>.
 </ul>
-
-<SECTION>Cross compilation reference table
-
-<ENTRY>ccrt Cross compilation reference table
-
-<table border="0" cellspacing="2" cellpadding="3"><tr bgcolor="#e0e0f0">
-  <td><b>MACHINE</b></td>
-  <td><b>MACHINE_ARCH</b></td>
-  <td><b>Cross compiler (from pkgsrc/cross)</b></td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">algor</td>
-  <td valign="top">mipsel</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/mipsel-netbsd</td>
-</tr><tr>
-  <td valign="top">alpha</td>
-  <td valign="top">alpha</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> none</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">amiga</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd</td>
-</tr><tr>
-  <td valign="top">amigappc</td>
-  <td valign="top">powerpc</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/powerpc-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">arc</td>
-  <td valign="top">mipsel</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/mipsel-netbsd</td>
-</tr><tr>
-  <td valign="top">arm26</td>
-  <td valign="top">arm26</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/armv2-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">arm32</td>
-  <td valign="top">arm32</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/arm-netbsd</td>
-</tr><tr>
-  <td valign="top">atari</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">bebox</td>
-  <td valign="top">powerpc</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/powerpc-netbsd</td>
-</tr><tr>
-  <td valign="top">cats</td>
-  <td valign="top">arm32</td>
-  <td><tt>a.out:</tt> none</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">cesfic</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd</td>
-</tr><tr>
-  <td valign="top">cobalt</td>
-  <td valign="top">mipsel</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/mipsel-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">shark</td>
-  <td valign="top">arm32</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/arm-netbsd</td>
-</tr><tr>
-  <td valign="top">dreamcast</td>
-  <td valign="top">sh3el</td>
-  <td><tt>&nbsp;COFF:</tt> <PKGSRC>cross/shel-netbsdcoff</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">evbsh3</td>
-  <td valign="top">sh3el<br>sh3eb</td>
-  <td><tt>&nbsp;COFF:</tt> <PKGSRC>cross/shel-netbsdcoff<br>
-    <tt>&nbsp;COFF:</tt> <PKGSRC>cross/sh-netbsdcoff</td>
-</tr><tr>
-  <td valign="top">hp300</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd<br>
-   <tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/m68k-netbsdelf <em>(1.6 and
-   later)</em></td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">hpcarm</td>
-  <td valign="top">arm32</td>
-  <td><tt>ELF:</tt> none</td>
-</tr><tr>
-  <td valign="top">hpcmips</td>
-  <td valign="top">mipsel</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/mipsel-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">hpcsh</td>
-  <td valign="top">sh3el</td>
-  <td><tt>&nbsp;COFF:</tt> <PKGSRC>cross/shel-netbsdcoff</td>
-</tr><tr>
-  <td valign="top">i386</td>
-  <td valign="top">i386</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/i386-netbsd<br>
-   <tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/i386-netbsdelf <em>(1.5 and
-   later)</em></td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">luna68k</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd</td>
-</tr><tr>
-  <td valign="top">mac68k</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">macppc</td>
-  <td valign="top">powerpc</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/powerpc-netbsd</td>
-</tr><tr>
-  <td valign="top">mipsco</td>
-  <td valign="top">mipseb</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/mipseb-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">mmeye</td>
-  <td valign="top">sh3eb</td>
-  <td><tt>&nbsp;COFF:</tt> <PKGSRC>cross/sh-netbsdcoff</td>
-</tr><tr>
-  <td valign="top">mvme68k</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd<br>
-   <tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/m68k-netbsdelf <em>(1.6 and
-   later)</em></td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">netwinder</td>
-  <td valign="top">arm32</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/arm-netbsd</td>
-</tr><tr>
-  <td valign="top">news68k</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd<br>
-   <tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/m68k-netbsdelf <em>(1.6 and
-   later)</em></td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">newsmips</td>
-  <td valign="top">mipseb</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/mipseb-netbsd</td>
-</tr><tr>
-  <td valign="top">next68k</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd<br>
-   <tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/m68k-netbsdelf <em>(1.6 and
-   later)</em></td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">ofppc</td>
-  <td valign="top">powerpc</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/powerpc-netbsd</td>
-</tr><tr>
-  <td valign="top">pc532</td>
-  <td valign="top">ns32k</td>
-  <td><tt>a.out:</tt> none</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">pmax</td>
-  <td valign="top">mipsel</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/mipsel-netbsd</td>
-</tr><tr>
-  <td valign="top">prep</td>
-  <td valign="top">powerpc</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/powerpc-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">sandpoint</td>
-  <td valign="top">powerpc</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/powerpc-netbsd</td>
-</tr><tr>
-  <td valign="top">sgimips</td>
-  <td valign="top">mipseb</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/mipseb-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">sparc</td>
-  <td valign="top">sparc</td>
-  <td><tt>a.out:</tt> none<br>
-      <tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/sparc-netbsdelf <i>(1.5 and later)</i></td>
-</tr><tr>
-  <td valign="top">sparc64</td>
-  <td valign="top">sparc64<br>sparc</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> none<br>
-    <tt>&nbsp;&nbsp;ELF:</tt> none</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">sun2</td>
-  <td valign="top">m68000</td>
-  <td><tt>a.out:</tt> none</td>
-</tr><tr>
-  <td valign="top">sun3</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd<br>
-   <tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/m68k-netbsdelf <em>(1.6 and
-   later)</em></td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">vax</td>
-  <td valign="top">vax</td>
-  <td><tt>a.out:</tt> none<br>
-      <tt>&nbsp;&nbsp;ELF:</tt> none <i>(1.6 and later)</i></td>
-</tr><tr>
-  <td valign="top">walnut</td>
-  <td valign="top">powerpc</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> <PKGSRC>cross/powerpc-netbsd</td>
-</tr><tr bgcolor="#f5f5ff">
-  <td valign="top">x68k</td>
-  <td valign="top">m68k</td>
-  <td><tt>a.out:</tt> <PKGSRC>cross/m68k-netbsd</td>
-</tr><tr>
-  <td valign="top">x86_64</td>
-  <td valign="top">x86_64</td>
-  <td><tt>&nbsp;&nbsp;ELF:</tt> none</td>
-</tr></table>
-
 
 </LIST>
 
@@ -451,9 +154,8 @@ There is no magic wand for this:
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.21 2002/02/10 13:44:34 wiz Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy;
-    2001
+  $NetBSD: index.list,v 1.23 2002/10/03 02:18:33 wiz Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
