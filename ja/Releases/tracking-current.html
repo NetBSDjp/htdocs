@@ -1,216 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
-<!-- Copyright (c) 1998
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-    <title>Tracking NetBSD-current with CVS</title>
-  </head>
+<link rel="shortcut icon" href="../../favicon.ico" origlink="/favicon.ico" type="image/x-icon">
+<title>This document has moved</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
 
-  <body bgcolor="#FFFFFF" text="#000000">
-    <h1>CVSによるNetBSD-currentの追跡</h1>
-    <h2>概要</h2>
+<table border="0"><tr><td>
+  <a href="../Misc/disclaimer.html#bsd-daemon">
+  <img align="middle" src="../../images/BSD-daemon.jpg" origlink="../images/BSD-daemon.jpg" border=0
+  width=146 height=129 alt="BSD daemon"></a>
+</td><td align="center">
+  <h1>この文書は移動しました</h1>
 
-    <p>Currentは次の方法により追跡できます。
-       基準となるソースのコピーを、
-       ほぼ週に一回(標準的)supを使い最新の状態に維持します。
-       そして、この基準となるソースツリーを、
-       ローカルのCVSリポジトリーにインポートします。
-       そして、リポジトリーのコピーをチェックアウトしCurrentを作成します。
+  <a href="../Documentation/current/">移動先</a>
+  をご覧になり、
+  ブックマークされている場合は変更してください。
+  もし他のページのリンクを辿ってこのページに来られた場合は、
+  そのリンクを修正できるように、
+  <a href="../Misc/feedback.html">お知らせください</a>。
+</td></tr></table>
+<p>
 
-    <p>このアプローチには3つの主要な理由があります。
-    <ol>
-      <li>いつどのようにcurrentが更新されたか追跡するため。
-      <li>ローカルの変更をほとんど自動的にcurrentソースに
-	マージできるようにするため。
-	currentソースを構築するのにいくつかパッチが必要なような、
-	NetBSD/arm32で必要です。
-      <li>構築するときの問題に備えて、いつもまったく変更していない
-	NetBSD-currentのソースツリーがあることを保証するため。
-    </ol>
-    
-    <p>このアプローチの短所は、
-      3つの独立のソースツリーのために、
-      実際のcurrentの構築に必要な空きを含めないで、
-      およそ150MBのディスクスペースが必要なところです。
-
-    <h2>必要なもの</h2>
-    <ul>
-      <li>CVS 1.9 かそれ以降(pkgsrcか、ソースから構築のどちらでも)。
-        CVS 1.10 かそれ以降は、マージ機能がより良いので好ましい。
-      <li>SUP
-      <li>Perl 5(任意) 付属スクリプトのため
-    </ul>
-
-    <h2>詳説</h2>
-    <p>currentの追跡と構築は、6つの段階から成ります。
-    <ol>
-      <li>マスターソースツリーにSUPでソースを更新します。
-      <li>SUPしたファイルをCVSにインポートし、
-        作業用ソースのコピーを更新します。
-      <li>作業用ソースでSUPしたソースをマージします。
-      <li>currentを構築しインストールします。
-      <li>レポジトリーの構築に成功したソースにタグを付けます。
-    </ol>
-    <h3>ソースのSUP</h3>
-    <p>ソースは、どのNetBSD SUPサーバーからもSUP可能です。
-      またSUPの出力は後の参照のためにファイルに保存すべきです。
-
-    <h3>ソースのインポートとマージ</h3>
-    <p>ソースは次のようにインポートします。
-    <pre>
-cvs -d /misc/cvsrep import -I ! netbsd netbsd current-<i>date</i>
-    </pre>
-    <p><i>date</i>は追跡のためにSUP時の日付と置き換えます。
-      <code>-I !</code>オプションは、
-      ソースツリー中のファイルで無視されるファイルがないことを確実にします。
-      これはいくつかのNetBSDソースファイルに、
-      通常CVSにより無視される拡張子のものがあるからです。
-      もしローカルのパッチと衝突がある場合、
-      importコマンドはそれらを出力し、
-      衝突をマージするためのコマンドを次のように出力します。
-    <pre>
-cvs checkout -jnetbsd:yesterday -jnetbsd netbsd
-    </pre>
-    <p>このマージコマンドは、
-      インポートされたNetBSDソースを正確にマージするためのものですが、
-      SUPにより削除されたファイルは、ローカルに反映されません。
-      これを行うためのマージコマンドは、
-    <pre>
-cvs update -j<i>previous import tag</i> -j current-<i>date</i>
-    </pre>
-      です。
-    <p><i>previous import tag</i>
-      は前回のCVSインポートで使用したタグ名と置き換えます。
-      <i>date</i> は、まさにマージされたcurrentのインポートに使用したタグと
-      同じタグを利用できるようにするために、現在の日付と置き換えます。
-
-    <p>importコマンドにより表示される衝突は、衝突の可能性のあるものです。
-      これらは、通常updateコマンドによりマージされますが、
-      いくつかの場合、実際に衝突を引き起こします。
-      この場合、衝突行を手動でマージすることが必要です。
-      実際に衝突がある場合、cvs update時に、<code>C</code>に続き
-      ファイルネームが表示されます。
-
-    <p>衝突の手動マージは単純作業ではありませんが、
-      多くの場合、ローカルの変更を削除し、
-      元のNetBSDソースコードに似せてやることで解決します。
-    <p>衝突のCVSマークは次のようなものです。
-<pre>
-&lt;&lt;&lt;&lt;&lt;&lt;
-  <i>ローカルファイルのコード</i>
-======
-  <i>インポートされたファイルのコード</i>
-&gt;&gt;&gt;&gt;&gt;&gt; <i>新たにインポートされるリビジョンのローカルリビジョン番号</i>
-</pre>
-
-    <p>もしimportコマンドが何の衝突を表示しない場合でも、
-      チェックアウトしたツリーのコピーは
-      衝突した場合と同じ方法で更新できます。
-    <p>updateとcheckoutコマンドはすべて、
-      チェックアウトしたソースのディレクトリーで行ってください。
-      私のシステムでは、これは <code>/usr/src/netbsd</code> です。
-    <p>もし、これが最初のインポートならば、
-      チェックアウトしたソースはないでしょう。
-      '<code>/usr/src/netbsd</code>'にソースツリーを作りたいと仮定すると、
-      次のコマンドでソースをチェックアウトします。
-      マージ作業は必要ありません。
-    <pre>
-cd /usr/src
-cvs -d/misc/cvsrep checkout netbsd
-    </pre>
-
-    <h3>currentの構築</h3>
-    <!-- Insert reference to build instructions here -->
-
-    <h3>構築に成功したものへのタグ付け</h3>
-    <p>もし、構築が完全に成功して、
-      動作するバイナリーセットを作成できたのならば、
-      動作するソースにタグ付けすることで使いやすくできます。
-      これは、万一なにかの原因で構築できないcurrentツリーになっても、
-      ひとつのCVSコマンドで、構築できるツリーに巻き戻すことを可能にします。
-      タグ付けは次のコマンドで行えます。
-    <pre>
-cvs tag successful-build-<i>build date</i>
-    </pre>
-    <h2>注</h2>
-    <ul>
-      <li>もし、ファイル中の
-        $NetBSD: tracking-current.html,v 1.6 1998/10/19 07:30:41 abs Exp $
-        マーカーを認識するNetBSDカスタムバージョンのCVSを使用しない場合、
-        ファイルのNetBSDリビジョン番号を、構築時に問題が起きた場合に
-        参照の目的に使用することができます。
-      <li>上記のsup/インポート/マージの作業は、まったく簡単に自動化できます。
-        以下のPerlスクリプトがこの作業を自動的に行います。
-<pre>
-#!/usr/local/bin/perl
-#
-# Script to SUP NetBSD-current, import it into CVS and merge it with
-# any local changes.
-#
-# NOTES:
-# This script does no error handling so is not really suitable for 
-# non-interactive use.
-#
-# This script has only been test with cvs-1.10.1 and cvs-1.9.18.
-#
-$SRCROOT="/usr/src/netbsd";
-$IMPORTROOT="/misc/import";
-$CVSROOT="/misc/cvsrep";
-#run the sup into a perl stream
-system "/usr/sbin/sup -zsv" ; # This may need to change for none
-                              # current systems
-
-# now import the new files into CVS 
-
-chdir $IMPORTROOT or die "Could not cd to $IMPORTROOT\n";
-
-($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;
-$date = localtime;
-$shortdate = sprintf "%02d%02d%04d",$mday,$mon+1,1900+$year;
-system "/usr/local/bin/cvs -d$CVSROOT import -I ! -m\"SUP Import $date\" netbsd netbsd current-$shortdate ";
-
-# make the working directory the local NetBSD Tree
-chdir $SRCROOT or die "Could not change to $SRCROOT diectory\n";
-
-# Now do the import.
-$lastimport = `cat /usr/src/netbsd/.tag`; # `s are backquotes
-$lastimport =~ s/\n//; # strip off any trailing newline in the string
-system "/usr/local/bin/cvs update -j $lastimport  -j
-current-$shortdate ";
-# Now write the current file into tag save file
-open TAG,"&gt;$SRCROOT/.tag" or die "Could not open new tag file";
- print TAG "current-$shortdate";
-close TAG;
-    </pre> 
-    <p>このスクリプトは、著者がほとんどスクリプトツールの実験のために
-      Perlで書いたものです。これは同じことを行うシェルスクリプトを
-      まったく素直に書くことができるでしょう。
-
-      <li>CVSによるcurrentの追跡のテクニックは、
-        何度かNetBSD current-users メーリングリストで議論されています。
-        その他のテクニックについては、
-        NetBSDのメーリングリストを検索してみてください。
-    </ul>
-    <p>
-    もし、何かコメントや提案があれば、
-    Mike Pumford <a href="mailto:mpumford@black-star.demon.co.uk">
-    mpumford@black-star.demon.co.uk</a> (このページのメインテイナー)か
-    <a href="mailto:www@netbsd.org">www@netbsd.org</a>に送ってください。
 <hr>
-<table><tr>
-  <td>
-    <a href="../index.html">
-    <img src="/images/NetBSD-banner.gif" origlink="../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../"><img
+        src="../../images/NetBSD-flag.gif" origlink="../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
   </td><td>
-    <a href="../index.html">ホームページ</a>
-  </td>
-</tr></table>
+    <a href="../"><img
+        src="../../images/empty.gif" origlink="../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD">ホームページ</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td>
+    <a href="../Documentation/"><img
+        src="../../images/NetBSD-flag.gif" origlink="../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td> 
+    <a href="../Documentation/"><img
+        src="../../images/empty.gif" origlink="../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
 
 <hr>
 <address>
-    www@JP.NetBSD.ORG<br>
-    $NetBSD: tracking-current.html,v 1.6 1998/10/19 07:30:41 abs Exp $<br>
-    <a href="/Misc/disclaimer.html" origlink="../Misc/disclaimer.html">Copyright &copy; 1998
-    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  <small>
+  (連絡先 - <a href="../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
+  $NetBSD: tracking-current.html,v 1.19 2002/09/07 16:43:12 grant Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2002
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
 
 </body>
