@@ -2,9 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2003
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>NetBSD Documentation: Debugging the NetBSD kernel with GDB HOWTO</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -23,41 +24,50 @@ variables, and other minor debugging tasks, if you're doing serious
 kernel hacking you'll want to setup to work with the remote debugger,
 KGDB, instead.
 <p>
-The advantage of KGDB over DDB is that you can step through the *source
-code* of the kernel, rather than through disassembled machine code. As a
+The advantage of KGDB over DDB is that you can step through the <em>source
+code</em> of the kernel, rather than through disassembled machine code. As a
 matter of fact, nearly all GDB facilities work, including any of the
 various graphical frontends for gdb (eg - <PKGSRC>devel/ddd).
 
 <ENTRY>prerequisites Prerequisites
 
-* Two machines of the same architecture (including object code format)
-both running NetBSD:<p><p>
+<ul>
+<li>Two machines of the same architecture (including object code format)
+both running NetBSD:
+<p>
 
-<PRE>
-    TARGET - the machine that will be running the debug kernel
-    REMOTE - the machine that will run/display gdb
-</PRE>
+<pre>
+  TARGET - the machine that will be running the debug kernel
+  REMOTE - the machine that will run/display gdb
+</pre>
 
 It is possible to build gdb hosted on one architecture and targeted for
-another, but I'll leave that for someone else to describe.<p><p>
+another, but that is currently beyond the scope of this document.
+<p>
+</li>
 
-* A free serial port on each machine.<p>
-* A null modem cable<p>
-* Knowledge of how to build and install a kernel, and how to use gdb.<p>
+<li>A free serial port on each machine.</li>
+<li>A null modem cable (see the 
+<a href="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial 
+Port Primer</a> for more information).</li>
+<li>Knowledge of how to build and install a kernel, and how to use
+gdb.</li>
+</ul>
 
 <ENTRY>instructions Instructions
 
-(In the following, I assume that you'll be using tty01 on the REMOTE
-machine (the one running gdb) and tty00 on the "target" (the one being
-debugged). This should hopefully straighten out any confusion about
-which serial port is being referenced in the instructions)<p><p>
+In the following, we will assume that you'll be using tty01 on the
+REMOTE machine (the one running gdb) and tty00 on the TARGET (the one
+being debugged). You may need to substitute the correct devices for
+the serial ports for your hardware, eg. dty00.
+<p><p>
 
 <ol>
 <li>Build a kernel with KGDB enabled.
 <p>
 (NOTE: It may be best to build the kernels on the REMOTE machine.
 That way all the proper source and symbol files are already there when
-it comes time to debug.)<p><p>
+it comes time to debug.)
 <p>
 
 <ul>
@@ -65,18 +75,18 @@ it comes time to debug.)<p><p>
 TARGET machine:
 <p>
 
-<PRE>
-  #options 	DDB		# in-kernel debugger
+<pre>
+  #options 	DDB			# in-kernel debugger
   #options 	DDB_HISTORY_SIZE=100	# enable history editing 
-</PRE>
+</pre>
 
 and uncomment (or add) the following three lines:<p><p>
 
-<PRE>
+<pre>
   options 	KGDB		# remote debugger
   options 	"KGDB_DEVNAME=\"com\"",KGDBADDR=0x3f8,KGDBRATE=9600
   makeoptions	DEBUG="-g"	# compile full symbol table
-</PRE>
+</pre>
 
 Change KGDBADDR to match the IO address of the serial port you will use
 on the TARGET (0x3f8 is tty00, 0x2f8 is tty01), and KGDBRATE to match
@@ -92,8 +102,8 @@ the TARGET.
 <p>
 
 Copy the file "netbsd" from the kernel
-build directory to the root directory of the TARGET machine. *DO NOT*
-INSTALL THIS KERNEL ON THE REMOTE MACHINE (especially if you're using
+build directory to the root directory of the TARGET machine. <b>DO NOT
+INSTALL THIS KERNEL ON THE REMOTE MACHINE</b> (especially if you're using
 the same tty on both machines!)
 <p>
 
@@ -102,34 +112,34 @@ the same tty on both machines!)
 
 <ul>
 <li>If you built the kernel on the TARGET machine, make a copy of all
-of /usr/src/sys from there to the REMOTE machine. (*Note: you can't just
+of /usr/src/sys from there to the REMOTE machine. (Note: you can't just
 NFS-mount the directory from the TARGET! When gdb hits a breakpoint,
-*everything* on the TARGET will stop, including nfsd!)
+<b>everything</b> on the TARGET will stop, including nfsd!)
 <p>
 
 <li>Change the line in /etc/ttys for the tty you plan to use on the
-REMOTE machine (and *only* the REMOTE) to something like:
+REMOTE machine (and <b>only</b> the REMOTE) to something like:
 <p>
 
-<PRE>
-   tty01 "/usr/libexec/getty std.9600" unknown off local
-</PRE>
+<pre>
+  tty01 "/usr/libexec/getty std.9600" unknown off local
+</pre>
 
 The important parts here are "off" (so that init won't run getty on the
-port) and "local" - ttyflags sets up the defaults for the port according
-the /etc/ttys at boottime, and gdb requires "local" to be set so that it
-doesn't wait for DTR. (*Note: the "local" setting shouldn't be necessary
-for NetBSD-current after Dec 21, 1999, or for NetBSD 1.5)
+port) and "local". This is because `ttyflags' sets up the defaults for
+the port according the /etc/ttys at boottime, and gdb requires "local"
+to be set so that it doesn't wait for DTR.
 <p>
+
 You may also want to change the "std.9600" to a different bitrate - it
 should match the rate you set in the kernel options for the TARGET as
 well as the remotebaudrate you set in gdb (below). Make sure there is
 actually an entry in /etc/gettytab to match the name you give here.<p><p>
 <p>
 
-<li>Reboot the REMOTE machine, or otherwise cause ttyflags to run and
-reread /etc/ttys. ("kill -1 1" may be sufficient, although I've seen
-init get confused by a change in the ordering of items in /etc/ttys).
+<li>Reboot the REMOTE machine, or otherwise have ttyflags run and
+reread /etc/ttys. ("kill -1 1" may be sufficient, although init can
+get confused by a change in the ordering of items in /etc/ttys).
 <p>
 </ul></li>
 
@@ -140,9 +150,9 @@ init get confused by a change in the ordering of items in /etc/ttys).
 message comes up. Enter the following command:
 <p>
 
-<PRE>
-	boot -d
-</PRE>
+<pre>
+  boot -d
+</pre>
 
 This will cause the kernel to load, after which the message "waiting for
 kgdb" will be printed, and the TARGET will stop.
@@ -153,9 +163,9 @@ kgdb" will be printed, and the TARGET will stop.
 gdb:
 <p>
 
-<PRE>
-	gdb netbsd.gdb
-</PRE>
+<pre>
+  gdb netbsd.gdb
+</pre>
 
 After a couple seconds of churning, you will get the (gdb) prompt.
 <p>
@@ -163,36 +173,36 @@ After a couple seconds of churning, you will get the (gdb) prompt.
 <li>setup a couple gdb flags:
 <p>
 
-<PRE>
-	# this one lets you stop the TARGET any time with Ctrl-C
-	(gdb) set remotebreak 1
-	# this sets the baudrate gdb will use (default 9600, 
-	# MUST match the setting in the kernel installed on the TARGET)
-	(gdb) set remotebaud 9600
-	# this one speeds up retransmissions of debugger
-	# commands when there is a line error on the serial
-	(gdb) set remotetimeout 3
-</PRE>
+<pre>
+  # this one lets you stop the TARGET any time with Ctrl-C
+  (gdb) set remotebreak 1
+  # this sets the baudrate gdb will use (default 9600, 
+  # MUST match the setting in the kernel installed on the TARGET)
+  (gdb) set remotebaud 9600
+  # this one speeds up retransmissions of debugger
+  # commands when there is a line error on the serial
+  (gdb) set remotetimeout 3
+</pre>
 <p>
 
-<li>Connect to the REMOTE machine (assuming you're using tty00 on the
+<li>Connect to the TARGET machine (assuming you're using tty01 on the
 REMOTE):
 <p>
 
-<PRE>
-	target remote /dev/tty00
-</PRE>
+<pre>
+  target remote /dev/tty01
+</pre>
 <p>
 
 You should be greeted with something like the following:
 <p>
 
-<PRE>
-	Remote debugging using /dev/tty01
-	kgdb_connect (verbose=1) at 	../../../../arch/i386/i386/kgdb_machdep.c:244
-	244             if (verbose)
-	(gdb)
-</PRE>
+<pre>
+  Remote debugging using /dev/tty01
+  kgdb_connect (verbose=1) at 	../../../../arch/i386/i386/kgdb_machdep.c:244
+  244             if (verbose)
+  (gdb)
+</pre>
 <p>
 
 If GDB instead appears to "hang", you may have something wrong with your
@@ -210,12 +220,12 @@ later time, hit Ctrl-C.
 build directory containing the following lines:
 <p>
 
-<PRE>
-      file netbsd.gdb
-      set remotebreak 1
-      set remotebaud 9600
-      target remote /dev/tty00
-</PRE>
+<pre>
+  file netbsd.gdb
+  set remotebreak 1
+  set remotebaud 9600
+  target remote /dev/tty01
+</pre>
 <p>
 
 Now you can start debugging by just typing "gdb".
@@ -233,16 +243,16 @@ don't see the second line, either you didn't get KGDB enabled in the
 kernel you built, or you're running the wrong kernel:
 <p>
 
-<PRE>
-	com0 at isa0 port 0x3f8-0x3ff irq4: ns16550a, working fifo
-	com0: kgdb
-</PRE>
+<pre>
+  com0 at isa0 port 0x3f8-0x3ff irq4: ns16550a, working fifo
+  com0: kgdb
+</pre>
 <p>
 
 <li>Make sure the serial ports and cable work with a "normal"
 application: boot the TARGET with a non-KGDB kernel and try running
 "tip" between the two machines. If you don't know about tip, here's a
-quick rundown on what to do:i
+quick rundown on what to do:
 <p>
 
 * put the following lines in /etc/remote on both the TARGET and the
@@ -299,7 +309,7 @@ the loop you can single-step through it.
 
 </LIST>
 
-<a href="">Up to <em>NetBSD Documentation: Kernel</em></a>
+<a href="./">Up to <em>NetBSD Documentation: Kernel</em></a>
 <hr>
 
 <DOCLINK>
@@ -308,8 +318,8 @@ the loop you can single-step through it.
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: kgdb.list,v 1.5 2001/03/16 15:04:41 dent Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  $NetBSD: kgdb.list,v 1.12 2003/02/16 19:30:46 grant Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
