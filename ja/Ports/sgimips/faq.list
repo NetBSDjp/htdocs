@@ -94,14 +94,16 @@ subnet 10.0.0.0 netmask 255.255.255.0 {			# Adjust
 
      <li> Enter the machine's PROM again, and be sure the IP address
           is set properly:
+     <p>
 
-<pre>
->> <b>printenv netaddr</b>
-netaddr=1.2.3.4
->> <b>setenv netaddr 10.0.0.15</b>
->> <b>printenv netaddr</b>
-netaddr=10.0.0.15
-</pre>
+     <tt>
+     &gt;&gt; <b>printenv netaddr</b><br>
+     netaddr=1.2.3.4<br>
+     &gt;&gt; <b>setenv netaddr 10.0.0.15</b><br>
+     &gt;&gt; <b>printenv netaddr</b><br>
+     netaddr=10.0.0.15<br>
+     </tt>
+     <p>
 
      <li> Make sure you have tftp enabled in /etc/inetd.conf, then
           drop a proper kernel into /tftpboot, e.g. netbsd.IP22.
@@ -109,13 +111,15 @@ netaddr=10.0.0.15
 
      <li> Tell the PROM to do a netboot, loading the "netbsd.IP22"
           kernel: 
+     <p>
 
-<pre>
->> <b>boot -f bootp():/netbsd.IP22</b>
-Setting $netaddr to 10.0.0.15 (from server 10.0.0.3)
-Obtaining /netbsd-IP22 from server 10.0.0.3
-...
-</pre>
+     <tt>
+     &gt;&gt; <b>boot -f bootp():/netbsd.IP22</b><br>
+     Setting $netaddr to 10.0.0.15 (from server 10.0.0.3)<br>
+     Obtaining /netbsd-IP22 from server 10.0.0.3<br>
+     ...<br>
+     </tt>
+     <p>
 
      <li> When asked for root device, enter "<tt>?</tt>" to get a list of
           choices. E.g. "<tt>sq0</tt>" is the Indy's ethernet.
@@ -125,7 +129,7 @@ Obtaining /netbsd-IP22 from server 10.0.0.3
           for root device: "<tt>nfs</tt>". 
      </ol>
 
-     If you encounter trouble, use tcpdump(8) or pgksrc/net/ethereal
+     If you encounter trouble, use tcpdump(8) or pkgsrc/net/ethereal
      to debug the network traffic. See the Irix
      <a href="http://www.mcsr.olemiss.edu/cgi-bin/man-cgi?prom">prom</a>
      manpage for more help on PROM commands.
@@ -149,82 +153,13 @@ To start bootstrapping, the following files are needed:
 <dd><a href="ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/netbsd.ip32">ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/netbsd.ip32</a>
 </dl>
 
-<ENTRY>crosscompiling How to crosscompile a sgimips kernel from i386?
+<ENTRY>crosscompiling How to crosscompile a sgimips kernel?
 
-Here's a receipe on crosscompiling a NetBSD-current kernel for sgimips
-on a NetBSD-current/i386 system. See below if you run a release of
-NetBSD. Here we go:
-<p>
-
-<ol>
-<li> Install the cross-mipseb-netbsd-1.3.0.0 binary package, or build
-     it from pkgsrc/cross/mipseb-netbsd. (the "eb" here is for
-     "endian: big").
-     <p>
-
-<pre>
-# cd /usr/pkgsrc/cross/mipseb-netbsd
-# make install
-</pre>
-
-<li> Make sure you have the crosscompiler first in path. It's
-     installed in /usr/pkg/cross/mipseb-netbsd/bin. (Also, make sure
-     this doesn't lead to confusion later if you want to compile
-     native code again 8-):
-     <p>
-
-<pre>
-# PATH=/usr/pkg/cross/mipseb-netbsd/bin:$PATH
-# export PATH
-</pre>
-
-<li> set the MACHINE environment variable to "sgimips":
-     <p>
-
-<pre>
-# MACHINE=sgimips
-# export MACHINE
-</pre>
-
-<li> set the MAHINE_ARCH environment variable to "mipseb":
-     <p>
-<pre>
-# MACHINE_ARCH=mipseb
-# export MACHINE_ARCH
-</pre>
-
-<li> As usual, change into the kernel config dir, prepare a config
-     file, and run config(8):
-     <p>
-
-<pre>
-# cd /usr/src/sys/arch/sgimips/conf
-# cp TEAL MYMACHINE
-# vi MYMACHINE
-# config MYMACHINE
-</pre>
-
-<li> As usual, change to the compile dir, and let the ball roll:
-     <p>
-
-<pre>
-# cd ../compile/MYMACHINE
-# make depend
-# make
-</pre>
-
-<li> Put the resulting kernel into your /tftpboot dir, or whatever you
-     think is appropriate.
-     <p>
-</ol>
-
-The above instructions work fine for -current sources on a -current
-system. It won't work on a release system (1.5.x), as a
-newer config(8) command is needed.  If you run a release, you can
-setup a -current/i386 system in a seperate dir
-(e.g. /home/i386-current) and use it within a chroot environment.
-<p>
-
+NetBSD 1.6 and later systems have full support for cross-compilation
+of the base system, even as a non-root user and even on non-NetBSD hosts.
+See the <a href="../../Documentation/cross/">Cross-building NetBSD</a>
+under <a href="../../Documentation/">NetBSD Documentation pages</a>
+for details.
 
 <ENTRY>resetting-eaddr How to reset $eaddr on IP22 etc.?
 Here's a method to set the ethernet address that works on at
@@ -237,7 +172,7 @@ All disclaimers apply yadda yadda.
 At the PROM prompt:
 <p>
 
-<pre>dump -w -x 0xbfbe04e8</pre>
+<tt>dump -w -x 0xbfbe04e8</tt>
 <p>
 
 Sanity check the output here to see if it matches the address
@@ -245,12 +180,14 @@ given in the 'ec0: bad ethernet address' error message. If not,
 you may not want to overwrite whatever is there instead.
 <p>
 
-<pre>fill -w -v 0xGG 0xbfbe04e8
+<tt>
+fill -w -v 0xGG 0xbfbe04e8
 fill -w -v 0xHH 0xbfbe04ec
 fill -w -v 0xII 0xbfbe04f0
 fill -w -v 0xJJ 0xbfbe04f4
 fill -w -v 0xKK 0xbfbe04f8
-fill -w -v 0xLL 0xbfbe04fc</pre>
+fill -w -v 0xLL 0xbfbe04fc
+</tt>
 <p>
 
 Where GG:HH:II:JJ:KK:LL is the intended ethernet address. It's a
@@ -307,7 +244,7 @@ OS (SASH) version installed:
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: faq.list,v 1.31 2003/07/23 16:32:53 keihan Exp $<br>
+  $NetBSD: faq.list,v 1.32 2003/10/05 09:30:03 tsutsui Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
