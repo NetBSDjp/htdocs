@@ -115,6 +115,7 @@ in the next section of this HOW-TO.
 Setting up nfs, <a href="#netbsd">NetBSD</a><br>
 Setting up nfs, <a href="#openbsd">OpenBSD</a><br>
 Setting up nfs, <a href="#freebsd">FreeBSD</a><br>
+Setting up nfs, <a href="#macosx">MacOS X and Darwin</a><br>
 Setting up nfs, <a href="#linux">Linux</a><br>
 Setting up nfs, <a href="#sunos">SunOS</a><br>
 Setting up nfs, <a href="#solaris">Solaris</a><br>
@@ -151,7 +152,7 @@ The <tt>GENERIC</tt> kernel distributed with NetBSD has this compiled in.
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -197,8 +198,8 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
-The setup for FreeBSD is now (version 4.x) similar to NetBSD, only mountd
-needs different options. 
+The setup for FreeBSD is now (version 4.x) similar to NetBSD, but mountd
+needs different options and <tt>/etc/exports</tt> has a different format.
 
 <ol>
 <li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
@@ -216,18 +217,27 @@ needs different options.
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li>Add the following line to <tt>/etc/exports</tt>:
+<li>Add the following line to <tt>/etc/exports</tt> (see the
+<a href="http://www.freebsd.org/doc/handbook/nfs.html">FreeBSD Handbook, 
+Section 17.4</a> on NFS):
 <pre><b>#/etc/exports
-/export/client/root -maproot=root:wheel    client.test.net 
-/export/client/swap -maproot=root:wheel    client.test.net
-/export/client/usr  -maproot=nobody:nobody client.test.net
-/export/client/home -maproot=nobody:nobody client.test.net</b></pre>
+/export/client/root /export/client/swap -maproot=root:wheel    client.test.net 
+</b></pre>
+FreeBSD is unable to export multiple directories within a filesystem (such as
+<tt>/export</tt>) to a client unless all of the directories are listed on
+a single line in <tt>/etc/exports</tt>.
+<p>
+You will also need to make sure the your client's <tt>/home</tt> and 
+<tt>/usr</tt> are stored in <tt>/export/client/root</tt>.  FreeBSD is 
+unable to set different properties for exported directories, defeating the
+point of exporting those directories separately (and without 
+<tt>-maproot=root:wheel</tt>).
 <p>
 
 <li><tt># <b>ps -aux | grep mountd</b></tt><br>
@@ -240,6 +250,98 @@ needs different options.
 <li><tt># <b>ps -aux | grep nfsd</b></tt><br>
    If the <tt>nfsd</tt>aemons are not running, then you need to start them:<br>
    <tt># <b>/sbin/nfsd -tun 4</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="macosx">MacOS X and Darwin</a></h3>
+<dl><dt><dd>
+This setup for MacOS X and Darwin use the NetInfo system.  There are ways to 
+use typical BSD-style configuration files, but most systems are by default
+configured to use NetInfo.  Here, we describe how to set up a default install of
+MacOS X/Darwin (i.e. in its own local NetInfo domain).  
+Read your <tt>netinfo(5)</tt> manpage for more information.
+<p>
+
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Modify the NetInfo database to export your shares.  Note that you must
+escape the forward slashes in the path to your export <i>twice</i>.  Once for
+the shell, and once for the NetInfo parser (since it uses forward slashes to
+delimit NetInfo properties).  Just to add to the confusion, the NetInfo
+property we're adding to is called <tt>/exports</tt>.
+<pre># <b>nicl . -create /exports/\\/export\\/client\\/root opts maproot=root:wheel</b>
+# <b>nicl . -create /exports/\\/export\\/client\\/root clients 192.168.0.10</b>
+# <b>nicl . -create /exports/\\/export\\/client\\/swap opts maproot=root:wheel</b>
+# <b>nicl . -create /exports/\\/export\\/client\\/swap clients 192.168.0.10</b>
+# <b>nicl . -create /exports/\\/export\\/client\\/usr opts maproot=nobody:nobody</b>
+# <b>nicl . -create /exports/\\/export\\/client\\/usr clients 192.168.0.10</b>
+# <b>nicl . -create /exports/\\/export\\/client\\/home opts maproot=nobody:nobody</b>
+# <b>nicl . -create /exports/\\/export\\/client\\/home clients 192.168.0.10</b>
+</pre>
+To later add another client for the same export, you would <tt>append</tt> 
+to that property (as opposed to the initial <tt>create</tt>):
+<pre>#<b> nicl . -append /exports/\\/export\\/client\\/root clients 192.168.0.12</b>
+</pre>
+<p>
+To verify that everything looks good, read it back:
+<pre># <b>nicl . -read /exports/\\/export\\/client\\/root</b>
+name: /export/client/root
+opts: maproot=root:wheel
+clients: 192.168.0.10 192.168.0.12</pre>
+
+<p><li><tt># <b>ps -aux | grep portmap</b></tt><br>
+   If the <tt>portmap</tt> is not running, then you need to start it:<br>
+   <tt># <b>/usr/sbin/portmap</b></tt>
+
+<p><li><tt># <b>ps -aux | grep nfsd</b></tt><br>
+   If the <tt>nfsd</tt>aemons are not running, then you need to start them:<br>
+   <tt># <b>/sbin/nfsd -t -u -n 6</b></tt>
+
+<p><li><tt># <b>ps -aux | grep mountd</b></tt><br>
+   If <tt>mountd</tt> is running, then <tt>kill -HUP</tt> that process to
+   force it to reread the NetInfo database.  
+
+<p><li>Your system will always start the NFS daemons after reboots if the 
+   NetInfo <tt>/exports</tt> property is present.  To remove all exports and
+   prevent your system from starting NFS in the future, run:<br>
+   <tt># <b>nicl . -delete /exports</b></tt>
 </ol>
 <p>
 
@@ -278,7 +380,7 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -357,7 +459,7 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -423,7 +525,7 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -484,7 +586,7 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -555,7 +657,7 @@ client files in <tt>/private/export/client</tt> instead of
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -632,7 +734,7 @@ access.
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -690,7 +792,7 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -758,7 +860,7 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.2/binary/sets/kern.tgz</b></tt>
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.3/binary/sets/kern.tgz</b></tt>
 <p>
 
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
@@ -832,7 +934,7 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 <address>
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: nfs.html,v 1.34 2002/03/16 16:42:09 heinz Exp $<br>
+  $NetBSD: nfs.html,v 1.37 2002/08/09 16:37:34 jschauma Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
