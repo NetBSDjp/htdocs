@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.11 1999/08/26 02:36:39 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.12 1999/08/26 02:43:55 sakamoto Exp $
 #
 
 $|=1;
@@ -198,7 +198,7 @@ EOF
 	my ($pkg);
 	foreach $pkg (sort keys %nodata) {
 		print DST "$pkg|$nodata{$pkg}\n";
-		print "$pkg	$nodata{$pkg}\n";
+		print "$pkg|$nodata{$pkg}\n";
 	}
 
 	print DST <<EOF;
