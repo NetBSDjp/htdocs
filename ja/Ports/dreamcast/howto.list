@@ -2,9 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2002
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD/dreamcast: How to use NetBSD/dreamcast</title>
 </head>
 <body bgcolor="#ffffff" text="#000000" link="#2020cc" vlink="#700080">
@@ -21,17 +22,18 @@ NetBSD 初心者も対象としています。ただし、ある程度の UNIX 的な知識は
 <a href="http://mail-index.netbsd.org/port-dreamcast/">port-dreamcast
 メーリングリストのアーカイブ</a>、 Marcus Comstedt のホームページ <a
 href="http://mc.pp.se/dc/">http://mc.pp.se/dc/</a> 、 BeTips.net <a
-href="http://www.betips.net">http://www.betips.net</a> 、および筆者個人の
+href="http://www.betips.net">http://www.betips.net</a> 、
+<a href="http://members.wri.com/josht/dreamcast/dreamcast.html">Josh Tolbert's 
+Dreamcast How-to</a>、および筆者個人の
 試行錯誤の結果から選りすぐりました。
 <p>
 
-<ul>
-  <li>計画その 1 : Dreamcast を CD からブートする (ルートファイルシステムは、
-    ISO9660 CD)
-  <li>計画その 2 : Dreamcast をネットワークからブートする
-</ul>
-
-<h2>計画その 1</h2>
+システムをまともに使うためには書き込み可能なファイルシステムが必要なので、
+この HOWTO では Dreamcast をネットブートさせることに集中します。 CD
+からのブートはテスト用には便利ですし、
+「ただのお遊び」でそうしたい人たちもいるので、
+CD からのブートに関する簡単な説明もしておきます。
+<p>
 
 <h3>1) 必要なもの</h3>
 
@@ -41,24 +43,28 @@ href="http://www.betips.net">http://www.betips.net</a> 、および筆者個人の
 <ul>
   <li>Dreamcast ゲーム機 (2000 年 9 月以前に製造されたものをおすすめします
     (それより後に製造されたものでも動いたとの情報もありますので、
-    メーリングリストのアーカイブで確認してください)
+    メーリングリストのアーカイブで確認してください))
     <p>
   <li>Dreamcast キーボード
     <p>
   <li>オプション - Dreamcast マウス (本稿執筆時点ではドライバーがありません。
     あなたが書いてみませんか?)
     <p>
-  <li>windows が動いている PC
+  <li>Windows が動いている PC
     <p>
   <li>NetBSD が動いている PC (Linux や他の *BSD でもよいはずです。
     BeOS は step 3 が行なえません)
     <p>
-  <li>DiscJuggler for Windows (demo version で十分です) <a
-    href="http://www.padus.com">http://www.padus.com</a>
-    <p>
   <li>ブランク CD-R (CD-RW は Dreamcast では読めません)
-  <li>ブート可能な NetBSD カーネル (DiscJuggler イメージ) 。 <a
-    href="http://www.roadsign.com/dc/">http://www.roadsign.com/dc/</a> にあります。
+    <p>
+  <li><a  href="http://members.wri.com/josht/dreamcast/dreamcast-kernel.tar.gz">
+    Josh のサイト</a> (または <a 
+    href="http://www.schnarff.com/netbsd/dreamcast-kernel.tar.gz">ミラー</a>)
+    で配布されているブート可能な NetBSD カーネル。
+    まずはテスト CD で試したいという場合は、
+    <a href="http://www.roadsign.com/dc/netbsd.zip"> 
+    ブート可能な DiscJuggler イメージ</a>と、これを焼くための
+    <a href="http://www.padus.com">DiscJuggler の demo version</a>を入手してください。
     <p>
   <li>"mkhybrid" と CD を焼くためのプログラム (筆者は BeOS で CD Burner
     を使っていますが、ふつうは "cdrecord" でしょう)
@@ -67,86 +73,159 @@ href="http://www.betips.net">http://www.betips.net</a> 、および筆者個人の
 <h3>2) ブータブルカーネル CD を作る</h3>
 
 <ul>
-  <li>DiscJuggler を使い、ブート可能なカーネルイメージファイルを焼きます
+  <li>ダウンロードしたカーネルを適当な場所に展開します。 audio.raw と
+      kernel.raw というファイルがあるはずです。
     <p>
-  <li>焼いた CD を DC に入れて、電源を入れます
+  <li>最初に audio.raw をオーディオトラックとして焼きます。残りのセッション用に
+      ディスクをオープンしたままにしておいてください。 cdrecord
+      では以下のようにします:
+    <p><pre>	# cdrecord dev=0,1,0 -multi -audio -audio.raw</pre>
+    <p>もちろん、この dev=0,1,0 は、お使いのシステムに合った値に変える必要が
+       あります。これは cdrecord -scanbus で調べられます。
     <p>
-  <li>ブートの情報が流れるはずです。それから、ルートファイルシステムを尋ねる
-    プロンプトが出ます。
+  <li>kernel.raw をデータとして焼きます。 cdrecord では以下のようにします:
+    <p><pre>	# cdrecord dev=0,1,0 -multi -xa1 netbsd-kernel.raw</pre>
 </ul>
 <p>
+テスト CD を焼く場合:
+<ul>
+  <li>ダウンロードしたイメージを DiscJuggler を使って焼きます。この CD を
+      Dreamcast に入れて電源を入れた際にブートメッセージが出れば、その
+      Dreamcast は使えるということです; もしそのマシンが 2002 年 9 月より後に
+      製造されたものである場合は、 <a
+      href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-dreamcast">
+      メーリングリスト</a>でお知らせください。
+  <p>
+  <li>CD 上にファイルシステムを作ってテストしたい場合:
+    <ul>
+      <li><a href="http://www.netbsd.org">http://www.netbsd.org</a> から
+          HPCSH tarball を取ってきて、適当な場所に置きます
+      <p>
+      <li>/home/dreamcast/dev/ で<pre>	# sh MAKEDEV all</pre> を実行します
+      <p>
+      <li>この配布物を CD に焼くため、 mkhybrid でイメージを作ります:
+      <pre>	# mkhybrid -o DCBSD.img -V DCNetBSD -a -r /home/dreamcast/</pre>
+      -V はボリュームラベル、 -a はこのディレクトリー以下の全ファイル、 -r は
+      Rock Ridge 拡張 (必須ではないが、指定しても問題はない) を意味します。
+      <p>
+      <li>DiscJuggler CD を Dreamcast に入れて電源を入れます。ルート FS
+          を尋ねるプロンプトでは "gdrom" と打ち込みます; ダンプデバイスを
+          尋ねられたら "Enter" を押します。
+      <p>
+      <li>ブート CD を、さきほど作ったファイルシステム CD に入れ換えます
+      <p>
+      <li>ファイルシステムを尋ねるプロンプトで "cd9660" と打ち込みます;
+          これでシングルユーザーモードに入るはずです。
+    </ul>
+</ul>
 
-これがすんなりいけば、お使いの DC の製造日は問題ないということです。
-それが 2000 年 9 月より後に製造されたものである場合は、
-メーリングリストでお知らせください。
-
-<h3>3) ルートファイルシステム CD を作る</h3>
+<h3>3) NFS サーバー & ファイルシステムの準備</h3>
 
 <ul>
-  <li><a href="../../">http://www.netbsd.org</a>
-    で HPCSH tarball を探します
+  <li>Josh のサイトから<a 
+      href="http://members.wri.com/josht/dreamcast/dreamcast-world.tar.gz">
+      world ファイル</a>を取ってきます。
     <p>
-  <li>tarball を *BSD/Linux PC のディレクトリーに展開します。
+  <li>このファイルを、お使いの *BSD/Linux PC の適当な場所に展開します。
+      
     <p>
-  <li>MAKEDEV スクリプトを実行します。これでコンソールや
-    その他の必要なデバイスが作られます。
+  <li>/etc/exports ファイルを用意します (書式については exports(5) マニュアルを
+      参照) 。 Josh のサイトに <a href="http://members.wri.com/josht/dreamcast/exports.txt">
+      例</a>があります。以下の点に注意してください:
+    <ul>
+      <li>"-maproot=0" します。さもないと、 Dreamcast はファイルシステムを
+          マウントできません。
+      <li>共有可能なネットワークかホストを指定します; さもないと、
+          全世界から書き込み可能になってしまい、
+          危険です。
+    </ul>
     <p>
-    <pre>	# sh MAKEDEV all</pre>
+  <li>mountd と nfsd が動いていることを確認します; 動いていれば、 "ps aux | grep 
+      '(mount|nfs)'d" でそれらが表示されます。表示されない場合、
+      それらを起動するため、 root で "mountd" と "nfsd" を実行します;
+      今後のブート時にこれらを自動的に起動するようにするため、 /etc/rc.conf
+      を編集して、 nfs_server=YES、 lockd=YES、 statd=YES を書きます。
     <p>
-  <li>mkhybrid を使い、この HPCSH 配布物と、さきほど作った /dev/* から
-    ISO9660 イメージを作ります。
-    <pre>	# mkhybrid -o DCBSD.img -V DCNetBSD -a -r /path/to/files</pre>
+  <li>/etc/dhcdp.conf を設定します (このファイルの書式は man dhcpd.conf(5)
+      参照) 。 <a href="http://members.wri.com/josht/dreamcast/dhcpd.conf">
+      設定例</a>が Josh のサイトにあります。このほか <a 
+      href="http://www.schnarff.com/netbsd/dhcpd.conf"> Alex Kirk のサイト</a>
+      にも例があります。 dhcpd.conf を書くときには以下の点に注意してください:
+    <ul>
+      <li>host セクションに Dreamcast の MAC アドレスを指定 *しなければ
+          なりません* 。 MAC アドレスは BBA を見ればわかります;
+          ステッカーに書いてあります。
+      <li>root-path オプションは、 
+          world ファイルを展開した場所にする必要があります。
+      <li>domain-name-servers などのオプションは厳密には必要ありませんが、
+          書いておいたほうが簡単になります。
+    </ul>
     <p>
-    ここで -V はボリュームラベル、 -a はソースディレクトリーの全ファイルの指定、
-    -r は rock ridge 拡張です (これは必要でないかもしれませんが、
-    筆者の経験では、指定したところで何も問題はないようです)
+  <li>dhcpd が動いていることを確認します; 動いていなければ <pre>#	sh /etc/rc.d/dhcpd start</pre>
+      します。いつでも DHCP が動くようにするため、 /etc/rc.conf を編集して
+      dhcpd=YES を書いておきます。
     <p>
-  <li>cdrecord を使い、このイメージを (ブータブルカーネルイメージではなく)
-    ふつうの ISO9660 CD として焼きます
+  <li>/home/dreamcast/dev/ で MAKEDEV スクリプトを実行します。これで、
+      他の必要なデバイスとともにコンソールが作られます。
+    <p>
+    <pre>       # sh MAKEDEV all</pre>
+    <p>
+  <li>Dreamcast 用のスワップファイルを作ります。任意のサイズにできますが、
+      経験上は 32-64MB が最適です (小さすぎると使い物になりませんし、
+      大きすぎると保守のために過大な物理 RAM を占有します) 。
+      スワップファイルは Dreamcast のルートとしてエクスポートする
+      ディレクトリーの下に置くようにします。
+    <p>
+    <pre>	# dd if=/dev/zero of=swap bs=32k count=1024 </pre> (サイズが 32MB の場合)
+    <p>
+  <li>/home/dreamcast/etc/fstab (または Dreamcast のルートとなる場所の fstab
+      ファイル) を編集し、適切なファイルシステムをマウントするようにします:
+    <pre>	192.168.2.69:/home/alex/dreamcast/dc / nfs rw,auto 0 0
+	/.swap none swap sw 0 0
+	/kern /kern kernfs rw
+	/proc /proc procfs rw 0 0
+	/dev/gdrom0c /mnt/gdrom cd9660 ro,noauto 0 0
+    </pre> 
+    <p>
 </ul>
 
 <h3>4) やってみよう</h3>
 
 <ul>
-  <li>ブータブルカーネル CD から DC をブートします
-  <li>ルートファイルシステムを尋ねられたら、 GDROM と答えます。
-    次のようにタイプしてください:
+  <li>CD を Dreamcast に入れて電源を入れます。 CD が正しく作れていれば、
+      見慣れた NetBSD のブートアップシーケンスが始まります。
+      もし、 2000 年 9 月より後に製造された Dreamcast
+      でこれに成功したら、 <a 
+      href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-dreamcast">
+      メーリングリスト</a>でお知らせください。
     <p>
-    <pre>	# gdrom0</pre>
+  <li>問題が起きた場合、 /etc/exports か /etc/dhcpd.conf がおかしいのかも
+      しれません。まずはこれらにくだらない間違いがないか、再確認するとよいでしょう
+      ─私たちもそういう間違いをするので、気にしないように。
+      説明なしにエラーが出た場合は、
+      /usr/src/sys/sys/errno.h を見ると簡単な説明があります。
     <p>
-  <li>ダンプデバイスを尋ねられたら、単に "Enter" を押します。
+   <li>行き詰まったら、<a 
+       href="http://mail-index.netbsd.org/port-dreamcast">メーリングリストの
+       アーカイブを見ましょう</a>。これは役立ちます。検索したい場合は
+       Google の Advanced Search を使うのが最善です; ドメインを
+       mail-index.netbsd.org に絞り、検索語に "dreamcast"
+       を含めるようにします。
     <p>
-  <li>ここで、ブータブルカーネル CD を、さきほど焼いたルートファイルシステム
-    CD と取り替える必要があります。
+   <li>それでもうまくいかなければ、<a 
+       href="http://www.netbsd.org/cgi-bin/subscribe_list.pl?list=port-dreamcast">
+       メーリングリスト</a>に投稿してください。問題の詳細を書き、関連する
+       エラーメッセージ/設定ファイル/ログファイルを (サイズが小さければ) 引用してください。
     <p>
-  <li>ファイルシステムの種類を入力します:
-    <p>
-    <pre>	# cd9660</pre>
-    <p>
-    ルートファイルシステム CD が入っている状態で "enter" を押すと、 DC
-    はシングルユーザーモードに入るはずです。また、シェルと端末の種類
-    (vt220 か vt100 と答えればよい) を尋ねられます。
 </ul>
 
 <h3>5) 完了!</h3>
 
-<ul>
-  <li>これはとても面白いことではありますが、ほとんど実用にはなりません。
-    一時領域を必要とするエディター (vi) は使えませんし、何も書き換えることが
-    できません。ここで、若干のオプションがあります:
-    <p>
-  <li>NFS を使い、 DC を読み書き可能なファイルシステムからブートする
-    (Broadband Adapter が必要です)
-    <p>
-  <li>必要なプログラムをすべて含めた、専用のルートファイルシステム CD を作り、
-    その CD を使う。
-    最初のオプションを実行すれば……
-</ul>
-
-<h2>計画その 2</h2>
-
-準備中
-<p>
+カスタムカーネルをいろいろ作って遊びたい場合は、 Josh の <a
+href="http://members.wri.com/josht/dreamcast/ipslave.html">IP Slave ページ</a>
+にある説明を読むことをおすすめします。
+このページでは、カーネルを作るたびに CD
+を焼かなくてもすむ方法について、説明しています。
 
 <hr>
 <a href="./">Up to <em>NetBSD/dreamcast Port Page</em></a>
@@ -160,7 +239,7 @@ href="http://www.betips.net">http://www.betips.net</a> 、および筆者個人の
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: howto.list,v 1.4 2001/07/25 19:25:36 dent Exp $<br>
+  $NetBSD: howto.list,v 1.6 2002/09/26 16:34:12 hubertf Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
