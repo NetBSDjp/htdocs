@@ -3,101 +3,102 @@
 <html>
 <head>
 <!-- Copyright (c) 1998, 1999, 2000
-	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>
-Setting up the tftpd server, Diskless NetBSD HOW-TO
+Diskless NetBSD HOW-TO tftpd サーバーの設定
 </title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-Previous |
-<a href="nfs.html">Next</a> |
-<a href="">Table of Contents</a>
+戻る |
+<a href="nfs.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Setting up the <tt>tftpd</tt> server, Diskless NetBSD HOW-TO</h1>
+<h1>Diskless NetBSD HOW-TO <tt>tftpd</tt> サーバーの設定</h1>
 
-TFTP (or Trivial File Transfer Protocol) is used by the boot rom in several
-vendors' machines to download the boot loader and/or the kernel.
+TFTP (Trivial File Transfer Protocol) は、いくつかのベンダーのマシンの
+ブート rom がブートローダーやカーネルをダウンロードするために使います。
 <p>
 
-This service runs over TCP/IP, so the client must first obtain an IP address,
-typically via <a href="rarp.html"><tt>rarp</tt></a>, 
-<a href="bootpd.html"><tt>bootp</tt></a>, or 
-<a href="../dhcp.html"><tt>dhcp</tt></a>.
+このサービスは TCP/IP 上で動くので、クライアントはまず IP アドレスを、
+大抵は <a href="rarp.html"><tt>rarp</tt></a> 、
+<a href="bootpd.html"><tt>bootp</tt></a> または
+<a href="../dhcp.html"><tt>dhcp</tt></a> から得なければなりません。
 <p>
 
-First, you need to make sure that you haven't denied any host access via
-TCP wrappers.  Look in <tt>/etc/hosts.deny</tt> and
-<tt>/etc/hosts.allow</tt> for tftp entries.  If you're using these
-files to restrict tftp access, then you need to either comment out the
-tftp entry in <tt>hosts.deny</tt> or add an entry for your client in
-<tt>hosts.allow</tt>
+はじめに、あなたがどのホストからも TCP wrapper 経由のアクセスを
+拒否されていないことを確認する必要があります。
+<tt>/etc/hosts.deny</tt> と <tt>/etc/hosts.allow</tt> の tftp のエントリーを調べてください。これらのファ
+イルで tftp のアクセスを制限している場合、
+<tt>hosts.deny</tt> の tftp のエントリーをコメントアウトするか、
+<tt>hosts.allow</tt> にクライアントのエントリーを追加する必要があります。
 <p>
 
-Next, you should copy all of the files necessary for your architecture
-to <tt>/tftpboot</tt>, as specified in the client architecture-specific 
-introduction.  For example, for a <a href="intro.sun.html">sparc</a>
-client with IP address 192.168.1.10, you'd run:
+次に、クライアントのアーキテクチャー別の序説にあるとおり、
+そのアーキテクチャーに必要なファイルをすべて <tt>/tftpboot</tt> にコピーします。
+たとえば、クライアントが <a href="intro.sun.html">sparc</a> で
+IP アドレスが 192.168.1.10 の場合、次のようにします:
 <pre># <b>mkdir -p /tftpboot</b>
 # <b>cp /export/client/root/usr/mdec/boot /tftpboot/C0A8010A.SUN4C</b></pre>
 <p>
 
-Note, some tftp daemons do not support chroot'ing into <tt>/tftpboot</tt>,
-and you may need to specify in <a href="bootparams.html">bootparams</a>,
-<a href="bootpd.html">bootpd</a>, or <a href="dhcpd.html">dhcpd</a> the
-entire path to the bootloader.  This is something you should test using
-the <tt>tftp</tt> client before getting frustrated that netbooting doesn't
-work.
+注意: いくつかの tftp デーモンは
+<tt>/tftpboot</tt> への chroot をサポートしませんので、
+<a href="bootparams.html">bootparams</a>、 <a href="bootpd.html">bootpd</a>、
+または <a href="dhcpd.html">dhcpd</a> に
+ブートローダーの完全なパスを与える必要があります。
+ネットワークからうまくブートできないことで悩まないよう、あらかじめ
+<tt>tftp</tt> クライアントをテストに使うことをおすすめします。
 <p>
-If all else fails, you can set your directories up such that a request for
-<tt>/tftpboot/C0A8010A.SUN4C</tt> works on a chroot'ed <tt>tftpd</tt>:
+もし、どうしても失敗する場合は、 <tt>/tftpboot/C0A8010A.SUN4C</tt>
+へのリクエストが chroot された <tt>tftpd</tt> 上でうまくいくように
+ディレクトリーを設定するとよいかもしれません。
 <pre># <b>cd /tftpboot</b>
 # <b>ln -s . tftpboot</b></pre>
 <p>
-Setting up tftpd, <a href="#netbsd">NetBSD</a><br>
-Setting up tftpd, <a href="#openbsd">OpenBSD</a><br>
-Setting up tftpd, <a href="#freebsd">FreeBSD</a><br>
-Setting up tftpd, <a href="#linux.inetd">Linux</a> (using <tt>inetd.conf</tt>)<br>
-Setting up tftpd, <a href="#linux.xinetd">Linux</a> (using <tt>xinetd.conf</tt>)<br>
-Setting up tftpd, <a href="#next">NEXTSTEP</a><br>
-Setting up tftpd, <a href="#hpux">HP-UX</a><br>
+<a href="#netbsd">NetBSD</a> での tftpd の設定<br>
+<a href="#openbsd">OpenBSD</a> での tftpd の設定<br>
+<a href="#freebsd">FreeBSD</a> での tftpd の設定<br>
+<a href="#linux.inetd">Linux</a> での tftpd の設定 (<tt>inetd.conf</tt> を使用)<br>
+<a href="#linux.xinetd">Linux</a> での tftpd の設定 (<tt>xinetd.conf</tt> を使用)<br>
+<a href="#next">NEXTSTEP</a> での tftpd の設定<br>
+<a href="#hpux">HP-UX</a> での tftpd の設定<br>
 <p>
 
-[<em>If you have details for any other platform, <a
-href="../../../Misc/feedback.html">please let us know</a></em>]
+[<em>もし、これら以外のプラットフォームについて詳しくご存じなら、 <a
+href="../../../Misc/feedback.html">ぜひお知らせください</a></em>]
 <p>
 
 <hr>
 
-<h3><a name="netbsd">NetBSD</a> and <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="netbsd">NetBSD</a> と <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
-   following line:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp            dgram   udp     wait    root    /usr/libexec/tftpd      tftpd -s /tftpboot</pre> 
 <p>
 
-<li>Ensure that the last item on the line is <tt>/tftpboot</tt>
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-You can test your <tt>tftpd</tt> from any unix machine, by running:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
-file to get.
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-Continue on to setting up <a href="nfs.html">nfs</a>
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
@@ -105,76 +106,75 @@ Continue on to setting up <a href="nfs.html">nfs</a>
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
-   following line:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp   dgram   udp     wait    nobody  /usr/libexec/tftpd      tftpd /tftpboot</pre> 
 <p>
 
-<li>Ensure that the last item on the line is <tt>/tftpboot</tt>
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-You can test your <tt>tftpd</tt> from any unix machine, by running:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
-file to get.
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-Continue on to setting up <a href="nfs.html">nfs</a>
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-<h3><a name="linux.inetd">Linux (using <tt>inetd.conf</tt>)</a></h3>
+<h3><a name="linux.inetd">Linux (<tt>inetd.conf</tt> を使用)</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
-   following line:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp  dgram   udp     wait    nobody  /usr/sbin/tcpd  in.tftpd /tftpboot</pre> 
 <p>
 
-<li>Ensure that the last item on the line is <tt>/tftpboot</tt>
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-You can test your <tt>tftpd</tt> from any unix machine, by running:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
-file to get.
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-Continue on to setting up <a href="nfs.html">nfs</a>
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-<h3><a name="linux.xinetd">Linux (using <tt>xinetd.conf</tt>)</a></h3>
+<h3><a name="linux.xinetd">Linux (<tt>xinetd.conf</tt> を使用)</a></h3>
 <dl><dt><dd>
-Note, xinetd is not used by default.  These are instructions for Debian 2.1
+xinetd はデフォルトでは使われないことに注意してください。
+これは Debian 2.1 向けの説明です。
 <p>
 
 <ol>
 <li><tt># <b>adduser tftp</b></tt>
 <p>
 
-<li><tt># <b>vi /etc/shadow</b></tt> to change tftp's password to be *.
+<li><tt># <b>vi /etc/shadow</b></tt> して、ユーザー tftp のパスワードを * にします。
 <p>
 
-<li>Edit <tt>/etc/xinetd.conf</tt> and add the following entry: 
+<li><tt>/etc/xinetd.conf</tt> に下記のエントリーを追加します:
 <pre>service tftp
 {
         socket_type = dgram
@@ -188,56 +188,56 @@ Note, xinetd is not used by default.  These are instructions for Debian 2.1
 <p>
 
 <li><tt># <b>ps aux | grep xinetd</b></tt><br>
-   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-You can test your <tt>tftpd</tt> from any unix machine (assuming you add it to
-the <tt>only_from</tt> line), by running:
+この <tt>tftpd</tt> は、任意の unix マシン (<tt>only_from</tt>
+行に書かれているものとします)を使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
-file to get.
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-Continue on to setting up <a href="nfs.html">nfs</a>
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="next">NEXTSTEP</a></h3>
 <dl><dt><dd>
-Note, NEXTSTEP uses <tt>/private/tftpboot</tt> as the location for tftp
-served files.  Make sure your bootloaders are placed in this directory.
+注意: NEXTSTEP では、 tftp でサービスされるファイルの置き場として
+<tt>/private/tftpboot</tt> を使います。
+ブートローダーをこのディレクトリーに置くよう注意してください。
 <p>
 
 <ol>
-<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
-   following line:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp    dgram   udp     wait    root    /usr/etc/tftpd          tftpd -s /private/tftpboot
 </pre>
 <p>
 
-<li>Ensure that the last item on the line is <tt>/private/tftpboot</tt>
+<li>この行は最後が <tt>/private/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> that process to force it to reread <tt>/etc/inetd.conf</tt>.
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-You can test your <tt>tftpd</tt> from any unix machine, by running:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
-file to get.
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-Continue on to setting up <a href="nfs.html">nfs</a>
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
@@ -245,59 +245,58 @@ Continue on to setting up <a href="nfs.html">nfs</a>
 <h3><a name="hpux">HP-UX</a></h3>
 <dl><dt><dd>
 <ol>
-<li>Edit <tt>/etc/passwd</tt> and create a new user for the tftpd account:
+<li><tt>/etc/passwd</tt> を編集して、 tftpd アカウント用の新しいユーザーを作ります:
 <pre>tftp:*:9999:9999:tftp server:/tftpboot:/bin/false</pre>
 <p>
 
-<li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
-   following line:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp         dgram  udp wait   root /etc/tftpd    tftpd</pre>
-   Under HP-UX 10, the path is <tt>/usr/lbin/tftpd</tt> instead of <tt>/etc/tftpd</tt>
+   HP-UX 10 では、 <tt>/etc/tftpd</tt> は <tt>/usr/lbin/tftpd</tt> にします。
 <p>
 
 <li><tt># <b>inetd -c</b></tt><br>
-   This tells the inetd process to re-read its configuration file
+   これで、 inetd プロセスが設定ファイルを読み直します。
 </ol>
 <p>
 
-You can test your <tt>tftpd</tt> from any unix machine, by running:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
-file to get.
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-Continue on to setting up <a href="nfs.html">nfs</a>
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-Previous |
-<a href="nfs.html">Next</a> |
-<a href="">Table of Contents</a>
+戻る |
+<a href="nfs.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
+        src="../../../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a> 
   </td><td>
     <a href="../../../"><img
-        src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        src="../../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
+        src="../../../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
-        src="../../../images/empty.gif" border="0"
+        src="../../../../images/empty.gif" border="0"
         width="1" height="1" alt="NetBSD ">Documentation top level</a>
   </td></tr></table>
 </td></tr></table>
@@ -307,7 +306,7 @@ Previous |
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
   $NetBSD: tftpd.html,v 1.16 2000/10/20 05:40:20 dent Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+  <a href="../../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

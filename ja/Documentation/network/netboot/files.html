@@ -3,75 +3,75 @@
 <html>
 <head>
 <!-- Copyright (c) 1998, 1999, 2000
-	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>Setting up the filesystem, Diskless NetBSD HOW-TO</title>
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<title>Diskless NetBSD HOW-TO ファイルシステムの設定</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="nfs.html">Previous</a> |
-<a href="finish.html">Next</a> | 
-<a href="">Table of Contents</a>
+<a href="nfs.html">戻る</a> |
+<a href="finish.html">進む</a> | 
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Setting up the filesystem, Diskless NetBSD HOW-TO</h1>
+<h1>Diskless NetBSD HOW-TO ファイルシステムの設定</h1>
 
-The procedure outlined here is independent of the server's operating system.
-These are files to extract or modify on the nfs server:
+ここでは、サーバーのオペレーティングシステムに依存しない手順を説明します。
+下記は nfs サーバー上で展開や修正を行なうファイル群です:
 <p>
 
 <ol>
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li>If you're not running NetBSD or OpenBSD on your nfs server, then you may
-    want to check to see if you have GNU tar, version 1.12 or later installed
-    (some distributions of Linux ship with an older GNU tar that doesn't 
-    support the necessary features):
+<li>nfs サーバーが NetBSD か OpenBSD 以外の場合、
+    GNU tar の 1.12 以降がインストールされているか確認してください
+    (いくつかの Linux ディストリビューションには、
+    必要な機能がない古い GNU tar が附属しています):
    <p><tt># <b>tar --version</b></tt><br>
    <tt>tar (GNU tar) 1.12</tt><br>
-   <p>If not, you need to get GNU 
-   <tt><a href="ftp://ftp.gnu.org/pub/gnu/tar/tar-1.12.tar.gz">tar</a></tt>,
-   as it provides the option to preserve uid and gid properly.  If you
-   proceed in untarring the distribution sets, they will have ownerships
-   set incorrectly, which will cause problems.
-   <p>If you use the GNU tar on non-Net/OpenBSD, use the 
-   <tt>[--numeric-owner]</tt> option.
+   <p>もし違う場合には、 uid と gid を保つオプションのある GNU
+   <tt><a href="ftp://ftp.gnu.org/pub/gnu/tar/tar-1.12.tar.gz">tar</a></tt>
+   を手に入れてください。
+   さもないと、アーカイブの展開時に、ファイルのオーナー情報が
+   不適切に設定され、問題が起こります。
+   <p>Net/OpenBSD 以外で GNU tar を使う場合、
+   <tt>[--numeric-owner]</tt> オプションを使います。
 <p>
 
-<li>Extract essential distribution sets:<br>
+<li>必須の配布物を展開します:<br>
 <tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5/binary/sets/base.tgz</b></tt><br>
 <tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5/binary/sets/etc.tgz</b></tt><br>
 <p>
 
-<li>Extract any additional distribution sets using the same procedure
+<li>他の配布物も、同様にして展開します。
 <p>
 
 <li><tt># <b>mkdir /export/client/root/kern</b></tt>
 <p>
 
-<li>Set up swap:<br>
+<li>スワップを設定します:<br>
    <tt># <b>mkdir /export/client/root/swap</b></tt><br>
    <tt>#&nbsp;<b>dd&nbsp;if=/dev/zero&nbsp;of=/export/client/swap&nbsp;bs=4k&nbsp;count=4k</b></tt>
-   <p>This creates a 16 MB swap file.  If your operating system doesn't have a
-   <tt>/dev/zero</tt> (HP-UX doesn't), then you can download this 16 MB 
-   <a href="swap.tar.gz">swap</a> file (16 KB gzipped).
-   <p>SunOS, use the following command to create a 16 MB swap file:<br>
+   <p>これで 16 MB のスワップファイルができます。
+   <tt>/dev/zero</tt> のないオペレーティングシステム (HP-UX など) の場合は、
+   この 16 MB の <a href="../../../../Documentation/network/netboot/swap.tar.gz">swap</a> ファイ
+ル (16 KB gzipped)
+   をダウンロードしてください.
+   <p>SunOS では、次のようにして 16 MB のスワップファイルを作ります:<br>
    <tt># <b>mkfile 16m /export/client/swap</b></tt>
 <p>
 
-<li>Set up <tt>/etc/ifconfig.le0</tt>.  Create a file called 
-   <tt>/export/client/root/etc/ifconfig.le0</tt>, which has the following
-   line:
+<li><tt>/etc/ifconfig.le0</tt>の設定。下記の行を内容に持つ、
+   <tt>/export/client/root/etc/ifconfig.le0</tt> というファイルを作ります:
 <pre><b>inet client netmask 255.255.255.0 broadcast 192.168.1.255</b></pre>
-   replacing <tt>255.255.255.0</tt> with the broadcast address your 
-   network administrator wants you to use, and replacing <tt>192.168.1.255</tt>
-   with the broadcast address your network administrator specifies.
+   ここで <tt>255.255.255.0</tt> はネットワーク管理者が指定するサブネットマスク、
+   <tt>192.168.1.255</tt> はネットワーク管理者が指定するブロードキャストアドレスです。
 <p>
 
-<li>Set up <tt>/etc/fstab</tt>.  Create a file called
-   <tt>/export/client/root/etc/fstab</tt>, which has the following lines:<br>
+<li><tt>/etc/fstab</tt> の設定。下記の行を内容に持つ、
+   <tt>/export/client/root/etc/fstab</tt> というファイルを作ります:<br>
 <pre><b>#/etc/fstab
 nfsserver:/export/client/swap   none  swap  sw,nfsmntpt=/swap
 nfsserver:/export/client/root   /     nfs   rw 0 0
@@ -79,17 +79,17 @@ nfsserver:/export/client/usr    /usr  nfs   rw 0 0
 nfsserver:/export/client/home   /home nfs   rw 0 0</b></pre>
 <p>
 
-<li>Edit <tt>/etc/rc.conf</tt>.  Open in your editor
-   <tt>/export/client/root/etc/rc.conf</tt>.  Some important things to set up
-   are (replace <tt>192.168.1.1</tt> with the router your network administrator
-   specifies):
+<li><tt>/etc/rc.conf</tt> の作成。エディターで
+   <tt>/export/client/root/etc/rc.conf</tt> というファイルを開きます。
+   重要な設定項目 (<tt>192.168.1.1</tt>
+   はネットワーク管理者が指定するルーターに置き換えます):
 <pre>hostname="<b>client</b>"
 defaultroute="<b>192.168.1.1</b>"
 nfs_client=<b>YES</b></pre>
 <p>
 
-<li>Add your machines to <tt>/etc/hosts</tt>.  Add the following lines to
-   <tt>/export/client/root/etc/hosts</tt>:<br>
+<li><tt>/etc/hosts</tt> にあなたのマシンを加えます。下記の行を
+   <tt>/export/client/root/etc/hosts</tt> に追加します:<br>
 <pre><b>#/etc/hosts
 192.168.1.10 client.test.net client
 192.168.1.5  nfsserver.test.net nfsserver</b></pre>
@@ -99,57 +99,62 @@ nfs_client=<b>YES</b></pre>
 </ol>
 <p>
 
-<h2>Some space-saving techniques</h2>
-<a href="mailto:SALEM@statoil.com">Lazaro Daniel Salem</a> has sent in 
-some suggestions on creating a pseudo-clustered environment (wherein all 
-clients and the server share almost all configuration files).  This will only
-work if your client(s) and server are running on the same NetBSD port (merely
-running on the same architecture (i.e. microprocessor) will not suffice).
+<h2>容量節約のための技巧</h2>
+<a href="mailto:SALEM@statoil.com">Lazaro Daniel Salem</a> は、
+疑似的なクラスター環境
+(すべてのクライアントとサーバーが設定ファイルをすべて共有する)
+を作るためのいくつかの提案を寄せてくれました。
+これは、すべてのクライアントとサーバーが同一の NetBSD ポート
+(単に同じアーキテクチャー (マイクロプロセッサー) ならばよい
+というわけではありません) を使う場合のみ有効です。
 <p>
-If you are curious, <a href="cluster.txt">read his suggestions</a>.
+もし興味があれば、<a href="cluster.txt">この提案を読んでください</a>。
 <p>
 
-<h2>It's time to boot up your diskless machine!</h2>
+<h2>これでディスクレスマシンをブートできます !</h2>
 <ol>
-<li>Here is an <a href="diskless.txt">example</a> of what the 
-   diskless boot messages on a NetBSD/hp300 machine look like.<br>
-   <i>If your screen goes black or appears to hang, make sure that NetBSD
-   supports a local console on your particular machine, you may need to
-   hook up a serial terminal.</i>
+<li>NetBSD/hp300 マシンでのディスクレスブートメッセージの
+   <a href="diskless.txt">例</a>があります。<br>
+   <i>もし画面が真っ暗になったり固まったりしたら、 NetBSD がそのマシンの
+   ローカルコンソールに対応しているか確かめてください。
+   シリアル端末を使う必要があるかもしれません。
+   </i>
    <p>
-   <i>If your serial terminal doesn't show anything (or your machine
-   doesn't even have serial ports), then you need to read additional
-   directions on <a href="files.nocons.html">setting up remote access</a>
-   without any console</i>
+   <i>もしシリアル端末に何も表示されない (あるいはマシンにシリアルポートが
+   ない) 場合、さらに、コンソールなしでの
+   <a href="files.nocons.html">リモートアクセスの設定</a>
+   を読む必要があります。
+   </i>
 <p>
 
-<li>Your client will boot into single-user mode, giving you this prompt:<br>
+<li>クライアントマシンがブートしてシングルユーザーモードに入り、
+   下記のプロンプトが出ます:<br>
    <tt>Enter pathname of shell or RETURN for sh:</tt><br>
-   Hit return.
+   リターンキーを押します。
 <p>
 
-<li>It'll ask you your terminal type.<br>
-   On a NetBSD/hp300 machine, the local console, is
-   <tt>hp300h</tt>, and for serial console, you should probably use
-   <tt>vt100</tt>
+<li>端末の種類を尋ねられます。<br>
+   NetBSD/hp300 マシンのローカルコンソールでは <tt>hp300h</tt> です。
+   シリアルコンソールではおそらく <tt>vt100</tt> とすべきでしょう。
 <p>
 
 <li><tt># <b>mount /usr</b></tt>
 <p>
 
-<li>Create the <tt>/dev</tt> files.<br>
+<li><tt>/dev</tt> ファイルの作成。<br>
    <tt># <b>cd /dev;./MAKEDEV all</b></tt><br>
-   This takes a while (at least two minutes), be patient.
+   これにはしばらく (少なくとも 2 分) かかりますので、気長に待ってください。
    <p>
-   Note, this won't work using the HP-UX 9 or earlier NFS server,
-   since it doesn't allow client creation of device files.  You'll have to
-   download this tarball of <a href="hp300.dev.tar.gz">device files</a> 
-   (5 KB) for NetBSD/hp300 and run, on the nfs server:<br>
+   注意: HP-UX 9 以前の NFS サーバーは、クライアントがデバイスファイルを
+   作ることを禁止しているため、これができません。 nfs サーバー上で
+   NetBSD/hp300 用の<a href="../../../../Documentation/network/netboot/hp300.dev.tar.gz">デバイスフ
+ァイル</a>
+   (5 KB) をダウンロードして展開する必要があります:<br>
    <tt># <b>cd /export/client/root</b></tt><br>
    <tt># <b>tar [--numeric-owner] -xpvzf dev.tar.gz</b></tt>
 <p>
 
-<li>Check to make sure swap will work:
+<li>うまくスワップが働いているか、確かめます:
 <pre># <b>swapctl -A</b>
 swapctl: adding nfsserver:/export/client/swap as swap device at priority 0
 # <b>swapctl -l</b>
@@ -157,51 +162,52 @@ Device      512-blocks     Used    Avail Capacity  Priority
 /dev/??          32768        0    32768     0%    0</pre>
 <p>
 
-<li>Continue to multi-user mode.  Edit <tt>/etc/rc.conf</tt> either
-   on the nfs server (in <tt>/export/client/root/etc/rc.conf</tt>) or on 
-   the client, and change the line to read:<br>
+<li>マルチユーザーモードへ移ります。
+   nfs サーバー (in <tt>/export/client/root/etc/rc.conf</tt>) か
+   クライアント上で <tt>/etc/rc.conf</tt> を編集し、
+   ファイルが読まれるよう、次のように変更します:<br>
    <tt>rc_configured=<b>YES</b></tt>
 <p>
 
-<li>Exit out of the single-user shell, by typing <tt><b>exit</b></tt>.
+<li><tt><b>exit</b></tt> とタイプしてシングルユーザーのシェルを抜けます。
 <p>
 
-<li>Log in as <tt>root</tt> and have fun using your new NetBSD
-   diskless workstation!
+<li><tt>root</tt> でログインし、新しい NetBSD
+   ディスクレスワークステーションを楽しんでください !
 </ol>
 <p>
 
-Now, you should continue on and <a href="finish.html">finish</a> up the
-diskless procedure by making sure your server(s) start all of the necessary
-daemons the next time they reboot.
+ここで、さらに続けて、
+サーバーをリブートしたときに必要なデーモンがすべて起動するか確かめて、
+ディスクレスの作業を<a href="finish.html">仕上げる</a>べきです。
 <p>
 
 <hr>
 
-<a href="nfs.html">Previous</a> |
-<a href="finish.html">Next</a> |
-<a href="">Table of Contents</a>
+<a href="nfs.html">戻る</a> |
+<a href="finish.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
+        src="../../../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a> 
   </td><td>
     <a href="../../../"><img
-        src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        src="../../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
+        src="../../../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
-        src="../../../images/empty.gif" border="0"
+        src="../../../../images/empty.gif" border="0"
         width="1" height="1" alt="NetBSD ">Documentation top level</a>
   </td></tr></table>
 </td></tr></table>
@@ -211,7 +217,7 @@ daemons the next time they reboot.
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
   $NetBSD: files.html,v 1.23 2000/11/26 00:49:32 dent Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+  <a href="../../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
