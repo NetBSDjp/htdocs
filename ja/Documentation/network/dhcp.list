@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2003
+<!-- Copyright (c) 1994-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -57,16 +57,17 @@ In addition there is a comprehensive
 <SECTION>DHCP Client Setup
 
 This section attempts to explain how to setup DHCP clients
-under NetBSD.  This document includes information for both NetBSD-1.3
-and NetBSD-1.4.
+under NetBSD. 
 
 <ENTRY>configure_dhcp Configure DHCP
 
-The DHCP client configuration is contained in the file <code>/etc/dhclient.conf</code>.
-You will need to create this file if it does not already exist on your system.
-Remember to customize this as needed, in particular be sure to change the hostname stuff
-and the ethernet interface.  See <tt>dhclient.conf(5)</tt> and <tt>dhcp-options(5)</tt>
-for more detailed information. A typical <code>/etc/dhclient.conf</code> is shown below.
+The DHCP client can be configured in the file
+<code>/etc/dhclient.conf</code>.  If the file is not present, DHCP 
+will still work fine. See <tt>dhclient.conf(5)</tt> and
+<tt>dhcp-options(5)</tt> 
+for more detailed information. A typical
+<code>/etc/dhclient.conf</code> is shown below.
+
 
 <pre>
 Send host-name "myname.my.domain";                 &lt;=== Put your
@@ -82,7 +83,7 @@ timeout 30;
 retry 60;
 select-timeout 5;
 
-script "/etc/dhclient-script";
+script "/sbin/dhclient-script";
 
 lease {
   interface "sn0";                               &lt;=== put your interface
@@ -99,52 +100,20 @@ lease {
 }
 </pre>
 
-<ENTRY>update_dhclient Update dhclient-script (NetBSD-1.3 only)
-
-If you have more than 1 network card in your machine, you need to
-edit the <code>/etc/dhclient-script</code> file to avoid a bug which
-generates a large log file.  Basically, the idea is to make 
-dhclient-script exit without doing anything when called on the network
-card which doesn't have DHCP running on it.  Note that this bug has
-been fixed in NetBSD-1.4 and later.
-
-For example, on my machine, I have two network cards.  I run DHCP on 
-the <code>ae1</code> network card and do not run DHCP on 
-<code>ae0</code>.  For this example, add the following lines to
-<code>/etc/dhclient-script</code> immediately after the 
-<code>#!/bin/sh</code> line at the beginning of the file.
-
-<pre>
-  # don't run DHCP on ae0 
-  if [ $interface = "ae0" ]; then
-    exit 0
-  fi
-</pre>
 
 <ENTRY>enable_dhcp Enable DHCP
 
-<h3>NetBSD-1.3 and earlier</h3>
-
-Edit <code>/etc/netstart.local</code> and add the line '<code>dhclient
-<em>interface</em></code>', where <code><em>interface</em></code>
-is your network interface, such as <code>ae1</code> or <code>sn0</code>
-under NetBSD/mac68k or <code>ep0</code> under NetBSD/i386.
-You should be able to see what driver you
-have during the NetBSD boot sequence or by looking at the output
-of <code>dmesg</code>.  This causes the DHCP client software to be
-automatically started during the boot sequence.
-
-<h3>NetBSD-1.4</h3>
-
 Edit <code>/etc/rc.conf</code> and edit the '<code>dhclient</code>'
-line to read '<code>dhclient=YES</code>'.  Add a list of network
+line to read '<code>dhclient=YES</code>'.  By default, DHCP requests
+will be sent to all attached network interfaces. If you want to only
+use DHCP on a single/less network cards, add a list of network
 interfaces which should be configured with DHCP to the
 '<code>dhclient_flags</code>' line.  For example,
 '<code>dhclient_flags="ae1"</code>'.
 
-The next time you reboot your machine it will configure itself as a DHCP client.
-To enable DHCP without rebooting, run the command '<code>dhclient <em>interface</em></code>'
-where <code><em>interface</em></code> your network interface.
+The next time you reboot your machine it will configure itself as a
+DHCP client.  To enable DHCP without rebooting, run the command
+'<code>sh /etc/rc.d/dhclient start</code>'.
 
 
 <ENTRY>keep_resolv_conf How do I keep dhclient from nuking my /etc/resolv.conf?
@@ -166,12 +135,11 @@ See the dhclient-script(8) man page for more information.
 
 <SECTION>DHCP Server Setup
 
-This section shows how to setup a DHCP server under the NetBSD-1.4 family of
-releases.
-Note that you do not need to set up a DHCP server unless you want to dynamically
-assign addresses for computers on your LAN.
-For more detailed information see <tt>dhcpd(8)</tt>, <tt>dhcpd.conf(5)</tt>, 
-and <tt>dhcp-options(5)</tt>.
+This section shows how to setup a DHCP server.  Note that you do not
+need to set up a DHCP server unless you want to dynamically assign
+addresses for computers on your LAN.  For more detailed information
+see <tt>dhcpd(8)</tt>, <tt>dhcpd.conf(5)</tt>, and
+<tt>dhcp-options(5)</tt>.
 
 
 <ENTRY>configure_dhcpd Configure DHCPD
@@ -208,16 +176,19 @@ option routers 192.168.0.1;                   &lt;=== list of routers the client
 </pre>
 
 <ENTRY>enable_dhcpd Enable DHCPD
-<h3>NetBSD-1.4</h3>
 
 Edit <code>/etc/rc.conf</code> and edit the '<code>dhcpd</code>'
-line to read '<code>dhcpd=YES</code>'.  Add a list of network
+line to read '<code>dhcpd=YES</code>'.  If you don't want to serve
+DHCP requests on all network interfaces, add a list of network
 interfaces on which DHCPD should run to the
 '<code>dhcpd_flags</code>' line.  For example,
 '<code>dhcpd_flags="-q ae1"</code>'.
 
+
 <ENTRY>touch Create a dhcpd.leases file
-dhcpd wants a /var/db/dhcpd.leases file to exist. Create it by running 'touch /var/db/dhcpd.leases'.
+dhcpd wants a /var/db/dhcpd.leases file to exist. Create it by running
+'<code>touch /var/db/dhcpd.leases</code>'. 
+
 
 </LIST>
 
@@ -230,8 +201,8 @@ dhcpd wants a /var/db/dhcpd.leases file to exist. Create it by running 'touch /v
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: dhcp.list,v 1.16 2004/03/20 21:39:48 snj Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  $NetBSD: dhcp.list,v 1.17 2004/08/27 23:55:44 hubertf Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>

@@ -2,9 +2,9 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2002
+<!-- Copyright (c) 1994-2004
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>GPRS, CDPD HowTo</title>
 </head>
@@ -134,6 +134,69 @@ using PPP networking with NetBSD.
 <p>
 </dl>
 
+<ENTRY>sony-ericcson-t200 Using a SonyEricsson t200
+
+<small>The following information was provided by Andrew Cagney:</small>
+<p>
+The SonyEricsson t200 GPRS phone has it's serial baud rate wired to 9600.
+It doesn't drop the GPRS connection when pppd disconnects, and finally the USB
+phone cable provided doesn't appear to work under Netbsd at this point in
+time.
+</p>
+<p>The last problem can be worked around by using a USB<->serial cable and
+connecting that to the SonyEricsson.  The first two problems can be worked
+around/solved by including an init, connect and disconnect script in the
+options or peers file:
+</p>
+<pre>
+115200
+init "/etc/ppp/chat/t200.sh"
+connect "chat -v -f /etc/ppp/chat/t200"
+disconnect "chat -v -f /etc/ppp/chat/hup"
+</pre>
+</p>
+Then, t200.sh should contain:
+<pre>
+#!/bin/sh
+# Find out the intended baud rate
+b=`stty -g | sed -e 's/.*ispeed=//' -e 's/:.*//'`
+# Force the serial line to 9600 baud so that it can be re-configured
+stty 9600
+# Ask for the modem to list all baud rates, and the current one.  Then
+# force it to the rate the line was originally set to.
+if chat -v \
+    TIMEOUT 5 '' \
+    +++AT OK \
+    AT+IPR=? OK \
+    AT+IPR? OK \
+    AT+IPR=${b} OK
+then
+    stty ${b}
+    exit 0
+else
+    exit 1
+fi
+</pre>
+The file t200 should contain:
+<pre>
+ABORT BUSY
+ABORT ERROR
+ABORT 'NO CARRIER'
+ABORT 'NO DIALTONE'
+ABORT 'NO DIAL TONE'
+TIMEOUT 10 ''
+AT OK--AT--OK
+# Ask the modem its baud rate - a sanity check
+AT+IPR=? OK
+AT+IPR? OK
+# connect
+ATDT*99# CONNECT
+</pre>
+And, finally, the hup file should read:
+<pre>
+TIMEOUT 2
+'' +++ATH OK
+</pre>
 
 <ENTRY> cdpd Using a Cellular Digital Packet Data (CDPD) card
 
@@ -189,6 +252,8 @@ using PPP networking with NetBSD.
 <p>
 </dl>
 
+
+
 </LIST>
  
 <a href="./">Up to <em>NetBSD Documentation: Network</em></a>
@@ -199,9 +264,9 @@ using PPP networking with NetBSD.
 <hr>
 <address>
   <small>
-  <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: gprs.list,v 1.6 2002/08/18 16:38:10 jschauma Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2002
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: gprs.list,v 1.13 2004/08/27 23:56:52 hubertf Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
