@@ -1,4 +1,4 @@
-/*	$NetBSD: mkdevht.c,v 1.9 2001/06/25 23:19:57 dent Exp $	*/
+/*	$NetBSD: mkdevht.c,v 1.12 2002/06/15 04:16:23 mason Exp $	*/
 
 char *copyright =
 	"Copyright (c) 2000 Mason Loring Bliss";
@@ -30,15 +30,18 @@ char *copyright =
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-#define SHORTLEN 256
-#define LONGLEN 4096
+void fail(FILE *, char *);
+int collectline(int, int, FILE *, char *, char **, FILE *, char *);
+void usage(void);
+int main(int, char *[]);
 
 void
-fail(tempfile, tempfilename)
-	FILE *tempfile;
-	char *tempfilename;
+fail(FILE *tempfile, char *tempfilename)
 {
 	fclose(tempfile);
 	unlink(tempfilename);
@@ -48,157 +51,174 @@ fail(tempfile, tempfilename)
 }
 
 int
-collectline(line, silent, source, field, space, length, tempfile, tempfilename)
-	char *field, *space, *tempfilename;
-	FILE *tempfile, *source;
-	int silent, length;
+collectline(int line, int silent, FILE *source, char *field, char **space,
+    FILE *tempfile, char *tempfilename)
 {
-	char trash[9];
+	char *inputline;
+	int length, taglen;
 
-	if (fgets(trash, 8, source) == NULL)
-		if (silent)
-			return(1);
-		else
-			fail(tempfile, tempfilename);
+	length = 0;
 
-	if (fgets(space, length, source) == NULL)
-		if (silent)
-			return(1);
-		else
-			fail(tempfile, tempfilename);
+	/* Loop until we have a non-empty line. */
+	while (length == 0) {
+		if ((inputline = fgetln(source, (size_t *) &length)) == NULL) {
+			if (silent)
+				return(1);
+			else
+				fail(tempfile, tempfilename);
+		}
+		if (inputline[length - 1] == '\n')
+			--length;
+	}
 
-	space[strlen(space) - 1] = '\0';
-	if (strncmp(trash, field, 7)) {
+	/* See if the desired field is here. */
+	taglen = strlen(field);
+	if (strncmp(inputline, field, taglen)) {
+		if (length >= taglen)
+			inputline[taglen - 1] = '\0';
 		fprintf(stderr, "Line %d: Expected \"%s\", found \"%s\".\n", \
-		    line, field, trash);
+		    line, field, inputline);
 		fail(tempfile, tempfilename);
 	}
+
+	/* Eat whitespace. */
+	while (inputline[taglen] == ' ' || inputline[taglen] == '\t')
+		++taglen;
+
+	/* If we have a line with content, pass it back. */
+	if (*space)
+		free(*space);
+	if (length - taglen > 0) {
+		*space = (char *) calloc(sizeof(char) 
+		    * (length - taglen + 1), 1);
+		(void) strncpy(*space, inputline + taglen, length - taglen);
+		(*space)[length - taglen] = '\0';
+	} else
+		*space = NULL;
 
 	return(0);
 }
 
+void
+usage(void)
+{
+	fputs("usage: mkdevht <path-to-data-directory>\n", stderr);
+	exit(1);
+}
+
 int
-main()
+main(int argc, char *argv[])
 {
 	FILE *source, *dest;
-	int c, u, shade, line;
-	char trash[LONGLEN + 3], name[SHORTLEN], email[SHORTLEN],
-	    url[SHORTLEN], work[LONGLEN];
-	char *t;
+	int c, shade, line, trash;
+	char *name, *email, *url, *work, *tpath;
 
-	shade = 0;
-	line = 0;
+	if (argc != 2)
+		usage();
+
+	name = email = url = work = (char *) NULL;
+	trash = shade = line = 0;
 
 	/* make temporary file */
-	t = strdup("supporting-cast.html.XXXXXX");
-	if (mkstemp(t) == NULL) {
-		fprintf(stderr, "Error creating temporary file.\n", t);
+	tpath = strdup("supporting-cast.html.XXXXXX");
+	if (mkstemp(tpath) == NULL) {
+		fprintf(stderr, "Error creating temporary file.\n", tpath);
 		exit(1);
 	}
-	dest = fopen(t, "w");
+	dest = fopen(tpath, "w");
 	if (dest == NULL) {
-		fprintf(stderr, "Error opening %s.\n", t);
+		fprintf(stderr, "Error opening %s.\n", tpath);
 		exit(1);
 	}
 
 	/* head */
 	source = fopen("supporting-cast.head", "r");
 	if (source == NULL) {
-		fprintf(stderr, "Error opening supporting-cast.head.\n");
+		fprintf(stderr, "Error opening %s.\n", "supporting-cast.head");
 		exit(1);
 	}
 	while ((c = fgetc(source)) != EOF)
 		fputc(c, dest);
-	if (source != NULL)
+	if (source)
 		fclose(source);
 
-	source = fopen("supporting-cast.data", "r");
+	source = fopen(argv[1], "r");
 	if (source == NULL) {
-		fprintf(stderr, "Error opening supporting-cast.data.\n");
+		fprintf(stderr, "Error opening %s.\n", argv[1]);
 		exit(1);
 	}
 
 	/* Eat NetBSD tag in data file */
-	fgets(trash, LONGLEN - 1, source);
-
-
-/* XXX - Do something with overflows...? */
+	(void) fgetln(source, (size_t *) &trash);
 
 	/* data */
 	for (;;) {
 
 		shade = (shade == 1 ? 0 : 1);
 
-		if (collectline(++line, 1, source, "Name : ", name, \
-		    SHORTLEN - 1, dest, t))
+		if (collectline(++line, 1, source, "Name:", &name, dest, tpath))
 			break;
 
-		if (collectline(++line, 0, source, "Email: ", email, \
-		    SHORTLEN - 1, dest, t))
+		if (collectline(++line, 0, source, "Email:", &email, dest,
+		    tpath))
 			break;
 
-		if (collectline(++line, 0, source, "URL  : ", url, \
-		    SHORTLEN - 1, dest, t))
+		if (collectline(++line, 0, source, "URL:", &url, dest, tpath))
 			break;
 
-		if (collectline(++line, 0, source, "Work : ", work, \
-		    LONGLEN - 1, dest, t))
+		if (collectline(++line, 0, source, "Work:", &work, dest, tpath))
 			break;
-		u = strlen(work);
-		if (work[--u] == '\n')
-			work[u] = '\0';
 
 		/* output */
-		fprintf(dest, "<tr>\n  <td valign=top", dest);
+		fprintf(dest, "<tr>\n  <td valign=top");
 		if (shade)
-			fprintf(dest, " bgcolor=\"#eeeeee\"", dest);
+			fprintf(dest, " bgcolor=\"#f1f1f1\"");
 		else
-			fprintf(dest, " bgcolor=\"#ffffff\"", dest);
-		fprintf(dest, ">", dest);
+			fprintf(dest, " bgcolor=\"#ffffff\"");
+		fprintf(dest, ">");
 
-		if (u = strlen(url))
+		if (url)
 			fprintf(dest, "<a href=\"%s\">", url);
 
 		fputs(name, dest);
 
-		if (u)
+		if (url)
 			fputs("</a>", dest);
 
-		trash[0]='\0';
-		if (strlen(work) > 0) {
-			strcat(trash, " - \0");
-			strcat(trash, work);
-		}
-
-		fprintf(dest, "\n    <a href=\"mailto:%s\">&lt;%s&gt;</a></td>\n" \
-		    "  <td valign=top", email, email);
+		fprintf(dest, "\n    <a href=\"mailto:%s\">&lt;%s&gt;</a>"
+		    "</td>\n  <td valign=top", email, email);
 		if (shade)
-			fprintf(dest, " bgcolor=\"#eeeeee\"", dest);
+			fprintf(dest, " bgcolor=\"#eeeeee\"");
 		else
-			fprintf(dest, " bgcolor=\"#ffffff\"", dest);
-		fprintf(dest, ">\n    %s<br>\n  </td>\n</tr>\n\n", trash);
-
+			fprintf(dest, " bgcolor=\"#ffffff\"");
+	
+		if (work)
+			fprintf(dest, ">\n     - %s<br>\n  </td>\n</tr>\n\n",
+			    work);
+		else
+			fprintf(dest, ">\n    <br>\n  </td>\n</tr>\n\n");
 	}
 
-	if (source != NULL)
+	if (source)
 		fclose(source);
 
 
 	/* tail */
 	source = fopen("supporting-cast.tail", "r");
 	if (source == NULL) {
-		fprintf(stderr, "Error opening supporting-cast.tail.\n");
+		fprintf(stderr, "Error opening %s.\n", "supporting-cast.tail");
 		exit(1);
 	}
 	while ((c = fgetc(source)) != EOF)
 		fputc(c, dest);
-	if (source != NULL)
+	if (source)
 		fclose(source);
 
-	if (dest != NULL)
+	if (dest)
 		fclose(dest);
 
-	rename(t, "supporting-cast.html");
+	chmod(tpath, 0644);
+	rename(tpath, "supporting-cast.html");
 
 	return(0);
 }
