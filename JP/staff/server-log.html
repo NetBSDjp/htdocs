@@ -21,7 +21,7 @@
 <UL>まだindexからlinkとかは張らない
  <LI>MHonARCでML archiveのhtml化(www-changes-ja) 1999/2/26 - ichiro<br>
  	<A HREF="http://www.jp.netbsd.org/ja/JP/ml/www-changes-ja/index.html">http://www.jp.netbsd.org/ja/JP/ml/www-changes-ja/index.html</A><br>
- 	テスト的にwww-changes-jaをhtml化. html&search対象MailingListの選定は??</LI>
+ 	テスト的にwww-changes-jaをhtml化. html&amp;search対象MailingListの選定は??</LI>
  <LI>MHonARCでML archiveのhtml化 1999/4/26 - ichiro</LI>
     <UL>
 	<LI><A HREF="http://www.jp.netbsd.org/ja/JP/ml/admin-ja/index.html">http://www.jp.netbsd.org/ja/JP/ml/admin-ja/index.html</A>
@@ -36,18 +36,20 @@
  <LI>Namazu<A HREF="http://www.jp.netbsd.org/ja/JP/ml/search.html">全文検索</A> 1999/4/26 - ichiro</LI>
  <LI>MHonARC 2.4.6+patch, mlist2html 0.07 にversion up 2000/9/17- ichiro</LI>
 
- <LI>Mailing List 作成方法
+ <LI>Mailing List 作成方法 - kawamoto
     <UL>
-    <LI>オープンなmlの場合(設定が異なる場合は、ezmlm-makeのoptionを変更する)
+    <LI>オープンなmlの場合<BR>
+できるだけ下記のメールフィルタリングも併用すること。
+また、設定が異なる場合は、ezmlm-makeのoptionを変更する。
 <PRE>
 su; csh;
 setenv NEWML メーリングリスト名
-~ezmlm/ezmlm-make -aiklnpr -5 staff@jp.netbsd.org \
+~ezmlm/ezmlm-make -aiklnpr -5 ml-admin-open@jp.netbsd.org \
 	/var/mlist/ml/${NEWML} \
 	/var/qmail/alias/.qmail-${NEWML} \
 	${NEWML} jp.netbsd.org
 cd /var/mlist/ml/port-mips-ja
-tar cf - charset header* msgsize sequence | ( cd ../${NEWML}; tar xpvf -)
+tar cf - charset header* msgsize sequence | ( cd ../${NEWML} &amp;&amp; tar xpvf -)
 cd ..
 chown -R alias ${NEWML}
 chmod 711 ${NEWML}
@@ -60,6 +62,29 @@ mkdir /var/mlist/html/${NEWML}
 chmod 755 /var/mlist/html/${NEWML}
 cp /var/mlist/html/.[fh]* /var/mlist/html/${NEWML}
 </PRE>
+
+    <LI>オープンなmlにメールフィルタリングを追加する<BR>
+<PRE>
+su
+setenv NEWML メーリングリスト名
+~ezmlm/ezmlm-make -eaiklmnpr -5 ml-admin-open@jp.netbsd.org \
+	/var/mlist/ml/${NEWML} \
+	/var/qmail/alias/.qmail-${NEWML} \
+	${NEWML} jp.netbsd.org
+cd /var/mlist/ml/${NEWML}
+ed editor  # edコマンドの中の${NEWML}は自分で置き換えてね
+/ezmlm-reject/s/^|/|condredirect ${NEWML}-mod@jp.netbsd.org except /
+a
+|condredirect ${NEWML}-mod@jp.netbsd.org /var/mlist/bin/junkmail-check
+.
+/ezmlm-store/,$w editor-mod
+/ezmlm-store/s//ezmlm-send/
+/ezmlm-clean/d
+wq
+ln -s /var/mlist/ml/${NEWML}/editor-mod /var/qmail/alias/.qmail-${NEWML}-mod
+chown -R alias .
+</PRE>
+
     <LI>投稿者を参加者に制限する場合<BR>
 この場合はenvelope-fromを見て制限するので使用に注意すること。
 <PRE>
@@ -152,7 +177,7 @@ mirror		サーバーのホスト名
 supconf=ftp://ftp.netbsd.org/pub/sup
 hostbase=/ftp/pub
 
-cd $hostbase &&
+cd $hostbase &amp;&amp;
 wget --no-host-directories --cut-dirs=1 --mirror \
 	$supconf/mirror/releases \
 	$supconf/mirror/list \
@@ -250,7 +275,7 @@ wget --no-host-directories --cut-dirs=1 --mirror \
 </UL>
 
 <H5>
-$Id: server-log.html,v 1.20 2002/06/19 02:17:47 kawamoto Exp $
+$Id: server-log.html,v 1.21 2003/03/12 02:53:35 kawamoto Exp $
 </H5>
 </BODY>
 </HTML>
