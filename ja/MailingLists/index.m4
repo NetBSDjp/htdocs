@@ -192,7 +192,7 @@ LIST(pkgsrc-bugs)
 ENDLIST
 LIST(netbsd-docs)
   NetBSD の文書に関する議論のためのメーリングリストです。翻訳者用メーリングリスト
-に関する情報は<a href="../../developers/translate.html#ml" origlink="../developers/translate.html#ml">このページ</a>にあります。
+に関する情報は<a href="../developers/translate.html#ml">このページ</a>にあります。
 ENDLIST
 LIST(netbsd-help)
   ユーザーが質問を寄せる一般的な場としてのメーリングリストです。
