@@ -2,13 +2,14 @@
 
 <HTML>
 <HEAD>
-<!-- Copyright (c) 2000
+<!-- Copyright (c) 1994-2002
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <!--
   ==  By Brett Lymn
   -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
-<TITLE>Writing a pseudo device</TITLE>
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+<TITLE>NetBSD Documentation: Writing a pseudo device</TITLE>
 </HEAD>
 <BODY bgcolor="#FFFFFF" text="#000000">
 
@@ -50,7 +51,7 @@
    structures by prepending your device name to the function call
    names, will help if you have an idea of the config file entry you
    want to have.  The config file entry does not have to match the
-   source code file name.  In our skeleton driver we have decided to
+   header file name.  In our skeleton driver we have decided to
    call the pseudo-device "skeleton", so we shall have a config file
    entry called skeleton.  This means that the attach, open, close and
    ioctl function calls are named skeletonattach, skeletonopen,
@@ -97,15 +98,15 @@
    appended and the first element of this struct needs to be a
    <STRONG>struct device</STRONG> type, the name of the entry is not
    important but it must be first as the autoconfig system relies on
-   the softc struct being declared (????is this really true????) and
-   that it's first element is a struct device .  There needs to be a
+   the softc struct being declared <!-- ??? is this really true ??? --> and
+   that its first element is a struct device.  There needs to be a
    softc struct for each minor number a device handles.  The softc
    structure can hold more elements than just the struct device if the
    minor devices require state information to be kept about them.
 
 <ENTRY>functions The functions
     The kernel interfaces to your device via a set of function calls
-    which will be called when a user level program accesses your
+    which will be called when a user level programme accesses your
     device.  A device need not support all the calls, as we will see
     later, but at a minimum a useful device needs to support an open
     and close on it.  Remember the function names need to be prepended
@@ -120,10 +121,10 @@
   function is passed one parameter which is the number of devices this
   driver is expected to handle.
 <P>
-<LI> <h4>open</h4>
+<LI><h4>open</h4>
 
   As the name suggests, this function will be called when a user level
-  programme performs an open(2) call on the device.  At it's simplest
+  programme performs an open(2) call on the device.  At its simplest
   the open function may just return success.  More commonly, the open
   call will validate the request and may allocate buffers or
   initialise other driver state to support calls to the other driver
@@ -134,17 +135,19 @@
                 performed on.
 <P>
               <DT>flags
-              <DD>  ??? flags passed to the open call by user ???
+              <DD>  flags passed to the open call
+		<!-- ??? flags passed to the open call by user ??? -->
 <P>
               <DT>mode
-              <DD>  ??? mode for open ???
+              <DD>  mode for open 
+		 <!-- ??? mode for open ??? -->
 <P>
               <DT>proc
               <DD>  This is a pointer to the proc structure of the process
                 that has requested the open.  It allows for validation
                 of credentials of the process.
 </DL>
-<LI> <h4>close</h4>
+<LI><h4>close</h4>
 
   This closes an open device.  Depending on the driver this may be as
   simple as just returning success or it could involve free'ing
@@ -152,7 +155,7 @@
   to indicate the device is no longer open.  The parameters for the
   close function call are the same as those described for open.
 <P>
-<LI> <h4>read</h4>
+<LI><h4>read</h4>
   
   Read data from your device.  The parameters for the function are:
 <P><DL>
@@ -165,16 +168,16 @@
                 return to the user.
 
               <DT>flags
-              <DD>  ??? wuffor ??
+              <DD>  flags <!-- ??? wuffor ??? -->
 </DL><P>
-<LI> <h4>write</h4>
+<LI><h4>write</h4>
   
   Write data to your device.  The parameters for the write function
   are the same as those for a read function - the only difference
   being that the uio structure contains data to be written to the
   device.
 <P>
-<LI> <h4>ioctl</h4>
+<LI><h4>ioctl</h4>
 
   Perform an ioctl on your device.  The parameters for the ioctl call
   are:
@@ -185,8 +188,8 @@
               <DT>cmd
               <DD>  The ioctl command to be performed.  The commands are
                 defined in a header file which both the kernel code
-                and the user level code reference.  See the sample
-                header for an example.
+                and the user level code reference.  See the
+		<A HREF="pseudo_dev_skel.c">sample header</A> for an example.
 
               <DT>data
                <DD> This is a pointer to the parameters passed in by the
@@ -195,7 +198,7 @@
                 ioctl command being issued.
 
               <DT>flags
-              <DD>  ??? wuffor ???
+              <DD>  flags <!-- ??? wuffor ??? -->
 
               <DT>proc
               <DD>  The proc structure that is associated with the user
@@ -210,10 +213,10 @@
               <DD>  tty associated with the device
 
               <DT>flags
-              <DD>  ???
+              <DD>  flags <!-- ??? -->
 </DL><P>
 
-<LI> <h4>poll</h4>
+<LI><h4>poll</h4>
 
   Checks the device for data that can be read from it.  The parameters
   are:
@@ -229,7 +232,7 @@
                 level process making the ioctl request.
 </DL><P>
 
-<LI> <h4>mmap</h4>
+<LI><h4>mmap</h4>
 
   Supports the capability of mmap'ing a driver buffer into a user
   level programme's memory space.  The parameters are:
@@ -260,7 +263,7 @@
    have to modify these files:
 <P>
 <OL TYPE=i>
-<LI> <h4>/usr/src/sys/sys/conf.h</h4>
+<LI><h4>/usr/src/sys/sys/conf.h</h4>
 
    This file contains some macro defines to set up the cdevsw
    (character device switch) and bdevsw (block device switch) table
@@ -280,7 +283,8 @@
    another file.  For a more complex driver you can just copy one of
    the other defines and modify as required.
 <P>
-<LI> <h4>/usr/src/sys/arch/i386/i386/conf.c (where is on other archs?)</h4>
+<LI><h4>/usr/src/sys/arch/i386/i386/conf.c</h4>
+	<!-- where is on other archs? -->
 
    Once we have the cdevsw initialisation entry in <I>conf.h</I> we are set
    to do the next step.  The first thing to do is to include an
@@ -357,7 +361,11 @@ file dev/skeleton.c	   skeleton	needs-flag
    third field is the name of the driver that this file is associated
    with, in our case this is skeleton - our sample pseudo-device.  The
    fourth and last field is a control flag that tells config(8) to
-   write the skeleton.h include file.
+   write the skeleton.h include file. Note that here the file is called
+   skeleton.c, if we were using the example files here, we would have to
+   either rename pseudo_dev_skel.c to skeleton.c or change this entry.
+   Since we said above that we are calling it skeleton, it would probably
+   be more suitable to call it skeleton.c.
 
 <ENTRY>kernelconfig Adding the new device to the kernel config file
    Once config(8) has been told about the device, adding it to
@@ -398,19 +406,19 @@ pseudo-device  skeleton
 <PRE>
         cc -o sample sample.c
 </PRE>
-   Which will produce a binary called sample.  <STRONG>NOTE</STRONG>
+   Which will produce a binary called sample.  <STRONG>NOTE:</STRONG>
    you will have to have run <TT>make includes</TT> in the directory
-   you copied <TT>pseudo_dev_skel.h</TT> to to install the header file
+   you copied <TT>pseudo_dev_skel.h</TT> to install the header file
    into the system includes directory otherwise the compiler will
    complain about a missing include file.  Once you have compiled the
-   programme run it and then look at your kernel messages either on
-   the console screen or in <TT>/var/log/messages</TT>, the should
+   programme, run it and then look at your kernel messages either on
+   the console screen or in <TT>/var/log/messages</TT>, they should
    have a message that looks like this:
 <PRE>
 May 17 20:32:57 siren /netbsd: Got number of 42 and string of Hello World
 </PRE>
    Which is a message printed by the skeleton ioctl handler when it
-   receives a SKELTEST ioctl request, notice that the number and the
+   receives a SKELTEST ioctl request; notice that the number and the
    string printed are the ones we put into the <TT>param</TT>
    structure in sample.c.
 </LIST>
@@ -421,10 +429,9 @@ May 17 20:32:57 siren /netbsd: Got number of 42 and string of Hello World
 <address>
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.5 2000/09/21 11:24:39 dent Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy;
-    2000
-    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  $NetBSD: index.list,v 1.10 2002/07/17 10:05:26 grant Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2002
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
 
