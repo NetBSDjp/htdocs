@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.89 2003/09/27 09:54:41 dent Exp $
+# $NetBSD: list2html.pl,v 1.90 2003/12/07 17:44:11 jschauma Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
@@ -55,6 +55,11 @@ $^W = 1;
 umask 022;
 my($verbose, %extras, $months_previous, $list_date_links);
 my($version, %opt, %pkgname);
+my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
+	'Apr' => 4,	'May' => 5,	'Jun' => 6,
+	'Jul' => 7,	'Aug' => 8,	'Sep' => 9,
+	'Oct' => 10,	'Nov' => 11,	'Dec' => 12 );
+
 
 # List of pkgsrc names to 'human preferred' forms
 %pkgname = qw(kde KDE gimp GIMP gnome GNOME xsane XSane);
@@ -62,7 +67,7 @@ my($version, %opt, %pkgname);
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.89 $';
+$version = '$Revision: 1.90 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -233,11 +238,6 @@ sub check_date
     {
     my($date) = @_;
     my($month, $when);
-    my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
-		   'Apr' => 4,	'May' => 5,	'Jun' => 6,
-		   'Jul' => 7,	'Aug' => 8,	'Sep' => 9,
-		   'Oct' => 10,	'Nov' => 11,	'Dec' => 12 );
-
     if ($date !~ /(\S+)\s*(\d+)/)
 	{ &fail("Unable to parse date '$date'"); }
     if (!defined($month = $months{$1}))
@@ -370,7 +370,7 @@ sub makelist
 
 	if (m#^<DATE>\s*(.+\S)#)	# Changes
 	    {
-	    my($year, $month, $link, $linkwrapped);
+	    my($year, $month, $date, $link, $linkwrapped);
 
 	    if ($in_entry)
 		{
@@ -383,6 +383,8 @@ sub makelist
 	    if ($header !~ /^([-a-z0-9_.+]+)\s+(\d+) (\S+) (\d+) - (\S.*)/)
 		{ &fail("'$header' not in expected 'date - event' format"); }
 	    $href = $1;
+	    $month = $months{"$3"};
+	    $date = sprintf("%d-%02d-%02d", $4, $month, $2);
 	    $header = "$5 ($2 $3)";
 	    $month = "$3 $4";
 	    $link = $5;
@@ -409,7 +411,7 @@ sub makelist
 			"<font size=\"-1\">".
 			"(<a href=\"#top\">top</a>)</font>\n".
 			"</h3><dl><dt><dd>\n";
-		$list .= "<li>$title_font\n<a href=\"#$href\">$link</a>".
+		$list .= "<li>$title_font\n<!-- $date --><a href=\"#$href\">$link</a>".
 			"$end_title_font</li>\n";
 		if (@date_links < $list_date_links)
 		    {
