@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.105 2001/12/30 21:34:25 gendalia Exp $
+#	$NetBSD: index.m4,v 1.107 2002/01/16 04:11:21 perry Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -189,8 +189,9 @@ LIST(tech-embed)
   Discussions of the use of NetBSD in embedded systems.
 ENDLIST
 LIST(tech-install)
-  Discussion of technical issues relating to the
-  install process.
+  Technical discussion of improvements to NetBSD's installation
+  software. NOTE: This mailing list is not for assistance with installing
+  NetBSD. If you have problems installing NetBSD, see netbsd-help instead!
 ENDLIST
 LIST(tech-kern)
   Discussion of general kernel technical issues.
@@ -591,7 +592,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.105 2001/12/30 21:34:25 gendalia Exp $<br>
+  $NetBSD: index.m4,v 1.107 2002/01/16 04:11:21 perry Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
