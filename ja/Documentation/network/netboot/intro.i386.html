@@ -11,7 +11,7 @@
 
 <a href="intro.html">Previous</a> |
 <a href="nfs.html">Next</a> |
-<a href="">Table of Contents</a>
+<a href="./">Table of Contents</a>
 
 <hr>
 
@@ -27,8 +27,7 @@
     network card. This is becoming more popular in new PCs, especialy
     ones with build in network adapters. Setup a server on the
     network (see
-    <a href="http://www.tac.eu.org/cgi-bin/man-cgi?diskless+8">
-    diskless(8)</a>)
+    <a href="http://www.tac.eu.org/cgi-bin/man-cgi?diskless+8+NetBSD-current">diskless(8)</a>)
     and modify your BIOS settings to try the network boot first.
     <p>
     If your BIOS does not support this, but you have a network card
@@ -48,15 +47,82 @@
     via network. GRUB itself is loaded from disk or network using a
     PXE or NBI (such as <a
     href="http://etherboot.sourceforge.net">Etherboot</a>)
-    loader. GRUB supports many different NICs, more than the NetBSD's 'netboot'
-    bootloader does. If you are using Etherboot and you want to use GRUB version
-    0.5.95 (at the time this text was written version 0.5.95 was the only
-    GRUB release that supported diskless-booting) you need this <a
-    href="ftp://smaug.fh-regensburg.de/incoming/grub-0.5.95.etherboot-patch.gz">patch</a>.
+    loader. Etherboot &amp; GRUB supports many different NICs,
+    more than the NetBSD's 'netboot'
+    bootloader does. Note you'd need to use GRUB version 0.90 or later.
     GRUB and Etherboot require <a
     href="http://www.gnu.org/software/gcc/gcc.html">GCC</a> and <a
     href="http://www.gnu.org/software/binutils/binutils.html">GNU Binutils</a>
-    2.9.1 or later.
+    2.9.1 or later. They can be compiled on any system,
+    they don't need to be compiled on NetBSD host.
+   <p>
+   You'd need to setup environment so that EtherBoot would load and execute
+   appropriate GRUB image, and configure GRUB so that it would load NetBSD
+   kernel. The necessary steps are outlined below.
+   <ol>
+   <li>Put appropriate EtherBoot EPROM image to your EPROM.</li>
+   <li>Build GRUB 0.90. You need to configure it with options
+	<tt>--enable-diskless</tt>
+	and <tt>--enable-*</tt> appropriate for your NIC</li>
+   <li>Put built GRUB <tt>stage2/nbgrub</tt> image on TFTP server.</li>
+   <li>Configure <tt>dhcpd</tt> for the diskless machine, <tt>dhcpd</tt>
+	entry could look like this:
+<PRE>
+ group {
+  subnet 192.168.0.0 netmask 255.255.255.0 {
+    option log-servers 192.168.0.1;
+    option domain-name-servers 192.168.0.1;
+    # location of GRUB configuration file
+    option option-150 "/tftpboot/grub.conf";
+    # NFS root path
+    option root-path "/home/dolecek/netbsd-root";
+    # path of image EtherBoot should load and execute
+    filename "/tftpboot/nbgrub";
+  }
+  host foobar { fixed-address foobar; hardware ethernet 00:c0:6c:76:17:46; }
+ }
+</PRE></li>
+  <li>Create configuration file for GRUB and put it on TFTP server
+	as configured in <tt>option-150</tt> of <tt>dhcpd</tt>.
+        An example configuration for NetBSD follows.
+<PRE>
+# uncomment following two lines to use serial terminal
+# serial --unit=0 --speed=57600
+# terminal --timeout=0 serial
+
+# Boot automatically after 5 secs.
+timeout 5
+
+# By default, boot the first entry.
+default 0
+
+# Fallback to the first entry.
+fallback 0
+
+# For booting the NetBSD
+title NetBSD
+kernel --type=netbsd /tftpboot/netbsd
+</PRE></li>
+  <li>GRUB doesn't pass boot information to NetBSD. Thus, if you want
+      to be able to autoboot NetBSD, you'd need to configure kernel's
+      root explicitly, like:
+<PRE>
+config netbsd root on ? type nfs
+</PRE>
+     Then, build the kernel and put it on TFTP server as configured
+     in GRUB configuration file.</li>
+   <li>If you want to use serial console, you'd need to configure both
+       GRUB and kernel to use it. To use serial line for GRUB,
+       uncomment the <tt>serial</tt> and
+       <tt>terminal</tt> entries in above example GRUB configuration.
+	To use serial
+       line as NetBSD console, add option like
+<PRE>
+options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
+</PRE>
+	to your kernel configuration.
+   <li>That should be it!</li>
+  </ol>
 <p>
 
 <li><b>From floppy disk</b>
@@ -144,7 +210,7 @@
 
 <a href="intro.html">Previous</a> |
 <a href="nfs.html">Next</a> |
-<a href="">Table of Contents</a>
+<a href="./">Table of Contents</a>
 
 <hr> 
 
@@ -174,7 +240,7 @@
 <address>
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: intro.i386.html,v 1.15 2001/04/08 21:24:21 dent Exp $<br>
+  $NetBSD: intro.i386.html,v 1.19 2001/08/16 05:54:19 dent Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>

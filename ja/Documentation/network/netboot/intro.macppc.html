@@ -11,7 +11,7 @@
 
 <a href="intro.html">Previous</a> |
 <a href="bootpd.html">Next</a> |
-<a href="">Table of Contents</a>
+<a href="./">Table of Contents</a>
 
 <hr>
 
@@ -33,31 +33,40 @@ over PCI, Cardbus, SCSI, or Airport network interfaces.
 
 There are three major revisions of Open Firmware on the supported macppc
 machines.  Each handles booting in a different manner.  Open Firmware
-versions 1.0.5 and 2.X support BOOTP (or a DHCP server in BOOTP compatable
-mode) and expect to load a XCOFF bootloader.  Open Firmware version 3.X
-supports DHCP (and will fall back to BOOTP) and expects to load an ELF or 
-XCOFF bootloader, or the ELF kernel directly. 
+versions 1.0.5, 1.1.22, 2.0.x, and 2.4 support BOOTP (or a DHCP server in 
+BOOTP compatable
+mode) and expect to load a XCOFF bootloader.  Open Firmware version 3
+supports DHCP (and will fall back to BOOTP) and expects to load an XCOFF or 
+ELF bootloader, or the ELF kernel directly.
 <p>
 
-Since all versions of Open Firmware can load the XCOFF bootloader, we will
+Since all versions of Open Firmware can load the XCOFF bootloader, and since
+it provides the most flexibility, all Open Firmware versions should
 use <tt>ofwboot.xcf</tt>, which is in the NetBSD/macppc distribution. 
 <p>
 
-The version of OpenFirmware is printed when you first enter Open Firmware.  See the macppc <a href="../../../Ports/macppc/models.html">model support page</a> for a listing of all supported models and their Open Firmware versions.
-<p>
+The version of OpenFirmware is printed when you first enter Open Firmware. 
+See the macppc <a href="../../../Ports/macppc/models.html">model support
+page</a> for a listing of all supported models and their Open Firmware
+versions. <p>
 
 <big><b>Quirks/problems you may run into</b></big>
 <p>
 
 There have been some reports of some Open Firmware 1.0.5 machines not being able to
-netboot at all.  The symptom is that <tt>ofwboot.xcf</tt> fails to mount
+netboot.  The symptom is that <tt>ofwboot.xcf</tt> fails to mount
 the nfs server with the kernel and attempts to tftp something with no
-filename (it keeps printing the message "TFTP timeout").  See the <a
-href="http://mail-index.netbsd.org/port-macppc/2000/02/20/0007.html">post
-to port-macppc</a> detailing my experience.
+filename (it keeps printing the message "TFTP timeout").  The solution is to
+specify the path to the bootloader (even though the DHCP or bootp server sends
+that information):
+<pre>0 &gt; <b>boot enet:,\ofwboot.xcf </b></pre>
 <p>
 
-There have also reports of some Open Firmware 2.X machines which don't get all
+Additionally, older PowerMacintosh systems with Open Firmware 1.0.5 using
+<tt>ofwboot.xcf</tt> version 1.2 (included in NetBSD 1.5.3 and earlier)
+can't load compressed kernels.  Use <tt>gunzip</tt> to uncompress the kernel.
+<p>
+There have also reports of some Open Firmware 2.0.x machines which don't get all
 of the information properly from the BOOTP server, but a DHCP server
 serving BOOTP requests works.  Keep this in mind later.
 <p>
@@ -65,10 +74,9 @@ serving BOOTP requests works.  Keep this in mind later.
 The first generation of iMacs (Bondi Blue) have a known problem with DHCP
 with their
 original firmware.  You should download the latest firmware for these
-iMacs.  Other early Open Firmware 3.X models may have similar problems, and we
-recommend checking the <a href="http://asu.info.apple.com/">Apple Software
-Updates</a> site for firmware updates (just search for "firmware") if you
-encounter problems with DHCP.
+iMacs.  Other early Open Firmware 3 models may have similar problems.  See
+<a href="../../../Ports/macppc/faq.html#ofw-bugs">Are there bugs in my 
+machine's Open Firmware implementation?</a>
 <p>
 
 <big><b>Obtaining an IP address and downloading the boot loader</b></big>
@@ -76,26 +84,16 @@ encounter problems with DHCP.
 
 Power Macintosh workstations first try to acquire an IP address using
 either the Internet Bootstrap Protocol (BOOTP), or the Dynamic Host
-Configuration protocol (DHCP) depending on which revision of Open Firmware they have.  The bootpd and dhcpd servers use the
-ethernet address of the client machine to determine its IP address and a
-bootloader filename. If this request is successful, Open Firmware
-expects to be able to download a second-stage boot program via the Trivial File Transfer Protocol (TFTP). It will do this by setting up a
-TFTP connection to the server that answered the earlier BOOTP or DHCP 
-request,
-and asking for the file name returned by the server. The
-second-stage boot program then loads the kernel using NFS from the server
-and path specified by the BOOTP or DHCP request.
-<p>
-
-The <tt>ofwboot.xcf</tt> bootloader is capable
-of loading gzip'ed kernels which will greatly speed up the process of
-downloading the kernel.
-<p>
-
-Open Firmware 3.X machines may alternatively set up the gunzip'ed kernel to be
-downloaded by tftp and skip the bootloader, although this may be less
-flexible.
-<p>
+Configuration protocol (DHCP) depending on which version of Open Firmware
+they have.  The bootpd and dhcpd servers use the ethernet address (MAC) of the
+client machine to determine its IP address and a bootloader filename. If
+this request is successful, Open Firmware expects to be able to download a
+second-stage boot program via the Trivial File Transfer Protocol (TFTP).
+It will do this by setting up a TFTP connection to the server that
+answered the earlier BOOTP or DHCP request, and asking for the file name
+returned by the server. The second-stage boot program then loads the
+kernel using NFS from the server and path specified by the BOOTP or DHCP
+request. <p>
 
 Note, the very early PCI PowerMacintoshes (i.e. early Open Firmware 1.0.5
 machines) had a motherboard error which manifests as the ethernet address
@@ -107,7 +105,8 @@ ethernet address and see if it has been fixed, or if you zapped the PRAM
 and erased the fix.
 <p>
 To determine the MAC address Open Firmware will use for its BOOTP/DHCP request, type the following command:
-<pre>0 &gt <b> dev enet .properties</b>
+<pre>0 &gt <b> dev enet</b>
+0 &gt; <b>.properties</b>
 [...]
     local-mac-address CCCCCCCC CCCC
 [...]</pre>
@@ -115,29 +114,29 @@ To determine the MAC address Open Firmware will use for its BOOTP/DHCP request, 
 
 <h2>Open Firmware commands</h2>
 <dl><dt><dd>
-On Open Firmware 3.X machines,
-you can make it net boot by holding down the "N" key during startup
+On Open Firmware 3 machines,
+you can make it boot over ethernet by holding down the "N" key during startup
 without even entering Open Firmware.
 <p>
 
-On other machines (or if you want to set your machine up to net boot
-by default), you can boot from Open Firmware. For more information
-about getting to the Open Firmware prompt at boot time, see the <a
-href="../../../Ports/macppc/faq.html#ofw-access">NetBSD/macppc
-FAQ</a>.
+On earlier machines (or if you want to configure your Open Firmware 3 machine 
+to always netboot), you must first 
+<a href="../../../Ports/macppc/faq.html#ofw-access">get to the Open Firmware 
+prompt</a> and enter a boot command at the prompt.
 <p>
 
 The syntax used for netbooting varies depending on Open Firmware
-version. In Open Firmware 1.0.5 and 2.X you will need to type either:
-<pre>0 &gt; <b>boot enet</b>
-0 &gt; <b>boot enet enet:,netbsd.alternate</b>           #to specify a kernel other than "netbsd"
-0 &gt; <b>boot enet:192.168.1.5,ofwboot.xcf netbsd</b>   #if having trouble getting all info from bootpd</pre>
+version. In Open Firmware 1.0.5, 1.1.22, 2.0.x, and 2.4 you will need to type 
+one of:
+<pre>0 &gt; <b>boot enet:,\ofwboot.xcf</b>
+0 &gt; <b>boot enet:,\ofwboot.xcf netbsd.ram.gz</b>   #to specify a kernel other than "netbsd"
+0 &gt; <b>boot enet:192.168.1.5,\ofwboot.xcf netbsd</b>  #if having trouble getting all info from bootpd</pre>
 <p>
 
-In Open Firmware 3 you will need to type either:
-<pre>0 &gt; <b>boot enet:0</b>
-0 &gt; <b>boot enet:0,ofwboot.xcf enet:0,netbsd.alternate</b>    #to specify a kernel other than "netbsd"
-0 &gt; <b>boot enet:192.168.1.5,ofwboot.xcf netbsd</b>           #if having trouble getting all info from dhcpd</pre>
+In Open Firmware 3 you will need to type one of:
+<pre>0 &gt; <b>boot enet:0,\ofwboot.xcf</b>
+0 &gt; <b>boot enet:0,\ofwboot.xcf netbsd.ram.gz</b>           #to specify a kernel other than "netbsd"
+0 &gt; <b>boot enet:192.168.1.5,\ofwboot.xcf netbsd</b>           #if having trouble getting all info from dhcpd</pre>
 <p>
 
 Some users have reported trouble with DHCP sending the proper
@@ -147,12 +146,23 @@ the command line.
 
 Other arguments can be passed to the
 boot loader or kernel by specifying them on the end of the command
-line (e.g. <tt>boot&nbsp;enet&nbsp;-a</tt>).
+line (e.g. <tt>boot&nbsp;enet:,\ofwboot.xcf&nbsp;-a</tt>).  See the
+<a href="http://www.tac.eu.org/cgi-bin/man-cgi?ofwboot+7.macppc+NetBSD-current"><tt>ofwboot(7)</tt></a>
+man page.
 <p>
 
-To make booting over the network the default, type
-<tt><b>setenv boot-command enet[:0]</b></tt>.
+To make booting over the network the default, set the Open Firmware variables
+(where the presence of absence of the <tt>0</tt> depends on Open Firmware 
+version):
+<pre>0 &gt; <b>setenv boot-device enet:[0],\ofwboot.xcf</b>
+0 &gt; <b>setenv auto-boot? true</b>
+0 &gt; <b>reset-all</b></pre>
 </dd></dl>
+
+See also <a href="../../../Ports/macppc/faq.html#ofw-use">What can I do at 
+the Open Firmware prompt?</a> and 
+<a href="../../../Ports/macppc/faq.html#ofw-variables">The Open Firmware 
+variables of interest</a>.
 
 <h2>Begin setting things up (suggested order):</h2>
 <dl><dt><dd>
@@ -170,7 +180,7 @@ To make booting over the network the default, type
 
 <a href="intro.html">Previous</a> |
 <a href="bootpd.html">Next</a> |
-<a href="">Table of Contents</a>
+<a href="./">Table of Contents</a>
 
 <hr> 
 
@@ -200,7 +210,7 @@ To make booting over the network the default, type
 <address>
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: intro.macppc.html,v 1.14 2001/03/18 13:29:18 dent Exp $<br>
+  $NetBSD: intro.macppc.html,v 1.16 2002/01/03 04:07:48 mbw Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
