@@ -199,7 +199,7 @@ sub sub_external_links
         my($page, $section, $arch, $collection) = ($1, $2, $4, $6);
         my($link);
 
-        $link = 'http://man.netbsd.org/man/';
+        $link = 'http://man.NetBSD.org/man/';
 
         $link .= "$page+$section";
 
@@ -234,7 +234,7 @@ sub sub_external_links
 	    { $path = $1."src/$path"; }
 	elsif ($path !~ m#^(doc|xsrc)#)
 	    { $path = "basesrc/$path"; }
-	$text =~ s#<CURRENTSRC>([^\s<>]+\w)#<a href="http://cvsweb.netbsd.org/bsdweb.cgi/$path?rev=HEAD&content-type=text/x-cvsweb-markup">$1</a>#;
+	$text =~ s#<CURRENTSRC>([^\s<>]+\w)#<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/$path?rev=HEAD&content-type=text/x-cvsweb-markup">$1</a>#;
 	}
 
     # Expand <PKGSRC>category/name entries
@@ -244,7 +244,7 @@ sub sub_external_links
         my($n) = $3;
 	if (defined($pkgname{$n}))
 	    { $n = $pkgname{$n}; }
-        $text =~ s#<PKGSRC>((\w+/|)([^\s<>]+\w))#<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
+        $text =~ s#<PKGSRC>((\w+/|)([^\s<>]+\w))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
 	}
 
     # Expand <PORTPAGE>portname entries
