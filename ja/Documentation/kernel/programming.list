@@ -7,101 +7,103 @@
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<HEADING>カーネルプログラミング
+<HEADING>カーネルプログラミング
 
-現在、このドキュメントにはそれほど有用な情報が含まれていません。
-人々が多くの項目を寄稿してくれれば、もっと役に立つようになるでしょう。
+現在、このドキュメントにはそれほど有用な情報が含まれていません。
+人々が多くの項目を寄稿してくれれば、もっと役に立つようになるでしょう。
 
 <hr>
-<h2>他の関連するリンク</h2>
+<h2>他の関連するリンク</h2>
 <ul>
-<li> bus_dma(9) - NetBSD のマシン独立な DMA フレームワーク
+<li> bus_dma(9) - NetBSD のマシン独立な DMA フレームワーク
 	(<a href="bus_dma.ps">postscript()</a>)
 <li><a href="converting-ethernet-drivers.html">
-        昔の BSD のイーサネットドライバーの NetBSD-1.2D 以降への移植</a>
+        昔の BSD のイーサネットドライバーの NetBSD-1.2D 以降への移植</a>
 <li><a href="porting-freebsd-net.html">
-        FreeBSD のネットワークドライバーを NetBSD に移植するためのメモ</a>
+        FreeBSD のネットワークドライバーを NetBSD に移植するためのメモ</a>
 </ul>
 
 <LIST>
 
 <SECTION>Misc
 
-<ENTRY>knf KNF とは何ですか
-KNF は Kernel Normal Form の略で、
+<ENTRY>knf KNF とは何ですか
+KNF は Kernel Normal Form の略で、
 <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/share/misc/style">
-/usr/share/misc/style</a> に記述されている C のコーディングスタイルです。
+/usr/share/misc/style</a> に記述されている C のコーディングスタイルです。
 
 
-<ENTRY>printf デバッグのための printf() の使い方
-カーネルドライバーのデバッグ用の情報を出力するもっとも簡単な方法は、
-printf() を使うことでしょう。カーネルの printf は コンソールに出力
-されるので、多く出力しすぎ、システムが使いものにならないように注意
-しなければなりません。
+<ENTRY>printf デバッグのための printf() の使い方
+カーネルドライバーのデバッグ用の情報を出力するもっとも簡単な方法は、
+printf() を使うことでしょう。カーネルの printf は コンソールに出力
+されるので、多く出力しすぎ、システムが使いものにならないように注意
+しなければなりません。
 
-<ENTRY>forcing-ddb 強制的に DDB に落とす
-カーネルのコンフィグファイルが '<code>options&nbsp;DDB</code>'を
-含んでいる事を確認してください。
-ファイルに'<code>#include&nbsp;"opt_ddb.h"</code>" を記述し、
-'<code>Debugger()</code>' を使ってください。
+<ENTRY>forcing-ddb 強制的に DDB に落とす
+カーネルのコンフィグファイルが '<code>options&nbsp;DDB</code>'を
+含んでいる事を確認してください。
+ファイルに'<code>#include&nbsp;"opt_ddb.h"</code>' を記述し、
+'<code>Debugger()</code>' を使ってください。
 
 
-<ENTRY>adding_a_new_driver カーネルに新しいドライバーを追加する
-全てのドライバーは、すくなくとも以下の二つの関数を必要とします。
+<ENTRY>adding_a_new_driver カーネルに新しいドライバーを追加する
+全てのドライバーは、すくなくとも以下の二つの関数を必要とします。
 <ul>
-<li><tt><i>xxx</i>probe()</tt> (NetBSD がデバイスの存在を調べる時)</li>
-<li><code><i>xxx</i>attach()</code> ルーチンはデバイスを設定、アタッチします。</li>
+<li><tt><i>xxx</i>probe()</tt> (NetBSD がデバイスの存在を調べる時)</li>
+<li><code><i>xxx</i>attach()</code> ルーチンはデバイスを設定、アタッチします。</li>
 </ul>
-プローブとアタッチルーチンを書いたら、
-<tt>/sys/arch/&lt;your-arch&gt;/&lt;your-arch&gt;/conf.c</tt>.
-にエントリーを追加してください。そこには以下の二つのテーブルがあります。
+プローブとアタッチルーチンを書いたら、
+<tt>/usr/src/sys/arch/&lt;your-arch&gt;/&lt;your-arch&gt;/conf.c</tt>.
+にエントリーを追加してください。そこには以下の二つのテーブルがあります。
 <ul>
-<li><code>cdevsw</code> キャラクタデバイス用。</li>
-<li><code>bdevsw</code> ブロックデバイス用(ブロックI/O と戦略ルーチンとして使用する)。</li>
+<li><code>cdevsw</code> キャラクタデバイス用。</li>
+<li><code>bdevsw</code> ブロックデバイス用(ブロックI/O と戦略ルーチンとして使用する)。</li>
 </ul>
-ほとんどのエントリーは <code>cdev_<i>xxx</i>_init()</code> という形式と
-なります。これは標準的な Unix のデバイススイッチルーチンのプロトタイプ
-のためのマクロです。
+ほとんどのエントリーは <code>cdev_<i>xxx</i>_init()</code> という形式と
+なります。これは標準的な Unix のデバイススイッチルーチンのプロトタイプ
+のためのマクロです。
 <p>
-プローブとアタッチルーチンはブート時によばれます。
-メジャー番号がテーブルのインデックスに一致するデバイススペシャルファイル
-がオープンされた時に、<code>open()</code>、<code>close()</code>、
-<code>read()</code>、<code>write()</code> ルーチンがよばます。
-例えば、メジャー番号18 のデバイスをオープンした場合、<tt>cdevsw[]/bdevsw</tt>
-の中のデバイス番号18の "open" ルーチンがよばれます。
+プローブとアタッチルーチンはブート時によばれます。
+メジャー番号がテーブルのインデックスに一致するデバイススペシャルファイル
+がオープンされた時に、<code>open()</code>、<code>close()</code>、
+<code>read()</code>、<code>write()</code> ルーチンがよばます。
+例えば、メジャー番号18 のデバイスをオープンした場合、<tt>cdevsw[]/bdevsw</tt>
+の中のデバイス番号18の "open" ルーチンがよばれます。
 <p>
-ほとんどのドライバーはバス固有のアタッチコードとマシン独立のコアに分割
-されています。例えば、PCI lance イーサネットドライバーは以下のファイルで
-構成されています。
+ほとんどのドライバーはバス固有のアタッチコードとマシン独立のコアに分割
+されています。例えば、PCI lance イーサネットドライバーは以下のファイルで
+構成されています。
 <ul>
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/pci/files.pci">/sys/dev/pci/files.pci</a> - アタッチ情報 ('le at pci'を見てください)。
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/pci/if_le_pci.c">/sys/dev/pci/if_le_pci.c</a> - このドライバーのためのPCI バスのアタッチのコード。
+<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/pci/files.pci">/usr/src/sys/dev/pci/files.pci</a> - アタッチ情報 ('le at pci'を見てください)。
+<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/pci/if_le_pci.c">/usr/src/sys/dev/pci/if_le_pci.c</a> - このドライバーのためのPCI バスのアタッチのコード。
 <p>
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/conf/files">/sys/conf/files</a> - MI コアのアタッチ情報('le:'を見てください)。
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/am7990.c">/sys/dev/ic/am7990.c</a> - MI ドライバー、24ビットアクセスのコード。
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/am79990.c">/sys/dev/ic/am79990.c</a> - MI ドライバー、24ビットアクセスのコード。
-<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/lance.c">/sys/dev/ic/lance.c</a> - MI コアのドライバーのコード。
+<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/conf/files">/usr/src/sys/conf/files</a> - MI コアのアタッチ情報('le:'を見てください)。
+<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/am7990.c">/usr/src/sys/dev/ic/am7990.c</a> - MI ドライバー、24ビットアクセスのコード。
+<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/am79900.c">/usr/src/sys/dev/ic/am79900.c</a> - MI ドライバー、24ビットアクセスのコード。
+<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/dev/ic/lance.c">/usr/src/sys/dev/ic/lance.c</a> - MI コアのドライバーのコード。
 </ul>
 
-<ENTRY>adding_a_system_call システムコールを追加する
-<tt>syscalls.master</tt> にエントリーを追加し、syscall スタブを
-<tt>/usr/src/lib/libc/sys/Makefile.inc</tt> の適当な場所に追加してください。
+<ENTRY>adding_a_system_call システムコールを追加する
+<tt>syscalls.master</tt> にエントリーを追加し、syscall スタブを
+<tt><a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/lib/libc/sys/Makefile.inc">
+/usr/src/lib/libc/sys/Makefile.inc</a></tt> の適当な場所に追加してください。
 
-<ENTRY>accessing_a_kernel_structure_from_userland ユーザーランドからカーネルの構造体へアクセスする
-良い例が <tt><a 
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/usr.bin/vmstat/dkstats.c">/usr/src/usr.bin/vmstat/dkstats.c</a></tt> にあります。
-ここではディスクの統計情報を読んでいます。
+<ENTRY>accessing_a_kernel_structure_from_userland ユーザーランドからカーネルの構造体へアクセスする
+良い例が <tt><a 
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/usr.bin/vmstat/dkstats.c">/usr/src/usr.bin/vmstat/dkstats.c</a></tt> にあります。
+ここではディスクの統計情報を読んでいます。
 
 <ENDLIST>
 
-<a href="index.html"><em>NetBSD Documentation: Kernel</em>に戻る</a>
+<a href="index.html"><em>NetBSD Documentation: Kernel</em>に戻る</a>
 
 <BASELINKS>
 
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: programming.list,v 1.5 1999/09/10 01:01:49 soren Exp $<br>
+  $NetBSD: programming.list,v 1.6 1999/11/09 21:49:07 mason Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
 </address>
