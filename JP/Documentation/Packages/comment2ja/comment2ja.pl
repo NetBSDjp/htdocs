@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.3 1999/08/23 11:02:26 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.4 1999/08/23 11:16:51 sakamoto Exp $
 #
 
 $|=1;
@@ -149,7 +149,7 @@ foreach $dir (readdir(TOPDIR)) {
 			s/This package has a home page at/ホームページ:/;
 			s/Please note that this package has a (.*) license./このパッケージは $1 ライセンスであることに注意してください。/;
 			s/ftp:\/\/ftp.netbsd/ftp:\/\/ftp.jp.netbsd/;
-			s/>(pkg/DESCR)</>ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir/$1</;
+			s/>(pkg\/DESCR)</>ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir/$1</;
 			if (/<p>.*:<br>/) {
 				$com++;
 				# s///;
