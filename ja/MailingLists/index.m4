@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.125 2003/04/22 16:39:36 grant Exp $
+#	$NetBSD: index.m4,v 1.126 2003/04/27 00:17:25 fvdl Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -598,8 +598,8 @@ PORTLIST(port-vax)
   Digital の VAX シリーズのマシン上の NetBSD (NetBSD/vax)
   固有の事項の議論用です。
 ENDLIST
-PORTLIST(port-x86_64)
-  AMD x86-64 ベースのマシン上の NetBSD (NetBSD/x86_64)
+PORTLIST(port-amd64)
+  AMD x86-64 ベースのマシン上の NetBSD (NetBSD/amd64)
   固有の事項の議論用です。
 ENDLIST
 PORTLIST(port-x68k)
@@ -666,7 +666,7 @@ divert(9)
   (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.125 2003/04/22 16:39:36 grant Exp $<br>
+  $NetBSD: index.m4,v 1.126 2003/04/27 00:17:25 fvdl Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
