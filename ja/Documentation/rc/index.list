@@ -4,7 +4,7 @@
 <head>
 <!-- Copyright (c) 1994-2003
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>NetBSD Initialization and Services Control</title>
 </head>
@@ -44,7 +44,7 @@ overview of the rc configuration on NetBSD 1.5 and later.
 <ENTRY>a2 The rc.d Configuration
 
 <p>
-The rc files for the system reside under /etc, they are:
+The rc files for the system reside under <code>/etc</code>, they are:
 
 <pre>
 /etc/rc
@@ -62,9 +62,9 @@ The rc files for the system reside under /etc, they are:
 First a look at controlling and supporting scripts:
 
 <ul>
-<li><code>/etc/rc</code> - this script runs the scripts in /etc/rc.d
+<li><code>/etc/rc</code> - this script runs the scripts in <code>/etc/rc.d</code>
 <li><code>/etc/rc.subr</code> - this script contains common functions used by rc scripts
-<li><code>/etc/shutdown</code> - this script calls the scripts in /etc/rc.d in reverse order
+<li><code>/etc/shutdown</code> - this script calls the scripts in <code>/etc/rc.d</code> in reverse order
 </ul>
 
 <p>
@@ -84,7 +84,7 @@ fi
 </pre>
 
 <p>
-The /etc/defaults directory contains the default settings for NetBSD and the contents should not be changed. Within the rc context the only file of interest is rc.conf, this is the default rc configuration that ships with NetBSD. In order to alter a default setting, an override may be installed in /etc/rc.conf. For example, if you wanted to enable the Secure Shell Daemon:
+The <code>/etc/defaults</code> directory contains the default settings for NetBSD and the contents should not be changed. Within the rc context the only file of interest is <code>/etc/rc.conf</code>, this is the default rc configuration that ships with NetBSD. In order to alter a default setting, an override may be installed in <code>rc.conf</code>. For example, if you wanted to enable the Secure Shell Daemon:
 
 <pre>
 # cd /etc; grep ssh defaults/rc.conf
@@ -104,13 +104,29 @@ sshd=NO                 sshd_flags=""
 <p>Then remove anything you do not need.
 
 <p>
-Last and not least, the <code>/etc/rc.conf.d/</code> directory can be used
-for scripts that are third party.
+The <code>/etc/rc.conf.d</code> directory could be used in nearly the same way as <code>/etc/rc.conf<code>:
+
+<pre>
+# cd /etc; grep ^wscons defaults/rc.conf
+wscons=NO		wscons_flags=""		# setup wscons from wscons.conf
+# echo "wscons=YES" >> rc.conf.d/wscons
+</pre>
+
+<p>
+However, the fact that the script in <code>/etc/rc.conf.d</code> is sourced by <code>rc.subr</code> <b>after</b> the script in <code>/etc/rc.d</code>, suggests some interesting possibilities. Consider the following method for overriding a base system command with a pkgsrc installed command:
+
+<pre>
+echo 'command="/usr/pkg/bin/${name}"' > /etc/rc.conf.d/ntpd
+ln /etc/rc.conf.d/ntpd /etc/rc.conf.d/ntpdate
+</pre>
+
+<p>
+Observe that <code>${name}</code> is available to the <code>/etc/rc.conf.d</code> script. It's also possible to override the entire <code>/etc/rc.d</code> script with a complete script in <code>/etc/rc.conf.d</code>, but in that case, it would be cleaner and more predictable to simply overwrite the original in <code>/etc/rc.d</code>.
 
 <ENTRY>a3 The rc.d Scripts
 
 <p>
-The actual scripts that control services are in /etc/rc.d, following are all of the rc scripts in NetBSD 1.5:
+The actual scripts that control services are in <code>/etc/rc.d</code>, following are all of the rc scripts in NetBSD 1.5:
 
 <table width="100%" border="0" cellpadding="5" cellspacing="5">
 <tr>
@@ -203,7 +219,7 @@ ypserv<br>
 
 
 <p>
-Once a service has been activated or told not to activate in /etc/rc.conf it can be also be modified by calling the rc script from the command line, for example if an administrator needed to start secure shell:
+Once a service has been activated or told not to activate in <code>/etc/rc.conf</code> it can be also be modified by calling the rc script from the command line, for example if an administrator needed to start secure shell:
 
 <pre>
 ash# /etc/rc.d/sshd start
@@ -299,8 +315,8 @@ The new rc structure takes away the old methods of killing with a <code>-HUP</co
 <hr>
 <address>
   <small>
-  <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.list,v 1.16 2003/06/28 16:46:47 jschauma Exp $<br>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: index.list,v 1.20 2003/12/07 19:15:50 fredb Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
