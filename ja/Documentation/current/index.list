@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
 <html>
 <head>
@@ -44,7 +44,7 @@ href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/">
 ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/</a>,
 or using <a href="ftp://ftp.NetBSD.org/pub/NetBSD/README.sup">sup</a>.
 You may also want to check for a <a href="../../mirrors/">NetBSD
-mirror site</a> near to you. To update an exsting download run
+mirror site</a> near to you.  To update an existing download, run
 '<code>cvs -q update -dP</code>' in the root of the source tree.  Please
 remember to use the <code>-P</code> flag for cvs even if you check out a fresh
 copy.
@@ -237,7 +237,7 @@ new directory for this branch:
 	cvs checkout ... src
 	mv src ../NewName
 	cd ..
-	rmdir NewName
+	rmdir NewName-temp
 </pre>
 </tt>
 </li>
@@ -487,7 +487,7 @@ $shortdate = sprintf "%02d%02d%04d",$mday,$mon+1,1900+$year;
 system "/usr/local/bin/cvs -d$CVSROOT import -I ! -m\"SUP Import $date\" netbsd netbsd current-$shortdate ";
 
 # make the working directory the local NetBSD Tree
-chdir $SRCROOT or die "Could not change to $SRCROOT diectory\n";
+chdir $SRCROOT or die "Could not change to $SRCROOT directory\n";
 
 # Now do the import.
 $lastimport = `cat /usr/src/netbsd/.tag`; # `s are backquotes
@@ -499,8 +499,8 @@ open TAG,"&gt;$SRCROOT/.tag" or die "Could not open new tag file";
  print TAG "current-$shortdate";
 close TAG;
     </pre> 
-    <p>This script was written in Perl since it the scripting tool
-	  which the author has the most experient in using. It should
+    <p>This script was written in Perl since it is the scripting tool
+	  which the author has the most experience with. It should
 	  be fairly straightforward to write a shell script to perform 
       the same task.</li>
       <li>Techniques for tracking current with CVS have been discuss several
@@ -516,7 +516,7 @@ close TAG;
 <ENTRY>getrepos Getting the whole repository
 
 All the procedures described above allow you keeping your own
-changes in your repository, which has it's advantages if you develop
+changes in your repository, which has its advantages if you develop
 your own software based on NetBSD. If you don't want to maintain your
 own CVS repository, but just want to mirror NetBSD's CVS repository,
 there are three ways to do so.
@@ -673,6 +673,26 @@ You should copy a current MAKEDEV from the appropriate etc.<i>port</i> directory
 <li>./MAKEDEV wscons
 </ul>
 
+<ENTRY>rebuild-nbmake Why does build.sh always rebuild nbmake first?
+
+Even after running <code>./build.sh tools</code> and using the <code>-u</code>
+flag or specifing <em>TOOLDIR</em> in <code>/etc/mk.conf</code>,
+<tt>nbmake</tt> is always rebuilt by <code>build.sh</code>.  This is normal.
+The reason for this can be found in <code>./build.sh</code> itself, in the
+function <code>rebuildmake</code>:
+<blockquote><code><pre>
+        # Note that we do NOT try to grovel "mk.conf" here to find out if
+        # TOOLDIR is set there, because it can contain make variable
+        # expansions and other stuff only parsable *after* we have a working
+        # ${toolprefix}make.  So this logic can only work if the user has
+        # pre-set TOOLDIR in the environment or used the -T option to
+        # build.sh.
+        #               
+</pre></code></blockquote>
+So, if you do not want to rebuild <tt>nbmake</tt>, you will need to pass
+<code>-T tooldir</code> or set the <em>TOOLDIR</em> variable in the
+environment.
+
 </LIST>
 
 <DOCLINK>
@@ -681,7 +701,7 @@ You should copy a current MAKEDEV from the appropriate etc.<i>port</i> directory
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.list,v 1.58 2003/07/23 16:29:40 keihan Exp $<br>
+  $NetBSD: index.list,v 1.61 2004/03/28 16:05:50 heinz Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

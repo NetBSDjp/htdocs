@@ -51,8 +51,6 @@ Port Primer</a>
 <li><a href="../../Documentation/">General NetBSD Documentation</a>
     - for questions not specific to NetBSD/macppc.
 </ul>
-<p>
-
 
 
 <SECTION>General Problems/Questions
@@ -139,9 +137,6 @@ your floppy disk. If you get past this point, then your kernel has started
 to load.  Now, if you have problems, it is most likely no longer an Open
 Firmware problem, but a NetBSD problem. 
 
-<p>If you have a PowerBook (FireWire) or a PowerBook G4 (Titanium) and you 
-experience a hang here, then read about the <a href="#pb418">4.1.8 BootROM</a>.
-
 <p>If your <a href="#black-lcd">screen turns black</a>, and you have a 
 laptop, the LCD brightness may have been turned down all the way.
 
@@ -164,16 +159,15 @@ laptop, the LCD brightness may have been turned down all the way.
 Sometimes the kernel can't figure out where it was booting from.  You may
 need to build a kernel with the <a href="#dash-a">root device hard-coded</a>.
 
-<p>If your system hangs here, then read about
-<a href="#usb-keyboard-problems">USB keyboard problems</a>.  
+<p>If your system hangs here and you have a new PowerBook, then read about
+<a href="#powerbook">Are PowerPC-based PowerBooks supported?</a>.  
 
 <pre>     swapctl: adding /dev/sd0b as swap device at priority 0
      Automatic boot in progress: starting file system checks.
      [...]</pre>
 
 OK, now you've started in "multi-user mode" and the boot process is complete.
-If your keyboard doesn't work, see the FAQ entries for 
-<a href="#usb-keyboard-problems">USB keyboards</a> and for 
+If your keyboard doesn't work, see the FAQ entry for 
 <a href="#powerbook">recent laptops</a>.
 
 <p>If you're running sysinst and it says
@@ -288,147 +282,6 @@ X11 FAQ</a>.
 Try plugging it into the back of the Mac instead of into the keyboard.
 
 
-<ENTRY>usb-keyboard-problems USB keyboard problems
-There are two different types of USB keyboard problems.  One set of
-problems appeared after NetBSD 1.4.3 was released, and applies only to
-some iMac (Bondi Blue) and some PowerMacintosh G3 (Blue and White) machines.  
-This problem seems to have been fixed in NetBSD 1.6.
-<p>
-The other problem occurred on all models with USB keyboards, but was fixed
-prior to the release of NetBSD 1.5.
-
-<p><H3>iMac (Bondi Blue) and PowerMacintosh G3 (Blue and
-White) problems:</h3>
-See Bob Nestor's 
-<a href="http://mail-index.NetBSD.org/port-macppc/2001/06/11/0009.html">post</a>
-to the mailing list describing the problem and a
-workaround for the PowerMacintosh G3 (Blue and White).  This
-workaround doesn't work for the iMac (Bondi Blue), but Rob Gridley reports that 
-unplugging the mouse allows his system to boot and use the keyboard.  Also, 
-see the problem report, 
-<a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=12894">port-macppc/12894</a>
-<p>
-Briefly, what he recommends is:
-<p>
-<ol>
-  <li>Unplug the USB keyboard and plug in an ADB keyboard and mouse
-    <p>
-  <li>Boot NetBSD with the ADB keyboard
-    <p>
-  <li>Enter root, swap and filesystem responses on the ADB keyboard
-    <p>
-  <li>When the system gets to the shell prompt (or login if you went 
-    multi-user), unplug the ADB and plug in the USB keyboard
-</ol>
-<p>
-
-The USB will be usable at this point and you can use the
-system.  You'll notice that the ADB is dead even before you unplugged it.  
-Also you <b>MUST</b> boot without the USB installed or this won't work.
-<p>
-Alternatively, NetBSD 1.4.3 works fine on these two models and does not
-have this USB keyboard problem.
-
-<p><h3>Repeating keypress problems prior to NetBSD 1.5:</h3>
-There is a problem in some kernels that causes the first keypress
-from a USB keyboard to be repeated over and over again. A symptom
-of this would be the install system continually asking "<tt>(I)nstall,
-(S)hell or (H)alt ?</tt>" To avoid this problem, press the
-shift key before anything else.
-<p>
-On some newer machines, NetBSD will hang after configuring the devices but
-before entering single-user mode.  The recommended solution is to unplug
-all USB devices (especially hubs) and plug the mouse into the keyboard and
-the keyboard directly into the back of the mac.
-
-<ENTRY>cannot-allocate-vm-panic <tt>panic: startup: cannot allocate VM for buffers</tt>
-This problem should have been fixed in NetBSD 1.5.  If you
-still have this problem after upgrading, post to 
-<a href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a>. 
-
-<p>
-On some machines with large quantities of RAM the kernel will run out of
-kernel VM when it tries to allocate the buffer cache.
-You can avoid this by either of:
-<ol>
-<li>Removing some RAM
-<li>Adding <tt>"options BUFPAGES=800"</tt> to the <a
-    href="../../Documentation/kernel/#how_to_build_a_kernel">kernel
-    configuration</a>
-</ol>
-
-<ENTRY>wdc-lost-interrupt <tt>wdc0:0:1: lost interrupt</tt>
-This problem is present in NetBSD 1.5.2 on newer machines that support 
-ATA4 drives.  Unfortunately, there is presently no easy workaround.  Post 
-to <a href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a> for 
-assistance.
-
-<p>This has been reported on the iBook (Dual USB) and the iMac (Summer 
-2000) which has been updated to BootROM 4.1.9.
-
-<p>The problem is not present in NetBSD 1.5.3 and later.
-
-<ENTRY>pciide-lost-interrupt <tt>pciide0:0:0: lost interrupt</tt>
-This problem is fixed in NetBSD 1.5.1 and later.
-If you still have this problem after upgrading, post to 
-<a href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a>.
-
-<p>
-The NetBSD initialization code for the CMD 646 IDE controller doesn't
-correctly undo some of the settings that Open Firmware sets.  What happens
-is that Open Firmware sets the IDE controller up in 0646U2 mode and
-changes some of the interrupt settings.  The MI pciide driver doesn't know
-how to deal with this situation and you get a lot of "lost
-interrupt" messages.
-<p>
-What this means is that if you use Open Firmware to load the bootloader
-(i.e. <tt>ofwboot.xcf</tt>) or the kernel from your hard drive, NetBSD
-cannot use that drive.
-<p>
-A workaround is to place the kernel on another bootable
-bus and then use that to mount the drive with your NetBSD filesystem 
-on the drive connected to the CMD 646 IDE bus.  The
-key phrase here is "another bootable bus".  On the G3 and G4 machines which
-have this problem, they have more than one IDE bus (in addition to add-on
-SCSI busses).  The hard drive is typically on the bus which we have
-troubles with, but the CD-ROM and Zip drive are typically on a different
-IDE bus which works just fine.
-<p>
-What you may want to do is move your hard drive to the bus the CD-ROM is
-attached to (paying attention to the master/slave jumpers), and all your
-problems will go away, although your drive is using a slower IDE bus
-protocol.
-
-
-<ENTRY>mesh-fifo <tt>Panic: mesh: FIFO != 0</tt>
-This bug is not present in NetBSD 1.5 and later.
-<p>
-This is usually caused by bad SCSI cabling or devices.  Check your
-internal and external termination.  Check the length and quality of your
-cables.  Disconnect all devices that are not critical.
-<p>
-More often than not, this is caused by having a Zip drive on your MESH
-SCSI bus, as these devices do not behave like good SCSI citizens.
-<p>
-One person
-suggested that the MESH driver is more reliable if you don't reboot
-from MacOS into NetBSD. (That is, if you're running MacOS, shut down
-rather than rebooting, and then power it back on and boot to NetBSD.)
-<p>
-M L Riechers posted a very thorough 
-<a href="http://mail-index.NetBSD.org/port-macppc/2000/08/02/0029.html">
-message</a> on this topic.
-<p>
-Good luck.
-
-
-<ENTRY>bm0-device-timeouts I'm getting device timeouts on bm0
-This problem has been fixed in NetBSD 1.5 and later.
-<p>
-Inserting a 10Mb Hub (forcing bm0 to 10Mb/s instead of 100Mb/s) seems
-to prevent this problem.
-
-
 <ENTRY>ethernet-bad-date Ethernet isn't working
 Aside from the usual sorts of problems (such as cables and 
 <a href="../../Documentation/network/">configuration</a>),
@@ -444,21 +297,6 @@ PING 10.0.1.1 (10.0.1.1): 56 data bytes
 
 The solution is to use <tt>date(1)</tt> to set the time correctly.
 
-<ENTRY>power-off Woah, my machine just powered off!
-
-Well, that's probably because you're using a recent laptop (iBook,
-PowerBook (FireWire), and some later models) and NetBSD 1.5 or later.
-<p>
-The page up key sequence (<tt>FN-uparrow</tt>) will panic a NetBSD 1.5.1 or
-1.5 kernel.  This is fixed in NetBSD 1.5.2 and later.
-<p>
-The "brightness" keys (F1 and F2) will power off your machine and zap your 
-clock.  You will need to build a new kernel without the <tt>abtn</tt> option.
-Remove the following line from your 
-<a href="../../Documentation/kernel/#how_to_build_a_kernel">
-kernel configuration</a>:
-
-<pre>#abtn*  at adb?</pre>
 
 <ENTRY>power-manager My PowerBook or iBook won't power on, charge the battery, or recognize the charger
 Your power manager memory might be corrupted.
@@ -568,11 +406,6 @@ models list</a>.
 <p>The PowerBook 1400, 2300, and 5300 are not supported,
 because they do not have Open Firmware.
 
-<p>Some of the more recent models (iBook. iBook SE, iBook (Dual USB), PowerBook 
-(FireWire), and PowerBook G4 (Titanium)) have keyboards that were first 
-supported in NetBSD 1.5.1.  Versions of NetBSD prior to this required a 
-kernel patch.
-
 <p>Sometimes newly released laptop models have different built-in keyboard
 glue and it takes NetBSD a while to catch up.  If you have a newly
 released model, try posting to
@@ -581,10 +414,8 @@ released model, try posting to
 <p> Note that power management is not yet supported, so it is not
 possible to suspend and resume a PowerBook while running NetBSD.
 
-<p>See also <a href="#power-off">Woah, my machine just powered off!</a>,
-<a href="#power-manager">My PowerBook or iBook won't power on, charge the 
-battery, or recognize the charger</a>, and <a href="#pb418">PowerBook 
-(FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8</a>.
+<p>See also <a href="#power-manager">My PowerBook or iBook won't power 
+on, charge the battery, or recognize the charger</a>.
 
 <ENTRY>cpu-upgrade Are PowerPC CPU upgrades supported?
 Sure!
@@ -1253,32 +1084,11 @@ machine.</b>  Apple has fixed Open Firmware 3 such that you needn't change
 <p><h3>Open Firmware 1.0.5, 1.1.22, 2.0.x, and 2.4</h3>
 The default value of <tt>load-base</tt> on these systems is 4000, which
 isn't very good for our purposes.  <a href="SystemDisk-tutorial/">System
-Disk</a> sets <tt>load-base</tt> to 600000, which suits us just fine for
-NetBSD 1.5.3 and later.  mkLinux uses a different value, which may prevent
-you from booting NetBSD/macppc.  If you're using NetBSD 1.5.3 or later, 
-reading further may simply confuse you -- stop here and just use 600000.
-
-<p>The <tt>load-base</tt> is handled differently by 
-<tt>ofwboot.xcf</tt> and <tt>ofwboot</tt>.  <tt>ofwboot.xcf</tt> is the
-XCOFF bootloader used on MS-DOS floppies, ISO CD-Rs, and with netbooting.  
-<tt>ofwboot</tt> is the "partition zero" bootloader on the install floppies, 
-install CD-R images, and hard drives prepared with <tt>sysinst</tt> or
-<tt>installboot</tt>.
-
-<p><tt>ofwboot</tt> has been set to use 600000.  Therefore,
-you should use a <tt>load-base</tt> of 600000.
-
-<p>The NetBSD 1.5.3 and later versions of <tt>ofwboot.xcf</tt> have been
-set to use 640000. Due to a perculiarity of Apple's Open FIrmware,
-<tt>load-base</tt> must be an address different from the address
-<tt>ofwboot.xcf</tt> is set to use. Therefore, you should use a
-<tt>load-base</tt> of 600000. This value is also the correct one for
-booting MacOS X. 
-
-<p>The <tt>ofwboot.xcf</tt> from NetBSD versions prior to 1.5.3 had been
-set to use 600000.  Therefore, if you're trying to boot using this bootloader,
-you should use a <tt>load-base</tt> of 640000
-or get a newer version of <tt>ofwboot.xcf</tt>
+Disk</a> sets <tt>load-base</tt> to 600000, which is what we use.
+mkLinux uses a different value, which may prevent
+you from booting NetBSD/macppc.  If you're using NetBSD 1.5.2 or earlier, 
+read the <a href="oldfaq.html#old-ofw-load-base">old FAQ</a> 
+entry on load-base.
 
 <p>Once you are entirely positive that your machine has Open Firmware
 1.0.5, 1.1.22, 2.0.x, or 2.4 (see <a href="#ofw-version">Which version of
@@ -1593,11 +1403,6 @@ NetBSD/macppc CD-R image"</a> in the
 <a href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-1.6.1/macppc/INSTALL.html">
 NetBSD/macppc 1.6.1 Install Notes</a>.
 
-<p><i>Note: The install kernel on the 1.5.1 and 1.5.2 CDs will not
-recognize the IDE bus in the PowerMacintosh G3 (Blue & White) systems.</i>
-<a href="#nodisk">Where's my disk? (a.k.a. sysinst says <tt>I can not find any 
-hard disk for use by NetBSD</tt>)</a>. 
-
 
 <ENTRY>bootx Can I use the Linux BootX utility to boot NetBSD/macppc?
 No, although the BootX maintainer has said he will accept patches for
@@ -1795,12 +1600,6 @@ boot command is different, so at the Open Firmware prompt, type:
 0 &gt; <b>reset-all</b></pre>
 
 
-<ENTRY>pb418 PowerBook (FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8
-The two models listed above will fail to boot NetBSD 1.5.x and earlier if 
-they have have <a href="#ofw-version">BootROM</a> version 4.1.8 or later.
-<p>
-This problem is fixed in NetBSD 1.6 and later.
-
 
 <ENTRY>grey-screen Why does the screen turn grey with an icon in the center?
 This means that your system is trying to boot MacOS.  You might get to this state
@@ -1851,20 +1650,11 @@ has jumpers set correctly).  Check that the drive works under MacOS.
 termination.  Even though MacOS can use it, NetBSD may be pickier about the
 timings on the SCSI bus.
 
-<p>If you have a recent machine which support ATA4, and/or you've 
-installed a recent FirmWare update (late 2001), and you're trying to use 
-NetBSD 1.5.2, you may run into the 
-<a href="#wdc-lost-interrupt"><tt>wdc0:0:1: lost interrupt</tt></a> problem.
-
 <p>If you've got an IDE drive, then you may have a PowerMacintosh
 G3 (Blue and White) or an earlier system.  It wasn't until after the B&amp;W
 system that Apple fully worked out all the kinks with IDE devices.  Many
 people report that they have to put their NetBSD drive on the alternate
 IDE bus, and/or make it master (setting the CD-ROM to be slave).
-
-<p>To make the matters worse, the NetBSD 1.5.1 install kernel image does
-not support the IDE controller in the PowerMacintosh G3 (Blue and White).  The
-real kernel does support it.
 
 <p>Unfortunately, you may need to play around a bit to find the right
 combination that works for all the OSes you use on your system.  Keep in
@@ -1879,9 +1669,25 @@ Also see the Apple
 G3 and G4: IDE Master and Slave Support and Configuration</a> article
 on this topic.
 
+<p>Additionally, there were a few disk-related problems with earlier
+releases of NetBSD.  See the <a href="oldfaq.html#old-nodisk">old FAQ</a>.
+
 
 <!-- ======================================== -->
 <SECTION>Misc
+
+<ENTRY>moved This FAQ entry has moved
+<a name="cannot-allocate-vm-panic"> </a>
+<a name="wdc-lost-interrupt"> </a>
+<a name="pciide-lost-interrupt"> </a>
+<a name="mesh-fifo"> </a>
+<a name="bm0-device-timeouts"> </a>
+<a name="usb-keyboard-problems"> </a>
+<a name="power-off"> </a>
+<a name="pb418"> </a>
+FAQ entries about problems with NetBSD versions prior to the 1.6 
+release have been moved to the <a href="oldfaq.html">Old FAQ</a>.
+
 
 <ENTRY>elf Where is <tt>ldconfig</tt>/<tt>ld.so.conf</tt>?
 
@@ -1933,8 +1739,7 @@ have been reported to work without any problem.
 Well, some day someone might get <a
 href="http://www.ibrium.se/linux/mac_on_linux.html">Mac-on-linux</a>
 (for LinuxPPC) to work.  Meanwhile, try
-<a href="http://www.uni-mainz.de/~bauec002/B2Main.html">Basilisk II</a>
-or <a href="http://www.vmac.org">VMac</a>
+<PKGSRC>emulators/BasiliskII or <a href="http://www.vmac.org">VMac</a>
 both of which emulate a 68k Mac.
 
 
@@ -2000,7 +1805,7 @@ On NetBSD-current (1.6A or later),
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: faq.list,v 1.130 2004/02/21 11:38:16 darcy Exp $<br>
+  $NetBSD: faq.list,v 1.131 2004/04/18 22:51:21 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1998-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

@@ -1,6 +1,6 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.154 2004/02/21 15:03:33 minskim Exp $
-#	Copyright (c) 1994-2003
+#	$NetBSD: index.m4,v 1.157 2004/04/24 04:44:06 yyamano Exp $
+#	Copyright (c) 1994-2004
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
 
@@ -67,7 +67,7 @@ divert(0)dnl
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<!-- Copyright (c) 1994-2003
+<!-- Copyright (c) 1994-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.org">
 <title>NetBSD Mailing Lists</title>
@@ -461,7 +461,7 @@ PORTLIST(port-i386)
   CPUs (NetBSD/i386).
 ENDLIST
 PORTLIST(port-luna68k)
-  Discussion of issues specific to NetBSD on 68k based OMROM LUNA machines
+  Discussion of issues specific to NetBSD on 68k based OMRON LUNA machines
   (NetBSD/luna68k).
   There is also a <a href="#port-m68k">port-m68k</a> list for
   questions related to all Motorola 68k based ports.
@@ -658,6 +658,11 @@ PORTLIST(port-x68k)
   There is also a <a href="#port-m68k">port-m68k</a> list for
   questions related to all Motorola 68k based ports.
 ENDLIST
+PORTLIST(port-xen)
+  Discussion of issues specific to NetBSD on the
+  <a href="http://www.cl.cam.ac.uk/Research/SRG/netos/xen/">Xen Virtual Machine Monitor</a>
+ (NetBSD/xen).
+ENDLIST
   </ul>
 
 </td><td valign=top>
@@ -716,8 +721,8 @@ divert(9)
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.154 2004/02/21 15:03:33 minskim Exp $<br>
-  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  $NetBSD: index.m4,v 1.157 2004/04/24 04:44:06 yyamano Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
