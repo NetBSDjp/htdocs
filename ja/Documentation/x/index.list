@@ -225,6 +225,108 @@ vendor release number:    335
 </pre>
 In the case of XFree86, this tells us that the server version is 3.3.5.
 
+<ENTRY>anti_aliased How to setup anti-aliased fonts on NetBSD with XFree86 4
+
+<b>NOTE</b>: The paths below should be adjusted appropriately if using xpkgwedge
+<p>
+<ol>
+<li>Install the following packages from <a href="../software/packages.html">pkgsrc</a>:
+	<ul>
+		<li><PKGSRC>fonts/ms-ttf</li>
+		<li><PKGSRC>fonts/mkfontscale</li>
+                <li><PKGSRC>fonts/fontconfig</li>
+	</ul>
+</li>
+<li>Setup the font hints:
+	<ul>
+		<li><tt>mkfontscale /usr/X11R6/lib/X11/fonts/TrueType</tt></li>
+		<li><tt>mkfontdir /usr/X11R6/lib/X11/fonts/TrueType</tt></li>
+	</ul>
+	There should now be a 'fonts.dir' and 'fonts.scale' in the
+	TrueType font directory.
+</li>
+<li>Configure the X server:
+	<ul>
+		<li>In the "Module" section, make sure that the following exists:
+<pre><tt>
+		Load "type1"
+		Load "freetype"
+</tt></pre>
+		</li>
+		<li>In the "Files" section, verify the order of the font paths.
+               Verify that the TrueType and Type1 font paths are before
+               the rest:
+<pre><tt>
+		FontPath   "/usr/X11R6/lib/X11/fonts/local/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/TrueType/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/Type1/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/misc/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"
+		FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"
+		FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/"
+
+</tt></pre>
+		</li>
+	</ul>
+</li>
+<li>Configure Xft -- an example /usr/X11R6/lib/X11/XftConfig follows:
+<pre><tt>
+##### Example XftConfig
+dir "/usr/X11R6/lib/X11/fonts/TrueType"
+dir "/usr/X11R6/lib/X11/fonts/Type1"
+# Uncomment the following line if using an LCD display
+#match edit rgba = rgb;
+match any family == "fixed"             edit family =+ "mono";
+includeif       "~/.xftconfig"
+match any family == "Times"             edit family += "Times New Roman";
+match any family == "Helvetica"         edit family += "Verdana";
+match any family == "Courier"           edit family += "Courier New";
+match any family == "serif"             edit family += "Times New Roman";
+match any family == "sans"              edit family += "Verdana";
+match
+        any family == "mono"
+        all slant == roman
+        all weight < bold
+edit
+        family += "monotype.com";
+match any family == "mono"              edit family += "Courier New";
+match any family == "Charter"           edit family += "Bitstream Charter";
+match any family == "Bitstream Charter" edit family =+ "Charter";
+match any family == "Lucidux Serif"     edit family += "LuciduxSerif";
+match any family == "LuciduxSerif"      edit family =+ "Lucidux Serif";
+match any family == "Lucidux Sans"      edit family += "LuciduxSans";
+match any family == "LuciduxSans"       edit family =+ "Lucidux Sans";
+match any family == "Lucidux Mono"      edit family += "LuciduxMono";
+match any family == "LuciduxMono"       edit family =+ "Lucidux Mono";
+match any family == "Comic Sans"        edit family += "Comic Sans MS";
+match any family == "Comic Sans MS"     edit family =+ "Comic Sans";
+match any family == "Trebuchet"         edit family += "Trebuchet MS";
+match any family == "Trebuchet MS"      edit family =+ "Trebuchet";
+match any family == "Monotype"          edit family =+ "Monotype.com";
+match any family == "Andale Mono"       edit family += "Monotype.com";
+match any family == "Monotype.com"      edit family =+ "Andale Mono";
+##### End of XftConfig
+
+</tt></pre>
+</li>
+<li>Rebuild the font cache for applications that use fontconfig:
+<pre><tt>
+	fc-cache -v
+</tt></pre>
+This will take a very long time (~20 minutes on a PII 366),
+so be patient.
+</li>
+<li>That's it! Restart the X server, and test the configuration:
+<pre><tt>
+	xterm -ls -fg gray -bg black -ls -fa "Courier New Bold" -fs 10
+</tt></pre>
+</li>
+</ol>
+This Anti-Aliased-Fonts-Mini-Howto was written by Jared D. McNeill.
+
+
+
 <SECTION>Compiling programs
 
 <ENTRY>compile_fails_xm Compile fails - 'unable to locate libXm'
@@ -259,7 +361,7 @@ ensure you link against the necessary X libraries. In this case, add
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.29 2002/07/17 10:05:25 grant Exp $<br>
+  $NetBSD: index.list,v 1.30 2002/12/31 18:44:24 jschauma Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
