@@ -1,0 +1,256 @@
+<html>
+<head>
+<!-- Copyright (c) 1996, 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Documentation: Kernel</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<table><tr><td>
+<a href="../../Misc/daemon-copy.html">
+<img align="center" src="../../images/BSD-demon.gif" alt="BSD demon"></a>
+</td><td align=center>
+<h2>NetBSD Documentation: Kernel</h2>
+</td></tr></table>
+<p>
+
+<h3>Frequently Asked Questions</h3>
+<ul>
+<li><a href="#where_to_download_kernel_source">
+	Where to download kernel source</a>
+<li><a href="#how_to_build_a_kernel">
+	How to build a kernel</a>
+<li><a href="#why_msoft_float">
+	Why are kernels compiled with <b>-msoft-float</b></a>
+<li><a href="#problems_compiling_a_current_kernel">
+	Problems compiling a -current kernel</a>
+<li><a href="#how_to_debug_a_kernel_crash_dump">
+	How to debug a kernel crash dump</a>
+<li><a href="#plip_support">
+	Is PLIP (Parallel Line IP) supported</a>
+<li><a href="#how_to_add_a_kernel_to_a_boot_floppy">
+	How to add a kernel to a boot floppy</a>
+</ul>
+
+<h3>NetBSD specific documentation</h3>
+<ul>
+<li><a href="converting-ethernet-drivers.html">
+	Converting ancient BSD Ethernet drivers to NetBSD-1.2D and later</a>
+<li><a href="elf-notes.html">Vendor-specific ELF Note Elements</a>
+<li><a href="uvm.html">UVM, the new Virtual Memory system</a>
+<li><a href="vfork.html">Why implement traditional vfork()</a>
+</ul>
+
+<h3>Other online documentation</h3>
+<ul>
+<li><a href="http://www.netapp.com/technology/level3/nfsbook.html">
+    Chapter 9 (NFS) from Design and Implementation of 4.4BSD</a>
+</ul>
+
+<p><hr><h3><a name="where_to_download_kernel_source">
+	Where to download kernel source
+</a></h3>
+<h4><a name="official_release_kernel_source">Official release
+source</a></h4> The kernel source for a given release is held in the
+gzipped tarfile 'source/sets/syssrc.tgz' under the main directory for
+that release. For example NetBSD 1.3.2 kernel source is in the file:
+<pre>   <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3.2/source/sets/syssrc.tgz">/pub/NetBSD/NetBSD-1.3.2/source/sets/syssrc.tgz</a></pre>
+If you have a <a href="http://www.netbsd.com">NetBSD CD-Rom</a>, the
+'source/sets/syssrc.tgz' file should be included. The source can be
+extracted anywhere, though the traditional location is inside /usr/src.
+To extract use "<b><tt>cd / ; tar xvzpf &lt;FILENAME&gt;</tt></b>".
+<p> <h4>'Bleeding edge' -current source, for the adventurous only!</h4>
+The latest kernel sources are available from ftp.netbsd.org or one of
+the mirrors in the directory <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/">/pub/NetBSD/NetBSD-current/src/sys/</a>.<br>
+To compile a kernel you should download the following from <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/">
+/pub/NetBSD/NetBSD-current/tar_files/src</a>:  <ul>
+   <li><a
+   href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</a>
+   (Source for the 'config' program) <li><a
+   href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/sys.tar.gz">sys.tar.gz</a>
+   (Complete kernel source for all architectures) </ul> You should
+first build and install the 'config' program, in case it has changed
+since the version you are running. Since -current is on the active edge
+of NetBSD development, there can be <a
+href="#problems_compiling_a_current_kernel">problems compiling a
+-current kernel</a>. You are recommended to use source from an <a
+href="#official_release_kernel_source">Official Release</a> until you
+are familiar with the configuration process.
+
+<p><hr><h3><a name="how_to_build_a_kernel">
+	How to build a kernel
+</a></h3>
+<ol>
+    <li>Download and extract the kernel source (see
+	<a href="#where_to_download_kernel_source">Where to download kernel
+	source</a>).
+ <p><li>If you are following -current, you may need to compile a new version
+	of config. Assuming you have downloaded the complete -current source:
+	<br>
+	"<b><tt>cd /usr/src/usr.sbin/config ; make && make install</tt></b>"
+ <p><li>"<b><tt>cd /sys/arch/&lt;ARCH&gt;/conf</tt></b>"<br>
+	where &lt;ARCH&gt; is your machine's architecture such as 'i386',
+	'sparc', 'mac68k'.
+ <p><li>"<b><tt>cp GENERIC &lt;MYCONF&gt;</tt></b>"<br>
+	where &lt;MYCONF&gt; is your name for this configuration. You could use
+	your hostname, the machine type, or even your first name. Keep to
+	letters, numbers, and _ characters.
+ <p><li><b>Edit &lt;MYCONF&gt;</b><br>
+	Initially you can skip this stage.
+	You can remove drivers for CPU types, hardware, and devices you do
+	not have or use, or even enable options, such as on i386 commenting out
+	the 'pc0' line and enabling the 'vt0' to gain virtual consoles.
+	A good start to determing what hardware drivers you definitely need to
+	keep is to read the output of "<b><tt>dmesg</tt></b>" or
+	"<b><tt>dmesg | grep ' at '</tt></b>".  For evey line containing
+	'&lt;XXX&gt; at &lt;YYY&gt;' you need to keep the entries for both
+	&lt;XXX&gt; and &lt;YYY&gt;. You should also read "<b><tt>man 4
+	options</tt></b>"
+	for information on the different kernel configuration options.
+ <p><li>"<b><tt>config &lt;MYCONF&gt;</tt></b>"<br>
+	This will generate the kernel build directory for &lt;MYCONF&gt;.
+ <p><li>"<b><tt>cd ../compile/&lt;MYCONF&gt;</tt></b>"<br>
+	Change to the kernel build directory.
+ <p><li>"<b><tt>make depend</tt></b>"<br>
+	This generates a '.depend' file that enables the make program to what
+	needs to be rebuilt (at this point it will be everything!).
+ <p><li>"<b><tt>make</tt></b>"<br>
+	This will compile the kernel. If all goes well you will be left with a
+	'netbsd' kernel. This may take some significant time if you are on a
+	VAX, very little time on a big Alpha, and somewhere inbetween for the
+	rest of us.
+ <p><li>"<b><tt>mv /netbsd /netbsd.old ; mv netbsd /</tt></b>"<br>
+	This saves your current kernel, (_very_ important), and moves the new
+	kernel ready to be booted.
+	<br>On <b>NetBSD/pmax</b> you should instead:
+	"<b><tt>mv /netbsd /netbsd.old ; mv netbsd.aout /netbsd</tt></b>"
+ <p><li>"<b><tt>reboot</tt></b>"<br>
+	This should reboot using your new kernel - the boot messages should
+	contain a line of the form:
+	'NetBSD &lt;VERSION&gt; (&lt;MYCONF&gt;) #0: &lt;COMPILE_DATE&gt;
+
+ <p><li><b>If you have any problems:</b><br>
+	You should boot your 'netbsd.old' kernel in single user mode. The
+	procedure varies from port to port depending on the boot procedure,
+	but on i386 it would be:
+	<ol>
+	    <li><b>Press <tt>SPACE</tt> when the first NetBSD message appears</b></li>
+	    <li>"<b><tt>boot -s netbsd.old</tt></b>"</li>
+	</ol>
+	<p>
+	Then swap your kernel back:
+	<ol>
+	    <li>"<b><tt>fsck /</tt></b>"</li>
+	    <li>"<b><tt>mount /</tt></b>"</li>
+	    <li>"<b><tt>mv netbsd.old netbsd</tt></b>"</li>
+	    <li>"<b><tt>exit</tt></b>"</li>
+	</ol>
+	</p>
+</ol>
+
+<p><hr><h3><a name="why_msoft_float">
+	Why are kernels compiled with <b>-msoft-float</b>
+</a></h3>
+<p>
+When a process makes a system call the kernel needs to save the
+processor state, so that it can later switch back to the process.
+Floating point registers tend to be large and relatively plentiful,
+making saving and restoring them an expensive operation. If the FPU is
+in the middle of an operation the CPU will additionally be forced to
+sit and wait for it to finish before it can then copy the registers.
+<p>
+Avoiding floating point registers in the kernel gives a significant
+performance win for system calls. Some processors, such as sparc,
+can also use lazy FP context switching to sometimes avoid having to 
+save and restore FP registers even when switching between processes.
+<p>
+On some architectures the compiler can use floating point registers to
+speed up certain operations (such as block memory copies), breaking
+the above, so '-msoft-float' is required.
+
+<p><hr><h3><a name="problems_compiling_a_current_kernel">
+	Problems compiling a -current kernel
+</a></h3>
+The first point to note is you should subscribe to the
+<a href="../../MailingLists/index.html#current-users">current-users</a> mail
+list.  Tracking -current without reading current-users is akin to driving
+in the dark without any lights. You have been warned :).<p>
+It is always worth downloading the latest
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</a>, compiling, installing and rerunning on your config
+file - config changes reasonably frequently between releases.
+
+<p><hr><h3><a name="how_to_debug_a_kernel_crash_dump">
+	How to debug a kernel crash dump
+</a></h3>
+<ul>
+<li>Ensure you have <a href="#how_to_build_a_kernel">built a kernel</a> with
+    DEBUG enabled in the config file.
+<li>"<b><tt>gdb netbsd.gdb</tt></b>" (in kernel compile directory).
+<li>"<b><tt>target kcore /var/crash/netbsd.0.core</tt></b>" at the gdb prompt.
+</ul>
+You can use the usual gdb commands, such as 't'.
+
+<p><hr><h3><a name="plip_support">
+	Is PLIP (Parallel Line IP) supported
+</a></h3>
+There are patches from Martin Husemann which add PLIP support to
+NetBSD/i386, submitted as <a
+href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=1278">PR 1278</a>.
+The patches at the end of the PR should apply to the NetBSD 1.3.2 source tree.
+
+<p><hr><h3><a name="how_to_add_a_kernel_to_a_boot_floppy">
+	How to add a kernel to a boot floppy
+</a></h3>
+Some ports are already setup to build a boot floppy by
+"<b><tt>cd /usr/src/distrib/<em>&lt;ARCH&gt;</em>/floppies ; make </tt></b>".
+(You may need to build the INSTALL kernel manually before running this.
+If you have an existing <b>boot.fs</b> image you can replace the kernel with:
+<ol>
+<li><b><tt>vnconfig -c vnd0 boot.fs</tt></b>
+<li><b><tt>mount /dev/vnd0a /mnt</tt></b>
+<li><b><tt>gzip -c -9 &lt; netbsd &gt; /mnt/netbsd.gz</tt></b>
+<li><b><tt>umount /mnt</tt></b>
+<li><b><tt>vnconfig -u vnd0</tt></b>
+</ol>
+This assumes you have "<tt>pseudo-device vnd</tt>" in your kernel config file,
+and a ready to use kernel.
+
+
+<hr>
+<table width="100%"><tr>
+  <td>
+    <table><tr>
+      <td>
+	<a href="../../index.html">
+	<img src="../../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
+      </td><td>
+	<a href="../../index.html">Home Page</a>
+      </td>
+    </tr></table>
+  </td><td>
+    <table><tr>
+      <td>
+	<a href="../index.html">
+	<img src="../../images/NetBSD-banner.gif"
+	alt="NetBSD&nbsp;Documentation"></a>
+      </td><td>
+	<a href="../index.html">Documentation top level</a>
+      </td>
+    </tr></table>
+  </td>
+</tr></table>
+
+<hr>
+<address>
+  www@NetBSD.ORG<br>
+  $NetBSD: index.html,v 1.6 1998/11/02 05:53:43 abs Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1996, 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
