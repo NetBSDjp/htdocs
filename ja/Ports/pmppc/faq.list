@@ -53,21 +53,19 @@ is used.  This may not work if the firmware also configures
 the devices.  The firmware configuration can be turned off
 using <em>nvdisplay</em>.
 
-<ENTRY>nfs Why doesn't NFS work?
-It seems that the Ethernet chip on the PM/PPC card has trouble with
-large NFS block sizes.  The solution is to mount with a smaller block
-size.
-
-<ENTRY>bugs Why do my files get corrupted?
-There is a bug in the PowerPC pmap code, it seems to afflict all PPC
-ports.  It causes files written from an mmap()ed file to sometimes
-contain zeroes.
-<p>
-There is a very hacky workaround: duplicate line 413
-<pre>
-    memcpy(kp, p, l);
-</pre>
-in the file sys/arch/powerpc/powerpc/trap.c.
+<ENTRY>flash Can the NetBSD kernel be flashed?
+Yes, the same kernel that is booted over TFTP can be flashed.
+The steps are:
+<ul>
+<li> Get the kernel into memory:
+<pre> tftp_get 40000 kernel-name</pre>
+<li> Write it to flash.  The size of the kernel is reported by tftp_get.
+Use it in the command to copy from RAM to flash:
+<pre> flashblkwr 40000 70000000 size</pre>
+<li> Use <em>nvdisplay</em> to make sure that <tt>CopyToLoadAdr</tt> is
+set, that <tt>RomBase=70000000</tt>, and that <tt>RomSize</tt> is large
+enough to copy the whole kernel.
+</ul>
 
 </LIST>
 
@@ -80,7 +78,7 @@ in the file sys/arch/powerpc/powerpc/trap.c.
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: faq.list,v 1.8 2003/07/23 16:32:49 keihan Exp $<br>
+  $NetBSD: faq.list,v 1.9 2004/01/30 14:43:33 augustss Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1998-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
