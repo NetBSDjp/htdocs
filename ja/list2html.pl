@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.75 2002/01/01 05:37:41 hubertf Exp $
+# $NetBSD: list2html.pl,v 1.78 2002/05/30 01:11:18 grant Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -63,7 +63,7 @@ my($version, %opt, %pkgname);
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.75 $';
+$version = '$Revision: 1.78 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -93,8 +93,8 @@ $months_previous = &get_minmonth($months_previous);
 
 '<HEADING>\s*(.*)',
 '<table><tr><td>
-    <a href="$HOME/Misc/daemon-copy.html"><img
-     align="middle" src="/images/BSD-daemon.jpg" border="0"
+    <a href="$HOME/Misc/disclaimer.html#bsd-daemon"><img
+     align="middle" src="../$HOME/images/BSD-daemon.jpg" origlink="$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
     <h1>NetBSD ドキュメンテーション:</h1>
@@ -105,8 +105,8 @@ $months_previous = &get_minmonth($months_previous);
 
 '<DEVHEADING>\s*(.*)',
 '<table><tr><td>
-    <a href="$HOME/Misc/daemon-copy.html"><img
-     align="middle" src="/images/BSD-daemon.jpg" border="0"
+    <a href="$HOME/Misc/disclaimer.html#bsd-daemon"><img
+     align="middle" src="../$HOME/images/BSD-daemon.jpg" origlink="$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
     <h1>NetBSD 開発者ドキュメント:</h1>
@@ -118,11 +118,11 @@ $months_previous = &get_minmonth($months_previous);
 '<HOMELINK>',
 '<table><tr><td>
     <a href="$HOME/"><img
-	src="/images/NetBSD-flag.gif" border="0"
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$HOME/"><img
-	src="/images/empty.gif" border="0"
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">Home Page</a>
 </td></tr></table>'
 ,
@@ -131,21 +131,21 @@ $months_previous = &get_minmonth($months_previous);
 '<table width="100%"><tr><td>
   <table><tr><td>
     <a href="$HOME/"><img
-	src="/images/NetBSD-flag.gif" border="0"  
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"  
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$HOME/"><img
-	src="/images/empty.gif" border="0"
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
     <a href="$DEVELOPERS"><img
-	src="/images/NetBSD-flag.gif" border="0"  
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"  
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$DEVELOPERS"><img
-	src="/images/empty.gif" border="0"  
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"  
 	width="1" height="1" alt="NetBSD ">開発者ドキュメント</a>      
   </td></tr></table>
 </td></tr></table>'
@@ -155,21 +155,21 @@ $months_previous = &get_minmonth($months_previous);
 '<table width="100%"><tr><td>
   <table><tr><td>
     <a href="$HOME/"><img
-	src="/images/NetBSD-flag.gif" border="0"
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$HOME/"><img
-	src="/images/empty.gif" border="0"
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
     <a href="$DOCS"><img
-	src="/images/NetBSD-flag.gif" border="0"
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$DOCS"><img
-	src="/images/empty.gif" border="0"
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">Documentation top level</a>
   </td></tr></table>
 </td></tr></table>'
@@ -179,21 +179,21 @@ $months_previous = &get_minmonth($months_previous);
 '<table width="100%"><tr><td>
   <table><tr><td>
     <a href="$HOME/"><img
-	src="/images/NetBSD-flag.gif" border="0"
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$HOME/"><img
-	src="/images/empty.gif" border="0"
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
     <a href="$PORTS"><img
-	src="/images/NetBSD-flag.gif" border="0"
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$PORTS"><img
-	src="/images/empty.gif" border="0"
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">対応機種</a>
   </td></tr></table>
 </td></tr></table>'
@@ -203,21 +203,21 @@ $months_previous = &get_minmonth($months_previous);
 '<table width="100%"><tr><td>
   <table><tr><td>
     <a href="$HOME/"><img
-	src="/images/NetBSD-flag.gif" border="0"
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$HOME/"><img
-	src="/images/empty.gif" border="0"
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
     <a href="$GALLERY"><img
-	src="/images/NetBSD-flag.gif" border="0"     
+	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"     
 	width="91" height="42" alt=""></a>
   </td><td>
     <a href="$GALLERY"><img
-	src="/images/empty.gif" border="0"
+	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
 	width="1" height="1" alt="NetBSD ">Gallery page</a>
   </td></tr></table>
 </td></tr></table>'
@@ -548,7 +548,7 @@ sub makelist
 	    if (! m#^([^:]+:)\s+(.*)#)
 		{ &fail("<TROW> should match ([^:]+:)\s+(.*)"); }
 	    $ignore = undef;
-	    $_ = "<tr><th valign=top align=right>$1</th>\n  <td>$2</td></tr>\n";
+	    $_ = "<tr><th valign=top align=right>$1</th>\n  <td valign=top>$2</td></tr>\n";
 	    $in_trow = 1;
 	    }
 	elsif ($in_trow)
@@ -623,7 +623,7 @@ sub sub_external_links
 	my($page, $section, $arch, $collection) = ($1, $2, $4, $6);
 	my($link);
 
-	$link = 'http://www.tac.eu.org/cgi-bin/man-cgi?';
+	$link = 'http://man.netbsd.org/cgi-bin/man-cgi?';
 
 	$link .= "$page+$section";
 
