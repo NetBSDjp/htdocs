@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.126 2003/04/27 00:17:25 fvdl Exp $
+#	$NetBSD: index.m4,v 1.127 2003/04/27 09:57:17 fvdl Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -304,6 +304,10 @@ PORTLIST(port-alpha)
   Discussion of issues specific to NetBSD on Digital's Alpha AXP systems
   (NetBSD/alpha).
 ENDLIST
+PORTLIST(port-amd64)
+  Discussion of issues specific to NetBSD on AMD64 based machines
+  (NetBSD/amd64).
+ENDLIST
 PORTLIST(port-amiga)
   Discussion of issues specific to NetBSD on Commodore's Amiga and
   MacroSystem's DraCo machines (NetBSD/amiga).
@@ -601,10 +605,6 @@ PORTLIST(port-vax)
   Discussion of issues specific to NetBSD on Digital's VAX series of machines
   (NetBSD/vax).
 ENDLIST
-PORTLIST(port-amd64)
-  Discussion of issues specific to NetBSD on AMD x86-64 based machines
-  (NetBSD/amd64).
-ENDLIST
 PORTLIST(port-x68k)
   Discussion of issues specific to NetBSD on Sharp's Japanese X68000/X68030
   machines (NetBSD/x68k).
@@ -669,7 +669,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.126 2003/04/27 00:17:25 fvdl Exp $<br>
+  $NetBSD: index.m4,v 1.127 2003/04/27 09:57:17 fvdl Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
