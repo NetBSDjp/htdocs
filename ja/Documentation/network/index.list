@@ -20,16 +20,18 @@ Note that the relative URL path needs to be modified.
 -->
 <ul>
   <li><a href="wavelan.html">Lucent WaveLAN を用いたワイヤレスネットワーキング</a>
-  <li><a href="netboot/index.html">HOWTO ディスクレスマシンのネットブート</a>
+  <li><a href="netboot/">HOWTO ディスクレスマシンのネットブート</a>
   <li><a href="http://coombs.anu.edu.au/~avalon/ip-filter.html">IP-Filter</a> を
       用いた<a href="http://radon.static.net/~armenb/ipnat.html">ネットワーク
       アドレス変換 (Network Address Translation, NAT) FAQ</a>
   <li><a href="dhcp.html">DCHP クライアントとサーバー設定の HOWTO</a>.
   <li><a href="http://rfhs8012.fh-regensburg.de/~feyrer/NetBSD/NWF/">
       NetBSD/amiga のためのネットワーキング FAQ ガイド</a>
-  <li><a href="ipv6/index.html">IPv6 ネットワーキング FAQ</a>.
+  <li><a href="ipv6/">IPv6 ネットワーキング FAQ</a>.
+  <li><a href="ipsec/">IPsec FAQ</a>.
   <li><a href="http://www.macbsd.com/macbsd/howto/index.html">
       PPP、クロスコンパイル、その他の HOWTO</a>
+  <li><a href="http://www.obfuscation.org/ipf/ipf-howto.txt">IP Filter ベースの防火壁 HOWTO</a>
 </ul>
 
 <SECTION>Networking FAQ
@@ -251,8 +253,9 @@ pppd.conf ファイル中で <tt>active-filter</tt> を使うことができます:
   <li><h3>参考:</h3>
       <ul>
         <li>chat(8) - Automated conversational script
-        <li><a href="http://www.macbsd.com/macbsd/howto/pppnat/">
-            How to setup PPP for multiple ISP's, including IP-NAT and DNS setup.</a>
+        <!-- http://www.macbsd.com/macbsd/howto/pppnat
+             How to setup PPP for multiple ISP's, including
+             IP-NAT and DNS setup. -->
       </ul>
 </ul>
 
@@ -314,8 +317,7 @@ ISDN ネットワークカードを用いることができます。
 ローカルネットワーク(例えば 10.0.0.0/24) に接続されているホストから
 NetBSD マシンをルーターとして使用するために、ネットワークアドレス変換
 (Network Address Translation, NAT) を設定するには、次のようにすれば
-いいでしょう:
-<P>
+いいでしょう: <P>
 
 <OL>
 <LI>クライアントでは、NAT マシンをデフォルトルータとして指定します。
@@ -347,6 +349,11 @@ map ppp0 10.0.0.0/24 -> 0/32
 <PRE>
 ipfilter=YES                                    # uses /etc/ipf.conf
 ipnat=YES                                       # uses /etc/ipnat.conf
+</PRE>
+
+<LI> /etc/rc.local で ipv4 パケットフォワーディングを有効にします:
+<PRE>
+sysctl -w net.inet.ip.forwarding=1
 </PRE>
 
 <LI> リブートします。
@@ -424,6 +431,16 @@ named.conf(5) man ページはプログラム自身よりも
 いくつかの機能は、ドキュメントには書かれていますが
 実装されていません。
 
+<ENTRY>kerberos Kerberos
+Kerberos 認証システムについての情報は、
+下記のリンクを参照してください。
+<p>
+<ul>
+<li><a href="http://web.mit.edu/kerberos/www/">MIT Kerberos</a>
+<li><a href="http://www.pdc.kth.se/kth-krb/">KTH Kerberos</a>
+<li><a href="http://www.avana.net/~jtruitt/ferret/kerberos.html">Meta information (Links)</a>
+</ul>
+
 <SECTION>Network の問題
 
 <ENTRY>unable-to-ping 他のホスト名に ping できない
@@ -443,16 +460,77 @@ named.conf(5) man ページはプログラム自身よりも
         設定されている。
     </ol>
 
+<ENTRY>t-online Gotchas for german ISP T-Online
+	ドイツの ISP T-Online へダイアルインで入る場合、
+	正しいユーザー名と、独自のチャットスクリプトについての 2 点について、
+	大変トリッキーな事柄があります。一般的な ppp の設定方法の説明は
+	<a href="#ppp">上記</a>を参照してください。
+	<p>
+
+	<ol>
+	<li> T-Online のログイン名は、三つの部分を
+	     つなぎ合わせたものになっています:
+	     <p>
+
+	     <ol>
+	     <li> Anschlu&szlig;kennung: 12 桁の数字
+   	          (<i>AAAAAAAAAAAA</i>)、たとえば 000120123456
+	     <li> T-Online Nr: 12 桁の数字 (<i>TTTTTTTTTTTT</i>)、
+   	          たとえば 3200123456。しばしば
+	          "32" で始まります; 12 桁より少ない場合は、
+	          '#' を加えます)
+	     <li> Mitbenutzer-Nummer、 大抵は "0001" (<i>MMMM</i>)、
+   	          たとえば 0001
+             </ol>
+	     <p>
+             すると、ログイン名は、この三つの部分を何も挟まずに
+	     一行に並べたもの ("<i>AAAAAAAAAAAATTTTTTTTTTTTMMMM</i>") 、
+	    たとえば 0001201234563200123456#0001 になります。
+	    これを PPP オプションファイルの "<tt>user</tt>" 行に書きます。
+	     <p>
+	<li> チャットスクリプトでは、モデムが <tt>CONNECT</tt> を知らせてきてから、
+	     "<tt>.</tt>" を送るように注意する必要があります:
+
+<pre>
+ABORT BUSY    '' AT
+              OK ATZ
+              OK ATL1
+              OK ATD0191011
+              CONNECT <u>'.'</u>
+</pre>
+	     この最後のドットがないと、最初の LCP ConfReq frame を送出後、
+	     T-Online ダイアルインサーバーからの返答なしに、
+	     すぐに接続が切られることがあります。
+             <p>
+	</ol>
+
+	さらなる情報について、 (ドイツ語の) リンクをいくつか示します
+	(これらのほとんどは NetBSD 向けではありませんが、
+	心配は無用です─他の Unix-like オペレーティングシステムで
+	うまく使える手法は、普通は NetBSD でもうまくいきます):
+	<p>
+
+	<ul>
+        <li> <a href="http://www.albert-rommel.de/ppp.htm">PPP-Zugang
+   	          zu <font color="#FF00FF">T</font>-Online</a>
+        <li> <a href="http://home.t-online.de/home/Diedrich.Ehlerding/besonderheiten.html">Netzzugang bei <font color="#FF00FF">T</font>-Online: esonderheiten und Einschr&auml;nkungen</a> 
+	<li> <a href="http://sdb.suse.de/sdb/de/html/toppp.html">SuSE:
+	     T-Online Zugang mit PPP</a>
+	<li> <a
+	     href="http://sdb.suse.de/sdb/de/html/t_online3.html">SuSE:
+	     T-Online: Verbindung wird nicht aufgebaut</a>
+	<li> <a
+   	          href="http://sdb.suse.de/sdb/de/html/toppp_files.html">SuSE: PPP-Files f&uuml;r T-Online</a>
+	</ul>
+
 </LIST>
 
 <DOCLINK>
 
 <hr>
 <address>
-  (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
-       <a href="mailto:www@JP.NetBSD.ORG">日本語:
-       www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.list,v 1.24 2000/03/13 22:34:50 soren Exp $<br>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.29 2000/08/02 21:32:02 hubertf Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
