@@ -1,304 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
 <html>
 <head>
-<!-- Copyright (c) 1998, 1999 The NetBSD Foundation, Inc.
-     ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<!-- Copyright (c) 1994-2003
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
 <title>NetBSD Developer Documentation: Building and Packaging a Release</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
 <h2> NetBSD Developer Documentation: Release Engineering:</h2>
-<h2> Building and Packaging A Release </h2>
+<h2> Building and Packaging a Release or Snapshot </h2>
 
-<p> These instructions cover the steps to go from a source tree to
-a set of .tgz files comprising a release. You can also make a
-snapshot this way, though of course it should be clearly labeled
-as such. </p>
+<p>
+These instructions are for building releases and snapshots of NetBSD version
+1.5 or later. They cover the steps to go from a source tree to
+a set of .tgz files comprising a release. You can also make a snapshot 
+this way, though of course it should be clearly labeled as such.
 
-<p><strong>NOTE: when uploading a snapshot, please do not forget to update
-the <a href="../features/index.html">feature table</a>.</strong></p>
+<p>
+<strong>NOTE: when uploading a snapshot, please do not forget to update
+the <a href="../features/">feature table</a>.</strong>
 
-<p> The .tgz files are built in two steps. In the first, you build
-an exportable system, which does not include a build of the source
-under <b>src/domestic</b>, because this source cannot be exported
-from the US and Canada. (This step is the only step that will be
-taken for builders outside of the US and Canada.) The second step
-is to re-build the tree with the domestic source included, and
-package up the items that have changed since the last build into
-the <b>secr.tgz</b> set. All of the following steps assume you
-change to `src' to get to the root of your NetBSD source tree.</p>
+<p>
+The NetBSD release format is described in the <em>release(7)</em> manual page. 
+The file <b>/usr/share/mk/bsd.README</b> is also useful documentation.
 
-<p> The steps to build and package a release are as follows. </p>
+<p>
 
-<h3> I. Building the Exportable Base System </h3>
+The .tgz files are built in two steps. In the first, you build
+the base distribution. The second step is to build the X Window System
+distribution files. Some architectures require extra steps to build
+installation materials (such as boot loaders or boot floppy images). All
+of the following steps assume that you change to `src' to get to the root
+of your NetBSD source tree.
+<p>
+
+In earlier versions, there was a (US) domestic section of NetBSD containing
+code based on DES which could not be legally exported from the United
+States or Canada. For more details please see our page on 
+<a href="../../Misc/crypto-export.html">Exportability of NetBSD crypto
+code</a>.
+
+<p>
+The steps to build and package a release are as follows.
+
+<h3> I. Building the Base System </h3>
 
 <ol>
 
-<li> Set the variables you will need for your build. Except for
-<b>DESTDIR</b>, which must be set in the environment, all of the
-following can be set in the environment or <b>/etc/mk.conf</b>.
+<li> Set the variables you will need for your build. The 
+following can be set in the environment (lowest priority) or in 
+<b>/etc/mk.conf</b> or on the make command line (highest priority). 
+Here is an example <b>/etc/mk.conf</b> file:
 <blockquote><pre>
 # The location of your source tree.
 BSDSRCDIR=/home/cjs/netbsd/src
 # The location of the object files produced by the build.
 BSDOBJDIR=/home/cjs/netbsd/obj
-# For the initial build, which doesn't include those crypto
-# files which may not be exported from the US and Canada.
-EXPORTABLE_SYSTEM=1
 # These two aren't really necessary; they just make life
-# easier if/when you rebuild later.
+# easier if/when you rebuild later. See /usr/share/mk/bsd.README
+# for exact definitions. See also the top-level Makefile in src.
 BUILD=1
 UPDATE=1
-
-# The following variables must be set in the environment;
-# /etc/mk.conf will not do!
-
-# Where the installed files go.
-DESTDIR=/usr/home/cjs/netbsd/install
-# Where the release goes (in release(7) format, of course).
+# Where to install the binaries
+DESTDIR=/usr/home/cjs/netbsd/destdir
+# Where to put the actual release files
 RELEASEDIR=/usr/home/cjs/netbsd/release
 </pre></blockquote>
-</li>
+
+Note that some scripts in the src directory require <b>DESTDIR</b> to be 
+set in the environment (e.g. checkflist, see below). Also setting 
+<b>DESTDIR</b> in
+<b>/etc/mk.conf</b> may affect building of packages in pkgsrc.
+You may find it easier and safer to set <b>DESTDIR</b> and
+<b>RELEASEDIR</b> in the environment or on the make command line.</li>
 
 <li> Change to your source directory, and build the release.
-<blockquote> <pre>
+<blockquote><pre>
 cd src
 make obj
 make release
-</pre> </blockquote>
+</pre></blockquote>
+
+Or you may wish to set some variables on the make command line. For
+example:
+<blockquote><pre>
+make DESTDIR=/home/destdir RELEASEDIR=/home/releasedir release
+</pre></blockquote>
 
 </ol>
 
-<p> Note that this process assumes that the setlists are up-to-date.
-You may want to check them. If you havn't done the `make release'
-stage yet, you need do only the following to get to the point where
-you can check the distribution lists.
+<h3> II. Building X </h3>
 
-<blockquote> <pre>
+<p> The information for building and packaging the X sets is similar
+to the main sets above. 
+Change directory into your X source directory and type:
+<blockquote><pre>make release</pre></blockquote>
+or if you are specifying variables on the make command line:
+<blockquote><pre>
+make DESTDIR=/home/destdir RELEASEDIR=/home/release
+</pre></blockquote>
+
+<p>
+Note that I and II assume that the set-lists are up-to-date.
+You may want to check them. Instead of doing `make release'
+in each case:
+
+<blockquote><pre>
 cd src
 make obj
 # Build the object code and install it.
 make build
 # Install the final bits of the distribution.
 cd src/etc && make distribution
-</pre> </blockquote>
-</p>
+# Make the xsrc object code and install it.
+cd xsrc && make build
+</pre></blockquote>
 
-<p> To check the setlists for accuracy, update them appropriately,
-and then make the tarfiles for the sets, do the following: 
-<blockquote> <pre>
+<p> To check the set-lists for accuracy, update them appropriately,
+and then make the tar files for the sets, do the following: 
+<blockquote><pre>
 cd src/distrib/sets
-sh ./checkflist
-# Edit lists/*/* as necessary.
+sh ./checkflist -both
+</pre></blockquote>
+Now edit the files src/distrib/sets/lists/*/* as necessary.
+<blockquote><pre>
 cd src/etc
 make INSTALL_DONE=1 release
-</pre> </blockquote>
-</p>
-
-<h3> II. Building The Domestic Base System </h3>
-
-<p> If you are located in the US or Canada, you still need to make
-the domestic (non-exportable) sets.  Edit your /etc/mk.conf file
-to remove or comment out the <b>EXPORTABLE_SYSTEM=1</b> line (or
-just unset it in your environment, if that's where it's set).
-Then touch a timestamp file and rebuild:
-<blockquote><pre>
-touch /tmp/export.build
-cd src
-make build
+cd xsrc
+make INSTALL_DONE=1 release
 </pre></blockquote>
-</p>
 
-<p> Once the domestic distribution is built, you make only the
-<b>secr.tgz</b> set, which includes only the domestic material:
+<h3> III. Building Installation Materials </h3>
+
+<p>
+On most architectures, the basic installation materials are 
+handled by the `make release' in step I above. However, sometimes there are 
+architecture-dependent things that need to be done  
+under src/distrib/<i>arch</i>; some of these are not yet
+documented here. The results then need to be put in <b>$RELEASEDIR</b> 
+by hand (following the conventions listed in the <i>release</i>(7) manual 
+page). 
+
+<p>
+To produce an ISO9660 image of a release for making CD-ROMs, do
+steps I and II and ensure that you have <i>mkisofs</i>(8) (from
+the <i><a
+href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/sysutils/cdrecord/README.html">cdrecord</a></i>
+package) installed on your machine and in your path. 
+Then:
 <blockquote><pre>
-cd $DESTDIR
-find . -newer /tmp/export.build | pax -w -d |\
-    gzip -9 &gt; $RELEASEDIR/binary/security/secr.tgz
+cd src/etc
+make iso-image
 </pre></blockquote>
-</p>
-
-
-<h3> III. Building X </h3>
-
-<p> The information for building and packaging the X sets is similar
-to the main sets above, but has yet to be filled in.
-A good starting point would be to build and install the X sets, then
-use
-<pre>sh src/distrib/maketars -x -s src/distrib/sets -t $RELEASEDIR -d /</pre>
-</p>
-
-<h3> IV. Building Installation Materials </h3>
-
-<p> There are generally architecture-dependent things that need to
-be done (such as making boot floppies) that are done under
-src/distrib/<i>arch</i>; these are not yet documented here. The
-results then need to be put in $RELEASEDIR by hand (following the
-conventions listed in the <i>release</i>(7) manual page). Eventually
-the `make release' target should build all of the installation
-materials, too. </p>
-
-<h3> <a name="alter"> V. Alternative Build Approach </a></h3>
-<h4> V(A). Rationale </h4>
-<table align=right cellpadding=7 border=1 width="27%">
-<tr><td><i>	Comments? Section V has been contributed at Curt's request
-		by Ross Harvey, <a href="mailto:ross@netbsd.org">
-		ross@netbsd.org</a>.
-	</i>
-</table>
-I have several concerns with respect to the ``find . -newer'' trick,
-release building in general, and I also have concerns about the
-the frequent experimentation and modification that occurs in the
-top level Makefiles.
-<ul>
-<li>	I doubt if<code> find . -newer </code>
-	is idempotent w.r.t. things like header installs.
-<li>	It may be sensitive to the existing configuration.
-<li>	It seems important not to distribute a release you aren't running,
-	but it also seems important to install to an empty directory so that
-	the sets are not packaged from a hierarchy with a history, but rather
-	from a brand new hierarchy.
-<li>	The build system doesn't naturally support building to an empty
-	directory, and the constant churning and tweaking that is done to
-	the top-level Makefiles in src and src/domestic in order to attempt
-	to do this makes the job of the snapshot or release builder harder
-	as he is confronted with the difficult task of reunderstanding the
-	build system over and over again.
-<li>	Another source of frequent experimentation and churn in the build
-	system involves a thoroughly doomed attempt to anticipate
-	dependencies. The result is increased complexity, more subtle
-	bugs, but no actual automatic dependency resolution.
-  <ul>	<li>
-	<table align=right cellpadding=7 border=1 width="27%">
-		<tr><td><i>Why is it impossible to anticipate
-				dependencies?</i> Because the
-				complexity of the problem is
-				at best a quadratic and at worse a
-				factorial function of the number
-				of source modules and files.
-	</table>
-	<i>Anticipating dependencies in five million lines of code
-	(which includes a toolchain) is impossible.</i> Each developer
-	that puts in complexity for dependency resolution thinks he
-	has contributed something worthwhile and feels it justifies the
-	additional complexity, but there is a price in build time, build
-	system complexity, and learning curve for all other present and
-	future developers that is never considered.
-	<li>
-	A better choice is to keep the build system simple and just always
-	build to / (unset DESTDIR or DESTDIR=/) first. Since the developer
-	must generally resolve the unanticipated dependencies by hand anyway,
-	it's better to keep things simple so he can at least easily understand
-	what is happening while he does it. This is the point where a
-	well-meaning
-	developer, having resolved a dependency by hand, barges
-	in and elaborates a top-level Makefile to automate the particular
-	pre-build that he just did by hand.
-	<li>
-	<i>But:</i> next time, it will be some <i>other</i> dependency,
-	and we will be forever dragging along the new top-level Makefile
-	complexity and bugs for no benefit. Simplicity, on the other hand,
-	is always rewarded.
-  </ul>
-</ul>
-Here is my procedure, which addresses all of these concerns and also works
-just fine with most of the versions of the top-level Makefiles over the
-past year. Plea: <i>please stop changing them!</i>
-
-	<table align=right cellpadding=7 border=1 width="27%">
-		<tr><td><i>On Dynamic Dependency:</i>
-		To advance an old source tree,
-		Alan Smithee suggests an interesting trick:
-		Build with all static links first, then rebuild
-		with normal dynamic images.
-	</table>
-
-<h4> V(B). Procedure </h4>
-
-<h5> V(B)1. Summary </h5>
-
-The exportable system is built and installed once to /. The
-secr code is built and installed once to /. The exportable system is then
-installed a second time to an initially empty<code> /usr/obj/dist
-</code>.
-The secr code is then installed
-a second time to an initially empty<code> /usr/obj/secr</code>.
-
-<h5> V(B)2. Detail </h5>
-
-<ol compact>
-	<li> <code>unset DESTDIR</code>
-	<li> <code>make build EXPORTABLE_SYSTEM=1</code>
-	<li> <code>cd domestic && make build</code>
-	<li> <code>cd /usr/obj && rm -rf dist secr && mkdir dist secr</code>
-	<li> <code>cd /usr/src/etc</code>
-        <li> <code>DESTDIR=/usr/obj/secr make distrib-dirs </code>
-        <li> <code>DESTDIR=/usr/obj/dist make EXPORTABLE_SYSTEM=1 distribution 
-		</code><i>(This does a </i><code>make includes</code><i>
-				and a </i><code>make install</code><i>
-				in </i><code>/usr/src</code><i>.)</i>
-        <li> <code>cd /usr/src/domestic</code>
-        <li> <code>DESTDIR=/usr/obj/secr make includes install</code>
-		<br>Now, combine the whatis.db files for secr.tgz.
-        <li> <code>cd /usr/src/share/man</code>
-        <li> <code>/usr/obj/dist/usr/libexec/makewhatis /usr/obj/secr/usr/share/man</code>
-        <li> <code>cd /usr/obj/secr/usr/share/man</code>
-        <li> <code>cat /usr/obj/dist/usr/share/man/whatis.db &gt;&gt; whatis.db</code>
-        <li> <code>sort -u whatis.db -o whatis.db</code>
-</ol>
-
-<h5> V(B)3. Command File </h5>
-
-For a command file incorporating the part of this procedure that
-follows the build to /, please see:
-	<a href="rsnap"> the <code>rsnap</code> script</a>.
+will make an ISO9660 image and save it in <b>$RELEASEDIR/installation/cdrom</b>.
 
 <hr>
 
-<p> This page can still use a lot of work. Comments and updates
-for this page may be sent to <a href="mailto:cjs@netbsd.org">
-cjs@netbsd.org</a>. </p>
+<p>
+This page can still use a lot of work. Comments and updates
+for this page may be sent to <a href="mailto:cjs@NetBSD.org">
+cjs@NetBSD.org</a>.
+<p>
 
-<hr>
-<table width="100%" cols="2" border=0 cellspacing=8 cellpadding=0>
-<tr>
-  <td width="50%">
-    <table><tr>
-      <td>
-	<a href="../../index.html">
-	<img src="../../images/NetBSD-banner.gif" alt=""></a>
-      </td><td>
-	<font face="helvetica, arial">
-	<a href="../../index.html">
-	<img src="../../images/empty.gif"
-		alt="NetBSD " border=0>Home Page</a>
-	</font>
-      </td>
-    </tr></table>
-  </td>
-  <td width="50%">
-    <table><tr>
-      <td>
-	<a href="index.html">
-	<img src="../../images/NetBSD-banner.gif"
-		alt=""></a>
-      </td><td>
-	<font face="helvetica, arial">
-	<a href="index.html">
-	<img src="../../images/empty.gif"
-		alt="NetBSD " border=0>Release Engineering Documentation</a>
-	</font>
-      </td>
-    </tr></table>
-  </td>
-</tr></table>
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../"><img
+        src="../../images/NetBSD-flag.png" border="0"  
+        width="90" height="90" alt=""></a>
+  </td><td>
+    <a href="../../"><img
+        src="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td>
+    <a href="../../developers/"><img
+        src="../../images/NetBSD-flag.png" border="0"  
+        width="90" height="90" alt=""></a>
+  </td><td>
+    <a href="../../developers/"><img
+        src="../../images/empty.gif" border="0"  
+        width="1" height="1" alt="NetBSD ">Developer Documentation</a>      
+  </td></tr></table>
+</td></tr></table>
 
 <hr>
 <address>
-  www@NetBSD.ORG<br>
-  $NetBSD: build-release.html,v 1.16 1999/08/01 19:54:35 abs Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
-    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: build-release.html,v 1.32 2004/10/30 22:34:20 jschauma Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
+
 </body>
 </html>

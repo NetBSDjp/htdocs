@@ -1,19 +1,20 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html> <head>
-<!-- Copyright (c) 1998, 1999 The NetBSD Foundation, Inc.
-     ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>How to actually perform a CVS pullup</title>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2003
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
+<title>How to actually perform a CVS pull-up</title>
 </head>
 
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>How to actually perform a CVS pullup</h1>
+<h1>How to actually perform a CVS pull-up</h1>
 
-This page gives an example of how a pullup is actually done.  In the
-current release cycle (1.4) developers are expected to do pullups
-themselves after confirmation from release engineering during the
-initial phase of the release cycle.<p>
+For a given release cycle, typically in the beginning, developers may
+be expected to do pull-ups themselves after approval from the release
+engineering team.<p>
 
 Let us say you are pulling up the changes between <code>foo.c</code>
 1.19 and 1.21.<p>
@@ -30,7 +31,7 @@ First, and foremost, make sure you are starting with a clean
 	cvs update -rnetbsd-1-4 foo.c
 </blockquote>
 
-(See note at the end about the effect of this command.)
+(See note at the end about the effect of this command.)<p>
 
 Then, you need to patch up foo.c to add the changes you want to pull
 up. There are two ways of doing this. You can create a patch file and
@@ -40,37 +41,38 @@ needing that.<p>
 The incantation:
 
 <blockquote>
-	cvs diff -c -r1.19 -r1.21 foo.c &gt;/tmp/patch
+	cvs diff -kk -c -r1.19 -r1.21 foo.c &gt;/tmp/patch
 </blockquote>
 
-will produce a patch file which you can then apply by doing 
+will produce a patch file which you can then apply by doing
 
 <blockquote>
 	patch &lt;/tmp/patch
 </blockquote>
 
-The command
+or by feeding it directly to patch via a pipe.  The command
 
 <blockquote>
-	cvs update -j1.19 -j1.21 foo.c
+	cvs update -kk -j1.19 -j1.21 foo.c
 </blockquote>
 
 is essentially equivalent to the two steps listed above, and will
 similarly patch your file.<p>
 
 Now manually examine the file to make sure What You Wanted Done Is
-Done. If you are trying to make <code>foo.c</code> identical to the
+Done.  If you are trying to make <code>foo.c</code> identical to the
 head (presumably 1.21 is the head and 1.19 was the branch point or
 some such), you can do a
 
 <blockquote>
-	cvs diff -r1.21 foo.c
+	cvs diff -kk -r1.21 foo.c
 </blockquote>
 
-and the only diff should be the RCS Id. If <code>foo.c</code> isn't
-supposed to be identical to the head, you are going to have to make
-sure things are okay manually or use creative sets of cvs diffs to
-assure that what you wanted done was done.<p>
+and this should produce no diff (-kk prevents the expansion of RCS
+IDs).  If <code>foo.c</code> isn't supposed to be identical to the
+head, you are going to have to make sure things are okay manually or
+use creative sets of cvs diffs to assure that what you wanted done was
+done.<p>
 
 In any case, once done, do a:
 
@@ -78,24 +80,37 @@ In any case, once done, do a:
 	cvs commit foo.c
 </blockquote>
 
-The commit message <b>must</b> contain information about precisely
-what versions you pulled up in the commit message.  This is so that if
-somebody else has to do a pullup on the same file later (or if you
-might have to, and you might lose track) they will be able to.  Later
-could be a year from now, so don't assume that you'll remember the
-details of a particular pullup.<p>
+The format of the commit message on a release branch has over time
+been formalized to ease tracking and maintenance.  The format of the
+first line of the commit message should be one of the following:
 
-The commit message <b>should</b> also give a detailed message
-explaining why the pullup was done.<p>
+<ul>
+<li><tt>Pull up revision 1.45 (requested by <em>user</em>):</tt>
+<li><tt>Pull up revision 1.45 (via patch, requested by <em>user</em>):</tt>
+<li><tt>Pull up revisions 1.1-1.5 (new, requested by <em>user</em>):</tt>
+<li><tt>Apply patch (requested by <em>user</em>):</tt>
+</ul>
 
-So an example of an absolute minimum pullup message is "pulled up
-1.21-1.23".  This means, BTW, that you must <em>not</em> do a bunch of
-pullups in the same directory and then commit them with a message like
-"sync with trunk," because that won't say what versions you pulled
-up.<p>
+or obvious minor variations over these themes.  The rest of the commit
+message shall contain a free-format text explaining why the pull-up
+was done.  This message should preferably be an "externally sensible"
+message explaining <b>what</b> was fixed, not the exact details of how
+it was done.  The text of this message should be indented by two
+spaces, and for patch releases this text should also go in as an entry
+in the appropriate CHANGES file.<p>
+
+If the pull-up fixes a formally reported problem, this should be noted
+as <b>Fixes PR#nnnn</b> at the end of the commit message text.<p>
+
+The fact that we want exact revision numbers recorded in the commit
+message means, BTW, that you must <em>not</em> do a bunch of pull-ups
+in the same directory and then commit them with a message like "sync
+with trunk," because that won't say what versions you pulled up.
+<p>
 
 <hr>
 
+<p>
 Note that the command
 
 <blockquote>
@@ -109,48 +124,41 @@ to this release until you unstick this "glue" with
 <blockquote>
 	cvs update -A foo.c
 </blockquote>
+<p>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../"><img
+        src="../../images/NetBSD-flag.png" border="0"  
+        width="90" height="90" alt=""></a>
+  </td><td>
+    <a href="../../"><img
+        src="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td>
+    <a href="../../developers/"><img
+        src="../../images/NetBSD-flag.png" border="0"  
+        width="90" height="90" alt=""></a>
+  </td><td>
+    <a href="../../developers/"><img
+        src="../../images/empty.gif" border="0"  
+        width="1" height="1" alt="NetBSD ">Developer Documentation</a>      
+  </td></tr></table>
+</td></tr></table>
 
 <hr>
-<table width="100%" cols="2" border=0 cellspacing=8 cellpadding=0>
-<tr>
-  <td width="50%">
-    <table><tr>
-      <td>
-	<a href="../../index.html">
-	<img src="../../images/NetBSD-banner.gif" alt=""></a>
-      </td><td>
-	<font face="helvetica, arial">
-	<a href="../../index.html">
-	<img src="../../images/empty.gif"
-		alt="NetBSD " border=0>Home Page</a>
-	</font>
-      </td>
-    </tr></table>
-  </td>
-  <td width="50%">
-    <table><tr>
-      <td>
-	<a href="index.html">
-	<img src="../../images/NetBSD-banner.gif"
-		alt=""></a>
-      </td><td>
-	<font face="helvetica, arial">
-	<a href="index.html">
-	<img src="../../images/empty.gif"
-		alt="NetBSD " border=0>Release Engineering Documentation</a>
-	</font>
-      </td>
-    </tr></table>
-  </td>
-</tr></table>
-
-<hr>
-<address>  www@NetBSD.ORG<br>
-  $NetBSD: howto-pullup.html,v 1.3 1999/07/07 02:36:43 abs Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
-    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+<address>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: howto-pullup.html,v 1.15 2004/10/30 22:34:20 jschauma Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
-<!-- hhmts start -->
-Last modified: Wed Apr  7 19:07:30 MEST 1999
-<!-- hhmts end -->
-</body> </html>
+
+</body>
+</html>
