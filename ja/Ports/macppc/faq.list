@@ -140,6 +140,55 @@ OK、これで「マルチユーザーモード」に入り、ブートの過程が終わりました。
 <a href="#usb-keyboard-problems">USB キーボード</a>および
 <a href="#powerbook">最近のラップトップ</a>向けの項目を見てください。
 
+
+<ENTRY>disk-sharing マシン上の OS 間でファイルを共有する方法は ?
+残念ながら、素の NetBSD は、 Macintosh のファイルシステム (HFS、 HFS+ と UFS)
+をサポートしていませんので、次善策を取らねばなりません。 NetBSD
+パッケージコレクションから、
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">hfstools</a>
+や
+<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">xhfs</a>
+をインストールします。これらのユーティリティーを使うことで、コマンドラインや
+グラフィカルブラウザーから、 HFS 上のファイルが読み書きできます (HFS+ や UFS
+には<i>使えません</i>) 。これでは不都合がある場合は、さらに続きを読んでください。
+
+<p>MS-DOS フォーマットのパーティションを作ります。古い MacOS ではこれを自動的に
+マウントしますし、 unix-like OS (NetBSD、 linuxpcc、および MacOS X) では
+<tt>mount_msdos</tt> コマンドを使ってマウントできます。
+以下に、最も素直な方法の手順を概説します。
+
+<p><ol>
+<li>MacOS で Drive Setup (訳註: 日本語版ではドライブ設定) を使い、
+ハードドライブのパーティションを切ります。<i>これにより、
+ハードドライブ上の情報はすべて消えます</i>
+
+<p><li>次に、
+<a href="http://hyperarchive.lcs.mit.edu/cgi-bin/NewSearch?key=disk+charmer&search=&sp=sp">
+Disk Charmer</a> または
+<a href="http://www.versiontracker.com/moreinfo.fcgi?id=1253">DiskCharmer</a>
+を入手し、 MS-DOS ファイルシステムを作るよう設定します。
+設定画面は次のようになるはずです:
+<br>
+<img src="/images/ports/macppc/diskcharmer.gif" origlink="../../images/ports/macppc/diskcharmer.gif" alt="screenshot of DiskCharmer">
+
+<p><li>パーティションを DiskCharmer のウィンドウ上にドラッグします。すると、
+最初に作った HFS パーティションを消去し、そこに MS-DOS ファイルシステムを
+作る前に、プロンプトが出ます。
+
+<p><li>これで、古い MacOS をブートしたら、このパーティションが PC Exchange
+または File Exchange (これの呼び名は MacOS のバージョンによります)
+によって自動的にマウントされるようになりました。
+
+<p>MacOS X、 linuxppc や NetBSD をブートしたときは、次のコマンドを実行します:
+<pre>mkdir -p /msdos.filesystem;/sbin/mount_msdos -m 777 /dev/disk0s11 /msdos.filesystem</pre>
+
+ここで <tt>/msdos.filesystem</tt> はあなたが決めたマウントポイント、
+<tt>/dev/disk0s11</tt> はそのパーティションのデバイス名です。あるいは、
+NetBSD や linuxppc では、 <tt>/etc/fstab</tt> に項目を追加して、
+このファイルシステムがいつもマウントされるようにもできます。 MacOS X でも
+このような方法があるかもしれませんが、私はその方法をまだ知りません。
+</ol>
+
 <ENTRY>usb-mouse-bug USB マウスが認識されません。
 
 キーボードでなく、 Mac 本体背面に直接接続してみてください。
@@ -1419,7 +1468,7 @@ alt="option key"> 印の付いたキーがあります。
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: faq.list,v 1.61 2001/04/10 07:13:14 mbw Exp $<br>
+  $NetBSD: faq.list,v 1.62 2001/04/15 23:21:51 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
