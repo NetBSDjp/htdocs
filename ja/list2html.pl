@@ -409,10 +409,10 @@ sub makelist
 			"$end_title_font</li>\n";
 		if (@date_links < $list_date_links)
 		    {
-		    push(@date_links, "<li>\n".
+		    push(@date_links, "<li><font size=\"-1\">\n".
 				      "<a href=\"Changes/#$href\">\n".
 				      "    $link</a>\n".
-				      "</li>\n");
+				      "</font></li>\n");
 		    }
 		$in_entry = 1;
 		}
