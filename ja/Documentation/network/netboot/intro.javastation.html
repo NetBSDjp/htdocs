@@ -4,92 +4,93 @@
 <head>
 <!-- Copyright (c) 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>Introduction (JavaStation specific), Diskless NetBSD HOW-TO</title>
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<title>Diskless NetBSD HOW-TO, 序説 (JavaStation 固有な部分)</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="intro.html">Previous</a> |
-<a href="dhcpd.html">Next</a> |
-<a href="./">Table of Contents</a>
+<a href="intro.html">戻る</a> |
+<a href="dhcpd.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Introduction (Open Firmware-based JavaStation-specific), Diskless
-NetBSD HOW-TO</h1>
+<h1>Diskless NetBSD HOW-TO, 序説
+(Open Firmware ベースの JavaStation 固有な部分)</h1>
 
-<h2>Sun Firmware procedures</h2>
+<h2>Sun Firmware での手順</h2>
 <dl><dt><dd>
-<big><b>Which JavaStations can netboot</b></big>
+<big><b>どの JavaStations が netboot 可能か</b></big>
 <p>
 
-All JavaStations default to booting over a network interface. 
+すべての JavaStations は、デフォルトでネットワークインターフェースからブートします。
 <p>
 
-There are currently two supported JavaStation models, the JavaStation-1
-and the JavaStation-10.  Some JavaStation-1 units have OpenBoot PROM 2,
-and you should follow the directions in the normal <a
-href="intro.sun.html">sparc-specific</a> Diskless NetBSD HOW-TO.  Some
-JavaStation-1 and all JavaStation-10 units have Open Firmware.  You should
-follow the directions below for these units.
+現在のところ、 JavaStation-1 と JavaStation-10 のふたつのサポート機種が
+あります。 JavaStation-1 の一部のユニットは OpenBoot PROM 2 を持っており、
+こちらは通常の <a href="intro.sun.html">sparc 固有</a> の Diskless NetBSD
+HOW-TO の方法に従ってください。これ以外の JavaStation-1 とすべての
+JavaStation-10 ユニットは Open Firmware を持っています。これらでは、
+以下に示す手順に従ってください。
 <p>
 
-<big><b>Determining your ethernet hardware address</b></big>
+<big><b>イーサネットハードウェアアドレスを調べる</b></big>
 <p>
-When you power on your machine, it will print out its MAC address.  If it
-claims your ethernet address is <tt>ff:ff:ff:ff:ff:ff</tt>, then your
-NVRAM battery is dead.  See the 
+マシンの電源を入れると MAC アドレスが表示されます。このとき、
+イーサネットアドレスが <tt>ff:ff:ff:ff:ff:ff</tt> であると表示された場合は、
+NVRAM バッテリーが切れています。
 <a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">Sun
-NVRAM/Hostid FAQ</a>.  Your system will not netboot without a working NVRAM.
+NVRAM/Hostid FAQ</a> を参照してください。動作する NVRAM がないとネットブートはできません。
 <p>
 
-<big><b>Obtaining an IP address and downloading the boot loader</b></big>
+<big><b>IP アドレスの取得とブートローダーのダウンロード</b></big>
 <p>
 
-Open Firmware-based JavaStations first try to acquire an IP address using
-the Dynamic Host Configuration protocol (DHCP) The dhcpd server uses the
-ethernet address (MAC) of the client machine to determine its IP address
-and a bootloader filename. If this request is successful, Open Firmware
-expects to be able to download a second-stage boot program via the Trivial
-File Transfer Protocol (TFTP). It will do this by setting up a TFTP
-connection to the server that answered the earlier DHCP request, and
-asking for the file name returned by the server. The second-stage boot
-program then loads the kernel using NFS from the server and path specified
-by the DHCP request.
+Open Firmware ベースの JavaStation は、まず、 Dynamic Host Configuration
+protocol (DHCP) を使って IP アドレスを得ようとします。 dhcpd サーバーは、
+クライアントのイーサネットアドレス (MAC) をもとに、割り当てる
+IP アドレスとブートローダーのファイル名を決定します。
+このリクエストが成功すると、 Open Firmware は
+Trivial File Transfer Protocol (TFTP) を使って
+2 段階目のブートプログラムをダウンロードする体制に入ります。
+これは、最初の DHCP のリクエストに応えたサーバーに TFTP コネクションを張り、
+サーバーから教えられたファイル名のファイルを要求することで行なわれます。
+2 段階目のブートプログラムは、 DHCP で得られたサーバーとパスを元に
+NFS を使ってカーネルをロードします。
 
-<p>You should use the <tt>bootjs.elf</tt> bootloader for Open Firmware-based
-JavaStations, <i>not</i> <tt>boot.net</tt>.
+<p>Open Firmware ベースの JavaStation 用のブートローダーは、 <tt>boot.net</tt>
+では<i>なく</i>、 <tt>bootjs.elf</tt> を使う必要があります。
 </dd></dt></dl>
 
-<h2>Open Firmware commands</h2>
+<h2>Open Firmware のコマンド</h2>
 <dl><dt><dd>
-The default boot device is <tt>net</tt>.  You should not even need to enter
-the Open Firmware environment to netboot a JavaStation.  If you wish to specify
-an alternate NetBSD kernel name (e.g. <tt>netbsd-test</tt>), type at the Open
-Firmware prompt:
+デフォルトのブートデバイスは <tt>net</tt> です。 JavaStation をネットブート
+するために Open Firmware 環境に入る必要すらありません。別の NetBSD カーネル名
+(たとえば <tt>netbsd-test</tt>) を指定したい場合は、 Open Firmware
+プロンプトで以下のようにタイプします:
 <pre>0 &gt; <b>boot net netbsd-test</b></pre>
 </dd></dl>
 
-<h2>Begin setting things up (suggested order):</h2>
+<h2>設定を始める (次の順番に読むのが良いでしょう):</h2>
 <dl><dt><dd>
-Get <tt>bootjs.elf</tt> from the NetBSD/sparc distribution.  This is what
-is sent by TFTP.  Copy this file to <tt>/tftpboot</tt>
+NetBSD/sparc 配布物に含まれる <tt>bootjs.elf</tt> を用意してください。これは
+TFTP で送られるものです。このファイルを <tt>/tftpboot</tt> にコピーしておきます。
 <p>
 
 <ol>
 <li><a href="dhcpd.html"><tt>dhcpd</tt></a>
 <li><a href="tftpd.html"><tt>tftpd</tt></a>
 <li><a href="nfs.html"><tt>nfs</tt></a>
-<li><a href="files.html">client filesystem</a>
-<li><a href="finish.html">finishing up</a>
+<li><a href="files.html">クライアントのファイルシステム</a>
+<li><a href="finish.html">完了</a>
 </ol>
 </dd></dl>
 
 <hr>
 
-<a href="intro.html">Previous</a> |
-<a href="dhcpd.html">Next</a> |
-<a href="./">Table of Contents</a>
+<a href="intro.html">戻る</a> |
+<a href="dhcpd.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -101,7 +102,7 @@ is sent by TFTP.  Copy this file to <tt>/tftpboot</tt>
   </td><td>
     <a href="../../../"><img
         src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -118,7 +119,9 @@ is sent by TFTP.  Copy this file to <tt>/tftpboot</tt>
 <hr>
 <address>
   <small>
-  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  (連絡先 - <a href="../../../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
   $NetBSD: intro.javastation.html,v 1.1 2002/03/06 06:19:18 mbw Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
