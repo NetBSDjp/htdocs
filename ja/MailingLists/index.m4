@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.147 2003/11/27 13:37:46 heinz Exp $
+#	$NetBSD: index.m4,v 1.149 2004/01/25 18:52:45 christos Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -234,6 +234,9 @@ ENDLIST
 LIST(regional-boston)
   Discussion relevant to users in Boston.
 ENDLIST
+LIST(regional-ca)
+  Discussion relevant to users in Canada.
+ENDLIST
 LIST(regional-cs)
   Discussion relevant to users in Czech Republic &amp; Slovak Republic.
 ENDLIST
@@ -260,6 +263,9 @@ LIST(regional-nyc)
 ENDLIST
 LIST(regional-pl)
   Discussion relevant to users in Poland.
+ENDLIST
+LIST(regional-pt)
+  Discussion relevant to users in Portugal.
 ENDLIST
 LIST(regional-sfba)
   Discussion relevant to users in the San Francisco Bay Area.
@@ -702,7 +708,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.147 2003/11/27 13:37:46 heinz Exp $<br>
+  $NetBSD: index.m4,v 1.149 2004/01/25 18:52:45 christos Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
