@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.140 2003/08/04 12:21:42 soren Exp $
+#	$NetBSD: index.m4,v 1.146 2003/10/20 13:14:29 perry Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -241,6 +241,9 @@ ENDLIST
 LIST(regional-fr)
   フランス在住のユーザー向けの議論用です。
 ENDLIST
+LIST(regional-it)
+  イタリア在住のユーザー向けの議論用です。
+ENDLIST
 LIST(regional-jp)
   日本在住のユーザー向けの議論用です。
 ENDLIST
@@ -261,6 +264,9 @@ LIST(regional-pl)
 ENDLIST
 LIST(regional-sfba)
   サンフランシスコ湾岸在住のユーザー向けの議論用です。
+ENDLIST
+LIST(tech-cluster)
+  NetBSD ホストによるクラスターの構築や運用に関する技術的な議論用です。
 ENDLIST
 LIST(tech-embed)
   組み込みシステム上の NetBSD の使用に関する議論用です。
@@ -320,6 +326,12 @@ ENDLIST
 LISTSECTION(機種別のリスト)
 
   <ul>
+PORTLIST(port-acorn26)
+  ARMv2 と ARMv2a マシン上の NetBSD (NetBSD/arm26)
+  固有の事項の議論用です。
+  ARM ベースのすべてのポートに関する質問のための
+  <a href="#port-arm">port-arm</a> リストもあります。
+ENDLIST
 PORTLIST(port-acorn32)
   ARM6 およびそれ以降の CPU ベースのマシン上の NetBSD
   (NetBSD/acorn32) 固有の事項の議論用です。
@@ -358,16 +370,10 @@ LIST(port-arm)
   ARM ベースの NetBSD ポートすべてに関する事項の議論用です。
   ポート別のリストがありますので、各ポートに固有の質問や情報は
   そちらをご利用ください:
+  <a href="#port-acorn26">port-acorn26</a>、
   <a href="#port-acorn32">port-acorn32</a>、
-  <a href="#port-arm26">port-arm26</a>、
   <a href="#port-cats">port-cats</a>、
   <a href="#port-hpcarm">port-hpcarm</a>。
-ENDLIST
-PORTLIST(port-arm26)
-  ARM2 と ARM3 ベースのマシン上の NetBSD (NetBSD/arm26)
-  固有の事項の議論用です。
-  ARM ベースのすべてのポートに関する質問のための
-  <a href="#port-arm">port-arm</a> リストもあります。
 ENDLIST
 PORTLIST(port-atari)
   Atari の TT030、 Falcon、 Hades マシン上の NetBSD (NetBSD/atari)
@@ -398,23 +404,11 @@ PORTLIST(port-dreamcast)
   日立 Super-H (SH3/4) チップベースのすべてのポートに関する質問のための
   <a href="#port-sh3">port-sh3</a> リストもあります。
 ENDLIST
-PORTLIST(port-evbarm)
-  ARM ベースの評価ボード上の NetBSD (NetBSD/evbarm)
-  固有の事項の議論用です。
-  ARM ベースのすべてのポートに関する質問のための
-  <a href="#port-arm">port-arm</a> リストもあります。
-ENDLIST
 PORTLIST(port-evbmips)
   MIPS ベースの CPU を持つ評価ボード上の NetBSD (NetBSD/evbmips)
   固有の事項の議論用です。現在のところ MIPS Malta がサポートされています。
   MIPS ベースのすべてのポートに関する質問のための
   <a href="#port-mips">port-mips</a> リストもあります。
-ENDLIST
-PORTLIST(port-evbsh3)
-  日立 SuperH(TM) SH3/4 評価ボード上の NetBSD (NetBSD/evbsh3)
-  固有の事項の議論用です。
-  sh3 ベースのすべてのポートに関する質問のための
-  <a href="#port-sh3">port-sh3</a> リストもあります。
 ENDLIST
 PORTLIST(port-hp300)
   Hewlett-Packard の 9000/300 および 9000/400 シリーズのマシン上の NetBSD
@@ -518,17 +512,17 @@ PORTLIST(port-mvmeppc)
   PowerPC ベースのすべてのポートに関する質問のための
   <a href="#port-powerpc">port-powerpc</a> リストもあります。
 ENDLIST
-PORTLIST(port-newsmips)
-  MIPS ベースの Sony NEWS システム上の NetBSD (NetBSD/newsmips)
-  固有の事項の議論用です。
-  MIPS ベースのすべてのポートに関する質問のための
-  <a href="#port-mips">port-mips</a> リストもあります。
-ENDLIST
 PORTLIST(port-news68k)
   68k ベースの Sony NEWS システム上の NetBSD (NetBSD/news68k)
   固有の事項の議論用です。
   Motorola 68k ベースのすべてのポートに関する質問のための
   <a href="#port-m68k">port-m68k</a> リストもあります。
+ENDLIST
+PORTLIST(port-newsmips)
+  MIPS ベースの Sony NEWS システム上の NetBSD (NetBSD/newsmips)
+  固有の事項の議論用です。
+  MIPS ベースのすべてのポートに関する質問のための
+  <a href="#port-mips">port-mips</a> リストもあります。
 ENDLIST
 PORTLIST(port-next68k)
   68k ベースの NeXT 「黒いハードウェア」上の NetBSD (NetBSD/next68k)
@@ -607,6 +601,9 @@ PORTLIST(port-sh3)
   そちらをご利用ください:
   <a href="#port-dreamcast">port-dreamcast</a>、
   <a href="#port-hpcsh">port-hpcsh</a>。
+ENDLIST
+PORTLIST(port-sh5)
+  SH5 ベースの NetBDS ポートすべてに関する事項の議論用です。
 ENDLIST
 PORTLIST(port-sparc)
   Sun の 32 ビット Sparc ベースのマシン上の NetBSD (NetBSD/sparc)
@@ -702,7 +699,7 @@ divert(9)
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.140 2003/08/04 12:21:42 soren Exp $<br>
+  $NetBSD: index.m4,v 1.146 2003/10/20 13:14:29 perry Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
