@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $
+#	$NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $
 #	Copyright (c) 1994-2004
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -322,7 +322,7 @@ LIST(tech-smp)
   NetBSD のマルチプロセッサー対応に関する技術的事項の議論用です。
 ENDLIST
 LIST(tech-toolchain)
-  toolchain に関する技術的な議論用です。
+  toolchain および構築システムに関する技術的な議論用です。
 ENDLIST
 LIST(tech-userlevel)
   POSIX 準拠、コンパイル環境など、さまざまな
@@ -725,7 +725,7 @@ divert(9)
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $<br>
+  $NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
