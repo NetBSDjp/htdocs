@@ -1,0 +1,82 @@
+NetBSD/hpcmips installation 
+	- to make your file system on Compact Flush -
+$NetBSD: install.txt,v 1.1 2000/02/16 09:22:41 jun Exp $
+
+1. CF partition
+fdisk CF partition
+/dev/wd1a	ffs   112M	
+/dev/wd1b	swap   10M	
+/dev/wd1e	msdos	5M
+
+tips:
+How to create CE-readable msdos partition on CF?
+    - make sysid 6 primary partition with fdisk.
+    - Set CF to Windows CE CF slot.
+    - Windows CE will do formatting sysid 6 partition.
+    
+fdisk command results.
+      .........
+
+disklabel command results.
+      .........
+
+2. newfs & mount PC
+newfs /dev/wd1a 
+mount /dev/wd1a /mnt
+mount -t msdos /dev/wd1e /msdos2
+
+tips:
+pbsdboot.exe can find /netbsd kernel on CF ffs partition.
+if your CF has both msdos partition and ffs partition,
+pbsdboot.exe can find ffs:/netbsd from Windows CE environment.
+if so,you don't need to set kernel file on msdos partition.
+
+3. get distribution
+get base.tgz etc.tgz kern.tgz
+	ftp://ftp.netbsd.org/pub/NetBSD/arch/hpcmips/snapshot/snap-1999100
+
+4. copy kernel
+tar xzvf kern.tgz
+	netbsd    - root wd0a swap wd0b
+	sdnetbsd  - root sd0a swap sd0b
+	nfsnetbsd - root nfs  swap nfs
+
+cp -p netbsd /mnt/netbsd
+cp -p netbsd /msdos2/netbsd
+
+5. copy pbsdboot
+uudecode /usr/src/arch/hpcmips/stand/pbsdboot/pbsdboot.uu
+cp -p pbsdboot.exe /msdos2/pbsdboot.exe
+
+6. extract sets
+tar xzvf base.tgz -C /mnt
+tar xzvf etc.tgz  -C /mnt
+
+7. make device nodes
+
+cd /mnt/dev
+sh ./MAKEDEV all
+
+8. check /etc
+
+cp /mnt/etc/fstab.wd /mnt/etc/fstab
+edit /etc/fstab
+
+edit /etc/rc.conf
+
+rc_configured=NO  -> rc_configured=YES
+
+9. Full installation
+
+to Make Build,need 500M over storage.
+
+CF slot:NE-2000 Compatible CF Ether Card
+PCMCIA slot: Adaptec PCMCIA SCSI Card+SCSI Hard Disk
+
+% df
+Filesystem  1K-blocks     Used    Avail Capacity  Mounted on
+/dev/sd0a      808619   146213   621975    19%    /
+kernfs              1        1        0   100%    /kern
+procfs              4        4        0   100%    /proc
+/dev/sd0e     2103325   271547  1726611    13%    /usr/src
+
