@@ -94,7 +94,7 @@ width=146 height=129 alt="BSD demon"></a>
     <a href="$HOME/">
     <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
-    <!--<font face="helvetica, arial">-->
+    <font <!--face="helvetica, arial" -->>
     <a href="$HOME/">
     <img src="$HOME/images/empty.gif" border=0
 	    alt="NetBSD ">ホームページ</a>
@@ -111,7 +111,7 @@ width=146 height=129 alt="BSD demon"></a>
     <a href="$HOME/">
     <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
-    <!--<font face="helvetica, arial">-->
+    <font <!--face="helvetica, arial" -->>
     <a href="$HOME/">
     <img src="$HOME/images/empty.gif" border=0
      alt="NetBSD ">ホームページ</a>
@@ -124,7 +124,7 @@ width=146 height=129 alt="BSD demon"></a>
     <a href="$DEVELOPERS">
     <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
-    <font face="helvetica, arial">
+    <font <!-- face="helvetica, arial" -->>
     <a href="$DEVELOPERS">
     <img src="$HOME/images/empty.gif" border=0
      alt="NetBSD ">開発者ドキュメント</a>
@@ -143,7 +143,7 @@ width=146 height=129 alt="BSD demon"></a>
     <a href="$HOME/">
     <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
-    <font face="helvetica, arial">
+    <font <!-- face="helvetica, arial" -->>
     <a href="$HOME/">
     <img src="$HOME/images/empty.gif" border=0
      alt="NetBSD ">ホームページ</a>
@@ -156,7 +156,7 @@ width=146 height=129 alt="BSD demon"></a>
     <a href="$DOCUMENTATION">
     <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
-    <font face="helvetica, arial">
+    <font <!-- face="helvetica, arial" -->>
     <a href="$DOCUMENTATION">
     <img src="$HOME/images/empty.gif" border=0
      alt="NetBSD ">Documentation top level</a>
@@ -285,7 +285,7 @@ sub makelist
     my($data,$section,$href,$header,$list,$pre,%tags,$date_month);
     my($date_num,$date_num_used,$entry_num,$ignore,$in_entry,$in_section);
     my($endlist);
-    my($title_font) = "<font face=\"helvetica, arial, sans-serif\">";
+    my($title_font) = "<font <!-- face=\"helvetica, arial, sans-serif\" -->>";
     my($end_title_font) = "</font>";
     my(%rcsmap)=&extract_tags($outfile,'\$NetBSD.*\$');
     my($rcstag, $in_trow);
