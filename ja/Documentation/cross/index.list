@@ -9,117 +9,119 @@
 
 <body bgcolor="#FFFFFF" text="#000000">
 
-<HEADING>Cross-building NetBSD
+<HEADING> NetBSD のクロス構築
 
 <LIST>
 
-<h2>Other sources of information</h2>
+<h2>他の情報源</h2>
 <ul>
-<li><a href="../current/">Tracking NetBSD-current</a>
-<li><a href="../../Documentation/">General NetBSD Documentation</a>
-    - for questions not specific to cross building.
+<li><a href="../current/">NetBSD-currentの追跡</a>
+<li><a href="../../Documentation/">総合的な NetBSD ドキュメンテーション</a>
+    - クロス構築だけに限らない疑問について。
 </ul>
 
-<SECTION>Frequently asked questions
+<SECTION>繰り返される質問
 
-<ENTRY>terminology  Terminology
+<ENTRY>terminology  用語
 <ul>
-<li>Host system: the system you are willing to perform cross bulid.
-
-<li>Target system: the system you are willing to perform cross bulid for.
-
-<li>Cross build: if the host system is different from the target system,
-you are running a cross build.
-
-<li>Self build: if the host system is equal to the target system,
-you are runing a self build.
+<li>ホストシステム: クロス構築で、作業そのものを行おうとするシステム。
+<li>ターゲットシステム: クロス構築の作業結果を動かそうとするシステム。
+<li>クロス構築: ターゲットシステムとホストシステムが異なる場合に行うのがクロス構築。
+<li>セルフ構築: ターゲットシステムとホストシステムが同じ場合、セルフ構築。
 </ul>
 
-If you are running build on top of NetBSD/i386 to produce NetBSD/sh3 binary,
-you are running a cross build.
-NetBSD/i386 is the "host system", and NetBSD/sh3 is the "target system".
+ NetBSD/i386 上で、 NetBSD/sh3 のバイナリーを構築するなら、
+ クロス構築 をします。
+NetBSD/i386 が "ホストシステム" で、 NetBSD/sh3 が "ターゲットシステム" です。
 
-<ENTRY>why  Why cross-build?  When do we need to do cross-builds?
-Here are couple of reasons for cross-builds:
+<ENTRY>why  どうしてクロス構築?  クロス構築が必要なのはいつ?
+
+ クロス構築の2つの理由は:
 <ul>
-<li>NetBSD supports <A HREF="../../Ports/">numerous architectures</A>.
-Some of them are not that performant compared to other modern architectures.
-If you would like to build more frequently for older architectures,
-cross build is a good solution.
+<li>NetBSD <A HREF="../../Ports/">非常に多くのアーキテクチャー</A> を
+サポートします。
+それらのいくつかは、他の現代的アーキテクチャーに比べ性能は低いです。
+古いアーキテクチャー向けに何度も構築作業を行うなら、
+クロス構築は良い解決法です。
 
-<li>If the target systems is embedded system products (like cellphones),
-and you would like to port NetBSD onto that, you may not be able to run
-self build on top of the target system.
+<li>もし、 ターゲットシステムが(携帯電話のような)組み込みシステム製品で、
+それに、 NetBSD を移植しようとするなら、
+ ターゲットシステム上で セルフ構築 をできないかもしれません。
 
-<li>If you need to build NetBSD binary on top of non-NetBSD host system for
-some reason, you need to run a cross build.
+<li>もし何らかの理由で、 NetBSD ではないホストシステム でNetBSD バイナリーを
+構築する必要があるなら、 クロス構築する必要があります。
 
-<li>If you are trying to port NetBSD onto new architecture,
-cross compilation would be the only choice.
+<li> NetBSD を新しいアーキテクチャーに移植しようとするなら、
+クロスコンパイルだけが、唯一の選択肢です。
 </ul>
 
-<ENTRY>caveats  Caveats?
-With cross build, compiler settings get trickier.
-With cross build configuration compiler bugs tend to show up
-more frequently.
-We also need to use different version of compiler from self builds,
-so compiler compatibility issue (like between differet version of GCC, or
-compiler from different vendors) can become a headache.
+<ENTRY>caveats  警告?
+ クロス構築には、コンパイラーの設定を巧妙にします。
+ クロス構築設定において、コンパイラー バグ は、よりしばしば現れる傾向があります。
+
+また、セルフ構築と異なるバージョンのコンパイラーを使う必要があることもあり、
+それで、コンパイラーの互換性問題( GCC のバージョンが違うとか、他のベンダーのコンパイラー
+であるとか)が頭痛の種となることがあります。
 <p>
 
-With <tt>pkgsrc/cross</tt>, cross build for a.out PIC is not supported.
+<tt>pkgsrc/cross</tt> では、a.out PIC へのクロス構築はサポートされていません。
 <p>
 
-Use the correct cpp, or you will be in trouble with predefined symbols
-like <tt>__NO_LEADING_UNDERSCORES__</tt> or <tt>__LITTLE_ENDIAN__</tt>.
+正しい cpp を使ってください。さもないと
+ <tt>__NO_LEADING_UNDERSCORES__</tt> や <tt>__LITTLE_ENDIAN__</tt> のような、
+あらかじめ定義されたシンボルで困ることになります。
 <p>
 
-Of course we need to do more about stabilizing cross builds.
+もちろん、クロス構築をもっと安定させる必要はあります。
 
-<SECTION>Step-by-step
+<SECTION>道のり
 
-<ENTRY>host-system  Selecting a host system
-If you have no particular reasons, we'd suggest you to use NetBSD
-(probably the latest release, or netbsd-current) as your host system.
-It would be so much easier if you use NetBSD as your host system,
-as you will be able to use the same /usr/bin/make, /usr/share/mk/*, and such.
+<ENTRY>host-system  ホストシステムの選択
+特別な理由がなければ、ホストシステムには、
+ NetBSD(多分 最新のリリース または netbsd-current)  を使うことを勧めます。
+ホストシステムに NetBSD を使えば、
+ /usr/bin/make や /usr/share/mk/*, 等が同じ物を使えるので、
+より簡単です。
 
-<ENTRY>cross-compiler Preparing cross compiler
-If you are building for NetBSD target system on top of NetBSD host system,
-NetBSD package system has cross compiler configuration under "cross" directory.
-For example, if your target system is NetBSD/sh3,
-<PKGSRC>cross/sh-netbsdcoff (for big endian) and
-<PKGSRC>cross/shel-netbsdcoff (for little endian) are available.
+<ENTRY>cross-compiler クロスコンパイラーを用意する。
+ NetBSD ホストシステム上で NetBSD ターゲットシステムを構築するなら、
+NetBSD パッケージシステムの "cross" ディレクトリーの下に
+ クロスコンパイラー設定があります。
+例えば、 target system が NetBSD/sh3 なら、
+<PKGSRC>cross/sh-netbsdcoff (ビッグエンディアン 用) あるいは
+<PKGSRC>cross/shel-netbsdcoff (リトルエンディアン用) があります。
 <p>
 
-If you are using non-NetBSD as the host system,
-you will need to configure GNU gcc and GNU binutils for cross builds.
-Also, you will need to make NetBSD make(1), config(8), and other build tools
-available on your system.
+もし、ホストシステムに、 NetBSD ではないシステムを使うなら、
+クロス構築するのに、 GNU gcc と GNU binutils の設定をする必要があります。
 
-<ENTRY>build-tree Preparing build tree
-First of all, you need to get the whole NetBSD source code tree.
-See <a href="../current/">"Tracking NetBSD-current"</a> for details.
-In the following descriptions, we assume that the tree is under $TOP/src.
+また、 NetBSD の make(1), config(8) や、そのシステムにある
+他の構築ツールを make する必要があります。
+
+<ENTRY>build-tree  build tree を用意する
+まず第一に、NetBSD ソースコード ツリー 全体を入手する必要があります。
+詳しくは <a href="../current/">"NetBSD-currentの追跡"</a> を見てください。
+
+次の記述において、ツリーは $TOP/src の下にあると仮定します。.
 <p>
-
-Configure /etc/mk.conf correctly for cross builds.
-See options(5) and mk.conf(5) for details.
+クロス構築するために、 /etc/mk.conf を正確に設定してください。
+詳しくは options(5) と mk.conf(5) を見てください。
 <ul>
-<li>Prepare a directory to populate the compiled result.
-Point the directory with <tt>DESTDIR</tt> in /etc/mk.conf.
-<li>You will want to use <tt>OBJMACHINE</tt>, so that you can use the same
-NetBSD source code tree for multiple architectures.
+<li>殖民用のコンパイル生成物を置くディレクトリーを用意します。
+ /etc/mk.conf の <tt>DESTDIR</tt> で指定します。
+
+<li> <tt>OBJMACHINE</tt> を使えば、複数のアーキテクチャーで同じソースコードツリーが使えます。
 </ul>
 
-<ENTRY>build-script  Preparing a bulid script
-Prepare a script like below, to use the appropriate compiler, instead of
-normal compiler for the host system.
-The script is for NetBSD/evbsh3, with <PKGSRC>cross/sh-netbsdcoff binaries.
-You need to tweak MACHINE, MACHINE_ARCH and TARGET settings at least.
+<ENTRY>build-script  構築 script を用意する
+ホストシステムの通常のコンパイラーの代わりに、
+適切なコンパイラーを使うには、以下のようなスクリプトを用意します。
+
+この script は、 <PKGSRC>cross/sh-netbsdcoff バイナリーで NetBSD/evbsh3 を作るためのものです。
+すくなくても MACHINE , MACHINE_ARCH , TARGET の設定は、いじる必要があります。
 <p>
 
-There are couple of other build scripts available:
+いくつかのほかの構築スクリプトがあり:
 <A HREF="../../Ports/hpcmips/hpcmips-make">hpcmips-make</A>
 <p>
 
@@ -142,10 +144,10 @@ make AR=$TARGET-ar AS=$TARGET-as CC=$TARGET-gcc LD=$TARGET-ld NM=$TARGET-nm \
 	CXX=$TARGET-c++ CPP=$CPP $*
 </pre>
 
-<ENTRY>compile-kernel Actual cross compilation - kernel
-Use the build script to build the kernel.
-NetBSD config(8) is architecture independent, so you can use it on the
-host system.
+<ENTRY>compile-kernel クロスコンパイルの実際 - カーネル
+カーネルの構築には、構築スクリプトを使います。
+NetBSD の config(8) は、アーキテクチャーに依存しないので、
+ホストシステムの物を使うことができます。
 <pre>
 % cd $TOP/src/sys/arch/MYARCH/conf
 % cp GENERIC MYCONF
@@ -156,88 +158,94 @@ host system.
 % sh build-script
 </pre>
 
-<ENTRY>include-lib Getting include files and library files
-To run a cross build for the userland,
-you need to get working library and include file for the target system.
+<ENTRY>include-lib インクルードファイルとライブラリーファイルの作成
+ユーザーランドでクロス構築を実行するには、
+ターゲットシステムで動作するライブラリーおよびインクルードファイルを
+手に入れる必要があります。
 <p>
 
-First, you need to populate directory structure onto your DESTDIR.
+最初に、 DESTDIR 上にディレクトリー構造を配置する必要があります。
 <pre>
 # (cd $TOP/src; sh build-script beforeinstall)
 </pre>
 <p>
 
-To obtain a full include tree, you need to run "make includes"
-using the build script.
+全インクルードツリーを得るには、 構築スクリプトを用いて、
+ "make includes" を実行する必要があります。
 <pre>
 # (cd $TOP/src; sh build-script includes)
 </pre>
-After this, include files should be ready under <tt>$DESTDIR/usr/include</tt>.
-Copy it (or symlink it) to the directory which cross compiler will be using.
+これで、インクルードファイルが <tt>$DESTDIR/usr/include</tt> の下に用意できたはずです。
+それをクロスコンパイラーが利用するディレクトリーに
+コピー(かシンボリックリンク)してください。
 <p>
-
-To obtain a full library files,
-you need to run the following using the build script.
+全ライブラリーファイルを得るには、次の構築スクリプトを使って実行してください。
 <pre>
 # (cd $TOP/src/lib/csu; sh build-script dependall install)
 # (cd $TOP/src/lib; sh build-script dependall install)
 </pre>
-After this, <tt>$DESTDIR/usr/lib</tt> should have the library binary.
-Copy it (or symlink it) to the directory which cross compiler will be using.
+これで、 <tt>$DESTDIR/usr/lib</tt> にライブラリーのバイナリーができてるはずです。
+それをクロスコンパイラーが利用するディレクトリーに
+コピー(かシンボリックリンク)してください。
 
-<ENTRY>compile-userland Actual cross compilation - userland
-Use the build script to build the whole tree, as documented in
-<a href="../current/">"Tracking NetBSD-current"</a>.
+<ENTRY>compile-userland クロスコンパイルの実際 - ユーザーランド
+ツリー全体の構築には構築スクリプトを用い、
+<a href="../current/">"NetBSD-currentの追跡"</a> に書かれているように
+します。
+
 <pre>
 # (cd $TOP/src; sh build-script obj build)
 </pre>
 
-<SECTION>Common problems
+<SECTION>一般的な問題
 
-<ENTRY>make  "make" went funny in the middle
-In some of build Makefiles, there can be (mis)use of "make" when we
-invoke sub-make, like:
+<ENTRY>make  "make" 中におかしくなります
+
+
+構築 Makefile のうちのいくつかにおいて、 sub-make を呼び出すときに、
+次のように、(誤った)使い方がされていることがあって:
 <pre>
 foo:
 	(cd subdir; make)
 </pre>
-The problem here is that, by invoking "make", we will lose command
-line arguments you gave on your invocation, also we will use
-different make from what you have used at the start.
+この問題は、"make" の呼び出しにおいて与えられたコマンドライン引数を失うというもので、
+これはまた、開始時に使われた make と異なるものを使ってしまいまうというものです。
 <p>
 
-Solution: Replace "make" with "${MAKE}".
-Also please be sure to
-<a href="../../Misc/send-pr.html#submitting">report it to developers</a>
-so that it won't bite you again.
+解決法: "make" を "${MAKE}" で置き換えます。
+また、是非、
+<a href="../../Misc/send-pr.html#submitting">開発者へレポートする</a>
+をして、再び起こらないようにしてください。
 <pre>
 foo:
 	(cd subdir; ${MAKE})
 </pre>
 
-<ENTRY>compiler-issue  Compiler died with internal error, or something alike
-Yes, it is a problem.
-With cross compilation internal errors and compiler issues
-show up more frequently.
-Also, as we use different version of compiler from the one we use for
-self build, or we use different compiler, we see interesting issues
-time to time.
-Even for pkgsrc/cross tree, we use different version of GCC (egcs 1.1.1)
-from the NetBSD self builds (egcs 1.1.2).
-Also pkgsrc/cross may not contain some of changes made in NetBSD tree to egcs.
+<ENTRY>compiler-issue  コンパイラーが内部エラーか同じような何らかの原因でお亡くなりになります。
+はい、それは問題です。
+クロスコンパイルにおいて、コンパイラーの内部エラーは、しばしば現れます。
+
+また、セルフ構築で使われるのと異なるバージョンのコンパイラーや
+コンパイラー自体が違うものを使うと、その時々によって面白い結果になります。
+
+ pkgsrc/cross ツリーに関してでさえも、
+ NetBSD セルフ構築 (egcs 1.1.2) と異なるバージョンの GCC (egcs 1.1.1) を使います。
+
+また、 pkgsrc/cross は NetBSD ツリーで egcs に加えられた変更のいくつかが含まれていないかもしれません。
+
 <p>
 
-There is no magic wand to this:
+これに対しては魔法の杖はありません:
 <ul>
-<li>Review the content of compilation script.
-	If you mix compilers for different targets (like using /usr/bin/as
-	during cross build) you will be in trouble.
-<li>As workaround, try to decrease optimization level (like -O2 to -O),
-	change compiler settings at runtime.
-<li>Review your compiler settings at cross-compiler generation time.
-<li>If you know how to repeat it, and you are using gcc,
+<li>コンパイルスクリプトの中身を検討します。
+	もし、(クロス構築中に /usr/bin/as を使うなどのように)
+	異なるターゲット向けのコンパイラーが混ざると、問題を起こします。
+<li>次善策として、実行時にコンパイラーの設定を変え、
+最適化レベルを下げて試してみます( -O2 から -O のように)
+<li>クロスコンパイラー生成時のコンパイラーの設定を検討します。
+<li>もし、それを再現する方法を知っていて、 gcc を使っているなら、
 	<a href="http://www.gnu.org/software/gcc/bugs.html">
-	submit a bug report to gcc guys</a>.
+	gcc の人たちにバグレポートを申し出ましょう</a>.
 </ul>
 
 </LIST>
