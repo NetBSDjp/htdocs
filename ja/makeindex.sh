@@ -1,13 +1,13 @@
 #!/bin/sh
 #
-# $NetBSD: makeindex.sh,v 1.6 2003/12/07 17:44:11 jschauma Exp $
+# $NetBSD: makeindex.sh,v 1.8 2004/07/18 20:46:10 jschauma Exp $
 #
 # update index.html with NEWS and EVENTS from /htdocs/Changes/index.html and
 # /htdocs/gallery/events.html
 
 # insert the head
 DIR=${1:-.}
-if [ "$DIR" = "." ] || [ -f ${DIR}/Changes/index.html ]; then
+if [ "$DIR" = "." ] || [ -f ${WEB_PREFIX}/${DIR}/Changes/index.html ]; then
 	ROOT="."
 else
 	ROOT=".."
@@ -18,7 +18,7 @@ sed -e '/<!-- NEWS::START -->/q' index.html > index.tmp
 # links to anchors on that page are new, trim grep's separator and only print
 # the first 8 links
 grep 'href="#' ${ROOT}/Changes/index.html | \
-	sed -e "s:<!-- \(.*\) --><a href=\"#:<li><font face=\"helvetica, arial\" size=\"-1\"><tt>\1</tt> <a href=\"${ROOT}/Changes/#:" \
+	sed -e "s:<!-- \(.*\) --><a href=\"#:<li><font face=\"helvetica, arial, sans-serif\" size=\"-1\"><tt>\1</tt> <a href=\"${ROOT}/Changes/#:" \
 		-e '/^--/d' -e '9,$d' >> index.tmp
 
 # insert the middle part
@@ -43,7 +43,7 @@ if [ ! -f ${ROOT}/gallery/events.html ]; then
 	ROOT=".."
 fi
 sed -n -e "/Past Events/q" 						\
-	-e "s:<a href=\"#:<li><font face=\"helvetica, arial\" size=\"-1\"><a href=\"${ROOT}/gallery/events.html#:" \
+	-e "s:<a href=\"#:<li><font face=\"helvetica, arial, sans-serif\" size=\"-1\"><a href=\"${ROOT}/gallery/events.html#:" \
 	-e "/events.html#/p" 						\
 	${ROOT}/gallery/events.html >> index.tmp
 
