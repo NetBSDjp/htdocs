@@ -4,232 +4,250 @@
 <head>
 <!-- Copyright (c) 1998, 1999, 2000
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>Vendor-specific ELF Note Elements</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
 <table><tr><td>
-<a href="../../Misc/daemon-copy.html">
-<img align="middle" src="../../images/BSD-daemon.jpg" border=0
+<a href="/Misc/daemon-copy.html" origlink="../../Misc/daemon-copy.html">
+<img align="middle" src="/images/BSD-daemon.jpg" origlink="../../images/BSD-daemon.jpg" border=0
 width=146 height=129 alt="BSD daemon"></a>
 </td><td align=center>
-<h1>NetBSD Documentation:</h1>
-<h1>Vendor-specific ELF Note Elements</h1>
+<h1>NetBSD ドキュメンテーション:</h1>
+<h1>ベンダー特有の ELF 記号要素(Note Elements)</h1>
 </td></tr></table>
 <p>
 
+さまざまな オペレーティングシステム ベンダー が
+異なるシステムコールインターフェイスを要求する ELF バイナリー
+を出荷しています。
 
-Various operating system vendors are shipping ELF binaries and those
-binaries expect different system call interfaces.  In order to help
-operating systems correctly determine whether or not they can run an
-ELF program, and how to run it (e.g. what OS emulation to use), some
-operating system vendors have begun marking their ELF binaries with
-vendor-specific note elements, and placing those notes in the
-binaries' PT_NOTE sections.
+ オペレーティングシステムが ELF プログラムが実行できるかどうか、
+ どうやって実行するか(例えば どの OS エミュレーションを使うのか)を
+ 正しく 決定する 手助けのために、
+いくつかのオペレーティングシステムのベンダー は
+ ELF バイナリーの PT_NOTE セクションに ベンダー特有の記号要素 (note elements) 
+を付け始めました。
 
 <p>
-This page is meant to be a repository of knowledge about vendor-specific
-note elements used in binaries PT_NOTE sections for operating system
-identification.  It contains the following information:
+このページ は
+ バイナリーの PT_NOTE セクションで オペレーティングシステムの識別のために使わ
+れている
+ ベンダー特有の 記号要素 についての知識の宝庫に
+しようと思います。 このページには、次の情報が含まれています:
 
 <ul>
-<li><a href="#note-format">Format of an ELF Note Element</a>
-<li><a href="#note-names">Known ELF Note Names</a>
-<li><a href="#note-contents">Vendor-specific ELF Notes</a>
-<li><a href="#note-creation">Creating ELF PT_NOTE Sections</a>
+<li><a href="#note-format">ELF 記号要素 のフォーマット</a>
+<li><a href="#note-names">知られている ELF 記号名</a>
+<li><a href="#note-contents">ベンダー特有の ELF 記号</a>
+<li><a href="#note-creation">ELF PT_NOTE セクションの作成</a>
 </ul>
 
 <p>
-If your operating system uses vendor-specific note elements to
-mark its binaries and is not listed here, please send mail to
-<a href="mailto:cgd@netbsd.org">Chris Demetriou</a>
-with information about those notes.
 
+もし、あなたのオペレーティングシステムが
+ ベンダー特有記号要素
+をバイナリーのマークに使っていて、ここの一覧に載っていないなら、
+<a href="mailto:cgd@netbsd.org">Chris Demetriou</a> まで、
+その記号の情報をメールしてください。(訳注:たぶん英文で)
 
-<h2><a name="note-format">Format of an ELF Note Element</a></h2>
+<h2><a name="note-format"> ELF Note Element のフォーマット</a></h2>
 
-All ELF Note elements have the same basic structure:
+全ての ELF Note Element は同じ基本構造を持っていて:
 
 <pre>
-	Name Size	4 bytes (integer)
-	Desc Size	4 bytes (integer)
-	Type		4 bytes (usually interpreted as an integer)
-	Name		variable size, padded to a 4 byte boundary
-	Desc		variable size, padded to a 4 byte boundary
+	Name Size	4 bytes (整数)
+	Desc Size	4 bytes (整数)
+	Type		4 bytes (たいてい整数として解釈されます)
+	Name		可変長, 4 byte 境界で詰め物をされた
+	Desc		可変長, 4 byte 境界で詰め物をされた
 </pre>
 
 <p>
-The Name Size and Desc Size fields are integers (in the byte order
-specified by the binary's ELF header) which specify the size of the
-Name and Desc fields (excluding padding).
+Name , Desc 各フィールドの(詰め物を除いた)サイズの決定をする 
+Name Size , Desc Size 各フィールドは
+ 整数型 (バイトオーダーはバイナリーの ELF ヘッダーに指定されています)です。
 
 <p>
-The Name field specifies the vendor who defined the format of the Note.
-Typically, vendors use names which are related to their project and/or
-company names.  For instance, the GNU Project uses "GNU" as its name.
-No two vendors should use the same ELF Note Name, lest there be confusion
-when trying to interpret the meanings of notes.
+Name field は ベンダー が記号のフォーマットに基づいて 指定します。
+一般的に、 ベンダーはプロジェクトや会社名に関連した名前を使います。
+
+例えば、 GNU project はその名前に "GNU" を使います。
+
+ELF Note Name は、note の意味を解釈しようという時混乱するといけないので、
+どの 2つの ベンダー も同じ物を使わないようにするべきです。
 
 <p>
-The Type field is vendor specific, but it is usually treated as an
-integer which identifies the type of the note.
+Type フィールド はベンダー特有ですが、記号の特定において、
+たいてい整数型として扱われます。
 
 <p>
-The Desc field is vendor specific, and usually contains data which
-depends on the note type.
+Desc フィールド は ベンダー特有で、 たいてい記号の型に依存するデータが含まれ
+ています。
 
+<h2><a name="note-names">知られている ELF 記号 名</a></h2>
 
-<h2><a name="note-names">Known ELF Note Names</a></h2>
-
-The following are the strings known to be used as ELF Note Names, along
-with the organizations that use them.  Names with lengths that are
-not a multiples of 4 are padded in the note, but only the given length
-should be be checked.
+下記は ELF 記号名として使われている事が知られている文字列と
+それを使っている組織です。
+記号名の語長が 4 の倍数で無いものは 詰め物で埋められますが、
+与えられた長さだけを調べるようにするべきです。
 
 <pre>
-    Note Name String            Organization
+    Note Name 文字列                組織
     ----------------            ------------
-    "NetBSD\0"                  <a href="#note-contents-netbsd">The NetBSD Project</a>
-    0x4e 0x65 0x74 0x42 0x53 0x44 0x00 (length 7)
+    "NetBSD\0"                  <a href="#note-contents-netbsd">The NetBSD 
+Project</a>
+    0x4e 0x65 0x74 0x42 0x53 0x44 0x00 (語長:7)
 
-    "GNU\0"                     <a href="#note-contents-gnu">The GNU Project</a>
-    0x47 0x4e 0x55 0x00 (length 4)
+    "GNU\0"                     <a href="#note-contents-gnu">The GNU 
+Project</a>
+    0x47 0x4e 0x55 0x00 (語長:4)
 </pre>
 
 
-<h2><a name="note-contents">Vendor-specific ELF Notes</a></h2>
+<h2><a name="note-contents">ベンダー特有 ELF 記号</a></h2>
 
-This section contains information about the formats of ELF notes which
-vendors use in their PT_NOTE sections, and is split up by vendor.
+この節にはベンダーが PT_NOTE セクションで使っていて、 
+ベンダー別に異なっている ELF 記号のフォーマットに関する情報
+が含まれています。
 
 <dl>
 
 <dt><b><a name="note-contents-netbsd">The NetBSD Project</a></b>
 <dd>
-There are two vendor-specific ELF Notes for NetBSD, an OS Version note and
-an Emulation Name note.
-The former is used to indicate what OS Version
-native binaries were built with, and can be used to identify native
-binaries.
-The latter is used to mark binaries (both native an non-native) with
-a name that indicates which set of binary emulation code is to be used
-when they are run.
+ NetBSD には2つの ベンダー 特有 の ELF 記号があって、
+OS バージョン記号とエミュレーション Name 記号です。
+
+前者は、どの OS バージョンの native バイナリーかを示すのに使われ、
+ native バイナリーを識別するのにも使えます。
+
+後者は、実行時にどのエミュレーションコードセットを使えば良いかを示す名前と共
+に、
+バイナリーを (native と 非-native の)マークするのに使われます。
 
 <p>
-The format of the NetBSD OS Version note is:
+ NetBSD OS バージョン 記号 のフォーマットは:
 
 <pre>
     Name Size:          7
     Desc Size:          4
-    Type:               4-byte integer containing the value 0x01
-    Name:               "NetBSD\0" (padded to 8 bytes)
-    Desc:               4-byte integer containing the NetBSD OS version
-                        constant
+    Type:               4-byte 整数  0x01 という値が入っている
+    Name:               "NetBSD\0" (8 byte に合わせて詰め物がされています)
+    Desc:               4-byte 整数 NetBSD OS バージョン定数が入っている
 </pre>
 
 <p>
-The format of the NetBSD Emulation Name note is:
+ NetBSD エミュレーション Name 記号 のフォーマットは:
 
 <pre>
     Name Size:          7
     Desc Size:          variable
-    Type:               4-byte integer containing the value 0x02
-    Name:               "NetBSD\0" (padded to 8 bytes)
-    Desc:               NUL-terminated string naming the
-                        emulation to be used to run the binary
-                        (padded to the next 4-byte boundary)
+    Type:               4-byte 整数 0x02 という値が入っている
+    Name:               "NetBSD\0" (8 byte に合わせて詰め物がされています)
+    Desc:               バイナリーを実行するのに使うエミュレーションを表す、
+                        ナル文字で終わる文字列
+                        (次の4バイト境界まで詰め物された)
 </pre>
 
 <dt><b><a name="note-contents-gnu">The GNU Project</a></b>
 <dd>
-Starting with glibc 2.1, the GNU project will be using a single ELF Note
-to indicate which GNU operating system and which version of that system
-a binary was built for.  The format of that note is:
+ glibc 2.1 以降では、 GNU project は 
+ GNU オペレーティングシステム とどのバージョンのシステムで構築されたバイナ
+リーか
+を示すのに、単一の ELF Note を使い、
+  そのフォーマットは:
 
 <pre>
     Name Size:          4
     Desc Size:          4
-    Type:               4-byte integer containing the value 0x01
+    Type:               4-byte 整数 0x01 という値が入っている
     Name:               "GNU\0"
-    Desc:               4-byte integer OS/version (see below)
+    Desc:               4-byte 整数 OS/version (下記参照のこと)
 </pre>
 
-The OS/version value is encoded as:
+ OS/version 値 はこのようにエンコードされていて:
 
 <pre>
     0xAAMMmmss
 
     AA = ABI (0 = Linux, 1 = Mach/Hurd)
-    MM = ABI major version number
-    mm = ABI minor version number
-    ss = ABI micro version number
+    MM = ABI major バージョン番号
+    mm = ABI minor バージョン番号
+    ss = ABI micro バージョン番号
 </pre>
 
-For instance, the OS/version 0x01020304 would indiate that the binary
-needs the ABI of version 2.3.4 of the Mach/Hurd system.
+例えば、 OS/version が 0x01020304 というのは
+ Mach/Hurd システムの ABI バージョン 2.3.4 が必要なバイナリーだと言うことを示
+します。
 
 </dl>
 
-<h2><a name="note-creation">Creating ELF PT_NOTE Sections</a></h2>
+<h2><a name="note-creation">ELF PT_NOTE セクションの作成</a></h2>
 
-If you're using the GNU binutils 2.8 or greater to create your binaries,
-you can generate PT_NOTE sections in your final object files.
-To create a PT_NOTE section, create a section in one of your object
-files (for systems which generate PT_NOTE entries by default, this
-is typically the runtime startup code) with a name starting
-with ".note" and having the "allocate" property set.
-Put properly formed ELF Notes entries in that section.
-When final linking is done, all sections which have names starting
-with ".note" and which are marked "allocate" will be put into PT_NOTE
-sections in the final object file.
+バイナリーを作るために、 GNU binutils 2.8 かそれ以降を使っていれば、
+最終版のオブジェクトファイルに PT_NOTE セクション を生成することができます。
+
+PT_NOTE セクションを作るには、
+オブジェクトファイルの一つ
+(デフォルトで PT_NOTE エントリーを生成するシステムでは、
+これは一般的にランタイムのスタートアップコードです) に
+名前が ".note" で始まり "allocate" 属性セットを持つセクションをつくります。
+
+このセクションに、 ELF Note エントリーを適切な形で書きます。
+
+最終的なリンクが終わったとき、 ".note" で始まる名前をもち、かつ
+ "allocate" とマークされた全セクションは、
+最終オブジェクトファイルにおいて、
+ PT_NOTE セクション内に配置されるでしょう。
 
 <p>
-An example of GNU assembler input which will create a PT_NOTE section
-during final link is:
+   GNU アセンブラー の例では、最終リンク時に PT_NOTE セクション を作る入力物
+は:
 
 <pre>
     .section ".note.ident", "a"
     .p2align 2
-    .long 5                 # name size (not including padding)
-    .long 8                 # desc size (not including padding)
+    .long 5                 # name サイズ (詰め物含まず)
+    .long 8                 # desc サイズ (詰め物含まず)
     .long 0x01234567        # type
-    .ascii "NaMe\0\0\0\0"   # name (padded to a 4-byte boundary)
-    .long 0x76543210        # desc (padded to a 4-byte boundary)
+    .ascii "NaMe\0\0\0\0"   # name (4 byte 境界で詰め物をされた)
+    .long 0x76543210        # desc (4 byte 境界で詰め物をされた)
     .long 0x89abcdef
 </pre>
 
 <p>
-That example will create a section called ".note.ident", marked "allocate"
-(so that it will be turned into a PT_NOTE section during final link), which
-contains a single note.  That note has a type of 0x012345678, has the name
-"NaMe\0", and has a desc value consisting of two 4-byte integers,
-0x76543210 and 0x89abcdef.
+この例では ".note.ident" と呼ばれ、 "allocate" とマークされた、
+(最終リンク時に PT_NOTE セクション と変わる)
+1つの note を含むセクションを作るでしょう。
+
+ この note は type が 0x012345678,(訳注9桁???)、  name が "NaMe\0" で、
+ desc 値は、2つの 4-byte 整数、0x76543210 と 0x89abcdef です。
 <p>
 
 <hr>
-<a href="">Up to <em>NetBSD Documentation: Kernel</em></a>
+<a href=""><em>NetBSD ドキュメンテーション: カーネル</em>にもどる</a>
 <hr>
 
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../"><img
-        src="../../images/NetBSD-flag.gif" border="0"
+        src="/images/NetBSD-flag.gif" origlink="../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a>
   </td><td>
     <a href="../../"><img
-        src="../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        src="/images/empty.gif" origlink="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
     <a href="../../Documentation/"><img
-        src="../../images/NetBSD-flag.gif" border="0"
+        src="/images/NetBSD-flag.gif" origlink="../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a>
   </td><td> 
     <a href="../../Documentation/"><img
-        src="../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+        src="/images/empty.gif" origlink="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ドキュメンテーションのトップ</a>
   </td></tr></table>
 </td></tr></table>
 
@@ -246,4 +264,3 @@ contains a single note.  That note has a type of 0x012345678, has the name
 
 </body>
 </html>
-
