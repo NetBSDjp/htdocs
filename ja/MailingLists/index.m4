@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.113 2002/06/07 20:25:47 soda Exp $
+#	$NetBSD: index.m4,v 1.114 2002/10/25 16:38:09 grant Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -67,8 +67,7 @@ divert(0)dnl
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1><img src="../../images/NetBSD-flag.gif" origlink="../images/NetBSD-flag.gif"
-align="middle" width="91" height="42" alt="NetBSD"> $B%a!<%k%5!<%P!<$X$N%2!<%H%&%'%$(B</h1>
+<h2>NetBSD $B%a!<%j%s%0%j%9%H(B</h2>
 
 <p>
 ($BLuCp(B: $B$3$3$G@bL@$7$F$$$k$N$OK\2H$N%a!<%j%s%0%j%9%H$G$9!#F|K\8l$N%a!<%j%s%0%j%9%H$K$D$$$F$O(B <a href="http://www.jp.netbsd.org/ja/JP/ml.html">$BF|K\8l%a!<%j%s%0%j%9%H$N%Z!<%8(B</a>$B$r8+$F$/$@$5$$!#(B)
@@ -81,7 +80,7 @@ NetBSD $B%W%m%8%'%/%H$G$O!"(B NetBSD $B%f!<%6!<$H3+H/<T$,MF0W$K$d$j$H$j$G$-$k
 NetBSD $B%W%m%8%'%/%H$N(B Majordomo $B$N;H$$J}$,$o$+$k$h$&$K$J$C$F$$$^$9!#(B
 <p>
 
-$B$3$N(B WWW $B%Z!<%8$G$O!"3F%a!<%j%s%0%j%9%H$K$D$$$F@bL@$7$F$$$k$[$+!"(B
+$B$3$N%Z!<%8$G$O!"3F%a!<%j%s%0%j%9%H$K$D$$$F@bL@$7$F$$$k$[$+!"(B
 $B%a!<%j%s%0%j%9%H$N%"!<%+%$%V$N1\Mw!"(B
 $B$5$i$K$O%a!<%j%s%0%j%9%H$N9VFI<jB3$-$b$G$-$k$h$&$K$J$C$F$$$^$9!#(B
 $B$3$N%Z!<%8$O!";0$D$NItJ,$KJ,$+$l$F$$$^$9(B:
@@ -128,9 +127,26 @@ NetBSD $B$N%a!<%j%s%0%j%9%H$NB?$/$O!"IaDL$N(B unmoderated $B$J$b$N$G$9$,!"(B
 
 $B:w0z$H%"!<%+%$%V$O(B
 <a href="http://mail-index.netbsd.org/">http://mail-index.netbsd.org/</a>
-$B$H(B <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>
-$B$K$"$j$^$9(B; $B%a!<%j%s%0%j%9%H%"!<%+%$%V$r8!:w$9$k$K$O!"(B <a
-href="../Misc/search.html">http://www.netbsd.org/Misc/search.html</a> $B$r;H$C$F$/$@$5$$!#(B
+$B$H(B <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a> $B$K$"$j$^$9!#(B
+<p>
+
+Google $B$G%a!<%j%s%0%j%9%H$r4JC1$K8!:w(B (<a
+href="../Misc/search.html">$B$=$NB>$N(B NetBSD $B8!:w(B</a>)<br>
+<blockquote>
+  <table border=0><tr><td valign=top>
+  <img src="../../images/links/google.gif" origlink="../images/links/google.gif" width="120" height="42" alt="" border="0">
+  </td>
+  <td valign="top">
+  <form method="get" action="http://www.google.com/custom">
+    <input type="text" name="q" size=30 maxlength="255" value="">
+    <input type="hidden" name="cof" value="LW:247;L:http://www.netbsd.org/images/NetBSD-smaller.jpg;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
+    <input type="hidden" name="domains" value="mail-index.netbsd.org">
+    <input type="hidden" name="sitesearch" value="mail-index.netbsd.org">
+    <br>
+    <input type="submit" value="Google $B8!:w(B">
+    </form>
+  </td></tr></table>
+</blockquote>
 
 <h2><a name="index">The NetBSD Project $B$N%a!<%j%s%0%j%9%H(B</a></h2>
 
@@ -632,7 +648,7 @@ divert(9)
   ($BO"Mm@h(B - <a href="../Misc/feedback.html">$B1Q8l(B</a>,
        <a href="mailto:www@JP.NetBSD.ORG">$BF|K\8l(B:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.113 2002/06/07 20:25:47 soda Exp $<br>
+  $NetBSD: index.m4,v 1.114 2002/10/25 16:38:09 grant Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
