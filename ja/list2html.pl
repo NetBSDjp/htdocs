@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# NetBSD Id: list2html.pl,v 1.59 2000/10/09 17:16:18 dent Exp $
+# $NetBSD: list2html.pl,v 1.65 2001/04/09 00:11:59 dent Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -32,6 +32,7 @@
 #	<PKGSRC>category/name	-> link to pkgsrc README.html
 #	<CURRENTSRC>path	-> link to source file/dir in -current
 #	<URL>[^\s<]+[^<\s.]	-> Insert link to URL
+#	<RFC>RFC[0-9]+		-> link to RFC (www.normos.org)
 #
 # NOTE: Update htdocs/developers/htdocs.list when adding features.
 #
@@ -52,7 +53,7 @@ my($version, %opt, %pkgname);
 $months_previous = 9;	# Previous months to display for DATE entries
 $list_date_links = 6;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.60 $';
+$version = '$Revision: 1.65 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -81,7 +82,7 @@ $months_previous = &get_minmonth($months_previous);
 
 '<HEADING>\s*(.*)',
 '<table><tr><td>
-    <a href="/Misc/daemon-copy.html"><img
+    <a href="$HOME/Misc/daemon-copy.html"><img
      align="middle" src="/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
@@ -93,7 +94,7 @@ $months_previous = &get_minmonth($months_previous);
 
 '<DEVHEADING>\s*(.*)',
 '<table><tr><td>
-    <a href="/Misc/daemon-copy.html"><img
+    <a href="$HOME/Misc/daemon-copy.html"><img
      align="middle" src="/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
@@ -600,7 +601,7 @@ sub sub_external_links
 
     # Man page references. As of 1.4 matches every page except '[' and 'w'.
     # 
-    $_ = $text;	# Output text include match string, so handle in sections
+    $_ = $text; # Output text include match string, so handle in sections
     $text = '';
     while ( m#([a-zA-Z_][-\w.+]*[\w+])\((\d)(|\.(\w+))\)# )
 	{
@@ -608,14 +609,14 @@ sub sub_external_links
 
 	($page, $section, $arch) = ($1, $2, $4);
 
-	$link = 'http://www.flame.org/cgi-bin/uncgi/hman?';
+	$link = 'http://www.tac.eu.org/cgi-bin/man-cgi?';
+
+	$link .= "$page+$section";
 
 	if (defined($arch))
-	    { $link .= "arch=$arch&amp;"; }
+	    { $link .= ".$arch"; }
 	elsif ($opt{'a'})
-	    { $link .= "arch=$opt{'a'}&amp;"; }
-
-	$link .= "page=$page&amp;sect=$section";
+	    { $link .= ".$opt{'a'}"; }
 
 	$text .= $` . "<a href=\"$link\">$page($section)</a>";
 	$_ = $';
@@ -624,7 +625,7 @@ sub sub_external_links
 
     # Expand <CURRENTSRC>path
     #
-    if ($text =~ m#<CURRENTSRC>([^\s<>]+\w)#)
+    while ($text =~ m#<CURRENTSRC>([^\s<>]+\w)#)
 	{
         my($path);
 
@@ -644,12 +645,29 @@ sub sub_external_links
 
     # Expand <PKGSRC>category/name entries
     #
-    while ( $text =~ m#<PKGSRC>((\w+/|)([^\s<>]+\w))#)
+    while ($text =~ m#<PKGSRC>((\w+/|)([^\s<>]+\w))#)
 	{
         my($n) = $3;
 	if (defined($pkgname{$n}))
 	    { $n = $pkgname{$n}; }
         $text =~ s#<PKGSRC>((\w+/|)([^\s<>]+\w))#<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
+	}
+
+    # Expand <RFC>RFCxxxx entries
+    #
+    while ($text =~ m#<RFC>([^\s<>]+\w)#)
+	{
+        my($o, $n);
+	$o = $n = $1;
+	$n =~ s#^rfc##i;
+	if ($n =~ /^\d+$/)
+	    {
+	    $text =~ s#<RFC>$o#<a href="http://www.normos.org/ietf/rfc/rfc$n.txt">$o</a>#;
+	    }
+	    else
+	    {
+	    $text =~ s#<RFC>$o#$o#;
+	    }
 	}
 
     # Expand <user@host> email addresses
