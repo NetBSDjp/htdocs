@@ -48,11 +48,43 @@ and new formal releases of NetBSD. At this time (May 2003) a complete
 mirror of NetBSD needs about 100 GB and a new release of NetBSD adds
 between 10 and 15 GB (including binary packages).
 
-<ENTRY>ftp-retrieve Retrieving a copy of the NetBSD FTP site
-(To be written)
+<ENTRY>ftp-retrieve-sync Retrieving/Syncing a copy of the NetBSD FTP site
 
-<ENTRY>ftp-sync Syncing the NetBSD FTP site contents
-(To be written)
+There are several ways that you can retrieve and sync the files.  Depending on
+your personal preference, your network connection, the packages installed on
+your systems etc. you may choose one over the other.  Either way, it's
+probably a good idea to first run the relevant command by hand and then, when
+you have confirmed that everything's working as it should, create a script to
+be run by cron(8).
+<br><br>
+Below you can find some examples of how to keep your local copy in sync.
+Simply replace "&lt;FTPROOT&gt;" with the actual root of your ftp server.
+<br>
+<br>
+<ul>
+	<li>Using <PKGSRC>net/rsync:<br>
+	<pre>
+		$ rsync -v -Wartz --delete rsync://rsync.netbsd.org/NetBSD &lt;FTPROOT&gt;/pub/NetBSD/</pre>
+	</li>
+	<li>Using <PKGSRC>net/wget:<br>
+	<pre>
+		$ cd &lt;FTPROOT&gt;
+		$ wget -v -xnH -m ftp://ftp.netbsd.org/pub/NetBSD/</pre>
+	</li>
+	<li>Using <PKGSRC>net/mirror:<br>
+	<pre>
+		$ cat &gt; netbsd.org &lt;&lt;EOF
+		package=netbsd
+		comment=NetBSD
+		site=ftp.netbsd.org
+		remote_dir=/pub/NetBSD
+		local_dir=&lt;FTPROOT&gt;/pub/NetBSD
+		do_deletes=true
+		algorithm=1
+		EOF
+		$ mirror netbsd.org</pre>
+	</li>
+</ul>
 
 <ENTRY>ftp-notes Notes about a NetBSD FTP mirror
 As a NetBSD FTP mirror, it's important that you synchronize your
@@ -61,7 +93,7 @@ obsolete files may confuse users.
 <p>
 
 Also, it might happen that due to an e.g. security issue, file removal
-(or another administrative task) may be request from the NetBSD Project.
+(or another administrative task) may be requested from the NetBSD Project.
 
 <ENTRY>ftp-outage Where should an outage be announced
 If your FTP mirror experiences any significant system outage, you should
@@ -415,7 +447,7 @@ from our list and redirect the DNS name to an alternative site.
 <address>
   <small>
   <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: mirror.list,v 1.33 2003/05/03 23:02:46 heinz Exp $<br>
+  $NetBSD: mirror.list,v 1.35 2003/07/09 06:30:11 keihan Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
