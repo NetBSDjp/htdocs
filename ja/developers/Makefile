@@ -1,9 +1,9 @@
-# $NetBSD: Makefile,v 1.11 2000/09/09 07:47:07 dent Exp $
+# $NetBSD: Makefile,v 1.18 2002/11/09 21:54:55 jschauma Exp $
 # Nasty makefile to recurse into subdirs to ensure faq files are up to date
 
-all::	PR.html announce.html groups.html htdocs.html gnats-admin.html \
-	kernel-profiling.html new-port.html notes.html pkg-import.html \
-	security.html style.html www.html
+all::	PR.html announce.html htdocs.html gnats-admin.html translate.html \
+	translate-german.html translate-french.html translate-spanish.html \
+	mirrors.html new-port.html notes.html security.html style.html www.html
 
 all::
 	@for dir in `echo */Makefile | sed 's:/Makefile::g'` ; do \
@@ -13,4 +13,4 @@ all::
 .SUFFIXES:	.list .html
 
 .list.html:
-	../list2html.pl $< $@
+	perl ../list2html.pl $< $@
