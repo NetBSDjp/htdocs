@@ -1,0 +1,55 @@
+# $NetBSD: printcap,v 1.4 2000/08/25 04:19:42 dent Exp $
+
+# example printcap entry for printing to a printer on
+# an MS Windows PC (or other machine running SMB printer
+# sharing)
+#
+#
+# Because this entry is called "lp" (among other things) it will be
+# the default printer used by lpd. (Note that "lufer" is the name
+# of the MS Windows PC connected to my printer)
+
+lp|lufer|hplj4:\
+        :mx#0:sh:lp=/dev/null:sd=/var/spool/lpd/lufer:\
+        :af=/etc/lpd/lufer/acct:if=/usr/local/bin/smbprint:
+
+# explanation of fields (sd, if, and af will be changed for each
+# additional printer):
+# 
+#  mx#0
+# 	"maximum file size" 0 == "unlimited"
+# 
+#  sh
+#	"suppress printer of burst page banner"
+#
+#  lp=/dev/null
+# 
+#       device to send output to. All our output is actually done by
+#       smbprint when the accounting script is called (the accounting
+#       script receives a copy of all the output), so we send it to
+#       /dev/null
+# 
+#  sd=/var/spool/lpd/lufer
+# 
+#         directory to spool files in before they're sent to smbprint.
+#         Make sure this directory exists. Mine is owned by root/wheel,
+#         mode 755 and it appears to work okay, so I guess it doesn't
+#         need to be writable by normal users.
+# 
+#  if=/usr/local/bin/smbprint
+# 
+# 	"text filter which does accounting" according to man printcap.
+# 	We hijack this usage, using the "accounting" script to send
+# 	the file to the printer (smbprint calls Samba's smbclient
+#         program)
+# 
+#  af=/etc/lpd/lufer/acct
+# 
+# 	"accounting file". We actually use this field for another
+#         purpose - the "af" is sent as a parameter to the "if"
+# 	(smbprint) as a commandline parameter, and we use it there
+# 	to locate a configuration file for this particular printer,
+# 	by replacing the word "acct" with "config". So, in our case,
+# 	the configuration for this printer would be found in
+# 	/etc/lpd/lufer/config.
+
