@@ -1,0 +1,314 @@
+<html>
+<head>
+<!-- Copyright (c) 1996, 1998, 1999 The NetBSD Foundation, Inc.
+     ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Developer Documentation: The Release Engineering Process</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>NetBSD Developer Documentation: Release Engineering: The Release Engineer
+ing Process</h2>
+
+<h3><a name="make_release">4.4 How to make a NetBSD release</a></h3>
+
+<h4>4.4.1 Overview</h4>
+
+<p>
+The NetBSD Release process is an eight week process which is intended
+to make it possible to generate frequent quality releases without
+stalling development on the main branch.  The goal is to have two
+NetBSD releases per year.
+
+<p>
+In the description below, <var>VERSION</var> can have different
+textual representations depending on context.  For instance, if
+describing the release of NetBSD 1.2, <var>VERSION</var> would be
+"1-2" when used in a CVS command, "1.2" when talking about the
+version as announced to the public or defined in
+src/sys/conf/newvers.sh, or "1_2" when talking about the definition
+of the <b>NetBSD<var>VERSION</var></b> constant in src/sys/sys/param.h.
+
+<p>
+The basic timeline for a release looks like:
+<dl>
+<dt> <a href="#rel_week0">Week 0: Beginning of release cycle</a>
+<dd>
+	The release schedule is sent as a reminder to all NetBSD
+	developers and mirror maintainers.
+
+<dt> <a href="#rel_week1">Week 1: Snapshot sanity check</a>
+<dd>
+	Port maintainers should try to build full releases, to
+	ensure that the release generation machinery is functional.
+
+<dt> <a href="#rel_week2">Week 2: Creation of release branch and feature
+    freeze</a>
+<dd>
+	The release branch is created, and developers are disallowed
+	from committing new features to the release branch without
+	permission from the Release Engineer.
+
+<dt> <a href="#rel_week3">Week 3: First beta release</a>
+<dd>
+	Binary snapshots are released as <b>NetBSD <var>VERSION</var>_ALPHA</b>.
+
+<dt> <a href="#rel_week4">Week 4: Non-critical bug fix freeze</a>
+<dd>
+	Developers are disallowed from committing any changes other
+	than critical bug fixes to the release branch without
+	permission from the Release Engineer.  Mid-week, the release
+	branch is tagged <b>netbsd-<var>VERSION</var>-BETA</b>.
+
+<dt> <a href="#rel_week5">Week 5: Second beta release</a>
+<dd>
+	Binary snapshots are released as <b>NetBSD <var>VERSION</var>_BETA</b>.
+
+<dt> <a href="#rel_week6">Week 6: Code freeze</a>
+<dd>
+	Developers are disallowed from committing <em>ANY</em> changes
+	to the release branch without permission from the Release
+	Engineer.
+
+<dt> <a href="#rel_week7">Week 7: Tag final sources</a>
+<dd>
+	The release branch is tagged <b>netbsd-<var>VERSION</var>-FINAL</b>,
+	and port maintainers begin generating final release binaries.
+
+<dt> <a href="#rel_week8">Week 8: Release</a>
+<dd>
+	The release is announced to the world.
+
+</dl>
+
+<p>
+Yet to be done in this document:
+	<ul>
+	<li> Fill in various details.  (Search for XXX.)
+	<li> General background; note existence of "Release Engineer,"
+		his/her repsonsibilities, expand notion that development
+		continues as normal on trunk, etc.
+	<li> More details on release branch management: procedure
+		for pulling changes up, procedure for getting approval
+		for changes, etc.
+	<li> Post-release patching.  (It may make sense to re-work the
+		various "NetBSD" definitions in src/sys/sys/param.h
+		in light of post-release patches.)
+	</ul>
+
+<h4><a name="rel_week0">4.4.2 Week 0: Beginning of release cycle</a></h4>
+
+	<ul>
+	<li> Dates should be set for the various events in the release
+		cycle
+	<li> The updated release cycle calendar should be sent as
+		a reminder to NetBSD developers
+		(<i>developers@netbsd.org</i>) and mirror
+		maintainers (<i>XXX DETAILS</i>).
+	</ul>
+
+<h4><a name="rel_week1">4.4.3 Week 1: Snapshot sanity check</a></h4>
+
+	<ul>
+	<li> Port maintainers should try to build full releases, to
+		ensure that the release generation machinery is
+		functional.
+	</ul>
+
+<h4><a name="rel_week2">4.4.4 Week 2: Creation of release branch and
+    feature freeze</a></h4>
+
+	<ul>
+	<li> Tag the base of the release branch with a command like:<br>
+	    <pre>cvs rtag -a netbsd-<var>VERSION</var>-base src</pre>
+
+	<li> Create the release branch with a command like:<br>
+	    <pre>cvs rtag -a -b -rnetbsd-<var>VERSION</var>-base netbsd-<var>VERSION</var> src</pre>
+
+	<li> On the trunk, do the following:
+		<ul>
+		<li> Update the <b>NetBSD</b> constant in src/sys/sys/param.h
+			to be a date soon after the final release is expected.
+		<li> Update the <b>NetBSD<var>VERSION</var></b>
+			constant in src/sys/sys/param.h so that it uses the
+			appropriate major and minor version numbers, and is
+			defined to "2" (to indicate NetBSD-current, after the
+			release).
+		<li> Update <b>osr</b> in src/sys/conf/newvers.sh to
+			indicate the proper release
+			with an "A" suffix (to indicate
+			NetBSD-current, after the release).
+		<li> Update send-pr. (XXX HOW?)
+		</ul>
+
+	<li> On the release branch, do the following:
+		<ul>
+		<li> Update the <b>NetBSD</b> constant in src/sys/sys/param.h
+			to be the date of the expected "ALPHA" distributions.
+		<li> Update the <b>NetBSD</b><var>VERSION</var>
+			constant in src/sys/sys/param.h so that it uses the
+			appropriate major and minor version numbers, and is
+			defined to "1" (to indicate the appropriate
+			formal release.)
+		<li> Update <b>osr</b> in src/sys/conf/newvers.sh to
+			indicate the proper release
+			with an "_ALPHA" suffix.
+		<li> Update send-pr. (XXX HOW?)
+		</ul>
+
+	<li> Change FTP/SUP service on <i>ftp.netbsd.org</i> and
+		<i>sup.netbsd.org</i> to distribute the release
+		branch.
+
+	<li> Announce to the world the fact that the release process
+		is underway.  Note that FTP and SUP service will be
+		distributing the release branch during the release
+		process.
+
+	<li> Notify developers of release branch creation.  Include
+		procedure for accessing branch and notification that
+		they should not be committing new features to the
+		branch without permission of the Release Engineer.
+
+	<li> Create SUP collections for the new release. (XXX DETAILS?)
+
+	<li> Notify mirror maintainers about the new SUP collections,
+		so that they can start supping them before beta
+		distributions show up.
+	</ul> 
+
+<h4><a name="rel_week3">4.4.5 Week 3: First beta release</a></h4>
+
+	<ul>
+	<li> Port maintainers should create and distribute binary
+		snapshots, labelled <b>NetBSD <var>VERSION</var>_ALPHA</b>.
+	<li> Announce the alpha release to the world via the
+		<i>netbsd-announce@netbsd.org</i> mailing list and
+		<i>comp.unix.bsd.netbsd.announce</i> newsgroup. (???)
+	</ul>
+
+<h4><a name="rel_week4">4.4.6 Week 4: Non-critical bug fix freeze</a></h4>
+
+	At the beginning of the week:
+
+	<ul>
+	<li> Notify developers that they should not check in any
+		changes to the release branch without permission
+		from the Release Engineer other than critical bug
+		fixes.
+	</ul>
+
+	At mid-week:
+	<ul>
+	<li> Update <b>NetBSD</b> in src/sys/sys/param.h, <b>osr</b>
+		in src/sys/conf/newvers.sh, and send-pr as detailed in
+		the description for <a href="#rel_week2">Week 2</a>,
+		except using values appropriate for the "BETA"
+		release.
+	<li> Tag the sources "beta," with a command like:
+	    <pre>cvs rtag -a -rnetbsd-<var>VERSION</var> netbsd-<var>VERSION</var>-BETA src</pre>
+	<li> Instruct port maintainers to begin generating the beta
+		release.
+	</ul>
+	
+<h4><a name="rel_week5">4.4.7 Week 5: Second beta release</a></h4>
+
+	<ul>
+	<li> Beta binaries are released as <b>NetBSD <var>VERSION</var>_BETA</b>.
+	<li> Announce the beta release to the world via the
+		<i>netbsd-announce@netbsd.org</i> mailing list and
+		<i>comp.unix.bsd.netbsd.announce</i> newsgroup.
+	</ul>
+
+<h4><a name="rel_week6">4.4.8 Week 6: Code freeze</a></h4>
+
+	At the beginning of the week:
+
+	<ul>
+	<li> Notify developers that they should not check in any
+		further changes to the release branch without
+		permission from the Release Engineer.
+	</ul>
+
+	At mid-week:
+
+	<ul>
+	<li> Update <b>NetBSD</b> in src/sys/sys/param.h, <b>osr</b>
+		in src/sys/conf/newvers.sh, and send-pr as detailed in
+		the description for <a href="#rel_week2">Week 2</a>,
+		except using values appropriate for the "FINAL"
+		release.
+	</ul>
+
+<h4><a name="rel_week7">4.4.9 Week 7: Tag final sources</a></h4>
+
+	At mid-week:
+
+	<ul>
+	<li> Tag the sources "final," with a command like:
+	    <pre>cvs rtag -a -rnetbsd-<var>VERSION</var> netbsd-<var>VERSION</var>-RELEASE src</pre>
+	<li> Instruct port maintainers to begin generating the final
+		release.
+	</ul>
+
+<h4><a name="rel_week8">4.4.10 Week 8: Release</a></h4>
+
+	<ul>
+	<li> Final binaries are released as <b>NetBSD <var>VERSION</var></b>.
+	<li> Notify SUP and FTP mirror maintainers, so that they can
+		update their sites.
+	</ul>
+
+Two days later:
+	<ul>
+	<li> Announce the release to the world via the
+		<i>netbsd-announce@netbsd.org</i> mailing list and
+		<i>comp.unix.bsd.netbsd.announce</i> newsgroup.
+	</ul>
+
+<hr>
+<table width="100%" cols="2" border=0 cellspacing=8 cellpadding=0>
+<tr>
+  <td width="50%">
+    <table><tr>
+      <td>
+	<a href="../../index.html">
+	<img src="../../images/NetBSD-banner.gif" alt=""></a>
+      </td><td>
+	<font face="helvetica, arial">
+	<a href="../../index.html">
+	<img src="../../images/empty.gif"
+		alt="NetBSD " border=0>Home Page</a>
+	</font>
+      </td>
+    </tr></table>
+  </td>
+  <td width="50%">
+    <table><tr>
+      <td>
+	<a href="index.html">
+	<img src="../../images/NetBSD-banner.gif"
+		alt=""></a>
+      </td><td>
+	<font face="helvetica, arial">
+	<a href="index.html">
+	<img src="../../images/empty.gif"
+		alt="NetBSD " border=0>Release Engineering Documentation</a>
+	</font>
+      </td>
+    </tr></table>
+  </td>
+</tr></table>
+
+<hr>
+<address>
+  <font face="helvetica, arial" size=-2>
+  www@NetBSD.ORG<br>
+  $NetBSD: release-process.html,v 1.1 1999/07/18 05:20:56 abs Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1996, 1998, 1999
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </font>
+</address>
+
+</body>
+</html>
