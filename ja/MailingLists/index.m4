@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.95 2001/04/02 13:51:35 fvdl Exp $
+#	$NetBSD: index.m4,v 1.97 2001/06/05 17:46:47 thorpej Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -161,9 +161,12 @@ LIST(netbsd-ports)
   in ports of NetBSD.
 ENDLIST
 LIST(netbsd-users)
-  This is a forum for all people using NetBSD in any form.
-  A large number of people receive this list - use good
-  judgement when posting here.
+  This is a general purpose forum for all NetBSD users, regardless of
+  platform. As a large number of subscribers receive this list, please
+  use your good judgement when posting. Questions or comments about the
+  maintenance or design of NetBSD itself, as opposed to issues related
+  to using NetBSD, aren't appropriate to this list, and are better voiced
+  in a more narrowly focused technical list.
 ENDLIST
 LIST(pkgsrc-changes)
   This list is for those who are interested in getting a
@@ -244,6 +247,12 @@ ENDLIST
 LISTSECTION(Machine specific lists)
 
   <ul>
+PORTLIST(port-algor)
+  Discussion of issues specific to NetBSD on Algorithmics, Ltd. MIPS-based
+  evaluation boards (NetBSD/algor).
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
+ENDLIST
 PORTLIST(port-alpha)
   Discussion of issues specific to NetBSD on Digital's Alpha AXP systems
   (NetBSD/alpha).
@@ -552,7 +561,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.95 2001/04/02 13:51:35 fvdl Exp $<br>
+  $NetBSD: index.m4,v 1.97 2001/06/05 17:46:47 thorpej Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
