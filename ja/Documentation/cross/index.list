@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2002
+<!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -60,21 +60,6 @@ some reason, you need to run a cross build.
 cross compilation would be the only choice.
 </ul>
 
-<ENTRY>caveats  Caveats?
-With cross build, compiler settings get trickier.
-With cross build configuration compiler bugs tend to show up
-more frequently.
-We also need to use different version of compiler from self builds,
-so compiler compatibility issue (like between different version of GCC, or
-compiler from different vendors) can become a headache.
-<p>
-
-Use the correct cpp, or you will be in trouble with predefined symbols
-like <tt>__NO_LEADING_UNDERSCORES__</tt> or <tt>__LITTLE_ENDIAN__</tt>.
-<p>
-
-Of course we need to do more about stabilizing cross builds.
-
 <SECTION>Step-by-step
 
 <ENTRY>host-system  Selecting a host system
@@ -94,7 +79,7 @@ To create a toolchain e.g. for <em>macppc</em> into the directory
 /usr/cross/{bin,include,lib,libexec,...}, do:
 <pre>
 	% cd $TOP/src
-	% ./build.sh -m macppc -T /usr/cross -t
+	% ./build.sh -m macppc -T /usr/cross tools
 </pre>
 <p>
 For more options (including building a complete NetBSD tree from the
@@ -113,15 +98,22 @@ directory is used below.)
 % cd $TOP/src/sys/arch/macppc/conf
 % cp GENERIC MYCONF
 % vi MYCONF
+</pre>
+
+To cross-compile the kernel by hand, use the following commands:
+<pre>
 % /usr/cross/bin/nbconfig MYCONF
 % cd ../compile/MYCONF
 % /usr/cross/bin/nbmake-macppc depend
 % /usr/cross/bin/nbmake-macppc 
 </pre>
 
-If you run NetBSD-current as of 2002-10-21 or later (e.g. NetBSD 1.7),
-there is also a "-k" option to src/build.sh that will easily allow you
-to cross-build your kernel.
+Alternatively, you can let ./build.sh do all the work:
+<pre>
+% cd $TOP/src
+% ./build.sh kernel=MYCONF
+</pre>  
+
 <p>
 
 <ENTRY>compile-userland Actual cross compilation - userland
@@ -135,9 +127,20 @@ Use the build script to build the whole tree, as documented in
 <SECTION>Common problems
 
 <ENTRY>compiler-issue  Compiler died with internal error, or something similar
-Yes, it is a problem.
-With cross compilation internal errors and compiler issues
-show up more frequently.
+With cross build, compiler settings get trickier.
+With cross build configuration compiler bugs tend to show up
+more frequently.
+We also need to use different version of compiler from self builds,
+so compiler compatibility issue (like between different version of GCC, or
+compiler from different vendors) can become a headache.
+<p>
+
+Use the correct cpp, or you will be in trouble with predefined symbols
+like <tt>__NO_LEADING_UNDERSCORES__</tt> or <tt>__LITTLE_ENDIAN__</tt>.
+<p>
+
+Of course we need to do more about stabilizing cross builds.
+
 <p>
 
 There is no magic wand for this:
@@ -161,8 +164,8 @@ There is no magic wand for this:
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.26 2002/10/21 11:23:20 wiz Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
+  $NetBSD: index.list,v 1.28 2003/02/25 02:01:43 jschauma Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
