@@ -9,96 +9,97 @@
 </head>
 <body bgcolor="#ffffff" text="#000000" link="#2020cc" vlink="#700080">
 
-<h1>NetBSD/mipsco Installation Notes</h1>
+<h1>NetBSD/mipsco インストールノート</h1>
 
 <hr>
-<i>This document is still in the early stages of construction, and will
-eventually be replaced once a INSTALL manpage has been written</i>
+<i>この文書はまだ作成されたばかりの段階であり、いずれ INSTALL
+マニュアルページが書かれればそれに置き換えられることになります</i>
 <hr>
 <p>
 
-<h3>Supported Hardware</h3>
+<h3>対応ハードウェア</h3>
 
-The following devices are currently supprted on the Mips Magnum 3000 workstation
+現在のところ、 Mips Magnum 3000 ワークステーション上の下記のデバイスがサポートされています
 <p>
 
 <ul>
-<li>Onboard NCR 53c94 SCSI Controller</li>
-<li>Onboard AM7990 Lance Ethernet controller</li>
-<li>Onboard Z8530 Serial Ports 0 and 1</li>
+<li>オンボード NCR 53c94 SCSI コントローラー</li>
+<li>オンボード AM7990 Lance Ethernet コントローラー</li>
+<li>オンボード Z8530 シリアルポート 0 および 1</li>
 </ul>
 <p>
 
-The following devices are not currently supported:
+現在のところ、下記のデバイスはサポートされていません:
 <p>
 
 <ul>
-<li>ISA Expansion Bus</li>
-<li>Intel 82072 Floppy Disk controller</li>
-<li>Framebuffer (both mono and colour)</li>
-<li>PS/2 Keyboard Controller</li>
+<li>ISA 拡張バス</li>
+<li>Intel 82072 フロッピーディスクコントローラー</li>
+<li>フレームバッファー (モノクロ、カラーいずれも)</li>
+<li>PS/2 キーボードコントローラー</li>
 </ul>
 <p>
 
-<h3>Getting Started</h3>
+<h3>はじめましょう</h3>
 
-Currently you can only bootstrap the NetBSD kernel from a RISC/os
-disk partition or across the network using bootp.<br>
+現在のところ、 NetBSD カーネルのブートは、 RISC/os ディスクパーティション
+から、または bootp を利用したネットワーク経由でのみ可能です。<br>
 
-The NetBSD parition has to be created on another big-endian machine
-such as NetBSD/sparc or NetBSD/newsmips
+NetBSD/sparc や NetBSD/newsmips など、他のビッグエンディアンのマシンで
+NetBSD パーティションを作る必要があります
 <p>
 
-Work is underway to simplify the installation procedure with a miniroot
-filesystem and a pre-built snapshot that will allow you to partition your
-disks and install NetBSD directly.
+miniroot ファイルシステムと構築済スナップショットを使って、ディスク分割と
+NetBSD インストールを直接可能にするような、インストール作業単純化のための
+作業がおこなわれています。
 <p>
 
-Firstly obtain a copy of the most recent kernel from <a
+まず最初に、最新のカーネルのコピーを <a
 href="ftp://ftp.netbsd.org/pub/NetBSD/arch/mipsco/snapshot/">ftp.netbsd.org/pub/NetBSD/arch/mipsco/snapshot/</a>
+から入手します。
 <p>
 
-<h3>Booting From a RISC/os disk partition</h3>
+<h3>RISC/os ディスクパーティションからブートする</h3>
 
-If you have a running version of RISC/os installed on your machine it
-is by far the easiest method to boot the kernel.<br>
+動作するバージョンの RISC/os がマシンにインストールされていれば、
+これは、ずば抜けて最も簡単なカーネルのブート方法です。<br>
 
-You can simply copy across the netbsd kernel file into / of the RISC/os
-operating system, shutdown and boot the new kernel using:
+netbsd カーネルファイルを単に RISC/os オペレーティングシステムにコピーして
+おくだけで、シャットダウンし、以下のようにして新しいカーネルからブートできます:
 
 <blockquote><tt>boot dksd(,,0)/netbsd</tt></blockquote>
 
-This procedure will initially load the stand alone shell (SASH) from
-dksd(,,8)sash then load the NetBSD kernel.
+この方法では、まず stand alone shell (SASH) を dksd(,,8)sash から
+ロードし、それから NetBSD カーネルをロードします。
 <p>
 
-<h3>Network boot using bootp and tftp</h3>
+<h3>bootp と tftp を使ってネットワークブートする</h3>
 
-The Mips PROM firmware has a number of restrictions with its bootp protocol:
+Mips PROM ファームェアには、 bootp プロトコルに関していくつかの制限があります:
 <p>
 
 <ul>
-<li>The machines IP address is not determined using bootp - it must be setup
-in 'netaddr' in theprom environment
-<li>The broadcast address used is strict a Class A B or C netmask based on
-the netaddr setting
-<li>The broadcast address used is the all-zero's variant of the broadcast
-address. Some OS's don't accept this address by default and you must specify
-it in the ifconfig args.
+<li>マシンの IP アドレスは bootp を使っては決定されません - prom 環境変数
+'netaddr' を設定する必要があります
+<li>ブロードキャストアドレスは、 netaddr の設定にもとづき、厳密にクラス A、
+B または C が使われます
+<li>使われるブロードキャストアドレスは、オールゼロな形式です。
+OS によってはこのアドレスをデフォルトでは受け付けず、
+ifconfig の引数で明示する必要があります。
 </ul>
 <p>
 
-With above restrictions in mind please refer to the <a
+bootp および tftp デーモンの設定の詳細については、どうか上記の制限を念頭に置いた上で <a
 href="../../Documentation/network/netboot/">Diskless
-NetBSD HOW-TO</a>&nbsp; for details on setting up a bootp and tftp daemon.
+NetBSD HOW-TO</a>&nbsp; を参照してください。
 <p>
 
-The easiest way of determining the Ethernet MAC address is to snoop
-the network using '<tt>tcpdump -e</tt>'
+イーサネット MAC アドレスを決めるための最も簡単な方法は、
+'<tt>tcpdump -e</tt>' を使ってネットワークを覗くことです。
 <p>
 
-Once you have a server setup with bootpd and tftpd running you can boot
-the kernel from the firmware using the following commands in <b>bold</b>
+サーバーで bootpd と tftpd を動かしておけば、ファームウェアで下記の
+<b>太字</b>部分のコマンド使うことで、カーネルをブートすることができます
 
 <blockquote>
 <tt>Rx3230 MIPS Monitor: Version 5.43 OPT Mon May 13 17:31:12
@@ -120,22 +121,22 @@ All rights reserved.</tt>
 </blockquote>
 <p>
 
-<h3>Setting up a NetBSD Filesystem</h3>
+<h3>NetBSD ファイルシステムのセットアップ</h3>
 
-One you have successfully booted the NetBSD/mipsco kernel you will need to
-setup a filesystem with the rest of the distribution.
+NetBSD/mipsco カーネルのブートに成功したら、残りの配布物を使って
+ファイルシステムのセットアップが必要です。
 <p>
 
 <ol>
-<li>On a Big Endian NetBSD machine, label a disk and create a suitable
-filesystem. The reason why you currently need a big endian machine is the
-disklabel values are stored in host byte order. This needs to be the same byte
-order as the MIPS R3000 native format. This procedure is known to work
-from NetBSD/sparc which places a disklabel at offset 0x80 on the first
-disk sector.
-<li>Download and untar the NetBSD distribution files onto the root of
-the new filesystem. You can chose either the newsmips or sgimips
-snapshot releases until a more official mipsco snapshot is created
+<li>ビッグエンディアンの NetBSD マシンでディスクにラベルを書き込み、適切な
+ファイルシステムを用意します。ビッグエンディアンのマシンが必要になる理由は、
+ディスクラベル値がホストのバイトオーダーによって書かれるからです。このため
+MIPS R3000 ネイティブフォーマットと同じバイトオーダーであることが必要になります。
+この手順は、ディスクの最初のセクターにオフセット 0x80 でディスクラベルを置く
+NetBSD/sparc でうまくいくことがわかっています。
+<li>NetBSD 配布物をダウンロードし、作ったファイルシステムのルートに
+展開します。 mipsco の公式スナップショットができるまでは、 newsmips
+か sgimips いずれかのスナップショットリリースを使うことができます
 
 <ul>
 <li><a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/newsmips/snapshot/19991218/">ftp://ftp.netbsd.org/pub/NetBSD/arch/newsmips/snapshot/19991218/</a>
@@ -143,14 +144,14 @@ snapshot releases until a more official mipsco snapshot is created
 </ul>
 </li>
 
-<li>Change into &lt;rootdir&gt;/dev and run '.<tt>/MAKEDEV all'</tt> to create
-the default device nodes.
-<li>Change into &lt;rootdir&gt;/etc and configure rc.config and other startup
-files by hand.
-<li>Unmount the disk and connect the drive to the Mips machine
-<li>Boot the kernel using bootp or off the RISC/os disk partition. When
-prompted for the root device answer with the device name for the root filesystem
-disk you just created.
+<li>&lt;rootdir&gt;/dev に移動し、そこで '.<tt>/MAKEDEV all'</tt> を実行して
+デフォルトのデバイスノードを作ります。
+<li>&lt;rootdir&gt;/etc に移動し、 rc.config その他のスタートアップファイルを
+手動で設定します。
+<li>ディスクをアンマウントしてドライブを Mips マシンにつなぎます
+<li>bootp を使うかまたは RISC/os ディスクパーティションからカーネルをブートします。
+ルートデバイスを尋ねられたらさきほど作ったルートファイルシステムのデバイス名を
+答えます。
 </ol>
 <p>
 
@@ -161,29 +162,31 @@ disk you just created.
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../"><img
-        src="../../images/NetBSD-flag.gif" border="0"
+        src="../../../images/NetBSD-flag.gif" origlink="../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a>
   </td><td>
     <a href="../../"><img
-        src="../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        src="../../../images/empty.gif" origlink="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
     <a href="../../Ports/"><img
-        src="../../images/NetBSD-flag.gif" border="0"
+        src="../../../images/NetBSD-flag.gif" origlink="../../images/NetBSD-flag.gif" border="0"
         width="91" height="42" alt=""></a>
   </td><td> 
     <a href="../../Ports/"><img
-        src="../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Supported Architectures</a>
+        src="../../../images/empty.gif" origlink="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">対応アーキテクチャー</a>
   </td></tr></table>
 </td></tr></table>
 
 <hr>
 <address>
   <small>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
+  (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
+       <a href="mailto:www@JP.NetBSD.ORG">日本語:
+       www@JP.NetBSD.ORG</a>)<br>
   $NetBSD: install.html,v 1.9 2001/07/11 14:57:46 dent Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
