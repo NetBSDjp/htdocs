@@ -63,8 +63,21 @@ NetBSDのソースツリーへの各々の変更に興味がある方は、
 
 <hr>
 
+<h3>2001年06月</h3>
+<ul>
+<li>
+<a href="#pmap-mpc6xx">Motorola MPC6xx CPUs用の新しいpmapモジュールが-currentに</a></li>
+<li>
+<a href="#iha-driver">Initio INIC-940/950 PCI SCSIコントローラー用のドライバー</a></li>
+<li>
+<a href="#nd-010603">新しい開発者</a></li>
+<li>
+<a href="#hw-csum">ハードウェアIPv4/TCP/UDPチェックサム対応</a></li>
+</ul>
 <h3>2001年05月</h3>
 <ul>
+<li>
+<a href="#vax-smp">NetBSD/vax で複数のcpuが動くようになりました</a></li>
 <li>
 <a href="#algor">NetBSDがAlgorithmics MIPS評価ボードに移植されました</a></li>
 <li>
@@ -303,11 +316,194 @@ NetBSDのソースツリーへの各々の変更に興味がある方は、
 </ul>
 
 
+<hr><h2>2001年06月</h2><hr>
+<p><h3>
+<a name="pmap-mpc6xx">Motorola MPC6xx CPUs用の新しいpmapモジュールが-currentに (06 Jun)</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+    Matt Thomasは、PowerPC 60x、7xx (G3)、74xx (G4) CPU用の新しいpmapモジュールを、
+    <a href="../Releases/current.html">NetBSD-current</a>にコミットしました。新しい
+    pmapは、置き換えられた以前のpmapと比べて単純かつ高速です。例えば新しいpmap
+    モジュールを使うと、GENERIC <a href="../Ports/macppc/">NetBSD/macppc</a>
+    カーネルの構築にかかるカーネル時間が40%減少します。
+    <p>
+    また、Mattのコミットは構成の変更も含んでいます。近い将来、NetBSD は別のMMUを
+    持つPowerPCに対応する予定です。この準備のために、新しいpmapと関連するファイル
+    は新しい二つのディレクトリーに置かれます: sys/arch/powerpc/mpc6xx と 
+    sys/arch/powerpc/include/mpc6xx。powerpc/include 中のMPC6xx依存のヘッダーファイル
+    (bat.h、hid.h、hid_601.h、pte.h)は、 mpc6xx固有のpmap.hと共に
+    powerpc/include/mpc6xxへ移動されました。
+    <p>
+    新しいカーネル設定オプション(PPC_MPC6XX)が定義され、<a 
+    href="../Ports/bebox/">bebox</a>、<a href="../Ports/macppc/">macppc</a> ポート
+    のstd.&lt;port&gt;に追加されました。<a 
+    href="../Ports/prep/">prep</a>もすぐに更新される予定です。
+
+</dd></dl>
+<p><h3>
+<a name="iha-driver">Initio INIC-940/950 PCI SCSIコントローラー用のドライバー (03 Jun)</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+    Izumi Tsutsuiは、Initio INIC-940/950 SCSIコントローラー用のドライバーを、<a
+    href="../Releases/current.html">NetBSD-current</a>に追加しました。このドライバー
+    は、OpenBSDのihaドライバーを元に、いくつかの構造の変更をおこなったものです。
+
+</dd></dl>
+<p><h3>
+<a name="nd-010603">新しい開発者 (03 Jun)</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+    NetBSDプロジェクトは新しい開発者を迎え入れることを喜ばしく思います:
+    <p>
+    <ul>
+    <li>Mario Kemper、<a href="mailto:magick@netbsd.org">&lt;magick@netbsd.org&gt;</a>は、<a
+	href="../Documentation/software/packages.html">NetBSD パッケージ
+	コレクション(pkgsrc)</a>とX11ソースの作業をおこなう予定です。
+    </ul>
+
+</dd></dl>
+<p><h3>
+<a name="hw-csum">ハードウェアIPv4/TCP/UDPチェックサム対応 (03 Jun)</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+    Jason Thorpeは、インバウンド、アウトバウンドIPv4、TCP、UDPチェックサム
+    に対応するための彼の変更を<a href="../Releases/current.html">NetBSD-current</a>
+    にコミットしました。現在、NatSemi DP83820ギガビットイーサネット(<em>gsip</em>)、
+    3Com Etherlink XL (<em>ex</em>)、Alteon Tigon/Tigon2ギガビットイーサネット
+    (<em>ti</em>)に対応しています。また、この変更にはIPv6 pseudo-headerチェックサム
+    のキャッシング対応も含まれています。これにより、IPv6ユーザーはCPU時間を節約する
+    ことができます。
+    <p>
+    何か問題を発見したら、<a href="http://www.tac.eu.org/cgi-bin/man-cgi?send-pr+1">send-pr(1)</a>で不具合報告をおこなってください。   
+
+</dd></dl>
 <hr><h2>2001年05月</h2><hr>
+<p><h3>
+<a name="vax-smp">NetBSD/vax で複数のcpuが動くようになりました (31 May)</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+    Anders Magnussonは、彼のVAX 8350で全三つのプロセッサー動かすことに成功しま
+    した。テストはすでに終り、システムは安定して動いています。ほとんどのコード
+    は既にソースツリーに入っており、残りのコードは、若干の整理と洗練をおこない、
+    開発ブランチ、NetBSD-currentにコミットされる予定です。
+    <p>
+
+    VAX 8350システムは、今後NetBSDが対応するシステムの中で、おそらく最も遅い
+    マルチプロセッサーシステムです: それぞれの CPU は約2VUPS (~2MIPS)。
+    8350は通常二つのCPUしか搭載されていません。三つ目のCPUはテストのために追加
+    されたものです。
+    <p>
+
+    NetBSD/vaxを他の興味深いマシンで動かすことは、それほど難しいことでは
+    ありません。例えば、二つの6VUPS KA88 CPUを持つ8800、32VUPS以上の速度の
+    CPUを六つ搭載可能な6000シリーズ等です。Stay tuned!
+    <p>
+
+    興味のある人達のために、以下に<a href="http://www.tac.eu.org/cgi-bin/man-cgi?dmesg+8">dmesg(8)</a>と<a href="http://www.tac.eu.org/cgi-bin/man-cgi?top+1">top(1)</a>の出力をのせておきます:
+    また、ワークステーションやPCに甘やかされている全ての若者のために、
+    <em>本物の</em>のコンピューターがどんなものかがわかる二三の写真もあります:
+    <p>
+
+    これは<a href="http://www.ludd.luth.se/gallery/ludd1-mII/ftp.luth.se_mark_IV-4.jpg">VAX 8800</a> (the four rightmost sections with brown top)、
+    Andersが作業した<a href="http://www.ludd.luth.se/gallery/ludd1-mII/8350-1.jpg">8350</a>。
+    です。そして、これは
+    <a href="http://www.ludd.luth.se/gallery/ludd3-mII/6320.jpg">6000</a>、
+    6320 (それぞれ4 VUPS のCPU二つ)の写真です。
+    <p>
+
+
+    <a href="http://www.tac.eu.org/cgi-bin/man-cgi?dmesg+8">dmesg(8)</a>の出力:
+    <p>
+
+<pre>
+Copyright (c) 1996, 1997, 1998, 1999, 2000, 2001
+    The NetBSD Foundation, Inc.  All rights reserved.
+Copyright (c) 1982, 1986, 1989, 1991, 1993
+    The Regents of the University of California.  All rights reserved.
+
+NetBSD 1.5V (GENERIC.MP) #41: Wed May 30 17:46:57 CEST 2001
+    ragge@bakfull:/usr/home/ragge/tmp/syssrc/sys/arch/vax/compile/GENERIC.MP
+
+VAX 8200
+total memory = 49148 KB
+avail memory = 41848 KB
+using 640 buffers containing 2560 KB of memory
+mainbus0 (root)
+bi0 at mainbus0
+klesi at bi0 node 0 [sadr 20400000 eadr 20440000] not configured
+cpu0 at bi0 node 2: ka825 (master) cpu rev 2, u patch rev 28, sec patch 1
+kdb0 at bi0 node 4 vec 520
+mscpbus0 at kdb0: version 3 model 2
+ra0 at mscpbus0 drive 0: RA90
+ra0: nspt 52 group 1 ngpc 15 rct 780 nrpt 1 nrct 2
+ra1 at mscpbus0 drive 1: RA90
+ra1: nspt 69 group 1 ngpc 13 rct 414 nrpt 1 nrct 4
+cpu1 at bi0 node 7: ka825 (slave) cpu rev 2, u patch rev 29, sec patch 1
+ni0 at bi0 node 8 vec 540: DEBNA
+ni0: hardware address 08:00:2b:0b:cd:05
+cpu2 at bi0 node 9: ka825 (slave) cpu rev 2, u patch rev 28, sec patch 1
+dmb32 at bi0 node 10 unsupported
+mem0 at bi0 node 11: size 16MB, 1M chips
+mem1 at bi0 node 12 [sadr 1000000 eadr 2000000]: size 16MB, 1M chips
+mem2 at bi0 node 13 [sadr 2000000 eadr 3000000]: size 16MB, 1M chips
+booted from type 98 unit 0 csr 0x20010000 adapter 8 slave 0
+boot device: ni0
+root on ni0
+mountroot: trying cd9660...
+mountroot: trying nfs...
+nfs_boot: trying DHCP/BOOTP
+nfs_boot: BOOTP server: 130.240.16.34
+nfs_boot: my_addr=130.240.16.204
+nfs_boot: my_mask=255.255.255.0
+root on zen:/export/root/nisse
+root time: 0x3b0d6ac7
+Clock has lost 11256 day(s) - CHECK AND RESET THE DATE.
+root file system type: nfs
+cpu1: running
+cpu2: running
+init: copying out path `/sbin/init' 11
+/etc/rc.conf is not configured.  Multiuser boot aborted.
+Enter pathname of shell or RETURN for sh:
+Terminal type? [unknown]
+#
+</pre>
+
+
+    <a href="http://www.tac.eu.org/cgi-bin/man-cgi?top+1">top(1)</a>の出力:
+    <p>
+
+<pre>
+load averages:  0.77,  0.61,  0.28    09:42:47
+11 processes:  8 sleeping, 3 on processor
+Memory: 2476K Act, 156K Wired, 38M Free
+
+  PID USERNAME PRI NICE   SIZE   RES STATE     TIME   WCPU    CPU COMMAND
+   38 root      49    0   108K  368K onproc    0:05 74.31% 16.46% top
+   37 root      31    0   132K  352K onproc    0:51 26.59%  7.86% bc
+   32 root      10    0   444K   92K sleep     0:01  9.83%  3.56% sh
+   36 root      28    0   132K  352K onproc    0:05  9.17%  3.03% bc
+   31 root      10    0    24K  268K sleep     0:03  5.12%  1.86% time
+   29 root      10    0   444K  136K sleep     0:01  4.85%  1.76% sh
+   35 root      10    0    24K  268K sleep     0:00  5.03%  1.66% time
+   28 root      10    0   444K   80K sleep     0:01  0.00%  0.00% sh
+    1 root      10    0   248K   64K sleep     0:01  0.00%  0.00% init
+   33 root      10    0   444K  136K sleep     0:00  0.00%  0.00% sh
+   11 root      10    0   444K  312K sleep      ???  0.00%  0.00% sh
+</pre>
+
+    <a href="http://www.tac.eu.org/cgi-bin/man-cgi?top+1">top(1)</a>の出力に「3 on processor」とあること、
+    二つの「echo "2^9999/3^6308" | /usr/bin/time bc」を実行していることに
+    注目してください。
+
+</dd></dl>
 <p><h3>
 <a name="algor">NetBSDがAlgorithmics MIPS評価ボードに移植されました (29 May)</a>
 <font size="-1">(<a href="#top">top</a>)</font>
 </h3><dl><dt><dd>
+    <b>06/01更新:</b> NetBSD/algorポートメンテナーのJason Thorpeは、
+    Algorithmics P-4032 ボード対応をおこないました。ただし、JasonはまだP-4032を
+    持っていないので、この新しいコードはテストされていません。
+    <p>
     Jason Thorpeは、NetBSDを<a
     href="http://www.algor.co.uk/">Algorithmics</a> MIPS評価ボードに移植
     しました。この新しいポートは、NetBSD/algorと呼ばれます。そして、現在
@@ -390,8 +586,8 @@ NetBSDのソースツリーへの各々の変更に興味がある方は、
     した。
     <p>
     pkgsrcでは、sendmail 8.11.4、あるいは8.12.0.Beta10が利用可能です。
-    8.11.4については、mail/<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sendmail/README.html">sendmail</a> パッケージを、8.12.0.Beta10
-    については mail/<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/sendmail-current/README.html">sendmail-current</a> パッケージを御覧下さい。
+    8.11.4については、mail/<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/mail/sendmail/README.html">sendmail</a> パッケージを、8.12.0.Beta10
+    については mail/<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/mail/sendmail-current/README.html">sendmail-current</a> パッケージを御覧下さい。
     <p>
     他の興味深いドキュメントととして、<a
     href="../Documentation/software/3rdparty/">
@@ -2787,7 +2983,7 @@ for two packages.
 <!-- This comment ease an rcsmerge.
   <a href="../Misc/feedback.html">(Contact us)</a>
 -->
-  $NetBSD: index.list,v 1.422 2001/05/31 15:17:28 yyamano Exp $<br>
+  $NetBSD: index.list,v 1.431 2001/06/09 06:28:04 yyamano Exp $<br>
 <!-- This comment ease an rcsmerge.
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
 -->
