@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2003
+<!-- Copyright (c) 1994-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <!--
   ==  Originally by Chris Jones
@@ -140,15 +140,85 @@ message is harmless in this case, and you can get rid of it by
 deleting (or commenting out) the <code>screen 0</code> line.
 
 <ENTRY>colors How do I change the text display colors?
-Warning and error messages from the kernel, in addition to messages
-from the kernel's configuration code, are printed to the console.
-When kernel messages show up, they are normally displayed in a
-different color, which can be customized.  Look for
-<code>WS_KERNEL_FG</code> and <code>WS_KERNEL_BG</code> in your kernel
-config file.  Change these to taste, and recompile your kernel.
-<p>
-A special trick is to set both variables to
-<code>WSCOL_BLACK</code> which will disable kernel messages.
+
+<p>It is possible to change the foreground and background color of
+kernel messages setting the following options in kernel config
+files:</p> 
+
+<pre>
+options WS_KERNEL_FG=WSCOL_xxx
+options WS_KERNEL_BG=WSCOL_xxx
+</pre>
+
+<p>The <tt>WSCOL_xxx</tt> color constants are defined in
+src/sys/dev/wscons/wsdisplayvar.h.</p>
+
+<p>Starting from NetBSD 2.0G (-current after NetBSD 2.0), you can
+easily customize many aspects of your display appearance: the colors
+used to print normal messages, the colors used to print kernel
+messages and the color used to draw a border around the screen.</p>
+
+<p>All of these details can be changed either from kernel options or
+through the wsconsctl(8) utility; the later may be preferable if you
+don't want to compile your own kernel, as the default options in GENERIC
+are suitable to get this tip working.</p>
+
+<p>The following options can be set through wsconsctl(8):</p>
+
+<ul>
+<li><b>border</b>: The color of the screen border.  Its respective kernel
+option is <code>WSDISPLAY_BORDER_COLOR</code>.</li>
+
+<li><b>msg.default.attrs</b>: The attributes used to print normal console
+messages.  Its respective kernel options are <code>WS_DEFAULT_COLATTR</code>
+and <code>WS_DEFAULT_MONOATTR</code> (the former is used in color displays,
+whilte the later is used in monochrome displays).</li>
+
+<li><b>msg.default.bg</b>: The background color used to print normal console
+messages.  Its respective kernel option is <code>WS_DEFAULT_BG</code>.
+
+<li><b>msg.default.fg</b>: The foreground color used to print normal console
+messages.  Its respective kernel option is <code>WS_DEFAULT_FG</code>.
+
+<li><b>msg.kernel.attrs</b>: The attributes used to print kernel
+messages and warnings.  Its respective kernel options are
+<code>WS_KERNEL_COLATTR</code> and <code>WS_KERNEL_MONOATTR</code> (the
+former is used in color displays, whilte the later is used in monochrome
+displays).</li>
+
+<li><b>msg.kernel.bg</b>: The background color used to print kernel
+messages and warnings.  Its respective kernel option is
+<code>WS_KERNEL_BG</code>.
+
+<li><b>msg.kernel.fg</b>: The foreground color used to print kernel
+messages and warnings.  Its respective kernel option is
+<code>WS_KERNEL_FG</code>.
+</ul>
+
+<p>The values accepted as colors are: black, red, green, brown, blue,
+magenta, cyan and white.  The attributes are a comma separated list of one
+or more flags, which can be: reverse, hilit, blink and/or underline.</p>
+
+<p>For example, to emulate the look of one of those old Amstrad
+machines:</p>
+
+<dl>
+    <dd>wsconsctl -d -w border=blue msg.default.bg=blue
+    msg.default.fg=white msg.default.attrs=hilit</dd>
+</dl>
+
+<p>Or, to make your kernel messages appear red:</p>
+
+<dl>
+    <dd>wsconsctl -d -w msg.kernel.fg=red</dd>
+</dl>
+
+<p>Note that, in older versions of NetBSD, only a subset of this
+functionality is available; more specifically, you can only change the
+kernel colors by changing kernel options, as explained above.
+Also note that not all drivers support these features, so you may not get
+correct results on all architectures.</p>
+
 
 <ENTRY>muxdevices How do I use the wscons "mux" devices?
 The wscons "mux" devices let you multiplex the input streams from more than one
@@ -278,8 +348,8 @@ Here is a step by step list of things to do to get wsmoused(8) working
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.list,v 1.23 2004/03/20 22:25:09 snj Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  $NetBSD: index.list,v 1.26 2004/09/02 00:39:04 hubertf Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
