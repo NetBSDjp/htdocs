@@ -1390,30 +1390,29 @@ machine.</b>  Apple has fixed Open Firmware 3 such that you needn't change
 <tt>load-base</tt> to boot.
 
 <p><h3>Open Firmware 1.0.5, 1.1.22, 2.0.x, and 2.4</h3>
-The default value of <tt>load-base</tt> on these systems is 4000, which isn't
-very good for our purposes.  <a href="SystemDisk-tutorial">System Disk</a>
-sets <tt>load-base</tt> to 600000, which suits us just fine.  mkLinux uses
-a different value, which may prevent you from booting NetBSD/macppc.
+The default value of <tt>load-base</tt> on these systems is 4000, which
+isn't very good for our purposes.  <a href="SystemDisk-tutorial">System
+Disk</a> sets <tt>load-base</tt> to 600000, which suits us just fine for
+NetBSD 1.5.3 and later.  mkLinux uses a different value, which may prevent
+you from booting NetBSD/macppc.  If you're using NetBSD 1.5.3 or later, 
+reading further may simply confuse you -- stop here and just use 600000.
 
-<p>The <tt>load-base</tt> is handled differently by <tt>ofwboot.xcf</tt> (the
-XCOFF bootloader used on MS-DOS floppies, ISO CD-Rs, and with netbooting) and 
-<tt>ofwboot</tt> (the "partition zero" bootloader on the install floppies, 
+<p>The <tt>load-base</tt> is handled differently by 
+<tt>ofwboot.xcf</tt> and <tt>ofwboot</tt>.  <tt>ofwboot.xcf</tt> is the
+XCOFF bootloader used on MS-DOS floppies, ISO CD-Rs, and with netbooting.  
+<tt>ofwboot</tt> is the "partition zero" bootloader on the install floppies, 
 install CD-R images, and hard drives prepared with <tt>sysinst</tt> or
-<tt>installboot</tt>).
-
-<p>Both <tt>ofwboot.xcf</tt> and <tt>ofwboot</tt> have an address stored
-in their headers which is used to determine where they should be loaded in
-memory.  Unfortunately, these versions of Open Firmware don't work as you'd
-expect.  You must set <tt>load-base</tt> to a <i>different</i> address than
-the address stored in the header of <tt>ofwboot.xcf</tt>.  You <i>must</i>
-set <tt>load-base</tt> to the <i>same</i> address stored in the header of
-<tt>ofwboot</tt>.
+<tt>installboot</tt>.
 
 <p><tt>ofwboot</tt> has been set to use 600000.  Therefore,
 you should use a <tt>load-base</tt> of 600000.
 
-<p>The NetBSD 1.5.3 and later versions of <tt>ofwboot.xcf</tt> have been set 
-to use 640000.  Therefore, you should use a <tt>load-base</tt> of 600000.
+<p>The NetBSD 1.5.3 and later versions of <tt>ofwboot.xcf</tt> have been
+set to use 640000. Due to a perculiarity of Apple's Open FIrmware,
+<tt>load-base</tt> must be an address different from the address
+<tt>ofwboot.xcf</tt> is set to use. Therefore, you should use a
+<tt>load-base</tt> of 600000. This value is also the correct one for
+booting MacOS X. 
 
 <p>The <tt>ofwboot.xcf</tt> from NetBSD versions prior to 1.5.3 had been
 set to use 600000.  Therefore, if you're trying to boot using this bootloader,
@@ -1865,7 +1864,25 @@ with MacOS partitions).
 
 <ENTRY>drive-spinup My hard drive doesn't spin up before Open Firmware tried booting
 To add a delay before trying to boot (to allow a hard drive to spin up),
-put the <a href="SystemDisk-tutorial/of105patch2.txt">following
+set the following Open Firmware variable:
+<pre>0 &gt; <b>setenv boot-command catch 5000 ms boot</b>
+0 &gt; <b>reset-all</b></pre>
+
+<p>If the drive does not spin up until right before it tries booting, you 
+may need to change a jumper on your hard drive which specifies whether 
+the drive automatically spins up.  Most drive manufacturers have online 
+manuals listing jumper locations.
+
+Two alternate methods are another <tt>boot-command</tt> variation and an 
+nvramrc patch.
+
+<pre>0 &gt; setenv <b>boot-command begin ['] boot catch 999 ms cr again</b>
+0 &gt; <b>reset-all</b></pre>
+
+<p>There are reports that this single-line alternative doesn't work on some
+early Open Firmware 1.0.5 models.
+
+<p>You can also try the <a href="SystemDisk-tutorial/of105patch2.txt">following 
 patch</a> in your nvramrc:
 
 <pre>: wBoot
@@ -1879,17 +1896,10 @@ key? until
 Then you need to run <tt>nvstore</tt>.  See the 
 <a href="nvedit.html">NetBSD/macppc nvedit HOW-TO</a> for more help patching
 your nvramrc.  Now, you need to specify that your
-boot command is different, so at the Open Firmware prompt, type:<br>
+boot command is different, so at the Open Firmware prompt, type:
 
-<tt>0 &gt; <b>setenv boot-command wBoot</b></tt>
-<p>
-
-Alternatively, you can just patch the boot-command:<br>
-
-<tt>0 &gt; <b>boot-command begin ['] boot catch 999 ms cr again</b></tt>
-<p>
-There are reports that this single-line alternative doesn't work on some
-early Open Firmware 1.0.5 models.
+<pre>0 &gt; <b>setenv boot-command wBoot</b>
+0 &gt; <b>reset-all</b></pre>
 
 
 <ENTRY>pb418 PowerBook (FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8
@@ -2105,7 +2115,7 @@ On NetBSD-current (1.6A or later),
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.114 2002/08/07 19:35:58 mbw Exp $<br>
+  $NetBSD: faq.list,v 1.115 2002/09/15 21:30:43 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
