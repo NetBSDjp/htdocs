@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.140 2003/08/04 12:21:42 soren Exp $
+#	$NetBSD: index.m4,v 1.146 2003/10/20 13:14:29 perry Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -240,6 +240,9 @@ ENDLIST
 LIST(regional-fr)
   Discussion relevant to users in France.
 ENDLIST
+LIST(regional-it)
+  Discussion relevant to users in Italy.
+ENDLIST
 LIST(regional-jp)
   Discussion relevant to users in Japan.
 ENDLIST
@@ -260,6 +263,9 @@ LIST(regional-pl)
 ENDLIST
 LIST(regional-sfba)
   Discussion relevant to users in the San Francisco Bay Area.
+ENDLIST
+LIST(tech-cluster)
+  Technical discussion on building and using clusters of NetBSD hosts.
 ENDLIST
 LIST(tech-embed)
   Discussions of the use of NetBSD in embedded systems.
@@ -324,6 +330,12 @@ ENDLIST
 LISTSECTION(Machine specific lists)
 
   <ul>
+PORTLIST(port-acorn26)
+  Discussion of issues specific to NetBSD on ARMv2 and ARMv2a machines
+  (NetBSD/acorn26).
+  There is also a <a href="#port-arm">port-arm</a> list for
+  questions related to all ARM based ports.
+ENDLIST
 PORTLIST(port-acorn32)
   Discussion of issues specific to NetBSD on ARM6 and newer based machines
   (NetBSD/acorn32).
@@ -362,16 +374,10 @@ LIST(port-arm)
   Discussion of issues relevant to all ARM-based NetBSD ports.
   There are lists for the individual ports and they should be used for
   port-specific questions and information:
+  <a href="#port-acorn26">port-acorn26</a>,
   <a href="#port-acorn32">port-acorn32</a>,
-  <a href="#port-arm26">port-arm26</a>,
   <a href="#port-cats">port-cats</a>, and
   <a href="#port-hpcarm">port-hpcarm</a>.
-ENDLIST
-PORTLIST(port-arm26)
-  Discussion of issues specific to NetBSD on ARM2 and ARM3 based machines
-  (NetBSD/arm26).
-  There is also a <a href="#port-arm">port-arm</a> list for
-  questions related to all ARM based ports.
 ENDLIST
 PORTLIST(port-atari)
   Discussion of issues specific to NetBSD on Atari's TT030, Falcon, and Hades
@@ -402,23 +408,11 @@ PORTLIST(port-dreamcast)
   There is also a <a href="#port-sh3">port-sh3</a> list for
   questions related to all Hitachi Super-H (SH3/4) chips-based ports.
 ENDLIST
-PORTLIST(port-evbarm)
-  Discussion of issues specific to NetBSD on ARM-based evaluation boards
-  (NetBSD/evbarm).
-  There is also a <a href="#port-arm">port-arm</a> list for
-  questions related to all ARM based ports.
-ENDLIST
 PORTLIST(port-evbmips)
   Discussion of issues specific to NetBSD on evaluation boards with
   MIPS-based CPUs  (NetBSD/evbmips).  Currently the MIPS Malta is supported.
   There is also a <a href="#port-mips">port-mips</a> list for
   questions related to all MIPS based ports.
-ENDLIST
-PORTLIST(port-evbsh3)
-  Discussion of issues specific to NetBSD on Hitachi SuperH(TM) SH3/4
-  evaluation boards (NetBSD/evbsh3).
-  There is also a <a href="#port-sh3">port-sh3</a> list for
-  questions related to all sh3 based ports.
 ENDLIST
 PORTLIST(port-hp300)
   Discussion of issues specific to NetBSD on Hewlett-Packard's 9000/300 and
@@ -521,17 +515,17 @@ PORTLIST(port-mvmeppc)
   There is also a <a href="#port-powerpc">port-powerpc</a> list for
   questions related to all PowerPC based ports.
 ENDLIST
-PORTLIST(port-newsmips)
-  Discussion of issues specific to NetBSD on MIPS based Sony NEWS systems
-  (NetBSD/newsmips).
-  There is also a <a href="#port-mips">port-mips</a> list for
-  questions related to all MIPS based ports.
-ENDLIST
 PORTLIST(port-news68k)
   Discussion of issues specific to NetBSD on 68k based Sony NEWS systems
   (NetBSD/news68k).
   There is also a <a href="#port-m68k">port-m68k</a> list for
   questions related to all Motorola 68k based ports.
+ENDLIST
+PORTLIST(port-newsmips)
+  Discussion of issues specific to NetBSD on MIPS based Sony NEWS systems
+  (NetBSD/newsmips).
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
 ENDLIST
 PORTLIST(port-next68k)
   Discussion of issues specific to NetBSD on 68k based NeXT "black hardware"
@@ -610,6 +604,9 @@ PORTLIST(port-sh3)
   port-specific questions and information:
   <a href="#port-dreamcast">port-dreamcast</a>, and
   <a href="#port-hpcsh">port-hpcsh</a>.
+ENDLIST
+PORTLIST(port-sh5)
+  Discussion of issues relevant to all SH5-based NetBDS ports.
 ENDLIST
 PORTLIST(port-sparc)
   Discussion of issues specific to NetBSD on Sun's 32-bit Sparc based machines
@@ -705,7 +702,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.140 2003/08/04 12:21:42 soren Exp $<br>
+  $NetBSD: index.m4,v 1.146 2003/10/20 13:14:29 perry Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
