@@ -1,0 +1,852 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>Setting up the NFS server, Diskless NetBSD HOW-TO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<a href="bootparams.html">Previous</a> |
+<a href="files.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr>
+
+<h1>Setting up the NFS server, Diskless NetBSD HOW-TO</h1>
+
+NFS is a somewhat standard networked filesystem on UNIX.  The bootloader
+expects to find the kernel on an nfs server, load it into memory, and
+transfer control to it.
+<p>
+
+If you are only netbooting to install NetBSD on a local hard drive, please
+read <a href="local.install.html">this page</a>.
+<p>
+
+The client <b>needs</b> root read/write access on the nfs server.
+If this is a security issue with you, then you may need to be careful
+deciding where the client has access.  
+The following directories <b>must</b> have root read/write permissions:<br>
+<pre>/
+/var
+/etc
+/dev</pre>
+Therefore, the easiest thing would be to export <tt>/home</tt> and 
+<tt>/usr</tt> separately from <tt>/export/client/root</tt>, and without
+root read/write permissions.  This is why <tt>/usr</tt> and <tt>/home</tt>
+are explicitly shuffled around in this HOW-TO.  Here's what the directory
+structure will look like when you're done:
+<p>
+
+<table border="1" cellspacing="1" cellpadding="5">
+<tr><td><i>
+Server (exported directory)
+</i></td><td><i>
+Client
+</i></td></tr>
+
+<tr><td><tt>
+/export/client/root
+</tt></td><td><tt>
+/
+</tt></td></tr>
+
+<tr><td><tt>
+/export/client/swap </tt><i>(file)</i>
+</td><td><tt>
+/swap </tt><i>(file)</i>
+</td></tr>
+
+<tr><td><tt>
+/export/client/usr
+</tt></td><td><tt>
+/usr
+</tt></td></tr>
+
+<tr><td><tt>
+/export/client/home
+</tt></td><td><tt>
+/home
+</tt></td></tr>
+</table>
+<p>
+
+Note that <tt>/swap</tt> will be mounted as a file.
+<p>
+
+Also, note that if the server has the same architecture (e.g. Motorola
+680X0 microprocessor for NetBSD/hp300 and sun3, Sparc microprocessor
+for NetBSD/sparc, and Vax microprocessor for NetBSD/vax), and is
+running NetBSD, then the client will be able to use the <tt>/usr</tt>
+directory structure from the server, saving a significant amount of
+disk space.  If this is the case, then you will need to export
+<tt>/usr</tt> instead of <tt>/export/client/usr</tt> from the server.
+<p>
+
+You need to make sure that you haven't denied any host access via
+TCP wrappers.  Look in <tt>/etc/hosts.deny</tt> and
+<tt>/etc/hosts.allow</tt> for nfsd, mountd, rpcbind, and portmap
+entries.  If
+you're using these files to restrict nfs access, then you need to either
+comment out the nfsd, mountd, rpcbind, and/or portmap entries in
+<tt>hosts.deny</tt> or add entries for your client in
+<tt>hosts.allow</tt>.  You'll probably have to <tt>kill -HUP</tt> these
+daemons.  Note that portmap is tricky, and on some platforms <tt>kill
+-HUP</tt> will actually kill it.  It may be easiest to reboot your nfs
+server after changing your host access files.
+<p>
+
+The nfs servers on some of these platforms have problems, but usually,
+they can be worked around with a little effort.  This will be covered
+in the next section of this HOW-TO.
+<p>
+
+Setting up nfs, <a href="#netbsd">NetBSD</a><br>
+Setting up nfs, <a href="#openbsd">OpenBSD</a><br>
+Setting up nfs, <a href="#freebsd">FreeBSD</a><br>
+Setting up nfs, <a href="#linux">Linux</a><br>
+Setting up nfs, <a href="#sunos">SunOS</a><br>
+Setting up nfs, <a href="#solaris">Solaris</a><br>
+Setting up nfs, <a href="#news">NEWS-OS</a><br>
+Setting up nfs, <a href="#next">NEXTSTEP</a><br>
+Setting up nfs, <a href="#hpux7">HP-UX</a> 7 (couldn't get it to work)<br>
+Setting up nfs, <a href="#hpux9">HP-UX</a> 9<br>
+Setting up nfs, <a href="#hpux10">HP-UX</a> 10 and later<br>
+<p>
+
+<hr>
+
+<h3><a name="netbsd">NetBSD</a> and <a name="openbsd">OpenBSD</a></h3>
+<dl><dt><dd>
+If you have built your own kernel, you need to make sure you have the
+following in your config file:
+<pre>options         NFSSERVER</pre>
+The <tt>GENERIC</tt> kernel distributed with NetBSD has this compiled in.
+<p>
+
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Add the following lines to <tt>/etc/exports</tt>:
+<pre><b>#/etc/exports
+/export/client/root -maproot=root:wheel    client.test.net
+/export/client/swap -maproot=root:wheel    client.test.net
+/export/client/usr  -maproot=nobody:nobody client.test.net
+/export/client/home -maproot=nobody:nobody client.test.net</b></pre>
+<p>
+
+<li><tt># <b>ps -aux | grep mountd</b></tt><br>
+   If <tt>mountd</tt> is running, then <tt>kill -HUP</tt> that process to
+   force it to reread <tt>/etc/exports</tt>.  Otherwise, you'll need to 
+   start it:<br>
+   <tt># <b>/usr/sbin/mountd</b></tt><br>
+<p>
+
+<li><tt># <b>ps -aux | grep nfsd</b></tt><br>
+   If the <tt>nfsd</tt>aemons are not running, then you need to start them:<br>
+   <tt># <b>/usr/sbin/nfsd -tun 4</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="freebsd">FreeBSD</a></h3>
+<dl><dt><dd>
+FreeBSD deals with exporting filesystems a little differently than most other
+platforms.  See 
+<a href="http://www.freeBSD.org/FAQ/networking.html#EXPORTS-ERRORS">
+http://www.freeBSD.org/FAQ/networking.html#EXPORTS-ERRORS</a> 
+and <a href="http://www.freebsd.org/handbook/nfs.html">
+http://www.freebsd.org/handbook/nfs.html</a> for more 
+information.  The easiest method of proceeding is to assume that 
+FreeBSD doesn't support exporting individual directories.  You need to
+know the mountpoint of the filesystem you will be exporting.  This also
+means that the client will have root read/write privileges on that whole
+filesystem.  For example, if you only have one filesystem (i.e. /),
+then you need to export everything to the client.
+<p>
+
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li><tt># <b>df /export/client</b></tt><br>
+   to determine what filesystem <tt>/export/client</tt> is on.  This is
+   the <i>mountpoint</i> of your filesystem.  This is what gets exported
+   to the client. For purposes of this HOW-TO, we'll assume it's on the
+   <tt>/export</tt> filesystem.  
+<p>
+
+<li>Add the following line to <tt>/etc/exports</tt>:
+<pre><b>#/etc/exports
+/export -alldirs -maproot=root client.test.net</b></pre>
+   Replace <tt>/export</tt> with whatever directory <tt>df</tt> returned in
+   the previous step.
+<p>
+
+<li><tt># <b>ps -aux | grep mountd</b></tt><br>
+   If <tt>mountd</tt> is running, then <tt>kill</tt> that process.  You need
+   it to be running with the <tt>-r</tt> option for the swap file to be
+   mountable, and the <tt>-2</tt> option is to force it to use NFS V2.<br>
+   <tt># <b>/sbin/mountd -2r</b></tt><br>
+<p>
+
+<li><tt># <b>ps -aux | grep nfsd</b></tt><br>
+   If the <tt>nfsd</tt>aemons are not running, then you need to start them:<br>
+   <tt># <b>/sbin/nfsd -tun 4</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="linux">Linux</a></h3>
+<dl><dt><dd>
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Add the following lines to <tt>/etc/exports</tt>:
+<pre><b>#/etc/exports
+/export/client/root client.test.net(rw,no_root_squash)
+/export/client/swap client.test.net(rw,no_root_squash)
+/export/client/usr client.test.net(rw,root_squash)
+/export/client/home client.test.net(rw,root_squash)</b></pre>
+<p>
+
+<li><tt># <b>ps aux | grep mountd</b></tt><br>
+   If <tt>mountd</tt> is running, then <tt>kill -HUP</tt> that process.  This
+   will force it to reread the <tt>/etc/exports</tt> file.  If it's not already
+   running, then you need to:<br>
+   <tt># <b>/sbin/rpc.mountd [--no-nfs-version 3]</b></tt><br>
+   You may need to add the <tt>--no-nfs-version 3</tt> if you're having
+   problems.  See below.
+<p>
+
+<li><tt># <b>ps aux | grep nfsd</b></tt><br>
+   If the <tt>nfsd</tt>aemons are running, then you need to restart them
+   so that they reread the <tt>/etc/exports</tt> file.  If they're not already
+   running, then you need to:<br>
+   <tt># <b>/sbin/rpc.nfsd</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+<b>Kernel NFS Problem:</b>
+<blockquote>
+Most versions of linux only implement NFS2, in which case NetBSD
+will try NFS3 and then automatically fall back. Some versions
+(notably RedHat 6.0) will incorrectly answer both NFS2 and NFS3
+mount requests, then ignore any attempt to access the filesystem
+using NFS3. This causes untold pain and hassle.<br>
+<br>
+The workaround is to kill mountd and start it with options preventing NFS3
+problems (i.e., <tt><b>rpc.mountd&nbsp;--no-nfs-version&nbsp;3</b></tt>).
+</blockquote>
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="sunos">SunOS</a></h3>
+<dl><dt><dd>
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Create (or add to) your <tt>/etc/exports</tt> file:<br>
+<pre><b>#/etc/exports
+/export/client/root -root=client
+/export/client/swap -root=client
+/export/client/usr
+/export/client/home</b></pre>
+<p>
+
+<li><tt># <b>rm -f /etc/xtab;touch /etc/xtab</b></tt>
+<p>
+
+<li><tt># <b>exportfs -a</b></tt>
+<p>
+
+<li><tt># <b>ps aux | grep nfsd</b></tt><br>
+   If nfsd not already running, then run:<br>
+   <tt># <b>nfsd 8 &</b></tt>
+<p>
+
+<li><tt># <b>ps aux | grep mountd</b></tt><br>
+   If mountd is not already running, then run:<br>
+   <tt># <b>rpc.mountd -n &</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="solaris">Solaris</a></h3>
+<dl><dt><dd>
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Add the following lines to <tt>/etc/dfs/dfstab</tt>:
+<pre><b>share -F nfs -o root=client /export/client/root
+share -F nfs -o root=client /export/client/swap
+share -F nfs -o rw=client   /export/client/usr
+share -F nfs -o rw=client   /export/client/home</b></pre>
+<p>Be certain to use names, if you use numeric IP addresses, Solaris will
+deny access without any error messages.
+<p>
+
+<li><tt># <b>/usr/bin/ps -ef | grep nfs</b></tt><br>
+   If the nfs daemons are running, then you merely need to run:<br>
+   <tt># <b>shareall</b></tt><br>
+   Normally, you'd need to run <tt><b>unshareall;shareall</b></tt>, but
+   you've only added entries, not deleted anything.
+   <p>
+   If the nfs daemons aren't running, then you will need to run:<br>
+   <tt># <b>/etc/init.d/nfs.server start</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="news">NEWS-OS</a></h3>
+<dl><dt><dd>
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Create (or add to) your <tt>/etc/exports</tt> file:<br>
+<pre><b>#/etc/exports
+/export/client/root -root=client
+/export/client/swap -root=client
+/export/client/usr
+/export/client/home</b></pre>
+<p>
+
+<li><tt># <b>rm -f /etc/xtab;touch /etc/xtab</b></tt>
+<p>
+
+<li><tt># <b>/usr/etc/exportfs -av</b></tt>
+<p>
+
+<li><tt># <b>ps -aux | grep nfsd</b></tt><br>
+   If nfsd not already running, then run:<br>
+   <tt># <b>/etc/nfsd 4 &</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="next">NEXTSTEP</a></h3>
+<dl><dt><dd>
+Note, NEXTSTEP doesn't support exporting a file.  This means that swap
+will have to be a file on your root (nfs) filesystem, and not its own
+nfs mounted file.  Keep this in mind in later steps involving swap.
+<p>
+
+You may also wish to keep with NEXTSTEP convention and place all of your
+client files in <tt>/private/export/client</tt> instead of
+<tt>/export/client</tt>.
+<p>
+
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/root/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Launch <tt>/NextAdmin/NFSManager.app</tt>
+<p>
+
+<li>Click on the "Export From ..." menu item
+<p>
+
+<li>Select your NetInfo Domain (probably <tt>/</tt>) and click OK.
+<p>
+
+<li>Click on the top Add button to pick your Directory Name<br>
+<p>
+
+<li>Type in your client's name under "Root Access" and click that
+"Add" button.
+<p>
+
+<li>Click OK.  If your client doesn't have a DNS or <tt>/etc/hosts</tt>
+entry, NEXTSTEP will not serve correctly.
+<p>
+
+<li>Click the "Quit" menu item.
+</ol>
+<p>
+
+For reference, here is a <a href="next.nfs.gif">snapshot</a> of what the
+NFSManager Exported Directories window should look like.
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="hpux7">HP-UX 7</a></h3>
+<dl><dt><dd>
+I couldn't get the HP-UX 7 <tt>rpc.mountd</tt> to start.  Here's what I tried,
+if you think it might work for you.  Let us know what we're doing wrong.
+<p>
+
+I don't think HP-UX 7's NFS server allows for restricting root read/write
+access.
+<p>
+
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Add the following lines to <tt>/etc/exports</tt>:
+<pre><b>#/etc/exports
+/export/client/root client.test.net
+/export/client/swap client.test.net
+/export/client/usr  client.test.net
+/export/client/home client.test.net</b></pre>
+<p>
+
+<li><tt># <b>ps -ef | grep nfsd</b></tt><br>
+   If they're not running, then run:<br>
+   <tt># <b>/etc/nfsd 4</b></tt>
+<p>
+
+<li>Make sure the <tt>rpc.mountd</tt> in <tt>/etc/inetd.conf</tt> is uncommented
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="hpux9">HP-UX 9</a></h3>
+<dl><dt><dd>
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Open sam and make sure that the kernel has NFS support compiled in.<br>
+   <tt>Kernel Configuration -&gt; Subsystems, NFS/9000</tt><br>
+   This will require a reboot if it's not.
+<p>
+
+<li>Add the following lines to <tt>/etc/exports</tt>:
+<pre><b>#/etc/exports
+/export/client/root   -root=client.test.net
+/export/client/swap   -root=client.test.net
+/export/client/usr  -access=client.test.net
+/export/client/home -access=client.test.net</b></pre>
+<p>
+
+<li><tt># <b>ps -ef | grep mountd</b></tt><br>
+   If mountd is not already running, then run:<br>
+   <tt># <b>/usr/etc/rpc.mountd</b></tt>
+<p>
+
+<li><tt># <b>ps -ef | grep nfsd</b></tt><br>
+   If nfsd isn't already running, then run:<br>
+   <tt># <b>/etc/nfsd 4</b></tt>
+<p>
+
+<li><tt># <b>/usr/etc/exportfs -a</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="hpux10">HP-UX 10</a></h3>
+<dl><dt><dd>
+<ol>
+<li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/usr</b></tt>
+<p>
+
+<li><tt># <b>mkdir /export/client/home</b></tt>
+<p>
+
+<li><tt># <b>touch /export/client/swap</b></tt>
+<p>
+
+<li><tt># <b>cd /export/client/root</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-1.5.1/binary/sets/kern.tgz</b></tt>
+<p>
+
+<li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
+<p>
+
+<li>Edit <tt>/etc/rc.config.d/nfsconf</tt> and make sure that:<br>
+   <tt>NFS_SERVER=<b>1</b></tt><br>
+   <tt>START_MOUNTD=<b>1</b></tt><br>
+   If those are not set, then you will need to run:<br>
+   <tt># <b>/sbin/init.d/nfs.server start</b></tt>
+<p>
+
+<li>Add the following lines to <tt>/etc/exports</tt>:
+<pre><b>#/etc/exports
+/export/client/root   -root=client.test.net
+/export/client/swap   -root=client.test.net
+/export/client/usr  -access=client.test.net
+/export/client/home -access=client.test.net</b></pre>
+<p>
+
+<li><tt># <b>/usr/sbin/exportfs -a</b></tt>
+</ol>
+<p>
+
+If the server isn't running the NFS daemons, the client will print:
+<pre>le(0,0,0,0): Unknown error: code -1
+boot: Unknown error: code -1</pre>
+If the server is running NFS, but isn't exporting the root directory to the
+client, the client will print:
+<pre>boot: no such file or directory</pre>
+If everything is working properly, you will see a few numbers and a spinning
+cursor on the client.  This means you have succeeded!  At this point, your
+client isn't bootable.  If you let it continue, it will panic when attempting
+to start <tt>init</tt>.
+<p>
+
+Continue on to setting up the client <a href="files.html">filesystem</a>
+</dd></dl>
+
+<hr>
+
+<a href="bootparams.html">Previous</a> |
+<a href="files.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="../../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: nfs.html,v 1.32 2001/07/11 11:09:03 dent Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
