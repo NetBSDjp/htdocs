@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.97 2001/06/05 17:46:47 thorpej Exp $
+#	$NetBSD: index.m4,v 1.103 2001/11/17 01:25:48 wdk Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -254,12 +254,12 @@ PORTLIST(port-alpha)
   議論用です。
 ENDLIST
 PORTLIST(port-amiga)
-  NetBSD on Commodore の Amiga や MacroSystem の DraCo マシン上の
+  Commodore の Amiga や MacroSystem の DraCo マシン上の
   NetBSD (NetBSD/amiga) 固有の事項の議論用です。
   Motorola 68k ベースのすべてのポートに関する質問のための
   <a href="#port-m68k">port-m68k</a> リストもあります。
   <br><small>(このリストは、 <i>amiga</i>、 <i>amiga-dev</i>、
-  <i>amiga-x</i> の各リストにとってかわるものです)。</small>
+  <i>amiga-x</i> の各リストにとってかわるものです。)</small>
 ENDLIST
 PORTLIST(port-arc)
   MIPS ベースで ARC firmware を持った PC 上の NetBSD (NetBSD/arc)
@@ -273,6 +273,7 @@ LIST(port-arm)
   そちらをご利用ください:
   <a href="#port-arm26">port-arm26</a>、
   <a href="#port-arm32">port-arm32</a>、
+  <a href="#port-cats">port-cats</a>、
   <a href="#port-hpcarm">port-hpcarm</a>。
 ENDLIST
 PORTLIST(port-arm26)
@@ -288,7 +289,7 @@ PORTLIST(port-arm32)
   <a href="#port-arm">port-arm</a> リストもあります。
 ENDLIST
 PORTLIST(port-atari)
-  NetBSD on Atari の TT030、 Falcon、 Hades マシン上の NetBSD (NetBSD/atari)
+  Atari の TT030、 Falcon、 Hades マシン上の NetBSD (NetBSD/atari)
   固有の事項の議論用です。
   Motorola 68k ベースのすべてのポートに関する質問のための
   <a href="#port-m68k">port-m68k</a> リストもあります。
@@ -298,6 +299,12 @@ PORTLIST(port-bebox)
   固有の事項の議論用です。
   PowerPC ベースのすべてのポートに関する質問のための
   <a href="#port-powerpc">port-powerpc</a> リストもあります。
+ENDLIST
+PORTLIST(port-cats)
+  ARM ベースの Chalice Technology CATS マシンおよび EBSA 評価ボード上の
+  NetBSD (NetBSD/cats) 固有の事項の議論用です。
+  ARM ベースのすべてのポートに関する質問のための
+  <a href="#port-arm">port-arm</a> リストもあります。
 ENDLIST
 PORTLIST(port-cobalt)
   Cobalt Networks の MIPS ベースの Qube および RaQ コンピューター上の NetBSD
@@ -369,7 +376,7 @@ PORTLIST(port-mac68k)
   Motorola 68k ベースのすべてのポートに関する質問のための
   <a href="#port-m68k">port-m68k</a> リストもあります。
   <br><small>(このリストは、 <i>macbsd-general</i> と
-  <i>macbsd-development</i> の各リストにとってかわるものです)</small>。
+  <i>macbsd-development</i> の各リストにとってかわるものです。)</small>
 ENDLIST
 PORTLIST(port-macppc)
   Apple の PowerPC ベースの Macintosh マシン上の NetBSD (NetBSD/macppc)
@@ -381,6 +388,7 @@ LIST(port-mips)
   MIPS ベースの NetBSD ポートすべてに関する事項の議論用です。
   ポート別のリストがありますので、各ポートに固有の質問や情報は
   そちらをご利用ください:
+  <a href="#port-algor">port-algor</a>、
   <a href="#port-arc">port-arc</a>、
   <a href="#port-cobalt">port-cobalt</a>、
   <a href="#port-hpcmips">port-hpcmips</a>、
@@ -475,7 +483,7 @@ PORTLIST(port-sh3)
   <a href="#port-hpcsh">port-hpcsh</a>。
 ENDLIST
 PORTLIST(port-sparc)
-  Sun の 32 ビット Sparc ベースのマシン上の NetBSD (NetBSD/sparc).
+  Sun の 32 ビット Sparc ベースのマシン上の NetBSD (NetBSD/sparc)
   固有の事項の議論用です。
 ENDLIST
 PORTLIST(port-sparc64)
@@ -512,15 +520,15 @@ ENDLIST
 
   <ul>
 OLDLIST(amiga)
-  NetBSD/Amiga に関する事項の議論のためのリストです。<br>
+  NetBSD/amiga に関する事項の議論のためのリストです。<br>
   <em><a href="#port-amiga">port-amiga</a> に移行しました。</em>
 ENDLIST
 OLDLIST(amiga-dev)
-  NetBSD/Amiga の高度な開発に関する事項を扱うリストです。<br>
+  NetBSD/amiga の高度な開発に関する事項を扱うリストです。<br>
   <em><a href="#port-amiga">port-amiga</a> に移行しました。</em>
 ENDLIST
 OLDLIST(amiga-x)
-  NetBSD/Amiga で動作する X に関するリストです。<br>
+  NetBSD/amiga で動作する X に関するリストです。<br>
   <em><a href="#port-amiga">port-amiga</a> に移行しました。</em>
 ENDLIST
 OLDLIST(m68k)
@@ -559,7 +567,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.97 2001/06/05 17:46:47 thorpej Exp $<br>
+  $NetBSD: index.m4,v 1.103 2001/11/17 01:25:48 wdk Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
