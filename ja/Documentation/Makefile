@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.9 2000/09/19 11:38:47 dent Exp $
+# $NetBSD: Makefile,v 1.3 2002/08/01 20:25:13 jschauma Exp $
 # Nasty makefile to recurse into subdirs to ensure faq files are up to date
 
 all::	books.html bootcd.html compat.html elf.html mirror.html
@@ -11,4 +11,4 @@ all::
 .SUFFIXES:	.list .html
 
 .list.html:
-	../list2html.pl $< $@
+	perl ../list2html.pl $< $@

@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.3 2001/06/06 18:47:47 marcus Exp $
+#	$NetBSD: Makefile,v 1.3 2002/08/01 20:25:06 jschauma Exp $
 #	Process .list files into .html files
 
 all:	faq.html howto.html
@@ -6,4 +6,4 @@ all:	faq.html howto.html
 .SUFFIXES:	.list .html
 
 .list.html:
-	../../list2html.pl $< $@
+	perl ../../list2html.pl $< $@
