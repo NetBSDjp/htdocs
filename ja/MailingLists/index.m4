@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.122 2003/04/01 20:06:59 jschauma Exp $
+#	$NetBSD: index.m4,v 1.123 2003/04/22 15:50:56 lukem Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -191,6 +191,14 @@ LIST(netbsd-docs)
 ENDLIST
 LIST(netbsd-help)
   ユーザーが質問を寄せる一般的な場としてのメーリングリストです。
+ENDLIST
+LIST(netbsd-jobs)
+  NetBSD ユーザーや開発者と関連のある求人広告のための
+  メーリングリストです。
+ENDLIST
+LIST(netbsd-news)
+  NetBSD に関するニュースのためのメーリングリストです。
+  サードパーティーのニュースも含みます。
 ENDLIST
 LIST(netbsd-ports)
   NetBSD の移植作業をしている人や興味がある人のためのメーリングリストです。
@@ -659,7 +667,7 @@ divert(9)
   (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.122 2003/04/01 20:06:59 jschauma Exp $<br>
+  $NetBSD: index.m4,v 1.123 2003/04/22 15:50:56 lukem Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
