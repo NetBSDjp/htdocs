@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.137 2003/06/08 02:13:10 heinz Exp $
+#	$NetBSD: index.m4,v 1.138 2003/07/01 13:38:58 lukem Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -239,6 +239,9 @@ LIST(regional-cs)
 ENDLIST
 LIST(regional-fr)
   Discussion relevant to users in France.
+ENDLIST
+LIST(regional-jp)
+  Discussion relevant to users in Japan.
 ENDLIST
 LIST(regional-london)
   Discussion relevant to users in London.
@@ -699,7 +702,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.137 2003/06/08 02:13:10 heinz Exp $<br>
+  $NetBSD: index.m4,v 1.138 2003/07/01 13:38:58 lukem Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
