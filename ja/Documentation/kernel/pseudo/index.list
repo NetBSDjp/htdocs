@@ -7,7 +7,7 @@
 <!--
   ==  By Brett Lymn
   -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <TITLE>Writing a pseudo device</TITLE>
 </HEAD>
 <BODY bgcolor="#FFFFFF" text="#000000">
@@ -16,403 +16,440 @@
 
 <LIST>
 
-<SECTION>How to write a pseudo device
+<SECTION> 擬似デバイスの書き方
 
-<ENTRY>intro Introduction
-   This document is meant to provide a guide to someone who wants to
-   start writing kernel drivers.  The document covers the writing of a
-   simple pseudo-device driver.  You will need to be familiar with
-   building kernels, makefiles and the other arcana involved in
-   installing a new kernel as these are not covered by this document.
-   Also not covered is kernel programming itself - this is quite
-   different to programming at the user level in many ways.  Having
-   said all that, this document will give you the process that is
-   required to get your code into and recognised by the kernel.
+<ENTRY>intro 序説
 
-<ENTRY>yourcode Your code
-   The file <A HREF="pseudo_dev_skel.c">pseudo_dev_skel.c</A> gives the
-   framework for a pseudo-device and the file
-   <A HREF="pseudo_dev_skel.h">pseudo_dev_skel.h</A> defines the kernel
-   function prototypes and the ioctl data structure plus the ioctl
-   number itself.  Note that, unlike a normal device driver, a
-   pseudo-device does not have a probe routine because this is not
-   necessary.  This simplifies life because we do not need to deal
-   with the autoconfig framework.  The skeleton file given is for a
-   pseudo-device that supports the open, close and ioctl calls.  This
-   is about the minimum useful set of calls you can have in a real
-   pseudo-device.  There are other calls to support read, write, mmap
-   and other device functions but they all follow the same pattern as
-   open, close and ioctl so they have been omitted for clarity.
+このドキュメントはカーネルドライバーを書いてみようという方へのガイドです。
+ここではシンプルな擬似デバイスドライバーの書き方を扱います。
+カーネルの構築、makefile 関連や新しいカーネルのインストールに関する他の奥義
+はこれらはこのドキュメントには含まれてなく(別に)必要です
+
+また、カーネルプログラミングそれ自体も含まれていなく
+ - これは、ユーザーレベルプログラミングとは多くの面でとても違います。
+
+一通り書いたので、このドキュメントであなたのコードを
+カーネルに加えて動作させることができるようになります。
+
+<ENTRY>yourcode あなたのコード
+
+   <A HREF="pseudo_dev_skel.c">pseudo_dev_skel.c</A> ファイルが
+    擬似デバイスとファイルの骨格となります。
+   <A HREF="pseudo_dev_skel.h">pseudo_dev_skel.h</A>では 
+   kernel 関数プロトタイプと ioctl データ構造 と加えて ioctl 番号自体を定義します。
+   注として、普通のデバイスドライバーと違って、
+   擬似デバイスドライバーには、プローブルーチンは必要ないので持っていません。
+   この質素な生活は autoconfig フレームワークを扱う必要がないからです。
+   この skeleton ファイルは擬似デバイスの open, close, ioctl calls をサポートします。
+   これは、実際の擬似デバイスにおいて最低限実用的なコールのセットです。
+    read, write, mmap や ほかの デバイス 関数 をサポートするためのほかのコールもありますが、
+   詳細を除けば全て open, close, ioctl のパターンと同様に扱えます。
    <p>
-   Probably the first important decision you need to make is what you
-   are going to call your new device.  This needs to be done up front
-   as there are a lot of convenience macros that generate kernel
-   structures by prepending your device name to the function call
-   names, will help if you have an idea of the config file entry you
-   want to have.  The config file entry does not have to match the
-   source code file name.  In our skeleton driver we have decided to
-   call the pseudo-device "skeleton", so we shall have a config file
-   entry called skeleton.  This means that the attach, open, close and
-   ioctl function calls are named skeletonattach, skeletonopen,
-   skeletonclose and skeletonioctl respectively.  Another important
-   decision is what sort of device you are writing - either a
-   character or block device as this will affect how your code
-   interacts with the kernel and, of course, your code itself.  The
-   decision of block vs character device depends a lot on the
-   underlying hardware the driver talks to, if the device the driver
-   talks to operates by reading and write data in fixed chunks then a
-   block device is a good choice, an example of such a device is a
-   hard disk which usually reads and writes data in blocks of 512 byte
-   sectors.  If the hardware reads and writes data one byte at a time
-   then a character device is normally the best choice, an example of
-   such a device is a serial line driver.  Note that some drivers
-   support both a block mode and character mode of access to a device,
-   in this case the character mode is sometimes called the "raw"
-   device because it gives access to the hardware without the data
-   blocking abstractions operating on the access.  For a pseudo-device
-   the choice is more flexible because there is no underlying hardware
-   to consider.  The choice is driven by the use the pseudo-device is
-   going to be put to, a block device may be useful if you are going
-   to emulate a hard-disk or similar.  Our skeleton driver is to be a
-   character device.
-   <p>
-   Once the decisions have been made we can start cutting code, before
-   we do this though we need to decide where our file should go.  If
-   you are writing a pseudo-device that will be used by multiple
-   architectures then the appropriate place to put the driver code is
-   in <TT>/usr/src/sys/dev</TT>.  If the pseudo-device is specific to
-   a particular architecture then put the driver code under the
-   architecture specific directory, for example on the i386
-   architecture this would be <TT>/usr/src/sys/arch/i386/i386</TT>.
-   The include file should go into <TT>/usr/src/sys/sys</TT> for the
-   architecture independent device and in the <TT>include</TT>
-   directory under the architecture specific directory for an
-   architecture specific device, for example, on the i386 architecture
-   this would be <TT>/usr/src/sys/arch/i386/include</TT>.  In either
-   case ensure that you update the relevant <TT>Makefile</TT> so your
-   include file is installed.  One thing you will note is the
-   <STRONG>struct skeleton_softc</STRONG> at the top of <A
-   HREF="pseudo_dev_skel.c">pseudo_dev_skel.c</A>.  You must have a
-   softc structure declared with the name of your device with "_softc"
-   appended and the first element of this struct needs to be a
-   <STRONG>struct device</STRONG> type, the name of the entry is not
-   important but it must be first as the autoconfig system relies on
-   the softc struct being declared (????is this really true????) and
-   that it's first element is a struct device .  There needs to be a
-   softc struct for each minor number a device handles.  The softc
-   structure can hold more elements than just the struct device if the
-   minor devices require state information to be kept about them.
 
-<ENTRY>functions The functions
-    The kernel interfaces to your device via a set of function calls
-    which will be called when a user level program accesses your
-    device.  A device need not support all the calls, as we will see
-    later, but at a minimum a useful device needs to support an open
-    and close on it.  Remember the function names need to be prepended
-    with your device name.  The functions are:
+   たぶん、最初の重要な決定は、新しいデバイスをなんと呼ぶかを決めることです。
+   関数コール名の前にデバイス名をくっつけた kernel 構造体をつくるのに
+   便利なマクロがたくさんあることが知られていて、これは
+   作りたいカーネルコンフィグファイルエントリーの助けになるでしょう。
+
+    config ファイル エントリー は ソース コード ファイル 名 と合わせる必要はありません。
+   この skeleton ドライバー では、 "skeleton" 擬似デバイスと呼ぶ事にしたので
+    skeleton というエントリーを コンフィグファイルに作る事になります。
+   つまり、 attach, open, close, ioctl 関数 呼び出しcall の名前を、それぞれ
+    skeletonattach, skeletonopen, skeletonclose, skeletonioctl とすると言う事です。
+   もう1つの重要なのはデバイスの種類を決めることで -
+   あなたのコードが、カーネルと、もちろん、あなたのコード自体と、どう相互作用するかで
+   キャラクター型 か ブロック デバイス のどちらかにします。
+   ブロック型対キャラクター型のデバイスの決定は、
+   ドライバーが会話する根底の ハードウェアーにかなり依存し、
+   もしドライバーがデータの読書きを一定の塊で行なうデバイスなら
+   ブロックデバイスが良い選択で、そのようなデバイスの例として、
+   ハードディスクはたいてい 512 byte セクターをブロックとして読み書きします。
+
+   ハードウェアーが一度に読み書きするのが 1 byte のデータなら、
+   普通、キャラクター型デバイスが最もよい選択で、
+   例えば、シリアルラインドライバーがそうです。
+
+   注として、いくつかのドライバーはデバイスのアクセスに
+   ブロックモードとキャラクターモードの両方をサポートしていて、
+   この場合、キャラクターモードはしばしば "raw" デバイスと呼ばれます。
+   それは、アクセス時に
+   データブロック抽出操作(the data blocking abstractions operating) なしに
+   ハードウェアーのアクセスができるからです。
+
+   擬似デバイスでは、考慮するべき根底のハードウェアーがないので、より柔軟に選べます
+   擬似デバイスを使ってする内容により選択し、ブロック型デバイスは 
+   ハードディスクやそのようなもののエミュレートには便利でしょう。
+   skeleton ドライバーは キャラクター型デバイスです。
+
+   <p>
+   それを決定したら、コードを編集することができますが、
+   その前にファイルをどこに置くか決めることが必要です。
+
+   複数のアーキテクチャーで使われる擬似デバイスを書くなら、
+   そのドライバーのコードの置き場は <TT>/usr/src/sys/dev</TT> です。
+   もし擬似デバイスが個別のアーキテクチャーに特有の物なら、
+   ドライバーのコードは個別のディレクトリーの下に置き、
+    i386 の例では、 <TT>/usr/src/sys/arch/i386/i386</TT> です。
+   インクルードファイルについては、
+   アーキテクチャー非依存のデバイスは <TT>/usr/src/sys/sys</TT> に、
+   アーキテクチャー特有のデバイスでは、
+   アーキテクチャー個別のディレクトリーの下の <TT>include</TT> ディレクトリー、
+   例えば i386 アーキテクチャーでは
+    <TT>/usr/src/sys/arch/i386/include</TT> に置くべきです。
+
+どちらの場合でも、適切な <TT>Makefile</TT> を更新してください。
+それで、インクルードファイルがインストールされます。
+
+ <A HREF="pseudo_dev_skel.c">pseudo_dev_skel.c</A> の先頭に
+   <STRONG>struct skeleton_softc</STRONG> を書いてください。
+   デバイス名に "_softc" が書き添えられた名前で softc 構造体の宣言が必要で、
+   この構造体の最初の要素は <STRONG>struct device</STRONG> 型である必要があり、
+   エントリー名は重要ではありませんが、最初にある必要があり、
+    autoconfig システムが softc struct が宣言されていることをあてにしているから
+   (????これ本当????)で、その最初の要素は struct device です。
+   デバイスハンドル minor 番号 ごとに softc struct が必要です。
+    softc 構造体は minor デバイスがそれを維持する状態の情報を、必要に応じて
+   ただの struct device より多くの要素を持つことができます。
+
+<ENTRY>functions 関数
+
+   ユーザーレベルプログラムによるアクセスには
+   カーネルインターフェイスはデバイスに対しては関数のコールを通して行ないます。
+   デバイスは後に示すように全ての関数をサポートする必要はありませんが、
+   実用的なデバイスは最低限オープンとクローズをサポートする必要はあります。
+   関数名はデバイス名を前につけることを思い出してください。
+   この関数は:
 <P>
 <OL TYPE=i>
 <LI><h4>attach</h4>
   
-  This function is called once when the kernel is initialising.  It is
-  used to set up any variables that are referenced in later calls or
-  for allocating kernel memory needed for buffers.  The attach
-  function is passed one parameter which is the number of devices this
-  driver is expected to handle.
+  この関数はカーネルが初期化するときに一度呼び出されます。
+  これは、あらゆる変数の設定に使われ、
+  後のコールや、バッファーが必要とするカーネルメモリー割り当て
+  で参照されます。
+   attach 関数は 数あるデバイスのうちの1つのパラメーターを扱い、
+  このドライバーはハンドルを求めます。???????????
+
 <P>
 <LI> <h4>open</h4>
 
-  As the name suggests, this function will be called when a user level
-  programme performs an open(2) call on the device.  At it's simplest
-  the open function may just return success.  More commonly, the open
-  call will validate the request and may allocate buffers or
-  initialise other driver state to support calls to the other driver
-  functions.  The open call is passed the following parameters:
+  その名が示すように、ユーザーレベルプログラムが
+  デバイスに対して open(2) コールをした時に呼び出されます。
+  一番簡単な場合、 open 関数は単に success で戻るだけです。
+
+  より一般に open call は
+バッファーの要求と可能なら allocate することや
+他ドライバー関数のコールをサポートするため
+他のドライバーの状態を初期化することを有効にします。
+
+   open call は下記のパラメーターが使え:
 <P><DL>
              <DT>dev
-             <DD> This is the device minor number the open is being
-                performed on.
+             <DD> open しようとするデバイスのマイナー番号
 <P>
               <DT>flags
-              <DD>  ??? flags passed to the open call by user ???
+              <DD>  ??? ユーザーによる open call のフラグを素通し ???
 <P>
               <DT>mode
-              <DD>  ??? mode for open ???
+              <DD>  ??? open の mode ???
 <P>
               <DT>proc
-              <DD>  This is a pointer to the proc structure of the process
-                that has requested the open.  It allows for validation
-                of credentials of the process.
+              <DD>  オープン要求をしているプロセスの proc 構造体のポインター
+                これは、そのプロセスが
+                信頼できるものである(資格証明を有効にしてよい)ことを示します。
 </DL>
 <LI> <h4>close</h4>
 
-  This closes an open device.  Depending on the driver this may be as
-  simple as just returning success or it could involve free'ing
-  previously allocated memory and/or updating driver state variables
-  to indicate the device is no longer open.  The parameters for the
-  close function call are the same as those described for open.
+  open されていたデバイスを close します。
+
+  ドライバーによって、これはただ単純に success で戻るだけのものだったり、
+  あるいは、割り当てられていたメモリーの解放や
+  ドライバーの状態変数を、もはや open されてはいないと示すように変更する
+  必要があったりします。
+
+ close 関数呼び出しのパラメーターは、 open で記述したのと同じです。
 <P>
 <LI> <h4>read</h4>
-  
-  Read data from your device.  The parameters for the function are:
+  デバイスからデータを読み出します。
+  この関数のパラメーターは:
 <P><DL>
               <DT>dev
-              <DD>  The minor number of the device.
+              <DD>  デバイスのマイナー番号
 
               <DT>uio
-               <DD> This is a pointer to a uio struct.  The read function
-                will fill in the uio struct with the data it wants to
-                return to the user.
+               <DD>  uio 構造体へのポインターです。
+                read 関数は uio 構造体 にユーザーが欲しいデータを満たして戻ります。
 
               <DT>flags
               <DD>  ??? wuffor ??
 </DL><P>
 <LI> <h4>write</h4>
   
-  Write data to your device.  The parameters for the write function
-  are the same as those for a read function - the only difference
-  being that the uio structure contains data to be written to the
-  device.
+  デバイスにデータを書きこみます。
+ write 関数 のパラメーターは、 read 関数のものと同じで - ただ、違うのは
+ uio 構造体はデバイスに書きこまれるデータを含んでいることです。
+
 <P>
 <LI> <h4>ioctl</h4>
 
-  Perform an ioctl on your device.  The parameters for the ioctl call
-  are:
+  デバイスに ioctl をします。
+ ioctl call のパラメーターは:
 <P><DL>
               <DT>dev
-              <DD>  The minor number of the device.
+              <DD>  デバイスのマイナー番号
 
               <DT>cmd
-              <DD>  The ioctl command to be performed.  The commands are
-                defined in a header file which both the kernel code
-                and the user level code reference.  See the sample
-                header for an example.
+              <DD>  実行される ioctl コマンドです。
+                このコマンドはヘッダーファイル内で定義され
+                カーネルコードおよびユーザーレベルコードが参照します。
+                例はサンプルのヘッダーを見てください。
 
               <DT>data
-               <DD> This is a pointer to the parameters passed in by the
-                user level code.  What is in this parameter depends on
-                the implementation of the ioctl and also on the actual
-                ioctl command being issued.
+               <DD> ユーザーレベルコードで使えるパラメーターのポインターです。
+                このパラメーターは ioctl の実装と、実際に発行されたコマンドに依存します。
 
               <DT>flags
               <DD>  ??? wuffor ???
 
               <DT>proc
-              <DD>  The proc structure that is associated with the user
-                level process making the ioctl request.
+              <DD> ioctl 要求を出したユーザーレベルプロセスに関連する proc 構造体 です。
+
 </DL><P>
 
 <LI><h4>stop</h4>
 
-  Stop output on tty style device.
+  tty 様式デバイスで出力を停止します。
 <P><DL>
               <DT>tty
-              <DD>  tty associated with the device
+              <DD>  デバイスに結び付けられた tty
 
               <DT>flags
               <DD>  ???
 </DL><P>
 
 <LI> <h4>poll</h4>
-
-  Checks the device for data that can be read from it.  The parameters
-  are:
+デバイスからデータが読めるかチェックします。
+パラメーターは:
 <P><DL>
               <DT>dev
-              <DD>  The minor number of the device used.
+              <DD>  デバイスが使っているマイナー番号
 
               <DT>events
-              <DD>  The event(s) that the user level call is polling for.
+              <DD>  ユーザーレベルコールがポーリングするイベント
 
               <DT>proc
-               <DD> The proc structure that is associated with the user
-                level process making the ioctl request.
+               <DD> ioctl 要求を出したユーザーレベルプロセスに関連する proc 構造体 です。
+
 </DL><P>
 
 <LI> <h4>mmap</h4>
-
-  Supports the capability of mmap'ing a driver buffer into a user
-  level programme's memory space.  The parameters are:
+  ドライバーのバッファーをユーザーレベルプログラムのメモリー空間に mmap する
+  権限をサポートします。
+  パラメーターは:
 <P><DL>
               <DT>dev
-              <DD>  The minor device number of the device used.
+              <DD>  デバイスが使っているマイナーデバイス番号
 
               <DT>offset
-               <DD> The offset from the start of the buffer at which to
-                start the mmap.
+               <DD>  mmap 開始時のバッファーの先頭からのオフセット。
 
               <DT>prot
-              <DD>  The type of mmap to perform, either read only, write
-                only or read write.  The device driver need not
-                support all modes.
+              <DD>  mmap の挙動のタイプで、
+                    読みこみ専用、書きこみ専用、読み書き可能かのいずれかです。
+                    デバイスドライバーは全てをサポートする必要はありません。
 </DL></OL><P>
 
 
-<ENTRY>newdevice Making the kernel aware of the new device
+<ENTRY>newdevice カーネルに新しいデバイスを知らせる
 
-   Once you have done the coding of your pseudo-device it is then time
-   to hook your code into the kernel so that it can be accessed.  Note
-   that the process of hooking a pseudo-device into the kernel differs
-   a lot from that of a normal device.  Since a pseudo-device is
-   either there or not the usual device probe and auto-configuration is
-   bypassed and entries made into kernel structures at the source
-   level instead of at run time.  To make the kernel use your code you
-   have to modify these files:
+   擬似デバイスのコーディングをしたら、
+   アクセスできるよう、カーネルに組み込みます。
+
+   注として、カーネルが擬似デバイスを組みこむ方法は
+   通常のデバイスの場合と、いろいろ違います。
+
+   擬似デバイスは、通常のデバイス検出と auto-configuration を飛ばし、
+   実行時の代わりにソースレベルでカーネル構造体の中にエントリーを作ったり
+   そうではなかったりするからです。
+
+カーネルがあなたのコードを使うようにするには、
+これらのファイルを変更する必要があって:
 <P>
 <OL TYPE=i>
 <LI> <h4>/usr/src/sys/sys/conf.h</h4>
 
-   This file contains some macro defines to set up the cdevsw
-   (character device switch) and bdevsw (block device switch) table
-   entries.  You should, by now, know what type of device you are
-   writing.  In our example the skeleton driver is a character device
-   so we want to create an entry.  Also, our skeleton driver only
-   supports the open, close and ioctl calls.  Looking through the
-   <I>conf.h</I> file we find there is a generic device defined called
-   <TT>cdev__oci_init</TT> which does exactly what we
-   want.  This saves us a bit of typing by adding this define into
-   <I>conf.h</I>:
+   このファイルには
+   cdevsw (character device switch) と bdevsw (block device switch) テーブルエントリー
+  を設定する 定義マクロが入ってます。
+  あなたが書いているデバイスのタイプがわかっている必要があります。
 
+   我々の例において、 skeleton ドライバーはキャラクター型デバイスなので、
+   エントリーを作る必要があります。
+   また, skeleton ドライバーは open, close と ioctl のコールだけをサポートしています。
+
+    <I>conf.h</I> ファイルに目を通してみると
+    called <TT>cdev__oci_init</TT> と、まさに私が欲しい(方法で)
+   定義されている一般デバイスが見つかります。
+   これは、 <I>conf.h</I> に定義を追加するのにたくさん打ちこむことを省かせてくれて:
 <PRE>
    #define cdev_skeleton_init(c,n)     cdev__oci_init(c,n)
 </PRE>
-   This defines a macro we can use to define the cdevsw entry in
-   another file.  For a more complex driver you can just copy one of
-   the other defines and modify as required.
+   これは、ほかのファイルが cdevsw エントリー を定義できるように、マクロを定義します。
+   もっと複雑なドライバー では、単にほかの定義の1つをコピーして、
+   必要に応じ変更を加えればよいです。
 <P>
-<LI> <h4>/usr/src/sys/arch/i386/i386/conf.c (where is on other archs?)</h4>
+<LI> <h4>/usr/src/sys/arch/i386/i386/conf.c (ほかの arch ではどこ?)</h4>
 
-   Once we have the cdevsw initialisation entry in <I>conf.h</I> we are set
-   to do the next step.  The first thing to do is to include an
-   include file and set up the prototype for the devsw entry.  We do
-   this by putting this code in:
+   <I>conf.h</I> に cdevsw 初期化エントリー を作れば、
+   次のステップの設定をします。
+
+   最初にすることはインクルードファイルに 入れ、
+   エントリーのプロトタイプを設定することです。
+   これをするには次のコードを置けば良く:
 
 <PRE>
    #include "skeleton.h"
    cdev_decl(skeleton)
 </PRE>
 
-   Wait a minute!  We haven't created a skeleton.h!  That is correct,
-   we don't create that file.  It will be created by config(8), we
-   shall see later how this is done.  The second line there sets up
-   the function prototypes for the skeleton driver - you should
-   replace skeleton with the name of your pseudo-device.  That takes
-   care of the declarations.  Now we need to add the device into the
-   bdevsw/cdevsw table.  Since skeleton is a cdev we need to find the
-   cdevsw array and add an entry to it.  You should add an entry to
-   the end of the array - trying to add an entry in the middle of the
-   cdevsw table will mess up all the other device drivers.  So, at the
-   end of the cdevsw table we add an entry like this:
+   ちょっと待った!  skeleton.h は作ってないよ!
+  その通りです。そのファイルは作っていません。
+  それは、 config(8) でつくられ、後ほど、どうやる(なる)のか出てくるでしょう。
+   2行目は skeleton ドライバーの関数プロトタイプの設定で - 
+    skeleton は あなたの擬似デバイスの名前に置き換えます。
+   それは 宣言を処理します。
+
+    bdevsw/cdevsw テーブルの中にデバイスを追加することが必要です
+    skeleton は cdev なので、 cdevsw 配列 を見つけ、
+   エントリーを追加する必要があります。
+   その配列の最後にエントリーを追加するべきで
+    - cdevsw テーブルの途中に追加すると、ほかのデバイスドライバーを妨害します。
+   それで cdevsw テーブルの最後にこういうエントリーを追加します:
 
 <PRE>
         cdev_skeleton_init(NSKELETON,
                          skeleton),      /* 71: Skeleton pseudo-device */
 </PRE>
 
-   Again, NSKELETON is not defined by us anywhere.  When
-   config(8) is run it will generate a <I>skeleton.h</I> file
-   with NSKELETON defined in it, the symbol defines the number of
-   these devices to create - the number comes from the config file.
-   Note that <TT>cdev_skeleton_init</TT> is the macro we
-   defined in <I>conf.h</I> and that the second parameter ("skeleton") is the
-   name of our pseudo-driver.  This macro concatenates the name of
-   the pseudo-driver with the function call names (open, close, ioctl,
-   etc) to produce the function names that we have defined in our
-   code.  This is how the kernel knows to run your code.  The last bit
-   of the puzzle is the number in the comment next to the entry.  You
-   must copy the format of the other entries, increment the number and
-   put the function of your device into the comment.  The number is
-   important.  This number is the major number of your device.  You
-   need to make a note of this number for later.
+   繰り返しますが、 NSKELETON は私達はどこにも定義していません。
+    config(8) を実行すると、中に、 NSKELETON が定義された
+    <I>skeleton.h</I> ファイルができ、
+   シンボルは作られたデバイスの数だけ定義され - その数は config ファイルに由来します。
+
+   注として <TT>cdev_skeleton_init</TT> は
+   <I>conf.h</I> で定義したマクロで、
+   2番目のパラメーター ("skeleton") は擬似ドライバーの名前です。
+
+   このマクロは我々のコードで定義した関数名を作るために
+   擬似デバイス名と関数コール名(open, close, ioctl, etc)を連結します。
+
+   これは、カーネルがあなたのコードを走らせることを知る方法です。
+   パズルの最後のかけらは、そこにあるエントリーのコメントにあるその次の番号です。
+   ほかのエントリーの形式をそのままコピーして、
+   コメント内の番号を増やしデバイスの関数を書きこむことが必要です。
+   この番号は重要です。この番号はデバイスの major number で、
+   後のために、書きとめておく必要があります。
 </OL>
 
-<ENTRY>config Making config<b></b>(8) aware of the new device
-   To make config(8) aware of our new pseudo device we need to
-   edit the file in <TT>/usr/src/sys/conf/files</TT>.
-   This file tells config what valid device names there are and which
-   files are associated with these devices.  Firstly we look for the
-   section that defines the pseudo-devices.  This section has lines
-   that start with <TT>defpseudo</TT>.  Once we have found
-   the correct section we can add a line like this:
+<ENTRY>config config<b></b>(8) に新しいデバイスを知らせる
+
+ config(8) に新しい擬似デバイスを知らせるには、
+ <TT>/usr/src/sys/conf/files</TT> ファイルを編集します。
+
+   このファイルは  有効な デバイスの名前 と
+   これらのデバイスと関連するファイルを config に教えます。
+   最初に擬似デバイスを定義するセクションを捜します。
+   この セクションは <TT>defpseudo</TT> で始まる行を持っています。
+   正しいセクションを見つけると、こういう行を加えることができ:
 
 <PRE>
 defpseudo skeleton
 </PRE>
 
-   Which tells config(8) we have a pseudo-device called skeleton.
-   Next we need to tell config(8) which files are associated with the
-   skeleton pseudo-device.  In this case we only have on file but a
-   more complex pseudo-device may have more files, simply add each
-   file required on a line in the same manner.  For our example we
-   only need one line that looks like this:
+    config(8)に skeleton という擬似デバイスがあることを教えます。
+   つぎに、 config(8) に skeleton 擬似デバイスに関連するファイルを教えてあげる必要があります。
+   この場合
+ on (訳注 one ???)ファイル
+   があるだけですが、より複雑な擬似デバイスでは より多くのファイルがあるかもしれず、
+   同じ方法で必要とされるファイルごとに行を単純に追加していきます。
+
+  例では、このような1行が必要なだけで:
 
 <PRE>
 file dev/skeleton.c	   skeleton	needs-flag
 </PRE>
 
-   The <B><TT>file</TT></B> on the line is a key word to
-   say we are defining a device to file association.  The second field
-   is the location of the file relative to the root of the kernel
-   source tree (normally, <TT>/usr/src/sys</TT>).  The
-   third field is the name of the driver that this file is associated
-   with, in our case this is skeleton - our sample pseudo-device.  The
-   fourth and last field is a control flag that tells config(8) to
-   write the skeleton.h include file.
+   行中の <B><TT>file</TT></B> はデバイスとファイルの関係の定義 
+   を書くためのキーワードです。
+   2番目のフィールドは、ファイルの
+   カーネルソースツリールートからの相対位置 (通常、 <TT>/usr/src/sys</TT>) です。
+   3番目のフィールドはドライバー名でこのファイルが関連しているもので、
+   この場合 skeleton - サンプル擬似デバイスです。
+   4番目 で 最後の フィールド は config(8) に
+   skeleton.h インクルードファイルを書かせるための制御フラグです。
 
-<ENTRY>kernelconfig Adding the new device to the kernel config file
-   Once config(8) has been told about the device, adding it to
-   the kernel config file is simple.  To add our skeleton device we
-   add the line:
+<ENTRY>kernelconfig カーネルコンフィグファイルに新しいデバイスを追加する
+    config(8) にそのデバイスのことをしゃべらせるようにするために
+   カーネルコンフィグファイル に追加することは簡単です。
+    skeleton デバイスを追加するには、このような行を加え:
 
 <PRE>
 pseudo-device  skeleton
 </PRE>
 
-   To the kernel config file, note the name of the pseudo-device
-   matches the name given in the <TT>defpseudo</TT> line
-   in the previous section.  New defines can be added to the kernel
-   makefile by using the <B><TT>options</TT></B> kernel
-   config file keyword, config will build a makefile with the options
-   named added as -D command line options to the cc command.
+   カーネルコンフィグファイルには、
+   前節での <TT>defpseudo</TT> 行で与えられた名に揃えた
+   擬似デバイス名を書きます。
 
-<ENTRY>userlevel Allowing user level programmes access to the new device
-   After building and installing a new kernel there is one last thing
-   that needs to be done to access the new pseudo-device, this is to
-   make a device node for talking to the new device.  The device node
-   can be made on any file system that allows you to access devices
-   from it but, by convention, device nodes are created in
-   <I>/dev</I>.  To make the device node you will need to use
-   mknod(8) to create a device node with the major number you
-   noted in section 4.ii.  In our case the mknod(8) command would look
-   like this:
+   新しい定義は
+    <B><TT>options</TT></B> カーネルコンフィグファイル キーワードをつかうことで、
+   カーネル makefile に追加することができ、
+    config は cc コマンドに対し -D コマンドラインオプションを指定した
+    makefile を作ります。
+
+<ENTRY>userlevel ユーザーレベルプログラム が新しいデバイスにアクセスすることを許す
+
+   新しいカーネルを構築しインストールした後、
+最後にすることとして、新しい擬似デバイスにアクセスできるように
+デバイスノードを作る必要があります。
+
+   そのデバイスノードはアクセスすることができる
+   どんなファイルシステム上に作ることもできますが、
+   慣習によって、 デバイスノードは <I>/dev</I> に作られます。
+
+   デバイスノード をつくるために mknod(8)を使う必要があり、
+    4.ii 節で書きとめた major 番号で デバイスノード を作ります。
+   この場合、 mknod(8) コマンドでこのようにでき:
 <PRE>
         mknod /dev/skel c 71 0
 </PRE>
-   Once this has been done you should be able to open your new device
-   and test it out.  The file <A HREF="sample.c">sample.c</A> shows
-   the skeleton pseudo device in action.  This file assumes you have
-   followed the instructions here and have created <TT>/dev/skel</TT>,
-   this device is opened and a parameter structure passed to the
-   device driver via an ioctl call.  To compile the sample code use
-   this command line:
+
+   これで、新しいデバイスをオープンして試すことができます。
+   <A HREF="sample.c">sample.c</A> ファイルは
+    skeleton 擬似デバイスが元気であることを示します。
+  このファイルは、ここにある指示に従っていて
+ <TT>/dev/skel</TT> が作られていると仮定していて、
+   このデバイスはオープンされ、パラメーター構造体は
+ ioctl call でデバイスドライバーに移されます。
+  サンプルコードをコンパイルするには、コマンドラインで:
 <PRE>
         cc -o sample sample.c
 </PRE>
-   Which will produce a binary called sample.  <STRONG>NOTE</STRONG>
-   you will have to have run <TT>make includes</TT> in the directory
-   you copied <TT>pseudo_dev_skel.h</TT> to to install the header file
-   into the system includes directory otherwise the compiler will
-   complain about a missing include file.  Once you have compiled the
-   programme run it and then look at your kernel messages either on
-   the console screen or in <TT>/var/log/messages</TT>, the should
-   have a message that looks like this:
+   これで、 sample というバイナリーができるでしょう。
+
+  <STRONG>注意</STRONG> ヘッダーファイル置き場で、 <TT>pseudo_dev_skel.h</TT> を入れた
+  システムインクルードファイルのディレクトリーで
+   <TT>make includes</TT> をする必要があります。
+  さもなければ、コンパイラーはインクルードファイルが見つからないと訴えるでしょう。
+
+プログラムをコンパイルして実行すると、
+カーネルメッセージがコンソールと <TT>/var/log/messages</TT> の両方に現われ、
+ それはこのようなもので:
 <PRE>
 May 17 20:32:57 siren /netbsd: Got number of 42 and string of Hello World
 </PRE>
-   Which is a message printed by the skeleton ioctl handler when it
-   receives a SKELTEST ioctl request, notice that the number and the
-   string printed are the ones we put into the <TT>param</TT>
-   structure in sample.c.
+    skeleton ioctl 要求を受けた時に skeleton ioctl ハンドラーが表示する
+   メッセージの番号と文字列は sample.c の <TT>param</TT> 構造体の中に入れます。
 </LIST>
 
 <DOCLINK>
