@@ -2,268 +2,239 @@
 <head>
 <!-- Copyright (c) 1996, 1998, 1999 The NetBSD Foundation, Inc.
      ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
-<title>NetBSD Developer Documentation: The Release Engineering Process</title>
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
+<title>NetBSD開発者ドキュメント: リリース工学の手順</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h2>NetBSD Developer Documentation: Release Engineering: The Release Engineer
-ing Process</h2>
+<h2>NetBSD開発者ドキュメント: リリース工学: リリース工学の手順</h2>
 
-<h3><a name="make_release">4.4 How to make a NetBSD release</a></h3>
+<h3><a name="make_release">4.4 NetBSDリリースを作成する方法</a></h3>
 
-<h4>4.4.1 Overview</h4>
-
-<p>
-The NetBSD Release process is an eight week process which is intended
-to make it possible to generate frequent quality releases without
-stalling development on the main branch.  The goal is to have two
-NetBSD releases per year.
+<h4>4.4.1 概要</h4>
 
 <p>
-In the description below, <var>VERSION</var> can have different
-textual representations depending on context.  For instance, if
-describing the release of NetBSD 1.2, <var>VERSION</var> would be
-"1-2" when used in a CVS command, "1.2" when talking about the
-version as announced to the public or defined in
-src/sys/conf/newvers.sh, or "1_2" when talking about the definition
-of the <b>NetBSD<var>VERSION</var></b> constant in src/sys/sys/param.h.
+NetBSDのリリース手順はメインの枝の開発が引き伸ばされる事なく、
+頻繁に質の高いリリースを作り出す事が出来るよう、8週間の段階を踏みます。
+目標は年間2つのNetBSDリリースを出すことです。
 
 <p>
-The basic timeline for a release looks like:
+以下の記述では、<var>バージョン</var>は文脈によって違った表記のされ方をします。
+たとえば、NetBSD 1.2のリリースについて書いているとすると、
+<var>バージョン</var>は、CVSコマンドで使われる時には"1-2"となり、
+公にアナウンスされたバージョンについて書かれていたり、
+src/sys/conf/newvers.shの中で定義されていれば"1.2"となり、
+src/sys/sys/param.hの<b>NetBSD<var>バージョン</var></b>定数の定義について書かれていれば、
+"1_2"となります。
+
+<p>
+リリース用の基本的な経過は以下の通りです:
 <dl>
-<dt> <a href="#rel_week0">Week 0: Beginning of release cycle</a>
+<dt> <a href="#rel_week0">第0週: リリースサイクルの始まり</a>
 <dd>
-	The release schedule is sent as a reminder to all NetBSD
-	developers and mirror maintainers.
+	リリーススケジュールがNetBSD開発者やミラーのメンテナー全員に注意として送られます。
 
-<dt> <a href="#rel_week1">Week 1: Snapshot sanity check</a>
+<dt> <a href="#rel_week1">第1週: スナップショットの正当性チェック</a>
 <dd>
-	Port maintainers should try to build full releases, to
-	ensure that the release generation machinery is functional.
+	ポートメンテナーはリリースを作成するマシンが機能しているか確認するため、
+	フルリリースを構築しようとするはずです。
 
-<dt> <a href="#rel_week2">Week 2: Creation of release branch and feature
-    freeze</a>
+<dt> <a href="#rel_week2">第2週: リリースの枝の作成と機能の凍結</a>
 <dd>
-	The release branch is created, and developers are disallowed
-	from committing new features to the release branch without
-	permission from the Release Engineer.
+	リリースの枝が作成され、開発者はリリースエンジニアの許可なしに
+	新しい機能をリリースの枝に付け加えられなくなります。
 
-<dt> <a href="#rel_week3">Week 3: First beta release</a>
+<dt> <a href="#rel_week3">第3週: 最初のベータリリース</a>
 <dd>
-	Binary snapshots are released as <b>NetBSD <var>VERSION</var>_ALPHA</b>.
+	バイナリースナップショットが<b>NetBSD <var>バージョン</var>_ALPHA</b>として
+	リリースされます。
 
-<dt> <a href="#rel_week4">Week 4: Non-critical bug fix freeze</a>
+<dt> <a href="#rel_week4">第4週: 致命的でないバグの修正を凍結</a>
 <dd>
-	Developers are disallowed from committing any changes other
-	than critical bug fixes to the release branch without
-	permission from the Release Engineer.  Mid-week, the release
-	branch is tagged <b>netbsd-<var>VERSION</var>-BETA</b>.
+	開発者は致命的なバグの修正以外はどんな変更もリリースエンジニアの許可なしに
+	リリースの枝に反映させることは出来ません。
+	週の半ばにリリースの枝が<b>netbsd-<var>バージョン</var>-BETA</b>とつけられます。
 
-<dt> <a href="#rel_week5">Week 5: Second beta release</a>
+<dt> <a href="#rel_week5">第5週: 二つ目のベータリリース</a>
 <dd>
-	Binary snapshots are released as <b>NetBSD <var>VERSION</var>_BETA</b>.
+	バイナリースナップショットが<b>NetBSD <var>バージョン</var>_BETA</b>として
+	リリースされます。
 
-<dt> <a href="#rel_week6">Week 6: Code freeze</a>
+<dt> <a href="#rel_week6">第6週: コードの凍結</a>
 <dd>
-	Developers are disallowed from committing <em>ANY</em> changes
-	to the release branch without permission from the Release
-	Engineer.
+	開発者はリリースエンジニアの許可なしにリリースの枝に<em>いかなる</em>変更も
+	加えられません。
 
-<dt> <a href="#rel_week7">Week 7: Tag final sources</a>
+<dt> <a href="#rel_week7">第7週: 最終ソースへのタグ付け</a>
 <dd>
-	The release branch is tagged <b>netbsd-<var>VERSION</var>-FINAL</b>,
-	and port maintainers begin generating final release binaries.
+	リリースの枝が<b>netbsd-<var>バージョン</var>-FINAL</b>とタグ付けされ、
+	ポートメンテナーは最終リリースのバイナリーを作り始めます。
 
-<dt> <a href="#rel_week8">Week 8: Release</a>
+<dt> <a href="#rel_week8">第8週: リリース</a>
 <dd>
-	The release is announced to the world.
+	リリースが世界にアナウンスされます。
 
 </dl>
 
 <p>
-Yet to be done in this document:
+このドキュメントでまだされていないこと:
 	<ul>
-	<li> Fill in various details.  (Search for XXX.)
-	<li> General background; note existence of "Release Engineer,"
-		his/her repsonsibilities, expand notion that development
-		continues as normal on trunk, etc.
-	<li> More details on release branch management: procedure
-		for pulling changes up, procedure for getting approval
-		for changes, etc.
-	<li> Post-release patching.  (It may make sense to re-work the
-		various "NetBSD" definitions in src/sys/sys/param.h
-		in light of post-release patches.)
+	<li> いろいろな詳細を書くこと。  (XXXの検索。)
+	<li> 一般的な背景; "リリースエンジニア"の存在と責任に言及すること、
+		開発は本体で通常通り進むという注意を付け足すことなど。
+	<li> リリースの枝の管理についてより多くの詳細:
+		変更を引き上げるための手順、変更の承認を得るための手順など。
+	<li> リリース後のパッチ。
+		(リリース後のパッチということを考慮すれば、src/sys/sys/param.hの中にある
+		さまざまな"NetBSD"の定義に再び手を加えることが重要かもしれません。)
 	</ul>
 
-<h4><a name="rel_week0">4.4.2 Week 0: Beginning of release cycle</a></h4>
+<h4><a name="rel_week0">4.4.2 第0週: リリースサイクルの始まり</a></h4>
 
 	<ul>
-	<li> Dates should be set for the various events in the release
-		cycle
-	<li> The updated release cycle calendar should be sent as
-		a reminder to NetBSD developers
-		(<i>developers@netbsd.org</i>) and mirror
-		maintainers (<i>XXX DETAILS</i>).
+	<li> リリースサイクル中のいろいろなイベントのために、日程を設定するはずです。
+	<li> アップデートされたリリースサイクルのカレンダーがNetBSD開発者
+		(<i>developers@netbsd.org</i>) とミラーメンテナー (<i>XXX DETAILS</i>) へ
+		注意として送られるはずです。
 	</ul>
 
-<h4><a name="rel_week1">4.4.3 Week 1: Snapshot sanity check</a></h4>
+<h4><a name="rel_week1">4.4.3 第1週: スナップショットの正当性チェック</a></h4>
 
 	<ul>
-	<li> Port maintainers should try to build full releases, to
-		ensure that the release generation machinery is
-		functional.
+	<li> ポートメンテナーはリリースを作成するマシンが機能しているか確認するため、
+		フルリリースを構築しようとするはずです。
 	</ul>
 
-<h4><a name="rel_week2">4.4.4 Week 2: Creation of release branch and
-    feature freeze</a></h4>
+<h4><a name="rel_week2">4.4.4 第2週: リリースの枝の作成と機能の凍結</a></h4>
 
 	<ul>
-	<li> Tag the base of the release branch with a command like:<br>
-	    <pre>cvs rtag -a netbsd-<var>VERSION</var>-base src</pre>
+	<li> 以下のようなコマンドで、リリースの枝の基本になるタグがつけられます:
+		<pre>cvs rtag -a netbsd-<var>バージョン</var>-base src</pre>
 
-	<li> Create the release branch with a command like:<br>
-	    <pre>cvs rtag -a -b -rnetbsd-<var>VERSION</var>-base netbsd-<var>VERSION</var> src</pre>
+	<li> 以下のようなコマンドで、リリースの枝が作られます:
+		<pre>cvs rtag -a -b -rnetbsd-<var>バージョン</var>-base netbsd-<var>バージョン</var> src</pre>
 
-	<li> On the trunk, do the following:
+	<li> メインの枝では、以下のことをします:
 		<ul>
-		<li> Update the <b>NetBSD</b> constant in src/sys/sys/param.h
-			to be a date soon after the final release is expected.
-		<li> Update the <b>NetBSD<var>VERSION</var></b>
-			constant in src/sys/sys/param.h so that it uses the
-			appropriate major and minor version numbers, and is
-			defined to "2" (to indicate NetBSD-current, after the
-			release).
-		<li> Update <b>osr</b> in src/sys/conf/newvers.sh to
-			indicate the proper release
-			with an "A" suffix (to indicate
-			NetBSD-current, after the release).
-		<li> Update send-pr. (XXX HOW?)
+		<li> 最終リリースが予想される直後の日付になるように、
+			src/sys/sys/param.hの中の<b>NetBSD</b>定数をアップデートします。
+		<li> 適当なメジャーとマイナーのバージョン番号を使用するように
+			<b>NetBSD<var>バージョン</var></b>をアップデートし、
+			(リリース後にNetBSD-currentを示すように) "2"と定義します。
+		<li> (リリース後にNetBSD-currentを示すように) "A"という接尾詞で
+			適当なリリースを示すため、src/sys/conf/newvers.shにある
+			<b>osr</b>をアップデートします。
+		<li> send-prをアップデートします。 (XXX HOW?)
 		</ul>
 
-	<li> On the release branch, do the following:
+	<li> リリースの枝では、以下のことをします:
 		<ul>
-		<li> Update the <b>NetBSD</b> constant in src/sys/sys/param.h
-			to be the date of the expected "ALPHA" distributions.
-		<li> Update the <b>NetBSD</b><var>VERSION</var>
-			constant in src/sys/sys/param.h so that it uses the
-			appropriate major and minor version numbers, and is
-			defined to "1" (to indicate the appropriate
-			formal release.)
-		<li> Update <b>osr</b> in src/sys/conf/newvers.sh to
-			indicate the proper release
-			with an "_ALPHA" suffix.
-		<li> Update send-pr. (XXX HOW?)
+		<li> "アルファ" 配布が予想される日付になるように
+		src/sys/sys/param.hにある<b>NetBSD</b>定数をアップデートします。
+		<li>  適当なメジャーとマイナーのバージョン番号を使用するように、
+			<b>NetBSD<var>バージョン</var></b>をアップデートし、
+			(リリース後にNetBSD-currentを示すように) "1"と定義します。
+		<li> "_ALPHA"という接尾詞で適当なリリースを示すように
+			src/sys/conf/newvers.shにある<b>osr</b>をアップデートします。
+		<li> send-prをアップデートします。 (XXX HOW?)
 		</ul>
 
-	<li> Change FTP/SUP service on <i>ftp.netbsd.org</i> and
-		<i>sup.netbsd.org</i> to distribute the release
-		branch.
+	<li> リリースの枝を配布するように、<i>ftp.netbsd.org</i>と<i>sup.netbsd.org</i>上の
+		FTP/SUPサービスを変更します。
 
-	<li> Announce to the world the fact that the release process
-		is underway.  Note that FTP and SUP service will be
-		distributing the release branch during the release
-		process.
+	<li> リリース作業が進行中であることを世界にアナウンスします。
+		FTPとSUPサービスで、リリース作業中、リリースの枝を配布していることを記します。
 
-	<li> Notify developers of release branch creation.  Include
-		procedure for accessing branch and notification that
-		they should not be committing new features to the
-		branch without permission of the Release Engineer.
+	<li> リリースの枝が作成されたことを開発者に知らせます。
+		枝へアクセスする手順や、リリースエンジニアの許可なく枝に新しい機能を加える
+		べきではないという注意を含みます。
 
-	<li> Create SUP collections for the new release. (XXX DETAILS?)
+	<li> 新しいリリース用のSUPコレクションを作成します。 (XXX DETAILS?)
 
-	<li> Notify mirror maintainers about the new SUP collections,
-		so that they can start supping them before beta
-		distributions show up.
+	<li> ミラーメンテナーがベータ配布物が現れるまでにSUPを始められるよう、
+		新しいSUPコレクションについて知らせます。
 	</ul> 
 
-<h4><a name="rel_week3">4.4.5 Week 3: First beta release</a></h4>
+<h4><a name="rel_week3">4.4.5 第3週: 最初のベータリリース</a></h4>
 
 	<ul>
-	<li> Port maintainers should create and distribute binary
-		snapshots, labelled <b>NetBSD <var>VERSION</var>_ALPHA</b>.
-	<li> Announce the alpha release to the world via the
-		<i>netbsd-announce@netbsd.org</i> mailing list and
-		<i>comp.unix.bsd.netbsd.announce</i> newsgroup. (???)
+	<li> ポートメンテナーは<b>NetBSD <var>バージョン</var>_ALPHA</b>とラベルがつけられた
+		バイナリーのスナップショットを作成し、配布するはずです。
+	<li> <i>netbsd-announce@netbsd.org</i>メーリングリストや
+		<i>comp.unix.bsd.netbsd.announce</i>ニュースグループを通して
+		世界にアルファリリースをアナウンスします。 (???)
 	</ul>
 
-<h4><a name="rel_week4">4.4.6 Week 4: Non-critical bug fix freeze</a></h4>
+<h4><a name="rel_week4">4.4.6 第4週: 致命的でないバグの修正を凍結</a></h4>
 
-	At the beginning of the week:
+	週の始め:
 
 	<ul>
-	<li> Notify developers that they should not check in any
-		changes to the release branch without permission
-		from the Release Engineer other than critical bug
-		fixes.
+	<li> 致命的なバグの修正以外にはリリースエンジニアの許可なく、いかなる変更も
+		リリースの枝にチェックインすべきではないことを開発者に知らせます。
 	</ul>
 
-	At mid-week:
+	週の半ば:
 	<ul>
-	<li> Update <b>NetBSD</b> in src/sys/sys/param.h, <b>osr</b>
-		in src/sys/conf/newvers.sh, and send-pr as detailed in
-		the description for <a href="#rel_week2">Week 2</a>,
-		except using values appropriate for the "BETA"
-		release.
-	<li> Tag the sources "beta," with a command like:
-	    <pre>cvs rtag -a -rnetbsd-<var>VERSION</var> netbsd-<var>VERSION</var>-BETA src</pre>
-	<li> Instruct port maintainers to begin generating the beta
-		release.
+	<li> "ベータ"リリースに対して適当な値を使用する他に、
+		<a href="#rel_week2">第2週</a>で詳しく書かれている通り、
+		src/sys/sys/param.hの<b>NetBSD</b>とsrc/sys/conf/newvers.shの<b>osr</b>、
+		send-prをアップデートします。
+	<li> 以下のようなコマンドでソースに"beta"タグを付けます:
+	    <pre>cvs rtag -a -rnetbsd-<var>バージョン</var> netbsd-<var>バージョン</var>-BETA src</pre>
+	<li> ポートメンテナーにベータリリースを作り始めるよう指示します。
 	</ul>
 	
-<h4><a name="rel_week5">4.4.7 Week 5: Second beta release</a></h4>
+<h4><a name="rel_week5">4.4.7 第5週: 二つ目のベータリリース</a></h4>
 
 	<ul>
-	<li> Beta binaries are released as <b>NetBSD <var>VERSION</var>_BETA</b>.
-	<li> Announce the beta release to the world via the
-		<i>netbsd-announce@netbsd.org</i> mailing list and
-		<i>comp.unix.bsd.netbsd.announce</i> newsgroup.
+	<li> <b>NetBSD <var>バージョン</var>_BETA</b>としてベータバイナリーをリリースします。
+	<li> <i>netbsd-announce@netbsd.org</i>メーリングリストや
+		<i>comp.unix.bsd.netbsd.announce</i>ニュースグループを通して
+		世界にベータリリースをアナウンスします。
 	</ul>
 
-<h4><a name="rel_week6">4.4.8 Week 6: Code freeze</a></h4>
+<h4><a name="rel_week6">4.4.8 第6週: コードの凍結</a></h4>
 
-	At the beginning of the week:
+	週の始め:
 
 	<ul>
-	<li> Notify developers that they should not check in any
-		further changes to the release branch without
-		permission from the Release Engineer.
+	<li> リリースエンジニアの許可なく、いかなる変更もリリースの枝に
+	チェックインすべきでないことを開発者に知らせます。
 	</ul>
 
-	At mid-week:
+	週の半ば:
 
 	<ul>
-	<li> Update <b>NetBSD</b> in src/sys/sys/param.h, <b>osr</b>
-		in src/sys/conf/newvers.sh, and send-pr as detailed in
-		the description for <a href="#rel_week2">Week 2</a>,
-		except using values appropriate for the "FINAL"
-		release.
+	<li> "最終" リリースに対して適当な値を使用する他に、
+		<a href="#rel_week2">第2週</a>で詳しく書かれている通り、
+		src/sys/sys/param.hの<b>NetBSD</b>とsrc/sys/conf/newvers.shの<b>osr</b>、
+		send-prをアップデートします。
 	</ul>
 
-<h4><a name="rel_week7">4.4.9 Week 7: Tag final sources</a></h4>
+<h4><a name="rel_week7">4.4.9 第7週: 最終のソースへタグ付け</a></h4>
 
-	At mid-week:
+	週の半ば:
 
 	<ul>
-	<li> Tag the sources "final," with a command like:
-	    <pre>cvs rtag -a -rnetbsd-<var>VERSION</var> netbsd-<var>VERSION</var>-RELEASE src</pre>
-	<li> Instruct port maintainers to begin generating the final
-		release.
+	<li> 以下のようなコマンドでソースに"final"タグを付けます:
+	    <pre>cvs rtag -a -rnetbsd-<var>バージョン</var> netbsd-<var>バージョン</var>-RELEASE src</pre>
+	<li> ポートメンテナーに最終リリースを作成しはじめるよう指示します。
 	</ul>
 
-<h4><a name="rel_week8">4.4.10 Week 8: Release</a></h4>
+<h4><a name="rel_week8">4.4.10 第8週: リリース</a></h4>
 
 	<ul>
-	<li> Final binaries are released as <b>NetBSD <var>VERSION</var></b>.
-	<li> Notify SUP and FTP mirror maintainers, so that they can
-		update their sites.
+	<li> <b>NetBSD <var>バージョン</var></b>として最終バイナリーがリリースされます。
+	<li> サイトをアップデートできるよう、SUPやFTPミラーのメンテナーに知らせます。
 	</ul>
 
-Two days later:
+	二日後:
+
 	<ul>
-	<li> Announce the release to the world via the
-		<i>netbsd-announce@netbsd.org</i> mailing list and
-		<i>comp.unix.bsd.netbsd.announce</i> newsgroup.
+	<li> <i>netbsd-announce@netbsd.org</i>メーリングリストや
+		<i>comp.unix.bsd.netbsd.announce</i>ニュースグループを通して
+		世界にリリースをアナウンスします。
 	</ul>
 
 <hr>
@@ -275,11 +246,9 @@ Two days later:
 	<a href="../../index.html">
 	<img src="../../images/NetBSD-banner.gif" alt=""></a>
       </td><td>
-	<font face="helvetica, arial">
 	<a href="../../index.html">
 	<img src="../../images/empty.gif"
-		alt="NetBSD " border=0>Home Page</a>
-	</font>
+		alt="NetBSD " border=0>ホームページ</a>
       </td>
     </tr></table>
   </td>
@@ -290,11 +259,9 @@ Two days later:
 	<img src="../../images/NetBSD-banner.gif"
 		alt=""></a>
       </td><td>
-	<font face="helvetica, arial">
 	<a href="index.html">
 	<img src="../../images/empty.gif"
-		alt="NetBSD " border=0>Release Engineering Documentation</a>
-	</font>
+		alt="NetBSD " border=0>リリース工学ドキュメント</a>
       </td>
     </tr></table>
   </td>
@@ -303,7 +270,7 @@ Two days later:
 <hr>
 <address>
   <font face="helvetica, arial" size=-2>
-  www@NetBSD.ORG<br>
+  www@JP.NetBSD.ORG<br>
   $NetBSD: release-process.html,v 1.1 1999/07/18 05:20:56 abs Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1996, 1998, 1999
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
