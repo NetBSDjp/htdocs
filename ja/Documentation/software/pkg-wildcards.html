@@ -1,0 +1,252 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<HTML>
+<HEAD>
+<TITLE>Implementing Wildcards for the NetBSD Packages System</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+
+
+<CENTER>
+<HR NOSHADE WIDTH="70%">
+ <FONT SIZE="+2" COLOR="green">Implementing Wildcards for</FONT><BR>
+ <FONT SIZE="+2" COLOR="green">the NetBSD Packages System</FONT><BR>
+ <FONT SIZE="-1">Hubert Feyrer &lt;hubertf@netbsd.org&gt;, January 2000</FONT>
+<HR NOSHADE WIDTH="70%">
+</CENTER>
+<BR>
+
+
+<BLOCKQUOTE>
+<FONT SIZE=-1>
+	Abstract: This document first recalls how dependencies worked
+	in the NetBSD Packages System so far, and describes a way for
+	using wildcards to install binary packages that contain
+	wildcard dependencies, and implement better conflicting
+	packages. In addition, an overview of the changes since
+	the pkg_* tools were picked up is given.
+</FONT>
+</BLOCKQUOTE>
+
+
+<H1>1) The story so far</H1>
+
+Let me first remind you how dependency handling worked so far in the
+*BSD Packages/Ports systems. Leaving aside RUN/BUILD_DEPENDS, the
+dependency scheme worked by specifying lines in pkgs Makefiles
+like:
+<P>
+
+<PRE>
+	DEPENDS+=	foo-1.2:../../somecat/foo
+</PRE>
+
+This specifies two things:
+<P>
+<OL>
+<LI> The version of "foo" this package depends on. If this package is to
+   be installed, foo-1.2 needs to be present. 
+<LI> A fallback used if the required version is not installed on the system,
+   to build it via the packages system.
+</OL>
+
+Upon installation, "pkg_info -e" is used to find if the required
+version of "foo" is installed. If so, everything is fine and
+installation proceeds, for both building from pkgsrc and installation
+of binary packges via pkg_add.
+<P>
+
+If the required version is not installed, the build system will use the
+given fallback directory to install the package available at that place,
+in the hope to fulfil the dependency. For installing via binary packages,
+pkg_add will assume there's a foo-1.2.tgz binary package out there and
+install it. 
+<P>
+
+
+<H1>2) Wildcard depends</H1>
+
+The hardcoding of the version of "foo" wanted is problematic to maintain,
+and most of the time, it's not even a fixed version that's needed, but
+some or even any version installed would do, resulting in a dependency
+setting such as
+<P>
+
+<PRE>
+	DEPENDS+=	foo-*:../../somecat/foo
+</PRE>
+
+This indicates that "any" version of "foo" would do. The build system
+looks up if there's any "foo" installed by calling "pkg_info -e 'foo-*'",
+scanning all installed packages and accepting whatever version of "foo" is
+installed IF it is installed. If it's not installed, the build system will
+take whatever version happens to be in pkgsrc and installs it, using the
+fallback given.
+<P>
+
+For binary packages, the handling's more complex. Any binary package will
+properly know that it depends on "any" version of the "foo" package
+installed, and does the same check as the build system to find out. If any
+acceptable version is installed, fine. If not, we're a little bit in
+trouble to fulfil the requirement to (automatically) install "any" version
+of the "foo" package, as the "fallback" directory given can't be used in
+the context of binary packages, as rebuilding from source is not an option
+there. 
+<P>
+
+Instead, pkg_add goes out, scans all the available (binary!) packages
+available, and will then install the most recent one (still meeting the
+"requirement criteria, "foo-*"). This scanning is necessary to support the
+wildcard notion. If the version depended on uses some version limitation
+(``dewey depend''), e.g. foo<1.0, then the latest binary package available
+below version 1.0 will be found and installed, thus fulfilling the
+required dependency.
+<P>
+
+Binary packages can be installed not only from local disk but also via
+FTP, and the "directory scanning" described above is being performed
+there too. This scanning of remote directories was the last part that
+was missing from the NetBSD Packages System to make it fully wildcard
+capable. 
+<P>
+
+
+<H1>3) Some implementation notes</H1>
+
+When installing packages via FTP, imagine package "a-1.0" depending on
+package "b-1.*", which needs "c-*", etc. - something like "kde". Now,
+the (net-)actions needed are (roughly):
+<P>
+
+<UL>
+<LI> grab +CONTENTS of "a-1.0"
+<LI> find out which versions of "b" are available
+<LI> grab +CONTENTS of "b-1.whateverisavailable"
+<LI> find out which versions of "c" are available
+<LI> grab +CONTENTS of "c-something"
+<LI> grab rest of "c-something"
+<LI> grab rest of "b-1.whateverisavailable"
+<LI> grab rest of "a-1.0"
+</UL>
+
+Even if the "grab rest of ..." operation can be implemented by re-using
+the same connection (FTP or whatever), any new package is still be added
+by a new pkg_add process, which would potentially open another connection
+to the same FTP site, resulting in
+<P>
+
+<UL>
+<LI> flooding the remote site with connects
+<LI> wasting time for extra connection estrablishment
+</UL>
+
+This is avoided by using the same FTP session over all three pkg_add
+sessions. The co-process running ftp(1) has two pipes open for stdin and
+stdout, which are passed down to subsequent pkg_add commands, which know
+the file descriptors from some environment variables. With this
+connection caching, there's usually only one connection for retrieving
+and installing several binary packages. 
+<P>
+
+
+<H1>4) More than just for depends</H1>
+
+The wildcards used in the NetBSD Packages System are a superset of
+shell globs. Currently supported are:
+<P>
+
+<UL>
+<LI> shell globs (*, ?, ...), as documented in fnmatch(3)
+<LI> allowing csh style {foo,bar} alternates
+<LI> matching of package version numbers using >=, <=, < and > operators
+</UL>
+
+For example, "pkg_info -e 'foo>=1.3'" will match version 1.3 and later
+for the "foo" package. Now these wildcards are not only used to check
+for any matching packages installed, and to find any binary packages
+fiting patterns for dependencies. Wildcards are also allowed (and
+used) to implement matching of conflicting packages, to avoid having
+two packages on the system that should better not be installed at the
+same time, usually because of conflicting filenames or functionality.
+<P>
+
+Other uses uses of wildcards are in pkg_info and pkg_delete, where
+just a package name without version can be given, and an installed
+package is found automatically by tacking on a "-*". That way, one
+saves a few keystrokes and - more important - doesn't have to know
+what version is currently installed on the system. 
+<P>
+
+
+<H1>5) Other changes in the NetBSD Packages System</H1>
+
+Since NetBSD picked up the pkg_* from FreeBSD in mid-1997, several
+changes were made to enhance the tools. Some of the more interresting
+are:
+<P>
+
+<UL>
+<LI> The ftp code was rewritten twice. In a first step, the ftpio
+   library was replaced by spawning a ftp(1) process, to get the proxy
+   handling, bandwidth limiting etc. of that for free. The second
+   rewrite was for the connection caching, moving the ftp(1) processes
+   from recursive pkg_add calls to one ftp co-process.
+<LI> A "package database" was added, storing information of which
+   package any file on the system belongs to. With that information,
+   all the documentation (manpages, READMEs, ...) or config files for
+   a given binary can be found easily. 
+<LI> Installed and binary packages now contain the size of the package
+   in bytes. In addition, the size including all required packages is
+   stored. This information can be used to determine any diskspace
+   requirements before or after installation of a package.
+<LI> Recursive removing of packages, allowing to either remove all the
+   packages that a given package needs, all the packages that required
+   the package in question, or both.
+<LI> Detection of out-of-date pkg_* tools was added, in case a
+   bsd.pkg.mk is used that uses newer version that the tools
+   provide. This facility - in combination with the
+   pkgsrc/pkgtools/pkg_install package - allows for controlled updates
+   of the pkg_* tools on users' systems. 
+<LI> With the aid of the "zoularis" package, an environment of a few
+   core components of NetBSD ported to Solaris and Linux, the NetBSD
+   Packages System can (and is!) now be used on these systems too.
+   Documentation on this subsystem deserves it's own document, but
+   this feature again shows that NetBSD is the world's most portable
+   operating system. 
+</UL>
+   
+The following people deserve credits for the NetBSD Packages System,
+and where it is today:
+<P>
+
+<UL>
+<LI> pkg_* tools: Jordan Hubbart, John Kohl, several other unsung heroes
+<LI> Package conflict code: Thorsten Frueauf
+<LI> Wildcard matching: Alistair Crooks, Hubert Feyrer
+<LI> Wildcard dependency handling: Hubert Feyrer
+<LI> Getting NetBSD going on Solaris and Linux: Christos Zoulas,
+     Alistair Crooks, Kimmo Suominen
+<LI> The NetBSD pkgsrc committers and users for their help, assistance,
+     support and faith.
+</UL>
+
+<HR NOSHADE>
+
+Further information:
+<P>
+<UL>
+<LI> <A HREF="http://www.netbsd.org/">Homepage</A> of the NetBSD
+     Project
+<LI> <A HREF="http://web.mit.edu/afs/sipb.mit.edu/user/mycroft/artwork/what-is-netbsd.ps.gz">What is NetBSD</A>, also available in <A
+     HREF="http://www.feyrer.de/NetBSD/was-ist-netbsd.txt">german language</A>
+<LI> <A
+     HREF="packages.html">Documentation</A>
+     on the NetBSD packages collection (pkgsrc)
+</UL>
+   
+<HR NOSHADE>
+(c) Copyright 20000110 Hubert Feyrer &lt;hubertf@netbsd.org&gt;<BR>
+$NetBSD: pkg-wildcards.html,v 1.4 2000/10/21 04:12:52 dent Exp $
+
+</BODY>
+</HTML>
