@@ -14,12 +14,14 @@
 NetBSDのソースツリーへの各々の変更に興味がある方は、
 <a href="/MailingLists/" origlink="../MailingLists/">source-changes</a>メーリングリストに
 参加すれば要約ではない変更履歴を見ることができます。
+このファイルとパッケージの変更の内容は、<a href="rss.html">rss/xml</a>
+フォーマットでも見ることができます。
 </p>
 
 <h3>特定の領域に対する変更</h3>
 
 <ul>
-<li><a href="/Changes/changes-1.5.html" origlink="changes-1.5.html">NetBSD 1.4から1.5への重要なソースの変更</a>
+<li><a href="/Changes/changes-1.6.html" origlink="changes-1.6.html">NetBSD 1.5から1.6への重要なソースの変更</a>
     (毎晩更新)
 <!-- <li><a href="cvschanges/">最近9か月のCVSコミット</a></li>
     (6時間ごとに更新) -->
@@ -27,13 +29,1534 @@ NetBSDのソースツリーへの各々の変更に興味がある方は、
     (毎晩更新)</li>
 <li><a href="../Security/#patches">セキュリティーパッチ</a></li>
 </ul>
-関連項目: <a href="http://www.daemonnews.org/"><img
-	src="http://www.daemonnews.org/masthead.gif" alt="Daemon News"
-	border=0 width=433 height=103 align=top></a>
+
+<table border=0 cellpadding=1 cellspacing=0><tr><td valign=top>その他のサイト:
+</td><td valign=bottom>
+        <a href="http://www.oreillynet.com/bsd/"><img
+        src="../images/links/oreillybsd.jpg"
+        alt="O'Reilly BSD DevCenter" border=0 width="83" height="31" align=bottom></a>
+</td><td valign=bottom>
+	<a href="http://www.bsdtoday.com/"><img
+	src="../images/links/bsdtoday.gif"
+	alt="BSD Today" border=0 width="103" height="41" align=bottom></a>
+</td><td valign=bottom>
+	<a href="http://www.daemonnews.org/"><img
+	src="../images/links/dn.jpg"
+	alt="Daemon News" border=0 width="97" height="31" align=bottom></a>
+</td><td valign=bottom>
+	<a href="http://slashdot.org/bsd/"><img
+        src="../images/links/slashdot.jpg"                           
+        alt="Slashdot - BSD Section" border=0 width="88" height="31" align=bottom></a>
+</td></tr></table>
 
 <hr>
 
 <LIST>
+<DATE>ubc-code 27 Nov 2000 - UBC code integrated into NetBSD-current
+Chuck Silvers has integrated the Unified Buffer Cache project code into
+NetBSD-current.  To build a new -current kernel from an
+existing kernel configuration file, you'll want to remove any settings for
+"BUFCACHE", "NBUF", or "BUFPAGES", and let the size of the buffer cache go
+back to the default.  After that, you'll need to rerun <tt>config</tt>, and
+then you can build away.
+<p>
+Under UBC, the traditional buffer cache is no longer used for storing regular
+data, only metadata, so you'll want to allow the VM system to manage most of
+your physical memory.  The default buffer cache size will be fine for most
+people, regardless of the amount of memory in the machine.
+<p>
+What does this mean for you?  For most people, more memory will be available
+for caching regular file data, so filesystem i/o will be faster since there
+will be more times when the data you're accessing is already in memory.  How
+much faster depends on what you're doing, but you'll probably notice the
+difference.
+<p>
+More information is available in Chuck's announcement in the <a
+href="http://mail-index.netbsd.org/current-users/2000/11/27/0001.html">current-users
+mail archive</a>.
+
+<DATE>netbsd_1.4.3 25 Nov 2000 - NetBSD 1.4.3 リリース
+NetBSDプロジェクトは、NetBSD 1.4.3のリリースをお知らせできることを喜ば
+しく思います。
+<p>
+
+このリリースは、これまでの1.4.x系統に見つかった問題が修正され、安定性
+が向上し、また新たなハードウェアへの対応を含んでいます。NetBSD 1.4.3は
+1.4リリースブランチからのパッチリリースです。1.5リリースブランチからは、
+メジャーリリースであるNetBSD 1.5が間もなくリリースされます。
+<p>
+
+NetBSD 1.4.3のバイナリーとソースコードはすでに利用可能になっています。
+1.4.3ではpc532およびatariポートはソースコードのみでの提供となりますが、
+1.5ではどちらもバイナリーが提供されます。
+<p>
+
+このリリースは、NetBSD 1.4.2以降にNetBSDのメイン開発ブランチに取り込ま
+れた、以下のような多くの新機能を含みます:
+<p>
+
+<ul>
+  <li>Lucent Wavelan (Orinoco) 802.11B無線 Ethernet PCMCIAカードのドライ
+    バーが追加されました。wi(4)を参照してください。
+  <li>PCI Cyclom-4Y および -8Y マルチポートシリアルカードに対応しました。
+  <li>Macintosh LC Ethernet アダプターに対応しました。
+  <li>Macintosh Quadra 605 の内蔵ビデオに対応しました。
+  <li>Alteon Gigabit Ethernet ドライバー、ti(4)のバグが修正されました。
+  <li>いくつかの新たなPCI IDEコントローラーに対応しました。
+      pciide(4)を参照してください。
+  <li>i386 ポートは wd2 や wd3 にもインストールできるでしょう。
+  <li>I/O のサイズ(データ長)が大きい場合に起こり得る、CPU時間を使い切って
+      しまう問題が修正されました。これは SA#2000-005 を解決します。
+  <li>IP オプションの取り扱いに関連するサービス不能問題が修正されました。
+      これは SA#2000-002 を解決します。
+  <li>/etc/ftpchroot に関する問題が修正されました。これは SA#2000-006 を解
+      決します。
+  <li>セマフォーのロックに関する小さな問題が修正されました。これは
+      SA#2000-004 を解決します。
+  <li>DHCP ソフトウェアは ISC 2.0pl3に更新されました。dhcp クライアントの
+      コードにあったセキュリティーの問題(SA#2000-008)もこれによって解決
+      されました。
+  <li>利用者が指定したデータを書式指定文字列として扱う際の方法についての
+      ftpd の問題が修正されました。これは SA#2000-009 を解決します。
+  <li>sparc の c++rt0.o のコードは -fPIC オプションをつけてコンパイルされるよ
+    うになりました。これは(sprc/a.out では c++rt0.o にリンクされなくては
+    ならない)グローバル・コンストラクターを持つライブラリーもまた -fPIC
+    オプションをつけてコンパイルされなくてはならないことを意味します。
+  <li>現在ほとんどの国で、以前は制限されていた「domestic」セットを含む、
+      すべてのリリースを制限なしに輸入することができます。唯一「問題のあ
+      る地域」は米国との通商を禁止している国々です。この件についての詳細
+      は <a 
+      href="../../Misc/crypto-export.html">http://www.NetBSD.ORG/Misc/crypto-export.html</a>
+      から参照できます。
+  <li>利用者の指定した書式指定文字列によってバッファー・オーバーランが引
+      き起こされる可能性を取り除くため、広範囲に渡ってソースコードが監査
+      され、それぞれ修正されました。
+</ul>
+<p>
+
+以上に加え、私たちのバグ追跡システムで報告された70個以上のバグが修正さ
+れました。NetBSD 1.4.3にはその他に、1.4.3のリリース期間中に発見された、
+それまで報告されていなかったバグの修正も含まれています。
+<p>
+
+NetBSD 1.4.2から1.4.3の間の変更点の完全なリストは以下の場所にあります:
+<p>
+
+<blockquote><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.3/CHANGES-1.4.3">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.3/CHANGES-1.4.3</a></blockquote>
+<p>
+
+対応するハードウェア、インストールのしかた、このリリースに関する既知の
+注意事項など、お使いのアーキテクチャーについてのより詳しい情報は、イン
+ストールメモをご覧ください。
+<p>
+
+リリースディレクトリーに含まれるLAST_MINUTEファイルには、リリース用の
+ソースコード変更締切日以降に本リリースにおいて修正された変更の情報が含
+まれています。
+<p>
+
+NetBSD 1.4.3は世界中のミラーサイトから入手できます。ミラーサイトの一覧
+は <a
+href="../Sites/net.html">http://www.netbsd.org/Sites/net.html</a>
+にあります。
+<p>
+
+<table border=0 cellpadding=0 cellspacing=0><tr>
+  <td>NetBSD:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;</td>
+  <td><a href="../">http://www.netbsd.org/</a></td>
+</tr><tr>
+  <td>1.4.x information:&nbsp;&nbsp;</td>
+  <td><a href="./">http://www.netbsd.org/Releases/formal-1.4/</a></td>
+</tr><tr>
+  <td>NetBSD-1.4.3:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td><a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.3/">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.3/</a></td>
+</tr></table>
+
+<DATE>newdevelopers1123 23 Nov 2000 - New developers
+    The NetBSD project is pleased to announce three new developers:
+    <ul>
+    <li>Jason Beegan, <jtb@netbsd.org>, who will primarily be working with
+    the <a href="../Documentation/software/packages.html">NetBSD Packages
+    Collection</a>.
+    <li>Klaus Heinz, <heinz@netbsd.org>, who will be maintaining a German
+    language translation of the NetBSD web site.
+    <li>Mike Pelley, <mike@netbsd.org>, who will be helping maintain
+    IP Filter in the NetBSD source tree, as well as working in other
+    areas.
+    </ul>
+
+<DATE>structemul 21 Nov 2000 - Changes in struct emul and execsw[]
+    Jarom&iacute;r Dolecek has committed some changes to restructure
+    struct emul and execsw in the NetBSD-current tree.  These changes
+    are part of an effort to make emulations loadable via LKM.
+    <p>
+    The changes are quite extensive, though should not cause any problems.
+    More details are available in Jarom&iacute;r's commit message in the <a
+    href="http://mail-index.netbsd.org/source-changes/2000/11/21/0023.html">source-changes
+    mail archive</a> and his announcement in the <a
+    href="http://mail-index.netbsd.org/current-users/2000/11/21/0000.html">current-users
+    mail archive</a>.
+    
+
+<DATE>ftpd-0011 17 Nov 2000 - Recent ftpd enhancements
+    Luke Mewburn has been improving ftpd lately.  What follows is a list  
+    of recent changes:
+    <p>
+    <ul>
+    <li>Add ftpd.conf<b></b>(5) directives:
+	<ul>
+	<li>'<tt>maxfilesize</tt>' - limit maximum size of upload files
+	<li>'<tt>sanenames</tt>' - only permit uploaded filenames that don't
+	    start with '.' and only contain '[-+,._A-Za-z0-9]'
+	</ul> 
+    <p>
+    </li>
+    <li>New command line options:
+	<ul>
+	<li>'<tt>-P dataport</tt>' - different dataport
+	<li>'<tt>-q</tt>' - enable pidfiles (default)
+	<li>'<tt>-Q</tt>' - disable pidfiles
+	<li>'<tt>-u</tt>' - write utmp
+	<li>'<tt>-U</tt>' - don't write utmp (default)
+	<li>'<tt>-w</tt>' - write wtmp (default)
+	<li>'<tt>-W</tt>' - don't write wtmp
+	</ul>
+    </ul>
+    <p>
+    Note: -U meaning has changed from "write utmp" to "<em>don't</em> write
+    utmp" to be consistent with -q/-Q and -w/-W.  Old use of -U won't enable
+    an unwanted feature, it just won't enable a wanted feature.
+
+<DATE>i2o 08 Nov 2000 - Support for I2O adapters in NetBSD-current
+    Andrew Doran has added support for I2O adapters to NetBSD-current.
+    Currently, SCSI/FC-AL and raw block devices are supported.
+    <p>
+    This support was made possible by the kind donation of a
+    SmartRAID V Millennium by Distributed Processing Technology.
+
+<DATE>agc0011 06 Nov 2000 - Changes to the NetBSD Packages Collection in October 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in October 2000 is
+    available in the <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2000/11/06/0000.html">netbsd-announce
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>watchdog 04 Nov 2000 - Watchdog timer support in NetBSD-current
+    Jason Thorpe has committed a generic framework for hardware watchdog
+    timers.  The watchdog timer function in the PC-Weasel serial console
+    board for PCs is currently supported.  Jason will be adding support for
+    the ICS PCI-WDT501 watchdog timer board shortly.
+    <p>
+
+<pre>delphi:thorpej 136$ wdogctl 
+Available watchdog timers:
+        weasel, 12 second period [armed, kernel tickle]
+delphi:thorpej 137$</pre>
+    <p>
+
+    See the wdogctl<b></b>(8) manual page for more information.
+
+<DATE>newmozillaports 31 Oct 2000 - New Mozilla ports available
+    Charles Hannum has ported Mozilla to the Alpha, ARM (32-bit), PowerPC,
+    and SPARC CPU types (in addition to the existing i386 port).  More ports
+    are in progress right now.
+    <p>
+    Prebuilt packages are available from the NetBSD FTP server.  See:
+    <p>
+    <dl><dd>
+    <URL>ftp://ftp.netbsd.org/pub/NetBSD/packages/1.5/alpha/All/mozilla-0.m18nb1.tgz<br>
+    <URL>ftp://ftp.netbsd.org/pub/NetBSD/packages/1.5/arm32/All/mozilla-0.m18nb1.tgz<br>
+    <URL>ftp://ftp.netbsd.org/pub/NetBSD/packages/1.5/i386/All/mozilla-0.m18nb1.tgz<br>
+    <URL>ftp://ftp.netbsd.org/pub/NetBSD/packages/1.5G/powerpc/All/mozilla-0.m18nb1.tgz<br>
+    <URL>ftp://ftp.netbsd.org/pub/NetBSD/packages/1.5/sparc/All/mozilla-0.m18nb1.tgz<br>
+    </dd></dl>
+    <p>
+    Please note:
+    <p>
+    <ul>
+    <li>a.out platforms require an upgrade to ld.so to run Mozilla.
+    <li>There are some minor toolchain updates needed to <em>build</em> Mozilla
+        on all platforms.
+    </ul>
+    <p>
+    If you're running on an a.out platform or want to build Mozilla, and your
+    system is built from sources before these changes, you can either:
+    <p>
+    <ul>
+    <li>Check out the relevant sources from <a
+    href="../Documentation/current/#using-anoncvs">anoncvs</a>.
+    <li>Wait for the next snapshot.  Snapshots are announced on <a
+    href="../MailingLists/">mailing lists</a> for each port, in
+    addition to the news section of each <a
+    href="../Ports/">port page</a>.
+    </ul>
+
+<DATE>sanisutil 26 Oct 2000 - Four new security advisories
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-012.txt.asc">
+    NetBSD-SA2000-012</a>, 
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-013.txt.asc">
+    NetBSD-SA2000-013</a>,
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-014.txt.asc">
+    NetBSD-SA2000-014</a>, and
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-015.txt.asc">
+    NetBSD-SA2000-015</a> have been released, with fixes for two security
+ issues in netbsd system libraries and notification of security issues
+for two packages.
+
+<DATE>agc0010 23 Oct 2000 - Changes to the NetBSD Packages Collection in September 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in September 2000 is
+    available in the <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2000/10/23/0000.html">netbsd-announce
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>riscos2000 23 Oct 2000 - RISC OS 2000 show report
+   A group of NetBSD enthusiasts were one of the exhibitors at <a
+   href="http://www.armclub.org.uk/shows/riscos/">RISC OS 2000</a>.
+   They had CD's, leaflets, and a mixture of hardware running NetBSD
+   on display.  David Brownlee wrote up a report about the <a
+   href="../gallery/reports/riscos-2000.html">NetBSD stand at RISC OS 2000</a>.
+
+
+<DATE>twe 19 Oct 2000 - Support for 3ware RAID controllers
+    Andy Doran <ad@netbsd.org> has committed support for the <a
+    href="http://www.3ware.com/">3ware</a> Escalade family of RAID
+    controllers to NetBSD-current.  The Escalade RAID controllers
+    are IDE based, can handle between 2-8 drives (depending on the
+    controller), and can do RAID0, RAID1, and RAID10.   
+
+<DATE>newdeveloper1017 17 Oct 2000 - New developer
+    The NetBSD project is pleased to announce a new developer:
+    <ul>
+    <li>James Chacon, <jmc@netbsd.org>, who will be working on general
+    issues, in particular the build process.
+    </ul>
+
+<DATE>lukemftp1.5 11 Oct 2000 - Luke Mewburn has released lukemftp 1.5
+    A new release of lukemftp, a port of the enhanced NetBSD ftp client to
+    other systems, is now available.  lukemftp uses an autoconf configure
+    script and replacement library for systems which don't have NetBSD-specific
+    library functions.
+    <p> 
+    The major changes with this version are the addition of commands to use the
+    RFC 2389 and draft-ietf-ftpext-mlst-11 ftp extensions, and improved
+    portability, especially in the IPv6 code.
+    <p> 
+    The main ftp site for lukemftp is <a
+    href="ftp://ftp.netbsd.org/pub/NetBSD/misc/lukemftp/">ftp://ftp.netbsd.org/pub/NetBSD/misc/lukemftp/</a>.
+
+<DATE>bsdcon-2000 07 Oct 2000 - NetBSD and BSDCon 2000
+    This year, BSDCon will be held from October 14th to the 20th in Monterey,
+    California.  Tutorials will be from the 14th through the 17th, and the
+    Conference will be from the 18th through the 20th.  There are plenty of
+    activities of interest (see the <a
+    href="http://www.bsdcon.org/schedule.php3">conference schedule</a>
+    portion of the BSDCon web site), and a couple of those spotlight NetBSD.
+    <p><blockquote>
+    On October 19th, Charles Hannum will be giving a talk entitled
+    "NetBSD: Platform for The Future".  This will take place in the
+    Regency Ballroom from 8:30 to 9:30 am.
+    <p>
+    On October 20th, Jun-ichiro itojun Hagino, a member of the NetBSD Core
+    Group, will be giving a talk about NetBSD 1.5.  This will take place
+    in Regency I-III from 2:00 to 3:00 pm.
+    <p>
+    NetBSD will also be an exhibitor at BSDCon 2000.  The Expo hours are from
+    10:00 am to 6:00 pm on October 18th, 9:00 am to 5:00 pm on October 19th,
+    and 9:00 am to 4:00 pm on October 20th.  Stop by if you can.
+    </blockquote><p>
+    Information on other exhibitors, talks, tutorials, and registration can
+    be found on the <a href="http://www.bsdcon.org/">BSDCon web site</a>.
+    <p>
+    <b>Update:</b> Erik Berls <cyber@netbsd.org> and Luke Mewburn
+    <lukem@netbsd.org> gave the "NetBSD: Platform for the Future" talk since
+    Charles wasn't available.  Slides from this talk are available at
+    <a href="http://www.cs.rmit.edu.au/~lukem/talks/bsdcon-2000/">http://www.cs.rmit.edu.au/~lukem/talks/bsdcon-2000/</a>.
+    <p>
+    Also, a transcript of Jun-ichiro itojun Hagino's talk on NetBSD 1.5 is
+    available at <a
+    href="ftp://ftp.itojun.org/pub/paper/itojun-bsdcon2000-netbsd15.ps.gz">ftp://ftp.itojun.org/pub/paper/itojun-bsdcon2000-netbsd15.ps.gz</a>.
+
+<DATE>rijndael 04 Oct 2000 - AES (rijndael) support in NetBSD-current IPsec code
+        NetBSD-current IPsec (from KAME) now supports rijndael algorithm for
+        ESP encryption, thanks to the integration work of Jun-ichiro itojun
+        Hagino. rijndael is the finalist of AES contest, and
+        will be standardized in FIPS standard suite, to replace DES.
+	<p>
+        AES finalist was picked on Oct 2, the official algorithm number is
+        decided on Oct 3.  NetBSD-current has working rijndael support since
+        Oct 3 (the foundation has been there waiting for algorithm number).
+	<p>
+        The implementation is known to be interoperable with others.
+        Also, it is possible to negotiate rijndael IPsec SA by using the
+        latest racoon IKE daemon (pkgsrc/security/racoon, be sure to get
+        version 20001004a).
+	<p>
+        For more info see: 
+	<ul>
+        <li> <a href="http://www.nist.gov/aes/">http://www.nist.gov/aes/</a>
+	   (the algorithm itself)
+        <li> <a href="http://www.kame.net/">http://www.kame.net/</a>
+	   (KAME project where NetBSD IPsec comes from)
+        <li> <a href="../Documentation/network/ipsec/">http://www.netbsd.org/Documentation/network/ipsec/</a>
+	   (NetBSD IPsec FAQ)
+	</ul>
+	<p>
+	The change is now in 1.5 branch, and will be available in 1.5 release.
+
+<DATE>ssh 28 Sep 2000 - Secure Shell now in mainline
+    Jason Thorpe has committed an OpenSSH-based Secure Shell to the main
+    NetBSD sources.  This will be pulled into the netbsd-1-5 branch, so it
+    will be available in NetBSD 1.5.
+    <p>
+    Please note that the OpenSSH-based implementation is a temporary measure;
+    it will be replaced with a completely independent implementation as soon
+    as that other implementation is ready (within the next couple of months
+    it is hoped).
+
+<DATE>vlan 28 Sep 2000 - 802.1Q VLAN support in NetBSD-current
+    Andy Doran has added 802.1Q VLAN trunking support in NetBSD-current.
+    Enami Tsugutomo did work on multicast, and Jason Thorpe did work
+    on some additional integration cleanup.
+
+<DATE>agc0009 12 Sep 2000 - Changes to the NetBSD Packages Collection in August 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the 
+    NetBSD Packages Collection.  The write up for changes in August 2000 is 
+    available in the <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2000/09/12/0000.html">netbsd-announce
+    mail archive</a>.
+    <p> 
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>pty-structs 11 Sep 2000 - Change in kernel pty structures allocation
+   Jarom&iacute;r Dolecek has changed the way pty structs are allocated in
+   NetBSD-current.  It's now allocated at run-time, allowing support for
+   an arbitrary number of ptys without the need of a kernel recompile.
+   <p>
+   The value was previously set in a kernel config via:
+   <p>
+   <dl><dd>
+   pseudo-device pty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>foo</i>
+   </dd></dl>
+   <p>
+   This now does not mean that the fixed number <i>foo</i> is available, but
+   rather how big is the array of pointers to pty structs on the start.  If
+   <i>foo</i> is omitted, 64 is used.  This initial array is enlarged as
+   necessary.
+   <p>
+   Also, there's a new sysctl, kern.maxptys, which limits how many maximum
+   pty's might exist.  This defaults to 512.  Note that one would need to
+   install newer kernel includes and rebuild sysctl<b></b>(8) for it to
+   support kern.maxptys.
+   <p>
+   The full text of Jarom&iacute;r's announcement is available in the <a
+   href="http://mail-index.netbsd.org/current-users/2000/09/09/0015.html">current-users
+   mail archive</a>.
+
+<DATE>rssinternal 10 Sep 2000 - List of NetBSD code changes now available in XML/RSS format
+   The NetBSD Project is proud to offer another News Channel for content
+   providers and users.  The new channel, 'NetBSD Code Changes', will list
+   significant source changes (such
+   as newly added features in both kernel and userland), updated programs in
+   the base system, ports to new architectures, and more.
+   <p>
+   The 'NetBSD Code Changes' RSS file is available at the following URL:
+   <p>
+   <dl><dd>
+   <a href="http://www.netbsd.org/Changes/rss-netbsd-internals.xml">http://www.netbsd.org/Changes/rss-netbsd-internals.xml</a>
+   </dd></dl>
+   <p>
+   More information on this, and the other two channels, is available on the
+   <a href="rss.html">NetBSD News Channels</a> page.
+
+<DATE>largepages 07 Sep 2000 - Initial support for large pages
+    Jason Thorpe has added support for mapping the kernel text using large
+    pages to NetBSD-current/i386.  This gives a reasonable performance
+    improvement.  For example, building a GENERIC kernel on a 600MHz P-III
+    laptop:
+    <p>
+    <dl><dd>
+    before: 636.59s real   387.34s user    27.53s system
+    <p>
+    after: 597.21s real   382.88s user    24.88s system
+    </dd></dl>
+    <p>
+    Note that compiling stuff is userland-intensive, so things that spend a
+    lot more time in the kernel (e.g forwarding packets, IPsec processing,
+    RAIDframe, etc.) are likely to see better improvements.
+    <p>
+    This is initial support for large pages, so there is <b>not</b> generic
+    support for using large pages for other types of mappings yet, nor is
+    there support for mapping the kernel data/bss segments with large pages
+    (although that should be pretty straightforward).
+    <p>
+    An example kernel config can be found in <CURRENTSRC>sys/arch/i386/conf/DR-EVIL.4MB.
+    Follow its lead to learn how to enable large page support.
+    <p>
+    This initial support was developed at and contributed by <a
+    href="http://www.zembu.com/">Zembu Labs, Inc</a>. 
+
+<DATE>mipsco 06 Sep 2000 - Port for MIPS Computer Systems Inc. family of workstations and servers
+    In July, Wayne Knowles <wdk@netbsd.org>, a researcher in New Zealand,
+    successfully ported NetBSD to his RC3230 made by MIPS Computer Systems,
+    Inc.  The RC3230 was a R3000A desktop box commonly called R3000 Magnum;
+    a popular workstation that was re-badged by companies such as Bull and
+    Olivetti.  The port name was decided to be NetBSD/mipsco so other computers
+    by MIPS Computer Systems could be included in it.
+    <p>
+    In early August, NetBSD/mipsco was merged into the main NetBSD tree, and
+    has seen many improvements since.  Changes were committed to allow the
+    kernel to read either a BSD disklabel created under NetBSD/sparc or a
+    MIPS volume header created under Risc OS.  This change allowed the stand
+    alone shell to directly load a NetBSD kernel and mount a filesystem -
+    NetBSD/mipsco became self-sufficient.
+    <p>
+    Currently the Magnum 3000, Mips 3230 Server, and Bull DPX/Prostation M-20
+    are supported.  Support for other models is planned for the future.
+    <p>
+    The following persons helped greatly in the process of creating this port:
+    <p>
+    <ul>
+    <li>Wayne Knowles: port maintainer and main developer
+    <li>Toru Nishimura: developer
+    <li>Francis Bogsanyi and Chris Collins: provided feedback from the
+        pre-alpha snapshot
+    </ul>
+    <p>
+    If you're interested in following
+    or becoming a part of the development efforts, there's a port-mipsco
+    mailing list.  This list can be subscribed to either on the <a
+    href="../MailingLists/#port-mipsco">NetBSD web site</a> or by sending
+    a mail with the body of "subscribe port-mipsco" to majordomo@netbsd.org.
+    More information is also available on the <a
+    href="../Ports/mipsco/">NetBSD/mipsco</a> port page.
+
+<DATE>mvme162 06 Sep 2000 - Support for MVME162-LX 200/300 in NetBSD/mvme68k
+    Steve Woodford has added preliminary support for the LX 200/300 variants of 
+    <a href="http://www.mcg.mot.com/cfm/templates/product.cfm?PageID=16&amp;ProductID=2&amp;PageTypeID=1">MVME162</a>
+    to NetBSD/mvme68k.
+    <p>
+    Currently, the major onboard devices are supported (disk, network,
+    rs232 and VMEbus). However, work is still need to support the remaining
+    devices (e.g IndustryPack sites).
+    <p>
+    These boards are available with a dazzling array of build options. At
+    this time, the following options are <em>required</em>:
+    <p>
+    <ul>
+    <li>Real floating point hardware (the 68LC040 model isn't tested).
+    <li>The VMEchip2 must be present.
+    <li>If offboard VMEbus RAM is not present, at least 8MB of onboard
+	  RAM is required.
+    <li>Even if offboard VMEbus RAM <em>is</em> present, at least 4MB of onboard
+	  RAM is required (Boards with 1 or 2MB onboard RAM <em>can</em> be
+	  supported with offboard RAM, but not without some funky values in
+	  the VMEbus Master mapping registers).
+    </ul>
+    <p>
+    <a href="http://www.salientsystems.com/">Salient Systems</a> provided
+    hardware to Steve which made this support possible.
+    <p>
+    More information about NetBSD/mvme68k is available in the <a
+    href="../Ports/mvme68k/">NetBSD/mvme68k</a> pages.
+    <p>
+    <b>Update:</b> This support has been pulled into the netbsd-1-5 branch, so
+    it will be available in NetBSD 1.5.
+
+<DATE>embedded-powerpc 02 Sep 2000 - Embedded PowerPC Port started
+    A port to the Motorola MPC8xx series of embedded PowerPC devices has
+    begun.  This series of devices includes several dozen variants
+    with many different on-chip peripherals, notably high-speed
+    communications ports offering just about every known protocol,
+    including 10/100 Ethernet.  These chips have become quite popular in
+    the telecom industry.
+    <p>
+    The port is being performed by David Querbach, and is sponsored by
+    <a href="http://www.realtime.bc.ca">Real-Time Systems Inc.</a>, an
+    industrial embedded controller design house.
+
+<DATE>newdevelopers0820 20 Aug 2000 - New developers
+    The NetBSD project is pleased to announce three new developers:
+    <ul>
+    <li>IWAMOTO Toshihiro, <toshii@netbsd.org>, who will be working on various
+    bug fixes.
+    <li>Takahiro Kambe, <taca@netbsd.org>, who will be working on various
+    bug fixes, as well as helping with htdocs and pkgsrc.
+    <li>SUNAGAWA Keiki, <kei@netbsd.org>, who will be working on support for
+    PowerPC 601 and ADB of iBook.  Also, he will be helping out with pkgsrc
+    for powerpc and the Japanese category.
+    </ul>
+
+<DATE>updating 19 Aug 2000 - UPDATING file for those tracking -current
+    There is now an <CURRENTSRC>UPDATING file in the root of the source tree
+    on the main branch.  This file is intended to become a reference for those
+    <a href="../Documentation/current/">tracking -current</a>; changes that
+    break 'make build' from an earlier version of the tree will be appended to
+    it.
+
+<DATE>dec_de422 11 Aug 2000 - Support for DEC DE422 Ethernet
+    Jason Thorpe has added support to NetBSD-current for DEC DE422
+    Ethernet, which is a DEPCA attached to the EISA bus.  This board is
+    commonly found on Alpha Jensen systems.  This has been pulled into the
+    netbsd-1-5 branch, so it will be available in NetBSD 1.5.
+    <p>
+    More information about NetBSD/alpha is available in the <a
+    href="../Ports/alpha/">NetBSD/alpha</a> pages.
+
+<DATE>ipf3.4.9 10 Aug 2000 - New IP Filter 3.4.9 imported
+    Bernd Ernesti has imported IP Filter 3.4.9 into NetBSD-current.  A
+    complete list of changes is available in Bernd's announcement in the <a
+    href="http://mail-index.netbsd.org/current-users/2000/08/09/0013.html">current-users
+    mail archive</a>.
+    <p>
+    <b>Update:</b> This has been pulled into the netbsd-1-5 branch, so it will
+    be available in NetBSD 1.5.
+
+<DATE>sanetscape 08 Aug 2000 - Security advisory for Netscape browsers 
+    A security problem with JPEG parsing in Netscape browsers has been
+    discovered; you should upgrade Netscape Navigator/Communicator to at
+    least version 4.75.
+
+<DATE>crypto-speed 04 Aug 2000 - Speed improvements for crypto library
+    Jason Thorpe has added support for using the x86 assembly versions of
+    Blowfish, MD5, RMD160, and some of the BIGNUM routines (used by DSA
+    and RSA).  These improve performance of these algorithms significantly.
+    <p>
+    These changes will be pulled into the netbsd-1-5 branch, so that these
+    improvements will be available in NetBSD 1.5.
+    <p>
+    See also:
+    <ul>
+    <li><a href="000804.html">Speed improvements for crypto library: Before and
+        after comparisons</a>
+    </ul>
+
+<DATE>agc0008 04 Aug 2000 - Changes to the NetBSD Packages Collection in July 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in July 2000 is
+    available in the <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2000/08/04/0000.html">netbsd-announce
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>newdevelopers0803 03 Aug 2000 - New developers
+    The NetBSD project is pleased to announce two new developers:
+    <ul>
+    <li>Erik Reid, <reide@netbsd.org>, who will be doing sysadmin work in
+    the NetBSD build lab.
+    <li>Wayne Knowles, <wdk@netbsd.org>, who will be integrating and
+    working on his Mips Co. Rc3230 port.
+    </ul>
+
+<DATE>nis-v6-hostname 30 Jul 2000 - NIS change for non-IPv4 hostname lookup
+    Jun-ichiro itojun Hagino made some changes into NIS server/client code
+    to support non-IPv4 hostname lookup (IPv6 only at this moment).
+    The code obeys practice in Solaris 8,
+    and believed to be compatible with them.
+    We have a new NIS map ipnodes.{byname,byaddr} for non-IPv4 hostname lookup.
+    hosts.{byname,byaddr} NIS map is IPv4 only just like before.
+    The code is available in netbsd-current tree.
+
+<DATE>ftpd-enhancements 28 Jul 2000 - Recent ftpd enhancements
+    Luke Mewburn has been improving ftpd lately.  What follows is a list
+    of recent changes:
+    <p> 
+    <ul>
+    <li>Add ftpd.conf<b></b>(5) directives:
+	<ul>
+	<li>'chroot' (specify directory to chroot(2) to on login)
+	<li>'homedir' (specify homedir of users)
+	</ul>
+    <li>Add security enhancements:
+        <ul> 
+        <li>Make checkportcmd the default
+	<li>Add -r (explicitely drop root privs)
+	<li>Add -V vers (change version string to vers)
+	<li>Drop root privs if a chroot or guest user and ftpd is running on
+	a non reserved port.
+	</ul>
+    </ul>
+    <p> 
+    These changes have been pulled into the netbsd-1-5 branch, so
+    they will be available in NetBSD 1.5.
+
+<DATE>exper-sparc64-snapshot 26 Jul 2000 - Experimental sparc64 shared library snapshot
+    Charles Hannum has uploaded an experimental NetBSD/sparc64 snapshot with
+    shared libraries.  This is just a big tar file of the whole installation,
+    with a kernel in /netbsd.  The snapshot is located at
+    <URL>ftp://ftp.netbsd.org/pub/incoming/mycroft/sparc64.tgz
+    <p>
+    A few things to note:
+    <p>
+    <ul>
+    <li>This snapshot was cross-compiled from i386-netbsdelf.  The compiler
+	it contains is egcs 1.1.2, which is <b>not recommended</b> for
+	sparc64.  There should be a native gcc 2.95.2 build working soon.
+    <li>The snapshot does not contain hack(6), because it fails to build due
+	to a cross-compiler bug.
+    <li>There appear to be problems with tcpdump and krb5.  They'll be looked
+	into soon.
+    <li>It is, as stated, experimental.  As so, there's a chance it will
+	break.
+    </ul>
+    <p>
+    If you do try it, please report any problems you have to the
+    <a href="../MailingLists/#port-sparc64">port-sparc64</a> mailing list.
+    <p>
+    Also, see the <a href="../Ports/sparc64/">NetBSD/sparc64</a> pages for more
+    information on NetBSD/sparc64.
+
+<DATE>sendmail8.11.0 23 Jul 2000 - NetBSD-current now using sendmail 8.11.0
+    Jun-ichiro itojun Hagino has upgraded sendmail to 8.11.0 in NetBSD-current.
+    This new version includes many new features and bug fixes.
+    Bugfix includes IPv6 support fix (old cf file choked with IPv6-enabled
+    8.10.x - NetBSD tree was locally fixed).
+    <p>
+    <b>Update:</b> This has been pulled into the netbsd-1-5 branch, so it will
+    be available in NetBSD 1.5.
+
+<DATE>nwkey-support 21 Jul 2000 - Support for nwkey added to ifconfig for 802.11
+    Atsushi Onoe has committed changes to NetBSD-current for nwkey keyword
+    support in ifconfig(8) for IEEE 802.11 devices.  The available drivers are
+    wi (WaveLAN and PRISM-II), and awi (AMD/PRISM-I), for now.
+    <p>
+    Here is the usage from the updated man page:
+    <p>
+    <dl><dd>
+    <table border=0 cellspacing=0 cellpadding=0><tr>
+    <td valign=top>nwkey&nbsp;key&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>(IEEE 802.11 devices only) Enable WEP encryption for IEEE
+    802.11-based wireless network interfaces with the key.
+    The key can either be a string, a series of hexadecimal
+    digits, or a set of keys in the form n:k1,k2,k3,k4, where
+    n specifies which of keys will be used for all transmitted
+    packets, and four keys, k1 through k4, are configured
+    as WEP keys.  Note that the order must be match within
+    same network if multiple keys are used.<br>&nbsp;<br></td>
+    </tr><tr>
+    <td valign=top>-nwkey&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>(IEEE 802.11 devices only) Disable WEP encryption for
+    IEEE 802.11-based wireless network interfaces.</td>
+    </tr></table>
+    </dd></dl>
+    <p>
+    These changes have been pulled into the netbsd-1-5 branch, so
+    this will be available in NetBSD 1.5.
+
+<DATE>dreamcast-preannounce 15 Jul 2000 - Progress on port to Sega's Dreamcast game console
+    The port of the NetBSD operating system to Sega's Dreamcast
+    game console is reaching a state where it's near to single user
+    mode.  Utilizing the <a href="../Ports/sh3/">NetBSD/evbsh3</a>
+    port's simple structure and the fact that it supports both big
+    and little endian architectures as well as the general clean
+    design of the NetBSD operating system helped for this port.
+    Device drivers for the game pad, keyboard etc. are next on the
+    todo-list of Saitoh Masanobu, who works on this port.
+<pre>
+NetBSD 1.5_ALPHA (DREAMCAST) #8: Fri Jul 14 01:42:14 JST 2000
+    msaitoh@vslock.xxx.yyy:/var/sources/src/sys/arch/evbsh3/compile/DREAMCAST
+total memory = 16384 KB
+avail memory = 12988 KB
+using 230 buffers containing 920 KB of memory
+mainbus0 (root)
+shb0 at mainbus0
+scif0 at shb0 port 0xffe80000-0xffe8000f irq 12
+scif0: console
+biomask c0000000 netmask c0000000 ttymask e0000000
+md0: internal 1440K image area
+rn_init: radix functions require max_keylen be set
+boot device: &lt;unknown&gt;
+root on md0a dumps on md0b
+cannot mount root, error = 22
+root device (default md0a):
+</pre>
+
+
+<DATE>alpha-jensen 14 Jul 2000 - Support for Jensen systems in NetBSD/alpha  
+    Jason Thorpe has gotten the Jensen systems (DECpc AXP 150 a.k.a DEC
+    2000/300) working, thanks to some testing help from Gyenes Istvan.
+    There was a kernel configuration error in the INSTALL kernel that
+    prevented Jensen SCSI from working, but that has since been fixed and
+    the code has been committed.
+    <p>
+    This support has been pulled into the netbsd-1-5 branch so that NetBSD 1.5
+    will work on Jensen systems.
+    For more details (including console output of the most recent test kernel)
+    please see Jason's announcement in the <a
+    href="http://mail-index.netbsd.org/port-alpha/2000/07/12/0002.html">port-alpha
+    mail archive</a>.
+    <p>
+    Also, see the <a href="../Ports/alpha/">NetBSD/alpha</a> pages for more
+    information about NetBSD/alpha.
+
+<DATE>newdevelopers0710 10 Jul 2000 - New developers
+    The NetBSD project is pleased to announce two new developers:
+    <ul>
+    <li>Ichiro Fukuhara, <ichiro@netbsd.org>, who has already been doing
+    things with the <a href="http://www.jp.netbsd.org/">Japan NetBSD Users
+    Group</a>, including NetBSD-on-sh3/hpcmips.  He will continue his 
+    previous work, as well as helping with pkgsrc and htdocs.
+    <li>Jeff Smith, <jeffs@netbsd.org>, who brings a wealth of experience
+    with the MIPS architecture gained on the development of a number of
+    platforms at the company formerly known as Silicon Graphics.  Jeff's
+    expertise with the MIPS architecture and the caching issues involved
+    has already helped get the NetBSD/cobalt port off the ground.  He will
+    continue enhancing the MIPS platforms by integrating changes focusing
+    on performance, reliability, and serviceability issues.
+    </ul>
+
+<DATE>sadhcpftp 10 Jul 2000 - Security advisories for dhcp, ftpd, and wu-ftpd
+    Three new security advisories have been released, concerning 
+    fixes to vulnerabilities which have the potential to allow root access 
+    to attackers over the network.
+    <ol>
+    <li> 
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-008.txt.asc">
+    NetBSD-SA2000-008</a>: The ISC DHCP client is vulnerable to rogue DHCP servers</li>
+    <li> <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-009.txt.asc">
+    NetBSD-SA2000-009</a>: The NetBSD ftp server is vulnerable to a possible remote root compromise. </li>
+    <li> <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-010.txt.asc">
+    NetBSD-SA2000-010</a>: The wu-ftpd package is also vulnerable to a possible remote root compromise.
+    </li>
+    </ol>
+
+<DATE>developer-resources 10 Jul 2000 - NetBSD Developer Resources page
+    NetBSD has a specific build lab for 'full' developers, but it can
+    sometimes be difficult for others who would like to test and develop
+    software on the wide range of machines supported by NetBSD to do so.
+    <p>
+    In response to this, Rick Kelly, <rmk@rmkhome.com>, has created the <a
+    href="http://www.rmkhome.com/NetBSD/">NetBSD Developer Resources</a>
+    page, which lists NetBSD users who will donate time on their machines
+    to increase awareness of NetBSD and widen the pool of available software
+    for the OS.  The entries on the page consist of the users name, e-mail
+    address, and a listing of computer models available to developers.
+    <p>
+    Thanks should go to both Rick Kelly and all those who have offered
+    shell/login accounts on their systems.
+ 
+<DATE>lukemftp1.4 09 Jul 2000 - Luke Mewburn has released lukemftp 1.4
+    A new release of lukemftp, a port of the enhanced NetBSD ftp client to
+    other systems, is now available.  lukemftp uses an autoconf configure
+    script and replacement library for systems which don't have NetBSD-specific
+    library functions.
+    <p>
+    The major changes with this version are various fixes to the IPv6
+    support, the use of 'LIST' instead of 'NLST' with the ls command, support
+    for uploading files on the command line with '-u', the addition of fget
+    (which reads a list of files to retrieve from a given file), and
+    portability fixes.
+    <p>
+    The main ftp site for lukemftp is <a
+    href="ftp://ftp.netbsd.org/pub/NetBSD/misc/lukemftp/">ftp://ftp.netbsd.org/pub/NetBSD/misc/lukemftp/</a>.
+
+<DATE>linuxtag-2000 07 Jul 2000 - LinuxTag 2000 summary
+    A group of *BSD enthusiasts organized a *BSD booth at <a
+    href="http://www.linuxtag.de/2000/english/">LinuxTag 2000</a>, which,
+    among many other things, included a variety of boxes showcasing NetBSD.
+    Christian Weisgerber has written a <a
+    href="../gallery/reports/linuxtag-2000.html">summary</a> about his
+    experiences at LinuxTag 2000, as one both manning the *BSD booth and
+    giving a talk.
+
+<DATE>agc0007 04 Jul 2000 - Changes to the NetBSD Packages Collection in June 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in June 2000 is
+    available in the <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2000/07/04/0000.html">netbsd-announce
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>wasabisystems 30 Jun 2000 - Support for NetBSD from Wasabi Systems, Inc.
+    Wasabi Systems is a new company, founded by members of the NetBSD Project
+    and a team of experienced consultants and business services providers,
+    that will offer commercial-grade NetBSD sales, support, and service.
+    <p>
+    There has been a lot of talk and excitement since Wasabi commenced
+    operations on June 21st, and what follows is a brief outline of their
+    goals and what they're doing.
+    <p>
+    Perry Metzger, President and CEO of Wasabi, said, "Support is the key.
+    You can't go NetBSD if going NetBSD means going it alone.  And yet until
+    now, no company has stood behind NetBSD and offered complete NetBSD
+    customizations, support packages, and commercial-grade consulting
+    solutions.  Wasabi will bring the highest-caliber NetBSD developers and
+    consultants to every job we do, from mailservers to MIPS boxes, firewalls
+    to food processors."
+    <p>
+    Wasabi Systems is the premier source for commercial NetBSD support and
+    customization services, and offers a range of integrated NetBSD system
+    solutions, focusing on the Internet server appliance and embedded systems
+    markets.
+    <p>
+    Wasabi will also offer NetBSD support packages, training and certification
+    programs, and related NetBSD products.  In the summer of 2000, Wasabi
+    plans to release a limited edition of NetBSD 1.4.3 CD-ROMs, which will be
+    followed by the full release of Wasabi NetBSD 1.5 in the fall.
+    <p>
+    More information is available at the Wasabi Systems web site at
+    <a href="http://www.wasabisystems.com/">www.wasabisystems.com</a>.
+    <p>
+    See also:
+    <ul>
+    <li><a href="http://slashdot.org/bsd/00/06/22/1815244.shtml">Interview
+	with Perry Metzger, President and CEO of Wasabi (Jun 22)</a> 
+	- <i>Slashdot article</i>
+    <li><a href="http://www.wasabisystems.com/news.html#pr1">Initial
+	Wasabi Systems, Inc. press release (Jun 21)</a>
+	- <i>Wasabi Systems web site</i>
+    </ul>
+
+<DATE>sgimips-announce 30 Jun 2000 - NetBSD Port available for SGI Platform
+    The NetBSD Project is pleased to announce that the NetBSD/sgimips port
+    has reached a state where it is stable enough to run multi-user
+    mode. This makes NetBSD the world's first Open Source operating system
+    running on the Silicon Graphics O2, code for the Indy machines will be
+    available soon.  Utilizing NetBSD's machine independent driver
+    framework, the port currently supports most of the usual NetBSD PCI
+    drivers, including the machine's internal SCSI controller. Machines
+    with the R5000 CPU are known to work, R10k and R12k are untested due
+    to lack of hardware (contact <soren@netbsd.org> for arranging hardware
+    donations).
+    <P>
+    The following persons made this port possible:
+    <P>
+     <UL>
+     <LI> Soren Jorvang: port maintainer and main developer
+     <LI> Antti Kantee, Helsinki University of Technology: providing access
+          to O2 hardware
+     <LI> Herb Peyerl, the NetBSD Build Lab:  providing access to O2 hardware
+     <LI> Chan Wilson, Silicon Graphics, Inc.: Indy hardware donation
+     </UL>
+    <P>
+
+    If you have questions or want to participate in development of the the
+    NetBSD/sgimips port, feel free to join our mailing list: write mail
+    with "subscribe sgimips" in the body to majordomo@netbsd.org, and send
+    back the authentication mail you'll get. An archive of the mailing  
+    list can be found at <A HREF="http://mail-index.netbsd.org/port-sgimips/">http://mail-index.netbsd.org/port-sgimips/</A>.
+    <P>
+    See the <A HREF="../Ports/sgimips/">NetBSD/sgimips</A> homepage for more information.
+
+<DATE>agc0006 27 Jun 2000 - Changes to the NetBSD Packages Collection in May 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in May 2000 is
+    available in the <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2000/06/27/0000.html">netbsd-announce
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>newdevelopers0626 26 Jun 2000 - New developers
+    The NetBSD project is pleased to announce two new developers:
+    <ul>
+    <li>Shuichiro URATA, <ur@netbsd.org>, who has already contributed kernel
+    softfloat emulation code to the hpcmips port and support for the NEC
+    RISCstation 2250 and it's PCI for the arc port.  He will be working on
+    improving various aspects of NetBSD's arc and other mips ports.
+    <li>Takuya Shiozaki, <tshiozak@netbsd.org>, who is the main programmer of
+    the Citrus Project, which is an effort to implement the
+    internationalization framework (a.k.a. locale) for *BSD.  He will be
+    working on integrating this framework with NetBSD.
+    </ul>
+
+<DATE>salibdes 21 Jun 2000 - Security Advisory 2000-007 released
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-007.txt.asc">
+    NetBSD-SA2000-007</a> has been released, reporting a problem with
+    random key generation in libdes in the domestic version of
+    NetBSD-current if /dev/urandom is not in use.  The problem has
+    been corrected in -current and was not present in any formal release 
+    of NetBSD.
+
+    <p> More information on previous <a
+    href="../Security/advisory.html">security advisories</a> is
+    available in the NetBSD <a href="../Security/">
+    security</a> pages.
+
+
+<DATE>1.5releasecycle 20 Jun 2000 - NetBSD 1.5 release cycle started
+    Today, the release cycle for NetBSD 1.5 has started. The NetBSD 1.5
+    release is scheduled for early fall this year. Of course, we want
+    this to be the best NetBSD release ever, as with every release.
+    To help achieve this goal, you can test the ALPHA and BETA snapshots
+    that will be made available, or track the release branch sources.
+    <p>
+    If you want to use the NetBSD 1.5 branch source code using anoncvs,
+    update your source tree using the "-r netbsd-1-5" flag to the cvs
+    "update" command, or check out a separate tree using this flag to
+    the "checkout" command. To be sure that you get the 1.5 branch, you
+    should always use the "-r netbsd-1-5" flag.
+    <p>
+    For people tracking -current using SUP: the -current sources on the
+    NetBSD ftp and SUP servers will track the 1.5 release branch during
+    the release cycle, so no extra action is required to get the 1.5
+    branch sources.
+
+<DATE>softdepsmount 17 Jun 2000 - Soft updates mount change
+    Frank van der Linden has changed the way that soft updates are
+    enabled and disabled.  This is now done via a mount option (-o softdep).
+    It can no longer be done via tunefs, after you have recompiled it.
+    <p>
+    If you are using soft updates, and want to upgrade your kernel,
+    you should:
+    <p>
+    <ol>
+    <li>Compile and run a new kernel with "options SOFTDEP" in its config 
+        file.
+    <li>Update mount(8) and mount_ffs(8)
+    <li>Boot your new kernel single user
+    <li>Use the old tunefs to disable soft updates on any filesystem
+        you may have set it: "<i>tunefs -n disable /dev/rXdoX</i>".
+    <li>Continue booting
+    <li>Enable the softdep option in /etc/fstab for the filesystems that you
+        want it to be active on.
+    <li>Reboot again
+    </ol>
+    <p>
+    Full instructions on how to enable soft updates are located in the <a
+    href="../Documentation/misc/#softdeps">How to use soft
+    updates</a> FAQ entry.
+
+<DATE>rpcbugfix 13 Jun 2000 - Important RPC bugfix
+    Jason Thorpe has fixed a serious problem with the new TI-RPC code.  His
+    fix makes the RPC mem_alloc() macro use calloc() to prevent RPC from
+    using only partially-initiated data structures.  If you've attempted to
+    upgrade to the new RPC code, you should update your sources as soon as you
+    can, rebuild your libc, and then rebuild world.
+    <p>
+    See also:
+    <ul> 
+    <li><a href="#newrpccode">New RPC code added to the tree (Jun 03)</a>
+        - <i>web site announcement</i>
+    <li><a href="http://mail-index.netbsd.org/current-users/2000/06/08/0007.html">How to upgrade to new RPC code (Jun 07)</a>
+        - <i>current-users mail archive</i>
+    </ul>
+
+<DATE>hpt366 12 Jun 2000 - Support for the HighPoint HPT366 IDE Controller
+    Manuel Bouyer has committed support to NetBSD-current for the HighPoint
+    HPT366 IDE Controller.  It should work properly with both standard and
+    Ultra/66 cables.  Support for the HPT370 was also added, but is untested
+    as of this moment.  If you have any problems please report them with
+    send-pr(1). 
+
+<DATE>newdevelopers0605 05 Jun 2000 - New developers
+    The NetBSD project is pleased to announce three new developers:
+    <ul>
+    <li>Adam Ciarcinski, who will be working on the AmigaPPC port.
+    <li>Andreas Gustafsson, who will be working on various bits, including
+    pcmcia, wireless, pthreads, and general hacking both in and out of the
+    kernel. 
+    <li>Federico Lupi, who has already written a large amount of documentation
+    (in the form of the <a href="../Documentation/">NetBSD
+    Guide</a>), and will be working on integrating it with NetBSD's current
+    documentation and expanding it to cover even more subjects. 
+    </ul>
+
+<DATE>newrpccode 03 Jun 2000 - New RPC code added to the tree
+	Frank van der Linden has modified NetBSD's RPC code (the library code,
+	rpcinfo and rpcbind) to be based on the "<a href="http://www.as400.ibm.com/developer/tirpc/">TI-RPC</a>"
+        interface, Sun's second-generation RPC code.
+	<p>
+	Not all applications have been adapted to the new interface yet, but
+	they will continue to work because the old interface is still there
+	for backward compatibility.
+	<p>
+	Further details (including instructions on how to upgrade) are
+	available in Frank's announcement in the <a
+	href="http://mail-index.netbsd.org/current-users/2000/06/03/0000.html">current-users
+	mail archive.</a>  <b>Update:</b> On June 4th, Jason Thorpe fixed a
+	serious bug with the new RPC code that prevented programs from reliably
+        communicating with rpcbind<b></b>(8); an uninitialized variable kept a
+	necessary socket option from being enabled.  If you've updated after
+	the point when the new TI-RPC code went into the tree and before
+	Jason's fix, you really want to update your libc as soon as you can.
+
+<DATE>new_sysctls 03 Jun 2000 - Recent sysctls added
+	Simon Burge has added some new sysctls to help abolish the dreaded
+	"proc size mismatch" errors from ps(1) and some other kernel
+	grovellers, and also to return some data that has previously only been
+	accessible with /dev/kmem read access.  The sysctls are:
+	<p>
+	<ul>
+	<li>KERN_PROC2 - return an array of fixed sized "struct kinfo_proc2"
+	structures that contain most of the useful user-level data in
+	"struct proc" and "struct user".  The sysctl also takes the size of
+	each element, so that if "struct kinfo_proc2" grows over time old
+	binaries will still be able to request a fixed size amount of data.
+	<li>KERN_PROC_ARGS - return the argv or envv for a particular process
+	id.  envv will only be returned if the process has the same user id as
+	the requester or if the requester is root.
+	<li>KERN_FSCALE - return the current kernel fixpt scale factor.
+	<li>KERN_CCPU - return the scheduler exponential decay value.
+	<li>KERN_CP_TIME - return cpu time state counters.
+	</ul>
+	<p>
+	With input and suggestions from many people on tech-kern. 
+
+<DATE>alphaup1000 02 Jun 2000 - Support for Alpha Processor, Inc. UP1000
+	Jason Thorpe has added support for the Alpha Processor, Inc. UP1000
+	system.  The UP1000 is a PC-like board with an EV6 and the AMD 751
+	core logic chipset (same as is used on AMD Athlon systems).  SRM
+	console software is available for it.
+	<p>
+	Many thanks to
+	<a href="http://www.alpha-processor.com/">Alpha Processor, Inc.</a>
+	for supplying a board with which to do the port.
+	<p>
+	See the <a href="../Ports/alpha/">NetBSD/alpha</a> pages for more
+	information about NetBSD/alpha.
+
+<DATE>safour 28 May 2000 - Four new security advisories
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-003.txt.asc">
+    NetBSD-SA2000-003</a>, 
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-004.txt.asc">
+    NetBSD-SA2000-004</a>,
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-005.txt.asc">
+    NetBSD-SA2000-005</a>, and
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-006.txt.asc">
+    NetBSD-SA2000-006</a> have been released.  
+    Each concerns vulnerabilities involving authorized but untrusted users.
+    <ul><li><a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-003.txt.asc">2000-003</a> concerns a vulnerability in the xlockmore package. </li>
+    <li><a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-004.txt.asc">2000-004</a> concerns a problem with System V semaphores. </li>
+    <li><a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-005.txt.asc">2000-005</a> involves a cpu-hogging problem. </li>
+    <li><a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-006.txt.asc">2000-006</a> concerns a bug in NetBSD 1.4.2 ftpd. </li>
+   </ul>
+    <p> More information on current <a
+    href="../Security/advisory.html">security advisories</a> is
+    available on the NetBSD <a href="../Security/">
+    security</a> pages.
+
+<DATE>amigappc0 26 May 2000 - Initial NetBSD/amigappc code
+	The first mostly-demo kernel of NetBSD/Amigappc can now be built
+	from the -current sources, using the compiler and tools from the
+	cross-powerpc package. This is work by Adam Ciarcinski with some
+	help from Ignatios Souvatzis and valuable input from other
+	NetBSD/powerpc ports.
+
+<DATE>newdevelopers0523 23 May 2000 - New developers
+    The NetBSD project is pleased to announce two new developers:
+    <ul>
+    <li>Gregory McGarry, <gmcgarry@netbsd.org>, who has already contributed
+    audio device drivers, MCA device drivers, and PCMCIA code, and will be 
+    continuing work on miscellaneous drivers.
+    <li>Bernardo Innocenti, <bernie@netbsd.org>, who has already enhanced the
+    Amiga mainboard-audio driver, and will initially be working on integrating
+    sysinst support for NetBSD/Amiga.
+    </ul>
+
+<DATE>cyclades-z 18 May 2000 - Driver for Cyclades-Z intelligent multiport serial adapters
+    Jason Thorpe has committed a driver for the Cyclades-Z intelligent
+    multiport serial adapters.  These come in two basic flavors:
+    <p>
+    <ul>
+    <li>Cyclades-8Zo - 8 port board with an octopus cable.
+    <li>Cyclades-Ze - expandable model.  HD-50 SCSI cable connects board to
+    expansion boxes, each with 16 RJ45 serial ports.
+    </ul>
+    <p>
+    The Cyclades-Z is based on an MIPS R3000 which runs firmware provided by
+    the driver.  The firmware handles all flow control, etc.  It also has
+    optimizations for PPP (though the driver doesn't implement that yet).  The
+    driver defaults to running in polled mode, polling the board every 20ms
+    for input.  This is apparently the preferred method of running these
+    boards, which is fine, since the board has a very large (4Kbyte) input
+    buffer for each channel.
+    <p>
+    Bill Studenmund and Jason Thorpe wrote the driver.  The development
+    was sponsored by <a href="http://www.zembu.com/">Zembu Labs, Inc.</a>
+
+<DATE>pseudo_doc 17 May 2000 - Writing a pseudo device documented
+    The NetBSD web pages now have a document detailing how to
+    <a href="../Documentation/kernel/pseudo/">write a pseudo-device driver</a>.
+    This document includes sample code for a pseudo-device driver
+    that can be used as a framework on which to base a working driver.
+    The sample code is functional in that it can be incorporated into the
+    NetBSD kernel source by following the documented steps and booting the
+    resulting kernel to test the sample pseudo-device.  This document
+    covers only the i386 architecture.  If anyone has any comments then
+    please mail <a href="mailto:blymn@netbsd.org">Brett Lymn</a>.
+
+<DATE>agc0005 17 May 2000 - Changes to the NetBSD Packages Collection in April 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in April 2000 is
+    available in the <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2000/05/17/0001.html">netbsd-announce
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>bktr_imp 11 May 2000 - Driver for video capture and TV tuner cards (Brooktree 848 based)
+    NetBSD-current now includes the bktr driver, supporting
+    video capture (frame grabber) and TV tuner cards based on the
+    Brooktree Bt848, Bt848A, Bt849A, Bt878 and Bt879 chips.<p>
+
+    Supported hardware includes most cards by AVerMedia, Hauppauge,
+    Leadtek, Miro, Pinnacle, Pixelview, and Terratec.  Other hardware may
+    also be supported, particularly if it is based on the Brooktree
+    Bt848, Bt848A, Bt849A, Bt878, or Bt879. <em>(ATI All-in-Wonder cards
+    are a notable exception.)</em><p>
+                                                                               
+    The <a
+    href="ftp://telepresence.dmem.strath.ac.uk/pub/bt848/driver/">bktr
+    driver</a> was originally written by Amancio Hasty for FreeBSD and
+    is now maintained by Roger Hardiman. Bernd Ernesti, Berndt Josef Wulf,
+    Matthias Scheler, and Thomas Klausner ported the driver to NetBSD.
+    The driver supports device access through bus_space, and can thus be
+    used on all PCI-platforms, such as i386, alpha, cobalt, bebox, and macppc,
+    though at the moment it has only been tested on i386.<p> 
+
+    Use <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/graphics/fxtv/README.html">fxtv</a>
+    to watch TV, or <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/audio/xmradio/README.html">xmradio</a>
+to listen to radio.
+
+<DATE>arm26-commit 09 May 2000 - NetBSD/arm26 port committed
+    Ben Harris has committed the new <a href="../Ports/arm26/">arm26</a>
+    port, covering Acorn ARM2 and ARM3 based systems (the Archimedes
+    series and its successors).
+
+<DATE>viaenv 08 May 2000 - Driver for VIA VT82C686A hardware monitoring
+    Johan Danielsson has committed a driver, viaenv<b></b>(4), for the
+    hardware monitoring device of the VIA VT82C686A southbridge chip found
+    on some motherboards.
+
+<DATE>saipopts 07 May 2000 - Security Advisory for IP Options Remote DoS
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/security/advisories/NetBSD-SA2000-002.txt.asc">
+    NetBSD-SA2000-002</a> has been released, and deals with several
+    problems in the processing of IP options. Vulnerable systems can
+    be crashed remotely by malformed IP packets.  The vulnerability
+    applies to NetBSD releases 1.4.2 and earlier, as well as to
+    NetBSD-current prior to 2000-05-06, on all architectures.
+    <p> More information on previous <a
+    href="../Security/advisory.html">security advisories</a> is
+    available in the NetBSD <a href="../Security/">
+    security</a> pages.
+
+<DATE>ipf3.4.1 05 May 2000 - New IP Filter version
+    IP Filter 3.4.1 is now in NetBSD-current.  Remember to install a new kernel
+    before you update the programs.  If you have any problems please send a
+    bug report using send-pr(1).
+
+<DATE>sendmail8.10.1 03 May 2000 - NetBSD-current now using sendmail 8.10.1
+    <a href="http://www.sendmail.org/">sendmail</a> 8.10.1 has been imported
+    into the NetBSD-current source code tree.  The upgrade included a 
+    configuration file pathname change, from <tt>/etc/sendmail.*</tt> to
+    <tt>/etc/mail/sendmail.*</tt>.  Take caution when you upgrade your
+    mail servers.
+
+<DATE>ntp4 03 May 2000 - NetBSD-current now using ntp4
+    Simon Burge has cut everything over to use ntp4; all traces of xntp3
+    should now be gone from the build tree.  Your old ntp.conf configuration
+    file should still work. However, there are new features (such as multicast
+    support) that you may want to investigate.  There are some 
+    rough-around-the-edges man pages supplied, and the full HTML
+    documentation supplied with ntp4 is installed in /usr/share/doc/html/ntp.
+    For more details please see Simon's message in the <a
+    href="http://mail-index.netbsd.org/current-users/2000/05/03/0000.html">current-users
+    mail archive</a>.
+
+<DATE>newdevelopers0503 03 May 2000 - New developers
+    The NetBSD project is pleased to announce three new developers:  
+    <ul>
+    <li>Nick Hudson <skrll@netbsd.org>, who will be working on pkgsrc.
+    <li>Ben Harris <bjh21@netbsd.org>, who will be integrating his arm26 work.
+    <li>Thomas Klausner <wiz@netbsd.org>, who will be working on pkgsrc and
+    getopt_long.
+    </ul>
+
+<DATE>mca-snapshot 02 May 2000 - Experimental MCA support snapshot available
+    This snapshot, made by Jaromir Dolecek, is a patchset to bring Micro
+    Channel Architecture support into NetBSD-current.  It's based upon Scott
+    Telford's and McGarry's MCA code.
+    <p>
+    Almost no devices are supported in the snapshot - the only provided drivers
+    (besides ISA lpt, com, vga and floppy) are for IBM Tropic Token-Ring
+    adapters and AHA-1650.  Most notably, an ESDI driver is not present at the
+    moment.
+    <p>
+    The download locations are (floppy subdirectory contains a boot floppy with
+    an older kernel):
+    <blockquote>
+    <a href="http://www.ics.muni.cz/~dolecek/NetBSD/MCA/">http://www.ics.muni.cz/~dolecek/NetBSD/MCA/</a><br>
+    <a href="http://www.ics.muni.cz/~dolecek/NetBSD/MCA/floppy/">http://www.ics.muni.cz/~dolecek/NetBSD/MCA/floppy/</a><br>
+    </blockquote>
+    <p>
+    It's possible to replace the kernel on the provided floppy image with a
+    newer one (kernel configuration file is attached to the patchset).  See
+    the README and dev/mca/TODO for drawbacks and current limitations.
+
+<DATE>pre-zero-pages 24 Apr 2000 - Support for zero'ing pages in idle loop
+    Jason R Thorpe has just committed code that implements pre-zero'ing of
+    pages in the idle loop.  This helps zero-fill page faults a fair bit,
+    and also speeds up e.g. page table allocation.  Further details can be
+    obtained in the <a href="http://mail-index.netbsd.org/current-users/2000/04/24/0038.html">current-users
+    mail archive</a>.
+
+<DATE>arm26 16 Apr 2000 - NetBSD/arm26 experimental snapshot
+    A new experimental NetBSD/arm26 snapshot is available.  The snapshot
+    consists of a kernel and bootloader for NetBSD/arm26 as of 2000-04-15.
+    They are by no means fully functional, but the system gets up as far as
+    running user processes.  Notable changes from the last version are:
+    <p>
+    <ul>
+    <li>root on et (Ether1) devices now works
+    <li>rasops1 and rasops2 are compiled in, but don't work properly (boot in
+        mode 0 and see!)
+    <li>There's detection (but not use) of IOEBs and Unix Backplanes
+    <li>pre-emptive multi-tasking works, and init tests it
+    </ul>
+    <p>
+    If you want to test this, further instructions are available at the
+    download locations:
+    <dl><dd>
+    <a href="http://www.chiark.greenend.org.uk/~bjharris/netbsd-arm26/20000415/">http://www.chiark.greenend.org.uk/~bjharris/netbsd-arm26/20000415/</a><br>
+    <a href="ftp://ftp.chiark.greenend.org.uk/users/bjharris/netbsd-arm26/20000415/">ftp://ftp.chiark.greenend.org.uk/users/bjharris/netbsd-arm26/20000415/</a><br>
+    </dd></dl>
+
+<DATE>com_cardbus 16 Apr 2000 - Driver for serial devices on cardbus cards 
+    Johan Danielsson has committed a driver for serial devices on cardbus
+    cards.  If you have a card that might work with this (the most common case
+    would be an ethernet + modem cardbus card), please try it out.
+
+<DATE>agc0004 14 Apr 2000 - Changes to the NetBSD Packages Collection in March 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in March 2000 is
+    available in the <a
+    href="http://mail-index.netbsd.org/current-users/2000/04/14/0026.html">current-users
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>umass 04 Apr 2000 - New USB mass storage driver
+    Lennart Augustsson has ported a new umass(4) driver from FreeBSD.
+    It is more stable and now supports ATAPI devices as well as SCSI devices.
+
+<DATE>auvia 02 Apr 2000 - Driver for VIA VT82C686A integrated audio
+    Ty Sarna has committed a driver, auvia<b></b>(4), for the integrated
+    audio of the VIA VT82C686A southbridge chip found on some motherboards. 
+
+<DATE>handspring_visor 31 Mar 2000 - USB driver for Handspring Visor
+    Lennart Augustsson has committed a USB driver to NetBSD-current for the
+    <a href="http://www.handspring.com/products/vindex.asp">Handspring
+    Visor</a>.  It needs testing, so any feedback is appreciated.  More details
+    are available in uvisor<b></b>(4).
+
+<DATE>port-cobalt 31 Mar 2000 - Cobalt Networks Qube and RaQ port added
+    A port for the Cobalt Networks Qube and RaQ Microservers has been added.
+    See the <a href="../Ports/cobalt/">port-cobalt page</a> for further information.
+<DATE>isoc_mode_for_ohci 29 Mar 2000 - Support for USB isochronous mode for OHCI
+    Lennart Augustsson has added support for isoc mode on OHCI USB controllers.
+    This means that the uaudio driver should work on these now.
+
+<DATE>new_callout_code 23 Mar 2000 - New callout code committed
+    Jason Thorpe has committed new callout code to the NetBSD kernel.  The new
+    API, described in callout<b></b>(9), completely replaces the old
+    timeout()/untimeout() API.  The new subsystem has two major improvements: 
+    <p>
+    <ul>
+    <li>Clients provide storage for the callout data structures, thus
+    eliminating problems due to resource shortages.
+    <li>Insertion and removal of a callout is constant time.
+    </ul>
+    <p>
+    The changes to convert code to the new API were basically mechanical and
+    no problems are expected.  If you do encounter any problems please send a
+    bug report with send-pr(1) immediately.
+
+<DATE>onoe_awi 22 Mar 2000 - Support for 802.11 DS cards in awi driver
+    Atsushi Onoe has updated the awi driver, which now supports 802.11 DS
+    cards in addition to 802.11 FH cards.  The cards tested thus far are:
+    <p>
+    <ul>
+    <li>802.11 FH 1Mbps
+	<ul>
+	<li>BayStack 650
+	<li>Netwave AirSurfer Plus
+	</ul>
+    <li>802.11 DS 2Mbps
+	<ul>
+	<li>BayStack 660
+	<li>Icom SL-200
+	<li>Melco WLI-PCM
+	<li>NEL SSMagic
+	<li>Netwave AirSurfer Pro
+	</ul>
+    </ul>
+    <p>
+    More details and instructions can be found in Atsushi's message in the <a
+href="http://mail-index.netbsd.org/current-users/2000/03/22/0003.html">current-users
+    mail archive</a>.
+
+<DATE>cac_support 21 Mar 2000 - Compaq array controller support
+    Andy Doran has recently committed a driver for Compaq array controllers to
+    NetBSD-current. cac(4) handles the controller and ca(4)
+    handles the arrays. If you have the hardware and would like to try this
+    driver out, there are a couple things you should know:
+    <p>
+    <ul>
+    <li>This driver has only been tested out with a Smart Array 221, but should
+    also work on the following boards: SMART-2/E, SMART-2/P, SMART-2SL, Smart
+    Array 3100, Smart Array 3100ES, Integrated Array, Smart Array 4200, and
+    Smart Array 4200ES.
+    <li>It isn't enabled on anything other than i386.  This is temporary.
+    <li>It doesn't support anything other than PCI boards right now.  If the
+    hardware is out there and there's sufficient interest, Andy will probably
+    work on it.
+    <li>If anybody has the kit and could try this driver sooner rather than
+    later, it would be appreciated. Access to this hardware is lost to the
+    developer near the end of March.
+    </ul>
+    <p>
+    Until there's a snapshot supporting this hardware, you'll find install
+    floppy images and a GENERIC kernel at <a
+    href="ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/cac-test/">ftp://ftp.netbsd.org/pub/NetBSD/arch/i386/cac-test/</a>.
+
+<DATE>netbsd_1.4.2 21 Mar 2000 - NetBSD 1.4.2 Released
+    The NetBSD Project is pleased to announce the release of NetBSD 1.4.2.
+    <p>
+    This release fixes problems found in the earlier 1.4.x family of
+    releases, including some security issues.  We urge users to upgrade
+    their systems.  NetBSD 1.4.2 includes important changes on many
+    architectures.
+    <p>
+    The release binaries and source are available now, and can be found on
+    mirror sites across the world. Please use a mirror close to you.  A
+    gzipped patch is available, containing all of the changes to the main
+    system sources since 1.4.1 (just 'src'; not including X or package
+    source changes).
+    <p>
+    NetBSD 1.4.2 contains a number of new features, which have been
+    imported from the main NetBSD development branch since NetBSD 1.4.1
+    was released, including:
+    <p>
+    <ul>
+    <li>IPfilter upgrade to version 3.3.6
+    <li>XFree upgrade to XFree86 version  3.3.6
+    <li>update of BIND to 8.2.2-P5
+    <li>driver added for Alteon Gigabit Ethernet cards
+    <li>driver added for Realtek 100Mbit/s Ethernet cards
+    <li>driver added for VIA Rhine Fast PCI Ethernet cards
+    <li>driver added for DPT SmartCache/SmartRAID III or IV SCSI adapters
+    <li>driver added for BOCA 6-port ISA serial cards
+    <li>support for X-surf board on Amiga
+    <li>support for ext2fs revision 1 (with read-only support for
+    'sparse_super' and 'filetype' options)
+    <li>SysV compatible user management utilities (useradd, ...)
+    <li>mktemp(1) added (primarily for use in shell scripts)
+    <li>tcpdump now can do hex/ascii dumps
+    <li>errno is now always a macro, to ease the integration of thread
+    libraries with both system and third-party libraries
+    </ul>
+    <p>
+    Additionally, more than 120 formally reported problems have been fixed
+    since NetBSD 1.4.1, and NetBSD 1.4.2 also contains fixes for a lot of
+    non-reported problems discovered by developers and others during the
+    NetBSD 1.4.2 release cycle.
+    <p>
+    A full list of all the changes applied between NetBSD 1.4.1 and NetBSD
+    1.4.2 can be found in
+    <p>
+    <blockquote>
+    <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.2/CHANGES-1.4.2">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.2/CHANGES-1.4.2</a>
+    </blockquote>
+    <p>
+    Please see the INSTALL note for your architecture(s) for further
+    information, especially for the known caveats with this release.
+    <p>
+    Please also note that the LAST_MINUTE file in the main release
+    directory contains pointers to last minute changes which did not make
+    the source cutoff date.
+    <p>
+    More information: <a href="../Releases/formal-1.4/">http://www.netbsd.org/Releases/formal-1.4/</a><br>
+    NetBSD-1.4.2: <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.2/">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.2/</a><br>
+    NetBSD mirror list: <a href="../Sites/net.html">http://www.netbsd.org/Sites/net.html</a>
+
+<DATE>iopener_booted_with_netbsd 19 Mar 2000 - Netpliance i-opener booted with NetBSD
+    Andrew Gillham has booted NetBSD/i386 -current on his Netpliance i-opener.
+    He did this without opening the case and without using a 2.5" IDE hard
+    drive.  The steps involved (using a normal keyboard) are:
+    <p>
+    <ol>
+    <li>Get to a root shell, via 'ESC 4' and fast typing.
+    <li>Bring up PPP to a NetBSD machine.  Having a PBX helps.
+    <li>Backup the 16MB of flash, with the following:
+	<dl><dd># cat /dev/hd0 | gzip -9 &gt; hd0.gz</dd></dl>
+	<dl><dd># ftp &lt;your server&gt;</dd></dl>
+	<dl><dd>ftp&gt; put hd0.gz</dd></dl>
+    <li>Replace flash with NetBSD image, by ftping compressed file.
+	<dl><dd># gzip -d -c file_name.gz | cat &gt; /dev/hd0</dd></dl>
+    <li>Wait a few seconds, yank the power to prevent QNX updating flash.
+    <li>Reboot under NetBSD, enjoy.
+    </ol>
+
+<DATE>new_ahc_driver 17 Mar 2000 - New ahc driver
+    Frank van der Linden has checked in a new version of the ahc driver
+    (Adaptec SCSI), based on the FreeBSD driver by Justin Gibbs.
+    <p>
+    This driver provides support for the newer Adaptec cards, most notably
+    789x-based ones.  The option that the old driver had to enable tagged
+    queueing (AHC_TAGENABLE) is not there yet.  This option has not been
+    enabled yet to avoid possible problems it might add.  At this point,
+    without it, the driver should be quite stable.
+
+<DATE>in_action 16 Mar 2000 - See NetBSD in Action
+    Some people tend to ask "What does Unix/BSD/NetBSD look like?". Now
+    there's a web page in our gallery dedicated to showing them 
+    <a href="../gallery/in-Action/">applications and machines
+    running NetBSD</a>.
+
+<DATE>agc0003 09 Mar 2000 - Changes to the NetBSD Packages Collection in February 2000
+    Alistair G. Crooks has sent out his monthly summary of changes to the
+    NetBSD Packages Collection.  The write up for changes in February 2000 is
+    available in the <a
+    href="http://mail-index.netbsd.org/netbsd-announce/2000/03/09/0000.html">netbsd-announce
+    mail archive</a>.
+    <p>
+    There is also an automated list of pkgsrc changes, generated daily from
+    <CURRENTSRC>doc/pkg-CHANGES, available on the <a
+    href="pkg-changes.html">Recent packages changes</a> page.
+
+<DATE>jthorpe_alphadev 02 Mar 2000 - Jason Thorpe new NetBSD/alpha co-portmaster
+    Please welcome <a href="../People/Pages/thorpej.html">
+    Jason Thorpe</a> to the port-alpha-maintainer position.
+    Jason has been using NetBSD since 1993 and has been involved in way
+    too many things to even try to mention here.  Jason joins Ross
+    Harvey as co-portmaster of the NetBSD/alpha.
+
+<DATE>rss 02 Mar 2000 - NetBSD News Channels
+    Two new channels have been created using Rich Site Summary files, an XML
+    dialect, to provide NetBSD related News to content providers and their
+    users. The files are parsed by news services today to retrieve
+    information, and re-distribute it in their reader forums and/or sent out
+    via mail directly to your cell phone, if you decide so. Both general
+    NetBSD News and News related to the NetBSD Packages Collection are now
+    available not only from the NetBSD web site, but also from the sites
+    listed on the <a href="rss.html">RSS-page</a>.
+
 <DATE>i386smp2 29 Feb 2000 - i386上のSMPのための新しいテストカーネル
     Bill Sommerfeldによって、i386上のSMPのためのテストカーネルが
     第2段階になりました。第1段階からの変更一覧と詳細については、<a
