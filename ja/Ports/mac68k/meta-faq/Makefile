@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.2 2002/08/01 20:25:04 jschauma Exp $
+#	$NetBSD: Makefile,v 1.3 2002/08/01 20:25:45 jschauma Exp $
 #	Process .list files into .html files
 
 all:	meta-faq-1.html meta-faq-2.html meta-faq-3.html meta-faq-4.html \
