@@ -1,0 +1,178 @@
+<html>
+<head>
+<!-- Copyright (c) 1996, 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Documentation: The X Window System</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>The X Window System
+
+<LIST>
+
+<SECTION>Running X
+
+<ENTRY>xf86_corrupts_on_rage_128 XF86_SVGA corrupts glyphs on Rage 128 if accelerated
+To fix this make sure you have xsrc of at least 2000-01-13 (otherwise you will
+have to also apply the patch in PR
+<a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=9171">xsrc/9171</a>).
+ Then use <blockquote>Option "xaa_no_color_exp"</blockquote>
+in the Device section of your XF86Config.
+
+<ENTRY>slow_when_compiling X is very slow when compiling under NetBSD 1.3.x
+A <a href="ftp://ftp.netbsd.org/pub/NetBSD/misc/patches/1.3schedpatch">patch</a>
+for the NetBSD 1.3 series is available which will significantly improve the
+interactive performance under X while compiling or performing other tasks.
+
+<ENTRY>bypassing_xdm How to bypass xdm
+If xdm(1) is enabled but you are unable to login for some reason,
+possibly because there is no root password, and you do not have virtual
+consoles enabled (or they are not yet supported on your port), you can
+either press ^C at the immediately after the boot messages indicate xdm
+is starting, or:
+<ul>
+<li>Boot to single user mode<br>
+    Usually this is accomplished by passing '-s' at the end of the boot command.
+<li>Start the shell<br>
+    Press <tt>ENTER</tt> when prompted for the shell.
+<li>Check and mount the disks using fsck(8) and mount(8)<br>
+    <tt>fsck -p ; mount -vat ffs</tt>
+<li>Set term terminal type<br>
+    <tt>TERM=<em>vt100</em> ; export TERM</tt><br>
+    Note: you may need to use a different terminal type such as 'pc3' or 'sun'.
+<li>Fix problem<br>
+    Edit /etc/rc.conf to disable xdm, run '<tt>passwd</tt>' to set root's
+    password, or take whatever other corrective action is needed
+</ul>
+
+<ENTRY>startx_not_found When I type '<b><tt>startx</tt></b>' I get the message: <tt>startx: Command not found.</tt> What's wrong?
+You need to add the location of the X binaries to your shell's <tt>path</tt>
+variable.  For <tt>csh</tt> and its derivatives, add <tt>/usr/X11R6/bin</tt>
+to the line in your <tt>.cshrc</tt> file which sets the <tt>path</tt>
+variable. For <tt>sh</tt> and its derivatives, you'll need to modify you
+<tt>.profile</tt> instead. 
+
+
+<ENTRY>xinit_not_found Unable to run X - '<b>xinit: not found</b>'
+You need /usr/X11R6/bin in your path. As root add
+'<b><tt>set path = ( $path /usr/X11R6/bin )</tt></b>' to
+<tt>/etc/csh.cshrc</tt>, and start a new shell.
+
+<ENTRY>startx_fails startx fails -'<b>X connection to: 0.0 broken</b>'
+To see the error messages in this case, run:
+<ul>
+<li>If your shell is csh(1) or <PKGSRC>shells/tcsh:
+<pre>	startx &gt;& ~/x.log</pre>
+<li>If your shell is sh(1), ksh(1), or similar:
+<pre>	startx &gt; ~/x.log 2&gt;&amp;1</pre>
+</ul>
+Then view ~/x.log
+
+<ENTRY>shared_libraries_and_x X programs fail with '<b>lib<em>XXXX</em>.so.<em>NN</em>: No such file...</b>'
+As root, edit <tt>/etc/ld.so.conf</tt> and add the line:
+<pre>
+    /usr/X11R6/lib
+</pre>
+while you are there you should probably ensure it also contains:
+<pre>
+    /usr/pkg/lib
+</pre>
+<em>(You <b>are</b> using the
+<a href="../software/packages.html">NetBSD
+packages system</a> for adding additional programs?)</em>.<br>
+Then run "<b><tt>ldconfig -v</tt></b>", among the output you should see lines
+of the form: 'Adding /usr/X11R6/lib/libXIE.so.6.0'.
+<p>
+<b>What are shared libraries?</b><br>
+On order to save both disk and memory space most NetBSD ports use 'shared
+libraries'. This allows one copy of each library (libXmu.so.6.0) to be loaded
+into memory for multiple programs (xterm, fvwm2, etc). The standard system
+shared libraries live in /usr/lib, but NetBSD needs to be told where to find
+any additional libraries (such as those for X applications). To do this
+they should be added to '<tt>/etc/ld.so.conf</tt>'.
+
+<ENTRY>xconsole Console output (such as from 'su') garbles X display.
+The system is outputting a line to the console indicating something has
+happened (such as 'su'). You should really run xconsole(1) or
+one 'xterm -C' to capture this console output.
+<p>
+You may need to ensure your kernel is compiled with the following enabled:
+<pre>	options  UCONSOLE  # allow anyone to steal the virtual console</pre>
+See <a href="../kernel/#how_to_build_a_kernel">How to build a
+kernel</a> for details on how to build your own kernels.
+
+<ENTRY>wheel-mouse How to I get my mouse wheel to work?
+If you use a Microsoft IntelliMouse,
+Logitech Wheel Mouse (cordless our not) or something similar that has a 
+scroll wheel, and you want to use the wheel under NetBSD, first make
+a kernel that includes the "pmsi" driver, and make sure "wsmouse" uses
+it. Something like this should occur in your dmesg(1) output:
+<PRE>
+pmsi0 at pckbc0 (aux slot)
+wsmouse0 at pmsi0
+</PRE>
+Then, make sure to make the wheel to mouse buttons 4 and 5 in your
+/etc/XF86Config's "Pointer" section:
+<PRE>
+Section "Pointer"
+    Protocol    "wsmouse"
+    Device      "/dev/wsmouse0"
+    ZAxisMapping 4 5
+</PRE>
+That's enough to make xterms scroll. For other apps, you'll need to
+edit your ~/.Xdefaults. See 
+<A HREF="http://www.inria.fr/koala/colas/mouse-wheel-scroll/">Colas Nahaboo X mouse wheel scroll page</A>
+for details on a lot of applications that can be made working.
+
+<ENTRYLINK>http://www.xfree86.org/FAQ/#SectionB XFree86 FAQ
+
+<ENTRY>which_version Which version of XFree86 am I running?
+To quickly tell which version of the X server you are running, you
+can use xdpyinfo(1). E.g.:
+<pre>
+$ xdpyinfo | grep release
+vendor release number:    335
+</pre>
+In the case of XFree86, this tells us that the server version is 3.3.5.
+
+<SECTION>Compiling programs
+
+<ENTRY>compile_fails_xm Compile fails - 'unable to locate libXm'
+Xm does not come with the standard X11 environment. It is part of 
+<a href="http://www.opengroup.org/desktop/motif/">Motif</a>, which
+is a commercial graphical user interface.<p>
+A freeware implementation of Motif called
+<a href="http://www.lesstif.org/">Lesstif</a> is also available.
+It is available as part of the <a
+href="../software/packages.html">NetBSD packages collection</a>, under
+x11/<PKGSRC>x11/lesstif.
+
+<ENTRY>compile_fails_xpm Compile fails - 'unable to locate xpm.h', or '-lXpm: no match'
+xpm.h is part of the X PixMap library, used by many programs to allow more
+multi (than two) colour icons.
+It is available as part of the <a
+href="../software/packages.html">NetBSD packages collection</a>, under 
+graphics/<PKGSRC>graphics/xpm
+
+<ENTRY>compile_basic Compile fails to link: Undefined symbol '_XOpenDisplay'
+If it is a third party item of software, you should check if a version
+is available via the <a href="../software/packages.html">NetBSD
+packages collection</a>. If you are writing you own code you need to
+ensure you link against the necessary X libraries. In this case, add
+<code>-L/usr/X11R6 -lX11</code> to the end of your link line.
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.11 2000/02/15 14:34:47 abs Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1996, 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
