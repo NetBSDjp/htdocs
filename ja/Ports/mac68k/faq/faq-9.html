@@ -1,0 +1,498 @@
+<html>
+<head>
+<!-- Copyright (c) 1997, 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<TITLE>X Window System Version 11 Release 6</TITLE>
+</HEAD>
+<BODY>
+<A NAME="x-window"></A> <H1>9. <A NAME="s9"></A>X Window System Version 11 Release 6</H1>
+<P>
+<HR>
+<A HREF="faq.html#toc9">Contents of this section</A><HR>
+</P>
+
+<A NAME="G.H"></A> <H2>9.1 <A NAME="ss9.1"></A> Now I've got NetBSD working, so where do I get X? </H2>
+
+<P>The X Window System is now included as part of the NetBSD distribution as
+of the NetBSD 1.2 release.  You'll want the latest version, so you can pick
+up the files form the following directory:</P>
+<P>
+<A HREF="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3/mac68k/binary/sets/">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3/mac68k/binary/sets/</A>
+</P>
+<P>The <CODE>xbase.tgz</CODE> file is the base distribution, including the X binaries,
+shared libraries and some of the configuration files.  The <CODE>xcomp.tgz</CODE>
+file includes those items needed for compiling X binaries such as the
+static libraries and header files.  The <CODE>xfont.tgz</CODE> set includes the X11
+fonts.  The <CODE>xcontrib.tgz</CODE> set consists of the binaries and man pages
+from the X "contrib" directory (e.g. xload, xev).  Finally, the
+<CODE>xserver.tgz</CODE> file is the X server binary itself.  Install these files
+using your favorite method (i.e. either the Installer utility or from
+within NetBSD).  They will unarchive into the various subdirectories of
+<CODE>/usr/X11R6/</CODE>. </P>
+<P>The distribution X server is a monochrome server.  In order to use it, your
+machine <EM>must</EM> be in 1-bit (i.e. B&amp;W) mode before booting NetBSD.
+The NetBSD 1.3 X server provides a number of improvements over the 1.2
+server, so you will probably want to upgrade if you are using the older
+binaries.</P>
+<P>If you have trouble getting X to run, try starting it with:
+<BLOCKQUOTE><CODE>
+<PRE>
+startx &gt;&amp; startx.log
+</PRE>
+</CODE></BLOCKQUOTE>
+
+This will capture any error messages in the file <CODE>startx.log</CODE> so that
+you can examine it to determine the cause of the problem.</P>
+<P></P>
+
+<A NAME="G.S"></A> <H2>9.2 <A NAME="ss9.2"></A> When I type <CODE>startx</CODE> I get the message: <CODE>startx: Command not found.</CODE> What's wrong?</H2>
+
+<P>You need to add the location of the X binaries to your shell's <CODE>path</CODE>
+variable.  For <CODE>csh</CODE> and its derivatives, add <CODE>/usr/X11R6/bin</CODE> to
+the line in your <CODE>.cshrc</CODE> file which sets the <CODE>path</CODE> variable.  For
+<CODE>sh</CODE> and its derivatives, you'll need to modify you <CODE>.profile</CODE>
+instaed. </P>
+<P></P>
+
+<A NAME="G.J"></A> <H2>9.3 <A NAME="ss9.3"></A> I can't get X to run.  Does this have anything to do with having a read-only filesystem?</H2>
+
+<P>X will not run in single-user mode to the best of my knowledge, because I 
+don't think that the necessary daemons to manage the port connections it
+must have to run have been started at that point.  You need to exit from
+single-user mode (type exit or hit Ctrl-D), which will then run /etc/rc*,
+mount the listed filesystems read-write (or whatever you happen to
+specify), and then put you into multi-user mode from which you can run X by
+typing <CODE>startx</CODE>.</P>
+<P></P>
+
+<A NAME="G.A"></A> <H2>9.4 <A NAME="ss9.4"></A> After I type <CODE>startx</CODE> something weird happened: I got six really    tiny screens on the top of my monitor.  Can anyone help me with this one?</H2>
+
+<P>The problem is that your monitor is not in 1-bit (black &amp; white) mode
+and the kernel and NetBSD/mac68k X server that you are using do not support
+color.  You need to remember to set your monitor to 1-bit mode before you boot NetBSD.</P>
+<P></P>
+
+<A NAME="G.B"></A> <H2>9.5 <A NAME="ss9.5"></A> When I type <CODE>startx</CODE> I get the message: <CODE>xinit: libXmu.so.6.0 not found</CODE>. What's wrong?</H2>
+
+<P>The reason you are having trouble is that you have not made the dynamic
+link editor aware that the X libraries exist.  To do so you need to modify
+<CODE>var/run/ld.so.hints</CODE> using <CODE>ldconfig</CODE>.</P>
+<P>If you have the new-style (i.e. post-1.2) configuration files, you can edit
+<CODE>/etc/ld.so.conf</CODE> to contain the following line:
+<BLOCKQUOTE><CODE>
+<PRE>
+ /usr/X11R6/lib
+</PRE>
+</CODE></BLOCKQUOTE>
+</P>
+<P>If you are using the older method, you should edit <CODE>/etc/rc.local</CODE>
+to contain a line similar to the following:
+<BLOCKQUOTE><CODE>
+<PRE>
+#
+# Build the link-editor fast directory cache.
+#
+echo &quot;adding X libraries to the runtime link editor directory cache.&quot;
+ldconfig -m /usr/X11R6/lib
+</PRE>
+</CODE></BLOCKQUOTE>
+</P>
+<P>Much thanks to Jim Wise (jim@santafe.arch.columbia.edu) for the hint about
+the <CODE>-m</CODE> flag to <CODE>ldconfig</CODE>.</P>
+<P>Keep in mind that the above examples assume that your X shared libraries
+are located in <CODE>/usr/X11R6/lib</CODE>.  If you have moved them elsewhere,
+use that location instead.</P>
+<P>Although you can generally use the <CODE>LD_LIBRARY_PATH</CODE> to override or
+extend the list of libraries cached by <CODE>ldconfig</CODE>, the X server is a
+setuid program, so it will ignore any such attempts in this case.  See
+<CODE>ldconfig(8)</CODE> for details.</P>
+<P></P>
+
+<A NAME="G.M"></A> <H2>9.6 <A NAME="ss9.6"></A> When I type <CODE>startx</CODE> I get the message: <CODE>xinit: libXext.so.6.1 not found</CODE>. What's wrong?</H2>
+
+<P>See the 
+<A HREF="#G.B">previous answer</A>
+</P>
+<P></P>
+
+<A NAME="G.C"></A> <H2>9.7 <A NAME="ss9.7"></A> When starting X, I get <CODE>"ld.so: warning: libm.so.0.0: minor version >= 1 expected, using it anyway"</CODE>.  Should I worry about this?</H2>
+
+<P>The reason why you are getting this error is that the X server was compiled
+with a newer version of the shared libraries than you currently have on
+your system.  You are probably using the 1.0 or 1.1 distribution shared
+libs.  You need to update your shared libraries to fix this problem.</P>
+<P></P>
+
+<A NAME="G.D"></A> <H2>9.8 <A NAME="ss9.8"></A> When starting X, I get <CODE>"ld.so: Undefined symbol "__sys_errlist" in X:X"</CODE>, and then X just dies.  What am I doing wrong?</H2>
+
+<P>The problem here is the same as for the question above, you are using an
+outdated version of the shared libraries.  You need to update these
+libraries by finding a newer version of the base distribution tar file or
+else compile your own libraries from the current source.</P>
+<P></P>
+
+<A NAME="G.E"></A> <H2>9.9 <A NAME="ss9.9"></A> When using X and fvwm, I've noticed that the mouse tends to wrap around the left side of the screen.  What's up?</H2>
+
+<P>This is a problem with the first two MacBSD X servers.  You need to upgrade
+your X binaries.  For the latest sets, take a look at:</P>
+<P>
+<A HREF="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3/mac68k/binary/sets/">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3/mac68k/binary/sets/</A>
+</P>
+<P></P>
+
+<A NAME="G.F"></A> <H2>9.10 <A NAME="ss9.10"></A> After using X for several hours, I've noticed that certain keys, such as the arrow keys or the 'a' key stop working.  Is there a fix?</H2>
+
+<P>This is a problem with the first two MacBSD X servers.  Basically, the 'a'
+key was bound to keycode 0, something which is not recommended for an X
+server to do. You need to upgrade your X binaries.  For the latest sets,
+take a look at: </P>
+<P>
+<A HREF="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3/mac68k/binary/sets/">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3/mac68k/binary/sets/</A>
+</P>
+<P></P>
+
+<A NAME="G.G"></A> <H2>9.11 <A NAME="ss9.11"></A> I have two monitors, but how can I get xterms and stuff to come up on the second monitor?</H2>
+
+<P>Try using the <CODE>-display</CODE> flag for the X client in question like so:
+<BLOCKQUOTE><CODE>
+<PRE>
+xterm -display :0.1
+</PRE>
+</CODE></BLOCKQUOTE>
+
+This makes the client connect to display 0, screen 1 of the current
+machine.  Alternatively, most window managers have menus that are attached
+to the root window.  If you have a menu which will execute clients, then
+you can start them up in the second monitor by using the proper client from
+the menu.</P>
+<P></P>
+
+<A NAME="G.I"></A> <H2>9.12 <A NAME="ss9.12"></A> What's wrong with the up and down arrow keys under X? </H2>
+
+<P>This problem appears to be fixed as of the NetBSD 1.3 X distribution.
+Please obtain a copy of it and install it.  An explanation of the problem
+and a workaround for those using older X distributions follows.</P>
+<P>The left and right arrow keys, in conjunction with the option key, are used
+for emulation of the second and third mouse buttons.  This seems to
+conflict with the up and down arrow keys under X, but a simple fix exists:</P>
+<P>From Ken Nakata (kenn@eden.rutgers.edu):
+<BLOCKQUOTE>
+Included below is my .xmodmaprc file:
+</BLOCKQUOTE>
+
+<BLOCKQUOTE><CODE>
+<PRE>
+!
+! This is an `xmodmap' input file for Apple Standard ADB keyboards.
+! Automatically generated on Wed Jun 28 20:09:20 1995 by kenn with
+! XKeyCaps 2.22; Copyright (c) 1994 Jamie Zawinski &lt;jwz@lucid.com&gt;.
+!
+! This file presupposes that the keyboard is in the default state, and
+! may malfunction if it is not.
+!
+remove Mod1    = Alt_L
+
+keycode 0x3D =  Down
+keycode 0x3E =  Up
+
+add    Mod1    = Meta_L
+</PRE>
+</CODE></BLOCKQUOTE>
+
+<BLOCKQUOTE>
+and I just put the following line in my <CODE>.xinitrc</CODE>:
+</BLOCKQUOTE>
+
+<BLOCKQUOTE><CODE>
+<PRE>
+xmodmap $HOME/.xmodmaprc
+</PRE>
+</CODE></BLOCKQUOTE>
+
+<BLOCKQUOTE>
+That's it.  Removal and addition of Mod1 means I use the command key
+instead of the option key for Mod1 modifier.
+</BLOCKQUOTE>
+</P>
+<P></P>
+
+<A NAME="G.K"></A> <H2>9.13 <A NAME="ss9.13"></A> I've noticed the the speaker no longer seems to beep when I'm running X.  What's wrong?</H2>
+
+<P>You're using an outdated X distribution.  Apparently, sound support for X
+is a rather difficult thing to provide, however, Scott Reynolds
+(scottr@og.org) managed to include it in the NetBSD 1.3 X release:</P>
+<P>
+<A HREF="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3/binary/sets/">ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.3/binary/sets/</A>
+</P>
+<P></P>
+
+<A NAME="G.L"></A> <H2>9.14 <A NAME="ss9.14"></A> Black &amp; White X Windows is cool, but what about color?</H2>
+
+<P>It depends on your hardware.  Thanks to original efforts by Ken Nakata
+(kenn@eden.rutgers.edu) and Taras Ivanenko (ivanenko@ctpa03.mit.edu) and
+further work by Paul Goyette (paul@whooppee.com) there is 8-bit color
+support for Nubus video on some '030 and '040-based Macs.</P>
+<P>NOTE:  in addition to the information provided below, you may want to check
+out Mark Andres' (mark@giganet.net) color X HOWTO:</P>
+<P>
+<A HREF="http://www2.giganet.net/~mark/NetBSD/howtos/color-x-howto.html">http://www2.giganet.net/~mark/NetBSD/howtos/color-x-howto.html</A>
+</P>
+<P>In order to run in color you need two things:  kernel support for color
+video and an X server which understands this support.  You can obtain a
+color-capable X server which is compatible with the NetBSD 1.3 X
+distribution from the following location:</P>
+<P>
+<A HREF="ftp://ftp.macbsd.com/pub/NetBSD/X/Xmac68k_color.tar.gz">ftp://ftp.macbsd.com/pub/NetBSD/X/Xmac68k_color.tar.gz</A>
+</P>
+<P>If you need a color-capable server for the older NetBSD 1.2 X distribution,
+please check the <CODE>old/</CODE> subdirectory of the above directory.</P>
+<P>Please read the associated README file for the X server.  In addition, some
+information from Ken Nakata on the features of the new X server: </P>
+<P>
+<BLOCKQUOTE>
+Its new feature is in its grf initialization scheme when you are
+running a non-color kernel.
+</BLOCKQUOTE>
+</P>
+<P>
+<BLOCKQUOTE>
+It first tries to initialize grf in 8-bpp mode, and then tries 1-bpp
+if 8-bpp fails.  Both attempts use Taras' grf driver ioctl() calls, so
+neither will work if you have a GENERIC kernel (or whatever without
+Taras' grf driver built in).  The older colorkit server gave up on it
+here, but the new server does more: It GUESSES that the running kernel
+doesn't have Taras' driver in it, and it ASSUMES that the grf is
+already in 1-bpp mode, so it starts in 1-bpp mode.  You'll lose if you
+booted NetBSD in other than 1-bpp mode, but you would have lost even
+with the older colorkit servers anyway.
+</BLOCKQUOTE>
+</P>
+<P>
+<BLOCKQUOTE>
+A Colorkit Misconception Warning: If you run a kernel with Taras' grf
+driver and this server, you don't have to boot NetBSD in any
+particular pixel depth.  The server tries 8-bpp first, then 1-bpp if
+your video doesn't support 8-bpp no matter in what video mode you
+booted.  In other words, X won't run in any other pixel depth even if
+you explicitly boot NetBSD in that depth.  Why not support 4-, 16-, or
+even 24-bpp modes?  Frankly, that's out of range for my skills, and I
+don't personally want them that much.  Sorry.
+</BLOCKQUOTE>
+</P>
+<P>To summarize, this X server should work on <EM>both</EM> monochrome and color
+kernels, and it supports the terminal beep.  So, this X server is probably
+my server of choice.</P>
+<P>If you install the color X server as something other than
+<CODE>/usr/X11R6/bin/Xmac68k</CODE> (the default), you will need to create a
+symbolic link from it to <CODE>/usr/X11R6/bin/X</CODE> so that <CODE>startx</CODE> will
+start the correct binary.</P>
+<P>There are two methods of adding kernel support for color video.  The older
+of the two is to use the the colorkit loadable kernel module.  A version
+that works with NetBSD 1.3 and later should be available at:</P>
+<P>
+<A HREF="ftp://ftp.macbsd.com/pub/NetBSD/X/video_lkm/video_lkm_combined.o">ftp://ftp.macbsd.com/pub/NetBSD/X/video_lkm/video_lkm_combined.o</A>
+</P>
+<P>In order for the colorkit LKM to work, you must load it into the kernel.
+If you have a recent kernel, the kernel-level support for LKM's is already
+built-in.  If you are using an older (i.e. 1.2 or earlier kernel, you'll
+have to compile your own kernel with LKM support added, or, better yet,
+upgrade to 1.3). First, install the object file into <CODE>/usr/lkm</CODE>.
+Then, if you have the new <CODE>/etc/lkm.conf</CODE>, simply edit it to look
+something like the following: 
+<BLOCKQUOTE><CODE>
+<PRE>
+#       $NetBSD: faq-9.html,v 1.1.1.1 1999/05/02 12:45:30 kenn Exp $
+#
+# see lkm.conf(5) for details.  path will look in /lkm and /usr/lkm.
+#
+# path          options         entry           postinstall     output  when
+video_lkm_combined.o    -       video_lkm_cmd   -       /tmp/video      -
+</PRE>
+</CODE></BLOCKQUOTE>
+</P>
+<P>If you are not using the new <CODE>/etc/lkm.conf</CODE> file, you should
+upgrade your /etc directory.  Or, you can add something like the following
+to the end of <CODE>/etc/rc.local</CODE>: 
+<BLOCKQUOTE><CODE>
+<PRE>
+# Set up color video
+if [ -f /usr/lkm/video_lkm_combined.o ] ; then
+        echo 'loading color video.'
+        modload -o /tmp/video -e video_lkm_cmd video_lkm_combined.o
+fi
+</PRE>
+</CODE></BLOCKQUOTE>
+</P>
+<P>You could also issue the above command by hand, but remember that you must
+be in single-user mode to successfully execute <CODE>modload</CODE> unless you have
+<CODE>options INSECURE</CODE> specified in you kernel configuration.  A third
+option is to obtain the
+<A HREF="ftp://ftp.macbsd.com/pub/NetBSD/X/video_lkm.tar.gz">colorkit LKM source</A>
+,
+compile and/or install the LKM, and issue a <CODE>make load</CODE> command from the
+compile directory (while in single-user of course).</P>
+<P>One caveat for using the colorkit LKM is that the module does not unload
+gracefully, so if you shutdown the system from multi-user into single-user
+and try to load the LKM again, it will most likely hang the system.</P>
+<P>The second option for adding kernel support for color video is to get one
+of Paul Goyette's SLOTMAN kernels or to compile your own kernel with his
+SLOTMAN patches added.  You can obtain both from:</P>
+<P>
+<A HREF="ftp://ftp.whooppee.com/pub/slotman/">ftp://ftp.whooppee.com/pub/slotman/</A>
+</P>
+<P>This method is recommended over using the LKM since the SLOTMAN changes
+support a wider variety of video hardware because it contains a more
+complete implementation of the Slot Manager than does the LKM.  A list of
+machines supported by the SLOTMAN changes should be available in the same
+directory listed above.  Please contact Paul (paul@whooppee.com) for
+further information if your machine is not on his supported list</P>
+<P>As for color on Macs with internal video only, support is in the works by
+Michael Zucca (mrz5149@rit.cs.rit.edu).  As a result, none of
+the '040-based Macs will currently support color X windows with their
+onboard video.  Check out Michael's project page for the status of this
+effort:
+<BLOCKQUOTE><CODE>
+<A HREF="http://www.rit.edu/~mrz5149/projects.html">http://www.rit.edu/~mrz5149/projects.html</A>
+</CODE></BLOCKQUOTE>
+</P>
+<P></P>
+
+<A NAME="G.N"></A> <H2>9.15 <A NAME="ss9.15"></A> When starting X, I get <CODE>Fatal server error:  Can't run X server with no screens!</CODE>, and then X just dies.  What am I doing wrong?</H2>
+
+<P>This is probably due to lack of support for your video hardware in the
+kernel you are using.  Not all internal video hardware is supported yet,
+nor are all nubus video boards.  Use the <CODE>dmesg</CODE> command to search your
+boot message for a line beginning with <CODE>grf0</CODE>.  If you don't see such a
+line, you are currently out of luck (unless there is some experimental
+kernel with the support you need built into it).</P>
+<P>If you do see such a line, then you probably forgot to make devices.  As
+root, <CODE>cd</CODE> into the <CODE>/dev</CODE> directory and do a
+<BLOCKQUOTE><CODE>
+<PRE>
+sh MAKEDEV grf0 grf1 grf2 grf3
+</PRE>
+</CODE></BLOCKQUOTE>
+
+to make the appropriate devices.  Hopefully, this will solve your problem.</P>
+<P>Thanks to Ken Nakata (kenn@eden.rutgers.edu) for the above solution.</P>
+<P></P>
+
+<A NAME="G.O"></A> <H2>9.16 <A NAME="ss9.16"></A> I like X, but my German keyboard makes things a bit difficult.  Is there a fix?</H2>
+
+<P>Yes, Hauke Fath (hauke@Espresso.Rhein-Neckar.DE) has contributed a German
+xmodmaprc file.  It is available at:
+<BLOCKQUOTE><CODE>
+<A HREF="ftp://ftp.netbsd.org/pub/NetBSD/arch/mac68k/contrib/Xmodmap/de/">ftp://ftp.netbsd.org/pub/NetBSD/arch/mac68k/contrib/Xmodmap/de/</A>
+</CODE></BLOCKQUOTE>
+</P>
+<P></P>
+
+<A NAME="G.P"></A> <H2>9.17 <A NAME="ss9.17"></A> When I start X, I get the error: <CODE>/dev/grf2: not found</CODE>. What's wrong?</H2>
+
+<P>You are probably running on an older system with at least 2 monitors
+attached.  Either way, X servers later than September 1995 perform a couple
+of checks, one of which results in trying to open <CODE>/dev/grf2</CODE>.  If
+this fails, the X server will die.</P>
+<P>To fix this, you need to create the device file.  As root, <CODE>cd</CODE> to the
+<CODE>/dev</CODE> directory and type:
+<BLOCKQUOTE><CODE>
+<PRE>
+sh MAKEDEV grf2 grf3
+</PRE>
+</CODE></BLOCKQUOTE>
+
+If the above fails, you need to get a newer version of the MAKEDEV script
+(the 1.2 distribution or later should have it).</P>
+<P>Thanks to Ken Nakata (kenn@eden.rutgers.edu) and Allen Briggs
+(briggs@puma.macbsd.com) for the answer and the fix.</P>
+<P></P>
+
+<A NAME="G.Q"></A> <H2>9.18 <A NAME="ss9.18"></A> How do I keep console messages from messing up my X screen?</H2>
+
+<P>You need to either run xconsole or else run an xterm with the "-C" option.
+Even then, you need to have the
+<BLOCKQUOTE><CODE>
+<PRE>
+options         UCONSOLE
+</PRE>
+</CODE></BLOCKQUOTE>
+
+line uncommented in your config file (the GENERIC config is set up this
+way).  Due to a bug in xconsole, you may also need to have your X startup
+scripts <CODE>chown</CODE> the console to yourself and make it readable by you.</P>
+<P>You can also edit <CODE>/etc/syslog.conf</CODE> to redirect syslog output to
+wherever you would like it to go.</P>
+<P>Thanks to David Brownlee (abs@anim.dreamworks.com) for this answer.</P>
+<P></P>
+
+<A NAME="G.R"></A> <H2>9.19 <A NAME="ss9.19"></A> After upgrading everything but my X server, I get strange error messages about fonts.  How can I fix this?</H2>
+
+<P>The problem you are encountering is due to the fact that the new 1.3 X
+distribution uses gzipped fonts because it is XFree86 3.3-based, while the
+older distributions used compressed fonts because they were X11R6.1-based.
+A new server should be backwards compatible, but the old server won't be
+able to use the newer fonts. </P>
+<P>The solution is to upgrade all your X binaries at once, including the X
+server.  If you didn't upgrade the X server because you were using the older
+color server, there is a new one available that is compatible with the 1.3
+X distribution:</P>
+<P>
+<A HREF="ftp://ftp.macbsd.com/pub/NetBSD/X/Xmac68k_color.tar.gz">ftp://ftp.macbsd.com/pub/NetBSD/X/Xmac68k_color.tar.gz</A>
+</P>
+<P>Thanks to Kevin F. Havener (havenerk@thunder.safb.af.mil) for information
+on this one.</P>
+<P></P>
+
+<A NAME="G.T"></A> <H2>9.20 <A NAME="ss9.20"></A> When I try to start X, my machine appears to hang.  What am I doing wrong?</H2>
+
+<P>Assuming that your machine supports X (and most machines which will boot on
+their own console do), chances are you just aren't waiting long enough for
+the magic to happen.  On machines which lack an FPU and are low on memory
+(e.g. an LCII), it can take several minutes (like 20+) for X to start.  So,
+just sit back and wait a while.</P>
+<P>If you machine is hanging with the gray hatched background and the black X
+cursor in the foreground, it might be that you need to setup a .xinitrc
+file which will start X clients for you (although by default you should at
+least get an xterm if your path is set correctly).  Please read the
+<CODE>X(1)</CODE> and <CODE>xinit(1)</CODE> man pages for more info on how to configure X
+to your tastes. </P>
+<P></P>
+
+<A NAME="G.U"></A> <H2>9.21 <A NAME="ss9.21"></A> When I start X, everything runs in lovely shades of pink and yellow.  What's wrong?</H2>
+
+<P>You have booted into NetBSD without setting your screen to 1-bit mode
+first, and you are using the color X server, but color X isn't supported
+under your current setup.  The colors you are seeing a probably a result of
+the server using whatever colors happen to be in your CLUT at the time you
+booted NetBSD.  If you have a supported NuBus video card, you need to see
+the Q&amp;A above on setting up 
+<A HREF="#G.L">color X</A>
+.  Otherwise,
+you need to 
+<A HREF="faq-3.html#A.S">boot NetBSD in 1-bit mode</A>
+.</P>
+<P></P>
+
+<P>
+<HR>
+<A HREF="faq-10.html">Next</A> Chapter,
+<A HREF="faq-8.html">Previous</A> Chapter
+<HR>
+</P>
+<P>
+Table of contents of <A HREF="faq.html#toc9">this chapter</A>,
+ General <A HREF="faq.html#toc">table of contents</A></P>
+<P>
+<A HREF="faq.html">Top</A> of the document,
+ <A HREF="#0"> Beginning of this Chapter</A></P>
+
+<hr>
+<address>
+  www@NetBSD.ORG<br>
+  $NetBSD: faq-9.html,v 1.1.1.1 1999/05/02 12:45:30 kenn Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1997, 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</BODY>
+</HTML>
