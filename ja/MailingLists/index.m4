@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.95 2001/04/02 13:51:35 fvdl Exp $
+#	$NetBSD: index.m4,v 1.97 2001/06/05 17:46:47 thorpej Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -164,9 +164,12 @@ LIST(netbsd-ports)
   NetBSD の移植作業をしている人や興味がある人のためのメーリングリストです。
 ENDLIST
 LIST(netbsd-users)
-  さまざまな形で NetBSD を使う人達のための公開討論の場です。
-  おおぜいの参加者がこのリストを読んでいます
-  ─ここへはよく考えた上で投稿してください。
+  すべての NetBSD ユーザー向けの、プラットフォームによらない一般的な
+  公開討論の場です。おおぜいの参加者がこのリストを読んでいるため、
+  よく考えた上で投稿してください。 NetBSD 自体の保守や設計に関する
+  疑問やコメントは、 NetBSD の使用に関する話題とは異なるため、
+  このリストにはふさわしくありません。そのような話題は、
+  狭い範囲に特化した技術的なリストがふさわしいとされています。
 ENDLIST
 LIST(pkgsrc-changes)
   <a
@@ -240,6 +243,12 @@ ENDLIST
 LISTSECTION(機種別のリスト)
 
   <ul>
+PORTLIST(port-algor)
+  Algorithmics, Ltd. MIPS ベースの評価ボード上の NetBSD (NetBSD/alpha)
+  固有の事項の議論用です。
+  MIPS ベースのすべてのポートに関する質問のための
+  <a href="#port-mips">port-mips</a> リストもあります。
+ENDLIST
 PORTLIST(port-alpha)
   Digital の Alpha AXP システム上の NetBSD (NetBSD/alpha) 固有の事項の
   議論用です。
@@ -550,7 +559,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.95 2001/04/02 13:51:35 fvdl Exp $<br>
+  $NetBSD: index.m4,v 1.97 2001/06/05 17:46:47 thorpej Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
