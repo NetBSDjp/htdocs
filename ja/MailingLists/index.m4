@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.97 2001/06/05 17:46:47 thorpej Exp $
+#	$NetBSD: index.m4,v 1.103 2001/11/17 01:25:48 wdk Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -263,7 +263,7 @@ PORTLIST(port-amiga)
   There is also a <a href="#port-m68k">port-m68k</a> list for
   questions related to all Motorola 68k based ports.
   <br><small>(This list supersedes the <i>amiga</i>, <i>amiga-dev</i>, and
-  <i>amiga-x</i> lists).</small>.
+  <i>amiga-x</i> lists.)</small>
 ENDLIST
 PORTLIST(port-arc)
   Discussion of issues specific to NetBSD on MIPS based PCs with ARC firmware
@@ -277,6 +277,7 @@ LIST(port-arm)
   port-specific questions and information:
   <a href="#port-arm26">port-arm26</a>, and
   <a href="#port-arm32">port-arm32</a>, and
+  <a href="#port-cats">port-cats</a>, and
   <a href="#port-hpcarm">port-hpcarm</a>.
 ENDLIST
 PORTLIST(port-arm26)
@@ -302,6 +303,12 @@ PORTLIST(port-bebox)
   computer (NetBSD/bebox).
   There is also a <a href="#port-powerpc">port-powerpc</a> list for
   questions related to all PowerPC based ports.
+ENDLIST
+PORTLIST(port-cats)
+  Discussion of issues specific to NetBSD on ARM based Chalice Technology CATS
+  machines and EBSA evaluation boards (NetBSD/cats).
+  There is also a <a href="#port-arm">port-arm</a> list for
+  questions related to all ARM based ports.
 ENDLIST
 PORTLIST(port-cobalt)
   Discussion of issues specific to NetBSD on Cobalt Networks MIPS based
@@ -373,7 +380,7 @@ PORTLIST(port-mac68k)
   There is also a <a href="#port-m68k">port-m68k</a> list for
   questions related to all Motorola 68k based ports.
   <br><small>(This list supersedes both the <i>macbsd-general</i> and
-  <i>macbsd-development</i> lists)</small>.
+  <i>macbsd-development</i> lists.)</small>
 ENDLIST
 PORTLIST(port-macppc)
   Discussion of issues specific to NetBSD on Apple's PowerPC based Macintosh
@@ -385,6 +392,7 @@ LIST(port-mips)
   Discussion of issues relevant to all MIPS-based NetBSD ports.
   There are lists for the individual ports and they should be used for
   port-specific questions and information:
+  <a href="#port-algor">port-algor</a>, and
   <a href="#port-arc">port-arc</a>, and
   <a href="#port-cobalt">port-cobalt</a>, and
   <a href="#port-hpcmips">port-hpcmips</a>, and
@@ -514,16 +522,16 @@ ENDLIST
 
   <ul>
 OLDLIST(amiga)
-  This list was for discussing NetBSD/Amiga issues.<br>
+  This list was for discussing NetBSD/amiga issues.<br>
   <em>It has been obsoleted by <a href="#port-amiga">port-amiga</a>.</em>
 ENDLIST
 OLDLIST(amiga-dev)
   This list was for issues related to the further development of
-  NetBSD/Amiga.<br>
+  NetBSD/amiga.<br>
   <em>It has been obsoleted by <a href="#port-amiga">port-amiga</a>.</em>
 ENDLIST
 OLDLIST(amiga-x)
-  This list was for those running X under NetBSD/Amiga.<br>
+  This list was for those running X under NetBSD/amiga.<br>
   <em>It has been obsoleted by <a href="#port-amiga">port-amiga</a>.</em>
 ENDLIST
 OLDLIST(m68k)
@@ -561,7 +569,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.97 2001/06/05 17:46:47 thorpej Exp $<br>
+  $NetBSD: index.m4,v 1.103 2001/11/17 01:25:48 wdk Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
