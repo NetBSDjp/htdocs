@@ -1,6 +1,6 @@
 #!/usr/pkg/bin/perl
 #
-# $Id: mklinks.pl,v 1.5 2000/08/25 00:40:11 tacha Exp $
+# $Id: mklinks.pl,v 1.6 2000/09/05 23:01:39 kei Exp $
 #
 # <ITEM>
 # <TITLE>
@@ -86,7 +86,8 @@ sub makelist_by_arch {
 		'SUN3',
 		'NEWSMIPS',
 		'BEBOX',
-		'SH3'
+		'SH3',
+		'VAX'
 	);
 
 	&print_head($FD, "NetBSD-related LINKS (by architecture)",
