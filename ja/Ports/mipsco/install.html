@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2001
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD/mipsco: Installation Notes</title>
+</head>
+<body bgcolor="#ffffff" text="#000000" link="#2020cc" vlink="#700080">
+
+<h1>NetBSD/mipsco Installation Notes</h1>
+
+<hr>
+<i>This document is still in the early stages of construction, and will
+eventually be replaced once a INSTALL manpage has been written</i>
+<hr>
+<p>
+
+<h3>Supported Hardware</h3>
+
+The following devices are currently supprted on the Mips Magnum 3000 workstation
+<p>
+
+<ul>
+<li>Onboard NCR 53c94 SCSI Controller</li>
+<li>Onboard AM7990 Lance Ethernet controller</li>
+<li>Onboard Z8530 Serial Ports 0 and 1</li>
+</ul>
+<p>
+
+The following devices are not currently supported:
+<p>
+
+<ul>
+<li>ISA Expansion Bus</li>
+<li>Intel 82072 Floppy Disk controller</li>
+<li>Framebuffer (both mono and colour)</li>
+<li>PS/2 Keyboard Controller</li>
+</ul>
+<p>
+
+<h3>Getting Started</h3>
+
+Currently you can only bootstrap the NetBSD kernel from a RISC/os
+disk partition or across the network using bootp.<br>
+
+The NetBSD parition has to be created on another big-endian machine
+such as NetBSD/sparc or NetBSD/newsmips
+<p>
+
+Work is underway to simplify the installation procedure with a miniroot
+filesystem and a pre-built snapshot that will allow you to partition your
+disks and install NetBSD directly.
+<p>
+
+Firstly obtain a copy of the most recent kernel from <a
+href="ftp://ftp.netbsd.org/pub/NetBSD/arch/mipsco/snapshot/">ftp.netbsd.org/pub/NetBSD/arch/mipsco/snapshot/</a>
+<p>
+
+<h3>Booting From a RISC/os disk partition</h3>
+
+If you have a running version of RISC/os installed on your machine it
+is by far the easiest method to boot the kernel.<br>
+
+You can simply copy across the netbsd kernel file into / of the RISC/os
+operating system, shutdown and boot the new kernel using:
+
+<blockquote><tt>boot dksd(,,0)/netbsd</tt></blockquote>
+
+This procedure will initially load the stand alone shell (SASH) from
+dksd(,,8)sash then load the NetBSD kernel.
+<p>
+
+<h3>Network boot using bootp and tftp</h3>
+
+The Mips PROM firmware has a number of restrictions with its bootp protocol:
+<p>
+
+<ul>
+<li>The machines IP address is not determined using bootp - it must be setup
+in 'netaddr' in theprom environment
+<li>The broadcast address used is strict a Class A B or C netmask based on
+the netaddr setting
+<li>The broadcast address used is the all-zero's variant of the broadcast
+address. Some OS's don't accept this address by default and you must specify
+it in the ifconfig args.
+</ul>
+<p>
+
+With above restrictions in mind please refer to the <a
+href="../../Documentation/network/netboot/">Diskless
+NetBSD HOW-TO</a>&nbsp; for details on setting up a bootp and tftp daemon.
+<p>
+
+The easiest way of determining the Ethernet MAC address is to snoop
+the network using '<tt>tcpdump -e</tt>'
+<p>
+
+Once you have a server setup with bootpd and tftpd running you can boot
+the kernel from the firmware using the following commands in <b>bold</b>
+
+<blockquote>
+<tt>Rx3230 MIPS Monitor: Version 5.43 OPT Mon May 13 17:31:12
+PDT 1991 root</tt>
+<br><tt>Memory size: 33554432 (0x2000000) bytes, 32 MB</tt>
+<br><tt>Icache size: 32768 (0x8000) bytes</tt>
+<br><tt>Dcache size: 32768 (0x8000) bytes</tt>
+<br><tt>&gt;&gt; <b>setenv bootfile bootp()netbsd</b></tt>
+<br><tt>&gt;&gt; <b>setenv netaddr&nbsp; 192.168.58.46</b></tt>
+<br><tt>&gt;&gt; <b>boot</b></tt>
+<br><tt>Obtaining netbsd from server netbsd-alpha.lab.niwa.cri.nz</tt>
+<br><tt>1026032+501367+124032 entry: 0x80021000</tt>
+<br><tt>Copyright (c) 1996, 1997, 1998, 1999, 2000</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; The NetBSD Foundation, Inc.&nbsp; All rights
+reserved.</tt>
+<br><tt>Copyright (c) 1982, 1986, 1989, 1991, 1993</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; The Regents of the University of California.&nbsp;
+All rights reserved.</tt>
+</blockquote>
+<p>
+
+<h3>Setting up a NetBSD Filesystem</h3>
+
+One you have successfully booted the NetBSD/mipsco kernel you will need to
+setup a filesystem with the rest of the distribution.
+<p>
+
+<ol>
+<li>On a Big Endian NetBSD machine, label a disk and create a suitable
+filesystem. The reason why you currently need a big endian machine is the
+disklabel values are stored in host byte order. This needs to be the same byte
+order as the MIPS R3000 native format. This procedure is known to work
+from NetBSD/sparc which places a disklabel at offset 0x80 on the first
+disk sector.
+<li>Download and untar the NetBSD distribution files onto the root of
+the new filesystem. You can chose either the newsmips or sgimips
+snapshot releases until a more official mipsco snapshot is created
+
+<ul>
+<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/newsmips/snapshot/19991218/">ftp://ftp.netbsd.org/pub/NetBSD/arch/newsmips/snapshot/19991218/</a>
+<li><a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/sgimips/snapshot/20001123/">ftp://ftp.netbsd.org/pub/NetBSD/arch/sgimips/snapshot/20001123/</a>
+</ul>
+</li>
+
+<li>Change into &lt;rootdir&gt;/dev and run '.<tt>/MAKEDEV all'</tt> to create
+the default device nodes.
+<li>Change into &lt;rootdir&gt;/etc and configure rc.config and other startup
+files by hand.
+<li>Unmount the disk and connect the drive to the Mips machine
+<li>Boot the kernel using bootp or off the RISC/os disk partition. When
+prompted for the root device answer with the device name for the root filesystem
+disk you just created.
+</ol>
+<p>
+
+<hr>
+<a href="./">Up to <em>NetBSD/mipsco Port Page</em></a>
+<hr>
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../"><img
+        src="../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../../"><img
+        src="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td>
+    <a href="../../Ports/"><img
+        src="../../images/NetBSD-flag.gif" border="0"
+        width="91" height="42" alt=""></a>
+  </td><td> 
+    <a href="../../Ports/"><img
+        src="../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Supported Architectures</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: install.html,v 1.9 2001/07/11 14:57:46 dent Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>

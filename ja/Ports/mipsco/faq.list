@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2001
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD/mipsco: Frequently Asked Questions</title>
+</head>
+<body bgcolor="#ffffff" text="#000000" link="#2020cc" vlink="#700080">
+
+<h1>NetBSD/mipsco Frequently Asked Questions</h1>
+
+If your question is not covered by this FAQ you should ask the
+<a href="mailto:port-mipsco@NetBSD.ORG">port-mipsco</a> mailing list.
+
+<LIST>
+
+<SECTION>General Questions
+
+<ENTRY>dead-nvram NVRAM Setup procedure
+If you are having problems with bootp and see your ethernet address
+is 00:00:00:00:00:00 then the most likely cause is your NVRAM
+has reached the end of it's battery life.
+<p>
+
+The only way to solve the problem is to replace the MK48T02 NVRAM chip
+which is located near <tt>U-C8H1</tt> on the main board.  You will have
+to remove the Power Supply and look for a chip of non-standard height.
+<p>
+
+Unfortunately the MIPS designer engineers decided to make the first 1k
+of the NVRAM read only.  The only way you can reprogram your Ethernet
+MAC address is to use another machine.  The important values are at the
+start of memory and should be setup as follows:
+<p>
+
+<table cellpadding=0 cellspacing=0 align="center" width="80%">
+<tr><td><b>Address</b></td><td><b>Contents</b></td></tr>
+<tr><td>0x0</td><td>MSB of MAC&nbsp;address</td></tr>
+<tr><td>0x1</td><td>..</td></tr>
+<tr><td>0x2</td><td>..</td></tr>
+<tr><td>0x3</td><td>..</td></tr>
+<tr><td>0x4</td><td>..</td></tr>
+<tr><td>0x5</td><td>LSB of MAC address</td></tr>
+<tr><td>0x6</td><td>Machine type (0x0a = Mips Magnum 3000)</td></tr>
+<tr><td>0x7</td><td>???</td></tr>
+<tr><td>0x8</td><td>???</td></tr>
+<tr><td>0x9</td><td>ASCII Serial Number - 1st digit</td></tr>
+<tr><td>0xa</td><td>ASCII Serial Number</td></tr>
+<tr><td>0xb</td><td>ASCII Serial Number</td></tr>
+<tr><td>0xc</td><td>ASCII Serial Number - last digit</td></tr>
+</table>
+<p>
+
+Additional information about the MK48T02 NVRAM chip can be found in the
+<a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">
+Sun NVRAM/Hostid FAQ</a>.
+<p>
+
+The procedure for using a Sun IPX, SS1 or SS2 for reprogramming the NVRAM
+is as follows:
+<p>
+
+<ol>
+<li> Remove NVRAM from Mips machine and install into Sun Workstation
+<li> Boot Sun Workstation and break into firmware monitor 
+<li> Enter new command mode by entering n
+<li> Read the machine serial number which should look like 00ABCD-9111 
+     where ABCD is a 4 digit serial number.
+<li> Type the following commands in sequence:
+<pre><tt>
+    02000000 obio 0 map-page
+    0 7f8 ff fill
+    0 0 c!
+    0 1 c!
+    6b 2 c!
+    AB 3 c!        <i>(AB is first 2 digits of serial number)</i>
+    52 4 c!
+    CD 5 c!        <i>(CD is last 2 digits of serial number)</i>
+    0a 6 c!
+    10 7 c!
+    44 8 c!
+    3A 9 c!        <i>(3 followed by first serial number digit)</i>
+    3B a c!        <i>(3 followed by second serial number digit)</i>
+    3C b c!        <i>(3 followed by third serial number digit)</i>
+    3D c c!        <i>(3 followed by last serial number digit)</i>
+</tt></pre>
+
+<li> While at the monitor prompt immediately power down the machine
+ (don't attempt to reboot otherwise the NVRAM will be reinitialized).
+ Transplant the MK48T02 chip into your Mips machine.
+
+<li> With a newly initialized NVRAM chip you will hear a beep at powerup
+ and see the startup diagnostics when you connect a terminal to serial 1
+ at 9600 baud.
+ You will probably witness a NVRAM checksum error - at this stage we
+ are unable to locate enough information about the NVRAM format and checksum
+ procedure to correct this.  For now the machine will be usable on the
+ network even with a checksum failure.
+</ol>
+
+</LIST>
+
+<a href="./">Up to <em>NetBSD/mipsco Port Page</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: faq.list,v 1.6 2001/07/11 14:57:46 dent Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
