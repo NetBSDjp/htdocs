@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.75 2002/01/01 05:37:41 hubertf Exp $
+# $NetBSD: list2html.pl,v 1.78 2002/05/30 01:11:18 grant Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
@@ -61,7 +61,7 @@ my($version, %opt, %pkgname);
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.75 $';
+$version = '$Revision: 1.78 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -91,7 +91,7 @@ $months_previous = &get_minmonth($months_previous);
 
 '<HEADING>\s*(.*)',
 '<table><tr><td>
-    <a href="$HOME/Misc/daemon-copy.html"><img
+    <a href="$HOME/Misc/disclaimer.html#bsd-daemon"><img
      align="middle" src="$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
@@ -103,7 +103,7 @@ $months_previous = &get_minmonth($months_previous);
 
 '<DEVHEADING>\s*(.*)',
 '<table><tr><td>
-    <a href="$HOME/Misc/daemon-copy.html"><img
+    <a href="$HOME/Misc/disclaimer.html#bsd-daemon"><img
      align="middle" src="$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
@@ -537,7 +537,7 @@ sub makelist
 	    if (! m#^([^:]+:)\s+(.*)#)
 		{ &fail("<TROW> should match ([^:]+:)\s+(.*)"); }
 	    $ignore = undef;
-	    $_ = "<tr><th valign=top align=right>$1</th>\n  <td>$2</td></tr>\n";
+	    $_ = "<tr><th valign=top align=right>$1</th>\n  <td valign=top>$2</td></tr>\n";
 	    $in_trow = 1;
 	    }
 	elsif ($in_trow)
@@ -612,7 +612,7 @@ sub sub_external_links
 	my($page, $section, $arch, $collection) = ($1, $2, $4, $6);
 	my($link);
 
-	$link = 'http://www.tac.eu.org/cgi-bin/man-cgi?';
+	$link = 'http://man.netbsd.org/cgi-bin/man-cgi?';
 
 	$link .= "$page+$section";
 
