@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.13 1999/08/26 03:12:01 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.14 1999/10/27 04:03:31 sakamoto Exp $
 #
 
 $|=1;
@@ -88,7 +88,7 @@ open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 open(DST, "|nkf -j > $wwwdir/README-all.html") || die "dst:$wwwsrc/README-all.html\n";
 while (<SRC>) {
 	s/\"(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
-	if (/^<TR VALIGN=TOP><TD VALIGN=TOP><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
+	if (/^<TR VALIGN=TOP><TD><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
 		my ($p) = $1;
 		my ($pkg) = $packages{$p};
 		if (defined($pkg)) {
