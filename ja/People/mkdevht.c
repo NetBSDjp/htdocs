@@ -1,4 +1,4 @@
-/*	$NetBSD: mkdevht.c,v 1.8 2000/06/03 15:30:31 mason Exp $	*/
+/*	$NetBSD: mkdevht.c,v 1.9 2001/06/25 23:19:57 dent Exp $	*/
 
 char *copyright =
 	"Copyright (c) 2000 Mason Loring Bliss";
@@ -149,9 +149,11 @@ main()
 			work[u] = '\0';
 
 		/* output */
-		fprintf(dest, "<tr>\n<td valign=top", dest);
+		fprintf(dest, "<tr>\n  <td valign=top", dest);
 		if (shade)
-			fprintf(dest, " bgcolor=\"#cccccc\"", dest);
+			fprintf(dest, " bgcolor=\"#eeeeee\"", dest);
+		else
+			fprintf(dest, " bgcolor=\"#ffffff\"", dest);
 		fprintf(dest, ">", dest);
 
 		if (u = strlen(url))
@@ -168,11 +170,13 @@ main()
 			strcat(trash, work);
 		}
 
-		fprintf(dest, " <a href=\"mailto:%s\">&lt;%s&gt;</a>\n<br>\n" \
-		    "</td>\n<td valign=top", email, email);
+		fprintf(dest, "\n    <a href=\"mailto:%s\">&lt;%s&gt;</a></td>\n" \
+		    "  <td valign=top", email, email);
 		if (shade)
-			fprintf(dest, " bgcolor=\"#cccccc\"", dest);
-		fprintf(dest, ">\n%s\n<br>\n</td>\n</tr>\n\n", trash);
+			fprintf(dest, " bgcolor=\"#eeeeee\"", dest);
+		else
+			fprintf(dest, " bgcolor=\"#ffffff\"", dest);
+		fprintf(dest, ">\n    %s<br>\n  </td>\n</tr>\n\n", trash);
 
 	}
 
