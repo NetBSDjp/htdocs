@@ -69,7 +69,7 @@ divert(0)dnl
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
 <!-- Copyright (c) 1994-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@JP.NetBSD.org">
+<link rev="made" href="mailto:www@jp.NetBSD.org">
 <title>NetBSD Mailing Lists</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -723,8 +723,8 @@ divert(9)
 <address>
   <small>
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
-       <a href="mailto:www@JP.NetBSD.org">日本語:
-       www@JP.NetBSD.org</a>)<br>
+       <a href="mailto:www@jp.NetBSD.org">日本語:
+       www@jp.NetBSD.org</a>)<br>
   $NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
