@@ -1,0 +1,214 @@
+Document ref: $NetBSD: README.sup,v 1.31 1999/01/20 22:55:07 lukem Exp $
+
+Instructions for installing NetBSD sources and releases using SUP
+-----------------------------------------------------------------
+
+SUP is a network installation package written by CMU used to distribute
+software. For more details on SUP refer to the man pages.
+
+Sup works by reading a configuration file (supfile) and using this information
+to determine what "collections" of files will be loaded from the collection
+repository. Here is an example of a supfile to load the NetBSD current
+release
+
+[ Note: lines have been broken for readability; do NOT use '\' in supfiles ]
+
+current release=allsrc host=sup.NetBSD.ORG hostbase=/ftp/pub \
+	base=/usr prefix=/usr \
+	backup use-rel-suffix
+current release=security host=sup.NetBSD.ORG hostbase=/ftp/pub \
+	base=/usr prefix=/usr \
+	backup use-rel-suffix
+current release=doc host=sup.NetBSD.ORG hostbase=/ftp/pub \
+	base=/usr prefix=/usr \
+	backup use-rel-suffix
+
+This supfile will load the "current" collections for "allsrc", "security",
+and "doc" in the /usr directory on the local machine.
+
+The supfile line is made up of keywords that describe the collection's
+location on the sup server and where and how it will be loaded on the
+local host.
+
+	release - the release of the collection to load.
+        host	- the 'host' where the SUP repository resides. NetBSD uses
+                  sup.NetBSD.ORG .
+        hostbase - the pathname on the host to the base of the collection.
+		  The hostbase for NetBSD is "/ftp/pub".
+	base	- where you want to install it locally.
+	prefix	- used to locate the "sup" directory to write sup's
+		  info about updates. Usually the same as base.
+
+This supfile can also set some options. The "old" option tells sup
+to check all files for changes, not just those that are newer than the
+last sup update. Normally sup will overwrite local files with the changed
+file from the repository. If the sup collection specifies that an existing
+file should be renamed to a backup, the "backup" option in the supfile
+activates this. The "delete" option tells sup to delete any files locally
+that are no longer in the collection - be careful with this one.
+The "keep" option will cause sup to NOT update files that have been
+changes locally. The "compress" option will use gzip to compress the
+files before transfer and gunzip them on the receiving end. This option
+can be used to cut down on the number of transmitted bytes.
+
+You may want to set 'base' and 'prefix' to something other than /usr
+if you want to preserve your existing src tree.
+
+The sup repository on sup.NetBSD.ORG currently offers these primary
+collections:
+
+	mirror
+		Whole chunks of ftp.NetBSD.ORG:~ftp/pub/NetBSD, to be supped
+		by people mirroring large sections of the NetBSD ftp area.
+       
+	current
+		The NetBSD-current sources.
+
+The following list describes the releases offered for each collection.
+Full information on the individual binary releases can be found elsewhere
+at this ftp site.
+
+Collection
+ |	Release		Description
+------------------------------------------------------------------------------
+mirror	all		all of ~ftp/pub/NetBSD from ftp.NetBSD.ORG
+mirror	all-export	like 'all', but export-safe
+mirror	1.3		the NetBSD 1.3 release (.../NetBSD-1.3)
+mirror	1.3-export	like '1.3', but export-safe
+mirror	1.3.1		the NetBSD 1.3.1 release (.../NetBSD-1.3.1)
+mirror	1.3.1-export	like '1.3.1', but export-safe
+mirror	1.3.2		the NetBSD 1.3.2 release (.../NetBSD-1.3.2)
+mirror	1.3.2-export	like '1.3.2', but export-safe
+mirror	1.3.3		the NetBSD 1.3.3 release (.../NetBSD-1.3.3)
+mirror	1.3.3-export	like '1.3.3', but export-safe
+mirror	current		the NetBSD-current sources (.../NetBSD-current)
+mirror	current-export	like 'current', but export-safe
+mirror	current-tar	tarred current sources (.../NetBSD-current/tar_files)
+mirror	current-tar-export	like 'current-tar', but export-safe
+mirror	arch		some -current binaries (.../arch)
+mirror	arch-export	like 'arch', but export-safe
+mirror	arch-alpha	-current bins for the Alpha (.../arch/alpha)
+mirror	arch-amiga	-current bins for the Amiga (.../arch/amiga)
+mirror	arch-arm32	-current bins for the arm32 (.../arch/arm32)
+mirror	arch-atari	-current bins for the Atari (.../arch/atari)
+mirror	arch-bebox	-current bins for the BeBox (.../arch/bebox)
+mirror	arch-hp300	-current bins for the HP9000/300 (.../arch/hp300)
+mirror	arch-i386	-current bins for the i386 (.../arch/i386)
+mirror	arch-m68k	-current bins for M68k based H/W (.../arch/m68k)
+mirror	arch-mac68k	-current bins for the Mac (.../arch/mac68k)
+mirror	arch-macppc	-current bins for the PowerMac (.../arch/macppc)
+mirror	arch-mips	-current bins for MIPS based H/W (.../arch/mips)
+mirror	arch-mvme68k	-current bins for the 68k MVME (.../arch/mvme68k)
+mirror	arch-newsmips	-current bins for the Sony NEWS (../arch/newsmips)
+mirror	arch-next68k	-current bins for the NeXT (../arch/next68k)
+mirror	arch-ofppc	-current bins for OpenFirmware PowerPC (.../arch/ofppc)
+mirror	arch-pc532	-current bins for the pc532 (.../arch/pc532)
+mirror	arch-pica	-current bins for the PICA (.../arch/pica)
+mirror	arch-pmax	-current bins for the pmax (.../arch/pmax)
+mirror	arch-powerpc	-current bins for PowerPC based H/W (.../arch/powerpc)
+mirror	arch-sparc	-current bins for the Sparc (.../arch/sparc)
+mirror	arch-sun3	-current bins for the Sun3 (.../arch/sun3)
+mirror	arch-vax	-current bins for the VAX (.../arch/vax)
+mirror	arch-x68k	-current bins for the x68k (.../arch/x68k)
+mirror	mailing-lists	NetBSD list archives (.../mailing-lists)
+mirror	misc		Miscellaneous stuff (.../misc)
+mirror	packages	NetBSD packages software archive (.../packages)
+mirror	distfiles	Local copies of packages (.../packages/distfiles)
+
+current	allsrc		NetBSD-current sources, excluding export-restricted
+			files.  (see the security release below, and the note
+			about it further below)
+current	bmake		the NetBSD-current Berkeley 'make' sources
+current	doc		the NetBSD-current 'doc' directory
+current	games		the NetBSD-current games
+current	gnu		the NetBSD-current GNU sources
+current	include		the NetBSD-current include file sources
+current	ksrc		all of the NetBSD-current kernel sources and a few
+			associated binaries.
+current	ksrc-common	the machine-independent kernel sources, and a few
+			associated binaries.
+current	ksrc-alpha	machine dependent kernel sources for NetBSD/alpha
+current	ksrc-amiga	machine dependent kernel sources for NetBSD/amiga
+current	ksrc-arm32	machine dependent kernel sources for NetBSD/arm32
+current	ksrc-atari	machine dependent kernel sources for NetBSD/atari
+current	ksrc-bebox	machine dependent kernel sources for NetBSD/bebox
+current	ksrc-hp300	machine dependent kernel sources for NetBSD/hp300
+current	ksrc-i386	machine dependent kernel sources for NetBSD/i386
+current	ksrc-mac68k	machine dependent kernel sources for NetBSD/mac68k
+current	ksrc-macppc	machine dependent kernel sources for NetBSD/macppc
+current	ksrc-mvme68k	machine dependent kernel sources for NetBSD/mvme68k
+current	ksrc-newsmips	machine dependent kernel sources for NetBSD/newsmips
+current	ksrc-next68k	machine dependent kernel sources for NetBSD/next68k
+current	ksrc-ofppc	machine dependent kernel sources for NetBSD/ofppc
+current	ksrc-pc532	machine dependent kernel sources for NetBSD/pc532
+current	ksrc-pica	machine dependent kernel sources for NetBSD/pica
+current	ksrc-pmax	machine dependent kernel sources for NetBSD/pmax
+current	ksrc-sparc	machine dependent kernel sources for NetBSD/sparc
+current	ksrc-sun3	machine dependent kernel sources for NetBSD/sun3
+current	ksrc-vax	machine dependent kernel sources for NetBSD/vax
+current	ksrc-x68k	machine dependent kernel sources for NetBSD/x68k
+current	regress		regression tests
+current	security	security sources (see below)
+current	src		sources for NetBSD-current, excluding kernel sources,
+			games, GNU source, regression tests, and
+			export-restricted sources
+current	pkgsrc		source format "packages" (excluding distfiles)
+current	tar_files	gzipped tar files of the NetBSD-current src, pkgsrc,
+			and xsrc files, excluding export-restricted sources.
+
+If you only want the kernel sources for a specific port there are some
+sub-releases of the "current" collection that you can use instead of
+the "ksrc" one. If you are using the sub-releases, be sure to also sup
+the "ksrc-common" release.
+
+        ksrc-common
+                Kernel sources common to all ports.
+
+	ksrc-alpha, ksrc-amiga, ksrc-arm32, ksrc-atari, ksrc-bebox,
+	ksrc-hp300, ksrc-i386, ksrc-mac68k, ksrc-macppc, ksrc-mvme68k,
+	ksrc-newsmips, ksrc-next68k, ksrc-ofppc, ksrc-pc532, ksrc-pica,
+	ksrc-pmax, ksrc-sparc, ksrc-sun3, ksrc-vax, ksrc-x68k
+                Kernel sources for a particular port.
+
+The security release is not to be sup'ed by sites outside of the USA,
+and for the mirror collections, the "-export" release should be used
+instead of the non "-export" release.  Read the "README.export-control"
+file for details.
+
+Full releases of NetBSD (such as 1.3.3) are best retrieved by ftp'ing
+the relevant release files from ftp.NetBSD.org (or an appropriate
+mirror site) rather than by using sup.
+
+IMPORTANT!!
+Be aware that the current release is simply a snapshot of the daily
+state of NetBSD development and is not guaranteed to build (or even
+work) - use at your own risk !
+
+Stable releases of NetBSD are available via SUP. Instructions are
+included with the release announcement.
+
+Before running sup, be sure that your /etc/services contains this
+entry.
+
+supfilesrv      871/tcp         # for SUP
+
+To try sup without really updating anything use the '-f' flag. The '-v'
+flag means verbose and can be used to see what sup is doing.
+
+	sup -fv supfile
+
+The sup binaries, sup man page and sample supfiles are included as part of
+the NetBSD distribution in release 1.3 and above.  You will find the
+sample supfiles in /usr/share/examples/supfiles.  Comments should be
+directed to "sup@NetBSD.ORG". 
+
+A mailing list exists for users of the NetBSD "current" release. To
+join, mail to "majordomo@NetBSD.ORG" with a mail body
+of "info". The reply will describe the mailing lists for NetBSD.
+You will want to subscribe to the "current-users" mailing list.
+We will use this list to announce any special changes made to the
+"current" tree.
+
+If you want to track individual changes to the source tree, join the
+"source-changes" mailing list via the same address.  This is not for
+the light-hearted.
