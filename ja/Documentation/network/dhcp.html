@@ -2,157 +2,161 @@
 <head>
 <!-- Copyright (c) 1998, 1999
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD DHCP HOWTO</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 <h1><a name="top">NetBSD DHCP HOWTO</a></h1>
 
 <h2>Dan McMahill, <code>mcmahill@alum.mit.edu</code></h2>v1.0, June 6, 1998
-<p><hr><em>This document shows how to set up a Dynamic Host Configuration
-Protocol (DHCP) client under NetBSD.</em><hr></p>
+<p><hr><em>このドキュメントは、動的ホスト・コンフィギュレーション・プロトコル (DHCP) のクライアントを、NetBSDでどのように設定するか説明しています。</em><hr></p>
 <p>
-<h2>1. <a name="toc1" href="#s1">Introduction and Purpose</a></h2>
+<h2>1. <a name="toc1" href="#s1">紹介と目的</a></h2>
 <ul>
-<li><a href="#ss1.1">1.1 What is DHCP?</a>
-<li><a href="#ss1.2">1.2 Who needs to use DHCP?</a>
-<li><a href="#ss1.3">1.3 Sources of More Detailed Information</a>
-<li><a href="#ss1.4">1.4 Copyright and Disclaimers</a>
-<li><a href="#ss1.5">1.5 Additions and Corrections</a>
-<li><a href="#ss1.6">1.6 Contributors</a>
-<li><a href="#ss1.7">1.7 Version History</a>
+<li><a href="#ss1.1">1.1 DHCPとは何か</a>
+<li><a href="#ss1.2">1.2 DHCPはどのような人に有用か</a>
+<li><a href="#ss1.3">1.3 より詳細な情報の所在</a>
+<li><a href="#ss1.4">1.4 著作権と免責</a>
+<li><a href="#ss1.5">1.5 追加と修正</a>
+<li><a href="#ss1.6">1.6 協力者</a>
+<li><a href="#ss1.7">1.7 改訂履歴</a>
 </ul>
 
 <p>
-<h2>2. <a name="toc2" href="#s2">Setting up a DHCP client</a></h2>
+<h2>2. <a name="toc2" href="#s2">DHCPクライアントの設定</a></h2>
 <ul>
-<li><a href="#ss2.1">2.1 Enable DHCP</a>
-<li><a href="#ss2.2">2.2 Configure DHCP</a>
-<li><a href="#ss2.3">2.3 Update dhclient-script</a>
+<li><a href="#ss2.1">2.1 DHCPを有効にする</a>
+<li><a href="#ss2.2">2.2 DHCPのコンフィギュレーション</a>
+<li><a href="#ss2.3">2.3 dhclient-script を更新する</a>
 </ul>
 
 <p>
-<h2>3. <a name="toc3" href="#s3">Setting up a DHCP server</a></h2>
-<em>this section isn't done.  If anyone has done this, feel free to
-tell me how.</em>
+<h2>3. <a name="toc3" href="#s3">DHCPサーバーを設定する</a></h2>
+<em>このセクションには手が付いていません。もし誰かやった人がいたら、
+ぜひどうやったか教えてください。</em>
 </p>
 
 <p>
-Return to the <a href="#top">top</a>.
+<a href="#top">先頭</a>へ戻る。
 <hr>
-<h1>1. <a name="s1">Introduction and Purpose</a></h1>
+<h1>1. <a name="s1">紹介と目的</a></h1>
 <hr>
-<p>This document attempts to explain how to setup DHCP clients and
-servers for the NetBSD operating system. </p>
+<p>このドキュメントの目的は、DHCPのクライアントとサーバーを NetBSDオペ
+レーティングシステムにおいて設定する方法を説明することです。</p>
 <p>
-<h2>1.1 <a name="ss1.1">What is DHCP?</a></h2>
+<h2>1.1 <a name="ss1.1">DHCPとは何か</a></h2>
    
 <p>
-DHCP stands for Dynamic Host Configuration Protocol.  It allows dynamic
-configuration of the network configuration of a host computer.  The basic
-idea is this:  When a DHCP client is turned on, it initially doesn't have
-an IP address assigned to it.  It issues a broadcast message to any DHCP
-servers which are on the network.  An exchange takes place during which the
-DHCP server assigns an IP address to the client and tells the client certain
-key network configuration parameters (such as name server addresses for example).
+DHCPはDynamic Host Configuration Protocolの略です。
+それによって、ホストコンピューターの
+ネットワーク設定を動的に行うことがで
+きます。
+基本的なアイディアは以下の通り:
+<ul>
+<li>DHCPクライアントが使用される場合、そのコンピューターには最初はIPアドレスが割当てられていない。
+<li>クライアントはそのネットワーク上の任意のDHCPサーバーに対してブロードキャストメッセージを発行する。
+<li>やりとりが行われ、DHCPサーバーはクライアントにIPアドレスを割当てる。
+サーバーはまた、その他の重要なネットワーク設定パラメーター(例えば、ネームサーバーのアドレスなど)も通知する。
+</ul>
+
 </p>
 <p>
-<h2>1.2 <a name="ss1.2">Who needs to use DHCP?</a></h2>
+<h2>1.2 <a name="ss1.2">DHCPはどのような人にとって有用か</a></h2>
 </p>
 <p>
-Many internet service providers (ISP's) require the use of DHCP.
-Another use is for laptop computers which may be connected to more
-than one network.  For example a laptop may be connected to a network
-in the office and also at home.  This is an ideal use for DHCP as the
-laptop doesn't need to be manually reconfigured for use in the 2
-different networks.
+多くのインターネット・サービス・プロバイダ(ISP)はDHCPを使う必用があります。
+別の使い道は、一つ以上のネットワークに接続する可能性のあるラップトップコンピューターです。
+例えば、ラップトップはオフィスと自宅の両方でネットワークに接続されることがあります。
+この場合、異なる2つのネットワークに接続するために手動で設定を変更し直す必用がないので、
+DHCPを使うのがぴったりと言えます。
 </p>
 
-<p><h2>1.3 <a name="ss1.3">Sources of More Detailed Information</a></h2>
+<p><h2>1.3 <a name="ss1.3">より詳細な情報の所在</a></h2>
 </p>
 <p>
-I don't claim to be an expert (or anything resembling an expert for that
-matter) on DHCP.  There is, however, detailed information available on the
-web.  The defining document is
-<a href="http://www.cis.ohio-state.edu/htbin/rfc/rfc1541.html"><b>RFC 1541</b></a>, 
-Request for Comments document for the Dynamic Host Configuration Protocol (DHCP).
-In addition there is a comprehensive 
-<a href="http://web.syr.edu/~jmwobus/comfaqs/dhcp.faq.html">DHCP FAQ</a>.
+筆者は自分がDHCPのエキスパートであると、(あるいは、この件に関してエキスパートに似た何かであるとさえ)言うつもりはありません。
+しかしながら、Webで詳細な情報を入手することが可能です。
+
+定義文書は、
+「<a href="http://www.cis.ohio-state.edu/htbin/rfc/rfc1541.html"><b>RFC 1541</b></a>, 
+Request for Comments document for the Dynamic Host Configuration Protocol (DHCP) 」です。
+また、包括的な
+「<a href="http://web.syr.edu/~jmwobus/comfaqs/dhcp.faq.html">DHCP FAQ</a>」もあります。
 </p>
 
-<p><h2>1.4 <a name="ss1.4">Copyright and Disclaimers</a></h2>
+<p><h2>1.4 <a name="ss1.4">著作権と免責</a></h2>
 </p>
 <p>
-Although I try to verify that the information contained within this HOWTO
-is correct, I accept no responsibility for loss or damage caused by the   
-use of the information contained within this HOWTO.
+このHOWTOに含まれる情報が正しいものであることをできる限り確かめてはいますが、このHOWTO中の情報の使用の結果生じたいかなる損失・損害についても、筆者は責任を負いません。</P>
 </p>
 <p>this HOWTO is Copyright (c), 1998 by Dan McMahill.</p>
 
-<p><h2>1.5 <a name="ss1.5">Additions and Corrections</a></h2>
+<p><h2>1.5 <a name="ss1.5">追加と修正</a></h2>
 </p>
 <p>
-Please send all additions, suggestions, and corrections to Dan McMahill
-<a href="mailto:mcmahill@alum.mit.edu">&lt;mcmahill@alum.mit.edu&gt</a>.
-If making a correction, please do not send a copy of 
-the entire HOWTO.  Just send the relevant text from the HOWTO plus the 
-corrected text.
+追加、提案、修正は Dan McMahill
+<a href="mailto:mcmahill@alum.mit.edu">&lt;mcmahill@alum.mit.edu&gt</a>
+に送ってください。
+修正をした場合は、HOWTO全体を送るのではなくて、HOWTO中の修正対象部分と
+修正済みの文章をだけを送るようにしてください。
 </p>
 
-<p><h2>1.6 <a name="ss1.6">Contributors</a></h2>
+<p><h2>1.6 <a name="ss1.6">協力者</a></h2>
 </p>
-<p>The following people have contributed to the DHCP HOWTO:
+<p>下記の人々がDHCP HOWTOに協力しくれました:
 <ul>
-<li>several, unfortunately I've lost their names.  If you're
-    one of them, let me know and I'll put your name here.</li>
+<li>何人かいるのですが、不幸なことに私は彼等の名前をなくしてしまいました。
+もしあなたが協力者の一人なら、私に連絡してくださればここに名前を載せます。</li>
 </ul>
 </p>
 
-<p><h2>1.7 <a name="ss1.7">Version History</a></h2>
+<p><h2>1.7 <a name="ss1.7">改訂履歴</a></h2>
 </p>
 <p>
 <ul>
-<li>June 6, 1998 - Original HOWTO written by Dan McMahill
-<a href="mailto:mcmahill@alum.mit.edu">&lt;mcmahill@alum.mit.edu&gt</a></li>
+<li>1998年6月6日 - HOWTO 初版 Dan McMahill著 (
+<a href="mailto:mcmahill@alum.mit.edu">&lt;mcmahill@alum.mit.edu&gt</a>)</li>
 </ul>
 </p>
 
-<p>Return to the <a href="#top">top</a>.
+<p>
+<a href="#top">先頭</a>へ戻る。
 </p>
 
 <hr>
-<h1>2. <a name="s2">Setting up a DHCP client</a></h1>
+<h1>2. <a name="s2">DHCP クライアントの設定</a></h1>
 <hr>
 <p>
-This section attempts to explain how to setup DHCP clients
-under NetBSD.  This document was written for NetBSD-1.3.
+この節では、NetBSDにおけるDHCPクライアントの設定方法について説明します。
+このドキュメントは NetBSD-1.3向けに書かれています。
 </p>
 
-<p><h2>2.1 <a name="ss2.1">Enable DHCP</a></h2>
+<p><h2>2.1 <a name="ss2.1">DHCPを有効にする</a></h2>
 </p>
 <p>
-Edit <code>/etc/netstart.local</code> and add the line '<code>dhclient
-<em>interface</em></code>', where <code><em>interface</em></code>
-is your network interface, such as <code>ae0</code> or <code>sn0</code>
-under NetBSD/mac68k.  You should be able to see what driver you
-have during the NetBSD boot sequence or by looking at the output
-of <code>dmesg</code>.  This causes the DHCP client software to be
-automatically started during the boot sequence.
+<code>/etc/netstart.local</code> を編集して、'<code>dhclient
+<em>interface</em></code>'の行を追加します。ここで<code><em>interface</em></code>
+はネットワークインターフェース、 
+例えば NetBSD/mac68kでは<code>ae0</code>あるいは <code>sn0</code>です。
+あなたがどのドライバーを持っているかは、ブートシーケンスか
+<code>dmesg</code>の出力を見ることによってわかります。
+これで、ブートシーケンス中にDHCPクライアントのソフトウェアが自動的に起動されます。
 </p>
 
-<h2>2.2 <a name="ss2.2">Configure DHCP</a></h2>
+<h2>2.2 <a name="ss2.2">DHCPを設定する</a></h2>
 <ul>
-<li>Create a <code>/etc/dhclient.conf</code> file. Remember to customize
-this as needed, ie: change the hostname stuff and the ethernet interface. 
-A typical <code>/etc/dhclient.conf</code> is shown below.
+<li><code>/etc/dhclient.conf</code> ファイルを作成します。
+このファイルを必用に応じてカスタマイズしてください。
+つまり、ホスト名やイーサネットインターフェースを変更します。
+典型的な <code>/etc/dhclient.conf</code> を以下に示します。
 
 <pre>
-Send host-name "myname.my.domain";                 &lt;=== Put your
-                                                        hostname here.
-send dhcp-client-identifier "myident";             &lt;=== Put your host
-                                                        identifier here.
-							(this is often times
-							 the same as myname).
+Send host-name "myname.my.domain";                 &lt;=== ここに
+                                                        ホスト名を書く
+send dhcp-client-identifier "myident";             &lt;=== ここにホスト
+                                                        識別子を書く
+							(これは myname と同じ
+							 であることが多い).
 request subnet-mask, broadcast-address, routers,
     domain-name-servers;
 
@@ -163,13 +167,13 @@ select-timeout 5;
 script "/etc/dhclient-script";
 
 lease {
-  interface "sn0";                               &lt;=== put your interface
-                                                      device here.
-  option host-name "myname.my.domain";           &lt;=== put your 
-                                                      hostname here
+  interface "sn0";                               &lt;=== ここにインターフェース
+                                                      デバイスを書く
+  option host-name "myname.my.domain";           &lt;=== ここに
+                                                      ホスト名を書く
   option subnet-mask 255.255.255.0;
-  option domain-name "my.domain";                &lt;=== put your
-                                                      domain name here
+  option domain-name "my.domain";                &lt;=== ここに
+                                                      ドメイン名を書く
   option domain-name-servers 127.0.0.1;
   renew 2 2000/1/12 00:00:01;
   rebind 2 2000/1/12 00:00:01;
@@ -178,28 +182,29 @@ lease {
 </pre>
 
 <p>
-See <code><a href="http://www.flame.org/cgi-bin/uncgi/hman/dhcp-options;5">
-dhcp-options(5)</a></code> and <code><a
-href="http://www.flame.org/cgi-bin/uncgi/hman/dhclient.conf;5">
-dhclient.conf(5)</a></code> for more information.
+詳細は
+<!-- 訳者コメント: 原文ではのマニュアルページへのリンクは生きていなかったので、変更しました。 -->
+<code><a href="http://www.flame.org/cgi-bin/uncgi/hman?page=dhcp-options&amp;sect=5">
+dhcp-options(5)</a></code> と <code><a
+href="http://www.flame.org/cgi-bin/uncgi/hman?page=dhclient.conf&amp;sect=5">
+dhclient.conf(5)</a></code> を参照してください。
 </p>
 </ul>
 
-<h2>2.3 <a name="ss2.3">Update dhclient-script</a></h2>
+<h2>2.3 <a name="ss2.3">dhclient-scriptを更新する</a></h2>
 <p>
-If you have more than 1 network card in your machine, you need to
-edit the <code>/etc/dhclient-script</code> file to avoid a bug which
-generates a large log file.  Basically, the idea is to make 
-dhclient-script exit without doing anything when called on the network
-card which doesn't have DHCP running on it.
+ネットワークカードが二つ以上あるなら、
+<code>/etc/dhclient-script</code> を編集して大きなログファイルができてしまうバグを回避する必用があります。
+基本的な方針は、DHCPが走っていないネットワークカードについて呼ばれた時は、
+dhclient-script を何もしないで終了させることです。
 </p>
 
 <p> 
-For example, on my machine, I have two network cards.  I run DHCP on 
-the <code>ae1</code> network card and do not run DHCP on 
-<code>ae0</code>.  For this example, add the following lines to
-<code>/etc/dhclient-script</code> immediately after the 
-<code>#!/bin/sh</code> line at the beginning of the file.
+例として、筆者のマシンには2枚のネットワークカードがあります。
+<code>ae1</code> ネットワークカードにはDHCPを走らせ、
+<code>ae0</code>には走らせていません。 
+この例では、以下の数行を<code>/etc/dhclient-script</code> ファイルの先頭にある 
+<code>#!/bin/sh</code> の直後に追加します。
 </p>
 
 <pre>
@@ -210,32 +215,30 @@ the <code>ae1</code> network card and do not run DHCP on
 </pre>
 
 <p>
-After configuring DHCP, you must reboot your machine to make the
-changes take effect.
+DHCPを設定したら、その設定を有効にするためにコンピューターをリブートしなければなりません。
 </p>
 
 <p>
-Return to the <a href="#top">top</a>.
+<a href="#top">先頭</a>へ戻る。
 </p>
 
 <hr>
-<h1>3. <a name="s3">Setting up a DHCP server</a></h1>
+<h1>3. <a name="s3">DHCP サーバーを設定する</a></h1>
 <hr>
 <p>
-This section maybe will attempt to explain how to setup DHCP servers
-under NetBSD.  This document may get written for NetBSD-1.3.  I've
-never done this so if anyone wants to add this section, feel free.
-A good starting point would be the <a
-href="http://www.flame.org/cgi-bin/uncgi/hman/dhcpd;8"> dhcpd(8)</a>
-manpage.
+この節では、多分、NetBSDにおいてDHCPサーバーを設定する方法を説明するでしょう。
+筆者はまだ書いていないので、
+誰かこの節を追加したい人がいたらぜひそうしてください。
+とっかかりとしては、
+<a href="http://www.flame.org/cgi-bin/uncgi/hman/dhcpd;8"> dhcpd(8)</a> マニュアルページが良いでしょう。
 </p>
 
 <p>
-Return to the <a href="#top">top</a>.
+<a href="#top">先頭</a>へ戻る。
 </p>
 
 <hr>
-<a href="index.html">Back to <em>NetBSD Documentation: Network</em></a>
+<a href="index.html"><em>NetBSD ドキュメンテーション: ネットワーク</em>へ戻る。</a>
 
 <hr>
 <table width="100%"><tr>
@@ -245,7 +248,7 @@ Return to the <a href="#top">top</a>.
 	<a href="../../index.html">
 	<img src="../../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
       </td><td>
-	<a href="../../index.html">Home Page</a>
+	<a href="../../index.html">ホームページ</a>
       </td>
     </tr></table>
   </td><td>
@@ -255,7 +258,7 @@ Return to the <a href="#top">top</a>.
 	<img src="../../images/NetBSD-banner.gif"
 	alt="NetBSD&nbsp;Documentation"></a>
       </td><td>
-	<a href="../index.html">Documentation top level</a>
+	<a href="../index.html">NetBSDドキュメンテーション</a>
       </td>
     </tr></table>
   </td>
@@ -263,7 +266,7 @@ Return to the <a href="#top">top</a>.
 
 <hr>
 <address>
-  www@NetBSD.ORG<br>
+  www@JP.NetBSD.ORG<br>
   $NetBSD: dhcp.html,v 1.2 1999/02/14 19:01:06 abs Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1998, 1999
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
