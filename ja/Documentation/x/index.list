@@ -231,6 +231,108 @@ vendor release number:    335
 </pre>
 XFree86 の場合、これはサーバーのバージョンが 3.3.5 であることを表します。
 
+<ENTRY>anti_aliased NetBSD と XFree86 4 上でのアンチエイリアスフォントの設定方法
+
+<b>注意</b>: xpkgwedge を使っている場合は、以下の説明中のパスを適宜読み替えてください
+<p>
+<ol>
+<li>以下の各パッケージを <a href="../software/packages.html">pkgsrc</a> からインストールします:
+	<ul>
+		<li><PKGSRC>fonts/ms-ttf</li>
+		<li><PKGSRC>fonts/mkfontscale</li>
+                <li><PKGSRC>fonts/fontconfig</li>
+	</ul>
+</li>
+<li>フォントのヒント情報を設定します:
+	<ul>
+		<li><tt>mkfontscale /usr/X11R6/lib/X11/fonts/TrueType</tt></li>
+		<li><tt>mkfontdir /usr/X11R6/lib/X11/fonts/TrueType</tt></li>
+	</ul>
+	これで、 TrueType フォントディレクトリー内に 'fonts.dir' と
+	'fonts.scale' ができたはずです。
+</li>
+<li>X サーバーの構成:
+	<ul>
+		<li>"Module" セクション内に、以下の記述があることを確認します:
+<pre><tt>
+		Load "type1"
+		Load "freetype"
+</tt></pre>
+		</li>
+		<li>"Files" セクション内の、フォントパスの順序を確認します。
+               TrueType と Type1 用のフォントパスが、
+               それ以外のものより先にあることを確認します:
+<pre><tt>
+		FontPath   "/usr/X11R6/lib/X11/fonts/local/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/TrueType/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/Type1/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/misc/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"
+		FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"
+		FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/"
+		FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/"
+
+</tt></pre>
+		</li>
+	</ul>
+</li>
+<li>Xft の設定 -- /usr/X11R6/lib/X11/XftConfig ファイルの例を以下に示します:
+<pre><tt>
+##### Example XftConfig
+dir "/usr/X11R6/lib/X11/fonts/TrueType"
+dir "/usr/X11R6/lib/X11/fonts/Type1"
+# LCD ディスプレイを使っている場合は、次の行のコメントを外します
+#match edit rgba = rgb;
+match any family == "fixed"             edit family =+ "mono";
+includeif       "~/.xftconfig"
+match any family == "Times"             edit family += "Times New Roman";
+match any family == "Helvetica"         edit family += "Verdana";
+match any family == "Courier"           edit family += "Courier New";
+match any family == "serif"             edit family += "Times New Roman";
+match any family == "sans"              edit family += "Verdana";
+match
+        any family == "mono"
+        all slant == roman
+        all weight < bold
+edit
+        family += "monotype.com";
+match any family == "mono"              edit family += "Courier New";
+match any family == "Charter"           edit family += "Bitstream Charter";
+match any family == "Bitstream Charter" edit family =+ "Charter";
+match any family == "Lucidux Serif"     edit family += "LuciduxSerif";
+match any family == "LuciduxSerif"      edit family =+ "Lucidux Serif";
+match any family == "Lucidux Sans"      edit family += "LuciduxSans";
+match any family == "LuciduxSans"       edit family =+ "Lucidux Sans";
+match any family == "Lucidux Mono"      edit family += "LuciduxMono";
+match any family == "LuciduxMono"       edit family =+ "Lucidux Mono";
+match any family == "Comic Sans"        edit family += "Comic Sans MS";
+match any family == "Comic Sans MS"     edit family =+ "Comic Sans";
+match any family == "Trebuchet"         edit family += "Trebuchet MS";
+match any family == "Trebuchet MS"      edit family =+ "Trebuchet";
+match any family == "Monotype"          edit family =+ "Monotype.com";
+match any family == "Andale Mono"       edit family += "Monotype.com";
+match any family == "Monotype.com"      edit family =+ "Andale Mono";
+##### End of XftConfig
+
+</tt></pre>
+</li>
+<li>fontconfig を利用するアプリケーション用のフォントキャッシュを再構築します:
+<pre><tt>
+	fc-cache -v
+</tt></pre>
+これにはかなり時間がかかりますので (PII 366 マシンで最大 20 分程度)、
+辛抱して待ってください。
+</li>
+<li>これで完了です。 X サーバーを再起動して、この構成を確認してください:
+<pre><tt>
+	xterm -ls -fg gray -bg black -ls -fa "Courier New Bold" -fs 10
+</tt></pre>
+</li>
+</ol>
+このアンチエイリアスフォント Mini-Howto は、 Jared D. McNeill によるものです。
+
+
+
 <SECTION>プログラムのコンパイル
 
 <ENTRY>compile_fails_xm コンパイルに失敗する - 'unable to locate libXm'
@@ -267,7 +369,7 @@ graphics/<PKGSRC>graphics/xpm として含まれています。
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.list,v 1.29 2002/07/17 10:05:25 grant Exp $<br>
+  $NetBSD: index.list,v 1.30 2002/12/31 18:44:24 jschauma Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
