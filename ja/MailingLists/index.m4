@@ -1,0 +1,539 @@
+divert(-1)dnl
+#	$NetBSD: index.m4,v 1.90 2001/02/06 16:23:09 dent Exp $
+#	Copyright (c) 1994-2001
+#	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
+# http://mail-index.netbsd.org/
+
+undefine(`index')
+
+define(`LISTARCHIVE',
+`  <a href="http://mail-index.netbsd.org/$1/"><img src="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
+</td><td valign=top>')
+
+define(`LISTSUBSCRIBE',
+`  <a href="http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=$1"><img src="../images/misc/envelope.gif" align="bottom" border="0" width="29" height="29" alt="[Subscribe]"></a>
+</td><td valign=top>')
+
+define(`LISTPREHEADER',
+`divert(5)<table border=0 cellspacing=5 cellpadding=0><tr><td valign=top>')
+
+define(`LISTHEADER',
+`  <a name="$1"><b>$1:</b></a><br>')
+
+define(`PORTLISTHEADER',
+`  <a name="$1"><b>$1:</b></a> <a href="../Ports/substr($1,5)/">(homepage)</a><br>')
+
+define(`LISTSECTION',
+`<center><h3>$1</h3></center>
+divert(5)<h3>$1</h3>
+
+divert(0)dnl')
+
+define(`LIST',
+`    <li><a href="#$1">$1</a>
+LISTPREHEADER
+LISTSUBSCRIBE($1)
+LISTARCHIVE($1)
+LISTHEADER($1)')
+
+define(`PORTLIST',
+`    <li><a href="#$1">$1</a>
+LISTPREHEADER
+LISTSUBSCRIBE($1)
+LISTARCHIVE($1)
+PORTLISTHEADER($1)')
+
+define(`OLDLIST',
+`    <li><a href="#$1">$1</a>
+LISTPREHEADER
+LISTARCHIVE($1)
+LISTHEADER($1)')
+
+define(`ENDLIST', `</td></tr></table>
+
+divert(0)dnl')
+
+# here we go!!!
+divert(0)dnl
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2001
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Mailing Lists</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1>Gateway to the <img src="../images/NetBSD-flag.gif"
+align="middle" width="91" height="42" alt="NetBSD"> Mail Server</h1>
+
+The NetBSD Project provides a variety of public mailing lists to
+facilitate communication between the users and developers of NetBSD.
+All of the mailing lists are served by the <b>Majordomo</b> mailing
+list management package, and you can find out more about how to use
+the NetBSD Project's Majordomo by mailing <i>majordomo@NetBSD.ORG</i>
+with an empty message body.
+<p>
+
+Using this WWW page, you can find out what the various mailing
+lists are for, look at the mailing list archives, and even subscribe to
+the mailing lists themselves.  This page is broken up into three sections:
+this introductory section; an
+<a href="#index">index of the mailing lists</a> for quick reference; and the
+<a href="#descriptions">descriptions of the mailing lists</a>, along
+with links to allow you to look at their archives and subscribe to them.
+<p>
+
+<b>To subscribe to a mailing list</b> click on the
+<img src="../images/misc/envelope.gif" width="29" height="29"
+alt="[Subscribe]"> link
+next to its name, in the description section of this page.  You will
+then have to fill out a form, to supply your e-mail address.
+<i>NOTE: For this function to work, your browser must support forms.</i>
+<p>
+
+<b>To unsubscribe from a mailing list</b> send an email
+message from the address by which you are subscribed to <a
+href="mailto:majordomo@netbsd.org">majordomo@netbsd.org</a> containing
+only the message <tt><b>unsubscribe <em>listname</em></b></tt>
+<p>
+
+<b>To obtain a mailing list archive</b> click on the
+<img src="../images/misc/tape.gif" width="29" height="29"
+alt="[View archive]"> link
+next to its name, in the description section of this page.  This will
+take you to the mail archive server <a
+href="http://mail-index.netbsd.org/">mail-index.netbsd.org</a>.
+(Many thanks to the <a href="http://www.isc.org/">ISC</a> for the network
+access and rack space for this machine as well as
+<a href="mailto:root@garbled.net">Tim Rightnour</a> for building and
+maintaining the site..). An alternative index of our mailing lists
+is available at
+<a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>.
+<p>
+
+Please note that while the majority of the NetBSD mailing lists are
+normally unmoderated, there are circumstances which will occasionally
+cause a mailing list to be moderated by its manager.
+
+<h2>Searchable mailing list archives</h2>
+
+Searchable indexes are provided on
+<a href="http://mail-index.netbsd.org/">http://mail-index.netbsd.org/</a>
+and <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>.
+
+<h2><a name="index">The NetBSD Project's mailing lists</a></h2>
+
+<table><tr><td valign=top>
+
+  LISTSECTION(General lists)
+
+  <ul>
+LIST(current-users)
+  This is a forum for all people using an up-to-date
+  version of the NetBSD-current source tree.  It is a
+  good forum for talking about ``gotchas'' in the tree.
+  Since the NetBSD-current tree is a quickly moving target,
+  please confirm any problems with the latest tree
+  before posting.
+ENDLIST
+LIST(netbsd-advocacy)
+  This mailing list is for open discussion on how to promote the project.
+ENDLIST
+LIST(netbsd-announce)
+  This mailing list is for announcements about NetBSD.
+ENDLIST
+LIST(netbsd-bugs)
+  This mailing list is where you can discuss bugs in NetBSD.
+  All bug reports sent with <i>send-pr(1)</i> appear here.
+ENDLIST
+LIST(netbsd-docs)
+  This mailing list is for discussing NetBSD docs.
+ENDLIST
+LIST(netbsd-help)
+  This list provides a general help forum where users can ask
+  questions.
+ENDLIST
+LIST(netbsd-ports)
+  This list is for people working on or generally interested
+  in ports of NetBSD.
+ENDLIST
+LIST(netbsd-users)
+  This is a forum for all people using NetBSD in any form.
+  A large number of people receive this list - use good
+  judgement when posting here.
+ENDLIST
+LIST(pkgsrc-changes)
+  This list is for those who are interested in getting a
+  commit message for every change committed to the <a
+  href="../Documentation/software/packages.html">NetBSD
+  Packages Collection</a> (pkgsrc).   It is also available in <a
+  href="http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=pkgsrc-changes-digest">digest
+  form</a>, meaning one message daily containing all commit messages for changes
+  to the source tree in that 24 hour period.
+ENDLIST
+LIST(source-changes)
+  This list is for those who are interested in getting a
+  commit message for every change committed to the NetBSD
+  source tree.   It is also available in <a
+  href="http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=source-changes-digest">digest
+  form</a>, meaning one message daily containing all commit messages for changes
+  to the source tree in that 24 hour period.
+ENDLIST
+LIST(tech-embed)
+  Discussions of the use of NetBSD in embedded systems.
+ENDLIST
+LIST(tech-install)
+  Discussion of technical issues relating to the
+  install process.
+ENDLIST
+LIST(tech-kern)
+  Discussion of general kernel technical issues.
+ENDLIST
+LIST(tech-misc)
+  Discussion of technical issues that aren't really
+  appropriate for any of the other tech-* lists.
+ENDLIST
+LIST(tech-net)
+  Discussion of technical issues relating to NetBSD's
+  networking subsystem.
+ENDLIST
+LIST(tech-perform)
+  Discussion of performance issues in NetBSD, especially ways to
+  improve performance.
+ENDLIST
+LIST(tech-pkg)
+  Discussion of technical issues related to the NetBSD package system.
+ENDLIST
+LIST(tech-ports)
+  Discussion of technical issues related to porting NetBSD to different
+  hardware.
+ENDLIST
+LIST(tech-security)
+  Technical discussion regarding security issues in NetBSD.
+ENDLIST
+LIST(tech-crypto)
+  Technical discussion regarding cryptography in the NetBSD system. This list
+  applies to both US-based (cryptosrc-us) and International (cryptosrc-intl)
+  available cryptography.
+ENDLIST
+LIST(tech-smp)
+  Discussion of technical issues relating to
+  multi-processor support for NetBSD.
+ENDLIST
+LIST(tech-toolchain)
+  Technical discussion of toolchain issues.
+ENDLIST
+LIST(tech-userlevel)
+  Discussion of non-kernel related technical issues, such
+  as POSIX compliance, compilation environment, etc.
+ENDLIST
+LIST(tech-x11)
+  Discussion of the X11 window system as used with NetBSD.
+ENDLIST
+LIST(www-changes)
+  This list is for those who are interested in getting a commit message
+  for every change committed to the NetBSD WWW server's documents.
+ENDLIST
+  </ul>
+
+</td><td valign=top>
+
+LISTSECTION(Machine specific lists)
+
+  <ul>
+PORTLIST(port-alpha)
+  Discussion of issues specific to NetBSD on Digital's Alpha AXP systems
+  (NetBSD/alpha).
+ENDLIST
+PORTLIST(port-amiga)
+  Discussion of issues specific to NetBSD on Commodore's Amiga and
+  MacroSystem's DraCo machines (NetBSD/amiga).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+  <br><small>(This list supersedes the <i>amiga</i>, <i>amiga-dev</i>, and
+  <i>amiga-x</i> lists).</small>.
+ENDLIST
+PORTLIST(port-arc)
+  Discussion of issues specific to NetBSD on MIPS based PCs with ARC firmware
+  (NetBSD/arc).
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
+ENDLIST
+PORTLIST(port-arm26)
+  Discussion of issues specific to NetBSD on ARM2 and ARM3 based machines
+  (NetBSD/arm26).
+ENDLIST
+PORTLIST(port-arm32)
+  Discussion of issues specific to NetBSD on the ARM and StrongARM families of
+  microprocessors (NetBSD/arm32).
+ENDLIST
+PORTLIST(port-atari)
+  Discussion of issues specific to NetBSD on Atari's TT030, Falcon, and Hades
+  machines (NetBSD/atari).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
+PORTLIST(port-bebox)
+  Discussion of issues specific to NetBSD on Be, Inc.'s PowerPC based BeBox
+  computer (NetBSD/bebox).
+  There is also a <a href="#port-powerpc">port-powerpc</a> list for
+  questions related to all PowerPC based ports.
+ENDLIST
+PORTLIST(port-cobalt)
+  Discussion of issues specific to NetBSD on Cobalt Networks MIPS based
+  Qube and RaQ computers (NetBSD/cobalt).
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
+ENDLIST
+PORTLIST(port-dreamcast)
+  Discussion of issues specific to NetBSD on Sega Dreamcast (NetBSD/dreamcast).
+  There is also a <a href="#port-sh3">port-sh3</a> list for
+  questions related to all Hitachi Super-H (SH3/4) chips-based ports.
+ENDLIST
+PORTLIST(port-hp300)
+  Discussion of issues specific to NetBSD on Hewlett-Packard's 9000/300 and
+  9000/400 series machines (NetBSD/hp300).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
+PORTLIST(port-hp700)
+  Discussion of issues specific to NetBSD on Hewlett-Packard's 9000/700 
+  HP-PA RISC machines (NetBSD/hp700).
+ENDLIST
+PORTLIST(port-hpcmips)
+  Discussion of issues specific to NetBSD on MIPS based Windows CE PDA machines.
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
+ENDLIST
+PORTLIST(port-hpcsh)
+  Discussion of issues specific to NetBSD on Hitachi Super-H (SH3/4) family 
+  based Windows CE PDA machines.
+  There is also a <a href="#port-sh3">port-sh3</a> list for
+  questions related to all Hitachi Super-H (SH3/4) based ports.
+ENDLIST
+PORTLIST(port-i386)
+  Discussion of issues specific to NetBSD on IBM PC clones with i386 or better
+  CPUs (NetBSD/i386).
+ENDLIST
+PORTLIST(port-luna68k)
+  Discussion of issues specific to NetBSD on 68k based OMROM LUNA machines
+  (NetBSD/luna68k).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
+LIST(port-m68k)
+  Discussion of issues relevant to all m68k-based NetBSD ports.
+  There are lists for the individual ports and they should be used for
+  port-specific questions and information:
+  <a href="#port-amiga">port-amiga</a>,
+  <a href="#port-atari">port-atari</a>,
+  <a href="#port-hp300">port-hp300</a>,
+  <a href="#port-luna68k">port-luna68k</a>,
+  <a href="#port-mac68k">port-mac68k</a>,
+  <a href="#port-mvme68k">port-mvme68k</a>,
+  <a href="#port-news68k">port-news68k</a>,
+  <a href="#port-next68k">port-next68k</a>,
+  <a href="#port-sun3">port-sun3</a>, and
+  <a href="#port-x68k">port-x68k</a>.
+ENDLIST
+PORTLIST(port-mac68k)
+  Discussion of issues specific to NetBSD on Apple's m68k based Macintosh
+  machines (NetBSD/mac68k).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+  <br><small>(This list supersedes both the <i>macbsd-general</i> and
+  <i>macbsd-development</i> lists)</small>.
+ENDLIST
+PORTLIST(port-macppc)
+  Discussion of issues specific to NetBSD on Apple's PowerPC based Macintosh
+  machines (NetBSD/macppc).
+  There is also a <a href="#port-powerpc">port-powerpc</a> list for
+  questions related to all PowerPC based ports.
+ENDLIST
+LIST(port-mips)
+  Discussion of issues relevant to all MIPS-based NetBSD ports.
+  There are lists for the individual ports and they should be used for
+  port-specific questions and information:
+  <a href="#port-arc">port-arc</a>, and
+  <a href="#port-cobalt">port-cobalt</a>, and
+  <a href="#port-hpcmips">port-hpcmips</a>, and
+  <a href="#port-mipsco">port-mipsco</a>, and
+  <a href="#port-newsmips">port-newsmips</a>, and
+  <a href="#port-pmax">port-pmax</a>, and
+  <a href="#port-sgimips">port-sgimips</a>.
+ENDLIST
+PORTLIST(port-mipsco)
+  Discussion of issues specific to NetBSD on products of MIPS Computer Systems, Inc. (NetBSD/mipsco)
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
+ENDLIST
+PORTLIST(port-mvme68k)
+  Discussion of issues specific to NetBSD on Motorola's 68k VME board computers
+  (NetBSD/mvme68k).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
+PORTLIST(port-newsmips)
+  Discussion of issues specific to NetBSD on MIPS based Sony NEWS systems
+  (NetBSD/newsmips).
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
+ENDLIST
+PORTLIST(port-news68k)
+  Discussion of issues specific to NetBSD on 68k based Sony NEWS systems
+  (NetBSD/news68k).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
+PORTLIST(port-next68k)
+  Discussion of issues specific to NetBSD on 68k based NeXT "black hardware"
+  (NetBSD/next68k).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
+PORTLIST(port-ofppc)
+  Discussion of issues specific to NetBSD on OpenFirmware PowerPC systems
+  (NetBSD/ofppc).
+  There is also a <a href="#port-powerpc">port-powerpc</a> list for
+  questions related to all PowerPC based ports.
+ENDLIST
+PORTLIST(port-pc532)
+  Discussion of issues specific to NetBSD on the rather rare PC532 computer
+  (NetBSD/pc532).
+ENDLIST
+PORTLIST(port-pmax)
+  Discussion of issues specific to NetBSD on Digital's MIPS based DECstation
+  and DECsystem machines (NetBSD/pmax).
+  There is also a <a href="#port-mips">port-mips</a> list for
+  questions related to all MIPS based ports.
+ENDLIST
+LIST(port-powerpc)
+  Discussion of issues relevant to all PowerPC based NetBSD ports.
+  There are lists for the individual ports and they should be used for
+  port-specific questions and information:
+  <a href="#port-bebox">port-bebox</a>,
+  <a href="#port-macppc">port-macppc</a>,
+  <a href="#port-ofppc">port-ofppc</a>,
+  <a href="#port-prep">port-prep</a>, and
+  <a href="#port-sandpoint">port-sandpoint</a>.
+ENDLIST
+PORTLIST(port-prep)
+  Discussion of issues specific to NetBSD on PReP -- PowerPC Reference Platform
+  (NetBSD/prep).
+  There is also a <a href="#port-powerpc">port-powerpc</a> list for
+  questions related to all PowerPC based ports.
+ENDLIST
+PORTLIST(port-sandpoint)
+  Discussion of issues specific to NetBSD on Motorola Sandpoint reference
+  platform using the MPC8240 processor module (NetBSD/sandpoint).
+  There is also a <a href="#port-powerpc">port-powerpc</a> list for
+  questions related to all PowerPC based ports.
+ENDLIST
+PORTLIST(port-sgimips)
+  Discussion of issues specific to NetBSD on SGI MIPS platforms
+  (NetBSD/sgimips).  There is also a <a href="#port-mips">port-mips</a>
+  list for questions related to all MIPS based ports.
+ENDLIST
+PORTLIST(port-sh3)
+  Discussion of issues relevant to all Hitachi Super-H (SH3/4) chips-based
+  NetBSD ports.
+  There are lists for the individual ports and they should be used for
+  port-specific questions and information:
+  <a href="#port-dreamcast">port-dreamcast</a>, and
+  <a href="#port-hpcsh">port-hpcsh</a>.
+ENDLIST
+PORTLIST(port-sparc)
+  Discussion of issues specific to NetBSD on Sun's 32-bit Sparc based machines
+  (NetBSD/sparc).
+ENDLIST
+PORTLIST(port-sparc64)
+  Discussion of issues specific to NetBSD on Sun's 64-bit Ultrasparc based
+  machines (NetBSD/sparc64).
+ENDLIST
+PORTLIST(port-sun3)
+  Discussion of issues specific to NetBSD on Sun's Motorola 68k based machines
+  (NetBSD/sun3 and NetBSD/sun3x). Newer Sparc based Sun machines are covered on
+  <a href="#port-sparc">port-sparc</a> and
+  <a href="#port-sparc64">port-sparc64</a>.
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
+PORTLIST(port-vax)
+  Discussion of issues specific to NetBSD on Digital's VAX series of machines
+  (NetBSD/vax).
+ENDLIST
+PORTLIST(port-x68k)
+  Discussion of issues specific to NetBSD on Sharp's Japanese X68000/X68030
+  machines (NetBSD/x68k).
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
+  </ul>
+
+</td><td valign=top>
+
+  LISTSECTION(Obsolete lists)
+
+  <center><b>(Archive only)</b></center>
+  <p>
+
+  <ul>
+OLDLIST(amiga)
+  This list was for discussing NetBSD/Amiga issues.<br>
+  <em>It has been obsoleted by <a href="#port-amiga">port-amiga</a>.</em>
+ENDLIST
+OLDLIST(amiga-dev)
+  This list was for issues related to the further development of
+  NetBSD/Amiga.<br>
+  <em>It has been obsoleted by <a href="#port-amiga">port-amiga</a>.</em>
+ENDLIST
+OLDLIST(amiga-x)
+  This list was for those running X under NetBSD/Amiga.<br>
+  <em>It has been obsoleted by <a href="#port-amiga">port-amiga</a>.</em>
+ENDLIST
+OLDLIST(m68k)
+  This list was for those interested in issues relevant to all 
+  m68k-family CPU based ports.<br>
+  <em>It has been obsoleted by <a href="#port-m68k">port-m68k</a>.</em>
+ENDLIST
+OLDLIST(macbsd-development)
+  This list was for issues related to the further development of MacBSD.<br>
+  <em>It has been obsoleted by <a href="#port-mac68k">port-mac68k</a>.</em>
+ENDLIST
+OLDLIST(macbsd-general)
+  This list was for discussing MacBSD (NetBSD/mac68k) issues.<br>
+  <em>It has been obsoleted by <a href="#port-mac68k">port-mac68k</a>.</em>
+ENDLIST
+  </ul>
+
+</td></tr></table>
+divert(4)
+<h2><a name="descriptions">List descriptions</a></h2>
+divert(9)
+<hr>
+
+<table><tr><td>
+    <a href="../"><img
+	src="../images/NetBSD-flag.gif" border=0
+	width="91" height="42" alt=""></a>
+  </td><td>
+    <a href="../"><img
+	src="../images/empty.gif" border=0
+	width="1" height="1" alt="NetBSD ">Home Page</a>
+</td></tr></table>
+
+<hr> 
+<address>
+  <small>
+  <a href="../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.m4,v 1.90 2001/02/06 16:23:09 dent Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
