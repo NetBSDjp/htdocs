@@ -20,16 +20,18 @@ Note that the relative URL path needs to be modified.
 -->
 <ul>
   <li><a href="wavelan.html">Wireless networking using the Lucent WaveLAN</a>
-  <li><a href="netboot/index.html">HOWTO Netboot a diskless machine</a>
+  <li><a href="netboot/">HOWTO Netboot a diskless machine</a>
   <li><a href="http://radon.static.net/~armenb/ipnat.html">Network
       Address Translation (NAT) FAQ</a>, using
       <a href="http://coombs.anu.edu.au/~avalon/ip-filter.html">IP-Filter</a>.
   <li><a href="dhcp.html">HOWTO setup DHCP clients and servers</a>.
   <li><a href="http://rfhs8012.fh-regensburg.de/~feyrer/NetBSD/NWF/">
       NetBSD/amiga Guide to Networking FAQ</a>
-  <li><a href="ipv6/index.html">IPv6 Networking FAQ</a>.
+  <li><a href="ipv6/">IPv6 Networking FAQ</a>.
+  <li><a href="ipsec/">IPsec FAQ</a>.
   <li><a href="http://www.macbsd.com/macbsd/howto/index.html">
       PPP, cross compiling, and other HOW-TOs</a>
+  <li><a href="http://www.obfuscation.org/ipf/ipf-howto.txt">IP Filter Based Firewalls HOWTO</a>
 </ul>
 
 <SECTION>Networking FAQ
@@ -244,8 +246,9 @@ bring up the link (for example xntpd(8) ntp traffic), you can use
   <li><h3>See also:</h3>
       <ul>
         <li>chat(8) - Automated conversational script
-        <li><a href="http://www.macbsd.com/macbsd/howto/pppnat/">
-            How to setup PPP for multiple ISP's, including IP-NAT and DNS setup.</a>
+        <!-- http://www.macbsd.com/macbsd/howto/pppnat
+             How to setup PPP for multiple ISP's, including
+             IP-NAT and DNS setup. -->
       </ul>
 </ul>
 
@@ -302,10 +305,9 @@ should be usable <a href="#ppp">like normal modems.</a>
 
 <ENTRY>simplenat	A simple NAT setup
 
-To allow hosts that you have on your local network (say: 10.0.0.0/24)
-use your NetBSD machine as router, and setup Network Address Translation
-(NAT), do the following:
-<P>
+To allow hosts that you have on a local private network (say:
+10.0.0.0/24) use your NetBSD machine as router, and setup Network
+Address Translation (NAT), do the following: <P>
 
 <OL>
 <LI> On your clients, use the NAT machine as default router (put
@@ -336,6 +338,11 @@ map ppp0 10.0.0.0/24 -> 0/32
 <PRE>
 ipfilter=YES                                    # uses /etc/ipf.conf
 ipnat=YES                                       # uses /etc/ipnat.conf
+</PRE>
+
+<LI> Turn on ipv4 packet forwarding in /etc/rc.local:
+<PRE>
+sysctl -w net.inet.ip.forwarding=1
 </PRE>
 
 <LI> Reboot.
@@ -409,6 +416,16 @@ there is a <PKGSRC>net/bind4 package.  Also be aware that the man
 page for named.conf(5) is slightly newer than the program itself, so
 there are a few features that are documented but not implemented.
 
+<ENTRY>kerberos Kerberos
+Please see these links for information about the 
+Kerberos Authentication System:
+<p>
+<ul>
+<li><a href="http://web.mit.edu/kerberos/www/">MIT Kerberos</a>
+<li><a href="http://www.pdc.kth.se/kth-krb/">KTH Kerberos</a>
+<li><a href="http://www.avana.net/~jtruitt/ferret/kerberos.html">Meta information (Links)</a>
+</ul>
+
 <SECTION>Network problems
 
 <ENTRY>unable-to-ping Unable to ping other hostnames
@@ -427,6 +444,70 @@ there are a few features that are documented but not implemented.
 	to tcp port 113 without sending any response.
     </ol>
 
+<ENTRY>t-online Gotchas for german ISP T-Online
+	If you want to dial-in into the german ISP T-Online, the
+	two most tricky things are getting the correct username, and
+	using a proper chat-script. See <a href="#ppp">above</a> for a
+	general description of how to set up PPP.
+	<p>
+
+	<ol>
+	<li> Your login name at T-Online consists of three parts,
+	     glued together:
+	     <p>
+
+	     <ol>
+	     <li> Anschlu&szlig;kennung: 12 digit number
+   	          (<i>AAAAAAAAAAAA</i>), e.g. 000120123456
+	     <li> T-Online Nr: 12 digit number (<i>TTTTTTTTTTTT</i>),
+   	          e.g. 3200123456. Often
+	          starts with "32"; if yours is less than 12 digits,
+	          add a '#')
+	     <li> Mitbenutzer-Nummer, usually "0001" (<i>MMMM</i>),
+   	          e.g. 0001
+             </ol>
+	     <p>
+             Your login is now all three parts put in a row, with no
+	     seperator ("<i>AAAAAAAAAAAATTTTTTTTTTTTMMMM</i>"),
+  	     e.g. 0001201234563200123456#0001. Use this for 
+	     the "<tt>user</tt>"-line in your PPP options file. 
+	     <p>
+	<li> In the chat-script, you need to pay attention to send a
+	     "<tt>.</tt>" after the modem reported a <tt>CONNECT</tt>: 
+
+<pre>
+ABORT BUSY    '' AT
+              OK ATZ
+              OK ATL1
+              OK ATD0191011
+              CONNECT <u>'.'</u>
+</pre>
+	     Without this trailing dot, you may be disconnected
+	     immediately without an answer from the T-Online dialin
+	     server after your side has sent out the first LCP
+	     ConfReq frame. 
+             <p>
+	</ol>
+
+	Here are some (german language) links with more information
+	(don't let yourself distract that most of them are not
+	for NetBSD - being just another Unix-like operating
+	system, these tips usually apply to NetBSD as well):
+	<p>
+
+	<ul>
+        <li> <a href="http://www.albert-rommel.de/ppp.htm">PPP-Zugang
+   	          zu <font color="#FF00FF">T</font>-Online</a>
+        <li> <a href="http://home.t-online.de/home/Diedrich.Ehlerding/besonderheiten.html">Netzzugang bei <font color="#FF00FF">T</font>-Online: esonderheiten und Einschränkungen</a> 
+	<li> <a href="http://sdb.suse.de/sdb/de/html/toppp.html">SuSE:
+	     T-Online Zugang mit PPP</a>
+	<li> <a
+	     href="http://sdb.suse.de/sdb/de/html/t_online3.html">SuSE:
+	     T-Online: Verbindung wird nicht aufgebaut</a>
+	<li> <a
+   	          href="http://sdb.suse.de/sdb/de/html/toppp_files.html">SuSE: PPP-Files für T-Online</a>
+	</ul>
+
 </LIST>
 
 <DOCLINK>
@@ -434,7 +515,7 @@ there are a few features that are documented but not implemented.
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.24 2000/03/13 22:34:50 soren Exp $<br>
+  $NetBSD: index.list,v 1.29 2000/08/02 21:32:02 hubertf Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
