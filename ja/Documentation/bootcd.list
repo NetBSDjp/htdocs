@@ -35,7 +35,7 @@ It is assumed the directory <tt>/cdsources</tt> exists on your system
 and contains all the files which you want to end up on the CD ROM.
 One suggested layout for making an install CD is to follow the
 directory structure on <a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5.3/">ftp.netbsd.org</a>.  For example:
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.6/">ftp.netbsd.org</a>.  For example:
 <pre>
   /cdsources/i386/.....
   /cdsources/sparc/.....
@@ -72,11 +72,12 @@ following command:
 
 <ENTRY>i386image NetBSD/i386
 This section shows how to make a NetBSD/i386 bootable CD ROM.  The
-particular example is how to make a NetBSD-1.5.3/i386 install CD.  It
+particular example is how to make a NetBSD-1.6/i386 install CD.  It
 is assumed that the directory <tt>/cdsources/</tt> exists on your system
-and contains all the files and the directory structure from the 
+and contains all the files and the directory structure from the
 <a
-href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5.3/i386/">NetBSD-1.5.3/i386</a>
+href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.6/i386/">NetBSD-1.6/i386</a>
+distribution.
 The exact contents depend on what you want on your CD.  The
 important part is that
 <tt>/cdsources/i386/installation/floppy/boot-big.fs</tt> exists as that will
@@ -120,27 +121,57 @@ ramdisk-based install kernel that supports all models).
 
 <pre>
   cd /cdsources
-  cp macppc/binary/kernel/netbsd.GENERIC_MD.gz netbsd.gz
+  cp macppc/binary/kernel/netbsd.GENERIC_MD.gz netbsd.macppc
   cp macppc/installation/ofwboot.xcf .
 </pre>
 
 The NetBSD/macppc official ISO image is bootable on all supported models
-because it does some special magic.  See 
-<tt><a href="http://cvsweb.netbsd.org/bsdweb.cgi/basesrc/distrib/cdrom/"
->src/distrib/cdrom</a></tt> if you want to learn about it.
+because it does some special magic.  The CD is created as an HFS
+hybrid CD with an Apple Disk Partition Table using the <tt>"-hfs -part"</tt>
+options in mkisofs. The Partition Table is then modified to map (or point to)
+a driver file which makes the CD bootable on the PPC Macintosh and the
+driver file is appended to the end of the iso image.
 
-<p>To create the CD image for an Open Firmware 1.0.5, 1.1.22, or 2.0.x system,
-use the following command:
+<p>The CD won't be bootable via the "<tt>C</tt>" snag key though.  However
+this can be added with the following, although it may not work on all
+Macppc systems. (Adding the option will not impair the use of booting via
+OpenFirmware commands.)  To do this, create a CHRP bootscript in a top-level
+directory, tag the bootscript file with the proper Mac OS Type and Creator,
+and "bless" the directory which contains the file.  Mkisofs will attach the
+proper Mac OS Type and Creator codes while generating the ISO image file if
+the following line is added to the file
+<tt>/usr/src/distrib/cdrom/hfsmap.lst</tt>:
 
 <pre>
-  mkisofs -o output.iso -l -J -r -L /cdsources
+    .chrp - 'chrp' 'tbxi'
 </pre>
 
-<p>To create the CD image for an Open Firmware 2.4 or 3 system,
-use the following command:
+Then place the following file named <tt>bootscript</tt> in the (top-level)
+<tt>macppc</tt> directory:
 
 <pre>
-  mkisofs -o output.iso -hfs -part -l -J -r -L /cdsources
+   &lt;CHRP-BOOT&gt;
+   &lt;COMPATIBLE&gt;MacRISC&lt;/COMPATIBLE&gt;
+   &lt;DESCRIPTION&gt;
+   NetBSD/macppc bootable CD script
+   &lt;/DESCRIPTION&gt;
+   &lt;BOOT-SCRIPT&gt;
+   boot cd:,ofwboot.xcf netbsd.macppc
+   &lt;/BOOT-SCRIPT&gt;
+   &lt;/CHRP-BOOT&gt;
+</pre>
+
+<p>Create the macppc bootable CD image using the following commands:
+
+<pre>
+  cdrom_util="/usr/src/distrib/cdrom"
+  snag_boot="-map ${cdrom_util}/hfsmap.lst -hfs-bless ./macppc"
+  ofw_boot="-boot-hfs-file ${cdrom_util}/macppc_installboot/macppcboot.raw"
+  mkisofs -o output.iso -hfs -part ${snag_boot} ${ofw_boot} -l -J -r -L /cdsources
+  blknum=`ls -l output.iso | awk '{print $5}'`
+  blknum=`expr ${blknum} / 512`
+  ${cdrom_util}/macppc_installboot/macppc_installboot output.iso ${blknum} 756
+  dd if=/usr/mdec/ofwboot bs=64k count=1 conv=sync &gt;&gt; output.iso
 </pre>
 
 <p>Once you have burnt the CD, make sure Open Firmware can find the
@@ -151,9 +182,6 @@ important, since Open Firmware treats the boot file name as case
 sensitive.  Most (if not all) Open Firmware 1.0.5, 1.1.22, and 2.0.x systems 
 will think the bootloader is <tt>OFWBOOT.XCF</tt> and Open Firmware 3 should
 properly see it as <tt>ofwbot.xcf</tt>. 
-
-<p>Remember, you must enter Open Firmware to boot from this CD, you cannot
-simply hold down the "<tt>c</tt>" key.
 
 <ENTRY>pmaximage NetBSD/pmax
 NetBSD/pmax can boot from either a FFS or ISO 9660 CD ROM.  This
@@ -200,9 +228,9 @@ to put on the CD.  For example:
 <pre>
   mkisofs -o output.iso -l -J -r -L /cdsources
 </pre>
-Now get a bootable floppy image.  For NetBSD-1.5.3/sparc, this image
+Now get a bootable floppy image.  For NetBSD-1.6/sparc, this image
 may be found at
-<URL>ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.5.3/sparc/installation/bootfs/boot.fs.gz
+<URL>ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.6/sparc/installation/bootfs/boot.fs.gz
 
 The final step is to rewrite the ISO image with (a) a sun disklabel at
 the start, (b) the original image at the end, and (c) with the right
@@ -527,10 +555,11 @@ Commercial software that can create bootable (by i386) ISO 9660 images
 and write them to CD.
 <li><a href="http://www.goldenhawk.com/freeware.htm">FILE2CD</a>.
 Freeware program which can write an ISO 9660 image to CD.
+<li><a href="http://www.roxio.com/en/products/ecdc/index.jhtml">
+Roxio Easy CD Creator</a>.  Commercial software.
 <li><a
-href="http://www.adaptec.com/products/overview/ecdc.html">
-Adaptec Easy CD Creator Deluxe</a>.  Commercial software.
-<li>Adaptec Easy CD Creator.  Comes with many Windows based CD writers.
+href="http://www.ahead.de/en/index.html">
+Ahead Nero Burning ROM</a>.  Commercial software.
 </ul>
 
 <ENTRY>macrecord Under MacOS
@@ -539,9 +568,8 @@ ISO 9660 image to a CD.  This section is not an endorsement for any of
 these programs in particular, but is intended to at least mention some
 of the alternatives.
 <ul>
-<li><a
-href="http://www.adaptec.com/products/overview/toast.html">
-Adaptec Toast</a>.  Commercial software.
+<li><a href="http://www.roxio.com/en/products/toast/index.jhtml">
+Roxio Toast</a>.  Commercial software.
 </ul>
 
 
@@ -553,7 +581,7 @@ Adaptec Toast</a>.  Commercial software.
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: bootcd.list,v 1.41 2002/10/12 15:50:28 jschauma Exp $<br>
+  $NetBSD: bootcd.list,v 1.43 2002/10/25 14:24:32 heinz Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 2000-2002
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
