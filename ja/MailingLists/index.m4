@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.126 2003/04/27 00:17:25 fvdl Exp $
+#	$NetBSD: index.m4,v 1.127 2003/04/27 09:57:17 fvdl Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -300,6 +300,10 @@ PORTLIST(port-alpha)
   Digital の Alpha AXP システム上の NetBSD (NetBSD/alpha) 固有の事項の
   議論用です。
 ENDLIST
+PORTLIST(port-amd64)
+  AMD64 ベースのマシン上の NetBSD (NetBSD/amd64)
+  固有の事項の議論用です。
+ENDLIST
 PORTLIST(port-amiga)
   Commodore の Amiga や MacroSystem の DraCo マシン上の
   NetBSD (NetBSD/amiga) 固有の事項の議論用です。
@@ -598,10 +602,6 @@ PORTLIST(port-vax)
   Digital の VAX シリーズのマシン上の NetBSD (NetBSD/vax)
   固有の事項の議論用です。
 ENDLIST
-PORTLIST(port-amd64)
-  AMD x86-64 ベースのマシン上の NetBSD (NetBSD/amd64)
-  固有の事項の議論用です。
-ENDLIST
 PORTLIST(port-x68k)
   Sharp 製の日本の X68000/X68030 マシン上の NetBSD (NetBSD/x68k)
   固有の事項の議論用です。
@@ -666,7 +666,7 @@ divert(9)
   (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.126 2003/04/27 00:17:25 fvdl Exp $<br>
+  $NetBSD: index.m4,v 1.127 2003/04/27 09:57:17 fvdl Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
