@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.123 2003/04/22 15:50:56 lukem Exp $
+#	$NetBSD: index.m4,v 1.125 2003/04/22 16:39:36 grant Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -7,11 +7,11 @@ divert(-1)dnl
 undefine(`index')
 
 define(`LISTNEWS',
-`  <a href="http://news.netbsd.org/'`patsubst(patsubst(patsubst(patsubst($1, `^port-', `ports-'), `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
+`  <a href="http://news.NetBSD.org/'`patsubst(patsubst(patsubst(patsubst($1, `^port-', `ports-'), `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
 </td><td valign=top>', `-', `.')
 
 define(`LISTARCHIVE',
-`  <a href="http://mail-index.netbsd.org/$1/"><img src="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
+`  <a href="http://mail-index.NetBSD.org/$1/"><img src="../images/misc/tape.gif" align="bottom" border="0" width="29" height="29" alt="[View archive]"></a>
 </td><td valign=top>')
 
 define(`LISTSUBSCRIBE',
@@ -68,7 +68,7 @@ divert(0)dnl
 <head>
 <!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
 <title>NetBSD Mailing Lists</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -79,7 +79,7 @@ The NetBSD Project provides a variety of public mailing lists to
 facilitate communication between the users and developers of NetBSD.
 All of the mailing lists are served by the <b>Majordomo</b> mailing
 list management package, and you can find out more about how to use
-the NetBSD Project's Majordomo by mailing <i>majordomo@NetBSD.ORG</i>
+the NetBSD Project's Majordomo by mailing <i>majordomo@NetBSD.org</i>
 with an empty message body.
 <p>
 
@@ -97,12 +97,11 @@ with links to allow you to look at their archives and subscribe to them.
 alt="[Subscribe]"> link
 next to its name, in the description section of this page.  You will
 then have to fill out a form, to supply your e-mail address.
-<i>NOTE: For this function to work, your browser must support forms.</i>
 <p>
 
 <b>To unsubscribe from a mailing list</b> send an email
 message from the address by which you are subscribed to <a
-href="mailto:majordomo@netbsd.org">majordomo@netbsd.org</a> containing
+href="mailto:majordomo@NetBSD.org">majordomo@NetBSD.org</a> containing
 only the message <tt><b>unsubscribe <em>listname</em></b>.</tt>
 <p>
 
@@ -111,7 +110,7 @@ only the message <tt><b>unsubscribe <em>listname</em></b>.</tt>
 alt="[View archive]"> link
 next to its name, in the description section of this page.  This will
 take you to the mail archive server <a
-href="http://mail-index.netbsd.org/">mail-index.netbsd.org</a>.
+href="http://mail-index.NetBSD.org/">mail-index.NetBSD.org</a>.
 (Many thanks to the <a href="http://www.isc.org/">ISC</a> for the network
 access and rack space for this machine as well as
 <a href="mailto:root@garbled.net">Tim Rightnour</a> for building and
@@ -124,7 +123,7 @@ is available at
 <img src="../images/misc/news.gif" width="29" height="29"
 alt="[Newsgroup]"> link next to its name, in the description section of this
 page.  This will take you to the news-archive at <a
-href="http://news.netbsd.org/">news.netbsd.org</a>.
+href="http://news.NetBSD.org/">news.NetBSD.org</a>.
 <p>
 
 Please note that while the majority of the NetBSD mailing lists are
@@ -134,7 +133,7 @@ cause a mailing list to be moderated by its manager.
 <h2>Searchable mailing list archives</h2>
 
 Indexes and archives are provided on
-<a href="http://mail-index.netbsd.org/">http://mail-index.netbsd.org/</a>
+<a href="http://mail-index.NetBSD.org/">http://mail-index.NetBSD.org/</a>
 and <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>.
 <p>
 
@@ -670,7 +669,7 @@ divert(9)
 <address>
   <small>
   <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.123 2003/04/22 15:50:56 lukem Exp $<br>
+  $NetBSD: index.m4,v 1.125 2003/04/22 16:39:36 grant Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
