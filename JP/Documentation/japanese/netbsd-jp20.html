@@ -1,0 +1,135 @@
+<html>
+<head>
+<title>NetBSD Japanese Environment Setup Guide (Netscape)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="TeX,LaTeX,dvi2ps-j,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp19.html">[PREV]</a>
+<a href="ptex-memo.html">[NEXT]</a>
+
+<h1>Netscape の日本語対応化</h1>
+
+<p>Netscape 社の もじら ですが、実は結構しっかり日本語が
+サポートされています。具体的に言うと、ラベルやメニューなどは、
+日本語 locale でしっかり動作します。
+え、NetBSDには locale がない？そのとおりですが、Netscape は
+バイナリ配布でしかももとのバイナリは BSD/OS のものです。
+そう、BSD/OS は locale があります。
+
+基本的に以下の手順で日本語化(多言語化)できます。
+(なお、このドキュメントの 
+<a href="netbsd-jp01-3.html">
+"Open/NetBSDへの FreeBSD の locale 関連ライブラリの導入"</a>
+において FreeBSD の locale 関数群を導入した場合は、以下の 1. の作業
+は不要です)
+
+<ol>
+  <li> /usr/local/share 以下に、<a href="locale.tgz">
+       FreeBSD の /usr/share/locale</a> 以下のファイルを
+       コピーする。
+  <li> Netscape の配布中の nls ディレクトリの内容を、
+       <a href="nls.tgz">X11R5のnls の内容</a>と差し替える。
+
+  <li> 適当な locale で動作させる(日本語なら ja_JP.EUC)
+</ol>     
+
+<h2>X11のフォントの修正</h2>
+
+<p>
+X11の font の標準設定は Netscape にとってあまり良い設定では
+ありません。まずそれを適切になるように修正しておくといろいろ幸せです。
+
+<p>
+こちらのページをまず参照して、適切にフォントを設定しておきましょう。
+<ul>
+<li><a href="netbsd-jp19-0.html">X11用各種フォントの設定</a>
+</ul>
+
+<h2>Netscape のインストール</h2>
+
+<p>Netscape のインストールは、コンパイル時に設定されてる
+場所(/usr/X11/binなど)にいれる方法もありますが、この例では java の
+モジュールの検索パスなどを考えて、
+/usr/local/lib/netscape 以下にすべてを展開しています。
+<pre>
+# cd /usr/local/lib
+# mkdir netscape
+# cd netscape
+# tar zxvf $(SRCDIR)/netscape-v30..unknown-bsd...tar.gz
+</pre>
+
+<p>上記の nls を展開します。
+
+<p>X11R5 の locale には ja_JP.EUC がないので、
+nls.alias で ja_JP.ujis にエイリアスしておきます。
+また、nls/ja_JP.ujis のフォントの設定の中の、
+<pre>
+omron_udc_ja-0:GL:20400080:\033\045\057200omron_udc_ja-0\002
+</pre>
+というフォントは無いので削除しておきます。これがあると、起動時に
+<pre>
+Warning: Missing charsets in String to FontSet conversion
+</pre>
+とかいわれます(動作上問題はありません)<br>
+(ここの nls.tgz はこれらの修正をすでに行なっています。)
+<pre>
+# mv nls nls.orig
+# tar zxvf $(SRCDIR)/nls.tgz
+</pre>
+
+<p>リソースファイルの名前を正しくします。
+<pre>
+# mv Netscape.ad Netscape
+</pre>
+
+<p>
+bookmark などで日本語を表示させるために、<a href="NetscapeJPfont">
+このようなリソース</a>を追加設定しておきます。フォントの設定を追加しています。
+<pre>
+# mkdir ja_JP.EUC
+# cat $(SRCDIR)/NetscapeJPFont Netscape &gt;&gt; ja_JP.EUC/Netscape
+</pre>
+
+<p>
+なお、Netscape のメニューなども含めてさらに日本版っぽくする
+ためには、豊橋技術科学大学の竹部さんのページにくわしい情報があります。
+そちらをご参照下さい。
+<ul>
+<li><a href="http://www.bpel.tutics.tut.ac.jp/~take/Netscape/">
+X Window 用 英語版 Netscape を日本語版のようにしたい</a>
+</ul>
+
+<p>起動は次のようなスクリプトを使用します。(/usr/local/bin/netscape)
+<pre>
+#!/bin/sh
+XKEYSYMDB=/usr/local/lib/netscape/XKeysymDB
+XAPPLRESDIR=/usr/local/lib/netscape
+XNLSPATH=/usr/local/lib/netscape/nls
+export XKEYSYMDB XAPPLRESDIR XNLSPATH
+exec /usr/local/lib/netscape/netscape $*
+</pre>
+
+<p>Netscape を起動したら、Option/General Preference の設定の Font の
+項目で、jis_x0201, jis_x0208-1983, jis_x0212-1990 のところを
+すべて <bold>Fixed(Netscape)</bold> に変えます。
+サイズは適当に選んで下さい。これで、日本語のフォントのサイズが
+ちゃんと(jisx0208は)5段階出るようになります。
+
+<p><a href="jptest.html">このページ</a>で確認できます。
+
+<p>フォームに日本語でカットアンドペーストできます。
+(ただし、textarea では表示が乱れるようです。これは motif の bug
+であると思われます)
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp19.html">[PREV]</a>
+<a href="ptex-memo.html">[NEXT]</a>
+
+</body>
+</html>
+

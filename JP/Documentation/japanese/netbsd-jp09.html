@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (tgif)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,tgif,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp08.html">[PREV]</a>
+<a href="netbsd-jp10.html">[NEXT]</a>
+
+<h1>tgif-2.16-p12 + jp patch</h1>
+
+tgif は X11 上で動作する ドローツールです。LaTeX に張り込む
+絵などを作成する際によく用います。
+
+<h2>tgif のコンパイル</h2>
+
+ソースコードを入手して展開します。以下の場所などにあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/X11/Contrib/Drawing/tgif/tgif-2.16-p12.tar.gz">
+ftp://ftp.tut.ac.jp/X11/Contrib/Drawing/tgif/tgif-2.16-p12.tar.gz
+</a>
+<a href="ftp://ftp.tut.ac.jp/X11/Contrib/Drawing/tgif/tgif-2.16-p12.jp.gz">
+ftp://ftp.tut.ac.jp/X11/Contrib/Drawing/tgif/tgif-2.16-p12.jp.gz
+</a>
+
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/tgif-2.16-p12.tgz
+% cd tgif-2.16-p12
+% zcat $(SRCDIR)/tgif-2.16-p12.jp.gz | patch -p1
+</pre>
+
+<p>XIM を使う場合は、
+Imakefileの47行めの
+<pre>
+XIMDEFINES      = # -DUSE_XIM
+</pre>
+を
+<pre>
+XIMDEFINES      = -DUSE_XIM -DUSE_XIMP
+</pre>
+とします。
+
+<p>Xのバグにより、背景にグリッドの点線がでないので、次のオプションを
+DEFINES の中に追加します。
+<pre>
+-D_USE_XDRAWPOINT_TO_PUT_A_POINT
+</pre>
+
+あとは通常のコンパイル手順に従います。
+<pre>
+% xmkmf
+% make
+% su
+# make install
+# make install.man
+</pre>
+
+<h2>tgifでの日本語の入力方法</h2>
+
+<ul>
+<p><li>Xのセレクションを使用
+
+<p>カットアンドペーストで日本語を張り込むことができます。
+
+<p>文字フォントを Ryumin か Gothic にしておき、
+文字入力モードにします。この状態で、Edit メニューの SelectionPaste
+または、Ctrl-Meta-Shift-y で Mule などで入力した文字列を
+カットしたものがペーストできます。
+
+<p><li>Kinput2の場合
+
+<p>XIM対応にしなかった場合は、つねに kinput2 のみとなります。
+
+<p>XIM対応にした場合は、
+リソース Tgif*IMProtocol: kinput を設定するか、
+または % tgif -kinput として起動することで kinput2 のモードになります。
+
+<p>まず、文字フォントを Ryumin か Gothic にしておき、
+文字入力モードにします。ここで ctrl-space を押すと、kinput2 
+のウィンドウが開き、日本語を入力できます。
+
+<p><li>XIM の場合
+
+<p>リソース Tgif*IMProtocol: xim を設定するか、
+または % tgif -xim   として起動することで XIM のモードになります。
+
+<pre>
+Tgif*Modifiers: [Modifierのリスト]
+Tgif*Lang:      [使用する言語]
+</pre>
+のリソースで、モディファイアと言語を指定します。
+
+<ul>
+<p><li>例: XIM として XWNMO を使う場合
+<pre>
+Tgif*Modifiers: @im=_XWNMO
+Tgif*Lang: ja_JP.ujis
+</pre>
+<p><li>例: XIM として kinput2 を使う場合
+<pre>
+Tgif*Modifiers: @im=kinput2
+Tgif*Lang: japanese
+</pre>
+</ul>
+</ul>
+
+<p>日本語フォントを選択した状態で文字入力モードにすると、
+XIMと接続を開始します。漢字入力の開始などは XIM 側の設定によります。
+(kinput2 ではデフォルトで Shift-space か Ctrl-Kanji です。)
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp08.html">[PREV]</a>
+<a href="netbsd-jp10.html">[NEXT]</a>
+
+</body>
+</html>

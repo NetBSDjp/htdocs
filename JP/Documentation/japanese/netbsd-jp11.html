@@ -1,0 +1,164 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (SKK)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,SKK,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp10.html">[PREV]</a>
+<a href="netbsd-jp12.html">[NEXT]</a>
+
+<h1> SKK 8.6 のインストール</h1>
+
+<p>SKK は Mule 上で利用できる日本語入力システムの一つです。
+文節の区切りを人間が指示する、独特な操作法が特徴です。
+
+<p>まずはソースを入手します。以下の場所などにあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/GNU/emacslisp/misc/skk8.6.tar.gz">
+ftp://ftp.tut.ac.jp/GNU/emacslisp/misc/skk8.6.tar.gz
+</a>
+
+<h2>SKKのコンパイルとインストール</h2>
+
+<p>ソースを展開し、ディレクトリを移動します。
+
+<pre>
+% tar zxf skk8.6.tar.gz
+% cd skk8.6
+</pre>
+
+<h2>Configure</h2>
+<p>root になって Configure.euc を実行します。
+システムからインストールするディレクリを聞かれるので、
+適切な場所を答えて下さい。また、この時、辞書サーバを
+インストールするかについても質問されます。全ての質問に
+答えるとコンパイル後、指定した場所にインストールされます。
+
+<pre>
+% su
+% ./Configure.euc
+</pre>
+
+<p>infoファイルが指定したディレクトリにインストールされて
+います。Mule から M-x info で参照できるように、dir ファイル
+に以下の行を追加します。
+
+<pre>
+* SKK: (skk).       Nemacs/Mule のための日本語入力システム.
+</pre>
+
+<h2>SKK の使用方法</h2>
+
+<h3> .emacs の設定</h3>
+
+<p>.emacs ファイルに以下の行を追加します。
+
+<pre>
+	(obal-set-key "\C-x\C-j" 'skk-mode)
+	(global-set-key "\C-xj" 'skk-auto-fill-mode)
+	(global-set-key "\C-xJ" 'register-to-point)
+	(global-set-key "\C-xt" 'skk-tutorial)
+	(autoload 'skk-mode "skk" nil t)
+	(autoload 'skk-auto-fill-mode "skk" nil t)
+	(autoload 'skk-tutorial "skk-tut" nil t)
+	(autoload 'skk-check-jisyo "skk-tools" nil t)
+	(autoload 'skk-merge "skk-tools" nil t)
+	(autoload 'skk-diff "skk-tools" nil t)
+	(autoload 'skk-isearch-mode-setup "skk-isearch" nil t)
+	(autoload 'skk-isearch-mode-cleanup "skk-isearch" nil t)
+	(add-hook 'isearch-mode-hook
+		(function (lambda ()
+        		(and (boundp 'skk-mode) skk-mode
+        		(skk-isearch-mode-setup)))))
+	(add-hook 'isearch-mode-end-hook
+		(function (lambda ()
+			(and (boundp 'skk-mode) skk-mode
+			(skk-isearch-mode-cleanup)))))
+</pre>
+
+Nemacs または Emacs18 base の Mule の場合は多少異なりますので、
+ReadMe または info を確認して書き換えて下さい。
+
+<h3>.skk の設定</h3>
+
+SKK のカスタマイズはホームディレクリの .skk で行います。
+最低限、共通辞書に関する設定が必要ですので、以下の行を
+追加して下さい。ただし、辞書サーバを利用する場合と、し
+ない場合で設定が異なります。
+
+<ul>
+<p><li>辞書サーバを利用する場合
+
+<pre>
+	(setq skk-server-host "mars")
+	(setq skk-serv "/usr/local/soft/nemacs/etc/skkserv")
+	(setq skk-aux-large-jisyo ".../SKK-JISYO.L")
+
+</pre>
+
+<p><li>辞書サーバを利用しない場合
+
+<pre>
+	(setq skk-large-jisyo ".../SKK-JISYO.L")
+</pre>
+
+</ul>
+
+なお、SKK の起動キーは、デフォルトで C-x C-j です。
+詳細は、info/SKK または、skk.tex を参照して下さい。
+
+<h2>SKK 辞書のユーティリティプログラム</h2>
+
+<p>SKK 辞書に関して様々なユーティリティがあります。
+Emacs Lisp、C または perl で書かれてあり、C と Perl
+で書かれているものについては、コンパイルやインストール
+が必要です。また、必要であれば、パスが通ったディレクトリ
+に移動して下さい。
+
+
+<ul>
+<p><li> Emacs Lisp のプログラム
+
+<p> すでに組み込まれています。Mule の中から実行して下さい。
+詳細はドキュメントを参照して下さい。
+
+<p><li> C のプログラム
+
+<p>ディレクトリ jisyo-tools の下にあります。Makefile の
+CC と CFLAGS を適宜変更し、make して下さい。詳細は、
+jisyo-tools/README またはドキュメントを参照して下さい。
+
+<p><li> Perl のプログラム
+
+<p>ディレクトリ skktools の下にあります。READ.ME に書かれて
+いるユーティリティ群と README に書かれているユーティリティ群が
+あります。
+
+<ul>
+<p><li>READ.ME に書かれているユーティリティ群
+
+<p>jperl が必要です。使用する時は、スクリプト中の jperl
+のパスを適宜変更して下さい。スクリプト中の漢字コードには
+シフトJIS が使用されています。詳細は、skktools/READ.ME
+またはドキュメントを参照して下さい。
+
+<p><li>README に書かれているユーティリティ群
+
+<p>インストールが必要です。Makefile の perl のパスを
+適宜変更し、make して下さい。詳細は、skktools/README
+またはドキュメントを参照して下さい。
+</ul>
+
+</ul>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp10.html">[PREV]</a>
+<a href="netbsd-jp12.html">[NEXT]</a>
+
+</body>
+</html>

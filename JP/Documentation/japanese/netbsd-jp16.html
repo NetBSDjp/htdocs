@@ -1,0 +1,199 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (xdvi)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,TeX,LaTeX,xdvi,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp15.html">[PREV]</a>
+<a href="netbsd-jp17.html">[NEXT]</a>
+
+<h1>Xdvi patchlevel 17 + jp-patch 960209</h1>
+
+<p>Xdvi は、TeXで生成した DVI ファイルを X上で参照するための
+ツールです。現在の最新は Patchlevel 18 ですが、pTeXに対応
+している Patchlevel 17 のほうをインストールします。
+
+<h2>コンパイル作業</h2>
+
+<p>ソースとパッチを入手します。以下の場所などにあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/TeX/drivers/xdvi/PL17/xdvi-17.tar.gz">
+ftp://ftp.tut.ac.jp/TeX/drivers/xdvi/PL17/xdvi-17.tar.gz
+</a>
+<br><a href="ftp://ftp.tut.ac.jp/TeX/drivers/xdvi/PL17/xdvi-17jp.960209.gz">
+ftp://ftp.tut.ac.jp/TeX/drivers/xdvi/PL17/xdvi-17jp.960209.gz
+</a>
+
+<p>ソースを展開してパッチをあてます。
+<pre>
+% mkdir xdvi17
+% cd xdvi17
+% tar zxvf $(SRCDIR)/xdvi-17.tar.gz
+% zcat $(SRCDIR)/xdvi-17jp.960209.gz | patch -p1
+</pre>
+
+
+<p>パッチ当てによってできる、README.jp-patch
+に詳しい説明があります。それを参照しながら Imakefile を適宜環境に
+合わせて編集して下さい。
+
+<h3>Imakefile</h3>
+
+<p>この文書では、README.jp-patchでの4番の、NTT, ASCII, pTeX 対応で、
+日本語は VFlib を使用する設定でコンパイルします。
+
+<p>pTeX、VFlib をこの文書のとおりにインストールしてある場合には、
+<pre>
+DEFAULT_VFONTCAPDIR=/usr/etc
+</pre> 
+を
+<pre>
+DEFAULT_VFONTCAPDIR=/usr/local/lib/vfont
+</pre>
+にするだけで特に問題なくインストールできます。
+
+あと、205行目の
+<pre>
+xdvi.man: xdvi_man.sed mksedscript
+</pre>
+を、
+<pre>
+xdvi.man:: xdvi_man.sed mksedscript
+</pre>
+としておきます。
+
+<p>Makefile を作成します。
+<pre>
+% xmkmf
+</pre>
+
+
+<h3>Makefile</h3>
+
+<p>このまま作成すると、日本語が黒い四角で表示されます。
+175行付近の
+<pre>
+PROTO_DEFINES = -DFUNCPROTO=15 -DNARROWPROTO
+</pre>
+を
+<pre>
+PROTO_DEFINES = -DFUNCPROTO=15
+</pre>
+とするとなおるのでこうしておきます。
+
+<p>/usr/X11R6/include/X11/Xos.h と /usr/include/stdio.h の間で
+sys_errlistでの conflict が発生します。
+これは、/usr/X11R6/include/X11/Xos.h の設定を stdio.h に合わせて
+修正すればいいです。
+システムのファイルをいじるのがいやな場合は、次のようにして、その場に持ってきて
+変更してしまいましょう。
+
+<pre>
+% mkdir X11
+% cp /usr/X11R6/include/X11/Xos.h X11
+% vi X11/Xos.h
+</pre>
+
+107行め
+<pre>
+extern char *sys_errlist[]; 
+</pre>
+を
+<pre>
+extern const char *sys_errlist[]; 
+</pre>
+にする。(または削除)
+
+さらに、Makefileの
+<pre>
+TOP_INCLUDES = -I$(INCROOT)
+</pre>
+を次のように変更します。
+(現在のディレクトリを /usr/X11R6/lib より先に探しにいかせる)
+<pre>
+TOP_INCLUDES = -I. -I$(INCROOT)
+</pre>
+
+
+<p>また、/usr/include/stdlib.h と /usr/X11R6/include/X11/Xlib.h
+でも同様に wchar_t で conflict します。
+これもX側を システムに合わせるか、
+変更したくない場合は、コピーしてきて変更すればいいでしょう。
+
+<pre>
+% cp /usr/X11R6/include/X11/Xlib.h X11
+% vi X11/Xlib.h
+</pre>
+79行目
+<pre>
+typedef unsigned long wchar_t;
+</pre>
+を
+<pre>
+typedef int wchar_t;
+</pre>
+にする(これは削除したら駄目)
+
+<p>他にもいくつか修正します。
+<h3>font_open.c</h3>
+<pre>
+140行目
+char *getcwd(char *buf, int size);
+削除かコメントアウト
+</pre>
+
+<h3>SelFile.c</h3>
+<pre>
+49行目
+extern char *sys_errlist[]; 
+削除かコメントアウト
+</pre>
+
+<p>コンパイルしてインストールします
+<pre>
+% make
+%  su
+# make install
+# make install.man
+</pre>
+
+<p>
+TeXのプレビューには、pkフォントが必要です。MetaFont をインストールして
+自分で作成してもいいのですが、今回はすでに作成されたものを展開しておきます。
+コンパイルの際に、日本語フォントを VFlib ではなく、大日本フォントで使用
+するように指定した場合などは、それも展開します。
+互換のフリーの渡辺フォントというものもあります。
+
+<p>pk フォントは、次の場所に cm, latex のものをまとめたものがあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/TeX/fonts/pk300.tar.gz">
+ftp://ftp.tut.ac.jp/TeX/fonts/pk300.tar.gz
+</a>
+
+<pre>
+# cd /usr/local/lib/tex/fonts
+# mkdir pk
+# cd pk
+# tar zxvf pk300.tar.gz
+# mv pk300 300
+</pre>
+
+<h2>使用方法</h2>
+
+<pre>
+% xdvi DVIファイル名
+</pre>
+
+で、そのDVIファイルをプレビューできます。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp15.html">[PREV]</a>
+<a href="netbsd-jp17.html">[NEXT]</a>
+
+</body>
+</html>

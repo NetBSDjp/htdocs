@@ -1,0 +1,350 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide(XFree86 with I18N)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,XFree86,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01.html">[PREV]</a>
+<a href="netbsd-jp01-3.html">[NEXT]</a>
+
+<h1>XFree86 3.2 の X_LOCALE を含めた再構築</h1>
+
+<p>注:このドキュメントに書かれた手順はまだチェックが完了していません。
+しばしお待ち下さい。
+
+<h2>概説</h2>
+
+<p>XFree86 は、主に i386 アーキテクチャのマシンで動作する
+X11R6.1 ベースの Xのパッケージです。
+Ver 3.2 は正規リリースで、ソースコードがふくまれています。
+
+<p>通常 XFree86 は、各種OS用にバイナリで配布されています。
+OpenBSD や NetBSD 用のバイナリも存在します。
+
+<p>通常の使用はこのバイナリで問題ないのですが、国際化機能の
+使用のために、X に内蔵された locale 関数群を使用したい場合には、
+X のライブラリ群などを再構築する必要があります。
+
+<p>ここでは、-DX_LOCALE を組み込んだ X の再構築手順を簡単に
+解説しています。国際化の機能を使用しない、また別に示した方法
+でこれをおこなう場合にはとくに再構築を行なう必然性はありません。
+
+また、この文書では、再構築後の細かい設定については触れていません。
+これらについては、各種雑誌の記事や、付属のドキュメント
+( /usr/X11R6/lib/X11/doc などにインストールされます )
+などを参照して下さい。
+
+<p>また、これらインストール後の設定については、FreeBSD や Linux と
+同じです。これらの WWW ページで非常に詳しく解説してくれている
+ところがいくつかありますので、そちらも参考になると思います。
+
+<ul>
+<li>JLUG のトップページ(Japan Linux Users Group)
+<li>FreeBSD.jp.のトップページ
+</ul>
+
+<p>再コンパイルの手順は次のようになります。
+
+<ol> 
+<li>XFree86のソースコードの入手、展開
+<li>コンフィグファイルの書き換え( NetBSD.cf, xf86site.def )
+<li>Make World/install
+</ol>
+
+<h2>ソースコードの入手</h2>
+
+<p>まず、XFree86 のソースパッケージを入手します。
+近くの ftpサイト や CD-ROMなどから入手して下さい。
+以下の場所などにあります。
+
+<p>
+<a href="ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32src-1.tgz">
+ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32src-1.tgz</a>
+<a href="ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32src-2.tgz">
+ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32src-2.tgz</a>
+<a href="ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32src-3.tgz">
+ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32src-3.tgz</a>
+<a href="ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32contrib.tgz">
+ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32contrib.tgz</a>
+<a href="ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32servonly.tgz">
+ftp://ftp.tut.ac.jp/X11/XFree86/3.2/source/X32servonly.tgz</a>
+
+<dl>
+ <dt>src-1
+ <dd>ソースの基本部分
+ <dt>src-2
+ <dd>フォント、ドキュメント、その他のユーティリティ
+ <dt>src-3
+ <dd>印刷用の PS 形式のドキュメント + xtest suite(実験的なもの)
+ <dt>contrib
+ <dd>contrib distributuin (xeyes, xload などの一部のコントリブ)
+ <dt>servonly
+ <dd>サーバのみを構築する場合のセット
+</dl>
+
+<h2>ソースの展開</h2>
+
+次のようにして展開します。ここでは、src-1,src-2,contrib のみを展開しています。
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/x32src-1.tar.gz
+% tar zxvf $(SRCDIR)/x32src-2.tar.gz
+% tar zxvf $(SRCDIR)/x32contrib.tar.gz
+</pre>
+
+<p>再コンパイルの際には、$(TOPDIR)/xc/programs/Xserver/hw/xfree86/doc 以下
+の文章が参考になります。インストール後には(バイナリパッケージをいれた
+場合も入っています。)、$(LIBDIR)/doc にコピーされています。
+(通常 /usr/X11R6/lib/X11/doc )
+
+<h2>コンフィグファイルの書き換え</h2>
+
+<p>コンパイルを始める前に、設定ファイルを修正します。
+設定ファイルは、
+
+<pre>
+$(TOPDIR)/xc/config/cf/site.def
+$(TOPDIR)/xc/config/cf/xf86site.def
+$(TOPDIR)/xc/config/cf/NetBSD.cf
+$(TOPDIR)/xc/config/cf/xfree86.cf
+</pre>
+
+が読み込まれます。(OpenBSD でも NetBSD.cf を共通で使用)
+
+<p>読み込む順序は次のようになります。
+
+<ol>
+<li>site.def の BeforeVenderCF の部分
+   <br>ここの中で xf86site.def が読まれる
+<li>NetBSD.cf
+   <br>このファイルの末尾で xfree86.cf が読まれる
+<li>site.def の AfterVenderCF の部分
+</ol>
+
+<p>通常は、site.def に変更を加えるのですが、ここでは、
+NetBSD.cf (Open/NetBSDに固有の設定)
+xf86site.def (xfree86 用の設定) に変更を加えています。
+
+<p>なお、これらの設定ファイルの記述項目については、
+$(TOPDIR)/xc/config/cf/README を参照して下さい。
+変更可能なオプションについて説明があります。
+デフォルトの設定は、上記の 
+site.def, xf86site.def, NetBSD.cf, xfree86.cf
+の中を追いかけて読んでいってください(^^;)
+普通、最初に設定したもの(普通site.defに書く)がずっと有効になるように
+なっています。
+
+<h3>$(TOPDIR)/xc/config/cf/NetBSD.cf</h3>
+
+<hr><pre>
+158行
+#define StandardDefines -DCSRG_BASED
+</pre><hr>
+
+<p>の部分を以下のように修正します。
+
+<hr><pre>
+#define StandardDefines -DCSRG_BASED -DX_LOCALE
+</pre><hr>
+
+<p>これは X_LOCALE をつかうための設定の追加です。
+
+<h3>$(TOPDIR)/xc/config/cf/xf86site.def</h3>
+
+<p>内容をコメントを見ながら適宜修正しておきます。
+ここでは、以下のような項目を変更しました。
+
+使用しているグラフィックボード別に使用するサーバを指定します。
+<hr><pre>
+112行
+#ifdef i386Architecture
+#define XF86SVGAServer          YES
+#define XF86VGA16Server         YES
+#define XF86VGA16DualServer     NO
+#define XF86MonoServer          NO
+#define XF86MonoDualServer      NO
+#define XF86S3Server            NO
+#define XF86S3VServer           NO
+#define XF86I8514Server         NO
+#define XF86Mach8Server         NO
+#define XF86Mach32Server        NO
+#define XF86Mach64Server        NO
+#define XF86P9000Server         NO
+#define XF86AGXServer           NO
+#define XF86W32Server           NO
+#define XF86I128Server          NO
+#endif
+</pre><hr>
+
+<p>どの種類のサーバをコンパイルするか決めています。
+必要な部分を YES にして下さい。この例では、SVGA対応のサーバ
+と、VGAのサーバを作成させています。
+VGA のサーバは、XF86Setup を使用する場合には必須です。
+
+<hr><pre>
+202行
+#define ServerToInstall         XF86_SVGA
+</pre><hr>
+
+<p>これは、インストールする際に、どのサーバを標準のサーバにするか
+決めるためのものです。ここに指定されたものが、"X" に
+シンボリックリンクされます。
+ここはコメントアウトされているので、それを外して下さい。
+
+<hr><pre>
+262行
+#define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
+</pre><hr>
+
+<p>デフォルトでは、xfree86 は syscons, pcvt の 2 種のコンソールを
+サポートするようにコンパイルされます。この3つのうち、SYSCONSは標準の
+NetBSD1.1のパッケージに入っていないので、はずしておきます。
+
+
+仮想コンソール pcvt は、標準の位置(/usr/include/machine)に
+ヘッダファイルがないので、このままだとエラーが出ます。
+カーネルのソースのなかにあるので、コピーしておきます。
+
+<pre>
+% cp /sys/arch/i386/isa/pcvt/pcvt_ioctl.h /usr/include/machine
+</pre>
+
+OpenBSD 2.0でははいっている。NetBSD 要確認 /* XXX */
+
+
+OpenBSD 2.0いらない可能性あり(pccons.h)がある
+すでに Xfree86 にははいってない
+<p>PCCONSも Xfree86 に付属するヘッダファイルをコピーしておきます。
+<pre>
+% cp xc/programs/Xserver/hw/xfree86/etc/console.h /usr/include/machine
+</pre>
+
+<p>詳細は、xc/programs/Xserver/hw/xfree86/doc/{README.NetBSD,README.OpenBSD}
+   を参照して下さい
+
+<hr>
+
+<hr><pre>
+282行
+#define BuildFontServer     NO
+387行
+#define InstallFSConfig     NO  /* install sample fs config */
+</pre><hr>
+
+<p>フォントサーバは、不要と判断し、入れないように指定しています。
+必要な人はYES のままにしておきましょう。
+
+<hr><pre>
+339行〜
+#define BuildXInputExt          YES
+/*
+#define JoystickSupport         YES
+*/
+#define WacomSupport            YES
+#define ElographicsSupport      YES
+#define SummaSketchSupport      YES
+</pre><hr>
+
+ここでは、新しい Extention の、XInputExtention を使うか
+どうかの設定です。XInputExtention は、マウスなど以外の入力デバイス
+として使用できるようにする拡張です。
+ここでは、XInputExtention を有効にして、 Wacom の他部れっ戸
+などを使用できるようにしています。
+必要に応じてはずせばよいでしょう。
+
+<hr><pre>
+496行
+#define InstallJapaneseDocs     YES
+</pre><hr>
+
+<p>日本語に翻訳されたドキュメントをインストールします。
+$(LIBDIR)/doc/Japanese にインストールされます。
+少し内容が古いようですが、一読しておくといいでしょう。
+
+<h2>Xawのバグをつぶす</h2>
+
+この文書の中では、いくつかの Xaw の国際化機能を使った
+アプリケーションを紹介しています。しかし、現在の Xaw の国際化機能には、
+いくつか BUG があります。いちおうそのうちの致命的なものを
+2つ発見しました。それの修正のパッチを示しておきます。
+->参考<a href="netbsd-jp18.html#xawbigfix">
+Xの国際化クライアントのインストール/Xawのバグの修正</a>
+
+<ul>
+ <li><a href="XawI18n-bugfix.patch">Xaw I18N 用のバグフィックス
+     (XawI18n-bugfix.patch)</a>
+</ul>
+
+<p>このパッチをあてるには以下のようにします。
+<pre>
+% cd $(TOPDIR)/xc/lib/Xaw
+% patch < XawI18n-bugfix.patch
+</pre>
+
+<h2>コンパイル</h2>
+
+$(TOPDIR)/xc で
+
+<pre>
+% make World
+(ログをとる場合は、% make World > making.log )
+</pre>
+
+<p>数時間でコンパイルが完了します。
+
+<pre>
+% su
+# make install
+# make install.man   (マニュアルも入れる場合)
+</pre>
+
+<p>でインストールされます。
+
+<h2>インストール後の作業</h2>
+
+<p>インストール後、いくつかの作業が必要です。
+<ol>
+<p><li>/etc/XF86Config の設定
+
+<p>これの設定については man XF86Config や、$(LIBDIR)/dic 以下の
+文書、雑誌の記事などを参考にして下さい。
+
+<p><li>共有ライブラリの読み込み指定。
+
+<p>OpenBSD 2.0では /etc/rc にすでに記述があるのでこの項目は不要です
+NetBSD 要チェック /* XXX */
+
+<p><pre>
+# ldconfig /usr/X11R6/lib /usr/local/lib
+</pre>
+<p>として、共有ライブラリの読み込みの指示をしておきます。
+(/usr/local/lib は Xfree86 とは関係ないですが、ここにライブラリを
+おくことが多いので指定しておきました。)
+
+<p>次回起動以降も有効にするために、/etc/rc.local を修正しておきます。
+<pre>
+if [ -f /sbin/ldconfig ]; then
+    echo 'creating runtime link editor directory cache.'
+    ldconfig
+fi 
+</pre>
+の部分を以下のように直します。
+<pre>
+if [ -f /sbin/ldconfig ]; then
+    echo 'creating runtime link editor directory cache.'
+    ldconfig /usr/local/lib /usr/X11R6/lib
+fi 
+</pre>
+</ol>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01.html">[PREV]</a>
+<a href="netbsd-jp01-3.html">[NEXT]</a>
+
+</body>
+</html>

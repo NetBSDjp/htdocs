@@ -1,0 +1,211 @@
+<html>
+<head>
+<title>NetBSD Japanese Environment Setup Guide (jman,groff)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="NetBSD,jman,groff,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp04.html">[PREV]</a>
+<a href="netbsd-jp06.html">[NEXT]</a>
+
+<h1>jman のインストール</h1>
+
+<p>日本語化されたコマンドには、日本語のマニュアルが付属していることが
+あります。NetBSD の標準の man コマンドでは、これらを見ることができません。
+そこで、日本語のマニュアルを見ることができる jman コマンドを作成します。
+
+<p>NetBSD のマニュアルを日本語に翻訳した、jman とよばれるものがあります。
+
+これは、
+<a href="http://arpeggio.ics.es.osaka-u.ac.jp/~kamahara/NetBSD-X68030/index.j.html">
+NetBSD/X68kプロジェクト</a>の方々によって翻訳されたものです。
+
+<p>マニュアルの処理は、roff コマンドによって行なわれます。
+NetBSD の roff コマンドは 日本語の処理ができません。
+そこで、日本語化した groff を用いて日本語を処理させます。
+
+<a name="groff">
+<h2>groff 1.10 + japanese patch (jgroff 0.99+)のインストール</h2>
+</a>
+
+<h3>注意</h3>
+jman のみを入れる場合には、groff の再インストール
+は不要です。WnnやCannaなどの日本語マニュアルもきちんと
+入れたい場合には必要です。
+
+<p>
+もともと入っている /usr/bin/groff は、英文のマニュアルを処理する
+際に使用されています。日本語対応した groff および 関連プログラム
+は、これと衝突しないように、jg* の名前で /usr/local 以下にいれる
+ことにします。
+
+<p>まずソースコードと日本語化のパッチを入手します。
+以下の場所などにあります。
+
+<ul>
+<li><a href="ftp://ftp.tut.ac.jp/GNU/prep/groff-1.10.tar.gz">
+ftp://ftp.tut.ac.jp/GNU/prep/groff-1.10.tar.gz</a>
+<li><a href="ftp://ftp.tut.ac.jp/GNU/japanese-patch/jgroff-0.99.diff.gz">
+ftp://ftp.tut.ac.jp/GNU/japanese-patch/jgroff-0.99.diff.gz</a>
+日本語化パッチ
+<li><a href="ftp://ftp.tut.ac.jp/GNU/japanese-patch/jgroff-0.99+.diff.gz">
+ftp://ftp.tut.ac.jp/GNU/japanese-patch/jgroff-0.99.diff.gz</a>
+空白処理改善のパッチ
+</ul>
+
+<h3>パッチ当てとソースの修正</h3>
+
+<p>展開してパッチを当てます
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/groff-1.10.tgz
+% cd groff-1.10
+% zcat $(SRCDIR)/jgroff-0.99.diff.gz | patch -p1
+% zcat $(SRCDIR)/jgroff-0.99+.diff.gz | patch -p1
+</pre>
+
+インストール方法などの解説は、README.jp に記述されています。
+それを良くよみながらインストールしていきます。
+
+<p>Makefileを生成させます。
+<pre>
+% ./configure --prefix=/usr/local
+( DVI の出力を ASCII-TeX の形式にする場合は、--JTeX=ASCII を追加)
+</pre>
+
+<h3>Makefile</h3>
+<pre>
+g=
+</pre>
+を
+<pre>
+g=jg
+</pre>
+とします。
+
+<h3>コンパイル</h3>
+
+<p>
+コンパイルして、インストールさせます。
+デフォルトでは、/usr/local/bin, /usr/local/share/groff などに
+コマンドや roff のマクロなどがインストールされます。
+<pre>
+% make
+% su
+# make install
+</pre>
+
+<p>従来の groff と、今回入れた日本語の groff を明確に分離するために
+いくつかの作業を行ないます。
+
+<pre>
+# cd /usr/local/bin
+# mv grodvi jgrodvi
+# mv groff jgroff
+# mv grog jgrog
+# mv grolj4 jgrolj4
+# mv grops jgrops
+# mv grotty jgrotty
+# vi jgnroff
+最後の行の groff を jgroff に変更する
+</pre>
+
+呼び出し用の設定ファイルも修正します。
+gro* の各コマンドを呼び出す部分を、jgro* を呼び出すように変更します。
+
+<pre>
+# cd /usr/local/share/groff/font
+# foreach i (devascii devdvi devlatin1 devlj4 devnippon devps)
+? cd $i
+? mv DESC DESC.orig
+? sed -e 's/gro/jgro/g' DESC.orig &gt; DESC
+? cd ..
+? end
+</pre>
+
+<h2>jman の作成</h2>
+
+<p>jman のパッケージを入手します。
+以下の場所が配布元です。
+
+<p><a href="ftp://ftp.spa.is.uec.ac.jp/pub/NetBSD/jman/">
+ftp://ftp.spa.is.uec.ac.jp/pub/NetBSD/jman/
+</a>
+
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/netbsd1.2B-jman-*.tar.gz
+% cd netbsd1.2B-jman-*
+</pre>
+
+<h3>jman/jman.conf</h3>
+
+<p>/usr/local/bin/nroff を /usr/local/bin/jgnroff に
+修正(8箇所)
+
+<p>インストールします。
+<pre>
+% su
+# setenv LANG C
+# make install
+</pre>
+
+<p>groff のマクロファイルにパッチを当てておきます。
+groff に付属のmanマクロファイルは、本来の BSD のものと少しことなる
+部分があります。これを修正して、日本語対応してくれるパッチです。
+
+<pre>
+# cd /usr/local/share/groff/tmac
+# cat $(TOPDIR)/netbsd1.2B-jman-*/jgroff-for-netbsd-jman.dif | patch
+</pre>
+
+<p>日本語マニュアルは、/usr/local/jman の中に入れられます。
+また、/usr/local/bin/jman コマンドが作成されます。
+この jman コマンドは、 /etc/jman.conf を参照してマニュアルを
+読み込んで表示します。通常の man コマンドは、/etc/man.conf を参照しています。
+
+<p>man.conf(5) の詳細な記述方法は、 man man.conf を参照して下さい。
+
+<h2>jmanの使用方法</h2>
+
+<p>通常の man(1) と同様に利用できます。
+ページャを日本語が通るように more ではまく、less(日本語化したもの)に
+しなければなりませんが、jman は PAGER が未設定の場合は、
+自動的に less を読んでくれます。
+
+<p>日本語マニュアルがあればそれを、なければ英語のマニュアルを参照します。
+日本語のマニュアルを、/etc/jman.conf に設定されたディレクトリに
+いれておきましょう。(/usr/local/jman, /usr/X11R6/jman など)
+なお、マニュアルの漢字コードは、euc である必要があります。
+
+<pre>
+例: 適宜変更が必要です
+
+# mkdir /usr/X11R6/jman
+# mkdir /usr/X11R6/jman/man1
+# nkf -e kterm.jman &gt; /usr/X11R6/jman/man1/kterm.1
+% jman kterm
+</pre>
+
+<p>なお、他の NetBSD のコマンドのように、マニュアルをテキスト形式
+にして格納したければ、次のようにすればいいでしょう。
+
+<pre>
+例: 適宜変更が必要です。
+# nkf -e kterm.jman | jgnroff -Tnippon -mandoc &gt; /usr/X11R6/jman/cat1/kterm.0
+</pre>
+
+<p>テキスト形式のマニュアルは、 
+(マニュアルのディレクトリ)/cat(ジャンル)/(コマンド名).0
+として格納します。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp04.html">[PREV]</a>
+<a href="netbsd-jp06.html">[NEXT]</a>
+
+</body>
+</html>

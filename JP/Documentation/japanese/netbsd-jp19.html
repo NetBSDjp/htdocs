@@ -1,0 +1,167 @@
+<html>
+<head>
+<title>NetBSD Japanese Environment Setup Guide (maru-moji)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="X11,maru-moji,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp19-0.html">[PREV]</a>
+<a href="netbsd-jp20.html">[NEXT]</a>
+
+
+<h1>丸文字をつかおう (^^;)</h1>
+
+<p>丸文字フォントを設定すると、仕事がはかどらないことうけあいです:-)
+
+<h2>丸文字フォントのインストール</h2>
+
+<p>LINUX JEの sources/font から以下のファイル(全部)を 
+/usr/X11R6/lib/X11/fonts/maru にコピーしてきます。
+以下の場所などにあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/Linux/JE/sources/font">
+ftp://ftp.tut.ac.jp/Linux/JE/sources/font
+</a>
+
+<p>以下のファイルをもってきます。
+<pre>
+13x26.alias.gz
+13x26.bdf.gz
+7x14maru.bdf.gz
+7x14rkmr.bdf.gz
+maru14.alias.gz
+maru14.bdf.gz
+maru16.alias.gz
+maru16.bdf.gz
+maru18.alias.gz
+maru18.bdf.gz
+misc.alias.gz
+</pre>
+
+<p>インストールします。
+展開して圧縮をといたあと、bdf 形式から pcf に変更しています。
+そのあと、mkfontdir で、フォントの情報を fonts.dir に書き込ませています。
+<pre>
+% su
+# cd /usr/X11R6/lib/X11/fonts
+# mkdir maru
+# cd maru
+# cp (フォントの場所)/* .
+# gzip -d *
+# foreach i (*.bdf)
+? /usr/X11R6/bin/bdftopcf $i -o `basename $i .bdf`.pcf
+? end
+# mkfontdir
+# cat *.alias &gt; fonts.a
+# rm *.alias
+# mv fonts.a fonts.alias
+</pre>
+
+<h3>fonts.alias</h3>
+
+この中で、iso88859 となっている
+ところが2箇所あるので、iso8859に直しておきます。
+
+<p>これでフォントの準備ができました。
+
+<h3>/etc/XF86Config</h3>
+
+<p>フォントの設定を追加します。
+<pre>
+Section "Files" の中に、
+
+FontPath    "/usr/X11R6/lib/X11/fonts/maru"
+</pre>
+を加えます。
+これで次回のXの起動以降、丸文字フォントが使用できます。
+
+または、xset コマンドを用いて、.xinitrcなどで起動時に毎回
+フォントパスを設定してもいいでしょう。
+<pre>
+例:
+% xset fp+ /usr/X11R6/lib/X11/fonts/maru
+</pre>
+
+<h2>丸文字フォントの使用方法</h2>
+
+<ul>
+<p><li>kterm
+
+<p>次のようなリソースを設定しておきます。( .Xdefaults .Xresources など)
+<hr><pre>
+! 丸文字の kterm の設定 kterm -name mk14/mk16/mk18 で起動
+mk14*fontList: -*-marumoji-medium-r-normal--14-*-*-*-*-*-*-*
+mk16*fontList: -*-marumoji-medium-r-normal--16-*-*-*-*-*-*-*
+mk18*fontList: -*-marumoji-medium-r-normal--18-*-*-*-*-*-*-*
+</pre><hr>
+
+<p><pre>
+% kterm -name mk14
+</pre>
+などとすれば、丸文字の kterm が利用できます。
+(iso8855の 16,18ドット丸文字 は、ファイルがないので、14ドットのものの
+拡大になります。これがいやな場合は、 maru/fonts.alias を適宜変更
+して下さい。)
+
+<p><li>Mule (X版)
+
+<p>次のようなリソースを設定しておきます。
+<hr><pre>
+! mule フォントセットの設定 mule -fn name で指定させる
+Emacs*FontSetList: 14,16,24,m14,m16,m18
+Emacs*FontSet-14: -*-fixed-medium-r-*--14-*-iso8859-1
+Emacs*FontSet-16: -*-fixed-medium-r-*--16-*-iso8859-1
+Emacs*FontSet-24: -*-fixed-medium-r-*--24-*-iso8859-1
+Emacs*FontSet-m14:\
+    -*-marumoji-medium-r-*--14-*-iso8859-1,\
+    -*-marumoji-medium-r-*--14-*-jisx0201.1976-*,\
+    -*-marumoji-medium-r-*--14-*-jisx0208.1983-*,
+
+Emacs*FontSet-m16:\
+    -*-marumoji-medium-r-*--16-*-iso8859-1,\
+    -*-marumoji-medium-r-*--16-*-jisx0201.1976-*,\
+    -*-marumoji-medium-r-*--16-*-jisx0208.1983-*,
+
+Emacs*FontSet-m18:\
+    -*-marumoji-medium-r-*--18-*-iso8859-1,\
+    -*-marumoji-medium-r-*--18-*-jisx0201.1976-*,\
+    -*-marumoji-medium-r-*--18-*-jisx0208.1983-*,
+</pre><hr>
+
+<p><pre>
+% mule -fn m14
+</pre>
+     などとして、丸文字で起動できます。
+     また、起動後も、Ctrl - マウス右ボタンで出てくる、フォントの
+     切替えメニューの FontSet の項目から、設定している FontSet を
+     切替え出来ます。
+
+<p><li>X国際化クライアント
+
+<p><pre>
+*fontSet: -*-fixed-medium-r-normal--14-*
+</pre>
+などの fontSetの設定を、
+<pre>
+*fontSet: -*-marumoji-medium-r-normal--14-*
+</pre>
+にすれば、丸文字になります。
+.Xdefaults などで、一括指定すれば嬉しいかもしれません。:-)
+
+<p><li>NetScape
+
+<p>Options/General Preference/Font の Japanese のエントリに、
+Marumoji ができているはずです。これを指定すれば OK です。
+     
+</ul>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp19-0.html">[PREV]</a>
+<a href="netbsd-jp20.html">[NEXT]</a>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (canna)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,canna,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp06.html">[PREV]</a>
+<a href="netbsd-jp08.html">[NEXT]</a>
+
+<h2>Canna 3.2 patchlevel 2 のインストール</h2>
+
+<p>Canna も wnn と同様、日本語変換のためのサーバです。
+
+<p>Canna はデフォルトでは以下の場所にインストールされます。
+<pre>
+コマンド         /usr/local/canna/bin
+設定ファイルなど /usr/local/canna/lib
+ヘッダファイル   /usr/local/canna/include
+ライブラリ       /usr/lib
+エラーファイル   /usr/spool/canna
+ロックファイル   /usr/spool/canna/lock
+マニュアル       /usr/local/canna/man
+</pre>
+
+<h2>設定ファイルの変更</h2>
+
+<p>パッケージを入手して展開します。
+ソースは以下の場所などにあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/UNIX/canna/Canna32.tar.gz">
+ftp://ftp.tut.ac.jp/UNIX/canna/Canna32.tar.gz
+</a>
+<br><a href="ftp://ftp.tut.ac.jp/UNIX/canna/Canna32.patch1.sh.gz">
+ftp://ftp.tut.ac.jp/UNIX/canna/Canna32.patch1.sh.gz
+</a>
+<br><a href="ftp://ftp.tut.ac.jp/UNIX/canna/Canna32.patch2.gz">
+ftp://ftp.tut.ac.jp/UNIX/canna/Canna32.patch2.gz
+</a>
+
+<p>ソースコードを展開します。
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/Canna32.tar.gz
+% cd Canna32
+% zcat $(SRCDIR)/Canna32.patch1.sh.gz | sh -f -
+% patch -p1 &lt; ca32-p1.patch
+% zcat $(SRCDIR)/Canna32.patch2.gz | patch -p1
+</pre>
+
+<h3>Canna.conf</h3>
+
+<p>($TOPDIR)/Canna32/Canna.conf を適宜編集します。
+詳細は、INSTALL.jp  や Canna.conf 内のコメントを参照して下さい。
+
+<hr><pre>
+libCannaDir = /usr/lib 
+
+ErrDir  = /usr/spool/canna
+LockDir = /usr/spool/canna/lock
+ :
+cannaDsoRev = 1
+ :
+LockFile = .CANNALOCK
+</pre><hr>
+の部分を以下のように修正します。 
+<hr><pre>
+libCannaDir = /usr/local/lib
+
+ErrDir  = /var/log
+LockDir = /var/run
+ :
+cannaDsoRev = 1.0
+ :
+LockFile = canna.pid
+</pre><hr>
+ライブラリのインストール場所と、エラーファイルなどの場所を変更
+しています。あと共有ライブラリのバージョン番号の表記を変更しています。
+
+<h2>コンパイル</h2>
+
+<pre>
+% xmkmf
+% make Makefile
+% make Makefiles
+</pre>
+サブディレクトリの Makefile を生成しています。
+
+<p>ここで、lib/canna/Makefile の 906 行目 でエラーがでます。
+これを出ないように修正しておきます。
+899行目以降
+<hr><pre>
+install.man::
+ @(TMP=/tmp/tmp.$$$$; \
+ (略)
+ $(RM) $${TMP})
+</pre><hr>
+の部分を、
+<hr><pre>
+install.man::
+ TMP=/tmp/tmp.$$$$; \
+ (略)
+ $(RM) $${TMP}
+</pre><hr>
+とします。@(  ) をとっています。
+
+ヘッダファイルへのリンクを作成させます。
+<pre>
+% make includes
+</pre>
+
+<p>ここで、stddef.h と stdlib.h の以下の場所を修正します。
+canna は日本語を扱うために wchar_t を利用します。これ
+は、システム付属のものと、canna 独自のものどちらでも利用できます。
+が、NetBSD の wchar_t は日本語をサポートしておらず、canna 附属の
+ものを使用する必要があります。この際、システム側の設定との
+食い違いを修正するため、ヘッダファイルをすこし変更する必要が
+あります。システムのものを直接変更するのは気持ち悪いので、
+コピーしてから変更しています。
+<pre>
+% cd include
+% cp /usr/include/stddef.h .
+% cp /usr/include/stdlib.h .
+% chmod u+w std*
+% vi stddef.h
+% vi stdlib.h
+</pre>
+
+<h3>stddef.h, stdlib.h</h3>
+<hr><pre>
+#ifdef  _BSD_WCHAR_T_
+typedef _BSD_WCHAR_T_   wchar_t;
+#undef  _BSD_WCHAR_T_
+#endif
+</pre><hr>
+の部分を以下のように修正します。
+<hr><pre>
+#ifdef  _BSD_WCHAR_T_
+#ifndef _WCHAR_T
+#define _WCHAR_T
+typedef _BSD_WCHAR_T_   wchar_t;
+#endif
+#undef  _BSD_WCHAR_T_
+#endif
+</pre><hr>
+
+<p>つづいて生成されている Makefile の間違いを手動で修正していきます。
+修正するのは、lib 以下の Makefile です。
+
+<h3>lib/RK, lib/RKC, lib/RKC16, lib/canna, lib/canna16</h3>
+の中の Makefile の中に、
+<pre>$(     cannaDsoRev)</pre>
+となっている部分がいくつかあります。これを
+<pre>$(cannaDsoRev)</pre>
+と直します。
+
+<p>make を続けます。
+<pre>
+% make depend
+% make
+% su
+# make install
+(# make install.man マニュアルも入れる場合)
+</pre>
+
+以上でかんなのコンパイルとインストールが完了します。
+
+<h2>追加設定</h2>
+
+<h3>/etc/services</h3>
+
+<pre>
+canna  5680/tcp
+</pre>
+のエントリを追加します。
+
+<p>かんなは、コマンド cannaserver で起動します。
+cannaserver をマシン起動時に起動させるには、rc.local に
+以下のように追加します。
+<pre>
+if [ -f /usr/local/canna/bin/cannaserver ]; then
+       rm -f /var/spool/canna/lock/.CANNALOCK*
+       /usr/local/canna/bin/cannaserver
+       echo 'cannaserver started.'
+fi
+</pre>
+
+<p>cannaserver の終了には、cannakill コマンドを使用します。
+
+<p>各種コマンドは、標準の cannaserver のホスト名を環境変数
+CANNAHOST から取得します。
+.cshrc や .login で以下のように設定するといいでしょう。
+<pre>
+setenv CANNAHOST ホスト名
+</pre>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp06.html">[PREV]</a>
+<a href="netbsd-jp08.html">[NEXT]</a>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide(XFree86 with I18N)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,XFree86,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp00.html">[PREV]</a>
+<a href="netbsd-jp02.html">[NEXT]</a>
+
+<h1>X における国際化機能の利用に関する諸問題</h1>
+
+<h2>概要</h2>
+
+<p>X11R5 以降、X Window System は国際化のための機能が組み込まれています。
+これにより、国際化を行なったアプリケーションの作成が比較的容易になりました。
+なお、ここでの国際化は、表示や入力などで複数の言語を切替えて使用することを
+指し複数の言語を同時にあつかえるというもの(multilingualization)ではありません。
+
+<p>さて、この国際化のために ANSI で定義されたlocale 関数群が使用されて
+います。国際化の機能を有効にするには、まずシステムの setlocale 
+を呼び出して C の関数群の機能を切替えたあと、X内部の locale をそれにあわせて
+初期化させます。つぎのような手順です。
+
+<ol>
+<li>setlocale の呼出し<br>
+
+setlocale を呼び出して、適当な locale に変更します。
+(例:setlocale(LC_ALL,"") 環境変数 LANG の値に設定)
+
+<li>XSupportsLocale の呼出し<br>
+
+XSupportsLocale() として呼び出して、X が現状の
+Locale をサポートしているかどうかチェックさせて初期化させます。
+この時、$(LIBDIR)/locale/locale.alias を参照して
+OS の locale名と Xの locale名 の対応がとられます。
+この関数内部で、OSの locale の取得には setlocale(LC_ALL,NULL) 
+を使用しているので、(1)で失敗した時点で(2)は自動的に "C" ということに
+なってしまいます。
+
+<li>XSetLocaleModifiers の呼出し<br>
+
+XSetLocaleModifiers("") などとして呼び出して、
+ロケールに関する詳しい設定を行ないます。
+(現状では、入力メソッドの設定にのみ使用されている)
+</ol>
+
+<p>ちなみに Xtoolkit を使用している場合には、
+XtSetLanguageProc を呼び出すことによってこれらの作業が順次行なわれます。
+(実際の細かいシーケンスについてはソースなどを参照して下さい)
+
+<p>上の説明でわかる通り、国際化の機能を ON にするには、
+X がその言語をサポートしていることに加えて、setlocale による 
+locale 設定が成功する必要があります。
+
+<p>OpenBSD/NetBSD は 現在 locale の機構をほとんどサポートしていません。
+一応関数 setlocale はありますが、"C" と "POSIX" をうけいれる
+だけの飾りの関数です。関連の関数はすべて我々にとって無意味です。
+そのためこのままではこの国際化の機能は利用できません。
+
+<p>こういうまともに locale をサポートしていない OS の場合、
+X の中に Xlocale として実装されたものを代わりに使用できます。
+これはシステムの setlocale を置き換えてしまうものですが、
+マクロでの置換なので、有効にするためには Xのライブラリ群 (Xlib,Xt,Xaw)を
+ソースから再構築する必要があります。
+
+<ul>
+ <li><a href="netbsd-jp01-2.html">
+     XFree86 3.2 の X_LOCALE を含めた再構築</a>
+</ul>
+
+<p>第2の解決方法として、Open/NetBSD の libc に日本語などを
+サポートした locale 関数群を組み込んでしまうというものがあります。
+FreeBSD の関連コードがほとんどそのまま利用できます。
+
+<ul>
+ <li><a href="netbsd-jp01-3.html">
+     Open/NetBSD への FreeBSD の setlocale の導入</a>
+</ul>
+
+<p>もう一つ、裏技的な方法があります。
+X Consortium の X の実装において、X は内部に国際化に必要な関数を完全に
+内蔵しており、これを利用して国際化機能が実現されています。
+
+<p>一部 Xaw がシステムの多バイト関数を呼び出すのですが、
+Xのコンパイル時に
+<pre>
+#define XawI18nDefines  -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+</pre>
+をつけてコンパイルしておくと、システムのものを呼び出さず
+X 内部の関数を使用するようになります。
+ちなみに Open/NetBSD を含む大抵の OS ではこの設定はデフォルトで有効です。
+
+<p>この場合、Xが呼び出すシステム側の関数は、setlocale のみになります。
+つねに渡された値を受理するダミーの setlocale を作成して、
+クライアントのコンパイル時にリンクさせると、あっさり国際化クライアント
+を動作させることができます。(^^)
+
+<p>この手法はあまりまっとうではありませんが
+(クライアント内部でシステムの関数群は当然正常に利用できない)
+とりあえず表示と入力のみの実現でかまわないのなら、
+もっとも簡単に実行できます。
+
+<ul>
+ <li><a href="netbsd-jp01-4.html">
+     ダミーの setlocale の使用</a>
+</ul>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp00.html">[PREV]</a>
+<a href="netbsd-jp02.html">[NEXT]</a>
+
+</body>

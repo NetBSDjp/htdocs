@@ -1,0 +1,219 @@
+<html>
+<head>
+<title>NetBSD Japanese Environment Setup Guide (X i18n Client)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="X11,I18N,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp17.html">[PREV]</a>
+<a href="netbsd-jp19-0.html">[NEXT]</a>
+
+<h1>Xの国際化クライアントのインストール</h1>
+
+<h2>概説</h2>
+
+<p>X11R6 の Athene Widget(以下 Xaw) は標準で国際化の機能が組み込まれており、
+Xaw を用いて作成された X のクライアントは比較的容易に国際化が可能です。
+
+<p>この国際化は、locale 関数群を利用しており、NetBSD で利用するには、
+X を X_LOCALE を組み込んで作成しておく必要があります。
+
+<p>Xaw での 国際化の手順はおおむね以下のとおりです。
+クライアントによっては、デザインが狂ったりするので調整が必要に
+なることもあります。
+
+<ol>
+<li>main() の最初のほうに、
+    XtSetLanguageProc(NULL,NULL,NULL);
+    を加える
+<li>widget の定義部の
+    <br>asciiSrcObjectClass  を multiSrcObjectClass に変更する
+    <br>asciiSinkObjectClass を multiSinkObjectClass に変更する 
+<li>リソースに *International: true を加える
+    <br>リソースに *FontSet の設定を加える
+</ol>
+         
+<p>リソースファイルは、
+<ol> 
+<li>$(LIBDIR)/$(LANG)/app-defaults/クラス名
+<li>$(LIBDIR)/app-defaults/クラス名
+</ol>
+の順番によむので、もとのリソースファイルに 
+<pre>
+*international: true
+*fontSet: -*-fixed-medium-r-normal--14-*
+</pre>
+を加えたものを、$(LIBDIR)/$(LANG)/app-defaults に置けば、
+環境変数 LANG によって国際化版とそうでないものの切替が可能です。
+
+<p>具体的には、
+<pre>
+setenv LANG ja_JP.EUC
+</pre>
+としておけば、
+$(LIBDIR)/ja_JP.EUC/app-defaults の設定ファイルを読みにいって
+国際化機能 ON, locale japanese で動作して、
+<pre>
+setenv LANG C
+</pre>
+とすると、
+$(LIBDIR)/app-defaults の設定ファイルを読みにいって、
+国際化機能 OFF, locale C で動作するようになります。
+
+<p>なお、Xawでの国際化クライアントは、XIMによる入力が可能となっています。
+この設定については、
+<a href="netbsd-jp08.html#xim">kinput2の解説</a>を参照して下さい。
+
+<a name="xawbugfix">
+<h2>Xawのバグの修正</h2>
+</a>
+
+さて、上で解説した Xaw-I18N による国際化は比較的容易なのですが、
+実は現バージョン(X11R6.1)の Xaw の国際化にはいくつか致命的なバグが
+あります。具体的にはメモリリークによる Segmentation Fault など
+が起こります。2つほど原因の箇所を発見してあります。(X cons. への
+リポートは完了しています)これを利用するには2つの方法があります。
+
+<ol>
+ <li> Xaw をコンパイルしなおす<br>
+      Xaw のソースディレクトリ(xc/lib/Xaw) で以下に示すパッチをあてて、
+      再度 make, make install します。
+ <li>クライアントのコンパイル時に該当オブジェクトをリンクする<br>
+      パッチをあてた該当ファイルをクライアントのコンパイル時に一緒に
+      コンパイルしてリンクすればそちらが優先されるので問題無く
+      動作するようになります。
+</ol>
+
+<h3>Xaw のバグをとるパッチ</h3>
+
+<ul>
+<li><a href="XawI18n-bugfix.patch">
+    ソースにあてるパッチ(XawI18n-bugfix.patch)</a>
+<li><a href="XawI18n-bugfixed.tar.gz">
+    パッチ済みのソース(XawI18n-bugfixed.tar.gz:MultiSrc.c,XawIm.c)</a>
+</ul>
+
+<p>このパッチをあてるには以下のようにします。
+<pre>
+% cd $(TOPDIR)/xc/lib/Xaw
+% patch < XawI18n-bugfix.patch
+</pre>
+
+<hr>
+<a name="xcalendar">
+<h1>Xcalendar のインストール</h1>
+</a>
+
+XCalender は、日別にメモをつけることのできるカレンダーです。
+
+<p>ソースの入手先は     
+<a href="ftp://ftp.tut.ac.jp/X11/X11R6/contrib/programs/xcalender.tar.gz">
+ftp://ftp.tut.ac.jp/X11/X11R6/contrib/programs/xcalender.tar.gz
+</a>     
+です。
+     
+<h2>ファイルの変更</h2>
+
+<h3>Imakefile</h3>
+
+<pre>
+  EXTRA_DEFINES = -DATHENA
+</pre>
+を次のように変更
+<pre>
+  EXTRA_DEFINES = -DATHENA -DXI18N
+</pre>
+
+<pre>
+#
+# for Internationalization
+#
+#XCal-uj.ad: XCal-uj.sed
+#    sed 's;%%XCALENDAR_LIBDIR%%;$(XCALENDAR_LIBDIR);'\
+#    < $? \
+#    > $@
+#install:: XCal-uj.ad
+#    MakeDir($(LIBDIR)/ja_JP.ujis/app-defaults)
+#    $(INSTALL) -c $(INSTAPPFLAGS) XCal-uj.ad $(LIBDIR)/ja_JP.ujis/app-defaults/XCalendar
+
+#clean::
+#    $(RM) XCal-uj.ad
+</pre>
+を
+<pre>
+#
+# for Internationalization
+#
+XCal-uj.ad: XCal-uj.sed
+    sed 's;%%XCALENDAR_LIBDIR%%;$(XCALENDAR_LIBDIR);'\
+    < $? \
+    > $@
+install:: XCal-uj.ad
+    MakeDir($(LIBDIR)/japanese/app-defaults)
+    $(INSTALL) -c $(INSTAPPFLAGS) XCal-uj.ad $(LIBDIR)/japanese/app-defaults/XCa
+lendar
+
+clean::
+    $(RM) XCal-uj.ad
+</pre>
+にする。 ja_JP.ujis -> japanese に注意。
+     
+<h3>xcalender.h</h3>
+
+74行目:
+<pre>
+#ifdef XI18N
+#include &lt;X11/Xaw/Xawi18n.h&gt;
+#endif
+</pre>
+を削除
+
+<h2>コンパイル/インストール</h2>
+<pre>
+% uudecode < XCal-uj.uu
+% xmkmf
+% make
+% echo "*international: true" >> XCal-uj.sed
+% echo "*fontSet: -*-fixed-medium-r-normal--14-*" >> XCal-uj.sed
+</pre>     
+     
+<hr>
+<p><a name="xmascot">
+<h1>XMascot</h1></a>
+
+<p>XMascotは、X の画面上にかわいいマスコットを表示するための
+アプリケーションです。
+
+<p>XMascot は、始めから国際化を想定して作成されています。
+
+入手先は<a href="ftp://cclub.tutcc.tut.ac.jp/pub/xmascot/xmascot2.5.tar.gz">
+ftp://cclub.tutcc.tut.ac.jp/pub/xmascot/xmascot2.5.tar.gz
+</a>などです。
+     
+<p>Imakefile 中の
+<pre>
+#undef USE_I18N を #define USE_I18N
+</pre>
+にして、コンパイルするのみです。
+
+<pre>
+% xmkmf -a
+% make
+% su
+# make install
+</pre>
+
+<p>メニュー部分が日本語表示可能になります。
+ 
+</ol>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp17.html">[PREV]</a>
+<a href="netbsd-jp19-0.html">[NEXT]</a>
+
+</body>
+</html>

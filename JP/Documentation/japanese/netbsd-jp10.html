@@ -1,0 +1,164 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (mule)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,mule,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp09.html">[PREV]</a>
+<a href="netbsd-jp11.html">[NEXT]</a>
+
+<h1>Mule 2.3 のインストール</h1>
+
+<p>Mule は GNU Emacs を多言語に対応させたものです。
+日本語だけでなく、中国語、韓国語、タイ語など、さまざまな
+言語の表示、入力が可能です。
+
+<h2>Muleのコンパイル</h2>
+
+<p>まずはソースを入手します。以下の場所などにあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/GNU/mule/mule-2.3.tar.gz">
+ftp://ftp.tut.ac.jp/GNU/mule/mule-2.3.tar.gz</a>
+
+<p>ソースを展開します。
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/mule-2.3.tar.gz
+% cd mule-2.3
+</pre>
+
+<h3>mule-2.3/src/s/netbsd.h</h3>
+
+<p>一部修正します。
+
+<pre>
+#define LIB_SYSTEM -lutil
+</pre>
+を次のように修正します。
+<pre>
+#define LIB_SYSTEM -lcrypt
+</pre>
+-lutil は NetBSD 0.9 以降では不要です。 -lcrypt をつけないと、
+リンク時にエラーが出ます。
+
+<h2>Configureの実行</h2>
+
+<p>Configure を実行して Makefile を生成させます。
+
+<pre>
+% ./Configure i386--netbsd --terminal-face --with-x-toolkit
+</pre>
+
+<p>最初の i386--netbsd は、CPUがi386系列 - メーカ不明 - OSはNetBSD の意です。
+
+<p>--terminal-face は、端末版(mule -nw)を利用する時、太字などの
+文字属性を利用するよう指示しています。
+ 
+<p>--with-x-toolkit は、X での マウスの操作や、メニューなどを使用可能に
+します。
+
+<p>--mcpath を追加して、
+lisp/site-init.el で pathname-coding-system を設定すると、
+英語以外のファイル名が利用できるようになります。
+
+<p>詳しくは、INSTALL を参考にしましょう。
+
+<ul>
+<p><li>egg(jserver)を利用する場合
+
+<p><pre>
+--wnn --wnn-includes=/usr/local/include/wnn
+--wnn-libraries=/usr/local/lib
+</pre>
+をつけます。
+これらの設定は適宜インストールした場所に合わせて下さい。
+
+<p>なお、Egg の起動キーは、デフォルトで C-\ です
+詳細は、info/Egg-jp を参照して下さい。
+
+<p><li>canna/emacs を利用する場合
+
+<p><pre>
+--canna --canna-includes=/usr/local/canna/include
+--canna-libraries=/usr/local/lib
+</pre>
+をつけます。インストールした場所が異なる場合は、適宜
+--canna-includes と --canna-libraries を設定します。
+
+<p>なお、canna/emacs を利用するには、以下のような設定を
+~/.emacs に設定する必要があります。
+canna/emacs の起動キーはデフォルトで C-o です。
+詳細は、info/Canna-jp を参照して下さい。
+
+<hr>
+<pre>
+(if (and (boundp 'CANNA) CANNA)
+        (progn
+         (load-library "canna")
+         (canna) ))
+</pre>
+<hr>
+</ul>
+
+<h2>コンパイル/インストール</h2>
+
+<p>Congfigureが完了したら make します。
+<pre>
+% make
+% su
+# make install
+</pre>
+以上で完了です。
+
+<p>mule は標準では以下の場所にインストールされます。
+<pre>
+/usr/local/bin           muleおよび、付属コマンドが入ります
+/usr/local/lib/mule/     各種設定ファイルなど
+   lock/		 ロックファイルの領域
+   site-lisp/		 各マシンで追加した elisp ファイルを入れていきます
+   バージョン番号/lisp/  標準のelispファイルが格納されます
+	         /アーキテクチャ名  そのアーキテクチャ用の mule が呼び出す
+                                    コマンドが格納されています。
+                 /etc    ドキュメントが格納されてます。FAQや、いろいろな
+                         機能やコマンドの解説があります。目を通しておくと
+                         いいでしょう。FAQ-Mule.jp に日本語でのFAQがあります。
+
+/usr/local/info         info ファイルが格納されます。
+</pre>
+
+<h2>mule に関するドキュメント</h2>
+
+<p>mule は多くのオンラインドキュメントが含まれています。
+
+<ul>
+<p><li>チュートリアル
+
+<p>mule の操作法の簡単なチュートリアルがあります。
+<pre>
+M-x help-with-tutorial-for-mule
+Languages: Japanese
+</pre>
+で見られます。
+
+<p><li>info
+
+<p>M-x info で、info というマニュアルが読めます。
+mule(emacs) のあらゆるの機能の解説が入っています。
+
+<p><li>/usr/local/lib/mule/バージョン/etc
+
+<p>多くのドキュメントが入っています。 less などで見て下さい。
+FAQ-Mule.jp は必読です。
+</ul>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp09.html">[PREV]</a>
+<a href="netbsd-jp11.html">[NEXT]</a>
+
+</body>
+</html>

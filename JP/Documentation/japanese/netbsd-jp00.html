@@ -1,0 +1,130 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide(At first)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01.html">[NEXT]</a>
+
+<H1>はじめに</H1>
+
+<p>
+この文書では、パッケージをインストールするのではなく、
+順次自分でコンパイルを行なっていくことを主眼においています。
+実際にコンパイルを行なう際に発生するエラーなどを未然に防ぐ、
+または修正するように書いてあります。
+
+<p>
+このため、この文書を参照して日本語環境を整えるには、
+最低限何らかのエディタの使用(ed,viなど)ができる必要があります。
+また C言語 や make に関する知識があるほうが良いでしょう。
+
+<p>
+コンパイルをしている時間が無い、まためんどくさいという場合は、
+このような手法をとらず、パッケージの類がサポートされている
+Linux や FreeBSD を使用されることをおすすめします。
+手軽に必要なコマンドを導入できます。
+
+<p>
+
+
+
+
+
+
+<p>
+なるべく一般的に記述していますが、適宜自分の環境、またインストール
+するソフトのバージョンに応じて読み変えて下さい。基本的に各ソースに
+付属のドキュメント(README や INSTALL など)を良く読むようにしましょう。
+
+<p>なお、この文書では、コンパイルは基本的に一般ユーザで行ない、
+必要な時のみスーパーユーザになってコマンドを実行するようにしています。
+<pre>
+% コマンド     一般ユーザーでの実行
+% su           スーパーユーザへの Substitute User
+# コマンド     スーパーユーザーでの実行
+</pre>
+をそれぞれ意味しています。
+
+<p>また、次の表記も用います。
+<pre>
+$(SRCDIR) ftpなどで持ってきたソースのパッケージを置いてあるディレクトリ
+$(TOPDIR) ソースを展開する先のディレクトリ
+$(LIBDIR) X11 のライブラリディレクトリ (通常 /usr/X11R6/lib/X11 など)
+$(BINDIR) X11 のバイナリディレクトリ   (通常 /usr/X11R6/bin など)
+</pre>
+
+<p>日本語化(国際化)したコマンドは、環境変数 LANG を参照して
+動作するものがあります。こういうコマンドは、
+たいてい関数 setlocale を使用していますが、NetBSD は現在この locale の機
+構を全くサポートしていません。一応関数 setlocale はありますが、飾りです。
+このため C の locale 関連の関数はすべて無意味です。 
+
+<p>libc の出すメッセージについてのみは、gencat を利用して
+"C","Pig", "fr", "de" という言語のものが準備されています。
+(これは環境変数LANGに応じて表示するメッセージを変更させるもので、
+今のところ setlocaleとは全く関係ありません)
+
+<p>しかし、X内部の関数を利用すれば locale を使用することができます。
+また、FreeBSD から locale 関連部分を移植してこれを利用することも可能です。
+<a href="netbsd-jp01.html"->Xにおける国際化機能の利用に関する諸問題</a>
+
+<p>この文書では、環境変数 LANG に設定する locale名称 は "ja_JP.EUC" を
+使用していくことにします。.cshrc や .login などで、
+setenv LANG ja_JP.EUC
+を指定しておけばうまく動作するように設定していきます。
+
+<p>この locale名 "ja_JP.EUC" は、OS正規の setlocale を使用している
+プログラム(perlなど)では、警告やエラーになることがあります。
+(システムの locale を交換した場合はこの限りではありません)
+そのことを理解した上で使用してください。
+
+<a name="freqerr">
+<h1>NetBSDでのコンパイルで良く出るエラーとその対策</h1>
+</a>
+
+<p>NetBSD は 4.4BSD ベースになり、C言語も ANSIになっています。
+(実体はgccです)。また POSIX に準拠するようになりました。
+この際に、従来のOSと宣言が異なるために、エラーがでることがあります。
+このような場合は新しい設定のほうに合わせて書き直すことで解決します。
+
+<ul>
+<p><li>例1 ファイル名がかわった
+
+<p>utmp などのファイルのある場所が従来のOSなどと変わっています。このため、
+実行時に書き込めないまたは探せないで動作がおかしくなることがあります。
+正しい位置を指定すればなおります。
+
+<p>ファイルの位置の変わった例としては以下のようなものがあります
+     <ul>
+       <li>/etc/utmp  ->  _PATH_UTMP (/usr/include/utmp.hで定義)
+       <li>/etc/wtmp  ->  _PATH_WTMP (/usr/include/utmp.hで定義)
+       <li>/etc/lastlog -> _PATH_LASTLOG (/usr/include/utmp.hで定義)
+       <li>/etc/termcap -> /usr/share/misc/termcap
+       <li>/usr/spool/*  -> /var/spool/*
+       <li>/usr/spool/mail -> /var/mail
+     </ul>    
+
+<p>リンクで解決するなどの方法もありますが、正しく指定して
+   コンパイルしたほうがいいでしょう。
+     
+<p><li>例2 型宣言がかわった
+
+<p>型の宣言が、変更されているために、conflict エラーがけっこうでます。
+これは基本的には ソースコードの方をヘッダファイルに合わせます。
+ソース側を削除/コメントアウト/同じ宣言にするなどすればいいです。
+
+<p>char *sys_errlist[] が const char *sys_errlist[] になったことよる
+エラーはよく出ますこの文書ではソースから削除することで対策してます。
+</ul>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01.html">[NEXT]</a>
+
+</body>
+</html>
