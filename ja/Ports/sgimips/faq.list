@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2001
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD/sgimips Frequently Asked Questions</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1>NetBSD/sgimips Frequently Asked Questions</h1>
+
+<LIST>
+
+<SECTION>General Questions
+
+<ENTRY>bootstrapping How to bootstrap NetBSD/sgimips?
+To bootstrap the port, you need to netboot the kernel using the SGI's
+ARCS firmware, then prepare a second hard disk with NetBSD's FFS and
+disklabel. You then tell the kernel to use root/swap on the second
+disk. The firmware can't currently boot the kernel from an FFS
+filesystem, though, and you'll need to boot that via the net for
+now.
+<p>
+
+To start bootstrapping, the following files are needed:
+<p>
+
+<dl compact>
+<dt>Snapshot:
+<dd><a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/sgimips/snapshot/">ftp://ftp.netbsd.org/pub/NetBSD/arch/sgimips/snapshot/</a>
+<dt>Kernel:   
+<dd><a href="ftp://ftp.netbsd.org/pub/NetBSD/arch/sgimips/netbsd.ip32">ftp://ftp.netbsd.org/pub/NetBSD/arch/sgimips/netbsd.ip32</a>
+</dl>
+
+<ENTRY>resetting-eaddr How to reset $eaddr on IP22 etc.?
+Here's a method to set the ethernet address that works on at
+least the Indy, and perhaps also other machines with HPC3's.
+<p>
+
+All disclaimers apply yadda yadda.
+<p>
+
+At the PROM prompt:
+<p>
+
+<pre>dump -w -x 0xbfbe04e8</pre>
+<p>
+
+Sanity check the output here to see if it matches the address
+given in the 'ec0: bad ethernet address' error message. If not,
+you may not want to overwrite whatever is there instead.
+<p>
+
+<pre>fill -w -v 0xGG 0xbfbe04e8
+fill -w -v 0xHH 0xbfbe04ec
+fill -w -v 0xII 0xbfbe04f0
+fill -w -v 0xJJ 0xbfbe04f4
+fill -w -v 0xKK 0xbfbe04f8
+fill -w -v 0xLL 0xbfbe04fc</pre>
+<p>
+
+Where GG:HH:II:JJ:KK:LL is the intended ethernet address. It's a
+very good idea to reuse the address the machine was shipped with.
+Check the back of the machine if you cannot remember it.
+<p>
+
+Power down, wait one full minute and then power up. All variables
+will have been reset as with the resetenv command, except $eaddr.
+
+<ENTRY>prom-tftp-client-failing PROM tftp client failing with default NetBSD tftpd settings
+The PROM tftp client on SGI machines can fail with default NetBSD tftpd
+settings.  The problem is that your current PROM may not support port
+numbers with the sign bit set.  The workaround is to limit the port
+numbers of anonymous connections to 32767.  The following tunables
+should fix your problem:
+<p>
+<tt># sysctl -w net.inet.ip.anonportmin=20000<br>
+# sysctl -w net.inet.ip.anonportmax=32767</tt>
+
+</LIST>
+
+<a href="">Up to <em>NetBSD/sgimips Port Page</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: faq.list,v 1.12 2001/03/14 21:53:25 dent Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
