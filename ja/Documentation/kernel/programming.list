@@ -100,6 +100,88 @@ printf() $B$r;H$&$3$H$G$7$g$&!#%+!<%M%k$N(B printf $B$O(B $B%3%s%=!<%k$K=PN
 <CURRENTSRC>/usr/src/lib/libc/sys/Makefile.inc
 </tt> $B$NE,Ev$J>l=j$KDI2C$7$F$/$@$5$$!#(B
 
+<ENTRY>mmap_in_pseudo-device $B2>A[%G%P%$%9$K(B mmap $B$r<BAu$9$kJ}K!(B
+$B$"$J$?$N:n$C$?%G%P%$%9$O!"$*$=$i$/%-%c%i%/%?!<%G%P%$%9$G$7$g$&!#$b$7!"(B
+$B$=$&$G$"$l$P!"%G%P%$%9%Z!<%8%c!<$r;H$C$F$$$k$O$:$G$9!#(B(VM $B%7%9%F%`$O!"(B
+$B$3$l$i$9$Y$F$r1#JC$7$F$$$k$N$G!"?4G[$7$J$$$G$/$@$5$$(B)$B!#(B
+<p>
+$B:G=i$K!"(Bmmap $B%$%s%?!<%U%'!<%9$N$?$a$K!"E,Ev$J%*%U%;%C%H$r$$$/$D$+A*(B
+$B$s$G$/$@$5$$!#Nc$($P!V(Bmmap $B%*%U%;%C%H(B 0-M $B$O(B $B%*%V%8%'%/%H(BA$B$r$"$?$($k!"(B
+N-O $B$O%*%V%8%'%/%H(B B $B$r$"$?$($k!WEy$N$h$&$K!#(B
+<p>
+$B$3$l$,=*$k$H!"(Bmmap $B%k!<%A%s$O0J2<$N$h$&$K<BAu$G$-$^$9!#(B
+<p>
+<pre>
+int
+foommap(dev, off, prot)
+        dev_t dev;
+        int off, prot;
+{
+
+        if (off & PAGE_MASK)
+                panic("foommap");
+
+        if ((u_int)off &gt;= FOO_REGION1_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION1_MMAP_OFFSET + FOO_REGION1_SIZE))
+                return (atop(FOO_REGION1_ADDR + ((u_int)off -
+                    FOO_REGION1_MMAP_OFFSET)));
+
+        if ((u_int)off &gt;= FOO_REGION2_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION2_MMAP_OFFSET + FOO_REGION2_SIZE))
+                return (atop(FOO_REGION1_ADDR + ((u_int)off -
+                    FOO_REGION2_MMAP_OFFSET)));
+
+        /* Page not found. */
+        return (-1);
+}
+</pre>
+<p>
+$B$5$F!"<B:]$K$OC1=c$J%+!<%M%k%a%b%j!<%*%V%8%'%/%H$r(B mmap $B$9$k$N$G!"(B
+$B%3!<%I$O$b$&$9$3$7J#;($K$J$j$^$9(B($B7k6I$O2>A[%G%P%$%9$G$9$+$i(B)$B!#(B
+<p>
+$B$3$l$rF0:n$5$;$k$?$a$K$O!"%"%m%1!<%H$7$?%a%b%j!<%*%V%8%'%/%H$r%Z!<%8D4@0(B
+$B$5$l$?6-3&$K3N<B$K(B mmap $B$7$J$1$l$P$J$j$^$;$s!#$b$7!"%"%m%1!<%H$7$?%a%b%j(B
+$B$N%5%$%:(B &gt;= PAGE_SIZE $B$J$i!"$3$l$OJ]>Z$5$l$^$9!#$=$&$G$J$1$l$P!"(B
+uvm_km_alloc() $B$r;H$$!"%"%m%1!<%7%g%s%5%$%:$r%Z!<%8%5%$%:$K@Z$j$"$2$F$/$@$5$$!#(B
+<p>
+$B<c43$N=$@5$r2C$($k$H0J2<$N$h$&$K$J$j$^$9!#(B
+<p>
+<pre>
+int
+foommap(dev, off, prot)
+        dev_t dev;
+        int off, prot;
+{
+        paddr_t pa;
+
+        if (off & PAGE_MASK)
+                panic("foommap: offset not page aligned");
+
+        if ((u_int)off &gt;= FOO_REGION1_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION1_MMAP_OFFSET + FOO_REGION1_SIZE)) {
+                if ((vaddr_t)foo_object1 & PAGE_MASK)
+                        panic("foommap: foo_object1 not page aligned");
+                if (pmap_extract(pmap_kernel(), foo_object1 +
+                    (u_int)off - FOO_REGION1_MMAP_OFFSET, &pa) == FALSE)
+                        panic("foommap: foo_object1 page not mapped");
+                return (atop(pa));
+        }
+
+        if ((u_int)off &gt;= FOO_REGION2_MMAP_OFFSET &&
+            (u_int)off &lt; (FOO_REGION2_MMAP_OFFSET + FOO_REGION2_SIZE)) {
+                if ((vaddr_t)foo_object2 & PAGE_MASK)
+                        panic("foommap: foo_object2 not page aligned");
+                if (pmap_extract(pmap_kernel(), foo_object2 +
+                    (u_int)off - FOO_REGION2_MMAP_OFFSET, &pa) == FALSE)
+                        panic("foommap: foo_object2 page not mapped");
+                return (atop(pa));
+        }
+
+        /* Page not found. */
+        return (-1);
+}
+</pre>
+
 <ENTRY>accessing_a_kernel_structure_from_userland $B%f!<%6!<%i%s%I$+$i%+!<%M%k$N9=B$BN$X%"%/%;%9$9$k(B
 $BNI$$Nc$,(B <tt>
 <CURRENTSRC>/usr/src/usr.bin/vmstat/dkstats.c
@@ -116,7 +198,7 @@ printf() $B$r;H$&$3$H$G$7$g$&!#%+!<%M%k$N(B printf $B$O(B $B%3%s%=!<%k$K=PN
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: programming.list,v 1.11 2000/01/16 01:27:43 abs Exp $<br>
+  $NetBSD: programming.list,v 1.12 2000/03/23 18:25:01 dent Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
