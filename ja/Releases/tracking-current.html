@@ -1,0 +1,210 @@
+<html>
+<head>
+<!-- Copyright (c) 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+    <title>Tracking NetBSD-current with CVS</title>
+  </head>
+
+  <body bgcolor="#FFFFFF" text="#000000">
+    <h1>Tracking NetBSD-current with CVS</h1>
+    <h2>Overview</h2>
+
+    <p>Current can be tracked in the following way. The baseline copy of
+      the sources is kept up to date using sup approximately once a week.
+      as normal. This baseline source tree is then imported into a local
+      CVS repository. Current is then built from a checked out copy of
+      the repository.
+
+    <p>There are 3 major reasons for this approach
+    <ol>
+      <li>It keeps track of how current changes over time.</li>
+      <li>It allows for local changes to be almost automatically merged
+	into the updated current sources. This is needed on
+	NetBSD/arm32 as some patches are required to get the current
+	sources to build.</li>
+      <li>It ensures there is always a clean unmodified copy of the
+	NetBSD-current source tree is available in case of problems when
+	building.</li>
+    </ol>
+    
+    <p>The only downside to this approach is that 3 independent copies 
+      of the source tree are needed which amounts to about 150MB of
+      disk space not including the space required to actually build
+      current.
+
+    <h2>Requirements</h2>
+    <ul>
+      <li>CVS 1.9 or later(either from pkgsrc or just built from
+	source). CVS 1.10 or later is better as it handles merging better. </li>
+      <li>SUP installation</li>
+      <li>Perl 5 installation for supplied script(optional)</li>
+    </ul>
+    <h2>Details</h2>
+    <p>Tracking and building current consists of 6 phases:
+    <ol>
+      <li>Supping updated sources into master source tree.</li>
+      <li>Importing supped sources into CVS and updating working copy
+	of sources.</li>
+      <li>Merging supped sources with local working sources.
+      <li>Building and installing current.</li>
+      <li>Tagging the sources for a successful build in the
+	repository.</li> 
+    </ol>
+    <h3>Supping sources</h3>
+    <p>Sources can be supped from any NetBSD sup server and the output 
+      from the SUP should be stored in a file for later reference.
+
+    <h3>Importing and merging sources.</h3>
+    <p>Sources are imported as follows:
+    <pre>
+cvs -d /misc/cvsrep import -I ! netbsd netbsd current-<i>date</i>
+    </pre>
+    <p><i>date</i> is replaced by the date of the SUP for tracking
+      purposes. The <code>-I !</code> option ensures that no file in
+      the source tree is ignored. This is because some NetBSD source
+      files have extensions which are normally ignored by CVS. If
+      there are any conflicts with local patches the import command
+      will report them and will describe a command to merge the
+      conflicts something like:
+    <pre>
+cvs checkout -jnetbsd:yesterday -jnetbsd netbsd
+    </pre>
+    <p>This merge command will correctly merge the imported NetBSD
+      sources but it will not handle the removal of files locally
+      which have already been removed by the SUP process. To do this the
+      merge command would be:
+    <pre>
+cvs update -j<i>previous import tag</i> -j current-<i>date</i>
+    </pre>
+    <p><i>previous import tag</i> should be replaced with the name of
+      the tag used for the previous cvs import. <i>date</i> should be
+      replaced with the current date to yield the same tag used on
+      the current import that has just been merged.
+    <p>The conflicts reported by the import command are potential
+      conflicts. These are usually merged by the update command but in
+      some cases a real conflict occurs. In these cases a manual merge
+      of the conflicting lines will be required. A real conflict will
+      be reported in the cvs update output as a <code>C</code>
+      followed by a filename.
+    <p>Merging conflicts manually is not a simple process but in most
+      cases it should be resolved by removing the local changes and
+      making the file like the original NetBSD source code.  
+    <p>CVS marks conflicts as follows:
+<pre>
+&lt;&lt;&lt;&lt;&lt;&lt;
+  <i>code from local file</i>
+======
+  <i>code from imported file</i>
+&gt;&gt;&gt;&gt;&gt;&gt; <i>local revision number of newly imported revision</i>
+</pre>
+
+    <p>If the import reports no conflicts the checked out copy of the
+      tree should be updated in exactly the same way as for the
+      conflicts case.
+    <p> All update and checkout commands should be done in the
+      directory where the sources have been checked out. On my system
+      this is <code>/usr/src/netbsd</code>
+    <p>If this is the first import then there will be no sources
+      checked out. Assuming you wish to create the source tree in
+      '<code>/usr/src/netbsd</code>' The following commands will check
+      out the source and no merge step is required.
+    <pre>
+cd /usr/src
+cvs -d/misc/cvsrep checkout netbsd
+    </pre>
+    <h3>Building current.</h3>
+    <!-- Insert reference to build instructions here -->
+
+    <h3>Tagging a successful build</h3>
+    <p> If the build completes successfully and produces a working set 
+      of binaries it can be useful to tag the working sources. This
+      allows rewinding to a working build tree with a single CVS
+      command in the event that the current tree becomes unbuildable
+      for any reason. This can be performed by issuing the following
+      command:
+    <pre>
+cvs tag successful-build-<i>build date</i>
+    </pre>
+    <h2>Notes</h2>
+    <ul>
+      <li>If the NetBSD customised version of CVS which recognises $NetBSD: tracking-current.html,v 1.6 1998/10/19 07:30:41 abs Exp $
+        markers in files is not used the NetBSD revision number of the file
+	is available for reference purposes when build problems
+	occur.</li>
+      <li>The sup/import/merge sequence described above is quite
+	easily automatable. The following Perl script automates this
+	process.
+<pre>
+#!/usr/local/bin/perl
+#
+# Script to SUP NetBSD-current, import it into CVS and merge it with
+# any local changes.
+#
+# NOTES:
+# This script does no error handling so is not really suitable for 
+# non-interactive use.
+#
+# This script has only been test with cvs-1.10.1 and cvs-1.9.18.
+#
+$SRCROOT="/usr/src/netbsd";
+$IMPORTROOT="/misc/import";
+$CVSROOT="/misc/cvsrep";
+#run the sup into a perl stream
+system "/usr/sbin/sup -zsv" ; # This may need to change for none
+                              # current systems
+
+# now import the new files into CVS 
+
+chdir $IMPORTROOT or die "Could not cd to $IMPORTROOT\n";
+
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;
+$date = localtime;
+$shortdate = sprintf "%02d%02d%04d",$mday,$mon+1,1900+$year;
+system "/usr/local/bin/cvs -d$CVSROOT import -I ! -m\"SUP Import $date\" netbsd netbsd current-$shortdate ";
+
+# make the working directory the local NetBSD Tree
+chdir $SRCROOT or die "Could not change to $SRCROOT diectory\n";
+
+# Now do the import.
+$lastimport = `cat /usr/src/netbsd/.tag`; # `s are backquotes
+$lastimport =~ s/\n//; # strip off any trailing newline in the string
+system "/usr/local/bin/cvs update -j $lastimport  -j
+current-$shortdate ";
+# Now write the current file into tag save file
+open TAG,"&gt;$SRCROOT/.tag" or die "Could not open new tag file";
+ print TAG "current-$shortdate";
+close TAG;
+    </pre> 
+    <p>This script was written in Perl since it the scripting tool
+	  which the author has the most experient in using. It should
+	  be fairly straightforward to write a shell script to perform 
+      the same task.</li>
+      <li>Techniques for tracking current with CVS have been discuss several
+	times on the NetBSD current-users mailing list. For
+	alternative techniques try searching the NetBSD mailing lists.</li>
+    </ul>
+    <p>
+    If you have any comments or suggestions please send them to
+    Mike Pumford <a href="mailto:mpumford@black-star.demon.co.uk">
+    mpumford@black-star.demon.co.uk</a> (who maintains this page) or
+    <a href="mailto:www@netbsd.org">www@netbsd.org</a>.
+<hr>
+<table><tr>
+  <td>
+    <a href="../index.html">
+    <img src="../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
+  </td><td>
+    <a href="../index.html">Home Page</a>
+  </td>
+</tr></table>
+
+<hr>
+<address>
+    www@NetBSD.ORG<br>
+    $NetBSD: tracking-current.html,v 1.6 1998/10/19 07:30:41 abs Exp $<br>
+    <a href="../Misc/disclaimer.html">Copyright &copy; 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
