@@ -1,0 +1,438 @@
+<html>
+<head>
+<!-- Copyright (c) 1998, 1999, 2000
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>The NetBSD Networks FAQ</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>Basic NetBSD Networking
+
+This page is developing, and we welcome any
+<a href="../../Misc/feedback.html">comments or suggestions</a>.
+
+<LIST>
+<h2>Other links</h2>
+<!--
+If you add entries here, please add them to ../index.html as well.
+Note that the relative URL path needs to be modified.
+-->
+<ul>
+  <li><a href="wavelan.html">Wireless networking using the Lucent WaveLAN</a>
+  <li><a href="netboot/index.html">HOWTO Netboot a diskless machine</a>
+  <li><a href="http://radon.static.net/~armenb/ipnat.html">Network
+      Address Translation (NAT) FAQ</a>, using
+      <a href="http://coombs.anu.edu.au/~avalon/ip-filter.html">IP-Filter</a>.
+  <li><a href="dhcp.html">HOWTO setup DHCP clients and servers</a>.
+  <li><a href="http://rfhs8012.fh-regensburg.de/~feyrer/NetBSD/NWF/">
+      NetBSD/amiga Guide to Networking FAQ</a>
+  <li><a href="ipv6/index.html">IPv6 Networking FAQ</a>.
+  <li><a href="http://www.macbsd.com/macbsd/howto/index.html">
+      PPP, cross compiling, and other HOW-TOs</a>
+</ul>
+
+<SECTION>Networking FAQ
+
+<ENTRY>getting_started Getting Started
+The NetBSD install process includes basic network configuration, which
+implements a standard workstation setup. This configuration can be
+extended to take advantage of NetBSD's many networking features.
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li><a href="http://www.cis.ohio-state.edu/htbin/rfc/rfc1918.htmlRFC">RFC 1918</a>
+            - Address Allocation for Private Internets
+      </ul>
+</ul>
+
+<ENTRY>configuration_files  Network Configuration Files
+The network configuration is defined in a set of text
+configuration files.
+<ul>
+  <li>/etc/rc.conf - rc.conf(5) specifies system services,
+      including the the network services, to be automatically
+      started at system initialisation.
+  <li>/etc/hosts - hosts(5) the most basic hostname/IP map. 
+  <li>/etc/myname - the fully qualified hostname.
+  <li>/etc/mygate - default gateway. Usually better put in /etc/rc.conf, or
+      you can run routed(8).
+  <li>/etc/ifconfig.{<em>IF</em>}. - the definition of
+      network interface <em>IF</em>, used by
+      <em>/etc/netstart</em> at system initialisation, to configure
+     a network interface.
+  <li>/etc/ifaliases - ifaliases(5) a single interface can be aliased to more
+      than one IP number. The aliases are specified here, and used by
+      <em>/etc/netstart</em> at system initialisation.
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>configuration_programs  Network Configuration Programs
+Two important network configuration programs are used in the network startup script
+(/etc/netstart), and can be used to manually configure an active network.
+
+<ul>
+  <li>ifconfig(8) - change or view the characteristics of a network interface.
+  <li>route(8) - manipulate the network routing tables.
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>adding_a_host  Adding a New Host to the Network
+The minimum software requirement for a host to be added to a network
+is a configured interface with an address on the local network. If
+you provide network information during the NetBSD installation
+process, the new host can be immediately connected to the network and
+accessed by its IP number.
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>naming_a_host  Naming a New Host on the Network
+To allow access by hostname as well as by IP number, the new hostname
+and its IP number are added to the network configuration files. There
+are a number of ways to manage this;
+
+<ol>
+  <li>/etc/hosts: hosts(5) For small networks of a few hosts, the
+      hostname/IP maps can be manually duplicated in the /etc/hosts
+      files of each host.
+      <p>
+      <em>/etc/hosts:</em><br>
+      <samp>
+      192.168.1.2  host2.mydomain.org.au host2<br>
+      </samp>
+      <p>
+  <li>yp(8) enables the /etc/hosts files on the network to be
+      automatically
+      synchronised (along with other configuration files).
+  <li>DNS: The hostname maps can be centralised into zone-files which
+      are accessed by the name-server, named(8).
+      (there are many documents at
+      <a href="http://www.dns.net/dnsrd/docs/">www.dns.net</a>
+      dealing with setting up and maintaining DNS files).
+      <p>
+      <em>Forward zone file entry</em><br>
+      <samp>
+      host2  A     192.168.1.2
+      </samp>
+      <p>
+      <em>Reverse zone file entry</em><br>
+      <samp>
+      2      PTR   host2.mydomain.org.au.
+      </samp>
+</ol>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>internetworking  Inter-networking
+Connecting your network (which may consist of a single host) to
+another network requires that at least one host acts as a gateway between the two
+networks. The gateway host has two network interfaces - one
+configured for each network.
+
+<ul>
+  <li>Create an interface configuration file (/etc/ifconfig.{<em>interface</em>}) 
+      for the second ethernet interface.
+      <p>
+      <em>/etc/ifconfig.we1</em><br>
+      <samp>
+      192.168.2.30 netmask 0xffffff00 media 10base2/BNC
+      </samp>
+      <p>
+  <li>Reboot your computer to activate the new interface.
+  <li>Enable IP packet forwarding.  You can either compile a kernel
+      with "options GATEWAY", or you can "sysctl -w
+      net.inet.ip.forwarding=1" each time your machine boots, e.g.,
+      from /etc/rc.local.
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>placeholder
+      </ul>
+</ul>
+
+<ENTRY>ppp  Inter-networking with PPP
+A special type of network interface can be created on a serial port (with
+or without a modem attached) using pppd(8).
+
+<p>
+
+There are many ways to setup PPP. One simple method, suitable for
+connecting to your ISP is;
+<ol>
+  <li>Create an peer options file
+      <p>
+      <em>/etc/ppp/peers/myisp</em><br>
+      <samp>
+      # Example pppd options <br>
+      # Specific for myisp <br>
+      /dev/tty01<br>
+      local_IP_address:remote_IP_address<br>
+      connect '/usr/sbin/chat -v -f /etc/ppp/peers/myisp.chat'<br>
+      defaultroute<br>
+      persist<br>
+      ipparam myisp<br>
+      asyncmap 0<br>
+      noauth
+      </samp>
+      <p>
+  <li>Create an device options file
+      <p>
+      <em>/etc/ppp/options.{ttyname}</em><br>
+      <samp>
+      # Example pppd options <br>
+      # Specific for ttyname <br>
+      lock<br>
+      crtscts<br>
+      57600<br>
+      modem<br>
+      </samp>
+      <p>
+  <li>Create an chat file
+      <p>
+      <em>/etc/ppp/peers/myisp.chat</em><br>
+      <samp>
+      # Example chat file <br>
+      # Specific for myisp<br>
+      ABORT BUSY ABORT 'NO CARRIER' ""<br>
+      \da\ptz0 OK<br>
+      \da\ptdt8887776655 CONNECT<br>
+      </samp>
+      <p>
+  <li>Establish the connection with;
+      <p>
+      <samp>
+      pppd call myisp
+      </samp>
+      <p>
+  <li>Set the variable
+      <p>
+      <samp>
+      ppp_peers="myisp"
+      </samp>
+      in /etc/rc.conf rc.conf(5).
+      and the connection will be established automatically at boot-time.
+</ol>
+
+Unlike an ethernet interface, you do not need to create a
+<em>/etc/ifconfig.{interface}</em> file for a PPP interface.
+<p>
+If you are using demand dial ppp and do not wish certain traffic to
+bring up the link (for example xntpd(8) ntp traffic), you can use
+<tt>active-filter</tt> in your ppd.conf file:
+<pre>	active-filter   'not udp port ntp'</pre>
+
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>chat(8) - Automated conversational script
+        <li><a href="http://www.macbsd.com/macbsd/howto/pppnat/">
+            How to setup PPP for multiple ISP's, including IP-NAT and DNS setup.</a>
+      </ul>
+</ul>
+
+<ENTRY>pppleased Setting up pppd to use a leased line
+A leased line is a fixed point-to-point link.  Setting this up under NetBSD is
+a very simple process.  On the server build an <em>/etc/ppp/options</em> like
+this:
+<p>
+     <blockquote>
+     /dev/tty00<br> 
+     57600<br>
+     noauth<br>
+     crtscts<br>
+     passive<br>
+     &lt;local_IP_address&gt;:&lt;remote_IP_address&gt;<br>
+     debug<br>
+     netmask 255.255.255.255<br>
+     proxyarp<br>
+     </blockquote>
+<p>
+You need to change &lt;local_IP_address&gt; and &lt;remote_IP_address&gt; to
+the appropriate values for your network (&lt;local_IP_address&gt; can be the
+same as your ethernet, &lt;remote_IP_address&gt; must be one valid addr for
+your ethernet segment).
+<p>
+On the client build an <em>/etc/ppp/options</em> with:
+<p>
+     <blockquote>
+     /dev/tty00<br>
+     57600<br>
+     noauth<br>
+     crtscts<br>
+     defaultroute<br>
+     debug<br>
+     </blockquote>
+<p>
+On both sides adjust /dev/tty00 to the name of your serial port.
+
+<ENTRY>isdn4bsd	Inter-networking with ISDN cards
+The <a href="http://www.freebsd-support.de/i4b/">isdn4bsd</a> package enables
+<a href="../../Ports/alpha/index.html">NetBSD/alpha</a>,
+<a href="../../Ports/amiga/index.html">NetBSD/amiga</a>,
+<a href="../../Ports/atari/index.html">NetBSD/atari</a> and
+<a href="../../Ports/i386/index.html">NetBSD/i386</a>
+to use ISDN networking cards connected to DSS1 (European protocol)
+exchanges.  For this, you need to patch your kernel sources according
+to the instructions that come with the package, build a new kernel
+with the ISDN support compiled in and also build some control
+programs.
+<p>Note that this package is still considered to be in the beta test
+phase.
+<p>Also note that this is about ISDN cards, not about ISDN modems. The latter
+should be usable <a href="#ppp">like normal modems.</a>
+
+<ENTRY>simplenat	A simple NAT setup
+
+To allow hosts that you have on your local network (say: 10.0.0.0/24)
+use your NetBSD machine as router, and setup Network Address Translation
+(NAT), do the following:
+<P>
+
+<OL>
+<LI> On your clients, use the NAT machine as default router (put
+	<TT>defaultrouter="<I>a.b.c.d</I>"</TT> into their /etc/rc.conf if
+	they run NetBSD, where <TT><I>a.b.c.d</I></TT> is the internal
+	IP number (from the 10.0.0.0 net, i.e.)).
+<LI> On your NAT machine, first make sure your kernel has ipfilter
+	enabled:
+<PRE>
+options         PFIL_HOOKS    	        # pfil(9) packet filter hooks
+pseudo-device   ipfilter                # IP filter (firewall) and NAT
+</PRE>
+
+<LI> Put this into your /etc/ipf.conf(5):
+<PRE>
+pass in from any to any
+pass out from any to any
+</PRE>
+
+<LI> Put this into your /etc/ipnat.conf(5):
+<PRE>
+map ppp0 10.0.0.0/24 -> 0/32 proxy port ftp ftp/tcp
+map ppp0 10.0.0.0/24 -> 0/32 portmap tcp/udp 40000:60000
+map ppp0 10.0.0.0/24 -> 0/32
+</PRE>
+
+<LI> Enable everything in your /etc/rc.conf:
+<PRE>
+ipfilter=YES                                    # uses /etc/ipf.conf
+ipnat=YES                                       # uses /etc/ipnat.conf
+</PRE>
+
+<LI> Reboot.
+
+<LI> Use ping(8) and tcpdump(1) to debug.
+</OL>
+
+<ENTRY>maintenance  Maintenance
+<ul>
+  <li>Monitoring activity - useful tools
+      <ul>
+        <li>ifconfig(8) - configure and display network interface parameters.
+        <li>route(8) - manipulate the routing tables.
+        <li>ping(8) - send ICMP ECHO_REQUEST packets to network hosts
+        <li>traceroute(8) - print the route packets take to reach a network host
+        <li>tcpdump(1) - selectively view traffic on a network interface
+        <li>netstat(1) - show network status
+        <li>systat(8) 'systat netstat' - dynamically display network connections
+      </ul>
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li><PKGSRC>net/mrtg - This utility from the packages collection
+			lets you monitor your network activity graphically.
+      </ul>
+</ul>
+
+<ENTRY>security  Security
+<ul>
+  <li>/etc/hosts.{allow,deny}: The configuration files for
+      tcp-wrappers (hosts_access(5))
+      which is built into the master daemon inetd(8).
+</ul>
+<ul>
+  <li><h3>See also:</h3>
+      <ul>
+        <li>The <a href="http://www.cert.org/">CERT* Coordination Center</a>
+            studies Internet security vulnerabilities.
+        <li><a href="http://www.cert.org/tech_tips/root_compromise.html">
+            Steps for Recovering from a UNIX Root Compromise</a>
+      </ul>
+</ul>
+
+<ENTRY>appletalk  Running Appletalk
+NetBSD supports '<PKGSRC>net/netatalk', which enables unix machines
+to communicate with appletalk machines over ethernet (but not
+localtalk). This allows MacOS machines to read filesystems and
+print to printers via a NetBSD machine, and for the NetBSD machine
+to print to AppleTalk printers.  The necessary source is available
+via the NetBSD <a href="../software/packages.html">Packages
+Collection</a>.
+
+<ENTRY>new_bind  Converting to BIND version 8
+As of NetBSD 1.4, we are now using BIND version 8, which uses a
+different configuration file format.  The primary named config file
+has changed names from named.boot to named.conf.  You can convert your
+old configuration files like this:
+<samp>
+/usr/sbin/named-bootconf &lt; named.boot &gt; named.conf
+</samp>
+<p>
+If you prefer to continue to use the old version of BIND (version 4),
+there is a <PKGSRC>net/bind4 package.  Also be aware that the man
+page for named.conf(5) is slightly newer than the program itself, so
+there are a few features that are documented but not implemented.
+
+<SECTION>Network problems
+
+<ENTRY>unable-to-ping Unable to ping other hostnames
+    If you can ping(8) another machine by IP address ("<tt><b>ping
+    -n <em>W.X.Y.Z</em></b></tt>"), but not by hostname, then there
+    is probably a problem with your resolv.conf(5) file. Check your
+    nameservers are set correctly and responding.
+
+<ENTRY>connection-delays Connections seem to have a 30 second delay
+    This is usually either:
+    <ol>
+    <li>Incorrect resolv.conf(5) causing hostname lookups to timeout
+	against non responding nameservers,
+    <li>Remote mail servers attempting to connect back to your local
+	hosts identd(8) while ipf(8) has been configured to drop packets
+	to tcp port 113 without sending any response.
+    </ol>
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: index.list,v 1.22 2000/02/15 14:34:46 abs Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy;
+    1998, 1999, 2000
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</body>
+</html>
