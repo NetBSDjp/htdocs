@@ -161,6 +161,38 @@ There is no magic wand for this:
 	submit a bug report to the gcc guys</a>.
 </ul>
 
+<ENTRY>compiler-usage  How to use the NetBSD crosscompiler outside the NetBSD source tree?
+After building a crosscompiler toolchain in $TOOLDIR, how do you get
+the compiler to find the target system's includes and libs in $TARGETROOT?
+Assuming you have the 1.6.x toolchain and 'vax' as target, do the following
+steps:
+
+<pre>
+	% cd $TOOLDIR/vax--netbsdelf
+        % mv include include.BAK
+        % ln -s $VAXROOT/usr/include .
+        % mv lib lib.BAK
+        % ln -s $VAXROOT/usr/lib .
+        % set path=($path `pwd`/bin)
+        % rehash
+</pre>
+
+On -current and 2.0 systems, you'll have to take extra care for libraries
+in /lib, see
+<a href="http://mail-index.netbsd.org/tech-toolchain/2004/02/03/0006.html">this
+posting</a> in the tech-toolchain archives.
+<p>
+
+After that, your crosscompiling gcc will be used:
+
+<pre>
+	% which gcc
+	/home/cvs/src-1.6/tools/obj.vax/tools.NetBSD-1.6-vax/vax--netbsdelf/bin/gcc
+	% gcc h.c -o h
+	% file h
+	h: ELF 32-bit LSB executable, Digital VAX, version 1 (SYSV), for NetBSD, dynamically linked (uses shared libs), not stripped
+</pre>
+
 </LIST>
 
 <DOCLINK>
@@ -169,7 +201,7 @@ There is no magic wand for this:
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.list,v 1.33 2004/01/08 15:22:50 jschauma Exp $<br>
+  $NetBSD: index.list,v 1.35 2004/02/04 11:58:59 hubertf Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
