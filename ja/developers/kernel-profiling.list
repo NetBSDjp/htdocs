@@ -1,0 +1,146 @@
+<html>
+<head>
+<!-- Copyright (c) 1999 The NetBSD Foundation, Inc.
+     ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:kenh@NetBSD.ORG">
+<title>NetBSD Developer Documentation: Kernel Profiling HOWTO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<LIST>
+
+This is a description of how kernel profiling works, and how to use
+it.  This documentation was written by Matthias Drochner
+<drochner@zel459.zel.kfa-juelich.de>.
+
+<SECTION>NetBSD Developer Documentation: Kernel Profiling HOWTO
+
+<ENTRY>how-does-it-work How does it work
+<p>
+Two different sets of data about the behaviour
+of the profiled code are recorded independently:
+the frequency of every function call (call graph
+profiling) and the time spent in each function,
+estimated by the probability of the program counter
+being within the function when sampled at a random
+time which is in turn estimated by the fraction
+of profiling timer interrupts occuring while the
+function in question is executing.
+The <b>gprof(1)</b>
+utility interpretes the data. There are
+some limitations caused by the missing correlation
+between the two data sets which are noted in the BUGS
+section of its manpage.
+<p>
+Kernel profiling and user program profiling are
+mostly similar; there are only small differences
+in the way the profiling data are accessed and
+how the profiling is controlled.
+<p>
+The data related to kernel profiling are located
+within a global structure <b><kbd>_gmonparam</kbd></b> which is
+initialized by <b><kbd>kmstartup()</kbd></b> (in
+<b><kbd>kern/subr_prof.c</kbd></b>) during system initialization.
+The user level control program <b>kgmon(8)</b> uses
+<b>sysctl(3)</b> calls for control and data access, and
+partly <b>kvm(3)</b> accesses (also in the standard case
+where a live kernel is profiled!).
+
+<ENTRY>call-graph-recording Call graph recording
+
+The profiling flag (<b><kbd>-pg</kbd></b>) causes the compiler to
+issue a call to <b><kbd>mcount()</kbd></b> on every function entry.
+This is dispatched by machine specific glue to
+<b><kbd>_mcount(frompc, selfpc)</kbd></b>, which is implemented in
+<b><kbd>sys/lib/libkern/mcount.c</kbd></b>. <b><kbd>frompc</kbd></b> is
+the address
+the function was called from, and <b><kbd>selfpc</kbd></b> is
+the address of the called function itself.
+<p>
+For every (<b><kbd>frompc</kbd></b>, <b><kbd>selfpc</kbd></b>) pair
+encountered during
+the profiling, a <b><kbd>struct tostruct</kbd></b> is allocated
+from the array pointed to by <b><kbd>_gmonparam.tos</kbd></b>
+The entries are simply allocated from the beginning
+to the end in the order of first use. Some magic
+within <b><kbd>kmstartup()</kbd></b> determines the size of the
+array from the kernel's text size -- it seems that
+this is kind of an "educated guess".
+<p>
+The <b><kbd>struct tostruct</kbd></b> entries contain the address
+of the called function (<b><kbd>selfpc</kbd></b>) together with
+a histogramming counter. Entries belonging to the
+same calling address form a linked list. The list
+heads (ie the index of the first entry within the
+<b><kbd>_gmonparam.tos</kbd></b> array belonging to a particular
+calling address) are located in a second data array
+<b><kbd>_gmonparam.froms</kbd></b> which is indexed by the calling
+address (<b><kbd>frompc</kbd></b>) divided by some value (which should
+not be larger than the minimal distance of two calls
+within the code - see also the comments in
+<b><kbd>sys/sys/gmon.h</kbd></b>).
+<p>
+Note that for standard function calls there is only
+one <b><kbd>selfpc</kbd></b> for each <b><kbd>frompc</kbd></b>, so that
+the typical
+list consists of one member only.
+
+<ENTRY>statistical-profiling Statistical profiling
+
+If profiling is started, a profiling timer interrupt
+is set up which calls <b><kbd>statclock()</kbd></b> (see
+<b><kbd>sys/kern/kern_clock.c</kbd></b>). This should be a timer independent
+of the normal system clock to avoid interferences
+with functions running synchronously to system clock
+ticks. <b><kbd>statclock()</kbd></b> is used for both user program
+and kernel profiling.
+<p>
+The program counter at the time of the interruption,
+divided by some value again, is used as index into
+the histogram <b><kbd>_gmonparam.kcount</kbd></b> and the corresponding
+cell is incremented.
+
+<ENTRY>how-to-use-it How to use it
+
+<ul>
+<li> Build and boot a profiling kernel.
+  For this, use the <b><kbd>-p</kbd></b> flag to <b>config(8)</b>.
+  Otherwise,
+  there is nothing special. The profiling kernel
+  will print a message like
+  <pre>
+  Profiling kernel, textsize=1611256 [f0100000..f02895f8]</pre>
+  after autoconfiguration, before the root filesystem
+  is mounted.
+<li> Make sure <b><kbd>/netbsd</kbd></b> is the currently running kernel,
+  or use the <b><kbd>-N</kbd></b> option in the <b>kgmon(8)</b>
+  invocations below.
+<li> Start profiling with <b><kbd>kgmon -b</kbd></b>.
+<li> Run some applications which stress the part of the
+  system you want to investigate.
+<li> Stop profiling with <b><kbd>kgmon -h</kbd></b>.
+<li> Run <b><kbd>kgmon -p</kbd></b> to write the collected data into a
+  file <b><kbd>gmon.out</kbd></b>.
+<li> Before measuring different things, reset the in-kernel
+  profiling data buffers with <b><kbd>kgmon -r</kbd></b>.
+<li> To get a human readable interpretation from <b><kbd>gmon.out</kbd></b>,
+  run<pre>
+  % gprof /netbsd &gt; gprof.out</pre>
+<li> Try to make sense of the data.
+</ul>
+
+</LIST>
+
+<a href="">Up to <em>Main developers page</em></a>
+<hr>
+
+<DEVLINK>
+
+<address>
+  kenh@NetBSD.ORG<br>
+  $NetBSD: kernel-profiling.list,v 1.3 2000/01/19 01:13:25 abs Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1998, 1999
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+</body>
+</html>
