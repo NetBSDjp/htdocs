@@ -2,88 +2,88 @@
 <head>
 <!-- Copyright (c) 2000
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>Printing to a remote SMB printer from NetBSD</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<HEADING>Printing to a remote SMB printer from NetBSD
+<HEADING>NetBSD からリモート SMB プリンターへの印刷
 
-How to print from a NetBSD machine to a printer connected to an MS
-Windows machine (or other machine using SMB to share a printer)
+NetBSD マシンから、MS Windows マシン(あるいは、プリンターを共有するために 
+SMB を使用しているマシン)に接続されたプリンターへ印刷する方法
 
 <LIST>
 
-<SECTION>Printing to a remote SMB printer from NetBSD
+<SECTION>NetBSD からリモート SMB プリンターへの印刷
 
-<ENTRY>introduction Introduction
-The setup described below has been used for several years to print
-PostScript documents from a NetBSD machine to an HP Laserjet 4L
-connected to a MS Windows PC. This gives an example of both
-1) calling GhostScript to translate PS output into something a non-PS
-(in this case HP-PCL) printer understands, and 2) setting up
-/etc/printcap so that things printed with lpr will go to a remote
-printer that speaks SMB.
+<ENTRY>introduction 概要
+今から説明する設定は、ポストスクリプトドキュメントを、NetBSD マシンから 
+MS Windows PC に接続された HP Laserjet 4L で印刷するために、数年間使われ
+ているものです。この設定は、1) GhostScript を使い、PS 出力を 非 PS プリ
+ンター(この場合は HP-PCL)が理解できる形式に変換し、2) /etc/printcap を
+設定し、lpr で印刷したものを SMB を話すプリンターへ送信する例です。
 
-<ENTRY>prerequisites Prerequisites
-The following steps, if you haven't done them already, are necessary before
-you can set up printing to a remote SMB printer from NetBSD:
+<ENTRY>prerequisites 事前準備
+まだ準備が完了していなければ、以下の手順を、NetBSD からリモート SMB 
+プリンターに印刷するための設定をおこなう前に実行しておいてください。
 <p>
 <ol>
-<li>Install the <PKGSRC>net/samba package.
+<li><PKGSRC>net/samba パッケージのインストール
 <p>
-<li>If your printer is not PostScript, and you'll be wanting
-to print PostScript files (ie, your application produces
-PostScript output), install the <PKGSRC>print/ghostscript package.
+<li>もし、ポストスクリプトでないプリンターでポストスクリプトファイル
+(つまり、アプリケーションがポストスクリプトを出力するという事です)を
+印刷したい場合、<PKGSRC>print/ghostscript パッケージをインストール
+してください。
 </ol>
 
-<ENTRY>setting-up Setting up remote printing using samba
-The following steps should allow you to print to a remote printer from
-NetBSD, using samba to share it.
+<ENTRY>setting-up samba を使ったリモート印刷のための設定
+以下の手順で、プリンター共有のために samba を使い、NetBSD からリモート
+プリンターへ印刷できるようになります。
 <p>
 <ol>
-<li>Put the file "<A HREF="smbprint">smbprint</A>" in /usr/local/bin,
-and make it executable.
+<li>ファイル 「<A HREF="smbprint">smbprint</A>」を /usr/local/bin に置き、
+実行パーミッションを設定してください。
 <p>
-<li>Create a printcap entry for each remote printer similar to the
-example in the file "<A HREF="printcap">printcap</A>" included here.
+<li>リモートプリンター毎に、printcap のエントリーを作成してください。ここ
+にあるファイル「<A HREF="printcap">printcap</A>」の例が参考になるでしょう。
 <p>
-<li>Create a directory /etc/lpd/PRINTERNAME for each remote printer,
-and put a config file there similar to the one in the example
-file "<A HREF="config">config</A>" here.
+<li>リモートプリンター毎に、/etc/lpd/PRINTERNAME ディレクトリーを作成し、
+そこに config ファイルを置いてください。ここにあるファイル「<A HREF="config">
+config</A>」が参考になるでしょう。
 <p>
-<li>Create the spool directories you specified in your printcap
-entries.
+<li>printcap のエントリーで指定したスプールディレクトリーを作成して
+ください。
 <p>
-<li>Make sure you can connect to the printer on the remote machine
-manually with:
+<li>リモートマシン上のプリンターに接続できるかどうか、手動で確認して
+ください:
 <p><pre>
 	smbclient //machinename/printername
 </pre><p>
-If you receive the smb: \&gt; prompt, you're probably good to go. If not,
-you may need to add a "-I ip-addr" argument to the smbclient command
-in /usr/local/bin/smbprint. It is recommended that you figure out how to
-derive the ip address from the remote machine's SMB name with
-nmblookup, so that you won't have to hardcode the address (thus making
-the script useful for only a single printer).
+もし、smb: \&gt; プロンプトが表示されれば、たぶん大丈夫です。もし、表示
+されない場合は、/usr/local/bin/smbprint の中の smbclient コマンドの引数
+に、「-I IPアドレス」を追加する必要があります。できれば、nmblookup を
+使ってリモートマシンの SMB 名から IP アドレスを求める方法を使うことを
+お勧めします。そうすれば、アドレスをハードコードしなくてすみます(ハード
+コードすると、スクリプトはある一台のプリンター専用になってしまいます)。
 <p>
-<li>Try printing something. Remember, if you've specified a gs device
-in the config file, you <i>must</i> call lpr with a PostScript file. Either
-pipe the output of some program like a2ps to lpr, or print out
-one of the PostScript examples included in the Ghostscript distribution.
+<li>何か印刷してみてください。もし、config ファイルの中で gs デバイスを
+指定している場合は、lpr で PostScript ファイルを印刷 <i> しなければ
+ならない </i> 事を覚えておいてください。a2ps のようなプログラムの出力を
+パイプで lpr に渡すか、Ghostscript のディストリビューションに含まれる
+サンプルを印刷するとよいでしょう。
 <p>
-<li>Note that you can specify two different entries in your printcap,
-one that translates through Ghostscript, and one that sends the output
-untranslated (point them at different config directories, and give the
-same "server=" option, but different "device=" options). This way you
-can send things in the printer's native language (eg; PCL) or plain
-ASCII when needed, and still have a print device to give to programs
-that produce PostScript output.
+<li>printcap の中の二つの異なるエントリーを指定することができる事に注意
+してください。ひとつは Ghostscript で変換され、もうひとつは 変換なしです
+(これらの config ファイルは異なるディレクトリにおいて、同じ「server=」
+オプション、異なる「device=」オプションを使用してください)です。これに
+より、プリンターのネイティブ言語(例えば PCL)や、必要なら単なる ASCII 
+を送信することができ、かつ PostScript を出力するプログラムのための
+デバイスも使用することができます。
 </ol>
 
 </LIST>
 
-<a href="../">Up to <em>NetBSD Documentation: Miscellaneous</em></a>
+<a href="../"><em>NetBSD ドキュメンテーション: Miscellaneous</em>にもどる</a>
 <hr>
 
 <DOCLINK>
