@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
 <title>NetBSD/sparc Frequently Asked Questions</title>
@@ -24,6 +24,8 @@ It is intended for this to become a repository of frequently asked questions
 <li><a href="http://www.sunhelp.org/">SunHELP</a> - much sun related information
 <li><a href="http://www.sunhelp.org/faq/sunref1.html">Sun
     Hardware Reference FAQ</a> - overview of Sun hardware over the years
+<li><a href="http://docs.sun.com/?p=/coll/216.2">OpenBoot Collection</a>
+    reference on PROM commands and variables
 <li><a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">Sun
     NVRAM/Hostid FAQ</a> - if your machine PROM's battery has gone dead
 <li><a href="http://www.stokely.com/unix.serial.port.resources/A-B-Ycablepinout.html">
@@ -34,6 +36,7 @@ FAQ</a> by David Tong
 <li><a href="http://lios.apana.org.au/~cdewick/data/">The SunShack Data 
     Archive</a> collected by Craig Dewick (includes BootROM upgrades
     and the Sun Field Engineer Handbook)
+<li><a href="http://www.users.qwest.net/~eballen1/sparc.tech.links.html">Technical SPARC CPU resources</a>
 </ul>
 <p>
 
@@ -99,7 +102,7 @@ Another useful option is
 options         RASTERCONS_FULLSCREEN
 </pre></blockquote>
 
-<ENTRY>voyager-mouse The mouse on Sun Voyager acts weird in X (<tt>ms0: input error (0xc47)</tt>)
+<ENTRY>voyager-mouse The mouse on SPARCstation Voyager acts weird in X (<tt>ms0: input error (0xc47)</tt>)
 Apparently the original mouse that came with the Voyager (the Compact1
 370-1865-01 mouse, but not the 370-1865-03) runs at a faster serial speed
 than every other Sun mouse (4800 bps instead of 1200 bps).  You have two
@@ -170,7 +173,9 @@ href="../../Documentation/bootcd.html#sparcimage">NetBSD
 Bootable CD ROM HOWTO</a>.
 
 <ENTRY>nell Using the <i>nell</i> sbus-to-PCMCIA bridge
-NetBSD-curent supports this interface.  All 8 bit devices listed in the
+NetBSD 1.6 and later support cardbus and pcmcia cards with the SPARCstation 
+Voyager's on-board interface and with the nell sbus-to-PCMCIA bridge card.
+All 8 bit devices listed in the
 <a href="../../Hardware/pcmcia.html">Machine-independent PCMCIA drivers</a>
 page should work. Very few have been tested. There is a byte endian issue which 
 currently prevents 16 bit devices from working. See the 
@@ -178,11 +183,19 @@ currently prevents 16 bit devices from working. See the
 by Martin Husemann on nell support. 
 
 <p>There is a conflict between the <i>audioamd</i> device in sun4c and some 
-sun4m models and the (nell) device.  If your system has the audioamd device
-on-board, you need to build a new kernel with either audioamd commented out
-or with the following option:
+sun4m models and the (nell) device.  The 1.6 GENERIC kernel has the nell 
+interface disabled by default.  You'll need to build a kernel with the nell
+and various pcmcia interfaces uncommented.
+
+<p>If your system has the audioamd device on-board and you want to use
+it and the nell interface, you need to build a new kernel with
+the following option:
 <pre>options 	AUDIO_C_HANDLER</pre>
 
+<p>If you wish to use the Lucent WaveLAN card, you will need to add the
+following hack to your kernel configuration:
+<pre>options	WI_AT_BIGENDIAN_BUS_HACK
+wi*	at pcmcia? function ?		# Lucent WaveLan IEEE (802.11)</pre>
 
 <SECTION>PROM/Booting Questions
 
@@ -201,6 +214,13 @@ There are three ways to abort to the prom:
 
 Once at the prom you can continue with '<tt>go</tt>' ('ok' prompt), or
 '<tt>c</tt>' (&gt; prompt).
+
+<ENTRY>prom-troubleshooting Troubleshooting PROM problems
+See the troubleshooing guide at 
+<a href="http://docs.sun.com/db?p=/doc/806-2906-10/6jc3f0abd&a=view">docs.sun.com</a>.
+Additionally, if your ethernet address is <tt>FF:FF:FF:FF:FF:FF</tt>, then your
+NVRAM is dead and you may have trouble booting.  See 
+<a href="#dead-nvram">Ethernet address or hostid are all ones</a>.
 
 <ENTRY>sun4c-framebuffer-speedup How to speed up the framebuffer on sun4c hosts
 Here is a shellscript provided by greywolf@starwolf.com which speeds up
@@ -412,7 +432,7 @@ The JavaStation-1 (a.k.a. "Mr.Coffee") and JavaStation-10 (a.k.a.
 JavaStation-NC or "Krups") models are known to be working well in 
 NetBSD-current with a kernel patch.
 
-<p>Some JavaStation-1 units have an OpenBoot PROM (OPB2) similar to all
+<p>Some JavaStation-1 units have an OpenBoot PROM (OBP2) similar to all
 other models supported by NetBSD/sparc (i.e. models with 32 bit SPARC
 CPUs).  Some JavaStation-1 units and all JavaStation-10 units have an Open
 Firmware (OFW) similar to the models supported by NetBSD/sparc64 (i.e.
@@ -558,20 +578,27 @@ There are three 'Netscape' browsers in the <a href="../../Documentation/software
 <p>
 
 <ul>
-<li><PKGSRC>www/communicator - complete Netscape communicator install including email. (requires SunOS libraries)
-<li><PKGSRC>www/navigator - Standalone Navigator browser (requires SunOS libraries)
+<li><PKGSRC>www/communicator - complete Netscape communicator install including email. (requires SunOS or Solaris libraries)
+<li><PKGSRC>www/navigator - Standalone Navigator browser (requires SunOS or Solaris libraries)
 <li><PKGSRC>www/mozilla - Free version of the Netscape browser.
 </ul>
 <p>
 
 Both the communicator and navigator packages will run faster and
-provide more features than mozilla, but they require SunOS libraries in
-/emul/sunos (see compat_sunos(8)). All of these except libdl.so are
+provide more features than mozilla, but they require either Solaris
+libraries in /emul/svr4 (see compat_svr4(8)) or SunOS-4.1 libraries in
+/emul/sunos (see compat_sunos(8)). All of the SunOS-4.1 libraries
+except libdl.so are
 available from Sun's <a href="ftp://sunsolve.sun.com/pub/patches/">ftp
 site</a>. If anyone is interested in putting together a libdl it would
 be greatly appreciated :)
 
-<ENTRY>solaris-netscape-socket Under Solaris emulation, Netscape fails with `Error: Can't open display: :0.0'
+The Solaris-2.5.1 versions of communicator and navigator are the defaults as 
+current netscape versions are available for Solaris.  It appears that netscape-4.61
+was the last SunOS-4.1 version available.  If you wish to use the SunOS-4.1
+version of netscape, set the NS_USE_SUNOS variable in /etc/mk.conf.
+
+<ENTRY>sunos-netscape-socket Under SunOS emulation, Netscape fails with `Error: Can't open display: :0.0'
 Solaris Netscape (at least, version 4.51 attempts to use a pipe rather
 than a Unix domain socket to connect to the X server. Put
 <b>DISPLAY=unix:0.0</b> into netscape's environment before starting it
@@ -599,8 +626,8 @@ exec $MOZILLA_HOME/netscape $* </pre>
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.77 2002/05/03 02:33:08 grant Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  $NetBSD: faq.list,v 1.82 2002/07/25 05:13:00 grant Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
