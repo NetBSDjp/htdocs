@@ -101,8 +101,8 @@ remember when tracking -current.
   diverges from the last stable release, compatibility code will be
   added, but it will only be enabled if this option is present.  At a
   bare minimum, you will need this compatibility code for the time
-  between booting the new kernel and finishing your <tt>make
-  build</tt>.
+  between booting the new kernel and finishing your build via 
+  <tt>build.sh</tt>
   <p>
 
  <li>
@@ -118,7 +118,7 @@ remember when tracking -current.
 <a name="star">*</a>: Unless you are certain there have been no new
 system calls added, but do it anyway; it's safer.
 
-<ENTRY>build-targets What are the various Makefile targets
+<ENTRY>build-targets What are the various Makefile targets, how to actually build ?
 The most obvious target is 'make build' from <a
 href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/Makefile">/usr/src/Makefile</a>,
 which will install updated 'mk' files, include files, libs, then
@@ -128,6 +128,11 @@ new system calls have been added.  Other useful targets are documented
 in <a
 href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/share/mk/bsd.README">/usr/src/share/mk/bsd.README</a>,
 which is installed in <tt>/usr/share/mk/</tt>.
+The usage of 'make build' has been deprecated by the updated toolchain, and is
+strongly discouraged.
+Documentation concerning the usage of the new toolchain through the
+script 'build.sh' (which lives in the toplevel source directory) is
+in the <a href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/BUILDING">BUILDING</a> file.
 
 <ENTRY>using-anoncvs Tracking NetBSD-current with anoncvs
 
@@ -223,29 +228,32 @@ directory, and they will be automatically used. A sample .cvsrc would be:
 <h4>Building NetBSD from source</h4>
 
 <I>(assuming you have an up-to-date NetBSD binary
-snapshot, and source in /usr/src, on your machine already):</I><p>
+snapshot, and source in /usr/src, on your machine already; further
+assuming your BSDOBJDIR should be /usr/obj):</I><p>
 
 To build userland the first time:<p>
 
 <tt><b>mkdir /usr/obj</b></tt><br>
 <tt><b>cd /usr/src</b></tt><br>
-<tt><b>make obj</b></tt><br>
-<tt><b>make build</b></tt>
+<tt><b>./build.sh -O /usr/obj -T /usr/tools</b></tt><br>
+When you build your system for the first time using build.sh,
+a set of tools for future use of compilations will be built, too,
+and thus you encounter a quite increased runtime of the initial
+compilation.
 <p>
 
 To update userland binaries after a CVS update:<p>
 
 <tt><b>cd /usr/src</b></tt><br>
-<tt><b>make obj</b></tt><br>
-<tt><b>make UPDATE=1 build</b></tt>
+<tt><b>./build.sh -O /usr/obj -T /usr/tools -u</b></tt>
 <p>
 
 These will install the new binaries on the running system - reboot to make
 sure they all take effect. To build the binaries into some other location
-(in case you're paranoid about tromping on a running system), just set
-DESTDIR, eg:<p>
+(in case you're paranoid about tromping on a running system), just alter the 
+DESTDIR setting, eg:<p>
 
-<tt><b>make DESTDIR=/usr/NetBSD-new-build UPDATE=1 build</b></tt><br>
+<tt><b>./build.sh -D /usr/NetBSD-new-build -O /usr/obj -T /usr/tools -u</b></tt><br>
 
 <ENTRY>using-anoncvs-over-ssh Using anoncvs over ssh
     The methods described in <a href="#using-anoncvs">using anoncvs</a> can
@@ -367,7 +375,7 @@ DESTDIR, eg:<p>
     <li>Configure, <a href="../kernel/#how_to_build_a_kernel">
 	build</a>, and reboot into a new kernel.
     <li>cd to the base of your -current source tree and type
-	<tt>"<b>make build</b>"</tt>.
+	<tt>"<b>./build.sh -T /usr/tools -O /usr/obj </b>"</tt>.
     <li>You may need to merge in any changes that have been made to files in
 	/etc.
     </ol>
@@ -618,7 +626,7 @@ You should copy a current MAKEDEV from the appropriate etc.<i>port</i> directory
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.35 2002/04/30 13:23:53 martti Exp $<br>
+  $NetBSD: index.list,v 1.36 2002/05/08 13:33:22 martti Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
