@@ -45,6 +45,7 @@ width=146 height=129 alt="BSD demon"></a>
 <li><a href="#atapi_devices">ATAPI や ATA (IDE) デバイスのデバッグ</a></li>
 <li><a href="#usb-debugging">USB デバイスのデバッグ</a></li>
 <li><a href="#new_pnp_device">あたらしい PnP デバイスを認識させるには</a></li>
+<li><a href="#new_pcmcia_device">あたらしい PCMCIA デバイスを認識させるには</a></li>
 <li><a href="#plip_support">PLIP (Parallel Line IP) をサポートしていますか</a></li>
 </ul></font>
 
@@ -52,10 +53,11 @@ width=146 height=129 alt="BSD demon"></a>
 <h2>NetBSD に特有のドキュメント</h2>
 <ul>
 <li><a href="programming.html">カーネルプログラミング FAQ</a>
-<li><a href="/Documentation/kernel/elf-notes.html">ベンダー特有の ELF Note Element</a>
+<li><a href="pseudo/">疑似(pseudo)デバイスドライバーを書くには</a>
+<li><a href="elf-notes.html">ベンダー特有の ELF Note Element</a>
 <li><a href="uvm.html">UVM、あたらしい仮想メモリーシステム</a>
 <li><a href="vfork.html">なぜ伝統的な vfork() を実装したか</a>
-<li><a href="/Documentation/kernel/kgdb.html">GDB を用いた NetBSD カーネルのデバッグの方法</a>
+<li><a href="kgdb.html">GDB を用いた NetBSD カーネルのデバッグの方法</a>
 </ul>
 
 <h2>その他のオンライン ドキュメント</h2>
@@ -312,7 +314,7 @@ spl 関数についてのより詳しい情報は <a href="http://www.flame.org/cgi-bin/u
 <font size="-1">(<a href="#top">top</a>)</font></h3></font>
 </dt><dd>
 最初に注意すべき点は、
-<a href="/MailingLists/#current-users">current-users</a>
+<a href="../../MailingLists/#current-users">current-users</a>
 メーリングリストに参加した方がよいということです。
 current-users を読まずに -current を追うことはライトを灯けずに夜道を
 ドライブしているようなものです。警告しましたよ :)<p>
@@ -531,6 +533,7 @@ usbdebug=5</b>" と "<b>set uhcidebug=5</b>")
 </dt><dd>
 この手順は対応する汎用のデバイスがすでにサポートされており、
 デバイス ID が認識されないだけである時のみ有効です。
+動作の異なるデバイスを加えるにはソースコードを書く必要があります。
 <ol>
 <li>デバイスは、ブートメッセージ中に '<tt>not configured</tt>' として
 表示されているはずです。出力中に含まれる
@@ -544,16 +547,44 @@ usbdebug=5</b>" と "<b>set uhcidebug=5</b>")
 として作り直します。
 <li><a href="#building_a_kernel">カーネルの再構築</a>をしてください。
 </ol>
-註: この方法は 1.3.X より新しいリリース (-current を含みます)に対するものです。
-1.3.X では、デバイス ID を適切な <tt>/sys/dev/isapnp/*_isapnp.c</tt> ファイルに
-加える必要があります。
+
+</dd></dl></p>
+<p><dl><dt>
+<font><h3><a name="new_pcmcia_device">あたらしい PCMCIA デバイスを認識させるには</a>
+<font size="-1">(<a href="#top">top</a>)</font></h3></font>
+</dt><dd>
+この手順は対応する汎用のデバイスがすでにサポートされており、
+デバイス ID が認識されないだけである時のみ有効です。
+動作の異なるデバイスを加えるにはソースコードを書く必要があります。
+<ol>
+<li>カーネルを <a href="http://www.flame.org/cgi-bin/uncgi/hman?page=options&amp;sect=4">options(4)</a> <tt>PCMCIA_VERBOSE</tt> を有効にしてコンパイルします。
+<li>ブートメッセージをチェックします - 該当のカードは '<tt>not configured</tt>' と
+    レポートされているはずです。製造元(Manufacturer) とプロダクトコード(例題では
+    <tt><b>0x143</b></tt> と <tt><b>0x201</b></tt>です)を記録します:
+<pre>pcmcia0: CIS version PCMCIA 2.0 or 2.1
+pcmcia0: CIS info: Grey Cell, GCS2000, Gold II, 1
+pcmcia0: Manufacturer code <b>0x143</b>, product <b>0x201</b>
+pcmcia0: function 0: network adapter, ccr addr 3f8 mask 1
+</pre>
+<li><tt>ベンダー(vendor)</tt> と <tt>プロダクトコード(product)</tt> を <tt>
+<a href="http://cvsweb.netbsd.org/bsdweb.cgi/syssrc/sys/dev/pcmcia/pcmciadevs?rev=HEAD&content-type=text/x-cvsweb-markup">/sys/dev/pcmcia/pcmciadevs</a></tt>に加えます:
+<li><tt>pcmciadevs.h</tt> と <tt>pcmciadevs_data.h</tt> を
+	'<tt>make -f Makefile.pcmciadevs</tt>'
+    として作り直します。
+<li>付け加えたエントリーを適切な <tt>/sys/dev/pcmcia/</tt> にある bus attach ファイルの
+    先頭部分にあるデバイステーブルに付け加えます。例えば ne2000互換カードの場合には
+    <a href="http://cvsweb.netbsd.org/bsdweb.cgi/syssrc/sys/dev/pcmcia/if_ne_pcmcia.c?rev=HEAD&content-type=text/x-cvsweb-markup">/sys/dev/pcmcia/if_ne_pcmcia.c</a> に加えます。
+<li><a href="#building_a_kernel">カーネルの再構築</a>をします。
+<li>変更点を <a href="http://www.flame.org/cgi-bin/uncgi/hman?page=send-pr&amp;sect=1">send-pr(1)</a> または <a href="../../Misc/send-pr.html#submitting">オンラインフォーム</a>を用いて
+    報告して下さい。
+</ol>
 
 </dd></dl></p>
 <p><dl><dt>
 <font><h3><a name="plip_support">PLIP (Parallel Line IP) をサポートしていますか</a>
 <font size="-1">(<a href="#top">top</a>)</font></h3></font>
 </dt><dd>
-NetBSD/i386 に PLIP をサポートした Martin Husemann のパッチが
+NetBSD/i386 で PLIP をサポートするための Martin Husemann のパッチが
 <a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=1278">
 PR 1278</a> として出ています。
 この PR の末尾にあるパッチは、NetBSD 1.3.3 ソースツリーに対して適用す
@@ -597,8 +628,8 @@ PR 1278</a> として出ています。
 <hr>
 <address>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.34 2000/04/17 03:17:12 dent Exp $<br>
-  <a href="/Misc/disclaimer.html">Copyright &copy;
+  $NetBSD: index.list,v 1.36 2000/05/19 10:15:00 abs Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy;
     1996, 1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
 </address>
