@@ -7,7 +7,7 @@
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>NetBSD/i386 Frequently Asked Questions</h1>
+<h2>NetBSD/i386 Frequently Asked Questions</h2>
 
 It is intended for this to become a repository of frequently asked questions
 (and answers) specific to NetBSD/i386. 
@@ -22,7 +22,7 @@ It is intended for this to become a repository of frequently asked questions
     NetBSD 1.4.1 install notes</a> - supported hardware and how to install.
 <li><a href="../../Documentation/elf.html">The NetBSD ELF FAQ</a>.  As
     of NetBSD 1.5, the i386 port will use ELF instead of a.out.
-<li><a href="../../Documentation/netbsd/wscons.html">The wscons
+<li><a href="../../Documentation/wscons/">The wscons
     FAQ</a>.  NetBSD's platform-independent workstation console driver.
 <li><a href="../../MailingLists/#port-i386">port-i386 mail list</a>
     - if you have any additional questions please subscribe.
@@ -104,57 +104,117 @@ href="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-1.4.1/i386/installation/misc/pfdisk
 </table>
 (This limits drives to 8GBytes, at least from the BIOS' perspective).
 
-<ENTRY>msdos_partition Accessing an MS-DOS or Windows partition
+<ENTRY>ms_partition Accessing Microsoft partitions
+<p>
+NetBSD supports a number of different filesystems (for a complete list see
+fstab(5.i386)") including FAT, FAT32 and NTFS4 from Microsoft. NTFS5
+was introduced silently with Windows NT 4.0 ServicePack 4 and is used by
+default in Windows 2000. NTFS5 was not supported at time time of writing.
+Long filenames are supported on both FAT and NTFS.
+<p>
+To access another filesystem you have to set up a correct "<tt>disklabel</tt>"
+which tells the system where to find the data on the disk. With a correct
+"<tt>disklabel</tt>" you are able to "<tt>mount</tt>" it for use with NetBSD.
 <p>
 <strong>Setting up the disklabel</strong>
+<p>
 <ol>
 <li>Determine the disk containing the filesystem<br>
 If you only have a single IDE/ST506 or SCSI disk it will be <em>wd0</em> or
 <em>sd0</em>, if you have multiple disks you should check the output from
 "<tt>dmesg | more</tt>" to determine the correct disk's name.
-<p><li>Type "<tt>disklabel &lt;DISKNAME&gt;</tt>"<br>
-If the disk contains only MS-DOS partitions NetBSD will automatically generate
-a 'fake' disklabel containing an entry for the first MS-DOS partition.
 <p>
-[If you do this before the NetBSD installation is up and running, you
+<li>Determine the size and offset of the partition.<br>
+Type "<tt>fdisk</tt>" and you will see the size and offset of the partitions
+which could be something like:<br>
+<pre>
+NetBSD disklabel disk geometry:
+cylinders: 16938 heads: 15 sectors/track: 63 (945 sectors/cylinder)
+
+BIOS disk geometry:
+cylinders: 1023 heads: 240 sectors/track: 63 (15120 sectors/cylinder)
+
+Partition table:
+0: sysid 7 (OS/2 HPFS or NTFS or QNX2 or Advanced UNIX)
+    start 63, size 3190257 (1557 MB), flag 0x80
+        beg: cylinder    0, head   1, sector  1
+        end: cylinder  210, head 239, sector 63
+1: sysid 169 (NetBSD)
+    start 3193155, size 4096575 (2000 MB), flag 0x0
+        beg: cylinder  211, head  45, sector  1
+        end: cylinder  482, head  29, sector 63
+2: sysid 6 (Primary 'big' DOS, 16-bit FAT (&gt; 32MB))
+    start 7302960, size 4596480 (2244 MB), flag 0x0
+        beg: cylinder  483, head   0, sector  1
+        end: cylinder  786, head 239, sector 63
+3: sysid 15 (Ext. partition - LBA)
+    start 11899440, size 4097520 (2000 MB), flag 0x0
+        beg: cylinder  787, head   0, sector  1
+        end: cylinder 1023, head 239, sector 63
+</pre>
+The example is from a disk with 4 partitions:<BR>
+0) Windows NT 4.0 NTFS4 partition<BR>
+1) NetBSD ffs partition<BR>
+2) MS-DOS FAT partition<BR>
+3) Windows 2000 NTFS5 inside an "extended" partition<BR>
+<p>
+<li>Type "<tt>disklabel &lt;DISKNAME&gt;</tt>"<br>
+If the disk contains only MS-DOS partitions NetBSD will automatically generate
+a 'fake' disklabel containing an entry for the first MS-DOS partition.<br>
+The output could look something like this:<br>
+<pre>
+# disklabel wd0
+</pre>
+<i>physical disk information</i>
+<pre>
+8 partitions:
+#        size   offset     fstype   [fsize bsize   cpg]
+  a:   410130  3193155     4.2BSD     1024  8192    16   # (Cyl. 3379 - 3812)
+  b:   409185  3603285       swap                        # (Cyl. 3813 - 4245)
+  c:  4096575  3193155     unused        0     0         # (Cyl. 3379 - 7713)
+  d: 16006410        0     unused        0     0         # (Cyl.    0 - 16937)
+  e:  3274425  4012470     4.2BSD     2048 16384    32   # (Cyl. 4246 - 7710)
+</pre>
+<p>
+If your needed fstypes already are defined (i.e. MSDOS) you can skip down to
+<a href="#ms_partition_mounting">partition mounting</a>.
+<p>
+If you do this before the NetBSD installation is up and running, you
 may want to use the mbrlabel(8) utility to synthesize a temporary in-core
 disklabel describing all the <em>fdisk</em> partitions on a disk. You can
 then use that information for creating a new disklabel consisting of the
-BSD and other-OS partitions.]
+BSD and other-OS partitions.
 <p>
-You will see one partition with an 'fstype' of 'MS-DOS'. Make a note of
-the partition letter and skip to the <a href="#msdos_partition_mounting">
-mounting the filesystem</a> section.
-<p><li>Prepare to edit the disklabel<br>
+<li>Prepare to edit the disklabel<br>
 If you prefer to use an editor other than <em>vi</em> type
-"<tt>setenv EDITOR &lt;YOUR_EDITOR&gt;</tt>"
-<p><li>"<tt>disklabel -e &lt;DISKNAME&gt;</tt>"<br>
-The partition map at the bottom of the disklabel should look something like:
-<pre>
-6 partitions:
-#        size   offset    fstype   [fsize bsize   cpg]
-  a:   403200  1048320      4.2BSD     1024  8192    11   # (Cyl.  130 - 179)
-  b:   403200  1451520        swap                        # (Cyl.  180 - 229)
-  c:  3177216  1048320      unused        0     0         # (Cyl.  130 - 523)
-  d:  4225536        0      unused        0     0         # (Cyl.    0 - 523)
-  e:  2370816  1854720      4.2BSD     1024  8192    11   # (Cyl.  230 - 523)
-</pre>
-You need three things:
+"<tt>setenv EDITOR &lt;YOUR_EDITOR&gt;</tt>" eg. "<tt>setenv EDITOR
+pico</tt>".
+<p>
+<li>Edit the disklabel with "<tt>disklabel -e &lt;DISKNAME&gt;</tt>"<br>
+Go down to the bottom of the disklabel and you are ready to edit your
+labels.<p>
+You need two things:
     <ol>
     <li>The next unused partition letter (eg: 'f').
-    <li>The 'sectors/track' value from the top section of the disklabel
-	(eg: '63').
-    <li>The size of the MS-DOS partition - take the 'offset' of the 'c'
-        partition and subtract the 'sectors/track' (eg: 1048257).
+    <li>The 'start/size' value from fdisk (eg: '63').
     </ol>
 <p>
-Add a new line at the bottom that reads:
+Add a new line at the bottom that for NTFS reads:
 <pre>
-  &lt;PARTITION&gt;:   &lt;SIZE&gt;  &lt;SECTORS/TRACK&gt;   MSDOS
+  &lt;PARTITION&gt;:   &lt;SIZE&gt;  &lt;OFFSET&gt;   NTFS
 </pre>
-A suitable entry for the above example would be (fsize, bsize and cpg are blank):
+A suitable entry for the above example would be (fsize, bsize and cpg are
+blank):
 <pre>
-  f:  1048257       63       MSDOS
+  f:  3190257       63       NTFS
+</pre>
+Add another line for MSDOS:
+<pre>
+  &lt;PARTITION&gt;:   &lt;SIZE&gt;  &lt;OFFSET&gt;   MSDOS
+</pre>
+From the example the entry would be:
+<pre>
+  g:  4596480  7302960      MSDOS
 </pre>
 Notes on partitions: NetBSD/i386 currently only supports eight partitions per
 disk ('a' - 'h'), also the 'number of partitions' line directly above the
@@ -165,35 +225,37 @@ new partition is visible.
 </ol>
 
 <p>
-<strong><a name="msdos_partition_mounting">Mounting the filesystem</a></strong>
+<strong><a name="ms_partition_mounting">Mounting the filesystem</a></strong>
 <p>
 Every disk partition has a device entry in '/dev', the form of such an
 entry is '/dev/' followed by the diskname, followed by the partition letter.
-In the above example the device entry for the MS-DOS partition would be
-'/dev/wd0f'.
+In the above example the device entry for the NTFS and MS-DOS partitions would
+be '/dev/wd0f' and '/dev/wd0g' respectively.
+<p>
 <ol>
-<li>Create a mountpoint<br>
-    "<tt>mkdir &lt;MOUNTPOINT&gt;</tt>", eg: "<tt>mkdir /msdos</tt>".
-<p><li>Mount the filesystem<br>
-    "<tt>mount -t msdos &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;</tt>",
-    eg: "<tt>mount -t msdos /dev/wd0f /msdos</tt>".
+<li>Create a mountpoint for each partition<br>
+    "<tt>mkdir &lt;MOUNTPOINT&gt;</tt>", eg: "<tt>mkdir /msdos</tt>" and
+    "<tt>mkdir /nt4</tt>".
+<p><li>Mount the filesystems<br>
+    "<tt>mount -t &lt;TYPE&gt; &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;</tt>",
+    eg: "<tt>mount -t msdos /dev/wd0g /msdos</tt>" and "<tt>mount -t ntfs
+   /dev/wd0f /nt4</tt>".
 <p><li>Check all is ok<br>
-    "<tt>ls &lt;MOUNTPOINT&gt;</tt>", eg: "<tt>ls /msdos</tt>". 
-<p><li>Set filesystem to be automatically mounted on boot<br>
-    If you want NetBSD to automatically mount the filesystem every time it
-    boots you should edit <em>/etc/fstab</em> and add a line of the form:
+    "<tt>ls &lt;MOUNTPOINT&gt;</tt>", eg: "<tt>ls /msdos</tt>" and "<tt>ls
+    /nt4</tt>".
+<p><li>Set filesystems to be automatically mounted on boot<br>
+    If you want NetBSD to automatically mount the filesystems every time it
+    boots you should edit <em>/etc/fstab</em> and add lines of the form:
 <pre>
-    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  msdos   rw 1 3
+    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  msdos   rw
+    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  ntfs    rw
 </pre>
     Again, in the above example this would be:
 <pre>
-    /dev/wd0f /msdos  msdos   rw 1 3
+    /dev/wd0g /msdos  msdos   rw
+    /dev/wd0f /nt4    ntfs    rw
 </pre>
 </ol>
-Note: NetBSD can read MS-DOS and Windows 'FAT' and 'FAT32' partitions, including
-support for Windows95 and NT long filenames. It currently cannot read 'NTFS'
-filesystems. If you want to access a Windows NT partition under NetBSD you
-should ensure it uses a 'FAT' or 'FAT32' filesystem.
 
 <ENTRY>dual_boot Booting NetBSD or DOS/Windows/other via a menu
 This assumes you have already partitioned your disk, and installed both
@@ -260,7 +322,7 @@ The steps involved in this are
 partition using the tool <i>defrag</i>
 <li>Resizing the DOS partition using a tool called <i>FIPS</i>.
 Fips can be obtained e.g. from <a
-href="http://rufus.w3.org/linux/openlinux/2.3/install-tree/OpenLinux/tools/fips/">http://rufus.w3.org/linux/openlinux/2.3/install-tree/OpenLinux/tools/fips/</a>.
+href="ftp://ftp.du.se/disk0/slackware/slackware-3.4/install/FIPS/">ftp://ftp.du.se/disk0/slackware/slackware-3.4/install/FIPS/</a>.
 Be sure to read all the documentation!
 <li>Installing a bootloader as described <a href="#dual_boot">above</a>
 <li>Installing NetBSD
@@ -664,11 +726,13 @@ Once the connection has been established, you can use gdb as you would normally.
 
 <hr>
 <address>
+  <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.32 2000/06/09 00:02:41 dent Exp $<br>
+  $NetBSD: faq.list,v 1.37 2000/08/04 15:47:06 dent Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1996, 1997, 1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
 </address>
 
 </body>
