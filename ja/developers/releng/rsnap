@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# Before running this script you need to do:
+#
+# make build EXPORTABLE_SYSTEM=1 	(DESTDIR=/)
+# cd domestic && make depend && make && make install
+# Or, actually, domestic can now be done with:
+# cd domestic && make build
+#
+# Note: this is different from a single, non-exportable make build,
+# because that does not build some telnet stuff.
+#
+# (This script just packages snaps)
+#
+# Ross Harvey
+# ross@netbsd.org
+#
+set -e -x
+prefix=/usr/obj
+justpack=0
+if [ x$1 = x-justpack ]; then
+	shift
+	justpack=1
+fi
+if [ $# -ne 0 ]; then
+	prefix=$1
+fi
+dist=$prefix/dist
+secr=$prefix/secr
+release=$prefix/release
+if mkdir $dist $secr $release; then fi;
+if [ $justpack -eq 0 ]; then
+	cd /usr/src/etc
+	make DESTDIR=$secr distrib-dirs 
+	make DESTDIR=$dist EXPORTABLE_SYSTEM=1 distribution 
+	cd /usr/src/domestic
+	make DESTDIR=$secr includes install
+	cd /usr/src/share/man
+	$dist/usr/libexec/makewhatis $secr/usr/share/man
+	cd $secr/usr/share/man
+	cat $dist/usr/share/man/whatis.db >> whatis.db
+	sort -u whatis.db -o whatis.db
+fi
+cd /usr/src/distrib/sets
+RELEASEDIR=$release DESTDIR=$dist sh maketars
+RELEASEDIR=$release DESTDIR=$secr sh maketars secr
