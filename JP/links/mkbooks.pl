@@ -1,6 +1,6 @@
 #!/usr/pkg/bin/perl
 #
-# $Id: mkbooks.pl,v 1.2 1999/04/20 04:25:13 sakamoto Exp $
+# $Id: mkbooks.pl,v 1.3 1999/04/20 10:19:52 sakamoto Exp $
 #
 require("jcode.pl");
 
@@ -49,7 +49,7 @@ close(LIST_REGISTER);
 sub makelist_by_register {
 	local($FD) = @_;
 
-	&print_head($FD, "NetBSD-related BOOKS (by date)",
+	&print_head($FD, "NetBSD-related BOOKS (by registered)",
 		"<h1>NetBSD ¥ÿœ¢ΩÒ¿“(≈–œøΩÁ)</h1>\n" .
 		"<hr>\n");
 
@@ -144,7 +144,8 @@ sub print_item {
 <p>
 <dt><a name="item$number" href="#item$number">$title</a>
 <dd><table border=1>
-  <tr><td rowspan=8><image src="$image" width=100 height=142 alt="">
+  <tr><td rowspan=8><a href="$image"
+    ><image src="$image" width=100 height=142 border=0 alt="[cover]"></a>
   $author
   $publisher
   $date
