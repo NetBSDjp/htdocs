@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.94 2001/03/09 22:22:18 soda Exp $
+#	$NetBSD: index.m4,v 1.95 2001/04/02 13:51:35 fvdl Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -442,6 +442,9 @@ PORTLIST(port-prep)
   PowerPC ベースのすべてのポートに関する質問のための
   <a href="#port-powerpc">port-powerpc</a> リストもあります。
 ENDLIST
+PORTLIST(port-s390)
+  IBM S/390 プラットフォーム上の NetBSD (NetBSD/s390) 固有の事項の議論用です。
+ENDLIST
 PORTLIST(port-sandpoint)
   MPC8240 プロセッサーモジュールを使った Motorola Sandpoint リファレンス
   プラットフォーム上の NetBSD (NetBSD/sandpoint) 固有の事項の議論用です。
@@ -473,7 +476,7 @@ ENDLIST
 PORTLIST(port-sun3)
   Sun の Motorola 68k ベースのマシン上の NetBSD (NetBSD/sun3 および
   NetBSD/sun3x) 固有の事項の議論用です。
-  Newer Sparc ベースの Sun のマシンは、
+  新しい Sparc ベースの Sun のマシンは、
   <a href="#port-sparc">port-sparc</a> と
   <a href="#port-sparc64">port-sparc64</a> がカバーします。
   Motorola 68k ベースのすべてのポートに関する質問のための
@@ -547,7 +550,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.94 2001/03/09 22:22:18 soda Exp $<br>
+  $NetBSD: index.m4,v 1.95 2001/04/02 13:51:35 fvdl Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
