@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.86 2002/12/23 15:29:23 grant Exp $
+# $NetBSD: list2html.pl,v 1.87 2003/07/17 08:05:44 keihan Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
@@ -62,7 +62,7 @@ my($version, %opt, %pkgname);
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.86 $';
+$version = '$Revision: 1.87 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -614,7 +614,7 @@ sub sub_external_links
 	my($page, $section, $arch, $collection) = ($1, $2, $4, $6);
 	my($link);
 
-	$link = 'http://man.netbsd.org/man/';
+	$link = 'http://man.NetBSD.org/man/';
 
 	$link .= "$page+$section";
 
@@ -653,7 +653,7 @@ sub sub_external_links
 	elsif ($path !~ m#^(pkgsrc|xsrc|othersrc)#) {
 		$path = "src/$path";
 	}
-	$text =~ s#<CURRENTSRC>([^\s<>]+\w)#<a href="http://cvsweb.netbsd.org/bsdweb.cgi/$path?rev=HEAD&amp;content-type=text/x-cvsweb-markup">$1</a>#;
+	$text =~ s#<CURRENTSRC>([^\s<>]+\w)#<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/$path?rev=HEAD&amp;content-type=text/x-cvsweb-markup">$1</a>#;
 	}
 
     # Expand <URL>[^\s<]+[^<\s.]
@@ -666,7 +666,7 @@ sub sub_external_links
         my($n) = $3;
 	if (defined($pkgname{$n}))
 	    { $n = $pkgname{$n}; }
-        $text =~ s#<PKGSRC>((\w+/|)([^\s<>]+\w))#<a href="ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
+        $text =~ s#<PKGSRC>((\w+/|)([^\s<>]+\w))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
 	}
 
     # Expand <RFC>RFCxxxx entries
