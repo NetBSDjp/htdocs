@@ -1,0 +1,193 @@
+<html>
+<head>
+<!-- Copyright (c) 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Documentation: Power Management</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>Power Management for Laptops
+
+<LIST>
+
+<SECTION>Power Management
+
+<ENTRY>introduction Introduction
+This documentation describes some of the power managemnt facilities
+available in NetBSD, including the Advanced Power Management (APM)
+support found in most modern laptops.
+<p>
+Currently most of the information on this page is i386 specific.
+When NetBSD starts supporting more laptop architectures, then this
+documentation will be expanded to cover the power management features
+for those architectures.
+
+<ENTRY>basics The Basics of Power Management
+The core of laptop power management is centered around Advanced
+Power Management, or APM for short.  This is a set of BIOS provided
+service routines that provide an interface to the laptop hardware
+power management features.  It is via this interface that NetBSD
+receives APM events (such as suspend requests) or makes power management
+requests or queries (such as the current battery level).
+<p>
+APM specifies two different power saving modes: standby and suspend.
+What this actually does at a hardware level is dependent on the
+particular laptop being used.  "standby" typically means a light sleep,
+which consumes more power and is quicker to restore from than
+the "suspend" mode.  Typically the APM timers for standby and suspend
+mode are configured in a machine's BIOS.  After a machine has been
+determined "idle" for the appropriate period of time, the BIOS will
+request that the operating system go into the appropriate power
+saving mode.
+<p>
+At the NetBSD level, there are three components to APM support.
+The kernel driver, which is the interface to the APM BIOS, the
+apm daemon <b><kbd>apmd</kbd></b>, which interfaces with the APM kernel
+driver and runs the userland event scripts, and the command line
+program <b><kbd>apm</kbd></b>, which interfaces to <b><kbd>apmd</kbd></b>
+and can be used to query battery level or initiate a system suspend.
+<p>
+The way power management events generally flow is:
+<ol>
+<li>The APM BIOS determines a machine has been idle for the appropriate
+amount of time, and queues a standby/suspend request.
+<li>The APM kernel driver gets the request event the next time it
+polls the APM BIOS (typically once per second) and queues the
+standby/suspend request to the apm daemon.
+<li>The apm daemon determines whether or not to accept this request,
+based on the current power source and the daemon configuration.
+If the request is accepted, it performs any standby/suspend activities,
+then sends the accept/reject notice back to the kernel driver.
+<li>The kernel driver sends the accept/reject notice to the APM BIOS.
+<li>If the event request was accepted, the APM BIOS places the
+hardware in the specified mode.
+</ol>
+
+<ENTRY>configuring Configuring NetBSD APM Support
+First off, you need to compile a kernel with the APM driver enabled.
+Add (or uncomment) the following line in your kernel configuration file:
+<pre>	apm0	at mainbus0	# Advanced power management</pre>
+See <a href="../kernel/#building_a_kernel">how to build
+a kernel</a> for details on how to build your own kernels.
+<p>
+Once you have a kernel with the APM kernel driver built, run the apm
+daemon (<b><kbd>apmd</kbd></b>) at boot time by setting the
+<b><kbd>apmd</kbd></b> variable <kbd>/etc/rc.conf</kbd> to YES.
+<p>
+Once you've done both of these steps, you can use the <b><kbd>apm</kbd></b>
+utility to interace with the APM system.  For example:
+<pre>
+% apm
+Battery charge state: high
+Battery remaining: 98 percent
+A/C adapter state: not connected
+Power management enabled
+</pre>
+Read <b>apm(8)</b> and <b>apmd(8)</b>
+for more detailed information on how to use the APM support.
+
+<ENTRY>hints Power Management Hints and Tricks
+The primary interfaces for power management events are the scripts
+in <b><kbd>/etc/apm</kbd></b>: <b><kbd>standby</kbd></b>,
+<b><kbd>suspend</kbd></b>, and <b><kbd>resume</kbd></b>.
+<b><kbd>apmd</kbd></b> will run these scrips when it receives
+the appropriate APM event.
+<p>
+Some things you might want to do in a <b><kbd>standby</kbd></b>
+or <b><kbd>suspend</kbd></b> script are:
+<ul>
+<li>Turn off power to a network interface card.  If you are using PCMCIA
+network interface cards, you can do this by <b><kbd>ifconfig interface down
+</kbd></b>.
+<li>Unmount network filesystems (if you plan on resuming a laptop in a place
+where that filesystem might not be accessable).
+<li>Stop running <b><kbd>dhclient</kbd></b> or <b><kbd>pppd</kbd></b>.
+</ul>
+Conversely, you can run all the appropriate commands to undo all of
+the things you did at standby or suspend time in your <b><kbd>resume</kbd></b>
+script.
+<p>
+New in NetBSD 1.4 is the <b><kbd>atactl</kbd></b> command.  This
+command can be used to control power management features of ATA devices
+(more commonly known as IDE).  You can use the
+<b><kbd>setidle</kbd></b> option of <b><kbd>atactl</kbd></b> to set the
+standby timer used to control disk spindown.  See <b>atactl(8)</b>
+for more specific information.
+<p>
+If you're wondering what value to set for the ATA standby timer, I would
+recommend reading the following papers:
+<dl>
+<dt><u>A Quantitative Ananysis of Disk Drive Power Management in Portable
+Computers</u>
+<dd>Kester Li, Roger Kumpf, Paul Horton, Thomas Anderson,
+Computer Science Division, University of California, Berkeley, <i>Winter 1994
+Usenix</i>.
+<dt><u>Thwarting the Power-Hungry Disk</u>
+<dd>Fred Douglas, P. Krishnan, Brian Marsh, Matsushita Information Technology
+Laboratory, <i>Winter 1994 Usenix</i>.
+</dl>
+These papers both recommend low values for a standby timer, on the order
+of 2 to 8 seconds.
+<p>
+One problem with setting a low value value for the standby timer is
+that by default NetBSD writes to the disk often enough that the disk is
+constantly spinning up (at least once every 30 seconds, or however
+often <b><kbd>update</kbd></b> runs).  It turns out the most common
+cause of this is the filesystem updating the last access timestamps on
+files and the last modified time on device special files (such as
+pseudo-ttys).  This behavior can be suppressed by the
+<b>mount(8)</b>
+options <b><kbd>noatime</kbd></b> and (new in NetBSD 1.4)
+<b><kbd>nodevmtime</kbd></b>.  If you decide to do this as well, you
+might want to also change or remove completely the
+<b><kbd>atrun</kbd></b> job inside of <b><kbd>cron</kbd></b> - by
+default it will run once every 10 minutes and append an entry to the
+<b><kbd>cron</kbd></b> log file, causing a disk spinup.
+<p>
+It is also desirable in some circumstances to use different or disable
+completely power management settings depending if one is powered by
+line power or battery.  A new feature in NetBSD 1.4 is two additional
+<b><kbd>apmd</kbd></b> scripts: <b><kbd>line</kbd></b> and
+<b><kbd>battery</kbd></b>.  These scripts are run by <b><kbd>apmd</kbd></b>
+whenever APM detects a power source change.  The <b><kbd>line</kbd></b>
+script is run upon transition to line/AC power, and the
+<b><kbd>battery</kbd></b> script is run upon transition to battery power.
+The script corresponding to the current power source is also run when
+<b><kbd>apmd</kbd></b> is first started.
+<p>
+You can place commands inside of these scripts to change the power
+management settings when using battery or line power.  Here are some
+example scripts:
+<p>
+<ul>
+<li><b><kbd>/etc/apm/line</kbd></b>
+<pre>#!/bin/sh
+
+mount -u /
+mount -u /usr
+atactl wd0 setidle 0</pre>
+<li><b><kbd>/etc/apm/battery</kbd></b>
+<pre>#!/bin/sh
+
+mount -u -o async,noatime,nodevmtime /
+mount -u -o async,noatime /usr
+atactl wd0 setidle 5</pre>
+</ul>
+Another useful feature is the <b><kbd>-a</kbd></b> flag to
+<b><kbd>apmd</kbd></b> which will cause <b><kbd>apmd</kbd></b> to
+ignore standby or suspend events if the machine is currently on line
+power.
+
+</LIST>
+
+<DOCLINK>
+
+<hr>
+<address>
+  www@NetBSD.ORG<br> $NetBSD: index.list,v 1.3 2000/01/16 01:27:47 abs Exp $<br> <a
+  href="../../Misc/disclaimer.html">Copyright &copy; 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a> </address>
+
+</body>
+</html>
