@@ -78,8 +78,8 @@ $months_previous=&get_minmonth($months_previous);
 
 '<HEADING>\s*(.*)','
 <table><tr><td>
-<a href="$HOME/Misc/daemon-copy.html">
-<img align="center" src="$HOME/images/BSD-demon.jpg" border=0
+<a href="/Misc/daemon-copy.html">
+<img align="center" src="/images/BSD-demon.jpg" border=0
 width=146 height=129 alt="BSD demon"></a>
 </td><td align=center>
 <h1>NetBSD ドキュメンテーション:</h1>
@@ -92,11 +92,11 @@ width=146 height=129 alt="BSD demon"></a>
 <table><tr>
   <td>
     <a href="$HOME/">
-    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+    <img src="/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
     <font>
     <a href="$HOME/">
-    <img src="$HOME/images/empty.gif" border=0
+    <img src="/images/empty.gif" border=0
 	    alt="NetBSD ">ホームページ</a>
     </font>
   </td>
@@ -109,11 +109,11 @@ width=146 height=129 alt="BSD demon"></a>
   <table><tr>
   <td>
     <a href="$HOME/">
-    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+    <img src="/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
     <font>
     <a href="$HOME/">
-    <img src="$HOME/images/empty.gif" border=0
+    <img src="/images/empty.gif" border=0
      alt="NetBSD ">ホームページ</a>
     </font>
   </td>
@@ -122,11 +122,11 @@ width=146 height=129 alt="BSD demon"></a>
   <table><tr>
   <td>
     <a href="$DEVELOPERS">
-    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+    <img src="/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
     <font>
     <a href="$DEVELOPERS">
-    <img src="$HOME/images/empty.gif" border=0
+    <img src="/images/empty.gif" border=0
      alt="NetBSD ">開発者ドキュメント</a>
     </font>
   </td>
@@ -141,11 +141,11 @@ width=146 height=129 alt="BSD demon"></a>
   <table><tr>
   <td>
     <a href="$HOME/">
-    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+    <img src="/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
     <font>
     <a href="$HOME/">
-    <img src="$HOME/images/empty.gif" border=0
+    <img src="/images/empty.gif" border=0
      alt="NetBSD ">ホームページ</a>
     </font>
   </td>
@@ -154,11 +154,11 @@ width=146 height=129 alt="BSD demon"></a>
   <table><tr>
   <td>
     <a href="$DOCUMENTATION">
-    <img src="$HOME/images/NetBSD-banner.gif" border=0 alt=""></a>
+    <img src="/images/NetBSD-banner.gif" border=0 alt=""></a>
   </td><td>
     <font>
     <a href="$DOCUMENTATION">
-    <img src="$HOME/images/empty.gif" border=0
+    <img src="/images/empty.gif" border=0
      alt="NetBSD ">Documentation top level</a>
     </font>
   </td>
