@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
+    <!-- Copyright (c) 2002
+            The Japan NetBSD Users' Group. ALL RIGHTS RESERVED. -->
+    <title>memo(log) of 2002/03/31 pkgsrc BOF</title>
+  </head>
+
+  <body>
+<PRE>
+pkgsrc BOF
+
+第１部 Zoularis - pkgsrc for non-NetBSD systems -
+
+* pkgsrc on MacOS X		山野さん
+	-> 資料あり
+
+	compileできるのは300くらい
+	問題点
+		sys.mk が間違ってる。
+		libtool はFinkから持ってくる
+		dlopen ぱちる
+		cpp は apple のもの。precompileできる。 
+			-> gccのcppを使うように
+		デフォルトはアップルの precompiled header に対応した cpp。
+		しろやまさんの話だと、Next 時代の遺産なので /usr/include に
+		あるものしか使わないのなら GNU の cpp をデフォルトにしても
+		OK なはずらしいです。
+		しろやまさんに聞いた話で、関数のネームスペース問題があるかも。
+		ライブラリの中にある関数をおきかえるために自前で関数を用意
+		した場合、ライブラリのほうが使われちゃってうまくいかない場合が
+		あるとのこと。これも ld? のオプションで制御可能らしいです。
+		ld, strip のoptionが違う。
+		HFS+ はcase insensitive
+		shared libraryのnaming conventionが違う
+			-> bsd.pkg.mk
+	agcが1.6に向けてがんばるらしい
+
+* pkgsrc on Solaris		原岡さん
+	-> 資料あり
+
+	利点
+		pkgsrcを使って管理コストを下げられる
+		ソースonlyでしか配付できないものをpkgsrcで管理
+		gensolpkgでsolaris native pkgを作ることができる
+			-> make packageのときにinstallするのが問題ちゃ問題
+
+	問題点
+		solaris用のパッケージと二重管理になって嫌
+		zoularisをcompileするのは面倒だけどbinary kitがあるから良い
+
+	野望
+		Solaris8, AIX true64, BSD/OSなどに対応
+		NSUG CD-ROMに突っ込む
+
+	課題
+		patchなどをOS依存/非依存考慮すべし
+
+* pkgsrc on Linux		坂本
+	binary kitが古い。RedHatは 5.2, 6.0用。
+
+	othersrc/zoularisをcompileするにはNetBSD src treeが必要。
+	必要なものは限られているが、分離して配付してない。
+
+	zoularis自体updateされてないから
+	lchownとか新し目のsystem callが入ってない。
+	mtreeが正しく動かない。
+
+	BSD make前提patch freewnnとか。
+	標準で使うMAKEをbmakeにしちゃえばよさげ。
+
+	当然ながらLinux固有のpatchがあたってない。
+
+	どのrpmが必要かよくわからない。
+
+	仕方がないとは言え nativeのpackageを使う方式がpkgsrcにない。
+	.if exists(/usr/bin/pax)とかをそれぞれのpkgにいれていくしかない。
+
+	使ってる人いないぞ。
+
+* MacOS Xのパッケージシステム	しろやまさん
+	-> 資料あり
+
+	NeXT由来のパッケージは対応してない
+	Darwin開発者はOpenPackagesを使おうとしている
+		-> 開発どうなってるの?
+		事実上止まっている様子。
+
+	他のパッケージ
+		EasyPackage
+			開発終了(作者による継続が行われていない)
+			日本人作者で日本では比較的人気があった？
+		PineApple
+			rpmベース
+		Fink
+			debianベース
+		GNU-Darwin
+			FreeBSD portsベース
+			Core OS である Darwin を含めた distribution 全体を
+			GNU-Darwin と呼ぶ。パッケージシステム自体の呼称は無い。
+			ぷらっとホームで売ってる。
+			パッケージシステムのインストール時に openssh を
+			上書きしてくれるので要注意。(GUI から有効/無効の
+			操作不能になる。)
+
+	Mac OS X の UNIX 的アプローチ(Terminal.app 等)はあんまり使われて
+	ないかも。
+        ほとんど MacOS9 以前の互換を実現する classic 環境の利用が主。
+	でもコマンドラインを使う層も現れて来ているらしい。
+
+	Darwin1.4.1 を改めてインストールしてて気がついたの
+	ですが、Darwin 自体は、.deb なパッケージを使っているので、
+	いまだ dpkg を使っているらしい。
+
+* make packages on Darwin	OGATA
+	-> 資料あり
+
+	iBook G3 500MHz
+	HFS+
+	MacOS X 10.1.3
+
+	基本システムのコマンドを入れ換えてる  tarなど
+
+	7日10時間
+
+	distfiles 4.6GB
+
+	317/2700 11% compile可能
+
+* enabling IPv6 in MacOS X	OGATA
+	-> 資料あり
+
+	pkgsrc の利用事例としての紹介。
+	オリジナルは http://www.kame.net/newsletter/20020322/
+	BIND8 からのライブラリと openssh 作成に pkgsrc を使う。
+	kernel作り直す
+	library作り直す
+	KAMEのlibrary,pkgsrcも使う
+
+
+
+第２部 pkgsrc 全般
+
+elf/aout は mac68k が elf になることで全ての arch が elf になることで解決？
+pkgsrc 的には elf 前提、Mac OS X は elf じゃない(Mach-O)けど幸せになれる？
+64bit, endian は pkgsrc 化するソフト依存で pkgsrc 自身は問題無し。
+
+Linux emul, FreeBSD emul, Win32(PEACE) も特に問題無し。
+compat_darwin を用意すればエミュレーション可能？
+
+いけてる点
+	いちいち ./configure やるよりは簡単。
+いけてない点
+	作るのが手間。手で入れたほうが早い。
+	ライブラリのごくわずかの upgrade でも依存するパッケージが全部入れ直しに
+	なる。
+
+make print-PLIST: PLIST 作成コマンド
+	make install
+	make print-PLIST > /tmp/PLIST
+	のようにする。
+	${FIND} ${PREFIX}/. -newer ${EXTRACT_COOKIE}で検索してPLISTを表示してくれる。
+	基本的な環境変数の置換も行ってくれるらしい。
+
+	mount_union も併用するとより良い。
+	mount_union /a/pkg /usr/pkg
+	(cd /usr/pkgsrc/foo/bar; make install)
+	find /a/pkg -type f -or -type l > /tmp/plist2
+	(cd /usr/pkgsrc/foo/bar; make deinstall)
+	umount /usr/pkg
+
+make tarup: tarball 作って update してくれる？
+	pkg_tarup パッケージ名 でも可。
+	完全ではなかったはずですが、
+	インストール済パッケージから binary packageを作ってくれる。
+	試してないですが、
+	make replace
+	てので使ってるらしい。
+</PRE>
+  </body>
+</html>

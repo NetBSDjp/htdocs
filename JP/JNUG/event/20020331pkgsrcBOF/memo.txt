@@ -1,0 +1,169 @@
+pkgsrc BOF
+
+Part I   Zoularis - pkgsrc for non-NetBSD systems -
+
+* pkgsrc on MacOS X		Yamano-san
+	-> Those with data
+
+	300 pkgsrc can be compiled without any changes.
+	Point of problems
+		sys.mk is not suitable.
+		libtool is brought from Fink.
+		fetch dlopen.
+		cpp included is by Apple. 
+			-> Use cpp of gcc instead.
+		Default cpp is compliant with precompiled header of Apple.
+
+		By Shiroyama San, GNU cpp may be used if we use /usr/include only
+		in place of default header files. Those Apple stuff precompiled 
+		is a legacy of NeXT-inherited stuff.
+		
+		Also by Shiroyama San, there may be a name space problem in function.
+		When the function with the same name is written to replace the
+		existing one, the original one still be used instead of the replacement.
+		
+		It is said this may be controlled by the option of ld.
+
+		The command line options of ld and strip are incompatible.
+		HFS+ filesystem is case insensitive.
+		Naming convention of shared library is different.
+			-> bsd.pkg.mk
+	Seemingly, agc will do its best towards 1.6.
+
+* pkgsrc on Solaris		Haraoka-san
+	-> Those with data
+
+Advantage
+		Management cost can lowered using pkgsrc.
+		To ease installation for source-only-distribution.
+		Solaris native pkg can be made of gensolpkg.
+			-> It may be a problem it installs all when 'make package' is issued.
+
+	Problems
+		It is managed and distasteful in a package for solaris and duplication.
+		Although compile is troublesome, since there is binary kit in zoularis, it is good.
+
+	Ambition
+		Supporting others also like Solaris8, AIX true64, BSD/OS, etc.
+		It plunges into NSUG CD-ROM.
+
+	Subjects
+		should carry out OS dependence/non-depending consideration of the patch etc.
+
+* pkgsrc on Linux		Sakamoto-san
+	binary kit is old. Red Hat Package is object for 5.2, 6.0.
+
+	NetBSD src tree is required to compile othersrc/zoularis.
+restricted.
+	Prerequisite stuff is not so many, but it is not available.
+
+	Zoularis itself is not updated recently, some system-calls and lchown are not included
+
+	mtree does not work correctly.
+
+	Probably, it will be good to use bmake as default MAKE, or 
+	prepare patches for FreeWnn to use BSD make.
+
+	To be natural, Linux specific patches are not applied.
+
+	It is not well-understood which versions of RPM packages are required.
+
+	Linux native package can not be utilized in the context of pkgsrc, 
+	although it may be out-of-scope.
+	The work arround may be putting 
+	.if exists(/usr/bin/pax) into each pkg.
+
+	Who is the user ?
+
+* Package system of Mac OS X	Shiroyama-san
+	-> Those with data
+
+	NeXT originated packges are not supported in MacOS X.
+	The Darwin developer will use OpenPackages.
+		-> Is there any info on development status ?
+	        Doesn't seem proceeding  as a matter of fact.
+
+	Other packages
+		EasyPackage
+			Development ended. (continuation by the author is not performed)
+			It was comparatively popular by the Japanese author in Japan.
+		PineApple
+			rpm base
+		Fink
+			debian base
+		GNU-Darwin
+			FreeBSD ports base
+			The whole distribution including Darwin which is Core OS is called GNU-Darwin.   There is no name of the package system itself.   It is sold at Plathome(Akihabara's shop).
+			Requiring special attention, since openssh is overwritten at the time of installation of a package system. (This disables the operation  of ON/OF ssh from GUI.)
+
+	The UNIX approaches (Terminal.app etc.) of Mac OS X may not be popular.
+	The most of the users are interested in using classic environment for MacOS 9
+	for their existing job.
+	But it is true the new age who uses command line manupilation appears.
+
+	If you install Darwin 1.4.1, it will be noticed Darwin itself relies on dpkg,
+	which is based on .deb package.
+
+* make packages on Darwin		OGATA
+	-> Those with data
+
+	iBook G3 500MHz
+	HFS+
+	MacOS X 10.1.3
+
+	The command of a basic system is replaced. tar etc.
+
+	7 days 10 hours
+
+	distfiles 4.6GB
+
+	317/2700 11% compile is possible.
+
+* enabling IPv6 in MacOS X		OGATA
+	-> Those with data
+
+	Introduction as a use example of pkgsrc.
+	Original is http://www.kame.net/newsletter/20020322/ .
+	Pkgsrc is used for the library from BIND8, and openssh creation.
+	re-build kernel
+	re-build library
+	use library,pkgsrc of KAME too
+
+
+
+Part II   Whole pkgsrc
+
+All the migration from a.out to elf will be completed when Mac68k work is done.
+In pkgsrc, although an elf requred and Mac OS X are not with elf (Mach-O), elf migration
+makes everybody happy. 
+There may be 64 bit and endian issue, but it is just a matter how each software supports
+and pkgsrc itself are not affected by these problem.
+
+Linux emul, FreeBSD emul, and Win32 (PEACE) won't have any specific problems.
+An emulation is possible if compat_darwin is prepared.?
+
+good point
+	Easy rather than doing ./configure one by one.
+bad point
+	Time consuming effort. Manuall installation is faster than preparing pkgsrc.
+	Any slight Library update may makes whole dependent pkgsrc's to update.
+
+make print-PLIST: PLIST creation command
+	It does in this way:
+	make install
+	make print-PLIST > /tmp/PLIST
+	It searches and PLIST is displayed by ${FIND} ${PREFIX}/. -newer ${EXTRACT_COOKIE}
+	Seemingly, substitution of a fundamental environment variable will also be performed.
+
+	It is more good to also use mount_union together.
+	mount_union /a/pkg /usr/pkg
+	(cd /usr/pkgsrc/foo/bar; make install)
+	find /a/pkg -type f -or -type l > /tmp/plist2
+	(cd /usr/pkgsrc/foo/bar; make deinstall)
+	umount /usr/pkg
+
+make tarup: It makes tarball and update.
+	It is equivalent to 'pkg_tarup package-name'
+	This procedure, not being perfect, make binary package from an installed package.
+	make replace 
+	will call this make target.
