@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.74 2001/07/10 12:10:59 dent Exp $
+# $NetBSD: list2html.pl,v 1.75 2002/01/01 05:37:41 hubertf Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -60,10 +60,10 @@ my($version, %opt, %pkgname);
 # List of pkgsrc names to 'human preferred' forms
 %pkgname = qw(kde KDE gimp GIMP gnome GNOME xsane XSane);
 
-$months_previous = 9;	# Previous months to display for DATE entries
+$months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.74 $';
+$version = '$Revision: 1.75 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:m:hV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
