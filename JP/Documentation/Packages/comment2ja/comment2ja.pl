@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.1 1999/08/23 10:30:52 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.2 1999/08/23 10:52:57 sakamoto Exp $
 #
 
 $|=1;
@@ -50,6 +50,7 @@ if (! -d $wwwdir) {mkdir($wwwdir, $mode) || die "dst:$wwwdir\n";}
 open(DST, "|nkf -j > $wwwdir/README.html") || die "dst:$wwwsrc/README.html\n";
 while (<SRC>) {
 	if (/^<TR><TD VALIGN=TOP><a href=\"([^\/]+)/) {
+		s/\"(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 		my ($cat) = $category{$1};
 		if (defined($cat)) {
 			s/(: <TD>).*/$1$cat/;
@@ -72,6 +73,7 @@ open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 open(DST, "|nkf -j > $wwwdir/README-all.html") || die "dst:$wwwsrc/README-all.html\n";
 while (<SRC>) {
 	if (/^<TR VALIGN=TOP><TD VALIGN=TOP><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
+		s/\"(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 		my ($pkg) = $packages{$1};
 		if (defined($pkg)) {
 			s/(\) <TD>).*/$1$pkg/;
@@ -106,6 +108,7 @@ foreach $dir (readdir(TOPDIR)) {
 
 	while (<SRC>) {
 		s/You are now in the directory (".*")./$1 ディレクトリー/;
+		s/\"..\/(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 		if (/^<TR><TD VALIGN=TOP><a href=\"([^\/]+)/) {
 			my ($pkg) = $packages{"$dir/$1"};
 			if (defined($pkg)) {
@@ -142,6 +145,7 @@ foreach $dir (readdir(TOPDIR)) {
 
 		my ($com) = 0;
 		while (<SRC>) {
+			s/\"..\/..\/(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 			s/This package has a home page at/ホームページ:/;
 			s/Please note that this package has a (.*) license./このパッケージは $1 ライセンスであることに注意してください。/;
 			s/ftp:\/\/ftp.netbsd/ftp:\/\/ftp.jp.netbsd/;
