@@ -2,9 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2002
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.ORG">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>NetBSD/next68k: Frequently Asked Questions</title>
 </head>
 <body bgcolor="#ffffff" text="#000000" link="#2020cc" vlink="#700080">
@@ -22,164 +23,87 @@ answers!) about NetBSD/next68k.
     <li><a href="../../Documentation/wscons/">The wscons
 	FAQ</a>, about NetBSD's platform-independent workstation
 	console driver.
-    <li><a href="../../Documentation/network/netboot/intro.next68k.html">Netbooting
-	NetBSD/next68k</a>
+    <li><a href="../../Documentation/network/netboot/">Diskless
+	NetBSD HOW-TO</a>
+    <li><a href="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial 
+       Port Primer</a>
 </ul>
 
 <SECTION>Booting
 
-<ENTRY>rom-monitor How do I get to the firmware, or the ROM Monitor
+<ENTRY>rom-monitor How do I get to the firmware, or the ROM Monitor?
 You can get to the ROM monitor, or break into the debugger at any
-time, by hitting both <b>COMMAND</b> keys and the "~" key (above the
-'7' on the numeric keypad.
+time, by hitting both <b>COMMAND</b> and the backquote (<tt>`</tt>) key
+above the <tt>7</tt> on the numeric keypad.
 
-<ENTRY>netboot-command How do I tell the machine to netboot?
-From the <a href="#rom-monitor">ROM monitor</a> issue the command
-<pre>ben()netbsd</pre>
-This will send out a bootp request on the attached ethernet.
+<ENTRY>reset How do I reset the system without pulling the plug?
+This is a hard reset -- it does not sync the filesystems first.  Press
+the <i>left</i> <b>COMMAND</b>-<b>ALTERNATE</b>-<b><tt>*</tt></b> keys (where 
+the <tt>*</tt> key is to the right of the <tt>/</tt> on the numeric keypad).
 
 <ENTRY>netboot-how How do I netboot?
-<em>[Note: There is a section of the new <a
+This is now covered in the INSTALL notes.
+There is also a section of the <a
 href="../../Documentation/network/netboot/">Diskless NetBSD HOW-TO</a> devoted
 to <a
 href="../../Documentation/network/netboot/intro.next68k.html">Netbooting
-NetBSD/next68k</a>.  The information there will be of help to you, coupled
-with the following]</em>
+NetBSD/next68k</a>.  
+
+<ENTRY>monitor-commands What can I do in the ROM Monitor?
+From the ROM Monitor prompt, type <tt><b>?</b></tt> to get a listing of 
+the possible commands and <tt><b>p</b></tt> to configure the system.
+Additionally, pressing the <tt>Power</tt> key will let you power the system 
+down.
 <p>
-
-Netbooting is simple, once you know the proper incantations.  In this
-example.. we will have two servers, you don't need two servers, but
-understand that you can have as many as you like, doing different
-functions.
+To boot from a SCSI disk, type <tt><b>bsd()</b></tt>.  To boot from the 
+ethernet, type <tt><b>ben()netbsd</b></tt>.
 <p>
-
-<em>Sulafat</em> is our new NeXT, waiting to be booted.
-<p>
-
-<em>Rigel</em> is our bootpd, and tftpd server, it also houses our
-root partition.
-<p>
-
-<em>Giauzar</em> is an NFS server on the same network, with loads of disk
-space.
-<p>
-
-First.. we need to make a root partition for our machine. On rigel,
-we have enough space for root, and maybe part of usr.  In this case
-I created a directory called <i>/next</i>, about 90 megs, and populated
-it with the binaries from the distribution.  I also deleted
-/usr/share from this directory, to save space.  More on that later.
-<p>
-
-Having created a root directory, now I will go into 
-<code>/next/dev</code>, and run <code>sh ./MAKEDEV all</code>. This
-will populate the dev directory with the correct device nodes.  I can
-now go into /next/etc, and configure as much of etc as I like.  It's
-important at this stage that the machine has a few things configured:
-<p>
-
-<code>etc/hosts or etc/resolv.conf</code> will be needed to resolve
-names used during mounting of nfs filesystems, and other networking
-activities.
-<p>
-
-<code>etc/rc.conf</code> must be configured, just like any other
-NetBSD system.
-<p>
-
-<code>etc/myname</code> should contain the name of the machine you
-are attempting to netboot
-<p>
-
-<code>etc/fstab</code> is the fstab for your machine. Example:
-
 <pre>
-rigel:/next / nfs rw,auto 0 0
-giauzar:/usr/share /usr/share nfs ro 0 0
-giauzar:/usr/src/sulafat.swap none swap sw,nfsmntpt=/swap 0 0
-giauzar:/sulafat.pkg /usr/pkg nfs rw 0 0
+                        NeXT ROM Monitor 2.5 (v66)
+
+CPU MC68040 25 MHz, memory 100 nS
+Backplane slot #0
+Ethernet address:  0:0:f:0:fb:90
+Memory size 40 MB
+NeXT&gt;<b>?</b>
+NeXT ROM monitor commands:
+        p  inspect/modify configuration parameters
+        a [n]  open address register
+        m  print memory configuration
+        d [n]  open data register
+        r [regname]  open processor register
+        s [systemreg]  open system register
+        e [lwb] [alist] [format]  examine memory location addr
+        ec  print recorded system error codes
+        ej [drive #]  eject optical disk (default = 0)
+        eo  (same as above)
+        ef [drive #]  eject floppy disk (default = 0)
+        c  continue execution at last pc location
+        b [device[(ctrl,unit,part)] [filename] [flags]]  boot from device
+        S [fcode] open function code (address space)
+        R [radix]  set input radix
+Notes:
+        [lwb] select long/word/byte length (default = long).
+        [alist] is starting address or list of addresses to cyclically examine
+        Examine command, eith no arguments, uses last [alist]
+Copyright (c) 1988-1990 NeXT Inc.
+
+NeXT&gt;<b>p</b>
+boot command: sd()? <b>en()netbsd</b>
+DRAM tests:  yes? <b>yes</b>
+perform power-on system test:  yes? <b>yes</b>
+        sound out tests:  yes? <b>yes</b>
+        SCSI tests:  yes? <b>yes</b>
+        loop until keypress:  no?  <b>no</b>
+        verbose test mode:  no?  <b>yes</b>
+boot extended diagnostics:  no?  <b>no</b>
+serial port A is alternate console:  no?  <b>yes</b>
+allow any ROM command even if password protected:  no?  <b>no</b>
+allow boot from any device even if password protected:  no?  <b>no</b>
+allow optical drive #0 eject even if password protected:  yes?  <b>yes</b>
+enable parity cehcking if parity memory is present:  no?  <b>no</b>
+
 </pre>
-
-This provides the machine with more than just the minimal amount needed
-to boot.  In my configuration, root and usr are on rigel:/next.  I mount
-/usr/share from giauzar, because "share" means just that, sharable.
-I have also created a swapfile on giauzar.
-<p>
-
-Setting up the swapfile is very simple..  in the example above:
-
-<pre>
-giauzar# cd /usr/src
-giauzar# dd if=/dev/zero of=sulafat.swap bs=512 count=64000
-</pre>
-
-created a 32MB swapfile for sulafat's use.  Note how it was mounted
-in the fstab above.
-<p>
-
-You now need to create a directory called /tftpboot on your bootpd
-server.  Example:
-
-<pre>
-rigel# mkdir /tftpboot
-rigel# cp /next/usr/mdec/boot /tftpboot/boot
-</pre>
-
-I have copied the boot file for the NeXT, into the tftpboot directory.
-<p>
-
-Now set up the bootpd server<br><Br>
-Edit the file /etc/bootpd on the server.  In this case, rigel.
-
-<pre>
-sulafat:sm=255.255.255.0:gw=192.168.10.1:ht=ethernet:ha=00000f00c8fa:
-        ip=192.168.10.14:vm=auto:rp=/next:bf=boot
-</pre>
-
-In the above example, I have set the subnet-mask (sm) to 255.255.255.0,
-the default gateway (gw) to 192.168.10.1, the hardware-type (ht) to
-"ethernet", the hardware address (ha) to "00000f00c8fa", the IP address
-(ip) of sulafat to 192.168.10.14, the remote root mountpoint (rp) to
-/next, and the boot file (bf) to "boot".
-<p>
-
-I have also set the "vm" field to "auto".  This is required when
-netbooting a NeXT.
-<p>
-
-You can get the hardware address from your NeXT by entering the
-<a href="#rom-monitor">ROM Monitor</a>.  When the monitor boots up,
-it will display it's hardware address to you.
-<p>
-
-Now you will export the proper filesystems from the server.  In this
-case, rigel is exporting root to the NeXT, so on rigel /etc/exports
-should look like this:
-
-<pre>
-/next -maproot=0:10 192.168.10.14
-</pre>
-
-Once you have done that, you need to make sure all the appropriate
-daemons are running.  nfsd, and mountd must be running on rigel,
-to support the remote nfs mount of root.  You should also edit the
-/etc/inetd.conf file on the bootpd server (rigel) to enable
-"tftp" and "bootps".  You can also start bootpd manually, with
-the command <code>bootpd -d 9</code> to start it in debugging mode.
-this can be useful if you are having problems.
-<p>
-
-Now, if everything is set up, and all the proper daemons are running
-on the servers, you should be ready to tell the NeXT to netboot with
-the command <code>ben()netbsd</code>.
-
-<ENTRY>auto-boot How do I set it up to automatically netboot?
-After entering the <a href="#rom-monitor">ROM Monitor</a>, you may
-issue the command "p" to configure your NeXT.  The first question
-it will ask, is the boot device.  Normally this is set to "sd?".  You
-may change it to "en()netbsd", and the machine will automatically
-attempt to netboot on powerup.
-
 <SECTION>Hardware
 
 <ENTRY>no-monitor How do I run my NeXT headless?
@@ -227,77 +151,9 @@ href="http://www.peanuts.org/faq-serve/cache/189.html">The Peanut's Archive
 FAQ</a>.
 
 <ENTRY>serial-console How do I build a serial console cable?
-It turns out that the NeXT is a DCE device, unlike most other machines
-or terminals which are DTE.
-<p>
 
-First, you need to know which pin is which. From top to bottom, left
-to right, looking at the back of the machine:
-
-<pre>
- 8 7 6
- 5 4 3
-  2 1
-</pre>
-
-<img src="../../images/ports/next68k/serial.gif" width="64" height="65"
-     alt="Image of the NeXT serial port">
-<p>
-
-The pins are:
-<p>
-
-<ol>
-	<li> DTR
-	<li> DCD
-	<li> TxD
-	<li> GND
-	<li> RxD
-	<li> RTS
-	<li> RTxC
-	<li> CTS
-</ol>
-<p>
-
-In order to create a proper cable to talk to the NeXT from a PC serial
-port, or a terminal, you just need to wire the pins together.
-TxD -&gt; TxD, etc etc.
-
-<pre>
-PCs have 9pin/25pin male SUB-D connectors. The pin layout is as follows
-(seen from outside your PC):
-
-        1                         13         1         5
-      _______________________________      _______________
-      \  . . . . . . . . . . . . .  /      \  . . . . .  /
-       \  . . . . . . . . . . . .  /        \  . . . .  /
-        ---------------------------          -----------
-        14                       25           6       9
-
-Name (V24)  25pin  9pin  Dir  Full name              Remarks
------------------------------------------------------------------------
-   TxD         2     3    o   Transmit Data          Data
-   RxD         3     2    i   Receive Data           Data
-   RTS         4     7    o   Request To Send        Handshaking
-   CTS         5     8    i   Clear To Send          Handshaking
-   DTR        20     4    o   Data Terminal Ready    Status
-   DSR         6     6    i   Data Set Ready         Status
-   RI         22     9    i   Ring Indicator         Status
-   DCD         8     1    i   Data Carrier Detect    Status
-   GND         7     5    -   Signal ground          Reference level
-    -          1     -    -   Protective ground      Don't use this one
-                                                     as signal ground!
-</pre>
-
-I created my cable, by purchasing a Mac printer cable, which had all
-eight pins wired straight through.  I sliced the cable in half, and
-connected an RJ45 onto the end for my terminal server.  In order to use
-the serial port, you will have to set the variable
-"Port A as alternate console?" to "Y", from the configuration menu
-(accessed by typing "p" from the <a href="#rom-monitor">ROM Monitor</a>.
-It will probably be useful to have a multi-meter, or some form of
-continuity tester available to figure out which pin is which wire after
-opening up the "donor cable".
+See the <a href="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial 
+Port Primer</a> for more information.
 
 <ENTRY>monitor-pinout What is the pinout of the monitor cable?
 The NeXT monitor cable is a very strange DB19 connector.  I haven't
@@ -346,8 +202,8 @@ cable, as seen from the back of the machine:
 <address>
 <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.16 2001/07/12 14:38:34 dent Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  $NetBSD: faq.list,v 1.19 2002/12/24 17:02:38 jschauma Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2002
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>

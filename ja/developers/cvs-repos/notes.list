@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2001
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>Misc developer CVS notes</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<DEVHEADING>CVS - Misc developer notes
+
+<LIST>
+
+<SECTION>Misc developer CVS notes
+
+<ENTRY>head Why 'HEAD' is not as useful as you might expect
+
+HEAD is not a synonym for "last revision on main trunk", its actually
+quite a bit more Special than that. Consider, for instance, 'cat'.
+<p>
+
+<ul>
+<li>"<tt><b>cvs update -A</b></tt>" (also, "<tt><b>cvs update -Dnow</b></tt>") gets the revs:
+<pre>	Makefile	1.9
+	cat.1		1.16
+	cat.c		1.21</pre>
+<p>
+
+<li>"<tt><b>cvs update -r netbsd-1-4-base</b></tt>" gets the revs:
+<pre>	Makefile	1.8
+	cat.1		1.16
+	cat.c		1.19</pre>
+<p>
+
+<li>"<tt><b>cvs update -r netbsd-1-4-PATCH001</b></tt>" or "<tt><b>cvs
+update -r netbsd-1-4</b></tt>" gets the revs:
+<pre>	Makefile	1.8
+	cat.1		1.16
+	cat.c		1.19.2.1</pre>
+</ul>
+<p>
+
+In all cases, when you then say "<tt><b>cvs update -r HEAD</b></tt>"
+you get the same as "<tt><b>cvs update -A</b></tt>" or "<tt><b>cvs
+update -Dnow</b></tt>".
+<p>
+When you do "<tt><b>cvs diff -r HEAD</b></tt>", however:
+<p>
+
+<ul>
+<li>When you're current (via "<tt><b>cvs update -A</b></tt>",
+    etc.), you get the diffs:
+<pre>	file:		1st -r:	2nd -r:
+	-----		-------	-------
+	Makefile	1.9	1.9
+	cat.1		1.16	1.16
+	cat.c		1.21	1.21</pre>
+
+(i.e. no output.)
+<p>
+
+<li>When you're updated <tt>-r netbsd-1-4-base</tt>, you get the diffs:
+<pre>	Makefile	1.9	1.8
+	cat.1		1.16	1.16
+	cat.c		1.21	1.19</pre>
+(yes, those are backwards, since "<tt><b>cvs diff -r foo</b></tt>"
+uses as the 'first' set of files those with rev. foo, and the second
+those that you've got already checked out.)
+<p>
+
+<li>When you're updated <tt>-r netbsd-1-4-PATCH001</tt> or <tt>-r
+    netbsd-1-4</tt>, you get the diffs:
+<pre>	Makefile	1.9	1.8
+	cat.1		1.16	1.16
+	cat.c		1.19.2.1 1.19.2.1</pre>
+</ul>
+<p>
+
+In other words, "<tt><b>cvs update -r HEAD</b></tt>" is equivalent
+to "<tt><b>cvs update -A</b></tt>" or "<tt><b>cvs update -Dnow</b></tt>"
+(at least in the simple cases where there's no date-based attic
+lossage).
+<p>
+However, "<tt><b>cvs diff -r HEAD</b></tt>" compares each file with
+the <em>head of its branch</em>.  For some files on a branch (those
+which have been branched but for which there are no changes on the
+actual branch), the diff will be against the head of the
+branch that they were branched from (e.g. in the <tt>cat/Makefile</tt> case
+above, the head of the trunk).  For others (those which do have
+changes on the branch), the diff will be against the head of the
+currently-checked out branch.
+<p>
+In other words, <strong>you can't reliably use <tt>diff</tt> against
+<tt>-r HEAD</tt> to test whether a file matches the head of the
+trunk.</strong>
+<p>
+You can use <tt>-Dnow</tt> (but that's occasionally kinda broken, in the
+presence of deleted files... though at least not too verbose about it
+<p>
+After a commit to the branch, if you're willing to do multiple updates
+and use -kk, you can also tell by doing something like:
+<p>
+<ol>
+<li><tt><b>cvs update -kk</b></tt><br>
+    (get the head of the branch you currently have checked out,
+    with -kk.  If you just committed some changes to the branch,
+    this should simply have the effect of -kk-izing your files.)
+<li><tt><b>cvs update -A -kk</b></tt>
+</ol>
+<p>
+and if there are no files modified/added/deleted, the two are in sync.
+<p>
+So, in a nutshell, HEAD's pretty evil, i'd suggest avoiding it. (cgd)
+
+<ENTRY>cvsignore Do not use <TT>.cvsignore</tt> files!
+
+<P><TT>.cvsignore</TT> files are not to be used in most parts of the
+NetBSD source code repository.  (That is, after discussion, they
+have been banned from the source tree.)  All modules other than
+<TT>pkgsrc</TT> are currently included in this prohibition.
+
+<P><TT>.cvsignore</TT> files have been banned because, in a nutshell,
+they cause problems for NetBSD development.  There are two main
+classes of problems which they encourage: incomplete cleaning, and
+bogus files left in distributions.
+
+<P>Regarding the problem of incomplete cleaning, NetBSD sources
+should build and clean leaving only the original
+sources.  If other files, e.g. object files or other files created as
+a by-product of building, are left around after a complete clean with
+<TT>make cleandir</TT>, that is a bug.  <TT>.cvsignore</TT> files
+are used to mask that bug, and therefore should be avoided.
+
+<P>Regarding the problem of building a distribution that does not
+include bogus files, the easiest way to verify that there are no
+bogus files in the distribution is to run "<tt>cvs update</tt>"
+with the flags "<tt>-I! -ICVS</tt>".  However, <TT>.cvsignore</TT>
+entries are added to CVS's list of files to ignore <em>after</em>
+the <tt>-I</tt> flags are processed, and so it is impossible to
+cause CVS to ignore files mentioned in <TT>.cvsignore</TT> files!
+The possible consequences of this should be obvious: files can
+accidentally creep into source snapshots because they were mentioned
+in <TT>.cvsignore</TT> files and, for whatever reason, were not
+properly removed.
+
+<P>When importing packages which include <tt>.cvsignore</tt> files,
+make CVS ignore them by specifying the "<tt>-I .cvsignore</tt>"
+option to the "<tt>cvs import</tt>" command.
+
+<ENTRY>moving Moving and copying files in the repository
+Now and then a situation occurs in which it is necessary to move 
+or copy files in the CVS repository and keep the CVS history.
+This is not supported by CVS itself, so it can't be done using CVS's
+normal client-server mechanisms.
+<p>
+
+Some time ago there were some scripts that moved the actual RCS files
+around -- this is not supported anymore, just remove the file and add
+it in the new place, noting where it was moved from or to
+respectively, to make tracking these moves easier in years to come.
+For more files at once, you can also cvs import them instead of cvs
+adding them.
+
+</LIST>
+
+<a href="./">Up to <em>CVS Repository Issues</em></a>
+<hr>
+
+<DEVLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: notes.list,v 1.10 2002/03/14 03:47:47 jschauma Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>

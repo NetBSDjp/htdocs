@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2001
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.ORG">
+<title>NetBSD Documentation: Working with CVS branches</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<DEVHEADING>Working with CVS branches
+
+<i>Chris Demetriou writes:</i>
+<p>
+
+So, a bunch of you often do CVS branch stuff.  Below are the commands
+that I generally use to do branch stuff (creation, updating).  Jason
+asked me to send them here.
+<p>
+
+Assuming ${b} == the branch name and ${m} == the module name covered
+by the branch.  I assume that whole hierarchies will be worked with,
+rather than individual bits as some people seem to want to do.  I've
+never had much luck with the latter.
+<p>
+
+<b>To create a branch:</b>
+<p>
+
+<ol>
+  <li>Tag the set of sources you want to branch with a command like:
+    <p>
+    <pre>cvs rtag -r HEAD ${b}-base ${m}</pre>
+    <p>
+
+  <li>Branch them with the command:
+    <p>
+    <pre>cvs rtag -b -r ${b}-base ${b} ${m}</pre>
+</ol>
+<p>
+
+<b>To update the branch to reflect changes in the trunk:</b>
+<p>
+
+<ol>
+  <li>Update your working source tree to be on the branch:
+    <p>
+    <pre>cvs update -P -r ${b}</pre>
+    <p>
+    (in your working source tree)
+    <p>
+
+  <li>Make a tag which represents the new base you're moving to:
+    <p>
+    <pre>cvs rtag -F -r HEAD ${b}-nbase ${m}</pre>
+    <p>
+    This allows you to punt, and redo your merge again later if
+    you decide you don't have time to do it right then, or whatever.
+    <p>
+
+  <li>Merge changes between the old and new base of your branch:
+    <p>
+    <pre>cvs update -j ${b}-base -j ${b}-nbase</pre>
+    <p>
+    (in your working source tree)
+    <p>
+
+  <li>Merge conflicts, etc.
+    <p>
+
+  <li>Check in your changes (to the branch).
+    <p>
+
+  <li>Repoint the base tag at the new base revisions:
+    <p>
+    <pre>cvs rtag -F -r ${b}-nbase ${b}-base ${m}</pre>
+    <p>
+
+  <li>Delete the new base tags (now redundant):
+    <p>
+    <pre>cvs rtag -d ${b}-nbase ${m}</pre>
+</ol>
+<p>
+
+<hr>
+<a href="./">Up to <em>CVS Repository Issues</em></a>
+<hr>
+
+<DEVLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="../../Misc/feedback.html">(Contact us)</a>
+  $NetBSD: branch.list,v 1.1 2001/07/14 15:36:53 dent Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
+
