@@ -1,0 +1,506 @@
+<html>
+<head>
+<!-- Copyright (c) 1997, 1998
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<TITLE>General Q&amp;A</TITLE>
+</HEAD>
+<BODY>
+<A NAME="QandA"></A> <H1>3. <A NAME="s3"></A>General Q&amp;A</H1>
+<P>
+<HR>
+<A HREF="faq.html#toc3">Contents of this section</A><HR>
+</P>
+
+<A NAME="A.R"></A> <H2>3.1 <A NAME="ss3.1"></A> I want to see if NetBSD will run on my Mac.  What do I need to do?</H2>
+
+<P>This is really quite simple.  All you need to do is to obtain a copy of the
+Booter utility (as of this writing 1.11.1 is the latest version, older
+versions may work, however) and a kernel file, preferably raw (i.e. not
+gzipped or tarred).  The latest version of the Booter utility should be
+capable of handling gzipped kernel files.  Both can usually be obtained 
+by anonymous ftp from ftp.macbsd.com or ftp.netbsd.org.  In the Booter,
+select Options->Booting.  In the Boot Options dialog that appears, select the 
+radio button which says "Mac OS File" for the kernel location.  Clicking on
+the "Set..." button will present you with a standard open file dialog.
+Select the location of the kernel file.  Then click OK, and select
+Options->Boot Now.  You should see a list of things scroll by in the Booter
+window, and the screen should go entirely white.  A series of bootstrapping
+messages should go by.  If you manage to get to the line:
+<BLOCKQUOTE><CODE>
+<PRE>
+boot device: sd0
+</PRE>
+</CODE></BLOCKQUOTE>
+
+then NetBSD will probably work on your machine, and you should go ahead and
+try to install the base and etc packages.  The most recent kernels should
+actually reach a line that says:
+<BLOCKQUOTE><CODE>
+<PRE>
+root device (default sd0a):
+</PRE>
+</CODE></BLOCKQUOTE>
+
+Just type 'halt' at this line and the machine should shutdown nicely.</P>
+<P>If the bootstrap never leaves the MacOS booter, then try disabling the
+options in the booter about video interrupts, etc.  Another possibility is
+that you have corrupted the kernel file while decompressing it.  If this is
+the case, the booter will probably hang at the line:
+<BLOCKQUOTE><CODE>
+<PRE>
+Set _mac68k_vrsrc_vec to {0x0 0x0 0x0 0x0 0x0 0x0 }.
+</PRE>
+</CODE></BLOCKQUOTE>
+
+Many utilities such as the enhanced version of Stuffit Expander will do an
+end of line translation during decompression.  There is an option to turn
+this feature off in the preferences.  You can also use MacGzip instead
+(although you will probably have to set an option in the preferences dialog
+for it as well).  If bootstrapping dies later (after the entire screen
+changes color), then see the question below on
+<A HREF="#A.G">getting NetBSD to boot</A>
+.  </P>
+<P></P>
+<P></P>
+
+<A NAME="A.B"></A> <H2>3.2 <A NAME="ss3.2"></A> Can I break the distribution up into 1.4MB chunks so it will fit on a Mac floppy?</H2>
+
+<P>You should be able to ungzip the distribution files and re-tar them
+into smaller chunks.  Then re-gzip them.</P>
+<P></P>
+<P></P>
+
+<A NAME="A.C"></A> <H2>3.3 <A NAME="ss3.3"></A> What is Eschatology?  Why does my partitioning software list it?</H2>
+
+<P>Literally speaking, it is "the teachings of the end of the world".</P>
+<P>In this context it is a type of partition for older versions of A/UX. Apple
+must have meant it in good humor as a sign to administrators to prepare
+their systems for disaster.  The eschatology partition is supposed to allow
+the system to automatically recover critical system files whenever the
+system goes down.  It's part of the A/UX "autorecovery" process.  It was
+supposed to work by maintaining backup copies of these critical files for
+you on two separate partitions -- Eschatology and Eschatology2.  In five
+years of college with hundreds of other students with A/UX machines, I've
+never once heard of an incident where autorecovery kicked in and did its
+thing.</P>
+<P></P>
+<P></P>
+
+<A NAME="A.D"></A> <H2>3.4 <A NAME="ss3.4"></A> What is an "Autorecovery" partition?</H2>
+
+<P>It's the new name for an Eschatology partition.  I believe Apple
+renamed Eschatology to Autorecovery starting with A/UX 2.0.</P>
+<P></P>
+<P></P>
+
+<A NAME="A.E"></A> <H2>3.5 <A NAME="ss3.5"></A> Do I need "Eschatology" or "Autorecovery" partitions for NetBSD/mac68k?</H2>
+
+<P>No.</P>
+<P>If for any reason your formatting software forces you to create an
+"Eschatology", "Eschatology2", or "Autorecovery" partition, remove the
+partition and try to increase the size of other partitions you have alloc-
+ated to re-claim the space.</P>
+<P></P>
+<P></P>
+
+<A NAME="A.F"></A> <H2>3.6 <A NAME="ss3.6"></A> What do I do with the *.hqx files?  Why won't the installer recognize them?</H2>
+
+<P>Those files are in BinHex format.  They need to be converted back to
+binary form, or "de-BinHexed".  There are numerous utilities to perform
+this conversion under MacOS (such as Stuffit Expander or BinHex 4.0), or
+you can use the mcvert program on many unix systems to de-BinHex them:
+<BLOCKQUOTE><CODE>
+<PRE>
+mcvert base10.hqx
+</PRE>
+</CODE></BLOCKQUOTE>
+
+Then use the Installer to install the files.</P>
+<P></P>
+<P></P>
+
+<A NAME="A.G"></A> <H2>3.7 <A NAME="ss3.7"></A> NetBSD/mac68k doesn't boot on my machine.  It hangs.  What do I do?</H2>
+
+<P>Verify this checklist before going any further:
+<OL>
+<LI>Monitor Control Panel is set to 1-bit video.  If you have more than
+one video card, make sure both are set to 1-bit (this is no longer
+necessary unless you will be using dt or monochrome X, but anything
+higher than 8-bit just might hang the machine).</LI>
+<LI>your machine prefers an FPU (M68881/M68882 or full 68040).</LI>
+<LI>your 68020 machine has a PMMU (M68851).</LI>
+<LI>32-bit addressing is turned "on" in the Memory Control Panel.</LI>
+<LI>Machines with 32-bit dirty ROMs have MODE32 installed with 32-bit
+addressing turned "on". (These machines are the Mac II, IIx, IIcx,
+and SE/30.  There are others, but they will not run NetBSD.)</LI>
+<LI>Virtual Memory is turned "off" in the Memory Control Panel.</LI>
+<LI>the Booter has sufficient memory.  Select the Booter icon, press
+Command-I to see the memory allocated to the booter.</LI>
+<LI>Options->Booting...->Kernel Name is correct.  Most likely it will
+be "netbsd" unless you are testing a new kernel with a different
+name.</LI>
+<LI>Options->Booting...->Root SCSI ID is correct.  This should be the
+SCSI ID for the drive on which NetBSD/mac68k is installed on.  It
+may not be he same as the drive on which the Booter application
+is located.</LI>
+<LI>Options->Booting...->RAM is set to the amount of RAM in your
+machine, and Auto-size RAM is turned on.  <B>This is true even if you
+are using internal video on a Mac IIci or IIsi</B>.</LI>
+<LI>Options->Startup...->Extra debugging info is turned on.</LI>
+<LI>You are booting without any inits (i.e. extensions), especially RAM
+Doubler.   Mode32 is the exception.  To disable extensions, hold down
+the Shift key during MacOS boot.</LI>
+<LI>Your are running at least System 7.0. The current version of the
+Booter utility no longer works under System 6.x.x.</LI>
+<LI>Remove any non-standard (i.e. non-Apple) hardware.  Not all hardware
+is supported at the moment, and some may cause the boot to hang.</LI>
+</OL>
+</P>
+<P></P>
+<P>Make sure that you have the latest version of the Booter (1.11.1 as of this
+writing).</P>
+<P>If you are trying to boot a IIsi using a PDS/NuBus video card, be aware
+that you probably need to be using internal video in some way.  More on
+this below in the Q&amp;A on
+<A HREF="#A.Y">booting a IIsi with a video card</A>
+.</P>
+<P>If you are trying to boot NetBSD on a full installation (i.e. you are not
+just testing a raw kernel file from the MacOS), make sure that you make
+devices using the Installer utility.  Also, make sure that your swap
+partition exists before making devices so that the Installer will create
+the proper <CODE>/etc/fstab</CODE> entries.</P>
+<P>Please note that versions 1.1a through 1.1c of the Installer create a
+possibly incorrect version of <CODE>/etc/fstab</CODE> putting all of your
+partitions on sd0.  The solution is to obtain Installer 1.1d or later
+(version 1.1g is current as of this writing).</P>
+<P>If none of the above work, there are two possibilities: one is that
+NetBSD/mac68k does not currently support your machine.  The other is that
+the kernel you are trying to boot does not support your machine or your
+hardware.  You should probably try a different kernel.  Check out the
+Meta-FAQ for a list of useful web and ftp sites where you might find
+additional kernels:
+<BLOCKQUOTE><CODE>
+<A HREF="http://www.macbsd.com/macbsd/macbsd-docs/meta-faq/">http://www.macbsd.com/macbsd/macbsd-docs/meta-faq/</A>
+</CODE></BLOCKQUOTE>
+</P>
+<P>Perhaps of some help (depending on how recently it was updated) is the
+machine-status document, which should tell the status of NetBSD-current on
+your machine.  It is located at:
+<BLOCKQUOTE><CODE>
+<A HREF="http://www.macbsd.com/macbsd/macbsd-docs/machine-status/">http://www.macbsd.com/macbsd/macbsd-docs/machine-status/</A>
+</CODE></BLOCKQUOTE>
+</P>
+<P>Finally, it's quite possible that the most helpful resource is
+Mark Andres' (mark@ratbert.aisol.net) MacBSD Kernel Page:
+<BLOCKQUOTE><CODE>
+<A HREF="http://www2.giganet.net/~mark/NetBSD/kernels.html">http://www2.giganet.net/~mark/NetBSD/kernels.html</A>
+</CODE></BLOCKQUOTE>
+</P>
+<P></P>
+
+<A NAME="A.Y"></A> <H2>3.8 <A NAME="ss3.8"></A> NetBSD doesn't boot on my IIsi with a PDS/NuBus video card; it hangs while setting the video address.  What's wrong?</H2>
+
+<P>In the words of Allen Briggs (briggs@macbsd.com):
+<BLOCKQUOTE>
+Your problem is that you're not using internal video.  The IIsi only has
+1MB soldered on the motherboard in bank A and the memory map looks
+different depending on whether or not the video is enabled.  NetBSD does
+not correctly handle the case where the kernel does not fit into the
+first chunk of physical RAM.
+</BLOCKQUOTE>
+
+<BLOCKQUOTE>
+With internal video enabled, the part of bank A not used for the display is
+mapped to follow bank B and bank B is mapped to 0x0.  With internal video
+disabled, bank A is at 0x0 and bank B is mapped to follow bank A (at 1MB).
+The IIci is the same, but most people have more than 1MB in bank A of their
+IIci so it's not a problem.
+</BLOCKQUOTE>
+
+<BLOCKQUOTE>
+You can work around this by either attaching a display to the internal
+video port, or putting a display adapter (or a paper clip in the right
+place) that makes the circuitry think that there's a monitor attached.
+</BLOCKQUOTE>
+
+For more information on this solution, see the Q&amp;A below on
+<A HREF="faq-6.html#D.X">booting without a monitor</A>
+.</P>
+<P></P>
+
+<A NAME="A.AC"></A> <H2>3.9 <A NAME="ss3.9"></A> Even though I have 32-bit mode enabled on my IIsi, I'm told during boot that it can't run with the current memory mappings, and that I should turn 32-bit addressing on in the Memory control panel.  What's wrong?</H2>
+
+<P>This is another symptom of the 
+<A HREF="#A.Y">above</A>
+ problem.</P>
+<P></P>
+
+<A NAME="A.Z"></A> <H2>3.10 <A NAME="ss3.10"></A> Occasionally, NetBSD refuses to boot on my AV Mac.  Is there a remedy?</H2>
+
+<P>Yes.  You need to zap the PRAM by holding down Command-Option-P-R while
+booting into the MacOS.  For some reason, the AV Macs (i.e. Quadra 840AV
+and Quadra/Centris 660AV) are more susceptible to this problem than other
+classes of machine.  However, zapping the PRAM seems to cure most of the
+problems.</P>
+<P>Thanks to Dave Huang (khym@bga.com) for this information.</P>
+<P></P>
+
+<A NAME="A.J"></A> <H2>3.11 <A NAME="ss3.11"></A> Is NetBSD/mac68k exportable?</H2>
+
+<P>Everything except the security distribution (i.e. secr, secr10, secr11,
+secr12, secr121, secr.tgz) is exportable.  The secr* distribution files
+contains the libraries for crypt.  Exporting this distribution is a
+violation of US law, since cryptographic decoding software is considered a
+munition under
+<A HREF="http://www.epic.org/crypto/export_controls/itar.html">ITAR (International Traffic in Arms Regulations)</A>
+, the set of
+US laws governing this kind of thing.  Here is the NetBSD document on
+exporting restricted code or binaries:</P>
+<P>
+<A HREF="ftp://ftp.netbsd.org/pub/NetBSD/README.export-control">ftp://ftp.netbsd.org/pub/NetBSD/README.export-control</A>
+</P>
+<P></P>
+
+<A NAME="A.K"></A> <H2>3.12 <A NAME="ss3.12"></A> Can I still run NetBSD/mac68k without a secr distribution installed?</H2>
+
+<P>Yes.  The security distributions merely contain Kerberized versions of
+utilities such as telnet in addition to DES decryption code.  A standard
+NetBSD distribution is shipped with cryptographic encryption code which is
+sufficient for a working NetBSD system.</P>
+<P>If you simply are wondering if you can run without a secr distribution
+because you cannot find one, it can be found in the
+"mac68k/binary/security" subdirectory of the NetBSD release distribution
+tree.</P>
+<P></P>
+
+<A NAME="A.L"></A> <H2>3.13 <A NAME="ss3.13"></A> What is NetBSD used for?</H2>
+
+<P>In the words of Chris G. Demetriou (cgd@netbsd.org):</P>
+<P>
+<BLOCKQUOTE>
+"NetBSD, in general, is meant as a "stable research platform" -- that is,
+a system that can be used for commercial, home, and research work...  what
+_you_ do with it is up to you.  In general, those of us working on NetBSD
+are trying to improve the system in whatever way we can -- support for more
+hardware, stability, performance, documentation..."
+</BLOCKQUOTE>
+</P>
+<P></P>
+<P></P>
+
+<A NAME="A.M"></A> <H2>3.14 <A NAME="ss3.14"></A> Is there support for Japanese under NetBSD?</H2>
+
+<P>Yes.  Mark Andres (mark@giganet.net) has an excellent HowTo describing how
+he set up Japanese support on his system:</P>
+<P>
+<A HREF="http://www2.giganet.net/~mark/NetBSD/japanese.html">http://www2.giganet.net/~mark/NetBSD/japanese.html</A>
+</P>
+<P></P>
+
+<A NAME="A.N"></A> <H2>3.15 <A NAME="ss3.15"></A> If I have a 32-bit dirty machine, can I use the "32-Bit System Enabler (1.0.3)" I found on Apple's ftp site?</H2>
+
+<P>No.  This is probably not a good idea.  You should get the copy of MODE32
+which works with your system.  It is recommended that you use the version
+called  MODE32 (7.5), since earlier versions may not work well with System
+7.1 or later.  After installing MODE32, be sure to set your machine to
+32-bit addressing mode in the Memory control panel.  I believe that this
+version can be found in the following location:</P>
+<P>
+<A HREF="ftp://ftp.info.apple.com/Apple.Support.Area/Apple_SW_Updates/US/Macintosh/System/Other_System/">ftp://ftp.info.apple.com/Apple.Support.Area/Apple_SW_Updates/US/Macintosh/System/Other_System/</A>
+</P>
+<P></P>
+
+<A NAME="A.O"></A> <H2>3.16 <A NAME="ss3.16"></A> In the Booter utility, what does that radio button that specifies the kernel is in MacOS do?</H2>
+
+<P>It allows you to have a kernel in the MacOS HFS file system which the
+Booter will boot off of instead of booting off of a kernel file in the
+NetBSD FFS filesystem.  This highly useful feature allows you to
+<A HREF="#A.R">test kernels on your machine</A>
+ before actually going to
+the trouble of performing the entire NetBSD installation.  If a kernel will
+actually work on your machine, then booting it from the MacOS will get you
+all the way through the boot process until it has to change the root
+device.  So if you are interested in running NetBSD on your machine for the
+first time, this option is a good one to try.</P>
+<P></P>
+
+<A NAME="A.P"></A> <H2>3.17 <A NAME="ss3.17"></A> Why does NetBSD always seem to lose more time the longer I leave it running?</H2>
+
+<P>The problem stems from the fact that Apple decided clock interrupts should
+have the lowest priority (they are usually the highest on UN*X systems).
+As a result, under a heavy interrupt load (like lots of serial activity),
+it tends to miss clock update interrupts, thus causing the machine to lose
+time.  Apparently, this is also a problem under MacOS, but it doesn't show
+up as severely as under NetBSD.</P>
+<P>However, Richard Todd (rmtodd@servalan.servalan.com) notes:
+<BLOCKQUOTE>
+The battery-backed-up clock that keeps time when the machine is off
+is considerably more accurate than the one that supplies clock interrupts.
+Every time you reboot, the kernel clock gets re-initialized from the
+battery-backed-up clock, so you get correct time.
+</BLOCKQUOTE>
+</P>
+<P>What can you do about this?  If you are connected to the Internet, the best
+thing you can do is to run xntpd.  As the Network Time Protocol (NTP)
+daemon, xntpd contacts Internet time servers and synchronizes you system
+clock with them.  As of the 1.3 release, xntpd has been integrated into
+NetBSD.  For more information on how to use xntpd, please see the
+<CODE>xntpd(8)</CODE> manual page.</P>
+<P>A more permanent solution which doesn't require a network connection
+doesn't exist at the moment.  Basically, a kernel task which reads the PRAM
+clock every so often and that sets the Real Time Clock with this value would
+have to be created.</P>
+<P>Most people just live with the problem or reboot once in a while.</P>
+<P></P>
+
+<A NAME="A.Q"></A> <H2>3.18 <A NAME="ss3.18"></A> What system software should I be using in order to run MacBSD?</H2>
+
+<P>If you are using Booter 1.8 or later, you must be running System 7 or later
+system software.  System 6.x.x no longer works.  The problem appears to be
+in the booter, but no one really seems to care.</P>
+<P>The latest version of the Installer (i.e 1.1d or later) also requires
+System 7 or later.</P>
+<P>In addition, many extensions distributed with later versions of MacOS may
+cause problems.  It' generally a good idea to boot with extensions off if
+at all possible.</P>
+<P></P>
+
+<A NAME="A.S"></A> <H2>3.19 <A NAME="ss3.19"></A> Do(es) my monitor(s) need to be in black-and-white (i.e. 1-bit) mode in order for NetBSD to boot?</H2>
+
+<P>No.  Contrary to popular opinion, all machines on which NetBSD will run on
+the local console will still boot just fine in color mode.  However, you
+will be restricted to using the console, since dt will not run in color and
+color X support is available on a limited number of machines.  NetBSD might
+be slower in 4- or 8-bit mode, though (and I doubt anyone ever uses 2-bit
+mode).  So, it is still probably best to boot in 1-bit mode.  Just in case
+you are wondering, this can be achieved by choosing black-and-white in the
+Monitors control panel before booting into NetBSD.</P>
+<P>A simpler solution (and the one I'd recommend) is to select
+"Options->Monitors" in the Booter (versions 1.10.3 and later) to pull up
+the Monitors Preferences dialog box.  Then check the "Change Monitor Depth"
+box and select the "B&amp;W" radio button.  This will cause the Booter to
+automatically switch to 1-bit mode prior to boot.  When you return to
+MacOS, your color settings should be restored.  If you have multiple
+monitors, though, or for some reason need to use an older version of the
+Booter, you may need an extra program to change the depth(s) for you.</P>
+<P>Thanks to Nigel Pearson (nigel@ind.tansu.com.au) for the above information.</P>
+<P>Keep in mind that there is currently absolutely <EM>no</EM> support for 16-bit
+or 24-bit color.  NetBSD may even having trouble booting in 16- or 24-bit
+mode.  Please remember to have your color depth set no higher than 8 bits
+per pixel.</P>
+<P></P>
+
+<A NAME="A.X"></A> <H2>3.20 <A NAME="ss3.20"></A> How do I stop the Booter once it has started? </H2>
+
+<P>You can press Command-. (period) if you are fast enough.  Once the screen
+has changed color, there is no going back.  After that point, the only way
+to stop the boot is to hit the Restart button (or Control-Command-Power if
+your machine supports it).  This is also true if the Booter should hang
+during boot.  If you do halt the boot, it is usually a good idea to quit
+the Booter and restart it.  Otherwise it might hang if you try to boot
+again.</P>
+<P></P>
+
+<A NAME="A.T"></A> <H2>3.21 <A NAME="ss3.21"></A> I type <CODE>mesg y</CODE> to turn messages on but I do a finger on myself and it says messages off... am I missing something?</H2>
+
+<P>The reason for this is that you probably did not enable messages on the
+console itself when you first logged in, and now you are using dt or X.  If
+you put <CODE>mesg y</CODE> in your <CODE>.login</CODE> file, I think it will fix the
+problem (either that or remember to do that command on the console before
+you start X or dt).  </P>
+<P></P>
+
+<A NAME="A.V"></A> <H2>3.22 <A NAME="ss3.22"></A> How in the world are these kernels being numbered? </H2>
+
+<P>From Allen Briggs (briggs@puma.macbsd.com):
+<BLOCKQUOTE>
+By person...  When you do 'config GENERIC' in a clean source tree, the
+first kernel you build will be #0.  Each time you attempt to link the
+kernel, that version gets incremented by one.
+</BLOCKQUOTE>
+</P>
+<P>So, the number itself does not matter that much.  In general check any
+available README's to see what is different about a particular version of a
+particular kernel.</P>
+<P></P>
+
+<A NAME="A.W"></A> <H2>3.23 <A NAME="ss3.23"></A> What is this black Apple chip in my Mac II or where can I get a PMMU?</H2>
+
+<P>The black Apple chip in the socket marked 68851 is most likely the AMU
+(Address Management Unit), which is used to translate 24-bit addresses from
+the MacOS into 32-bit addresses used by the memory subsystem.  It isn't
+enough to actually run MacBSD (if MacBSD will boot fine, then you actually
+have a 68851 MMU or else are running a processor upgrade).</P>
+<P>The only source I've seen which sells the 68851 is DMS:</P>
+<P>
+<A HREF="http://www.datamem.com/main.htm">http://www.datamem.com/main.htm</A>
+</P>
+<P>Although there are quite possibly others.  Please keep in mind that this is
+not an endorsement of this company (but I do hear that it does have fairly
+low prices).</P>
+<P></P>
+
+<A NAME="A.AA"></A> <H2>3.24 <A NAME="ss3.24"></A> What exactly is a GENERIC kernel?</H2>
+
+<P>The term GENERIC refers to a kernel that is configured to run on just about
+any machine supported by the machine architecture; in this case, a GENERIC
+kernel should boot any machine supported by NetBSD/mac68k. The term
+originated from a line in the kernel configuration file which specified
+that the root device was "generic" as well as a configuration option.  This
+option and that format of the configuration line is no longer used, but
+the name will probably stick for a while.</P>
+<P>Since these kernels tend to include support for all the available device
+drivers and many models of machines that you are not using, you are
+encouraged to compile your own custom kernel.  Check out the
+<A HREF="http://www.macbsd.com/macbsd/howto/kernel.html">Kernel HOWTO</A>
+ for more information on doing this.</P>
+<P></P>
+
+<A HREF="ftp://ftp.macbsd.com/pub/NetBSD/utils/dt/dt-1.1.5.tar.gz">ftp://ftp.macbsd.com/pub/NetBSD/utils/dt/dt-1.1.5.tar.gz</A>
+</H2>
+
+
+<A NAME="A.U"></A> <H2>3.26 <A NAME="ss3.26"></A> How do I unsubscribe from the mailing list? </H2>
+
+<P>Since this particular question seems to have come up fairly often recently,
+I decided to add this answer:</P>
+<P>Please <B>do not</B> mail the mailing list itself with this kind of request.</P>
+<P>You can either read the instructions which were mailed to you when you
+joined the list, or you can send mail to "majordomo@NetBSD.ORG" with the
+following command in the body of your email message:
+<BLOCKQUOTE><CODE>
+<PRE>
+unsubscribe port-mac68k userid@hostname.domain
+</PRE>
+</CODE></BLOCKQUOTE>
+
+Please keep in mind that you need to use the same email address that you
+originally subscribed from.</P>
+<P>Once again, sending this of request to the mailing list tends to bring
+ridicule rather than help, so please read the directions.</P>
+<P></P>
+<P></P>
+
+<P>
+<HR>
+<A HREF="faq-4.html">Next</A> Chapter,
+<A HREF="faq-2.html">Previous</A> Chapter
+<HR>
+</P>
+<P>
+Table of contents of <A HREF="faq.html#toc3">this chapter</A>,
+ General <A HREF="faq.html#toc">table of contents</A></P>
+<P>
+<A HREF="faq.html">Top</A> of the document,
+ <A HREF="#0"> Beginning of this Chapter</A></P>
+
+<hr>
+<address>
+  www@NetBSD.ORG<br>
+  $NetBSD: faq-3.html,v 1.1.1.1 1999/05/02 12:45:30 kenn Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1997, 1998
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+</address>
+
+</BODY>
+</HTML>
