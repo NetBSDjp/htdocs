@@ -28,7 +28,15 @@ read <a href="local.install.html">this page</a>.
 
 The client <b>needs</b> root read/write access on the nfs server.
 If this is a security issue with you, then you may need to be careful
-deciding where the client has access.  
+deciding where the client has access.<br>
+<p>
+
+<strong>NOTE</strong>: Even if you export only specific subdirectories of a filesystem,
+a malicious client might still obtain access to the entire filesystem because
+the NFS server on many operating systems (including NetBSD) does not limit
+access requests to the actually exported subdirectory.
+<p>
+
 The following directories <b>must</b> have root read/write permissions:<br>
 <pre>/
 /var
@@ -189,19 +197,8 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
-FreeBSD deals with exporting filesystems a little differently than most other
-platforms.  See 
-<a href="http://www.freeBSD.org/FAQ/networking.html#EXPORTS-ERRORS">
-http://www.freeBSD.org/FAQ/networking.html#EXPORTS-ERRORS</a> 
-and <a href="http://www.freebsd.org/handbook/nfs.html">
-http://www.freebsd.org/handbook/nfs.html</a> for more 
-information.  The easiest method of proceeding is to assume that 
-FreeBSD doesn't support exporting individual directories.  You need to
-know the mountpoint of the filesystem you will be exporting.  This also
-means that the client will have root read/write privileges on that whole
-filesystem.  For example, if you only have one filesystem (i.e. /),
-then you need to export everything to the client.
-<p>
+The setup for FreeBSD is now (version 4.x) similar to NetBSD, only mountd
+needs different options. 
 
 <ol>
 <li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
@@ -225,18 +222,12 @@ then you need to export everything to the client.
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li><tt># <b>df /export/client</b></tt><br>
-   to determine what filesystem <tt>/export/client</tt> is on.  This is
-   the <i>mountpoint</i> of your filesystem.  This is what gets exported
-   to the client. For purposes of this HOW-TO, we'll assume it's on the
-   <tt>/export</tt> filesystem.  
-<p>
-
 <li>Add the following line to <tt>/etc/exports</tt>:
 <pre><b>#/etc/exports
-/export -alldirs -maproot=root client.test.net</b></pre>
-   Replace <tt>/export</tt> with whatever directory <tt>df</tt> returned in
-   the previous step.
+/export/client/root -maproot=root:wheel    client.test.net 
+/export/client/swap -maproot=root:wheel    client.test.net
+/export/client/usr  -maproot=nobody:nobody client.test.net
+/export/client/home -maproot=nobody:nobody client.test.net</b></pre>
 <p>
 
 <li><tt># <b>ps -aux | grep mountd</b></tt><br>
@@ -841,7 +832,7 @@ Continue on to setting up the client <a href="files.html">filesystem</a>
 <address>
   <small>
   <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: nfs.html,v 1.33 2001/09/13 22:04:12 tv Exp $<br>
+  $NetBSD: nfs.html,v 1.34 2002/03/16 16:42:09 heinz Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
