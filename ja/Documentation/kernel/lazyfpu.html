@@ -7,27 +7,27 @@
 
 <!-- Copyright (c) 2000
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>How lazy FPU context switch works</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
-
 
 <table><tr><td>
 <a href="../../Misc/daemon-copy.html">
 <img align="middle" src="../../images/BSD-daemon.jpg" border=0
 width=146 height=129 alt="BSD daemon"></a>
 </td><td align=center>
-<h1>NetBSD Documentation:</h1>
-<h1>How lazy FPU context switch works</h1>
+<h1>NetBSD ドキュメンテーション:</h1>
+<h1>どのように lazy FPU コンテキストスイッチは動作するのか</h1>
 </td></tr></table>
 <p>
 
 <center>
 <table border=0 cellpadding=0 cellspacing=0 width="98%"><tr><td bgcolor="#000000">
 <table border=0 cellpadding=4 cellspacing=1 width="100%"><tr><td bgcolor="#ffffff">
-<font face="helvetica, arial, sans-serif" size="-1">
-Here goes the explanation of how lazy FPU context switch works.<br>
+<font size="-1">
+ここでは、どのようにlazy FPU コンテキストスイッチは動作するのかについて
+説明します。<br>
 <br>
 Tohru Nishimura<br>
 Nara Insititute of Science and Technology<br>
@@ -37,67 +37,71 @@ Nara Insititute of Science and Technology<br>
 </center>
 
 <p><h3>
-<font face="helvetica, arial, sans-serif">How lazy FPU context switch
-works</font>
+<font>どのように lazy FPU コンテキストスイッチは動作するのか</font>
 </h3><dl><dt><dd>
-FPU is troublesome in saving and loading entire hardware context
-to/from reserved memory area hold by each process (it resides in
-u_pcb in NetBSD/mips).   It's unrealistic to switch whole FPU
-context from process to process upon every cpu_switch() is taken
-because FPU context save and reload operation consumes significant
-CPU cycles.
+FPU が、各プロセス毎の予約済みのメモリー領域(NetBSD/mips では、
+これは u_pcb の中にあります)へ/から、ハードウェアコンテキスト
+全体を保存したりロードしたりすることは困難です。cpu_switch() が
+発生するたびに、プロセスからプロセスへ FPU コンテキスト全体を
+スイッチするのは現実的ではありません。なぜなら、FPU コンテキスト
+の保存と再ロードのオペレーションは、著じるしい CPU サイクルを消費
+するからです。
 <p>
-Modern CPUs provide the way to disable itself to execute any FP
-insns.  When CPU is about to execute FP insn, an exception is posted
-and operating system starts processing 'FPU was unavailable for
-me' circumstance for the executing process.  It checks and prepares
-to allow the process to use FPU, then restarts the process to
-execute the FP insn once posted the exception.  This time FP insns
-will be executed normally and never make 'FPU is unavailable'
-condition until another process snatchs FPU from this process later.
+最近の CPU は、FP インストラクションを実行するために、この機能を
+無効にする方法を提供しています。CPU が FP インストラクションを
+実行しようとしている時、例外が投げられ、オペレーティングシステム
+は実行中のプロセスに「自分が使う事のできる FPU がない」という状況
+の処理を開始します。OS は、プロセスが FPU を使う事ができるように
+チェック、準備をおこないます。そして、例外が投げられた時、FP イン
+ストラクションを実行するためにプロセスを再スタートさせます。今度は、
+FP インストラクションは通常通りに実行され、後で他のプロセスが、この
+プロセスから FPU を取得するまで、「FPU が使用不可能」という状況は
+発生しません。
 <p>
-Every process is created to have no FPU ownership and inhibited to
-use FPU.   Unless the process ever executes any FP insns, nothing
-special happens to it and the process terminates peacefully.
+すべてのプロセスは、FPU の所有権無しで生成され、かつ FPU の使用を
+禁じられています。プロセスが FP インストラクションを実行しなけ
+れば、何も特別な事はおこらず、プロセスはおだやかに終了します。
 <p>
-If a process inhibited to use FPU is about to execute a FP insn,
-CPU posts 'unavailable' exception.  Global variable fpcurproc points
-which process has the ownership of FPU.  At the moment upon
-'unavailable' exception, FPU hardware should contain the snapshot
-of 'runtime image' for the owner process, which is different from
-curproc that has posted the exception.  Unavailable handler saves
-the FPU hardware context made with a large number of FP registers
-for the sake of fpcurproc, and load the curproc's FPU hardware
-context into FPU registers.  The initial load of process FPU context
-clears entire FPU.  In this way, FPU context switch is deferred
-until another process is found requesting to use FPU.  Because the
-vast majority of programs run no FP insn during process life time,
-deferred lazy FPU context switch works handsomely avoiding rather
-burdensome tasks of FPU save/load operations.
+もし、FPU の使用を禁止されたプロセスが、FP インストラクションを
+実行しようとすると、CPU は、「使用不可能」例外を投げます。グロー
+バルな変数 fpcurprocはどのプロセスが FPU を所有しているかを示します。
+「使用不可能」例外が発生した時、FPU ハードウェアは所有プロセスの
+「実行イメージ」のスナップショットを持っていなればなりません。
+これは、例外を投げた curproc とは異なります。使用不可能ハンドラー
+は、fpcurproc のために、多くの FP レジスターで構成される FPU ハード
+ウェアコンテキストを保存します。そして、curproc の FPU コンテキスト
+を FPU レジスターにロードします。プロセスの FPU コンテキストが最初
+にロードされると、すべての FPU はクリアーされます。このように、FPU 
+の使用を要求する他のプロセスが見つかるまで、FPU コンテキストスイッチ
+は延期されます。なぜなら、大多数のプログラムは、プロセスが生存して
+いる間、FP インストラクションを実行しません。延期された lazy FPU 
+コンテキストスイッチは、やっかいな FPU の保存/ロードの操作の仕事を
+できるだけ避けて、きちんと動作します。
 <p>
-<em>Matt Thomas adds that you need to be careful to properly cleanup
-tbe lazy FP context with the fpcurproc exits.</em>
+<em> fpcurproc が指すプロセスが終了するときに、lazy に割り当てられ
+ている FP context を、正しく解放するように注意しなければいけないこ
+とを Matt Thomas が指摘してくれました。</em>
 <p>
-The burdensome FPU context switch syndrome is similar to one in
-which MMU faces on process context switch.   MMU is a rather
-complicated machinary may hold a complex internal 'state' to describe
-the process' address space, or more weirdly, 'task description'
-for runtime environment, nature and feature of processes defined
-by CPU hardware foundation.  Some of MMU have dedicated register(s)
-to point the memory region which describes process address space.
-In that case MMU context switch is done handsomely by reloading
-another value for the new process to the dedicated register by
-executing a special MMU insn.  A certain CPU design is widely known
-to run hilariously spectacular job for MMU context switch by
-saving/loading handful numbers of register, traversing memory region
-to establish new process runtime context, with the cost of
-astonishingly long CPU cycle.   The costy hardware supported context
-switch capability is seldom used in practice and many consider it
-as CISCy or the waste of silicon.
+この厄介な FPU コンテキストスイッチシンドロームは、MMU がプロセス
+コンテキストスイッチに直面した時の状況に似ています。
+MMU は、プロセスのアドレススペースを表現するための複雑な内部「状態」、
+あるいは、もっと奇妙な実行環境の「タスクディスクリプション」を持つ、
+より複雑な機構です。プロセスの本質と特徴(nature and feature)は、CPU 
+ハードウェアにより定義されます。いくつかの MMU は、プロセスのアドレス
+スペースを示すメモリ領域をさすレジスターを使います。このような場合、
+MMU コンテキストスイッチは、特別な MMU インストラクションを実行する
+し、新しいプロセスのために他の値をレジスタに再ロードすることにより、
+きちんと動作します。ある種の CPU デザインは、MMU コンテキストスイッチ
+のためにさわがしい見せ物のような仕事をおこなうことで有名です。おどろ
+くべき長さの CPU サイクルを消費して、ごく小数のレジスターの保存/ロード
+し、新しいプロセスの実行コンテキストを確立するためにメモリ領域をいった
+りきたりします。コンテキストスイッチのケーパビリティをサポートする高価
+なハードウェアは実際問題めったに使われることはなく、多くの人は、それは 
+CISC 風、あるいはシリコンの浪費だと考えています。
 </dd></dl>
 
 <hr>
-<a href="">Up to <em>NetBSD Documentation: Kernel</em></a>
+<a href=""><em>NetBSD ドキュメンテーション: カーネル</em>にもどる</a>
 <hr>
 
 <table width="100%"><tr><td>
@@ -108,7 +112,7 @@ as CISCy or the waste of silicon.
   </td><td>
     <a href="../../"><img
         src="../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
