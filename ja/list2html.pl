@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.95 2004/02/28 08:50:51 grant Exp $
+# $NetBSD: list2html.pl,v 1.96 2004/10/30 22:33:23 jschauma Exp $
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -70,7 +70,7 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.95 $';
+$version = '$Revision: 1.96 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:qhV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -128,110 +128,87 @@ if ($opt{'q'})
 ,
 
 '<HOMELINK>',
-'<table><tr><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">Home Page</a>
-</td></tr></table>'
+'<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
+</td>
+</tr></table>'
 ,
 
 '<DEVLINK>',
 '<table width="100%"><tr><td>
-  <table><tr><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"  
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">ホームページ</a>
-  </td></tr></table>
+<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
+</td>
+</tr></table>
 </td><td>
-  <table><tr><td>
-    <a href="$DEVELOPERS"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"  
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$DEVELOPERS"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"  
-	width="1" height="1" alt="NetBSD ">開発者ドキュメント</a>      
-  </td></tr></table>
+<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$DEVELOPERS"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$DEVELOPERS">開発者ドキュメント</a></span><br>
+</td>
+</tr></table>
+
 </td></tr></table>'
 ,
 
 '<DOCLINK>',
 '<table width="100%"><tr><td>
-  <table><tr><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">ホームページ</a>
-  </td></tr></table>
+<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
+</td>
+</tr></table>
 </td><td>
-  <table><tr><td>
-    <a href="$DOCS"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$DOCS"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">Documentation top level</a>
-  </td></tr></table>
+<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$DOCS"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$DOCS">Documentation top level</a></span><br>
+</td>
+</tr></table>
+
 </td></tr></table>'
 ,
 
 '<PORTLINK>',
 '<table width="100%"><tr><td>
-  <table><tr><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">ホームページ</a>
-  </td></tr></table>
+<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
+</td>
+</tr></table>
 </td><td>
-  <table><tr><td>
-    <a href="$PORTS"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$PORTS"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">対応機種</a>
-  </td></tr></table>
+<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$PORTS"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$PORTS">対応機種</a></span><br>
+</td>
+</tr></table>
+
 </td></tr></table>'
 ,
 
 '<GALLINK>',
 '<table width="100%"><tr><td>
-  <table><tr><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$HOME/"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">ホームページ</a>
-  </td></tr></table>
+<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
+</td>
+</tr></table>
 </td><td>
-  <table><tr><td>
-    <a href="$GALLERY"><img
-	src="../$HOME/images/NetBSD-flag.gif" origlink="$HOME/images/NetBSD-flag.gif" border="0"     
-	width="91" height="42" alt=""></a>
-  </td><td>
-    <a href="$GALLERY"><img
-	src="../$HOME/images/empty.gif" origlink="$HOME/images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">Gallery page</a>
-  </td></tr></table>
+<table border="0" summary="Footer navigation"><tr>
+<td class="foothome"><span class="foothome"><a href="$GALLERY"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome">
+<span class="foothome"><a href="$GALLERY">Gallery Page</a></span><br>
+</td>
+</tr></table>
+
 </td></tr></table>'
 
 );
