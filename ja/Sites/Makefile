@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.3 1999/04/23 01:53:07 abs Exp $
+#	$NetBSD: Makefile,v 1.4 2002/08/01 20:25:36 jschauma Exp $
 #	Process .list files into .html files
 
 all:	cdroms.html
@@ -6,4 +6,4 @@ all:	cdroms.html
 .SUFFIXES:	.list .html
 
 .list.html:
-	../list2html.pl $< $@
+	perl ../list2html.pl $< $@
