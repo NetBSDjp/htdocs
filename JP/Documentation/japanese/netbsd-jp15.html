@@ -1,0 +1,164 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (ASCII pTeX)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,TeX,LaTeX,pTeX,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp14.html">[PREV]</a>
+<a href="netbsd-jp16.html">[NEXT]</a>
+
+<h1>ASCII pTeX j1.7 のインストール</h1>
+
+<p>ソースは以下の場所などにあります。
+EUC と jis が使えるようにコンパイルします。
+
+<p><a href="ftp://ftp.tut.ac.jp/TeX/ASCII-JTeX/jtex1.7.tar.Z">
+ftp://ftp.tut.ac.jp/TeX/ASCII-JTeX/jtex1.7.tar.Z
+</a>
+<br><a href="ftp://ftp.tut.ac.jp/TeX/ASCII-JTeX/ptex.jispatch">
+ftp://ftp.tut.ac.jp/TeX/ASCII-JTeX/ptex.jispatch
+</a>
+
+<h2>ソースの展開と修正</h2>
+
+<p>ソースを展開します。
+<pre>
+% mkdir jtex
+% cd jtex
+% tar zxvf ../jtex1.7.tar.Z
+% ./EUCsetup
+</pre>
+
+<p>jis を使用できるようにするパッチをあてます。
+<pre>
+% cd ptex/ptex
+% patch &lt; ../../../ptex.jispatch
+</pre>
+
+<p>pTeX用に作業します。
+<pre>
+% mv ../../jtex/web2cdir .
+% mv ../../jtex/jtangle .
+% chmod -R u+w *
+% cp texdir/pctex.ch.euc.big texdir/pctex.ch
+% rm jtangle/jtangle
+</pre>
+
+<p>ファイルをあらかじめ修正していきます。
+<h3>site.h</h3>
+
+<p>漢字コードの設定
+<pre>
+#define SJIS    
+#undef  EUC
+#undef  JIS
+</pre>
+次のように変更
+<pre>
+#undef  SJIS
+#define EUC
+#define JIS
+</pre>
+
+<p>TeXが参照するディレクトリの設定
+<pre>
+#define TEXINPUTS       ".:/usr/lib/tex/macros"
+#define TEXFONTS        ".:/usr/lib/tex/fonts"
+#define TEXPOOL         ".:/usr/lib/tex"
+#define TEXFORMATS      ".:/usr/lib/tex"
+
+#define BIBINPUTS       ".:/usr/local/lib/bibfiles"
+</pre>
+次のように変更
+<pre>
+#define TEXINPUTS       ".:/usr/local/lib/tex/macros"
+#define TEXFONTS        ".:/usr/local/lib/tex/fonts"
+#define TEXPOOL         ".:/usr/local/lib/tex"
+#define TEXFORMATS      ".:/usr/local/lib/tex"
+
+#define BIBINPUTS       ".:/usr/local/lib/bibfiles"
+</pre>
+
+<p>エディタの設定。適宜変更して下さい
+<pre>
+#define EDITOR          "/usr/local/bin/jvim +%d %s"
+</pre>
+
+
+<h3>web2cdir/Makefile</h3>
+
+<p>CFLAGS に -DFLEX を追加
+
+<h3>いろんなふぁいる</h3>
+<pre>
+web2cdir/web2c.h   13行目
+web2cdir/web2c.c   25行目
+web2cdir/splitup.c 32行目
+jtangle/tanext.c   31行目
+ctex/extra.c       46行目
+</pre>
+
+<p><pre>extern char *sprintf();</pre>を削除
+
+<h2>コンパイル作業</h2>
+
+<p>ptex/ptex で作業します。
+<pre>
+% set path=($path .)
+% cd jtangle
+% make
+% cd ..
+% make
+% su
+</pre>
+作成した pTeX をインストールします。
+<pre>
+# mkdir -p /usr/local/lib/tex
+# cp ctex/initex /usr/local/bin/initex
+# cp ctex/ptex.pool /usr/local/lib/tex/ptex.pool
+# cp ctex/virtex /usr/local/bin/virtex
+</pre>
+マクロとフォントメトリックファイルをコピーします。
+<pre>
+# mkdir -p /usr/local/lib/tex/macros
+# mkdir -p /usr/local/lib/tex/fonts
+# cd ..       (jtex/ptex/)
+# cp jfms/*.tfm /usr/local/lib/tex/fonts
+# cd ..
+# cp jfms/*.tfm /usr/local/lib/tex/fonts
+# cp tfm/*.tfm /usr/local/lib/tex/fonts
+# cp macros/{*.tex,*.sty} /usr/local/lib/tex/macros
+# cp jmacros/{*.tex,*.sty} /usr/local/lib/tex/macros
+</pre>
+pTeX と pLaTeX を作成します。
+<pre>
+# initex 'jplain \dump'
+# initex 'jlplain \dump'
+# cp jplain.fmt /usr/local/lib/tex/jtex.fmt
+# cp jlplain.fmt /usr/local/lib/tex/jlatex.fmt
+</pre>
+自動にフォーマットファイルを読んで実行するように
+リンクを張ります。
+<pre>
+# ln -s /usr/local/bin/virtex /usr/local/bin/jtex
+# ln -s /usr/local/bin/virtex /usr/local/bin/jlatex
+</pre>
+以上で完了です。
+
+<h2>pTeXの使用方法</h2>
+<pre>
+% jtex filename    plain TeX の場合
+% jlatex filename  LaTeX の場合
+</pre>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp14.html">[PREV]</a>
+<a href="netbsd-jp16.html">[NEXT]</a>
+
+</body>
+</html>

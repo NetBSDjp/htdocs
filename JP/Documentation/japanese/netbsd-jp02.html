@@ -1,0 +1,157 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (kterm)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,kterm,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01.html">[PREV]</a>
+<a href="netbsd-jp03.html">[NEXT]</a>
+
+<h1> KTerm 6.2.0のインストール</h1>
+
+<p>
+kterm は X で動作する端末エミュレータです。
+日本語だけではなく、iso2022 ベースの多言語を同時に表示可能です。
+
+<p>
+多言語の入力のサポートとして、X Input Method が利用可能です。
+また、日本語専用の入力手段として、kinput2 protocol がサポートされています。
+
+<dl>
+<dt>作者
+<dd>作成にかかわったかたはたくさんおられるようです。以下マニュアルより
+<pre>
+佐野勝也 (株式会社東芝),
+入江英夫 (ソニー株式会社),
+加藤朗 (東京大学),
+有座道春 (株式会社 SRA),
+石曽根信 (株式会社 SRA),
+籠谷裕人 (岡山大学),
+武川進 (日本電信電話株式会社)
+</pre>
+README の署名およびバグなどの連絡先は
+籠谷裕人さんです。(kagotani@in.it.okayama-u.ac.jp.)
+<dt>正規配布元
+<dd>Xの配布サイト
+</dl>
+
+<p>
+以下の場所からも入手できます。
+<ul>
+<li><a href="ftp://ftp.tut.ac.jp/X11/Contrib/Terminal/kterm-6.2.0.tar.gz">
+ftp://ftp.tut.ac.jp/X11/Contrib/Terminal/kterm-6.2.0.tar.gz
+</a>
+</ul>
+
+<h2>関連物</h2>
+
+<h3>Kterm の背景に壁紙をはりつけるパッチ</h3>
+
+<ul>
+<li><a href="kterm-6.2.0-wpr1.1.patch.gz">
+パッチ(kterm-6.2.0-wpr1.1.patch.gz)</a>
+</ul>
+
+<dl>
+<dt>作者:
+<dd>高木 淳司さん
+<dt>正規配布元:
+<dd><a href="http://karin.ip.titech.ac.jp/~takagi/kterm/">
+term + 壁紙パッチ のページ</a>
+</dl>
+
+<h3>多言語対応を追加するパッチ</h3>
+
+<ul>
+<li><a href="kterm-6.2.0-6.2.0.wd0.2.patch.gz">
+kterm-6.2.0-6.2.0.wd0.2.patch.gz</a>
+</ul>
+
+<dl>
+<dt>作者:
+<dd>鴨 浩靖@情報科学科.理学部.奈良女子大学(wd@ics.nara-wu.ac.jp)さん
+<dt>正規配布元:
+<dd><a href="ftp://ftp.ics.nara-wu.ac.jp/pub/wd/src/kterm/">
+ftp://ftp.ics.nara-wu.ac.jp/pub/wd/src/kterm/</a>
+</dl>
+
+<h2>Ktermのコンパイル</h2>
+
+<p>
+ソースを展開します。
+<pre>
+% cd $(TOPDIR)
+% tar zxf $(SRCDIR)/kterm-6.2.0.tar.gz
+% cd kterm-6.2.0
+</pre>
+
+<p>
+4.4BSD になって、utmp ファイルなどが存在するディレクトリが変わりました。
+ですが、kterm のソースはそれに対応していません。
+そのため、その部分を書き換えます。
+
+<p>
+...というのは Ver 6.1.0 まででした。
+Ver 6.2.0 では通常の X のコマンドのコンパイル手順のみで
+きちんとコンパイル & インストールできます。
+
+<p>
+必要があればREADME.kt を参照しながら、Imakefile や kterm.h
+を修正します。前頁での、setlocale の導入や国際化対応の X にしていない
+場合には、KTERM_XIM を設定していると、起動時に setlocale に失敗して
+警告がでます(また、XIMは利用できません)
+特に問題はないのですが、うっとおしいという人はこれを
+#undef しておきましょう。
+
+<p>
+なお、XIM を使う場合は、起動時に Input Method に接続する必要
+があります。このとき Input Method が存在しない場合は警告がでます。
+kinput2 などをあらかじめ起動しておきましょう。
+
+<h3>kterm.h</h3>
+
+X Input Method を使用しない場合は
+<pre>
+#define KTERM_XIM   /* XIM protocol */
+</pre>
+を以下のようにします。
+<pre>
+#undef KTERM_XIM   /* XIM protocol */
+</pre>
+
+コンパイル作業
+<pre>
+% xmkmf -a
+% make
+% su
+# make install
+# make install.man
+</pre>
+以上です。
+日本語のマニュアルも付属しています。これについては
+<a href="netbsd-jp05.html">jman</a>のところで
+詳しく説明します。
+
+<h2>Ktermの使用方法</h2>
+
+<p>
+<pre>
+% kterm -km euc	  入出力を euc  として起動
+% kterm -km sjis  入出力を sjis として起動
+</pre>
+
+<p>
+デフォルトの入出力コードは jisです。
+なお、euc/sjis のモードでもjis(iso2022)については普通に表示可能です。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01.html">[PREV]</a>
+<a href="netbsd-jp03.html">[NEXT]</a>
+
+</body>
+</html>

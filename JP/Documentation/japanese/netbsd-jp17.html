@@ -1,0 +1,136 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (dvi2ps-j)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,TeX,LaTeX,dvi2ps-j,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp16.html">[PREV]</a>
+<a href="netbsd-jp18.html">[NEXT]</a>
+
+<h1>dvi2ps-1.91j</h1>
+
+<p>dvi2ps-j は、TeX で作成した dvi ファイルを postscript プリンタに
+出力させるためのフィルタプログラムです。
+
+<p>ここでは ver 1.91j を紹介しますが、
+dvi2ps 2.0Beta もでています。まだベータですが、縦書き、VFlib の
+サポートなどの機能があります。
+
+<p><a href="ftp://ftp.math.s.chiba-u.ac.jp/tex/">
+ftp://ftp.math.s.chiba-u.ac.jp/tex/</a>が配布元です。
+
+<h2>dvi2ps-j のコンパイル</h2>
+
+<p>まずソースコードを入手します。
+以下の場所などにあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/TeX/drivers/dvi2ps-1.91j.tar.gz">
+ftp://ftp.tut.ac.jp/TeX/drivers/dvi2ps-1.91j.tar.gz</a>
+
+<p>ソースコードを展開します
+<pre>
+% tar zxvf dvi2ps-1.91j.tar.gz
+% cd dvi2ps-1.91j
+</pre>
+
+<p>doc/install.docにインストール方法の説明があります。
+これを参照して、適宜 Makefile を修正します。
+
+<h3>Makefile</H3>
+<pre>
+CFLAGS = -O
+</pre>
+を
+<pre>
+CFLAGS = -O -DPOSIX
+</pre>
+にすることのみ必須です。
+<pre>
+% make
+</pre>
+つづいて、fontdesc を作成します。
+これについては、doc/dvi2ps.doc, lib.doc, fontdesc.doc に詳しい解説があります。
+<pre>
+% make new-lib
+% cd lib
+</pre>
+英字は bitmap(pk font), 漢字はプリンタ内蔵という通常の使用の場合は、
+standard を利用すればいいでしょう。以下、この文書の上で解説
+したとおりの場所に ASCII TeX を入れた場合の解説です。
+適宜ディレクトリの場所を変更して下さい。
+<pre>
+% cp standard fontdesc
+</pre>
+
+<h3>fontdesc</h3>
+
+<p><pre>
+#fontdesc        fonts/asc-bikanji
+</pre>
+を、
+<pre>
+fontdesc        fonts/asc-bikanji
+</pre>
+とコメントアウトします。
+
+<h3>fonts/efontdef</h3>
+
+<p><pre>
+font    pk      *       3       /usr/local/lib/tex/fonts/pk/%f.%mpk
+</pre>
+に、pk フォントを入れた場所を指定する
+例:
+<pre>
+font    pk      *       3       /usr/local/lib/tex/fonts/pk/300/%f.%mpk
+</pre>
+
+
+<h3>fonts/asc-bk</h3>
+
+<p>( fonts/asc-bikanji から参照されている )
+<pre>
+font    jfm     *       0       /usr/local/lib/tex/jfonts/jfm/%f.tfm
+</pre>
+に、jfm ファイルのある場所を指定する
+<pre>
+例:
+font    jfm     *       0       /usr/local/lib/tex/fonts/%f.tfm
+</pre>
+細かい設定については doc 以下の文書を参考にしましょう。
+
+<p>インストールします
+<pre>
+% cd ..
+% su
+# make install
+# make install-lib
+</pre>
+マニュアルも入れておきます(整形してます)
+<pre>
+# nroff -mandoc doc/dvi2ps.man &gt /usr/local/man/cat1/dvi2ps.0
+# nkf -e doc/dvi2ps.jman | jgnroff -Tnippon -mandoc \
+&gt /usr/local/jman/cat1/dvi2ps.0
+</pre>
+
+<h2>dvi2ps-j の使用方法</h2>
+
+<p><pre>
+% dvi2ps file.dvi | lpr
+% dvi2ps file.dvi &gt file.ps
+</pre>
+というふうに使用します。
+DVI ファイルを Phostscript にして標準出力にだしてくれます。
+
+詳細は、doc 以下の文書や、マニュアルを参照して下さい。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp16.html">[PREV]</a>
+<a href="netbsd-jp18.html">[NEXT]</a>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (less)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,less,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp02.html">[PREV]</a>
+<a href="netbsd-jp04.html">[NEXT]</a>
+
+<h1>less 3.3.2 + iso221-patch のインストール</h1>
+
+<ul>
+<li><a href="netbsd-jp03-old.html">古いドキュメント(less-2.9.0 + iso-patch)</a>
+</ul>
+
+<p>
+less は、more を拡張した機能をもつページャです。
+これを多言語化したものをインストールします。
+これ以降さまざまな日本語関連のものをインストールする際
+などに、ドキュメントを読むために必須です。
+
+<p>
+この less も、iso-2022ベースで多言語化されています。
+kterm 6.2.0 と組み合わせることで、複数の言語を同時に表示可能です。
+またiso-2022 で記述した文字列の検索も可能になっています。
+
+<dl>
+<dt>オリジナル作者
+<dd>Mark Nudelman(markn@fog.net)
+<dt>正規配布元
+<dd>GNUの配布サイト
+</dl>
+
+<dl>
+<dt>パッチ作者
+<dd>less のパッチは長い歴史をもっており、数多くの方が関わっておられます。
+このバージョンのパッチは、丸川 一志さんが作成されました。
+jless に関する連絡先: jam@poboxes.com
+<dt>正規配布元
+<dd><a href="http://www.io.com/~kazushi/less/">Jam's less page</a>
+<dd><a href="ftp://ftp.aist-nara.ac.jp/pub/personal/kazusi-m/less/">
+ftp://ftp.aist-nara.ac.jp/pub/personal/kazusi-m/less/</a>
+</dl>
+
+<p>
+以下の場所からも入手できます。
+<ul>
+<li><a href="ftp://ftp.tut.ac.jp/GNU/iso2022-patch/less-332.tar.gz">
+ftp://ftp.tut.ac.jp/GNU/iso2022-patch/less-332.tar.gz</a>
+<li><a href="ftp://ftp.tut.ac.jp/GNU/iso2022-patch/less-332-iso221.patch.gz">
+ftp://ftp.tut.ac.jp/GNU/iso2022-patch/less-332-iso221.patch.gz</a>
+</ul>
+
+<h2>lessのコンパイル</h2>
+
+<p>
+ソースを展開します。
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/less-332.tar.gz
+</pre>
+
+<p>
+これにパッチを当てます。
+<pre>
+% cd less-332
+% gzip -dc $(SRCDIR)/less-332-iso221.patch.gz | patch -p1
+</pre>
+
+<p>
+パッチをあてると、詳しい解説が README.iso.jp にできます。
+目をとおしておきましょう。コンパイル手順は通常の less と同じになります。
+
+<p>Makefile を作成します。
+<pre>
+% ./configure
+</pre>
+なお、システムに既存の less などがあり、これとの衝突
+を避けたい場合は、Makefile 作成後 Makefile 中の
+<pre>
+# Where the installed binary goes.
+bindir = ${exec_prefix}/bin
+binprefix = 
+
+mandir = ${prefix}/man/man${manext}
+manext = 1
+manprefix = 
+</pre>
+の部分を次のように変更します。
+<pre>
+# Where the installed binary goes.
+bindir = ${exec_prefix}/bin
+binprefix = j
+
+mandir = ${prefix}/man/man${manext}
+manext = 1
+manprefix = j
+</pre>
+この場合、"jless" としてインストールされます。
+
+<p>Makeしてインストールします
+<pre>
+% make
+% su
+# make install
+</pre>
+
+<h2>less の使用方法</h2>
+
+<p>
+環境変数 JLESSCHARSET に、あらかじめ
+入力と表示のためのコードを設定しておきます。
+本来、LESSCHARSET がこのための環境変数ですが、
+多言語化していない less との衝突を防ぐため、こちらの
+変数を先に参照します。
+
+<p>.cshrc や .login などで、
+<pre>
+setenv JLESSCHARSET japanese-jis
+</pre>
+などと設定します。以下の charset が利用可能です。
+<pre>
+最初からあったもの: ascii, latin1, dos, koi8-r, next
+拡張したもの: iso7, iso8, ujis-iso7, euc-iso7,
+           sjis-iso7, jis, ujis-jis, euc-jis,
+           sjis-jis, ujis, euc, jis-ujis, jis-euc,
+           sjis, jis-sjis, japanese, japanese-iso7,
+           japanese-jis, japanese-ujis,
+           japanese-euc, japanese-sjis
+</pre>
+"-"の前が入力のコード(japanese だと、jis,euc-jp,sjis の自動判定)
+後が出力に用いるコードになります。kterm 6.2.0 なら出力として iso7
+が利用できます。
+
+<p>
+詳しいことは、マニュアルや README.iso.jp を参照して下さい。
+
+<p><pre>
+% less ファイル名
+</pre>
+でファイルの内容を確認することができます。
+拡張子 .gz などがついている場合は、自動的に展開しながら表示してくれます。
+これは内部的に zcat を呼び出しているだけなので、システム附属の zcat が
+gzip に対応していない場合は動作しません。この場合、zcat を gzip と
+差し替えて使いましょう。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp02.html">[PREV]</a>
+<a href="netbsd-jp04.html">[NEXT]</a>
+
+</body>
+</html>

@@ -1,0 +1,288 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (kinput2)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,kinput2,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp07.html">[PREV]</a>
+<a href="netbsd-jp09.html">[NEXT]</a>
+
+<h1>kinput2 v2.0 patchlevel 3 + bugfix のインストール</h1>
+
+<p>kinput2 は、jserver や cannaserver と通信して、
+kinput2 protocol や XIM protocol での日本語の入力を提供します。
+
+<p>
+kinput2 protocol は、kterm や tgif で利用できます。
+XIMは、Xクライアントの標準の入力方式で、国際化したクライアントで
+使用できます。
+
+<h2>コンパイル</h2>
+
+<p>ソースを入手して展開します。以下の場所などにあります。
+
+<ul>
+<li><a href="ftp://ftp.tut.ac.jp/X11/Contrib/Utilities/kinput2-v2-fix3.tar.gz">
+ftp://ftp.tut.ac.jp/X11/Contrib/Utilities/kinput2-v2-fix3.tar.gz</a>
+</ul>
+
+<p>ソースを展開します。
+<pre>
+% mkdir kinput2
+% cd kinput2
+% tar zxvf $(SRCDIR)/kinput2-v2-fix3.tar.gz
+</pre>
+
+<p>
+kinput2-v2-fix3 には通信中の Xtoolkit Widget が Destroy 時に
+停止するというバグがあります。
+これに対する解消のパッチが存在するので、それをあてておきます。
+このバグは次のリリースでは修正される予定だそうです。
+
+<ul>
+<li><a href="kinput2-v2-fix3-bugfix.patch">
+kinput2-v2-fix3の不都合を修正するパッチ</a>
+</ul>
+
+<pre>
+% patch -p0 < $(SRCDIR)/kinput-patch-fix3-bugfix.patch
+</pre>
+
+<p>
+kinput2-v2-fix3 に対する機能拡張として、kinput2-wnn-egg-key という
+ものが存在します。これは、kinput2 のキーバインドを Mule の egg 
+に近くするというものです。
+
+<ul>
+<li><a href="ftp://ftp.tut.ac.jp/X11/Contrib/Utilities/kinput2-wnn-egg-key-1.06.patch.gz">
+ftp://ftp.tut.ac.jp/X11/Contrib/Utilities/kinput2-wnn-egg-key-1.06.patch.gz</a>
+</ul>
+
+これを使用する場合は、次のようにしてパッチをあてます。
+<pre>
+% gzip -dc $(SRCDIR)/kinput2-wnn-egg-key-1.06.patch.gz | patch -p1
+</pre>
+附属のドキュメントを良く読んで使用して下さい。
+
+<h3>Kinput2.conf</h3>
+
+<p>ここでの説明は、それぞれ Wnn, Canna のインストールが完了している
+場合で示しています。
+Wnn / Canna の両方を使用することもできますし、
+片方だけの利用も可能です。
+(あと sj3 が利用できますが、この文書ではあつかいません。あしからず ^^;)
+
+<p>Wnn/Canna どちらの場合も、sj3 を使わないので、
+<hr><pre>
+#define UseSj3      /* define if you are going to use Sj3 */
+</pre><hr>
+の部分を
+<hr><pre>
+/* #define UseSj3      /* define if you are going to use Sj3 */
+</pre><hr>
+として、コメントアウトしておきます。
+
+<ul>
+<p><li>Wnn(jserver) を使う場合
+
+このバージョンではインストール済みの WNN を利用できます。
+
+<p>
+<hr><pre>
+/* #define UseWnn */    /* define if you are going to use Wnn */
+   :
+
+/*
+ * If you have installed Wnn..
+ *
+ * First check the directory where Wnn header files has been installed.
+ * If "config.h" is not there, you must specify the include directory
+ * in the Wnn source tree.
+ */
+XCOMM use installed header files (if config.h is there)
+XCOMM WNNINCDIR = /usr/X11R6/include/wnn
+XCOMM or header files in the source tree
+XCOMM WNNINCDIR = $(CONTRIBSRC)/programs/Xsi/Wnn/include
+XCOMM use installed library
+XCOMM WNNLIB = -lwnn
+
+/*
+ * Or, use library in the source tree..
+ */
+XCOMM use library in the source tree
+WNNSRC = $(CONTRIBSRC)/programs/Xsi/Wnn
+WNNINCDIR = $(WNNSRC)/include
+WNNLIB = $(WNNSRC)/jlib/libwnn.a
+</pre><hr>
+の部分を次のようになおします。
+この例は、Wnn のヘッダファイルを /usr/local/include/wnn に、
+ライブラリを /usr/local/lib にインストールした場合の例です。
+展開されたソースコードのほうを利用したい場合は、下側の設定の
+WNNSRC を適切に設定します。
+<hr><pre>
+#define UseWnn    /* define if you are going to use Wnn */
+  :
+
+/*
+ * If you have installed Wnn..
+ *
+ * First check the directory where Wnn header files has been installed.
+ * If "config.h" is not there, you must specify the include directory
+ * in the Wnn source tree.
+ */
+XCOMM use installed header files (if config.h is there)
+WNNINCDIR = /usr/local/include/wnn
+XCOMM or header files in the source tree
+XCOMM WNNINCDIR = $(CONTRIBSRC)/programs/Xsi/Wnn/include
+XCOMM use installed library
+WNNLIB = -L/usr/local/include -lwnn
+
+/*
+ * Or, use library in the source tree..
+ */
+XCOMM use library in the source tree
+XCOMM WNNSRC = $(CONTRIBSRC)/programs/Xsi/Wnn
+XCOMM WNNINCDIR = $(WNNSRC)/include
+XCOMM WNNLIB = $(WNNSRC)/jlib/libwnn.a
+</pre><hr>
+
+<p><li>Canna を使う場合
+
+<p><hr><pre>
+#define UseCanna        /* define if you are going to use Canna */
+  :
+
+/*
+ * If you have already installed Canna header files and libraries..
+ */
+XCOMM use installed headers/libraries
+XCOMM CANNAINSTDIR = /usr/local/canna
+XCOMM CANNASRC = $(CANNAINSTDIR)/include
+XCOMM CANNALIB = -lcanna16
+
+/*
+ * If you have compiled Canna that came with X11R6 (contrib/programs/Canna),
+ * but not installed yet..
+ */
+XCOMM use headers/libraries in the source tree
+CANNASRC = $(CONTRIBSRC)/programs/Canna32
+CANNALIB = -L$(CANNASRC)/lib/canna16 -lcanna16
+</pre><hr>
+この部分を次のように直します。
+Canna の ヘッダファイルを、 /usr/local/cann/include へ、
+ライブラリを、 /usr/local/lib に入れた場合です。
+こちらも、Canna のソースツリーを使用する場合は、下側の設定の
+CANNASRC を適切に設定します。
+<hr><pre>
+#define UseCanna        /* define if you are going to use Canna */
+
+
+/*
+ * If you have already installed Canna header files and libraries..
+ */
+XCOMM use installed headers/libraries
+CANNAINSTDIR = /usr/local/canna
+CANNASRC = $(CANNAINSTDIR)/include
+CANNALIB = -L/usr/local/lib -lcanna16 /* Canna のライブラリのある場所を指定 */
+
+/*
+ * If you have compiled Canna that came with X11R6 (contrib/programs/Canna),
+ * but not installed yet..
+ */
+XCOMM use headers/libraries in the source tree
+XCOMM CANNASRC = $(CONTRIBSRC)/programs/Canna32
+XCOMM CANNALIB = -L$(CANNASRC)/lib/canna16 -lcanna16
+</pre><hr>
+</ul>
+
+<p>編集が完了したらコンパイルしてインストールします。
+<pre>
+% xmkmf
+% make Makefiles
+% make depend
+% make
+% su
+# make install
+( # make install.man  マニュアルを入れる場合 )
+</pre>
+
+<h2>kinput2 の使用方法</h2>
+
+<p>kinput2 は使用する前に常駐させておく必要があります。
+<pre>
+% kinput2 &amp;		通常
+% kinput2 -wnn &amp;	wnn/canna 両方対応にしたときに、wnn のほうで起動
+% kinput2 -canna &amp;	wnn/canna 両方対応にしたときに、canna のほうで起動
+</pre>
+
+<ul>
+<li>kinput2 Protocol での使用
+
+<p>kinput2 を Kterm から Kinput2 Protocol で利用するには、
+kterm側で以下のようなリソース設定が必要です。
+この設定では、Shift-space で kinput2 が起動します。
+
+<pre>
+KTerm*VT100*translations: #override Shift&lt;Key&gt;space:\
+    begin-conversion(_JAPANESE_CONVERSION)
+KTerm*allowSendEvents: true
+</pre>
+
+<p>Tgif では次のリソースを設定します。
+<pre>
+Tgif*IMProtocol: kinput
+</pre>
+文字入力中に Shift-space で kinput2 が起動します。
+<a name="xim">
+<p><li>XIM での使用
+</a>
+
+<p>kinput2 を XIM で使用する場合は、以下の設定が必要です。
+<ol>
+<p><li>環境変数 XMODIFIERS を設定する。
+
+<p><pre>
+setenv XMODIFIERS "@im=kinput2"
+</pre>
+と .cshrc か .login などにいれておきます。
+
+<p><li>リソース *inputMethod: を設定する
+
+<p>.Xdefaults や .Xresource または各クライアントのリソースファイルなどで
+<pre>
+*inputMethod: kinput2
+</pre>
+を設定しておきます。
+
+<p><li>環境変数 LANG を 日本語の locale にしておく
+
+<p>デフォルトでは、ja_JP, ja_JP.SJIS, ja_JP.EUC, japan, japanese
+に反応して起動します。 (リソース *IMProtocol.locales で設定されています )
+<pre>
+setenv LANG ja_JP.EUC
+</pre>
+などを .cshrc や .login で設定しておきます。
+</ol>
+
+<p>kinput2 の XIM での起動キーはデフォルトでは 
+Shift&lt;Key&gt;space か Ctrl&lt;Key&gt;Kanji です。変更したい場合は、
+リソースの Kinput2*ConversionStartKeys: を変更します。
+詳細はマニュアルを参照して下さい。
+
+</ul>
+ 
+<p>kinput2 のキー操作などの設定を変更するには、ccdef ファイルを変更します。
+これについては、ソースコードのなかの、 doc/ccdef に解説があるので
+それを参照して下さい。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp07.html">[PREV]</a>
+<a href="netbsd-jp09.html">[NEXT]</a>
+
+</body>
+</html>

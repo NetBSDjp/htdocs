@@ -1,0 +1,186 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (Ghostscript)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,Ghostscript,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp12.html">[PREV]</a>
+<a href="netbsd-jp14.html">[NEXT]</a>
+
+<h1>GhostScript 2.6.2 + 2.6.1j10 patch</h1>
+
+GhostScript は、GNU の作成した PostScript インタプリタです。
+PostScript ファイルの出力結果を画面で確認したり、
+PostScript でないプリンタに出力させるデータを作ったり
+できます。主に他のコマンド(ghostview, lpr, xdvi など)
+から呼び出して使われます。
+
+<h2>ソースコードの展開</h2>
+
+まずソースコードを入手して展開します。
+以下の場所などにあります。
+
+<p>
+<a href="ftp://ftp.tut.ac.jp/GNU/prep/ghostscript-2.6.2.tar.gz">
+ftp://ftp.tut.ac.jp/GNU/prep/ghostscript-2.6.2.tar.gz
+</a>
+<br><a href="ftp://ftp.tut.ac.jp/Linux/GNU/prep/ghostscript-fonts-2.6.2.tar.gz">
+ftp://ftp.tut.ac.jp/GNU/prep/ghostscript-fonts-2.6.2.tar.gz
+</a>
+<br><a href="ftp://ftp.tut.ac.jp/GNU/ghostscript/gs261j10.tar.gz">
+ftp://ftp.tut.ac.jp/GNU/ghostscript/gs261j10.tar.gz
+</a>
+<br><a href="ftp://ftp.tut.ac.jp/GNU/ghostscript/gs261d13.tar.gz">
+ftp://ftp.tut.ac.jp/GNU/ghostscript/gs261d13.tar.gz
+</a>
+
+<p>ソースを展開します。
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/ghostscript-2.6.2.tar.gz
+% cd gs262
+</pre>
+日本語化キットを展開してパッチを当てます。
+<pre>
+% tar zxvf $(SRCDIR)/gs261j10.tar.gz
+% patch &lt; gs261j.diff
+% cp unix-gcc.mak Makefile
+</pre>
+DOS用のキットも展開します(これにVFlibのドライバが入っています。)
+<pre>
+% tar zxvf $(SRCDIR)/gs261d13.tar.gz
+</pre>
+Makefile を融合させます
+<pre>
+% cat kfvflib.mak &gt;&gt; Makefile
+</pre>
+
+<h2>修正作業</h2>
+
+<p>gs261j.euc などを読んで、Makefile を適宜変更していきます。
+
+<pre>
+XINCLUDE=-I/usr/X11R6/include
+XLIBDIRS=-L/usr/X11R6/lib
+</pre>
+以下では、X11R6 の PCF ファイルと、 TeXのPKフォント、
+そして VFlib を使えるように設定しています。他に Zeit や Sony の
+フォントを持っている場合は、それらを追加してもいいでしょう。
+<pre>
+FEATURE_DEVS=filter.dev dps.dev level2.dev kanji.dev \
+             kfpcf.dev kfjtex.dev kfvflib.dev                                 
+</pre>
+DEVICE_DEVS, DEVICE_DEVS1, .... DEVICE_DEVS9 までに出力させたい
+デバイスを追加していきます。
+もともとのパッケージで使用できるデバイスは、devs.mak に一覧があります。
+日本語化の際に追加されたドライバについては、drivers/ の下
+の各ディレクトリに解説があります。
+<pre>
+DEVICE_DEVS=x11.dev
+DEVICE_DEVS9=pbm.dev pbmraw.dev pgm.dev pgmraw.dev ppm.dev ppmraw.dev bit.dev
+</pre>
+Makefile の名前を合わせておきます。
+<pre>
+MAKEFILE=Makefile
+</pre>
+
+<h2>コンパイルとインストール</h2>
+
+<p>コンパイルしてインストールします。
+<pre>
+% make
+% su
+# make install
+</pre>
+
+<p>Makefile の で指定したディレクトリの下に 
+ghostscript-fonts-2.6.2.tar.gz を展開します。
+標準では /usr/local/lib/ghostscript です。
+<pre>
+# cd /usr/local/lib/ghostscript
+# tar zxvf  $(SRCDIR)/ghostscript-fonts-2.6.2.tar.gz
+</pre>
+
+<p>漢字フォントの設定をします。
+
+<ol>
+<li>PCFフォントを使う場合
+<pre>
+# cd /usr/local/lib/ghostscript/kanji
+# cp pcf.ps kconfig.ps
+# vi kconfig.ps
+</pre>
+kconfig.ps の中の以下の部分を、
+<hr><pre>
+/Ryumin-Light           4300000
+        (/usr/local/X11R5/lib/X11/fonts/misc/kanji24.pcf) pcfkanji
+/GothicBBB-Medium       4300200
+        (/usr/local/X11R5/lib/X11/fonts/misc/k14.pcf) pcfkanji
+</pre><hr>
+次のように変更します。
+<hr><pre>
+/Ryumin-Light           4300000
+        (/usr/X11R6/lib/X11/fonts/misc/jiskan24.pcf) pcfkanji
+/GothicBBB-Medium       4300200
+        (/usr/X11R6/lib/X11/fonts/misc/k14.pcf) pcfkanji
+</pre><hr>
+
+<p>XFree86では、標準ではフォントを圧縮しているので、
+そのままでは、gsから使えません。展開しておきます。
+<pre>
+# cd /usr/X11R6/lib/X11/fonts/misc
+# gzip -d jiskan* k14*
+</pre>
+フォントの名前がかわったので、このままだとXのほうでフォントが探せなく
+なります。フォントの情報を修正しておきます。
+<pre>
+# /usr/X11R6/bin/mkfontdir
+# exit
+% xset fp rehash     ( フォント情報を X に再読み込みさせています )
+</pre>
+
+<li>VFlib を使う場合
+<p>VFlib を使う場合は、GhostScript 側の設定に加えて、
+VFlib の vfontcap への記述が必要になります。
+
+<p>GS側の設定
+<pre>
+# cd /usr/local/lib/ghostscript/kanji
+# cp vflib.ps kconfig.ps
+</pre>
+デフォルトでのゴシックのフォント名は goth 明朝体は min と
+なっています。vflib の方で、これに合わせた名前で vfontcap を記述します。
+詳細は VFlib のマニュアルや、kfvflib.sj を参照して下さい。
+
+<pre>
+例： vfontcap   Microsoft TrueType での例
+min|mincho:\
+    :ft=truetype:\
+    :ff=/usr/local/lib/vflib/ttf/mincho:
+goth|gothic:\
+    :ft=truetype:\
+    :ff=/usr/local/lb/vflib/ttf/gothic:
+</pre>
+</ol>
+
+<h2>動作試験</h2>
+
+<p>次のようにして、動作試験します。
+<pre>
+% cd /usr/local/lib/ghostscript/kanji
+% gs hankaku.ps
+% gs allkanji.ps
+% gs ../example/tiger.ps
+</pre>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp12.html">[PREV]</a>
+<a href="netbsd-jp14.html">[NEXT]</a>
+
+</body>
+</html>

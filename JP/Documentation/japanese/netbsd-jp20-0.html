@@ -1,0 +1,166 @@
+<html>
+<head>
+<title>NetBSD Japanese Environment Setup Guide (Font)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="font,Netscape,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp18.html">[PREV]</a>
+<a href="netbsd-jp19.html">[NEXT]</a>
+
+<h1>X各種フォントの設定(含Netscape用設定)</h1>
+
+<p>
+このページでは、X Window System でよりよい日本語の表示を
+行なうために各種フォントを追加する方法を解説しています。
+
+<p>
+また X11の font の標準設定は Netscape にとってあまり良い設定では
+ないため、その点の修正も行ないます。
+
+<h2>フォントの追加</h2>
+
+X11 で使用可能な free なフォントとして次のようなものがあります。
+<ul>
+<li><a href="fonts/kaname_k12_bdf.tar.gz">要町フォント[12x12dot](kaname_k12_bdf.tar.gz)</a>
+<li>恵梨沙フォント[10x8dot](elisau10.tgz) まだ転載許可もらってないっす
+</ul>
+
+<h3>要町フォント</h3>
+
+<p>
+要町フォントはもともとX68k用に(株)満開製作所が作成したフォントで、
+これの X Window System 用にコンバートした版が存在します。
+
+<p>
+以下の手順でフォントを pcf 化し、X のフォントディレクトリにコピーします。
+<pre>
+% tar zxvf kaname_k12_bdf.tar.gz
+% bdftopcf knmhn12x.bdf > knmhn12x.pcf
+% bdftopcf knmzn12x.bdf > knmzn12x.pcf
+% compress knm*.pcf
+ここは X11R6.3 以降 (XFree86 3.3以降) で gzip で .gz 形式にすることができます。
+(% gzip knm*.pcf)
+% su
+# mv *.pcf.Z /usr/X11R6/lib/X11/fonts/misc
+(# mv *.pcf.gz /usr/X11R6/lib/X11/fonts/misc)
+</pre>
+
+<h3>恵梨沙フォント</h3>
+
+<p>
+恵梨沙フォントは、Hewlett-Packerd HP 95/100/200LX の日本語化のために
+作成された 8x8ドット日本語フォントで、
+オリジナル版(「恵梨沙フォントPJ」のみなさんが作成)を
+いしじま☆だい さんが X Window System で使用できるように
+改変された版が存在します。
+
+<ul>
+<li><a href="http://spock.vector.co.jp/authors/VA002310/">
+恵梨沙フォントHomePage</a>
+</ul>
+
+<p>
+恵梨沙フォントは、附属のドキュメントに詳細な解説が
+入っていますので、それにしたがって作業すればよいでしょう。
+基本的には要町と同様になります。
+
+<pre>
+% tar zxvf elisau10.tgz
+% bdftopcf elisau10.bdf > elisau10.pcf
+% compress elisau10.pcf
+(% gzip elisau10.pcf)
+% su
+# mv *.pcf.Z /usr/X11R6/lib/X11/fonts/misc 
+(# mv *.pcf.gz /usr/X11R6/lib/X11/fonts/misc)
+</pre>
+
+<h3>jis 補助漢字 (jisx0212)</h3>
+
+<p>
+jis補助漢字の X Window System 用のフォントは、
+安岡孝一さん＠京都大学大型計算機センター ほかのみなさまが
+作成されたものが一般に配布されています。
+また、mule 用のフォントに 24dot のものが存在します。
+
+<ul>
+<li><a href="http://www.kudpc.kyoto-u.ac.jp/~yasuoka/index-j.html">
+安岡さんのページ</a>
+</ul>
+
+<dl>
+<dt>14dot
+<dd><a href="fonts/jisksp14.bdf.gz">jisksp14.bdf.gz</a>
+     ( jisksp16 から <a href="fonts/bdfresize-1.4.tar.gz">bdfresize</a>で作成 )
+<dt>16dot
+<dd><a href="fonts/jisksp16-1990.bdf.gz">jisksp16-1990.bdf.gz</a>
+<dt>24dot
+<dd><a href="fonts/min-1-24.bdf.gz">min-1-24.bdf.gz</a>
+     ( mule 用のフォント )
+</dl>
+
+<p>以下の手順で pcf フォントを作成し、Xのフォントのディレクトリに
+いれます。他のフォントも同様にしてください。
+なお、下ではcompress で圧縮形式にしてあります。
+
+<pre>
+% gzip -d jisksp14.bdf.gz
+% bdftopcf jisksp14.bdf > jisksp14.pcf
+% compress jisksp14.pcf
+(% gzip jisksp14.pcf)
+% su
+# mv jisksp14.pcf.Z /usr/X11R6/lib/X11/fonts/misc
+</pre>
+
+<h3>最終作業</h3>
+
+<p>
+すべてのフォントを入れたら、mkfontdir しておきます。
+<pre>
+# cd /usr/X11R6/lib/X11/fonts/misc
+# mkfontdir
+</pre>
+
+これにより、フォントがデータベースに登録されて使用可能になります。
+これ以降 X を再起動するか、
+<pre>
+% xset fp rehash
+</pre>
+としてフォントを再検索させると新規登録したフォントが
+使用可能になります。
+
+<h2>Netscape 用のフォントのエイリアスの追加</h2>
+
+Netscape は、フォントの名称を 形状と作成者の組合せで区別しており、
+そのままでは好き勝手(^^;な名前のついている日本語フォントを
+併せて使用することができません。
+(名前の違うフォントは本来別ものなので、この Netscape の仕様は正当です。
+たまたま日本語のフォントが少ないので不都合になります(^^;)
+そこで適当にエイリアスをでっちあげて、登録した日本語フォントを
+まとめて使用できるようにします。
+
+<ul>
+<li><a href="fonts.alias.netscape">Netscape 用フォントのエイリアス</a>
+</ul>
+
+上記エイリアスファイルを /usr/X11R6/lib/fonts/misc/fonts.alias に
+追加します。Netscape で、5つのサイズのフォント(10,12,14,16,24ドット)を
+ちゃんと使えるように名前を割り振っています。
+<pre>
+# cat $(SRCDIR)/fonts.alias.netscape >> fonts.alias
+</pre>
+
+<p>
+このあと X を再起動させるか、<tt>xset fp rehash</tt>として、
+フォントの設定を再読み込みさせます。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp18.html">[PREV]</a>
+<a href="netbsd-jp19.html">[NEXT]</a>
+
+</body>
+</html>

@@ -1,0 +1,591 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (wnn)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,wnn,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp05.html">[PREV]</a>
+<a href="netbsd-jp07.html">[NEXT]</a>
+
+<h1>Wnn4.2 のインストール</h1>
+
+<p>Wnnは日本語を入力する際に、仮名漢字変換を行なってくれるサーバです。
+Mule などから利用します。
+
+<p>Wnn (jserver)はネットワークを使用して動作するので、
+たとえネットワークに接続してないマシンでもカーネルでループバックを
+有効にしておく必要があります。
+このとき socket を /tmp に作成するので /tmp に書き込めるように
+しておく必要もあります。
+
+<p>また uum は pty を利用するのでこれも必要です。
+X が動作している環境ならどちらも有効になっています。
+
+<hr>
+
+<p>
+まず、Wnn 4.2 にはいくつかバグがあります。また 4.4BSD に
+なった際の仕様変更などにより、いくつか問題が発生します。
+
+<p>
+なお、これらを修正するには、このページの記述をおこなっていくのも
+いいですが、FreeBSD の ports に含まれているパッチをあてるのが
+はっきりいって便利です。
+
+<p>
+新しい X (XFree86 3.1.2D 以降。X11R6.1になった)では、
+imake の記述ルールが変わった関係から、Wnn4.2付属の Project.tmpl
+では正常にコンパイルできなくなっています。
+Wnnの配布に付属する Project.tmpl から Wnn に関連した部分を抜き出して来て
+X11R6.1 の Project.tmpl に追加し、それをWnn4.2の Project.tmpl
+として使用することで問題なくコンパイル可能です。
+
+<p>
+具体的には、<a href="Project.tmpl.wnn">このファイル</a>を、
+X11R6.1 の Project.tmpl の末尾に追加して、その新しい Project.tmpl を 
+Xsi/config/Project.tmpl と差し替えます。
+このファイルは、Xsi/config/Project.tmpl の 1084 行目
+以降を切り出して、その中の "$$imakeprefix" となっている部分(4箇所)
+を"$(IMAKEPREFIX)"と置き換えたものです。
+
+<p>
+以下は差し替えの例です。
+<pre>
+% cd Xsi/config
+% cat /usr/X11R6/lib/X11/config/Project.tmpl \
+$(SRCDIR)/Project.tmpl.wnn > Project.tmpl
+</pre>
+
+<p>
+さらにさらに、どのバージョンからかなのは調べてないのですが、
+(すくなくとも正規の X11R6.3はそうなっている。XFree86 では不明)、
+Imake の X関連のテンプレートファイルの名称が 
+Prpoject.tmpl から X11.tmpl に変更になっています。
+このため、コンパイルをしようとしても、Wnn の設定が全く反映されない
+という現象がおこります。これの修正は単純で、Project.tmpl の名前を
+X11.tmpl に変更するのみです。
+
+<pre>
+% cd Xsi/config
+% cat /usr/X11R6/lib/X11/config/X11.tmpl \
+$(SRCDIR)/Project.tmpl.wnn > X11.tmpl
+</pre>
+
+<hr>
+
+<p>wnn はデフォルトの設定では以下の場所にインストールされます。
+<pre>
+/usr/local/bin/Wnn4   コマンドなど
+/usr/local/lib/wnn    辞書、設定ファイル
+$(LIBDIR)             ライブラリ
+$(INCDIR)/wnn         ヘッダファイル
+$(MANDIR)             マニュアル
+</pre>
+
+<h2>下準備</h2>
+
+<p>wnn は 普通ユーザー wnn で動作させます。
+あらかじめこのユーザーをつくっておきます。
+
+<pre>
+% su
+# vipw
+
+wnn:*:9000:7::0:0:Jserver::   などを加える
+</pre>
+
+<p>ユーザ ID などは適宜設定して下さい。
+グループは、/etc/group に "wnn" をつくってそれを利用してもいいし、
+bin(7番) を使っても問題ないようです。
+
+<h2>ソースの修正</h2>
+
+<p>まずパッケージを入手し、適当な場所に展開します。
+ソースは以下の場所などにあります。
+
+<p><a href="ftp://ftp.tut.ac.jp/UNIX/wnn/Wnn4.2.tar.gz">
+ftp://ftp.tut.ac.jp/UNIX/wnn/Wnn4.2.tar.gz
+</a>
+
+<p>ソースを展開します。
+<pre>
+% cd $(TOPDIR)
+% tar zxvf $(SRCDIR)/wnn42.tar.gz
+</pre>
+
+<p>Wnn4.2 には、中国語を入力するための cWnn(cserver)や
+韓国語を入力するための kWnn(kserver)、また X での日本語入力のための
+Xwnmo などが含まれますが、この文書では日本語のための Wnn(jserver) のみ
+インストールします。
+
+<p>X11R6 がインストールされている環境でのインストールを示します。
+インストールする前に、いくつか修正しておきます。
+
+<h3>Xsi/config/Project.tmpl</h3>
+
+<ul>
+<p><li>install(1) のオプションの修正
+
+<p><pre>
+INSTINCFLAGS = InstIncFlags -c
+INSTDATFLAGS = InstDatFlags -c
+INSTBINFLAGS = InstBinFlags -c
+</pre>
+を適当な位置に加えます。INSTAPPFLAGS の設定(416行)の上あたりでいいでしょう。
+標準の設定では、インストールの際に -c オプションを
+つけないようになっていて、インストールする時に元のファイルを
+消してしまい、正常にインストールできません。
+そこで、常に -c オプションをつけるように設定します。
+
+<p><li>日本語マニュアルがきちんと出来るように修正
+<ol>
+<p><li>テキスト形式にあらかじめ変換させる場合
+
+<p>XFree86(NetBSD) の標準の設定ではマニュアルを 
+Imakefile で InstallManPage を使ってインストールした場合
+nroff で処理してテキストの形式にしてから、 $(MANPATH)/cat$(MANSUFFIX)
+に格納しています。nroff コマンドを 日本語対応のものに置き換えておけば、
+きちんと日本語で処理されたテキスト形式のマニュアルができます。
+これを行なうには、
+<pre>
+NROFF = /usr/local/bin/jgnroff -Tnippon
+NEQN  = /usr/local/bin/jgneqn -Tnippon
+COL   = /bin/cat
+MANPATH = /usr/local/jman
+</pre>
+を Project.tmpl の先頭に付け加えておきます。
+jman の設定にあわせてマニュアルの格納ディレクトリを
+変更していることに注意してください。
+なおあらかじめ日本語対応の groff をつくっておく必要があります。
+
+<p><li>roff 形式のまま入れておきたい場合
+
+<p>テキスト化をせずに、そのままの形でインストールして、
+jman コマンドの実行の際に整形させるようにしたければ、
+Project.tmpl の先頭に以下のように付け加えます。
+jman の設定にあわせてマニュアルの格納ディレクトリを
+変更していることに注意してください。
+<pre>
+MANDIR = /usr/local/jman/man$(MANSUFFIX)
+#ifdef InstallManPageLong
+#undef InstallManPageLong
+#endif
+#define InstallManPageLong(file,destdir,dest)                           @@\
+InstallNamedTarget(install.man,file.man,$(INSTMANFLAGS),destdir,dest.$(MANSUFFIX))
+</pre>
+</ol>
+ 
+<p><li>jserver だけを作るように設定します。
+
+<p><pre>
+#ifndef BuildWnn
+#define BuildWnn    YES
+#endif
+#ifndef BuildCWnn
+#define BuildCWnn   NO
+#endif
+#ifndef BuildKWnn
+#define BuildKWnn   NO
+#endif
+#ifndef BuildXwnmo
+#define BuildXwnmo  NO
+#endif
+</pre>
+とします。これで jserver のみの作成になります。
+</ul>
+
+なお、あとで ONEW を入れる場合には、Ver3 互換のライブラリが必要に
+なるので、
+<pre>
+#ifndef BuildJlibV3
+#define BuildJlibV3     YES
+#endif
+</pre>
+も設定します。この場合には、次の修正も必要になります。
+
+<h3>Xsi/Wnn/jlib.V3/Imakefile</h4>
+
+<pre>
+SRC1= jlv3.c
+OBJ1= jlv3.o
+SRC2= $(WNNETCSRC)/gethinsi.c
+OBJ2= gethinsi.o
+SRC3= $(WNNETCSRC)/sstrings.c
+OBJ3= sstrings.o
+SRCS= $(SRC1) $(SRC2) $(SRC3)
+OBJS= $(OBJ1) $(OBJ2) $(OBJ3)
+略
+InstallNonExecFile($(WNNINCLUDESRC)/jlib.h,$(JWNNINCDIR))
+略
+WnnSpecialObjectRule($(OBJ2),$(SRC2),$(WNNETCSRC),)
+WnnSpecialObjectRule($(OBJ3),$(SRC3),$(WNNETCSRC),)
+</pre>
+これらを次のように直します。
+<pre>
+SRC1= jlv3.c
+OBJ1= jlv3.o
+SRC2= $(WNNETCSRC)/gethinsi.c
+OBJ2= gethinsi.o
+SRC3= $(WNNETCSRC)/sstrings.c
+OBJ3= sstrings.o
+SRC4= $(WNNETCSRC)/xutoj.c
+OBJ4= xutoj.o
+SRCS= $(SRC1) $(SRC2) $(SRC3) $(SRC4)
+OBJS= $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4)
+略
+InstallNonExecFile(jlib.h,$(JWNNINCDIR))
+略
+WnnSpecialObjectRule($(OBJ2),$(SRC2),$(WNNETCSRC),)
+WnnSpecialObjectRule($(OBJ3),$(SRC3),$(WNNETCSRC),)
+WnnSpecialObjectRule($(OBJ4),$(SRC4),$(WNNETCSRC),)
+</pre>
+
+<p>Wnn(Jserver)の端末用のフロントエンドとして uum が提供されています。
+しかし、これは正常に動作しません。
+
+<p>変換などの動作自体は正常です。uum の基本的な原理は、
+仮想端末を開いてその上でシェルを開き直し、標準入力
+からの入力に手を加えるようにというものです。
+
+<p>この仮想端末を開く際に、utmp にその情報を書き込んでいます。
+ところが、終了時にこの情報を復帰させることができません。
+これによる弊害は w コマンドの表示が変になる。login の情報がおかしくなる
+などがあります。
+
+<p>これを修正するには大がかりな変更が必要ですが、めんどうなので、
+utmp に書き込みを行なわないことにします。( login, rlogin, telnet 以外
+では、特に utmp に書き込みを行なう必要はありません )
+
+<h3>Xsi/Wnn/uum/Imakefile</h3>
+
+<pre>
+SRC1= ....
+
+OBJ1= ....
+</pre>
+の部分から、setutmp.c と setutmp.o を削除します。
+
+<h3>Xsi/Wnn/uum/jhlp.c</h3>
+
+<p>utmp 関連の関数呼び出しをすべて無効にします。
+呼び出されているのは saveutmp(), setutmp(), resetutmp() です。
+
+265 - 269行
+<pre>
+#if defined(BSD42) &amp;&amp; !defined(DGUX)
+     if (saveutmp() &lt; 0) {
+         puts("Can't save utmp\n");
+     }
+#endif /* BSD42 */
+</pre>
+1143-1146 行
+<pre>
+        if (setutmp(ttypfd) == ERROR) {
+             puts("Can't set utmp.");
+        }
+</pre>
+1565-1567 行
+<pre>
+     if (resetutmp(ttypfd) == ERROR) {
+         printf("Can't reset utmp.");
+     }
+</pre>
+
+<p>これらを削除またはコメントアウトします。
+
+<p>この他にも、インストール場所の変更なども可能です。
+
+標準ではライブラリやヘッダが X のディレクトリに入ります。
+なんとなく気持ち悪いので、私は次のようにしてます。
+
+<h3>Xsi/config/Project.tmpl</h3>
+1250行付近
+<pre>
+      WNNINCDIR = $(INCROOT)
+      WNNLIBDIR = $(USRLIBDIR)
+</pre>
+次のように変更
+<pre>
+      WNNINCDIR = /usr/local/include
+      WNNLIBDIR = /usr/local/lib
+</pre>
+
+詳細は、$(TOPDIR)/Xsi/Wnn/READ.ME.j を参照してください。
+
+<h3>Xsi/Wnn/pubdic/Imakefile</h3>
+
+付属語辞書をきちんと作るように修正します。
+111行目の
+<pre>
+InstallMultiple($(FZKDATA),$(JWNNPUBDICDIR))
+InstallMultiple($(FZK_SRC),$(JWNNFZKSRCDIR))
+</pre>
+の部分に、以下のように追加します。
+<pre>
+InstallMultiple($(FZKDATA),$(JWNNPUBDICDIR))
+install::
+        @for i in $(FZKDATA);\
+        do $(WNNTOUCH) $(DESTDIR)$(JWNNPUBDICDIR)/$$i; done
+InstallMultiple($(FZK_SRC),$(JWNNFZKSRCDIR))
+</pre>
+
+<p>Wnn では、辞書のアクセスの高速化のために、辞書自身の inode 番号を
+ヘッダに保持して、それでアクセスします。そのため、コピーを行なった
+際には wnntouch コマンドでこの inode 番号をきちんと合わせる必要
+があります。ところが、このパッケージでは、附属語ファイルを
+インストールする際に、これをするのを忘れています。
+ちゃんと wnntouch するように直します。
+
+<hr>
+ここを修正せずに手動で wnntouch してもいいです。
+対象は、/usr/local/lib/wnn/ja_JP/dic/pubdic/*.fzk です。
+<pre>
+make install のあとで、
+# cd /usr/local/lib/wnn/ja_JP/dic/pubdic
+# /usr/lcoal/bin/Wnn4/wnntouch *.fzk
+</pre>
+<hr>
+
+<p>
+これ以降の修正点は FreeBSD ports-current のパッチを参考
+にさせてもらいました。
+
+<h3>Xsi/Wnn/jlib.js.c</h3>
+
+<p>
+BSD4.4 にともなう UNIX DOMAIN の変更に対処
+
+221行
+<pre>
+    if (connect(sd,(caddr_t)&saddr,strlen(saddr.sun_path)+sizeof(saddr.sun_family)) == ERROR) {
+</pre>
+を
+<pre>
+	if (connect(sd,(caddr_t)&saddr,SUN_LEN(&saddr)) == ERROR) {
+</pre>
+に変更
+
+<h3>Xsi/Wnn/jserver/de.c</h3>
+
+<p>
+jserver のいたるところで、stderr にデータを出力してしまってる
+バグにたいする ad hoc な修正
+
+66行め
+<pre>
+#include <sys/ioctl.h>
+
+</pre>
+に
+<pre>
+#include <sys/ioctl.h>
+#include <sys/param.h>
+</pre>
+と追加
+
+266行目
+<pre>
+		if(!noisy){                                                    
+			fclose(stderr);                                    
+		}
+</pre>
+に
+<pre>
+		if(!noisy){                                                    
+			int fd;
+			fclose(stderr);                                    
+			if ((fd = open("/dev/null", O_WRONLY)) < 0) {
+				xerror("Cannot open /dev/null\n");
+			}
+			dup2(fd, 2);
+			close(fd);
+		}
+</pre>
+と追加
+
+<h3>Xsi/Wnn/jserver/readfile.c</h3>
+
+<p>
+初期化わすれ
+
+425行
+<pre>
+	jt2 = (struct JT *)malloc(sizeof(struct JT));
+	*jt2 = *jt1;                                      
+</pre>
+に
+<pre>
+	jt2 = (struct JT *)malloc(sizeof(struct JT));
+	*jt2 = *jt1;                                      
+	jt2->node = 0;
+</pre>
+を追加
+
+<h3>Xsi/Wnn/jserver/b_index.c</h3>
+
+<p>エンディアン問題
+
+<p>
+100行目
+<pre>
+		/** For each tuple in ri1[0] create b_nodes */
+		for (i=0; i<jt->maxri1[0]; i++){                      
+			serial = (jt->ri1[0]+i)->pter;
+			yomi = KANJI_str(jt->ri2[serial].kanjipter + jt->kanji, 0);                     
+			b_index_add(jt, yomi, serial);                          
+		}
+</pre>
+を
+<pre>
+		/** For each tuple in ri1[0] create b_nodes */
+		for (i=0; i<jt->maxri1[0]; i++){                      
+			serial = (jt->ri1[0]+i)->pter;
+			yomi = KANJI_str(ntohs(jt->ri2[serial].kanjipter) + jt->kanji, 0);                     
+			b_index_add(jt, yomi, serial);                          
+		}
+</pre>
+
+<p>
+133行目
+<pre>
+int   serial;
+{                                                                
+	w_char *yomi;                                 
+	yomi = KANJI_str(jt->ri2[serial].kanjipter + jt->kanji, 0);
+	delete_b_node(jt, yomi, 0, 0 );
+} 
+</pre>
+を
+<pre>
+int   serial;
+{                                                                
+	w_char *yomi;                                 
+	yomi = KANJI_str(ntohs(jt->ri2[serial].kanjipter) + jt->kanji, 0);
+	delete_b_node(jt, yomi, 0, 0 );
+} 
+</pre>
+に変更
+
+<p>
+162行
+<pre>
+			yo_kanji = KANJI_str(                 
+			jt->ri2[jt->bind[tmp_node].pter].kanjipter+jt->kanji, 0) ;
+</pre>
+を
+<pre>
+			yo_kanji = KANJI_str(                 
+			ntohs(jt->ri2[jt->bind[tmp_node].pter].kanjipter)+jt->kanji, 0) ;
+</pre>
+に変更
+
+<pp>
+218行
+<pre>
+			yo_kanji = KANJI_str(                 
+			jt->ri2[jt->bind[tmp_node].pter].kanjipter+jt->kanji, 0) ;
+</pre>
+を
+<pre>
+			yo_kanji = KANJI_str(                 
+			ntohs(jt->ri2[jt->bind[tmp_node].pter].kanjipter)+jt->kanji, 0) ;
+</pre>
+に変更
+
+<h2>コンパイル/インストール作業</h2>
+
+<p>$(TOPDIR)/Xsi で
+<pre>
+% make World -f Makefile.inst
+% su
+# make install
+( # make install.man マニュアルもいれる場合 )
+</pre>
+
+<p>これでインストールは完了しますが、このままだと、ユーザー辞書を作る際に
+ディレクトリに書き込みできないとおこられます。あらかじめユーザー辞書の領域を
+作成しておきます。
+<pre>
+# cd /usr/local/lib/wnn/ja_JP/dic
+# mkdir usr
+# chown wnn usr
+</pre>
+以上で完了です。
+
+<p>コマンド jserver で起動します。
+
+<p>jserver をマシンの起動時に起動させたい場合は、
+/etc/rc.local に以下のように追加します。
+<pre>
+if [ -f /usr/local/bin/Wnn4/jserver ]; then
+        /usr/local/bin/Wnn4/jserver
+        echo 'jserver started.'
+fi
+</pre>
+
+<p>jserver の終了には、wnnkill コマンドを使用します。
+
+<p>各種コマンドは、標準の jserver のホスト名を環境変数
+JSERVER から取得します。
+.login や .cshrc などで以下のように設定しておくといいでしょう。
+<pre>
+setenv JSERVER ホスト名
+</pre>
+
+<h1>uum の使い方</h1>
+
+<p>コマンドラインから
+<pre>
+% uum
+</pre>
+で起動します。
+
+<p>
+なお kterm の場合、キーバインドを変更しようとして warning が大量に
+でてしまいます。これを防ぐには/usr/local/lib/wnn/ja_JP/uumrc の
+中の、kterm のエントリをコメントアウトすればいいでしょう。
+
+<pre>
+オプション 
+
+   -D server jserverを指定
+   -j -u -s  表示コード指定
+   -J -U -S  入力コード指定
+
+　デフォルトはマニュアルと違いますが、-jJ のようです。 
+
+基本キー操作
+  
+  日本語モード CTRL - \ 
+  変換キー     CTRL - w
+  一覧表示     CTRL - w (2回目)
+  単文節変換   CTRL - z (辞書に無い場合カタカナ変換)
+  確定         CTRL - l, RETURN
+  次候補       CTRL - n (一覧表示中はページ単位)
+  前候補       CTRL - p (同上)
+  文節伸ばし   CTRL - o
+  文節縮め     CTRL - i
+  次文節       CTRL - f
+  前文節       CTRL - b
+  先頭文節     CTRL - a
+  末尾文節     CTRL - e
+
+  無変換モード q
+  全角アスキー Q
+  モード戻し   CTRL - g
+
+  辞書登録     CTRL - t
+</pre>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp05.html">[PREV]</a>
+<a href="netbsd-jp07.html">[NEXT]</a>
+
+</body>
+</html>
+

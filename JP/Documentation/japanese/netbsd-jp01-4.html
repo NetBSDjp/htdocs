@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide(Dummy setlocale)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,XFree86,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01-3.html">[PREV]</a>
+<a href="netbsd-jp02.html">[NEXT]</a>
+
+<h1>ダミーの setlocale の使用</h1>
+
+<p>前で述べたように、X11R6 の国際化において、システムのロケール関数で
+使用されているものは、setlocale だけで、これはチェックの目的で利用
+されています。
+
+<p>そこで、裏技的になってしまいますが、LANG に設定した locale を常に
+受け付けるダミーの setlocale を作成して組み込むことによって X の国際化機能を
+利用します。
+
+<p>ダミーの例: <a href="dmysetlocale.c">dmysetlocale.c</a>
+<pre>
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+char *setlocale(int cat,const char *locale)
+{
+    static char name[100]="C";
+
+    if(locale)
+        if(!*locale)
+            strcpy(name,getenv("LANG"));
+        else
+            strcpy(name,locale);
+    return name;
+}	
+</pre>
+していることは単純で、
+<ol>
+<li>空文字列がわたされたら環境変数 LANG の内容を記録
+<li>文字列がわたされたらそれを記録
+<li>記録されている文字列を返す
+</ol>
+だけです。
+
+<p>この関数をシステムの setlocale の変わりに libc にいれてしまうか、
+国際化対応のクライアントのコンパイル時にこのコードを一緒にリンクさせるこ
+とで使用できます。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01-3.html">[PREV]</a>
+<a href="netbsd-jp02.html">[NEXT]</a>
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide (VFlib)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,VFlib,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp11.html">[PREV]</a>
+<a href="netbsd-jp13.html">[NEXT]</a>
+
+<h1>VFlib-2.22-PL10 のインストール</h1>
+
+<p>
+VFlib は TrueType フォントや書体クラブなどのアウトラインフォントの展開
+をおこなうためのライブラリです。
+
+<p>
+GhostScript や Xdviなど で アウトラインフォントが使いたい場合は、
+VFlib をインストールします。
+
+<dl>
+<dt>作者
+<dd><a href="http://www.se.hiroshima-u.ac.jp/~kakugawa/">角川裕二さん</a>
+<dt>正規配布元
+<dd><a href="http://www.se.hiroshima-u.ac.jp/~kakugawa/Hacks/Hacks-JIS.html">Kakugawa Hacks</a> 角川さんのページの「計算機舘」
+</dl>
+
+<p>
+以下の場所からも入手可能です。(TUT ftp server)
+<ul>
+<li><a href="ftp://ftp.tut.ac.jp/TeX/dviwares/VFlib/VFlib-2.22-PL8.tar.gz">
+ftp://ftp.tut.ac.jp/TeX/dviwares/VFlib/VFlib-2.22-PL8.tar.gz</a>
+<li><a href="ftp://ftp.tut.ac.jp/TeX/dviwares/VFlib/VFlib-2.22-Patch9">
+ftp://ftp.tut.ac.jp/TeX/dviwares/VFlib/VFlib-2.22-Patch9</a>
+<li><a href="ftp://ftp.tut.ac.jp/TeX/dviwares/VFlib/VFlib-2.22-Patch10">
+ftp://ftp.tut.ac.jp/TeX/dviwares/VFlib/VFlib-2.22-Patch10</a>
+</ul>
+
+<h2>コンパイルとインストール</h2>
+
+<p>ソースを展開してパッチをあてます。
+<pre>
+% tar zxvf $(SRCDIR)/VFlib-2.22-PL8.tar.gz
+% cd  cd VFlib-2.22pl8
+% cd src
+% patch < $(SRCDIR)/VFlib-2.22-Patch9
+% patch < $(SRCDIR)/VFlib-2.22-Patch10
+</pre>
+
+<h3>src/Makefile</h3>
+
+<p>
+オープンするフォントの最大数を増やす場合は、これを増やします。
+<pre>
+# Maximum open files
+OPENFILES=-DMAX_OPEN_FONT_FILES=6
+</pre>
+
+<p>
+インストールする先を変更しています。
+<pre>
+VFCAP=-DDEFAULT_VFCAP=\"/usr/local/lib/vflib/vfontcap\"
+
+INSTALL_BINDIR=/usr/local/lib/vflib
+</pre>
+
+<p>
+コンパイルしてインストールします。
+<pre>
+% make
+% su
+# mkdir /usr/local/lib/vflib/
+# make install
+</pre>
+
+<h2>フォントを設定する</h2>
+
+<p>
+VFlib では、 TrueType Font や、JG Font, 書体倶楽部などの
+フォントが利用できます。ここでは、TrueType Font での設定のみ解説します。
+その他のフォントについては、マニュアルなどを参照して下さい。
+この例では、フォントとして
+<em>gothic.ttc</em> と <em>mincho.ttc</em> のフォントを利用すると
+仮定して記述してあります。使用するフォントにあわせて読み変えて下さい。
+
+<ol>
+<li> 適当なディレクトリに TrueType フォントをコピーします。
+
+<p>ここでは、/usr/local/lib/vflib/ttf としています。
+<pre>
+# mkdir /usr/local/lib/vflib/ttf
+# cd /usr/local/lib/vflib/ttf
+# cp (TrueType があるディレクトリ)/gothic.ttc .
+# cp (TrueType があるディレクトリ)/mincho.ttc .
+</pre>
+
+<li>TrueType フォント用にインデックスを作成させます。
+<p><pre>
+# /usr/local/lib/vflib/ttindex gothic.ttc
+# /usr/local/lib/vflib/ttindex mincho.ttc
+</pre>
+
+<li>vfontcap を作成します
+
+<p>
+$(SRCDIR)/VFlib-2.21/vfontcap を参考にして下さい。
+次のような内容でいいでしょう
+<pre>
+min|mincho:\
+    :ft=truetype:\
+    :ff=/usr/local/lib/vflib/ttf/mincho:
+goth|gothic:\
+    :ft=truetype:\
+    :ff=/usr/local/lib/vflib/ttf/gothic:
+</pre>
+</ol>
+
+<h2>フォントの著作権に関して</h2>
+NetNews のニュースグループ fj.lang.postscript に MITA Yoshio さんが
+代表的なフォントの著作権に関してメーカーに質問された結果が
+投稿されています。<br>
+Message-ID: &ltMITA.96Dec30144133@hanpen.fujita3.iis.u-tokyo.ac.jp&gt<br>
+を参照してください。
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp11.html">[PREV]</a>
+<a href="netbsd-jp13.html">[NEXT]</a>
+
+</body>
+</html>

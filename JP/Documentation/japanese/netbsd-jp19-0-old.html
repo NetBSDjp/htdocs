@@ -1,0 +1,144 @@
+<html>
+<head>
+<title>NetBSD Japanese Environment Setup Guide (Font)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="font,Netscape,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="netbsd-jp19-0.html#vflib">[RETURN]</a>
+
+<h2><a name=vflib>VFlibを使ってフォントを作成しよう!!</a></h2>
+
+<h3>はじめに</h3>
+
+<p>
+X で使える日本語フォントには限りがあります。そこで、VFlib を利用して、
+好きなサイズのフォントを作成してみましょう。
+
+<p>
+現在のXのpcfフォントの処理の実装は、使用する全フォントを全部メモリに
+読み込むというものになっています。このため、日本語のような大量の文字を
+もつフォントを利用する場合、大量のメモリを消費することになります。
+また、フォントのロード中は、X の全処理が停止して、画面が凍りつきます。
+というわけで、この方法は、大量のメモリと十分なCPUパワーがある人むけです:-P
+
+<p>
+なお、小さいフォントをこの方法で作った場合、潰れてしまうので
+奇麗にはならないです。
+
+<h3>VFlib と vftobdf のインストール</h3>
+
+<p>
+まず、この文書の、<a href="netbsd-jp12.html">VFlib2.22のインストール</a>
+などを参考にして、VFlib をインストールして下さい。
+
+<p>
+次に、vftobdf コマンドを作成します。
+以下のファイルを持っていってコンパイルして下さい。
+<ul>
+ <li><a href="vftobdf.tgz">vftobdf.tgz</a>(2260 byte)
+</ul>
+なお、これはこの文書の著者(go@cclub.tutcc.tut.ac.jp)が独自に
+作成したものです。ちなみに、VFlib の tools ディレクトリにも同名の
+コマンドがあります(つくったあとで気づいたっす^^;)。
+私のコマンドでは、jisx0208.1983 に含まれない文字はよけるようになっています。
+(ひとりごと:TrueType のフォントで jisx0208.1990 になってるものは存在するのかなぁ)
+
+<pre>
+% tar zxvf vftobdf.tgz
+% cd vftobdf
+% make
+</pre>
+
+Makefile のディレクトリの指定は、VFlib のインストール状況にあわせて
+変更して下さい
+
+<h3>BDFフォントの作成</h3>
+
+さきほど作成した vftobdf でフォントを作成します。
+vftobdf のオプションは次のようになります。
+<pre>
+usage: vftobdf [options] fontname 
+-f foundry     フォントの作成者の指定
+-s size        フォントのサイズの指定(pixel単位)
+-b             フォントを "bold" にする
+               (実際に太くなるのではなく名前を変更するだけです)
+-y num         フォントのベースラインを、フォントの下からどのくらいの
+               位置にもってくるか指定(pixel単位)
+               デフォルトは、フォントサイズの下から 20% の位置です。
+</pre>
+
+例
+<pre>
+% ./vftobdf -f ttfmin -s 16 min > min16.bdf
+% ./vftobdf -b -f ttfmin -s 16 min-b > minb16.bdf
+</pre>
+
+<p>
+フォントの名前(fontname)は、VFlib で設定している名前をつかいます。
+フォントの bearing の位置は中央になります。
+
+<p>
+これで作成した bdf フォントは、この文書の上で示したのと同様に X から
+使えるようにインストールして下さい。
+
+<h3>サンプル画面</h3>
+
+この方法で作成したフォントでの表示の例です
+字が小さいので、はっきりいって汚いですぅ(^^;;
+</ul>
+<li><a href="netscape.gif">Netscape での画面</a>(netscape.gif: 24KB)
+<li><a href="mule.gif">Mule での画面</a>(mule.gif: 23KB)
+</ul>
+
+Netscape では、作成したフォントの名前(fixed(foundry))が、フォント設定の
+メニューにでてくるようになるので、それを選んで下さい。
+既存の他のフォントと組み合わせる場合は、このページの
+<a href="#netscape">Netscape 用のフォントのエイリアスの追加</a>
+を参考にして下さい。
+
+<p>
+なおこの例では、DYNALAB INC. の、「Dynafont プレミアム30書体パック」
+の、DF平成明朝体W3、DF平成ゴシック体W3、DF極太明朝体、DF極太ゴシック体
+を使用しています。W3 を通常のフォント(medium)、極太 を bold として
+使用しました。
+
+<p>
+VFlib の複合フォント機能を使って、かなと記号は明朝、
+漢字はゴシックという、漫画で良く用いられている特殊な組合せの
+フォントにしてあります。
+
+<p>
+参考: VFlib の vfontcap での comic font の設定例
+<pre>
+# normal fonts
+min|mincho:\
+	:ft=truetype:\
+	:ff=/usr/local/lib/vflib/ttf/mincho:
+goth|gothic:\
+	:ft=truetype:\
+	:ff=/usr/local/lib/vflib/ttf/gothic:
+
+# bold fonts
+min-b|mincho-b:\
+	:ft=truetype:\
+	:ff=/usr/local/lib/vflib/ttf/mincho-b:
+goth-b|gothic-b:\
+	:ft=truetype:\
+	:ff=/usr/local/lib/vflib/ttf/gothic-b:
+
+# compound COMIC font
+comic:\
+	:ft=compound:\
+	:kj=goth:kn=min:sy=min:
+
+comic-b:\
+	:ft=compound:\
+	:kj=goth-b:kn=min-b:sy=min-b:
+</pre>
+
+</body>
+</html>

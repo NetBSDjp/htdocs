@@ -1,0 +1,158 @@
+<html>
+<head>
+<title>NetBSD Japanese Environment Setup Guide (ASCII pTeX 2.1.4)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="TeX,LaTeX,LaTeX2e,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp19.html">[PREV]</a>
+
+
+<a name="ptex">
+<h1>pTeX 2.1.4 (EUC version)</h1>
+</a>
+
+<pre>
+必要なファイル
+
+lib-6.9.tar.gz
+web-6.1.tar.gz
+web2c-6.1.tar.gz
+web2c.kpathsea-2.6.help
+
+ptex-2.1.4.tar.gz
+plib-euc.tar.gz
+
+dvipsk-5.58f.tar.gz
+dvipsk-jpatch-p1.1.tar.gz
+パッチ &lt; TAKEUCHI.96Mar7075800@galant.hc.t.u-tokyo.ac.jp &gt;
+
+(1)ライブラリ展開
+
+% su
+# cd /usr/local/lib
+# tar zxvf $(SRCDIR)/lib-6.9.tar.gz
+# tar zxvf $(SRCDIR)/plib-euc.tar.gz
+
+(2)ソース展開
+
+% cd $(SRCDIR)
+% tar zxvf web-6.1.tar.gz
+% tar zxvf web2c-6.1.tar.gz
+% tar zxvf ptex-2.1.4.tar.gz
+
+これは中の kpathsearchの部分をつかう
+% tar zxvf xdvik-18f.tar.gz
+
+kpathsearchのバージョンアップ(参考 web2c.kpathsea-2.6.help)
+
+% mv web2c-6.1/web2c xdvik-18f      web2c の部分をコピーする
+% mv xdvik-18f kpathsea-2.6         名前変更
+% rm -rf web2c-6.1                  これはもういらない
+% rm -rf kpathsea-2.6/xdvik         これもいらない(あとで別につくる)
+% cd kpathsea-2.6
+% patch -p -s &lt; ../web2c.kpathsea-2.6.help
+
+pTeX用の設定を行なう
+
+% cd ../ptex-2.1.4
+% ./pTeXsetup -euc
+
+作成
+
+% cd ../kpathsea-2.6
+% ./configure
+% make
+
+% su
+# make install
+
+<H1>LaTeX 2e</H1>
+
+<pre>
+ftp://ftp.tut.ac.jp/TeX/ASCII-pTeX/platex2e/1996-03-05/base-9512.tar.gz
+ftp://ftp.tut.ac.jp/TeX/ASCII-pTeX/platex2e/1996-03-05/pl9603e.tar.gz
+
+% setenv TEXBIN /usr/local/bin
+% setenv TEXMF /usr/local/lib/texmf
+
+% su
+# rm -f $TEXMF/tex/latex2e/base/*
+
+% tar zxvf base-9512.tar.gz
+% tar zxvf pl9603e.tar.gz
+
+% cd base
+% chmod u+w *
+% initex unpack.ins
+
+質問に y と答える
+</pre>
+
+
+xdvik-18 インストール
+
+ソースの展開
+
+% tar zxvf xdvik-18f.tar.gz
+% cd xdvik-18f/xdvik
+% zcat ../../xdvik18f-j1.0.patch.gz | patch
+% zcat ../../xdvik18f-j1.0+vfontmap+misc.patch.961105.gz
+% cd ..
+% ./configure
+% make
+
+
+
+
+
+
+
+xdvik を入れる場合、いくつかエラーが出る。
+
+xdvi.c
+
+cd xdvik
+mkdir X11
+cp /usr/X11R6/include/X11/Xlib.h X11     79行を消す
+cp /usr/X11R6/include/X11/Xos.h X11      107行を消す
+sfSelFile.c:51: conflicting types for `sys_errlist'
+
+
+
+dvipsk のコンパイル
+% cd $(TOPDIR)/kpathsea-2.6/dvipsk
+% ./configre
+% make
+% su
+# make install
+</pre>
+
+
+
+
+
+
+
+
+(これは dvipsk をつかうとき!
+日本語化パッチあて
+% tar zxvf dvipsk-jpatch-p1.1.tar.gz
+% cd dvipsk-5.58f
+% patch &lt; ../dvipsk.patch
+)
+
+
+
+
+
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp19.html">[PREV]</a>
+
+</body>
+</html>

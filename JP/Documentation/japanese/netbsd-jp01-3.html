@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>Open/NetBSD Japanese Environment Setup Guide(FreeBSD's locale)</title>
+<meta http-equiv="Content-type" content="text/html; charset=iso-2022-jp">
+<meta http-equiv="Keywords" content="OpenBSD,NetBSD,japanese">
+<meta name="AUTHER" content="Go Watanabe go@cclub.tutcc.tut.ac.jp">
+</head>
+
+<body>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01-2.html">[PREV]</a>
+<a href="netbsd-jp01-4.html">[NEXT]</a>
+
+<h1>Open/NetBSDへの FreeBSD の locale 関連ライブラリの導入</h1>
+
+Open/NetBSD においては、日本語の locale はサポートされていません。
+しかし、FreeBSD や BSD/OS では、LC_CTYPE に関する日本語 locale が
+サポートされています。これはもともと BSD 4.4Lite から
+きているもので、比較的容易に Open/NetBSD に導入可能です。
+
+<p>FreeBSD に入っているものは、標準の ctype.h とかを変更していて
+ちょっと気持ち悪いので、その部分は入れないことにしました。
+関連して、strcoll, strxfrm の部分も入れてません。
+(入れたい方はそう面倒な作業ではないと思うので頑張ってみて下さい)
+導入するのはマルチバイト関連の変換関数群
+のみです。
+
+</ul>
+<li><a href="setlocale.tgz">setlocale.tgz:OpenBSD用の locale 関連関数群
+(from FreeBSD)</a>
+</ul>
+
+<p>1998/10/11 追記
+上記パッチは/sys/include/machine/limits.h の MB_LEN_MAX を修正しわすれてます。
+1 を 6 に変更してください。これは
+/usr/include/machine/limits.h にインストールされるものです。
+libc コンパイル時には後者が参照されるので、そちらの
+ほうに修正が反映された状態でコンパイルしてください。
+
+<p>注: まだ NetBSD できちんとチェックしてません。
+<p>もひとつ注: たしか NetBSD では、locale の設定ファイルの
+読みとりパスに関するセキュリティホールが塞がれてないはずなので、
+そのままこのパッチを導入してしまうとまずいです。
+OpenBSD では該当部が次のようになってます。
+NetBSD でもこれをまねして直しましょう。(場所は setlocale() に入ってすぐの部分)
+<hr>
+<pre>
+    if (issetugid() != 0 ||
+        ((!PathLocale && !(PathLocale = getenv("PATH_LOCALE"))) ||
+         !*PathLocale))
+        PathLocale = _PATH_LOCALE;
+</pre>
+<hr>
+
+<p>この中にまとめてある関数群やヘッダへのパッチは、libc を再構築
+する際にソースコードに追加することによって組み込みます。
+このため Open/NetBSD のlibc のソースコードが必要です。
+OSの再構築にかんする知識をもっておられる方のみが対象です。
+
+<p>なお、この方法は方向性としては、X_LOCALE を用いるものより
+正しいものと思います(OSが本来サポートすべき機能なので)
+が、十分ではありません。
+今後の国際化機能の追加方向としては、POSIX や XPG4 また ISO-C に
+沿った形が望ましいと思います。
+というわけで現在、この locale 関数群をベースに、ISO-C 1990 で定義された
+関数群を実装していこうと考えています。いっしょにしようというかたは 
+<a href="mailto:bsd@cclub.tutcc.tut.ac.jp">
+bsd@cclub.tutcc.tut.ac.jp</a> まで連絡ください(^^;
+
+</ul>
+
+<p><a href="index.html#contents">[CONTENTS]</a>
+<a href="netbsd-jp01-2.html">[PREV]</a>
+<a href="netbsd-jp01-4.html">[NEXT]</a>
+
+</body>
+</html>
