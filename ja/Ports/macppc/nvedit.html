@@ -9,25 +9,81 @@
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>NetBSD/macppc nvedit HOW-TO</h1>
+<h1>NetBSD/macppc <tt>nvedit</tt> HOW-TO</h1>
 
 <hr>
 <p>
 
 This page gives a quick introduction to the commands needed to edit the
-contents of the Open Firmware nvram.
+contents of the Open Firmware NVRAMRC.  The NVRAMRC is a permanently
+stored file that may be run at each reboot of your system.  Usually, it
+holds a set of FORTH commands which modify the behavior of your system
+during boot.  For more information on creating the contents of an NVRAMRC,
+the <a href="http://karchive.info.apple.com/article.html?artnum=60285">Apple
+Network Server 500,700: Open Firmware Read Me</a> Technote is a good
+place to start.
+<p>
+There is a set of commands within Open Firmware that deal with this
+NVRAMRC.  These commands are entered from the Open Firmware prompt
+(i.e. the <tt>0 &gt;</tt> prompt).  As with all Open Firmware settings, it
+is best if you reset your machine after changing any settings using the
+<tt>reset-all</tt> command.
+<p>
+
+<table border=1 cellpadding=5>
+<tr><td valign=top><tt>nvedit</tt></td>
+<td>start the editor with the current nvramrc contents.  If
+there is still a file in the temporary buffer, it resumes editing
+that file.  Otherwise, it copies the NVRAMRC contents into the temporary
+buffer and starts editing it. </td></tr>
+
+<tr><td valign=top><tt>nvstore</tt></td>
+<td>stores the temporary nvram buffer into NVRAMRC and discards
+the contents of the temporary buffer</td></tr>
+
+<tr><td valign=top><tt>nvquit</tt></td>
+<td>discards the contents of the temporary nvramrc buffer
+without writing to NVRAMRC</td></tr>
+
+<tr><td valign=top><tt>nvrun</tt></td>
+<td>executes the contents of the temporary nvram buffer</td></tr>
+
+<tr><td valign=top nowrap><tt>nvalias
+&lt;alias&gt; &lt;device-path-name&gt;</tt></td>
+<td>defines an alias to the specified device (you must use the full path, 
+not other devaliases), for example:<br>
+  <tt>nvalias bsd-cd /bandit/gc/mesh/sd@3:0,\OFWBOOT.XCF</tt><br>
+will let you type `<tt>boot bsd-cd</tt>' and it will load
+<tt>ofwboot.xcf</tt> from the CD-ROM drive in a PowerMacintosh
+7300</td></tr>
+
+<tr><td valign=top><tt>nvunalias &lt;alias&gt;</tt></td>
+<td>removes the device alias from the NVRAMRC</td></tr>
+
+<tr><td valign=top><tt>setenv use-nvramrc? &lt;value&gt;</tt></td>
+<td>where &lt;value&gt; is either <tt>true</tt> or <tt>false</tt>.  This
+environment variable determines whether or not the contents of the NVRAM
+are executed each time the machine is reset or rebooted</td></tr>
+
+</table>
+<p>
+<hr>
+<p>
+<i>Note: some Open Firmware 1.0.5 systems do not have enough NVRAM storage
+for the System Disk patches in addition to a <tt>nvalias</tt> 
+setting.  You should probably keep the System Disk patches instead of the
+<tt>nvalias</tt></i>.
+
 <p>
 
 As specified in the Open Firmware spec, there is an editor built into all
-OF implementations.  This page describes how to use it.  You may notice
+Open Firmware implementations.  These are the commands to use the
+editor.  You may notice
 that some of the commands are very similar to emacs.  We use <tt>C-x</tt>
 to represent holding down the control key and the <tt>x</tt> key.
 <p>
 
-<table>
-<tr><td><tt>nvedit</tt></td>
-<td>start the editor with the current nvramrc contents</td></tr>
-
+<table border=1 cellpadding=5>
 <tr><td><tt>C-l</tt></td>
 <td>refreshes the display</td></tr>
 
@@ -46,24 +102,11 @@ to represent holding down the control key and the <tt>x</tt> key.
 <tr><td><tt>C-b</tt></td>
 <td>moves back one character</td></tr>
 
-<tr><td><tt>C-c</tt></td>
-<td>exit the editor and store edited contents into a nvram buffer<br>
-<i>note: this does <b>not</b> save the changes to nvramrc</i></td></tr>
+<tr><td valign=top><tt>C-c</tt></td>
+<td>exit the editor and store edited contents into a temporary buffer<br>
+<i>note: this does <b>not</b> save the changes to the
+NVRAMRC, you still need to run <tt>nvstore</tt></i></td></tr>
 
-<tr><td><tt>nvstore</tt></td>
-<td>stores the edited nvram buffer into the nvramrc</td></tr>
-
-<tr><td><tt>nvquit</tt></td>
-<td>discards the contents of the edited nvram buffer</td></tr>
-
-<tr><td><tt>nvrun</tt></td>
-<td>executes the contents of the edited nvram buffer</td></tr>
-
-<tr><td><tt>nvalias</tt></td>
-<td>adds device aliases to the nvramrc</td></tr>
-
-<tr><td><tt>nvrun</tt></td>
-<td>removes device aliases from the nvramrc</td></tr>
 </table>
 <p>
 
@@ -83,19 +126,21 @@ key? until
 ;</pre>
 
 Then you need to run <tt>nvstore</tt>.  Now, you need to specify that your
-boot command is different, so at the OF prompt, typet:<br>
+boot command is different, so at the OF prompt, type:<br>
 
 <tt>0 &gt; <b>setenv boot-command wBoot</b></tt>
 <p>
 
-Alternatively, you can just patch the boot-command for OF 2 and higher
-systems, as such:<br>
+Alternatively, you can just patch the boot-command:<br>
 
-<tt>0 &gt; <b>boot-command begin ['] boot catch 1000 ms cr again</b></tt>
+<tt>0 &gt; <b>boot-command begin ['] boot catch 999 ms cr again</b></tt>
+<p>
+There are reports that this single-line alternative doesn't work on some
+early Open Firmware 1.0.5 models.
 <p>
 
 <hr>
-<a href="">Up to <em>NetBSD/macppc Port Page</em></a>
+<a href="./">Up to <em>NetBSD/macppc Port Page</em></a>
 <hr>
 
 <table width="100%"><tr><td>
@@ -124,7 +169,7 @@ systems, as such:<br>
 <address>
   <small>
   www@NetBSD.ORG<br>
-  $NetBSD: nvedit.html,v 1.2 2000/08/27 06:12:33 mbw Exp $<br>
+  $NetBSD: nvedit.html,v 1.7 2001/08/15 19:02:17 dent Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>

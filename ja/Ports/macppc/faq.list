@@ -11,23 +11,48 @@
 
 <h1>NetBSD/macppc Frequently Asked Questions</h1>
 
-Here are some frequently asked questions about NetBSD/macppc.
+Here are some frequently asked questions (and answers) about
+NetBSD/macppc.
 <p>
 
 This FAQ is very much a work in progress. If you have additional
 information, questions, or answers, send mail to <a
 href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a>.
-<p>
-
-See also the following related FAQ's:
-<ul>
-    <li><a href="../../Documentation/elf.html">The NetBSD ELF FAQ</a>.
-    <li><a href="../../Documentation/wscons/">The wscons
-	FAQ</a>, for NetBSD's platform-independent workstation console
-	driver.
-</ul>
 
 <LIST>
+
+<h2>See also the following related information:</h2>
+<ul>
+    <li><a href="SystemDisk-tutorial/">NetBSD/macppc System Disk
+        Tutorial</a>
+    <li><a href="models.html">NetBSD/macppc Model Support Page</a>
+    <li><a href="nvedit.html">NetBSD/macppc nvedit HOW-TO</a>, for
+        info on how to edit the contents of the NVRAMRC
+    <li><a href="partitioning.html">NetBSD/macppc Partitioning HOW-TO</a>
+    <li><a href="x11.html">NetBSD/macppc X11 FAQ</a>
+    <li><a href="../../Documentation/elf.html">NetBSD ELF FAQ</a>
+    <li><a href="../../Documentation/wscons/">wscons
+	FAQ</a>, for NetBSD's platform-independent workstation console
+	driver
+</ul>
+<p>
+
+<h2>Additional information is also available:</h2>
+<ul>
+<li><a
+href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.5.2/macppc/INSTALL.html">
+    NetBSD 1.5.2 install notes</a> - supported hardware and how to install.
+<li><a href="../../MailingLists/#port-macppc"> port-macppc mail list</a>
+    - if you have any additional questions please subscribe.
+<li><a
+href="../../Documentation/network/netboot/intro.macppc.html">Netbooting
+    NetBSD/macppc</a>.
+<li><a href="../../Documentation/">General NetBSD Documentation</a>
+    - for questions not specific to NetBSD/macppc.
+</ul>
+<p>
+
+
 
 <SECTION>General Questions
 
@@ -101,6 +126,9 @@ or 2.0.x machine. If you get past this point, then your kernel has started
 to load.  Now, if you have problems, it is most likely no longer an Open
 Firmware problem, but a NetBSD problem. 
 
+<p>If you have a PowerBook (FireWire) or a PowerBook G4 (Titanium) and you 
+experience a hang here, then read about the <a href="#pb418">4.1.8 BootROM</a>.
+
 <p>If your screen turns black, and you have a laptop, the LCD brightness
 may have been turned down all the way.  See 
 <a href="#black-lcd">below</a>. 
@@ -136,6 +164,11 @@ OK, now you've started in "multi-user mode" and the boot process is complete.
 If your keyboard doesn't work, see the FAQ entries for 
 <a href="#usb-keyboard-problems">USB keyboards</a> and for 
 <a href="#powerbook">recent laptops</a>.
+
+<p>If you're running sysinst and it says
+<tt>I can not find any hard disk for use by NetBSD</tt>
+then you should see the FAQ entry on <a href="#nodisk">Where's my 
+disk?</a>
 
 
 <ENTRY>disk-sharing How do I share files between the OSes on my machine?
@@ -185,18 +218,208 @@ to always mount this filesystem.  There's probably a way to do this with MacOS
 X, but I don't know how yet.
 </ol>
 
+<ENTRY>partitions I'm confused by all these contradicting partition notations
+And you have a right to be.  We get confused too.
+
+<p>There are <i>three</i> partition identification schemes you'll run across
+when using NetBSD/macppc.  To make things more confusing, the order of
+the partitions gets shuffled around, and some have more than others.  Most of
+the users with Open Firmware 1.0.5, 1.1.22, or 2.0.x models need not be
+concerned with these issues, since NetBSD insists on writing its own
+partition map over the contents of your drive, and that's the only partitioning
+scheme you will encounter.  This section is primarily to describe the
+situation on Open Firmware 3 systems.
+
+<p>See also the <a href="partitioning.html">NetBSD/macppc Partitioning HOW-TO</a>
+
+<p><ol>
+<li><b>MacOS-visible partitions (by partition name in Finder):</b><br>
+While you may have created a bunch of partitions in Drive Setup, only
+those partitions visible to MacOS will show up in the Finder.
+
+<p>The only partitions visible to MacOS 9 and earlier are those formatted in
+HFS, HFS+, or MS-DOS formats.  The only partitions visible to MacOS X and later
+are those formatted in HFS, HFS+, and UFS (<i>not</i> NetBSD's 4.2BSD FFS).
+The user can manually mount MS-DOS format partitions as well.
+
+<li><b>Open Firmware's scheme (0 thru max partition number, as seen by
+  Open Firmware, also visible using pdisk):</b><br>
+The order of partitions is directly related to the order you selected 
+in Drive Setup or the NetBSD partitioning tools.
+<p><table border=1 cellpadding=5>
+ <tr><td>0</td>
+ <td>a special "partition" reserved for a first stage bootloader</td></tr>
+ <tr><td>1 thru ~8</td>
+ <td>often reserved for MacOS drivers if the drive is formatted with a MacOS
+  tool, not visible from MacOS</td></tr>
+ <tr><td>~9 thru ~15</td>
+ <td>user created partitions, placed in order of their physical location on
+  disk (i.e. HFS, A/UX, and UFS partitions are in whatever order the user
+  created them in).</td></tr>
+ </table>
+
+<p><li><b>NetBSD-visible partitions (letters a thru h, as seen by 
+ <tt>disklabel</tt>):</b><br>
+NetBSD shuffles the partitions around such that things work out better for 
+itself.  The <tt>fstype</tt> reported by <tt>disklabel(8)</tt> is set
+by the Apple Partition Map flags, and does not depend on the actual
+type of filesystem on that partition (be it NetBSD FFS, Apple HFS, or MS-DOS).
+In particular, MS-DOS formatted partitions show up as <tt>HFS</tt> partitions.
+
+<p><table border=1 cellpadding=5>
+ <tr><td>a</td>
+ <td>Your "A/UX Root" partition, regardless of its order on the disk</td></tr>
+ <tr><td>b</td>
+ <td>Your "A/UX Swap" partition, regardless of its order on the disk</td></tr>
+ <tr><td>c</td>
+ <td>This is the entire disk (first sector to last sector)</td></tr>
+ <tr><td>d-f</td>
+ <td>First few non-A/UX partitions (usually the user HFS(+) partitions)</td></tr>
+ <tr><td>g</td>
+ <td>Your "A/UX User" partition (if present), regardless of its order on the disk</td></tr>
+ <tr><td>h</td>
+ <td>Additional non-A/UX partitions (usually user HFS(+) partitions)</td></tr>
+</table>
+</ol>
+
+<p>So, for example the following is what Drive Setup created on my PowerBook 
+(FireWire):
+<p><table border=1 cellpadding=5>
+<tr><td><b>MacOS</b></td><td><b>OF</b></td><td><b>NetBSD</b></td> 
+  <td><b>Comment</b></td><td><b>Apple Partition Map type</b></td>
+  <td><b>disklabel fstype</b></td></tr>
+
+<tr><td><br></td>        <td>0</td>  <td><br></td>    
+  <td>bootloader</td>               <td><br></td>
+  <td><br></td></tr>
+
+<tr><td><br></td>        <td>1</td>  <td><br></td>    
+  <td>MacOS driver</td>             <td>Apple_partition_map Apple</td>
+  <td>unknown</td></tr>
+
+<tr><td><br></td>        <td>2</td>  <td><br></td>    
+  <td>MacOS driver</td>             <td>Apple_Driver43*Macintosh</td>
+  <td>unknown</td></tr>
+
+<tr><td><br></td>        <td>3</td>  <td><br></td>    
+  <td>MacOS driver</td>             <td>Apple_Driver43*Macintosh</td>
+  <td>unknown</td></tr>
+
+<tr><td><br></td>        <td>4</td>  <td><br></td>    
+  <td>MacOS driver</td>             <td>Apple_Driver_ATA*Macintosh</td>
+  <td>unknown</td></tr>
+
+<tr><td><br></td>        <td>5</td>  <td><br></td>    
+  <td>MacOS driver</td>             <td>Apple_Driver_ATA*Macintosh</td>
+  <td>unknown</td></tr>
+
+<tr><td><br></td>        <td>6</td>  <td><br></td>    
+  <td>MacOS driver</td>             <td>Apple_FWDriver Macintosh</td>
+  <td>unknown</td></tr>
+
+<tr><td><br></td>        <td>7</td>  <td><br></td>    
+  <td>MacOS driver</td>             <td>Apple_Driver_IOKit Macintosh</td>
+  <td>unknown</td></tr>
+
+<tr><td><br></td>        <td>8</td>  <td><br></td>    
+  <td>MacOS driver</td>             <td>Apple_Patches Patch Partition</td>
+  <td>unknown</td></tr>
+
+<tr><td>Untitled</td>   <td>9</td>  <td>d</td>    
+  <td>MacOS 9 boot partition</td>   <td>Apple_HFS untitled</td>
+  <td>HFS</td></tr>
+
+<tr><td>Untitled 2</td> <td>10</td> <td>e</td>    
+  <td>MacOS X boot partition</td>   <td>Apple_HFS untitled 2</td>
+  <td>HFS</td></tr>
+
+<tr><td>Untitled 3</td> <td>11</td> <td>f</td>    
+  <td>MS-DOS shared partition</td>  <td>Apple_HFS untitled 3</td>
+  <td>HFS</td></tr>
+
+<tr><td><br></td>        <td>12</td> <td>a</td>      
+  <td>NetBSD boot partition</td>    <td>Apple_UNIX_SVR2 A/UX Root</td>
+  <td>4.2BSD</td></tr>
+
+<tr><td><br></td>        <td>13</td> <td>b</td>      
+  <td>NetBSD swap</td>              <td>Apple_UNIX_SVR2 Swap</td>
+  <td>swap</td></tr>
+
+<tr><td><br></td>        <td>14</td> <td>g</td>      
+  <td>unused disk space</td>        <td>Apple_Free Extra</td>
+  <td>unknown</td></tr>
+
+<tr><td><br></td>        <td><br></td> <td>c</td>      
+  <td>NetBSD whole disk</td>         <td><br></td>
+  <td>unused</td></tr>
+</table>
+
+<p>After installation, one of the HFS partitions, "Untitled" (which is
+partition 9 to Open Firmware, and partition d to NetBSD) has 
+<tt>ofwboot.xcf</tt>, and one of the A/UX partitions (which is partition 12
+to Open Firmware, and partition a to NetBSD) has my NetBSD kernel, so I use 
+the following command to boot:
+<pre>boot hd:9,ofwboot.xcf hd:12</pre>
+
+<ENTRY>scroll-speed Why does the screen scroll text so slowly?
+The text console code is not optimized in the GENERIC kernel.  There is
+accelerated text console code in -current, if you build a new
+kernel.  This fix is <em>not</em> in NetBSD 1.5.x.
+<p>
+You will need to build a new kernel.  Add the following line to your 
+<a href="../../Documentation/kernel/#how_to_build_a_kernel">
+kernel configuration</a>:
+<pre>options	OFB_ENABLE_CACHE</pre>
+<p>
+For information on X11 servers, see the <a href="x11.html">NetBSD/macppc      
+X11 FAQ</a>.
+
+
 <ENTRY>usb-mouse-bug My USB mouse is not recognized.
 
 Try plugging it into the back of the Mac instead of into the keyboard.
 
 
-<ENTRY>mouse-buttons How can I emulate a 3-button mouse with a 1-button mouse in X?
-
-At the moment, you can't.  Try finding a cheap 3 button mouse, most ADB and 
-USB mice are supported.
-
-
 <ENTRY>usb-keyboard-problems USB keyboard problems
+There are two different types of USB keyboard problems.  One set of
+problems appeared after NetBSD 1.4.3 was released, and applies only to
+some iMac (Bondi Blue) and some PowerMacintosh G3 (Blue and White) machines.  
+This problem has not been fixed yet.
+<p>
+The other problem occurred on all models with USB keyboards, but was fixed
+prior to the release of NetBSD 1.5.
+
+<p><H3>iMac (Bondi Blue) and PowerMacintosh G3 (Blue and
+White) problems:</h3>
+See Bob Nestor's 
+<a href="http://mail-index.netbsd.org/port-macppc/2001/06/11/0009.html">post</a>
+to the mailing list describing the problem and a
+workaround for the PowerMacintosh G3 (Blue and White).  There is no
+workaround for the iMac (Bondi Blue).  Also, see the problem report, 
+<a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=12894">port-macppc/12894</a>
+<p>
+Briefly, what he recommends is:
+<p>
+<ol>
+  <li>Unplug the USB keyboard and plug in an ADB keyboard and mouse
+    <p>
+  <li>Boot NetBSD with the ADB keyboard
+    <p>
+  <li>Enter root, swap and filesystem responses on the ADB keyboard
+    <p>
+  <li>When the system gets to the shell prompt (or login if you went 
+    multi-user), unplug the ADB and plug in the USB keyboard
+</ol>
+<p>
+
+The USB will be usable at this point and you can use the
+system.  You'll notice that the ADB is dead even before you unplugged it.  
+Also you <b>MUST</b> boot without the USB installed or this won't work.
+<p>
+Alternatively, NetBSD 1.4.3 works fine on these two models and does not
+have this USB keyboard problem.
+
+<p><h3>Repeating keypress problems prior to NetBSD 1.5:</h3>
 There is a problem in some kernels that causes the first keypress
 from a USB keyboard to be repeated over and over again. A symptom
 of this would be the install system continually asking "<tt>(I)nstall,
@@ -224,8 +447,19 @@ You can avoid this by either of:
     configuration</a>
 </ol>
 
+<ENTRY>wdc-lost-interrupt <tt>wdc0:0:1: lost interrupt</tt>
+This problem is present in NetBSD 1.5.2 on newer machines that support 
+ATA4 drives.  Unfortunately, there is presently no easy workaround.  Post 
+to <a href="port-macppc@netbsd.org">port-macppc@netbsd.org</a> for 
+assistance.
+
+<p>This has been reported on the iBook (Dual USB) and the iMac (Summer 
+2000) which has been updated to BootROM 4.1.9.
+
+<p>The problem is not present in NetBSD-current.
+
 <ENTRY>pciide-lost-interrupt <tt>pciide0:0:0: lost interrupt</tt>
-This problem is fixed in NetBSD-current and NetBSD 1.5.1.  
+This problem is fixed in NetBSD 1.5.1 and later.
 If you still have this problem after upgrading, post to 
 <a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>.
 
@@ -238,7 +472,7 @@ how to deal with this situation and you get a lot of "lost
 interrupt" messages.
 <p>
 What this means is that if you use Open Firmware to load the bootloader
-(i.e. <tt>ofwboot.elf</tt>) or the kernel from your hard drive, NetBSD
+(i.e. <tt>ofwboot.xcf</tt>) or the kernel from your hard drive, NetBSD
 cannot use that drive.
 <p>
 A workaround is to place the kernel on another bootable
@@ -301,42 +535,40 @@ devices to <tt>ttya</tt> with
 <a href="SystemDisk-tutorial/">System Disk</a> and connecting a serial
 cable to another machine running a terminal emulator.
 
-<ENTRY>changing-resolution How do I change the resolution or the number of colors?
-You can't do this from within NetBSD.  These settings need to be changed
-in Open Firmware.  Also, NetBSD/macppc does not yet support color depths
-of more than 8 bpp.
-<p>
-Older machines (7300 - 8600) cannot change resolutions from within
-OF.  They are fixed to 640x480 at 67 Hz (after applying the <a
-href="SystemDisk-tutorial/of105patch.html">patch</a>).  Without this
-patch, the frequency is undetermined (usually 60 Hz or 120 Hz, but could
-be just about anything).
-<p>
-<!-- On newer machines OF &gt;= 2.0, you can type (at the OF prompt):
-(pre)0 &gt; (b)dev screen(/b)
-0 &gt; (b)show-modes(/b)
-0 &gt; (b)mode#(/b)
-1 &gt; (b).(/b)(/pre)
-(p)
-This will list the resolutions available on your system.  If you set your
-system to one of these resolutions from within MacOS, then Open FIrmware
-should keep that setting. -->
-
-On newer machines, you need to set the resolution you want from within
-MacOS.  Open Firmware should then keep that setting.
-<p>
-Chris Tribo reports that his XClaimVR 64 card ignores the MacOS monitor
-setting and always comes up at the same resolution.
 
 <ENTRY>power-off Woah, my machine just powered off!
 
 Well, that's probably because you're using a recent laptop (iBook,
-PowerBook (FireWire), or PowerBook G4 (Titanium)) with an unsupported
-keyboard patch and pressed one of the weird keys (like brightness or page
-up). 
+PowerBook (FireWire), or PowerBook G4 (Titanium)).
+<p>
+The page up key sequence (<tt>FN-uparrow</tt>) will panic a NetBSD 1.5.x
+kernel.  This is fixed in NetBSD-current.  If you're prone to pressing
+page up, you should compile a new kernel.
+<p>
+The "brightness" keys (F1 and F2) will power off your machine and zap your 
+clock.  Don't press them, since we don't have a workaround yet.
 
-<p>No solution, just don't press those keys until a better keyboard patch
-is made. 
+<ENTRY>power-manager My PowerBook or iBook won't power on, charge the battery, or recognize the charger
+Your power manager memory might be corrupted.
+<p>
+See <a href="http://til.info.apple.com/techinfo.nsf/artnum/n14449">TIL 14449</a>
+for info on how to reset it.
+
+<ENTRY>pb418 PowerBook (FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8
+The two models listed above will fail to boot NetBSD 1.5.x and earlier if 
+they have have <a href="#ofw-version">BootROM</a> version 4.1.8 or later.
+<p>
+Unfortunately, you will either need to build a new kernel from -current to boot
+NetBSD on these models, or send your machine back to Apple to be flashed to an
+earlier BootROM version.
+
+<ENTRY>timedrift My PowerComputing clone's clock drifts too much.
+Yeah, it appears that the <tt>timebase</tt> in Open Firmware doesn't match
+the hardware.  You need to correct it.
+
+<p>See the 
+<a href="http://mail-index.netbsd.org/port-macppc/2001/08/03/0003.html">post</a>
+by Adam Lebsack.
 
 <!-- ======================================== -->
 <SECTION>Supported Hardware
@@ -388,7 +620,7 @@ essentially becomes a new machine, in which case it may be supported.)
 These machines have PCI and Open Firmware, but use the PowerPC 601
 processor, which is not currently supported. However, the 7500's
 processor is upgradable, so if you buy a 603/604/G3/G4 upgrade for it,
-NetBSD will work.
+NetBSD will work.  See <a href="#cpu-upgrade">below</a>.
 
 <p> In addition, some work is in progress on a rs6000 port, and it
 will bring 601 support to NetBSD.  Once this is done, it will be a
@@ -401,23 +633,52 @@ models list</a>.
 
 <p>The PowerBook 2400 and the older G3 PowerBooks are known
 to be supported. The PowerBook 1400, 2300, and 5300 are not supported,
-because they are not PCI-based. Other models may work out of the box,
-or may need a small additional amount of driver work before they work.
+because they do not have Open Firmware. Most of the later models work fine.
 
-<p>Some of the newer models (iBook, PowerBook (FireWire), and PowerBook G4 
-(Titanium)) require a special patch to use their
-keyboards.  There is a recent snapshot of NetBSD with these patches on the
-ftp mirrors.  It is in the <tt>arch/macppc/snapshot</tt> directory. 
+<p>Some of the most recent models (iBook. iBook SE, iBook (Dual USB), PowerBook 
+(FireWire), and PowerBook G4 (Titanium)) have keyboards that were first 
+supported in NetBSD 1.5.1.  Versions of NetBSD prior to this required a 
+kernel patch.
 
 <p> Note that power management is not yet supported, so it is not
 possible to suspend and resume a PowerBook while running NetBSD.
+
+<p>See also <a href="#power-off">Woah, my machine just powered off!</a>,
+<a href="#power-manager">My PowerBook or iBook won't power on, charge the 
+battery, or recognize the charger</a>, and <a href="#pb418">PowerBook 
+(FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8</a>.
+
+<ENTRY>cpu-upgrade Does NetBSD/macppc support CPU upgrades??
+Sure!
+<p>
+Many people upgrade their slow 601, 603, 604, or G3 CPUs with a faster 604, G3, 
+or G4 CPU.  Actually, it's currently necessary if you have a PowerMacintosh 
+7500 with the original PowerPC 601 chip.
+<p>
+People have reported success with upgrading the CPU in 
+original PCI PowerMacintosh systems (7300 - 9600), supported PowerBooks, and
+earlier G3 systems.  The common manufacturers are Newer Technology, 
+Powerlogix, Sonnet, and XLR8.  If the CPU works in MacOS, it should work in
+NetBSD.  There is apparently no need for the MacOS "virtual firmware" type
+of patch -- NetBSD initializes the CPU just fine.
+<p>
+In rare circumstances, you may need to compile a special kernel to enable the
+L2 cache on G3 or G4 CPUs in older systems.  Usually this is not necessary, and
+it "just works".  When it doesn't, you'll see a message like the following:
+<pre>cpu0 at mainbus0: L2 cache not enabled</pre> 
+
+<p>If, when you boot, there is a message like this, 
+then you should follow the directions in this
+<a href="http://mail-index.netbsd.org/port-macppc/2001/01/05/0000.html">post</a>
+and this
+<a href="http://mail-index.netbsd.org/port-macppc/2001/01/05/0007.html">post</a>.
 
 <ENTRYLINK>models.html NetBSD/macppc supported models list
 
 <ENTRY>peripherals What peripherals does NetBSD/macppc support?
 (see the 
-<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.5/macppc/INSTALL.html">
-NetBSD/macppc 1.5 Install Notes</a> for full list)
+<a href="ftp://ftp.NetBSD.ORG/pub/NetBSD/NetBSD-1.5.2/macppc/INSTALL.html">
+NetBSD/macppc 1.5.2 Install Notes</a> for full list)
 
 <p>
 <ul>
@@ -426,6 +687,8 @@ NetBSD/macppc 1.5 Install Notes</a> for full list)
     <li> On-board 79C950 (MACE) ethernet
     <li> On-board bmac ethernet, 10Base-T only
     <li> On-board gmac ethernet
+    <li> On-board AirPort<br>
+        <i>See <a href="#airport">below</a></i>
     <li> Tulip-compatible, 3Com, and NE2000-compatible PCI cards (de,
 	ep, and ne drivers)
   </ul>
@@ -441,15 +704,15 @@ NetBSD/macppc 1.5 Install Notes</a> for full list)
 	<i>See <a href="#boot-pci">below</a></i>
     <li> BusLogic PCI SCSI (not quite supported in mainline yet)
 
-    <li> On-board IDE hard drives and CD-ROM drives<br>
-	<i>See <a href="#pciide-lost-interrupt">above</a></i>
+    <li> On-board IDE hard drives and CD-ROM drives
 
     <li> USB mass-storage devices (such as Zip drives)
   </ul>
 
   <li> <strong>Serial</strong>
   <ul>
-    <li> On-board RS-422 serial (modem/printer) port
+    <li> On-board RS-422 serial (modem/printer) port<br>
+	<i>See <a href="#badserial">below</a></i>
     <li> On-board USB controller (iMac and Blue G3s)
     <li> USB-based serial and parallel ports
   </ul>
@@ -494,10 +757,40 @@ NetBSD/macppc does not yet support
 <ul>
   <li> Floppy drives (built-in or USB), other than for booting
   <li> Power management
-  <li> Airport
   <li> full wscons capabilities such as virtual terminals and color text
   <li> Use of more than one processor (the extra CPUs sit idle)
 </ul>
+
+<ENTRY>badserial I'm having troubles with my serial port!
+That's because the built-in serial ports don't work very well.  Actually, 
+they're really only good enough for console use (and even then, they're
+sometimes flaky).
+<p>
+Until someone fixes this, don't assume you can run a modem, ppp, sync your 
+palm, or whatever.  If you have any experience with serial drivers and a 
+willingness to help, please contact 
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a>.
+
+<ENTRY>pppmacppc How do I get ppp working?
+Ouch.  Unfortunately, since the built-in serial ports don't work, there
+are a few bugs in the ppp drivers that haven't been quashed.
+
+<p>See Donald Lee's 
+<a href="http://mail-index.netbsd.org/port-macppc/2001/07/26/0023.html">post</a>
+on how he got his Cyclades PCI card to run ppp.
+
+<ENTRY>airport Is AirPort or AirMac supported?
+Yes, but not in NetBSD 1.5.x or earlier.  You will need to 
+<a href="../../Documentation/kernel/#how_to_build_a_kernel">build a
+kernel</a> from -current sources, with the <tt>wi</tt> driver.
+<p>
+Once you have rebooted with your new kernel, you can follow the instructions
+on the <a href="../../Documentation/network/wavelan.html">Using
+WaveLAN IEEE under NetBSD</a> page.
+<p>
+If your AirPort base station was set up under MacOS and you use encryption, 
+you may need to run the <tt>AirPort Admin Utility</tt>, configure your 
+base station, and find the equivalent network password.
 
 
 <!-- ======================================== -->
@@ -514,7 +807,9 @@ language.
 
 You can find more about Open Firmware at the <a
 href="http://playground.sun.com/1275/home.html">Open Firmware Working
-Group home page</a>.
+Group home page</a> or at the
+<a href="http://bananajr6000.apple.com">Apple Computer Open Firmware Home 
+Page</a>.
 
 
 <ENTRY>ofw-version Which version of Open Firmware is my machine?
@@ -532,11 +827,17 @@ supports-bootinfo
  ok</pre>
 <p>
 Alternatively, any machine which did not ship with a G3 or G4 processor is
-either OF 1.0.5 or 2.0.x.  All "translucent" models all have OF 3.
+either OF 1.0.5 or 2.0.x.  All desktop models without an internal floppy
+drive have OF 3.  All laptop models without built-in SCSI have OF 3.
 
-<p><i>Note:</i> When you apply a firmware patch from Apple onto an Open 
-Firmware 3 machine, you are <i>not</i> changing the version of Open 
-Firmware, you are upgrading your <b>BootROM</b> version.  This BootROM 
+<p><i>Note:</i> Open Firmware 3 systems have a rewritable "firmware", also
+called the <em>BootROM</em>. When you use an Apple firmware updater, it
+updates the BootROM. This will <b>not</b> change the version of Open
+Firmware in your machine - it will still be Open Firmware 3. The BootROM
+is what is first executed when you power on or reset your system. The
+BootROM then loads Open Firmware, which boots your operating system.
+<p>
+This BootROM 
 version can be found using Apple System Profiler in MacOS.  Often, it is 
 listed on the first line of your screen when you first boot into Open 
 Firmware.  For example, my PowerBook (FireWire) prints:
@@ -565,12 +866,18 @@ distinguish Open Firmware version from BootROM version.
 
 <i>Warning about FirmWare Update 4.1.7 and 4.1.8</i><br>
     Apple recently released a new version of firmware for recent
-    models.  There are two reports of PowerBook G4 machines being
-    unable to boot NetBSD after this upgrade.  Also, many people
+    models.  Many people
     are having problems with their third-party RAM.  See this
     <a href="http://www.macfixit.com/archives/april.01.a.shtml#firm-04-07">
     discussion on www.macfixit.com</a> before deciding to upgrade.
+    PowerBook (FireWire) and PowerBook G4 (Titanium) owners should also 
+    see <a href="#pb418">above</a>.
     <p>
+
+<i>Warning about FirmWare Update 4.1.9 on iMac (Summer 2000)</i><br>
+There are reports that this combination with NetBSD 1.5.2 will prevent the 
+CD-ROM and the hard drive from operating together.  See
+<a href="#wdc-lost-interrupt">above</a>.<p>
 
 If you have an older model mac (i.e. one that does not have a flash
 upgradable firmware), you can still patch your system.  Open Firmware
@@ -647,6 +954,11 @@ that everyone else uses.) Use kermit or some other terminal program.
 immediately after you hear the startup sound. You should see the
 prompt `<tt>0&nbsp;&gt;</tt>' on the (serial) console within a few
 seconds.
+
+<p>Alternatively, there are some reports that you can send a serial
+<tt>BREAK</tt> to the modem port at the correct time during the boot
+sequence, and that will enter Open Firmware.  Read the manual for your
+terminal emulator to figure out how to send a <tt>BREAK</tt>.
 
 <p>To switch the machine to using the monitor and keyboard instead of the
 serial console, type:
@@ -732,7 +1044,9 @@ known to work on some models).  Otherwise, if you are not
 using a serial console, there might be a conflict between the screen
 driver and Open Firmware which prevents OF from loading
 ofwboot.xcf.  There are several models that cannot be booted while
-using the screen and keyboard.  The
+using the screen and keyboard.  In particular, if your system uses the 
+"valkyrie" style video (type <tt>'devalias screen'</tt> to see), you 
+must boot from a serial console.  The
 only known workaround is to use a serial console (i.e. set your input and
 output devices to ttya or ttyb).  You can use the System
 Disk utility (see the <a href="SystemDisk-tutorial/">tutorial</a>)
@@ -909,15 +1223,15 @@ commands you've typed in, as well as emacs/tcsh-style control keys for editing
 
 <p> For more details on basic Open Firmware commands, see
 
-<a
-href="http://developer.apple.com/technotes/tn/tn1061.html">"Technote
-1061 - Fundamentals of Open Firmware, Part I: The User Interface"</a>,
-<a
-href="http://developer.apple.com/technotes/tn/tn1062.html">"Technote
-1062 - Fundamentals of Open Firmware, Part II: The Device Tree"</a>,
-and <a 
+<a href="http://bananajr6000.apple.com/">Apple Computer
+Open Firmware Home Page</a> and <a 
 href="http://developer.apple.com/technotes/tn/tn2001.html">"Technote 2001
 - Running files from a hard drive in Open Firmware</a>.
+<p>
+For more details on programming Open Firmware in the FORTH language, see
+<a href="http://karchive.info.apple.com/article.html?artnum=60285">Apple
+Network Server 500,700: Open Firmware Read Me</a> (it mostly applies
+to PowerMacintosh systems as well).
 
 
 <SECTION>Booting
@@ -968,25 +1282,17 @@ using <tt>bootxx</tt></td></tr>
 <tr><td><tt>ofwboot.xcf</tt></td>
 <td>yes</td>
 <td>yes</td>
-<td>no</td>
+<td>yes</td>
 <td>necessary bootloader (loaded from filesystem OF understands,
 <tt>bootxx</tt>, or over ethernet) that understands NetBSD filesystem and
 disklabel and can load the ELF kernel (or a gzip'ed kernel)</td></tr>
-
-<tr><td><tt>ofwboot.elf</tt></td>
-<td>no</td>
-<td>no</td>
-<td>yes (optional)</td>
-<td>optional bootloader (loaded from filesystem OF understands or
-over ethernet) that understands NetBSD filesystem and disklabel and
-can load the ELF kernel (or a gzip'ed kernel)</td></tr>
 
 <tr><td><tt>netbsd</tt></td>
 <td>yes</td>
 <td>yes</td>
 <td>yes</td>
 <td>the kernel, needed to run NetBSD.  Loaded by
-<tt>ofwboot.xcf</tt> or <tt>ofwboot.elf</tt>.  On OF 3 machines, OF can
+<tt>ofwboot.xcf</tt>.  On OF 3 machines, OF can
 load the kernel directly from any filesystem it understands or over
 ethernet</td></tr>
 </table>
@@ -1035,8 +1341,8 @@ floppy image.</td></tr>
 <td>yes</td>
 <td>yes</td>
 <td>yes</td>
-<td>Note, however, that the bootloaders <tt>ofwboot.xcf</tt> and
-<tt>ofwboot.elf</tt> do not understand MS-DOS filesystems and can't load a
+<td>Note, however, that the bootloader <tt>ofwboot.xcf</tt>
+does not understand MS-DOS filesystems and can't load a
 kernel on a MS-DOS filesystem.</td></tr>
 
 <tr><td>HFS and HFS+</td>
@@ -1188,21 +1494,21 @@ get OF to load this ELF program, you need to do one of the following:
 
 <ul>
 <li>Follow the <a href="../../Documentation/network/netboot/">Diskless
-HOW-TO</a> and load <tt>ofwboot.elf</tt> or <tt>netbsd</tt> over the
+HOW-TO</a> and load <tt>ofwboot.xcf</tt> or <tt>netbsd</tt> over the
 network<br>
 <tt>boot&nbsp;enet:0</tt>
 <p>
 
-<li>Copy <tt>ofwboot.elf</tt> or <tt>netbsd</tt> to the top level of a
+<li>Copy <tt>ofwboot.xcf</tt> or <tt>netbsd</tt> to the top level of a
 MacOS formatted
 drive on a HFS or HFS+ format partition (make sure you transfer it in
 binary mode)<br>
-<tt>boot hd:,ofwboot.elf</tt>
+<tt>boot hd:,ofwboot.xcf</tt>
 <p>
 
-<li>Copy <tt>ofwboot.elf</tt> and <tt>netbsd</tt> to the top level of a
+<li>Copy <tt>ofwboot.xcf</tt> and <tt>netbsd</tt> to the top level of a
 hybrid HFS/ISO 9660 format CD-R<br>
-<tt>boot cdrom:ofwboot.elf</tt>
+<tt>boot cdrom:ofwboot.xcf</tt>
 <p>
 See <a href="#boot-cd">below</a> for more detail.
 </ul>
@@ -1331,14 +1637,28 @@ HOW-TO</a>.
 href="http://www.enchantedlearning.com/tech/netbsd_imac.shtml">iMac-specific
 netbooting information</a>.
 
-<ENTRY>cdr151 Where is the official NetBSD/macppc 1.5.1 CD-R image stored?
-We don't know just yet (May 13, 2001).  Check back once NetBSD 1.5.1 is
-officially released.
+<ENTRY>cdr151 Where is the official NetBSD/macppc 1.5.x CD-R image stored?
+Look for the <a href="../../mirrors/#iso">NetBSD Download Site</a>
+closest to you.
+<p>
+The command to boot an Open Firmware 1.0.5, 2.0.x, or 2.4 system from a SCSI 
+drive is (make sure to capitalize the filenames):
+<pre>boot <i>scsi-int</i>/sd@3:0,\OFWBOOT.XCF NETBSD.MACPPC</pre>
+<p>
+You may need to replace <tt><i>scsi-int</i></tt> with the devalias of your 
+CD-ROM device.
+<p>
+The command to boot an Open Firmware 3 system is (make sure to use lower case
+file names):
+<pre>boot cd:,\ofwboot.xcf netbsd.macppc</pre>
+
+<p>
+<i>Note: The install kernel on this CD will not recognize  the IDE bus in the
+PowerMacintosh G3 (Blue & White) systems.</i>  <a href="#nodisk">See below</a>.
+
 
 <ENTRY>boot-cd How do I set up my own bootable CD-ROM?
-Create an ISO 9660 image with <tt>ofwboot.xcf</tt> and/or
-<tt>ofwboot.elf</tt>
-(depending on which version of Open Firmware your machine is) and a
+Create an ISO 9660 image with <tt>ofwboot.xcf</tt> and a
 <i>gunzip</i>ed kernel.  Be careful with some of the MacOS gunzip
 programs, as they may extract the kernel as an ASCII file.  Place both the
 ofwboot and kernel files are at the top level of the CD
@@ -1358,9 +1678,8 @@ ISO/HFS CD, only pure ISO</i></td></tr>
 <tt>boot ide1/disk@0:0,ofwboot.xcf -a</tt></td>
 <td> for an OF 2.0.X machine without a <tt>cd</tt> devailas</td></tr>
 <tr><td><tt>boot cd:ofwboot.xcf -a</tt></td>
-<td>for an OF 2.0.X or 2.4 machine</td></tr>
+<td>for an OF 2.0.X, 2.4, or 3 machine</td></tr>
 <tr><td><tt>boot cd:netbsd</tt><br>
-<tt>boot cd:ofwboot.elf -a</tt></td>
 <td>for an OF 3.0 machine<br>
 <i>Note: OF 3 can only load from a hybrid HFS/ISO CD</i></td></tr>
 </table>
@@ -1397,6 +1716,51 @@ the brightness on your PowerBook screen to fix this.
 If you don't have a PowerBook, then your system has defaulted to using a
 serial console.  See <a href="#ofw-boot-serial">above</a>.
 
+
+<ENTRY>nodisk Where's my disk? (a.k.a. sysinst says <tt>I can not find any hard disk for use by NetBSD</tt>)
+Well, that's a good question!
+
+<p>The root cause is that NetBSD didn't find your hard drive (or, more 
+insidiously, didn't find your drive controller).  There a variety of reasons
+why this happens.  First determine whether it found your IDE controller 
+(in the boot messages that scroll by, you should see a line with <tt>wdc0</tt>
+(for IDE) or <tt>scsibus0</tt> (for SCSI)).  If not, then you'll just have
+to use a different kernel that supports your drive bus.  Post to
+<a href="mailto:port-macppc@netbsd.org">port-macppc@netbsd.org</a> for help.
+
+<p>Now, eliminate the easy problems (drive plugged in, powered on, and
+has jumpers set correctly).  Check that the drive works under MacOS.
+
+<p>If NetBSD still can't find the disk, then for SCSI disks, check the 
+termination.  Even though MacOS can use it, NetBSD may be pickier about the
+timings on the SCSI bus.
+
+<p>If you have a recent machine which support ATA4, and/or you've 
+installed a recent FirmWare update (late 2001), and you're trying to use 
+NetBSD 1.5.2, you may run into some problems.  See 
+<a href="#wdc-lost-interrupt">above</a>.
+
+<p>If you've got an IDE drive, then you may have a PowerMacintosh
+G3 (Blue and White) or an earlier system.  It wasn't until after the B&amp;W
+system that Apple fully worked out all the kinks with IDE devices.  Many
+people report that they have to put their NetBSD drive on the alternate
+IDE bus, and/or make it master (setting the CD-ROM to be slave).
+
+<p>To make the matters worse, the NetBSD 1.5.1 install kernel image does
+not support the IDE controller in the PowerMacintosh G3 (Blue and White).  The
+real kernel does support it.
+
+<p>Unfortunately, you may need to play around a bit to find the right
+combination that works for all the OSes you use on your system.  Keep in
+mind that any system that does not have Open Firmware 3 cannot boot from
+slave devices (an Open Firmware limitation).
+
+<p>Chris Tribo has posted a good breakdown of the early G3 models and their 
+limitations/identification.  See his 
+<a href="http://mail-index.netbsd.org/port-macppc/2001/07/26/0019.html">post</a>.
+Also see the Apple Knowledgebase 
+<a href="http://kbase.info.apple.com/cgi-bin/WebObjects/kbase.woa/24/wa/query?type=id&amp;val=24342">article</a>
+on this topic (you need to sign in with 'macppc@netbsd.org' and 'macppc').
 
 <ENTRY>dash-a Why does the kernel always prompt me for the root device?
 Various people have reported that they can't get their NetBSD/macppc
@@ -1478,6 +1842,9 @@ binaries such as Netscape Navigator. Please check the Linux compatibility
 for NetBSD/PowerPC
 <a href="http://gizmo.minet.net:8080/emul_linux/">status page</a> for
 more information.
+<p>
+This feature is <i>not</i> included in NetBSD 1.5.x.  You will need to run
+a <tt>-current</tt> kernel or wait for a future release of NetBSD.
 
 
 <ENTRY>macos Can NetBSD/macppc run MacOS binaries?
@@ -1512,6 +1879,15 @@ Often, when you read Mac documentation, you'll see the instruction to hold
 down "C-O-p-r" or some other variation.  This means you should hold down
 the command and option keys in addition to the letters "p" and "r". 
 
+<ENTRY>adb-short How do I boot my system without an ADB keyboard?
+If you're using a serial console, don't have an ADB keyboard, and don't
+want to reach behind (or wherever) your real power switch is located, you
+can create a hardware hack that appears to the computer to be the
+"power" key on an ADB keyboard.  All macs have a real power switch (be it
+soft or hard power), it may just be a bit hidden.  This will void your
+warrantee, don't hold us liable, etc.  See Chris Tribo's 
+<a href="http://mail-index.netbsd.org/port-macppc/2001/06/09/0002.html">post</a>
+to the mailing list on this topic.
 
 <!-- ======================================== -->
 </LIST>
@@ -1525,7 +1901,7 @@ the command and option keys in addition to the letters "p" and "r".
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: faq.list,v 1.74 2001/05/18 01:47:16 dent Exp $<br>
+  $NetBSD: faq.list,v 1.89 2001/11/03 01:21:44 mbw Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1998, 1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
