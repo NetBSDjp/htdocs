@@ -6,134 +6,140 @@
   </head>
 
   <body bgcolor="#FFFFFF" text="#000000">
-    <h1>Tracking NetBSD-current with CVS</h1>
-    <h2>Overview</h2>
+    <h1>CVSによるNetBSD-currentの追跡</h1>
+    <h2>概要</h2>
 
-    <p>Current can be tracked in the following way. The baseline copy of
-      the sources is kept up to date using sup approximately once a week.
-      as normal. This baseline source tree is then imported into a local
-      CVS repository. Current is then built from a checked out copy of
-      the repository.
+    <p>Currentは次の方法により追跡できます。
+       基準となるソースのコピーを、
+       ほぼ週に一回(標準的)supを使い最新の状態に維持します。
+       そして、この基準となるソースツリーを、
+       ローカルのCVSリポジトリーにインポートします。
+       そして、リポジトリーのコピーをチェックアウトしCurrentを作成します。
 
-    <p>There are 3 major reasons for this approach
+    <p>このアプローチには3つの主要な理由があります。
     <ol>
-      <li>It keeps track of how current changes over time.</li>
-      <li>It allows for local changes to be almost automatically merged
-	into the updated current sources. This is needed on
-	NetBSD/arm32 as some patches are required to get the current
-	sources to build.</li>
-      <li>It ensures there is always a clean unmodified copy of the
-	NetBSD-current source tree is available in case of problems when
-	building.</li>
+      <li>いつどのようにcurrentが更新されたか追跡するため。
+      <li>ローカルの変更をほとんど自動的にcurrentソースに
+	マージできるようにするため。
+	currentソースを構築するのにいくつかパッチが必要なような、
+	NetBSD/arm32で必要です。
+      <li>構築するときの問題に備えて、いつもまったく変更していない
+	NetBSD-currentのソースツリーがあることを保証するため。
     </ol>
     
-    <p>The only downside to this approach is that 3 independent copies 
-      of the source tree are needed which amounts to about 150MB of
-      disk space not including the space required to actually build
-      current.
+    <p>このアプローチの短所は、
+      3つの独立のソースツリーのために、
+      実際のcurrentの構築に必要な空きを含めないで、
+      およそ150MBのディスクスペースが必要なところです。
 
-    <h2>Requirements</h2>
+    <h2>必要なもの</h2>
     <ul>
-      <li>CVS 1.9 or later(either from pkgsrc or just built from
-	source). CVS 1.10 or later is better as it handles merging better. </li>
-      <li>SUP installation</li>
-      <li>Perl 5 installation for supplied script(optional)</li>
+      <li>CVS 1.9 かそれ以降(pkgsrcか、ソースから構築のどちらでも)。
+        CVS 1.10 かそれ以降は、マージ機能がより良いので好ましい。
+      <li>SUP
+      <li>Perl 5(任意) 付属スクリプトのため
     </ul>
-    <h2>Details</h2>
-    <p>Tracking and building current consists of 6 phases:
-    <ol>
-      <li>Supping updated sources into master source tree.</li>
-      <li>Importing supped sources into CVS and updating working copy
-	of sources.</li>
-      <li>Merging supped sources with local working sources.
-      <li>Building and installing current.</li>
-      <li>Tagging the sources for a successful build in the
-	repository.</li> 
-    </ol>
-    <h3>Supping sources</h3>
-    <p>Sources can be supped from any NetBSD sup server and the output 
-      from the SUP should be stored in a file for later reference.
 
-    <h3>Importing and merging sources.</h3>
-    <p>Sources are imported as follows:
+    <h2>詳説</h2>
+    <p>currentの追跡と構築は、6つの段階から成ります。
+    <ol>
+      <li>マスターソースツリーにSUPでソースを更新します。
+      <li>SUPしたファイルをCVSにインポートし、
+        作業用ソースのコピーを更新します。
+      <li>作業用ソースでSUPしたソースをマージします。
+      <li>currentを構築しインストールします。
+      <li>レポジトリーの構築に成功したソースにタグを付けます。
+    </ol>
+    <h3>ソースのSUP</h3>
+    <p>ソースは、どのNetBSD SUPサーバーからもSUP可能です。
+      またSUPの出力は後の参照のためにファイルに保存すべきです。
+
+    <h3>ソースのインポートとマージ</h3>
+    <p>ソースは次のようにインポートします。
     <pre>
 cvs -d /misc/cvsrep import -I ! netbsd netbsd current-<i>date</i>
     </pre>
-    <p><i>date</i> is replaced by the date of the SUP for tracking
-      purposes. The <code>-I !</code> option ensures that no file in
-      the source tree is ignored. This is because some NetBSD source
-      files have extensions which are normally ignored by CVS. If
-      there are any conflicts with local patches the import command
-      will report them and will describe a command to merge the
-      conflicts something like:
+    <p><i>date</i>は追跡のためにSUP時の日付と置き換えます。
+      <code>-I !</code>オプションは、
+      ソースツリー中のファイルで無視されるファイルがないことを確実にします。
+      これはいくつかのNetBSDソースファイルに、
+      通常CVSにより無視される拡張子のものがあるからです。
+      もしローカルのパッチと衝突がある場合、
+      importコマンドはそれらを出力し、
+      衝突をマージするためのコマンドを次のように出力します。
     <pre>
 cvs checkout -jnetbsd:yesterday -jnetbsd netbsd
     </pre>
-    <p>This merge command will correctly merge the imported NetBSD
-      sources but it will not handle the removal of files locally
-      which have already been removed by the SUP process. To do this the
-      merge command would be:
+    <p>このマージコマンドは、
+      インポートされたNetBSDソースを正確にマージするためのものですが、
+      SUPにより削除されたファイルは、ローカルに反映されません。
+      これを行うためのマージコマンドは、
     <pre>
 cvs update -j<i>previous import tag</i> -j current-<i>date</i>
     </pre>
-    <p><i>previous import tag</i> should be replaced with the name of
-      the tag used for the previous cvs import. <i>date</i> should be
-      replaced with the current date to yield the same tag used on
-      the current import that has just been merged.
-    <p>The conflicts reported by the import command are potential
-      conflicts. These are usually merged by the update command but in
-      some cases a real conflict occurs. In these cases a manual merge
-      of the conflicting lines will be required. A real conflict will
-      be reported in the cvs update output as a <code>C</code>
-      followed by a filename.
-    <p>Merging conflicts manually is not a simple process but in most
-      cases it should be resolved by removing the local changes and
-      making the file like the original NetBSD source code.  
-    <p>CVS marks conflicts as follows:
+      です。
+    <p><i>previous import tag</i>
+      は前回のCVSインポートで使用したタグ名と置き換えます。
+      <i>date</i> は、まさにマージされたcurrentのインポートに使用したタグと
+      同じタグを利用できるようにするために、現在の日付と置き換えます。
+
+    <p>importコマンドにより表示される衝突は、衝突の可能性のあるものです。
+      これらは、通常updateコマンドによりマージされますが、
+      いくつかの場合、実際に衝突を引き起こします。
+      この場合、衝突行を手動でマージすることが必要です。
+      実際に衝突がある場合、cvs update時に、<code>C</code>に続き
+      ファイルネームが表示されます。
+
+    <p>衝突の手動マージは単純作業ではありませんが、
+      多くの場合、ローカルの変更を削除し、
+      元のNetBSDソースコードに似せてやることで解決します。
+    <p>衝突のCVSマークは次のようなものです。
 <pre>
 &lt;&lt;&lt;&lt;&lt;&lt;
-  <i>code from local file</i>
+  <i>ローカルファイルのコード</i>
 ======
-  <i>code from imported file</i>
-&gt;&gt;&gt;&gt;&gt;&gt; <i>local revision number of newly imported revision</i>
+  <i>インポートされたファイルのコード</i>
+&gt;&gt;&gt;&gt;&gt;&gt; <i>新たにインポートされるリビジョンのローカルリビジョン番号</i>
 </pre>
 
-    <p>If the import reports no conflicts the checked out copy of the
-      tree should be updated in exactly the same way as for the
-      conflicts case.
-    <p> All update and checkout commands should be done in the
-      directory where the sources have been checked out. On my system
-      this is <code>/usr/src/netbsd</code>
-    <p>If this is the first import then there will be no sources
-      checked out. Assuming you wish to create the source tree in
-      '<code>/usr/src/netbsd</code>' The following commands will check
-      out the source and no merge step is required.
+    <p>もしimportコマンドが何の衝突を表示しない場合でも、
+      チェックアウトしたツリーのコピーは
+      衝突した場合と同じ方法で更新できます。
+    <p>updateとcheckoutコマンドはすべて、
+      チェックアウトしたソースのディレクトリーで行ってください。
+      私のシステムでは、これは <code>/usr/src/netbsd</code> です。
+    <p>もし、これが最初のインポートならば、
+      チェックアウトしたソースはないでしょう。
+      '<code>/usr/src/netbsd</code>'にソースツリーを作りたいと仮定すると、
+      次のコマンドでソースをチェックアウトします。
+      マージ作業は必要ありません。
     <pre>
 cd /usr/src
 cvs -d/misc/cvsrep checkout netbsd
     </pre>
-    <h3>Building current.</h3>
+
+    <h3>currentの構築</h3>
     <!-- Insert reference to build instructions here -->
 
-    <h3>Tagging a successful build</h3>
-    <p> If the build completes successfully and produces a working set 
-      of binaries it can be useful to tag the working sources. This
-      allows rewinding to a working build tree with a single CVS
-      command in the event that the current tree becomes unbuildable
-      for any reason. This can be performed by issuing the following
-      command:
+    <h3>構築に成功したものへのタグ付け</h3>
+    <p>もし、構築が完全に成功して、
+      動作するバイナリーセットを作成できたのならば、
+      動作するソースにタグ付けすることで使いやすくできます。
+      これは、万一なにかの原因で構築できないcurrentツリーになっても、
+      ひとつのCVSコマンドで、構築できるツリーに巻き戻すことを可能にします。
+      タグ付けは次のコマンドで行えます。
     <pre>
 cvs tag successful-build-<i>build date</i>
     </pre>
-    <h2>Notes</h2>
+    <h2>注</h2>
     <ul>
-      <li>If the NetBSD customised version of CVS which recognises $NetBSD: tracking-current.html,v 1.6 1998/10/19 07:30:41 abs Exp $
-        markers in files is not used the NetBSD revision number of the file
-	is available for reference purposes when build problems
-	occur.</li>
-      <li>The sup/import/merge sequence described above is quite
-	easily automatable. The following Perl script automates this
-	process.
+      <li>もし、ファイル中の
+        $NetBSD: tracking-current.html,v 1.6 1998/10/19 07:30:41 abs Exp $
+        マーカーを認識するNetBSDカスタムバージョンのCVSを使用しない場合、
+        ファイルのNetBSDリビジョン番号を、構築時に問題が起きた場合に
+        参照の目的に使用することができます。
+      <li>上記のsup/インポート/マージの作業は、まったく簡単に自動化できます。
+        以下のPerlスクリプトがこの作業を自動的に行います。
 <pre>
 #!/usr/local/bin/perl
 #
@@ -175,32 +181,33 @@ open TAG,"&gt;$SRCROOT/.tag" or die "Could not open new tag file";
  print TAG "current-$shortdate";
 close TAG;
     </pre> 
-    <p>This script was written in Perl since it the scripting tool
-	  which the author has the most experient in using. It should
-	  be fairly straightforward to write a shell script to perform 
-      the same task.</li>
-      <li>Techniques for tracking current with CVS have been discuss several
-	times on the NetBSD current-users mailing list. For
-	alternative techniques try searching the NetBSD mailing lists.</li>
+    <p>このスクリプトは、著者がほとんどスクリプトツールの実験のために
+      Perlで書いたものです。これは同じことを行うシェルスクリプトを
+      まったく素直に書くことができるでしょう。
+
+      <li>CVSによるcurrentの追跡のテクニックは、
+        何度かNetBSD current-users メーリングリストで議論されています。
+        その他のテクニックについては、
+        NetBSDのメーリングリストを検索してみてください。
     </ul>
     <p>
-    If you have any comments or suggestions please send them to
+    もし、何かコメントや提案があれば、
     Mike Pumford <a href="mailto:mpumford@black-star.demon.co.uk">
-    mpumford@black-star.demon.co.uk</a> (who maintains this page) or
-    <a href="mailto:www@netbsd.org">www@netbsd.org</a>.
+    mpumford@black-star.demon.co.uk</a> (このページのメインテイナー)か
+    <a href="mailto:www@netbsd.org">www@netbsd.org</a>に送ってください。
 <hr>
 <table><tr>
   <td>
     <a href="../index.html">
     <img src="../images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
   </td><td>
-    <a href="../index.html">Home Page</a>
+    <a href="../index.html">ホームページ</a>
   </td>
 </tr></table>
 
 <hr>
 <address>
-    www@NetBSD.ORG<br>
+    www@JP.NetBSD.ORG<br>
     $NetBSD: tracking-current.html,v 1.6 1998/10/19 07:30:41 abs Exp $<br>
     <a href="../Misc/disclaimer.html">Copyright &copy; 1998
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
