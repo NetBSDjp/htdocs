@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.103 2001/11/17 01:25:48 wdk Exp $
+#	$NetBSD: index.m4,v 1.105 2001/12/30 21:34:25 gendalia Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -247,6 +247,12 @@ ENDLIST
 LISTSECTION(Machine specific lists)
 
   <ul>
+PORTLIST(port-acorn32)
+  Discussion of issues specific to NetBSD on ARM6 and newer based machines
+  (NetBSD/acorn32).
+  There is also a <a href="#port-arm">port-arm</a> list for
+  questions related to all ARM based ports.
+ENDLIST
 PORTLIST(port-algor)
   Discussion of issues specific to NetBSD on Algorithmics, Ltd. MIPS-based
   evaluation boards (NetBSD/algor).
@@ -275,8 +281,9 @@ LIST(port-arm)
   Discussion of issues relevant to all ARM-based NetBSD ports.
   There are lists for the individual ports and they should be used for
   port-specific questions and information:
-  <a href="#port-arm26">port-arm26</a>, and
-  <a href="#port-arm32">port-arm32</a>, and
+  <a href="#port-acorn32">port-acorn32</a>,
+  <a href="#port-arm26">port-arm26</a>,
+  <a href="#port-arm32">port-arm32</a>,
   <a href="#port-cats">port-cats</a>, and
   <a href="#port-hpcarm">port-hpcarm</a>.
 ENDLIST
@@ -371,6 +378,7 @@ LIST(port-m68k)
   <a href="#port-mvme68k">port-mvme68k</a>,
   <a href="#port-news68k">port-news68k</a>,
   <a href="#port-next68k">port-next68k</a>,
+  <a href="#port-sun2">port-sun2</a>,
   <a href="#port-sun3">port-sun3</a>, and
   <a href="#port-x68k">port-x68k</a>.
 ENDLIST
@@ -392,12 +400,12 @@ LIST(port-mips)
   Discussion of issues relevant to all MIPS-based NetBSD ports.
   There are lists for the individual ports and they should be used for
   port-specific questions and information:
-  <a href="#port-algor">port-algor</a>, and
-  <a href="#port-arc">port-arc</a>, and
-  <a href="#port-cobalt">port-cobalt</a>, and
-  <a href="#port-hpcmips">port-hpcmips</a>, and
-  <a href="#port-mipsco">port-mipsco</a>, and
-  <a href="#port-newsmips">port-newsmips</a>, and
+  <a href="#port-algor">port-algor</a>,
+  <a href="#port-arc">port-arc</a>,
+  <a href="#port-cobalt">port-cobalt</a>,
+  <a href="#port-hpcmips">port-hpcmips</a>,
+  <a href="#port-mipsco">port-mipsco</a>,
+  <a href="#port-newsmips">port-newsmips</a>,
   <a href="#port-pmax">port-pmax</a>, and
   <a href="#port-sgimips">port-sgimips</a>.
 ENDLIST
@@ -439,6 +447,10 @@ ENDLIST
 PORTLIST(port-pc532)
   Discussion of issues specific to NetBSD on the rather rare PC532 computer
   (NetBSD/pc532).
+ENDLIST
+PORTLIST(port-playstation2)
+  Discussion of issues specific to NetBSD on Sony's Playstation 2
+  machines (NetBSD/playstation2).
 ENDLIST
 PORTLIST(port-pmax)
   Discussion of issues specific to NetBSD on Digital's MIPS based DECstation
@@ -493,9 +505,19 @@ PORTLIST(port-sparc64)
   Discussion of issues specific to NetBSD on Sun's 64-bit Ultrasparc based
   machines (NetBSD/sparc64).
 ENDLIST
+PORTLIST(port-sun2)
+  Discussion of issues specific to NetBSD on Sun's Motorola 68010 based machines
+  (NetBSD/sun2). Newer Sun machines are covered on
+  <a href="#port-sun3">port-sun3</a>, 
+  <a href="#port-sparc">port-sparc</a> and
+  <a href="#port-sparc64">port-sparc64</a>.
+  There is also a <a href="#port-m68k">port-m68k</a> list for
+  questions related to all Motorola 68k based ports.
+ENDLIST
 PORTLIST(port-sun3)
-  Discussion of issues specific to NetBSD on Sun's Motorola 68k based machines
-  (NetBSD/sun3 and NetBSD/sun3x). Newer Sparc based Sun machines are covered on
+  Discussion of issues specific to NetBSD on Sun's Motorola 68020 (sun3) and
+  68030 (sun3x) based machines (NetBSD/sun3). Newer Sparc based Sun machines
+  are covered on
   <a href="#port-sparc">port-sparc</a> and
   <a href="#port-sparc64">port-sparc64</a>.
   There is also a <a href="#port-m68k">port-m68k</a> list for
@@ -569,7 +591,7 @@ divert(9)
 <address>
   <small>
   <a href="../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.m4,v 1.103 2001/11/17 01:25:48 wdk Exp $<br>
+  $NetBSD: index.m4,v 1.105 2001/12/30 21:34:25 gendalia Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
