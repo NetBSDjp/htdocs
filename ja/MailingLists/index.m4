@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.157 2004/04/24 04:44:06 yyamano Exp $
+#	$NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $
 #	Copyright (c) 1994-2004
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
@@ -7,7 +7,7 @@ divert(-1)dnl
 undefine(`index')
 
 define(`LISTNEWS',
-`  <a href="http://news.NetBSD.org/'`patsubst(patsubst(patsubst(patsubst($1, `^port-', `ports-'), `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
+`  <a href="http://news.NetBSD.org/'`patsubst(patsubst(patsubst(patsubst($1, `^port-', `ports-'), `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../../images/misc/news.gif" origlink="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
 </td><td valign=top>', `-', `.')
 
 define(`LISTARCHIVE',
@@ -152,7 +152,7 @@ href="../Misc/search.html">その他の NetBSD 検索</a>)<br>
   <td valign="top">
   <form method="get" action="http://www.google.com/custom">
     <input type="text" name="q" size=30 maxlength="255" value="">
-    <input type="hidden" name="cof" value="LW:247;L:http://www.NetBSD.org/images/NetBSD-smaller.jpg;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
+    <input type="hidden" name="cof" value="LW:247;L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:241;AH:center;AWFID:4f6b0499f0f58d2c;">
     <input type="hidden" name="domains" value="mail-index.NetBSD.org">
     <input type="hidden" name="sitesearch" value="mail-index.NetBSD.org">
     <br>
@@ -216,6 +216,9 @@ LIST(netbsd-users)
   疑問やコメントは、 NetBSD の使用に関する話題とは異なるため、
   このリストにはふさわしくありません。そのような話題は、
   狭い範囲に特化した技術的なリストがふさわしいとされています。
+ENDLIST
+LIST(pkgsrc-bulk)
+  pkgsrc バルク構築の報告と構築ログが流れるメーリングリストです。
 ENDLIST
 LIST(pkgsrc-changes)
   <a
@@ -453,6 +456,11 @@ PORTLIST(port-hpcsh)
 ENDLIST
 PORTLIST(port-i386)
   i386 以降の CPU を持つ IBM PC 互換機上の NetBSD (NetBSD/i386)
+  固有の事項の議論用です。
+ENDLIST
+PORTLIST(port-iyonix)
+  ARM ベースの <a href="http://www.iyonix.com/">Iyonix pc</a>
+  上の NetBSD (NetBSD/iyonix)
   固有の事項の議論用です。
 ENDLIST
 PORTLIST(port-luna68k)
@@ -703,8 +711,8 @@ divert(9)
 
 <table><tr><td>
     <a href="../"><img
-	src="../../images/NetBSD-flag.gif" origlink="../images/NetBSD-flag.gif" border=0
-	width="91" height="42" alt=""></a>
+	src="../../images/NetBSD-flag.png" origlink="../images/NetBSD-flag.png" border=0
+	width="90" height="90" alt=""></a>
   </td><td>
     <a href="../"><img
 	src="../../images/empty.gif" origlink="../images/empty.gif" border=0
@@ -717,7 +725,7 @@ divert(9)
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.org">日本語:
        www@JP.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.157 2004/04/24 04:44:06 yyamano Exp $<br>
+  $NetBSD: index.m4,v 1.161 2004/10/30 22:33:36 jschauma Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
