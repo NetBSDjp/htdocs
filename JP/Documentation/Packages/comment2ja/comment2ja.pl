@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.12 1999/08/26 02:43:55 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.13 1999/08/26 03:12:01 sakamoto Exp $
 #
 
 $|=1;
@@ -40,11 +40,23 @@ foreach my $file ("all", "category", "pkg", "top") {
 }
 
 #
+# reject handler
+#
+sub rej {
+	my ($file) = @_;
+	if (-f "$tmpfile.rej") {
+		print STDERR "\t$file\n";
+		unlink("$tmpfile.rej");
+	}
+}
+
+#
 # topdir README.html
 #
 open(SRC, "|patch -s -o $tmpfile $pkgsrc/README.html|") || die "src:$pkgsrc/README.html\n";
 print SRC "$diff{'top'}\n";
 close(SRC);
+&rej("README.html");
 open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 if (! -d $wwwdir) {mkdir($wwwdir, $mode) || die "dst:$wwwdir\n";}
 open(DST, "|nkf -j > $wwwdir/README.html") || die "dst:$wwwsrc/README.html\n";
@@ -71,6 +83,7 @@ close(DST);
 open(SRC, "|patch -s -o $tmpfile $pkgsrc/README-all.html|") || die "src:$pkgsrc/README-all.html\n";
 print SRC "$diff{'all'}";
 close(SRC);
+&rej("README-all.html");
 open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 open(DST, "|nkf -j > $wwwdir/README-all.html") || die "dst:$wwwsrc/README-all.html\n";
 while (<SRC>) {
@@ -105,6 +118,7 @@ foreach $dir (readdir(TOPDIR)) {
 		die "src:$pkgsrc/$dir/README.html\n";
 	print SRC "$diff{'category'}";
 	close(SRC);
+	&rej("$dir/README.html");
 	open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 	if (! -d "$wwwdir/$dir")
 		{mkdir("$wwwdir/$dir", $mode) || die "dst:$wwwdir/$dir\n";}
@@ -144,6 +158,7 @@ foreach $dir (readdir(TOPDIR)) {
 			die "src:$pkgsrc/$dir/$pkgdir/README.html\n";
 		print SRC "$diff{'pkg'}";
 		close(SRC);
+		&rej("$dir/$pkgdir/README.html");
 		open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 		if (! -d "$wwwdir/$dir/$pkgdir")
 			{mkdir("$wwwdir/$dir/$pkgdir", $mode) ||
@@ -179,7 +194,7 @@ foreach $dir (readdir(TOPDIR)) {
 	closedir(CATEGORY);
 }
 closedir(TOPDIR);
-unlink("$tmpfile", "$tmpfile.orig", "$tmpfile.rej", "$tmpfile.rej.orig");
+unlink("$tmpfile", "$tmpfile.orig");
 
 #
 # nodata pkgs
