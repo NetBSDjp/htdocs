@@ -2,7 +2,7 @@
 <head>
 <!-- Copyright (c) 1996, 1998
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@JP.NetBSD.ORG">
 <title>NetBSD Documentation: The X Window System</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -54,53 +54,57 @@ variable. For <tt>sh</tt> and its derivatives, you'll need to modify you
 <tt>.profile</tt> instead. 
 
 
-<ENTRY>xinit_not_found Unable to run X - '<b>xinit: not found</b>'
-You need /usr/X11R6/bin in your path. As root add
-'<b><tt>set path = ( $path /usr/X11R6/bin )</tt></b>' to
-<tt>/etc/csh.cshrc</tt>, and start a new shell.
+<ENTRY>xinit_not_found X が動かない - '<b>xinit: not found</b>'
+/usr/X11R6/bin を path に入れてください。
+root で '<b><tt>set path = ( $path /usr/X11R6/bin )</tt></b>' を
+<tt>/etc/csh.cshrc</tt> に追加し、新たなシェルを起動してください。
 
-<ENTRY>startx_fails startx fails -'<b>X connection to: 0.0 broken</b>'
-To see the error messages in this case, run:
+<ENTRY>startx_fails startx が失敗する -'<b>X connection to: 0.0 broken</b>'
+この場合、エラーメッセージを見るために、次のようにして起動してください:
 <ul>
-<li>If your shell is csh(1) or <PKGSRC>shells/tcsh:
+<li>使用しているシェルが csh(1) または <PKGSRC>shells/tcsh の場合:
 <pre>	startx &gt;& ~/x.log</pre>
-<li>If your shell is sh(1), ksh(1), or similar:
+<li>使用しているシェルが sh(1), ksh(1) 等の場合:
 <pre>	startx &gt; ~/x.log 2&gt;&amp;1</pre>
 </ul>
-Then view ~/x.log
+そして、~/x.log を見てください
 
-<ENTRY>shared_libraries_and_x X programs fail with '<b>lib<em>XXXX</em>.so.<em>NN</em>: No such file...</b>'
-As root, edit <tt>/etc/ld.so.conf</tt> and add the line:
+<ENTRY>shared_libraries_and_x X プログラムが '<b>lib<em>XXXX</em>.so.<em>NN</em>: No such file...</b>'と言って起動できない
+root で <tt>/etc/ld.so.conf</tt> を編集し、この行を追加してください:
 <pre>
     /usr/X11R6/lib
 </pre>
-while you are there you should probably ensure it also contains:
+同時にこの行も含んでいることも確認した方がいいでしょう:
 <pre>
     /usr/pkg/lib
 </pre>
-<em>(You <b>are</b> using the
+<em>(追加プログラムを足すのに
 <a href="../software/packages.html">NetBSD
-packages system</a> for adding additional programs?)</em>.<br>
-Then run "<b><tt>ldconfig -v</tt></b>", among the output you should see lines
-of the form: 'Adding /usr/X11R6/lib/libXIE.so.6.0'.
+パッケージ</a>を<b>使っています</B>よね?)</em><br>
+その後 "<b><tt>ldconfig -v</tt></b>" を実行すると、出力の中から
+この形式の行を見つけられるでしょう: 'Adding /usr/X11R6/lib/libXIE.so.6.0'.
 <p>
-<b>What are shared libraries?</b><br>
-On order to save both disk and memory space most NetBSD ports use 'shared
-libraries'. This allows one copy of each library (libXmu.so.6.0) to be loaded
-into memory for multiple programs (xterm, fvwm2, etc). The standard system
-shared libraries live in /usr/lib, but NetBSD needs to be told where to find
-any additional libraries (such as those for X applications). To do this
-they should be added to '<tt>/etc/ld.so.conf</tt>'.
+<b>共有ライブラリーってなんですか?</b><br>
+ディスクとメモリーを節約するために、ほとんどの NetBSD のポーティングでは
+'共有ライブラリー' を用います。
+これによって、複数のプログラム (xterm, fvwm2, etc) が利用する
+各ライブラリー (たとえば libXmu.so.6.0) は、一度だけメモリーに読み込まれる
+ことになります。
+標準のシステム共有ライブラリーは /usr/lib にありますが、NetBSD は
+追加のライブラリー (X のアプリケーション用など) のありかを知る必要が
+あります。そのためには '<tt>/etc/ld.so.conf</tt>' に追加をします。
 
-<ENTRY>xconsole Console output (such as from 'su') garbles X display.
-The system is outputting a line to the console indicating something has
-happened (such as 'su'). You should really run xconsole(1) or
-one 'xterm -C' to capture this console output.
+<ENTRY>xconsole コンソール表示 ('su'などの) が X の表示をこわす
+システムは何かが起こったこと ('su'など) を示すためコンソールに出力を
+行います。
+このコンソール出力を表示させるための、xconsole(1) あるいは 'xterm -C' プ
+ログラムを起動するようにしてください。
 <p>
-You may need to ensure your kernel is compiled with the following enabled:
+以下を有効にしてカーネルをコンパイルする必要があるかもしれません:
 <pre>	options  UCONSOLE  # allow anyone to steal the virtual console</pre>
-See <a href="../kernel/#how_to_build_a_kernel">How to build a
-kernel</a> for details on how to build your own kernels.
+詳しくは
+<a href="../kernel/#how_to_build_a_kernel">カーネルの作り方</a>
+を参照してください。
 
 <ENTRY>wheel-mouse How to I get my mouse wheel to work?
 If you use a Microsoft IntelliMouse,
@@ -136,24 +140,23 @@ vendor release number:    335
 </pre>
 In the case of XFree86, this tells us that the server version is 3.3.5.
 
-<SECTION>Compiling programs
+<SECTION>プログラムのコンパイル
 
-<ENTRY>compile_fails_xm Compile fails - 'unable to locate libXm'
-Xm does not come with the standard X11 environment. It is part of 
-<a href="http://www.opengroup.org/desktop/motif/">Motif</a>, which
-is a commercial graphical user interface.<p>
-A freeware implementation of Motif called
-<a href="http://www.lesstif.org/">Lesstif</a> is also available.
-It is available as part of the <a
-href="../software/packages.html">NetBSD packages collection</a>, under
-x11/<PKGSRC>x11/lesstif.
+<ENTRY>compile_fails_xm コンパイルに失敗する - 'unable to locate libXm'
+Xm は標準の X11 環境に入っていません。これは商用の GUI である
+<a href="http://www.opengroup.org/desktop/motif/">Motif</a> の一部です。<p>
+Motif のフリーな実装である
+<a href="http://www.lesstif.org/">Lesstif</a> も利用できます。
+これは <a
+href="../software/packages.html">NetBSD パッケージ</a>の中に
+x11/<PKGSRC>x11/lesstif として含まれています。
 
-<ENTRY>compile_fails_xpm Compile fails - 'unable to locate xpm.h', or '-lXpm: no match'
-xpm.h is part of the X PixMap library, used by many programs to allow more
-multi (than two) colour icons.
-It is available as part of the <a
-href="../software/packages.html">NetBSD packages collection</a>, under 
-graphics/<PKGSRC>graphics/xpm
+<ENTRY>compile_fails_xpm コンパイルに失敗する - 'unable to locate xpm.h' または '-lXpm: no match'
+xpm.h は X の PixMap ライブラリーの一部で、カラーアイコンを作るために
+多くのプログラムで使われています。
+これは <a
+href="../software/packages.html">NetBSD パッケージ</a>の中に
+graphics/<PKGSRC>graphics/xpm として含まれています。
 
 <ENTRY>compile_basic Compile fails to link: Undefined symbol '_XOpenDisplay'
 If it is a third party item of software, you should check if a version
