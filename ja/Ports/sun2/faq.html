@@ -17,6 +17,8 @@
 <h2><a name="top">全般的な質問</a></h2>
 <ul>
 <li>
+<a href="#ec-nfs">3Com 3c400 (<tt>ec</tt>) カードを持つ NFS クライアント</a></li>
+<li>
 <a href="#sunos_compat">SunOS との互換性</a></li>
 <li>
 <a href="#sun2-history">NetBSD/sun2 の歴史</a></li>
@@ -35,12 +37,33 @@
     のネットワークからの起動</a>。
 <p>
 
-<li><a href="../../Documentation/">General NetBSD ドキュメンテーション</a>
+<li><a href="../../Documentation/">NetBSD 全般のドキュメンテーション</a>
     - NetBSD/sun2 固有でない質問向け
 </ul>
 
 <hr>
 <h2>全般的な質問</h2><hr>
+<p><h3>
+<a name="ec-nfs">3Com 3c400 (<tt>ec</tt>) カードを持つ NFS クライアント</a>
+<font size="-1">(<a href="#top">top</a>)</font>
+</h3><dl><dt><dd>
+3Com 3c400 (<tt>ec</tt>) Multibus イーサネットカードは、受け取った
+イーサネットパケットを、その長さにかかわらず二つしかバッファーできず、
+残りのパケットは取りこぼします。 NFS クライアントは、特に指定しなければ、
+1 回につき 8 キロバイトのリクエストを読みます。つまり、サーバから
+6 個以上のパケットが送出され、これがただちにカードを飽和させ、
+3 個目のパケットからは失われるということです。
+
+<p>
+NFS は all-or-nothing な性質を持っていることから、クライアントは
+再送されただけのパケットはすべて捨てており、これが悪循環を生んでいます。
+回避策は、クライアント側で mount コマンドにオプションを追加して、
+NFS に一回につき 1 キロバイトのみのリクエストを要求することです:
+
+<p>
+<tt>mount -t nfs -o -r=1024 <i>server</i>:<i>directory</i> <i>mountpoint</i></tt>
+
+</dd></dl>
 <p><h3>
 <a name="sunos_compat">SunOS との互換性</a>
 <font size="-1">(<a href="#top">top</a>)</font>
@@ -92,7 +115,7 @@ NetBSD の sun2 ポートは、 Matt Fredette によって 2001 年
   (連絡先 - <a href="../../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: faq.html,v 1.4 2001/07/13 08:27:38 kano Exp $<br>
+  $NetBSD: faq.html,v 1.5 2001/11/11 05:52:28 kano Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
