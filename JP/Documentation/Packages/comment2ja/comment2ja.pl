@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.7 1999/08/23 11:53:28 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.8 1999/08/24 04:00:51 sakamoto Exp $
 #
 
 $|=1;
@@ -150,6 +150,7 @@ foreach $dir (readdir(TOPDIR)) {
 			s/Please note that this package has a (.*) license./このパッケージは $1 ライセンスであることに注意してください。/;
 			s/ftp:\/\/ftp.netbsd/ftp:\/\/ftp.jp.netbsd/;
 			s/\"(pkg\/DESCR)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/$1\"/;
+			s/no precompiled binaries available/コンパイル済みのパッケージは現在用意されていません/;
 			if (/<p>.*:<br>/) {
 				$com++;
 				# s///;
