@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.14 1999/10/27 04:03:31 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.15 1999/10/27 05:28:15 sakamoto Exp $
 #
 
 $|=1;
@@ -10,6 +10,7 @@ my ($wwwdir) = shift;
 my ($mode) = 0755;
 my (%diff);
 my ($tmpfile) = "/tmp/comment2ja_$$";
+my ($patch) = "patch -s -o $tmpfile";
 
 if (! $pkgsrc || ! $wwwdir) {die "comment2ja.pl pkgsrcdir wwwdir\n";}
 
@@ -32,7 +33,7 @@ close(COMMENT);
 #
 foreach my $file ("all", "category", "pkg", "top") {
 	if (! -f "README.$file") {die "README.$file\n";}
-	open(DIFF, "diff $pkgsrc/templates/README.$file README.$file|") || die "diff:README.$file";
+	open(DIFF, "diff -C1 $pkgsrc/templates/README.$file README.$file|") || die "diff:README.$file";
 	while (<DIFF>) {
 		$diff{$file} .= $_;
 	}
@@ -53,7 +54,7 @@ sub rej {
 #
 # topdir README.html
 #
-open(SRC, "|patch -s -o $tmpfile $pkgsrc/README.html|") || die "src:$pkgsrc/README.html\n";
+open(SRC, "|$patch $pkgsrc/README.html|") || die "src:$pkgsrc/README.html\n";
 print SRC "$diff{'top'}\n";
 close(SRC);
 &rej("README.html");
@@ -80,7 +81,7 @@ close(DST);
 #
 # topdir README-all.html
 #
-open(SRC, "|patch -s -o $tmpfile $pkgsrc/README-all.html|") || die "src:$pkgsrc/README-all.html\n";
+open(SRC, "|$patch $pkgsrc/README-all.html|") || die "src:$pkgsrc/README-all.html\n";
 print SRC "$diff{'all'}";
 close(SRC);
 &rej("README-all.html");
@@ -88,6 +89,24 @@ open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 open(DST, "|nkf -j > $wwwdir/README-all.html") || die "dst:$wwwsrc/README-all.html\n";
 while (<SRC>) {
 	s/\"(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
+	if (/^The following list contains all$/) {
+# The following list contains all
+# %%NPKGS%%
+# packages currently available
+# in the NetBSD Packages Collection, sorted alphabetically. 
+# Please select an entry for more details!
+		my ($npkgs) = <SRC>;
+		$_ = <SRC>;	# skip line
+		$_ = <SRC>;	# skip line
+		$_ = <SRC>;	# skip line
+
+		$_ = <<EOF;
+以下は、NetBSD パッケージコレクションで現在利用できる 全
+$npkgs
+パッケージのリストです。アルファベット順にソートされています。
+詳細については各エントリーを選んで下さい!
+EOF
+	}
 	if (/^<TR VALIGN=TOP><TD><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
 		my ($p) = $1;
 		my ($pkg) = $packages{$p};
@@ -114,7 +133,7 @@ foreach $dir (readdir(TOPDIR)) {
 	    $dir eq "pkg" || $dir eq "distfiles" || $dir eq "packages" ||
 	    $dir eq "mk" || $dir eq "templates") {next;}
 
-	open(SRC, "|patch -s -o $tmpfile $pkgsrc/$dir/README.html|") ||
+	open(SRC, "|$patch $pkgsrc/$dir/README.html|") ||
 		die "src:$pkgsrc/$dir/README.html\n";
 	print SRC "$diff{'category'}";
 	close(SRC);
@@ -154,7 +173,7 @@ foreach $dir (readdir(TOPDIR)) {
 		    ! -f "$pkgsrc/$dir/$pkgdir/README.html" ||
 		    $pkgdir eq "pkg") {next;}
 
-		open(SRC, "|patch -s -o $tmpfile $pkgsrc/$dir/$pkgdir/README.html|") ||
+		open(SRC, "|$patch $pkgsrc/$dir/$pkgdir/README.html|") ||
 			die "src:$pkgsrc/$dir/$pkgdir/README.html\n";
 		print SRC "$diff{'pkg'}";
 		close(SRC);
@@ -174,6 +193,29 @@ foreach $dir (readdir(TOPDIR)) {
 			s/ftp:\/\/ftp.netbsd/ftp:\/\/ftp.jp.netbsd/;
 			s/\"(pkg\/DESCR)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/$1\"/;
 			s/no precompiled binaries available/コンパイル済みのパッケージは現在用意されていません/;
+
+			if (/^(<p>)The package is located in the $/) {
+# <p>The package is located in the 
+# "%%PORT%%"
+# directory. It can be manipulated using the packaging tools,
+# working on the
+# "%%PKG%%"
+# package.
+				my ($pdir) = <SRC>;
+				$_ = <SRC>;	# skip line
+				$_ = <SRC>;	# skip line
+				my ($pname) = <SRC>;
+				$_ = <SRC>;	# skip line
+
+				$_ = <<EOF;
+<p>このパッケージのソースは
+$pdir
+ディレクトリーに位置してします。パッケージツールでは、
+$pname
+で操作します。
+EOF
+			}
+
 			if (/<p>.*:<br>/) {
 				$com++;
 				# s///;
