@@ -1,7 +1,9 @@
 #!/usr/bin/env perl
 #
-# $Id: list2html.pl,v 1.6 1999/05/13 03:23:16 abs Exp $
+# NetBSD Id: list2html.pl,v 1.6 1999/05/13 03:23:16 abs Exp $
 # Process *.list files into indexed *.html files. (abs)
+#  $Id$
+#  Japanese support (sakamoto)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
 #	<SECTION>Text		Introduces new section, before DATE or ENTRY
@@ -49,7 +51,7 @@ $months_previous=&convert_months_previous(9);	# DATE entries to display
 <a href="$HOME/Misc/daemon-copy.html">
 <img align="center" src="$HOME/images/BSD-demon.gif" alt="BSD demon"></a>
 </td><td align=center>
-<h1>NetBSD Documentation:</h1>
+<h1>NetBSD ドキュメンテーション:</h1>
 <h1>$TITLE</h1>
 </td></tr></table>
 <p>
@@ -62,7 +64,7 @@ $months_previous=&convert_months_previous(9);	# DATE entries to display
 	<a href="$HOME/index.html">
         <img src="$HOME/images/NetBSD-banner.gif" alt="NetBSD&nbsp;Home"></a>
       </td><td>
-	<a href="$HOME/index.html">Home Page</a>
+	<a href="$HOME/index.html">ホームページ</a>
       </td>
     </tr></table>
   </td><td>
@@ -72,7 +74,7 @@ $months_previous=&convert_months_previous(9);	# DATE entries to display
 	    src="$HOME/images/NetBSD-banner.gif"
 	    alt="NetBSD&nbsp;Documentation"></a>
       </td><td>
-	<a href="$DOCUMENTATION/index.html">Documentation top level</a>
+	<a href="$DOCUMENTATION/index.html">ドキュメントと FAQ</a>
       </td>
     </tr></table>
   </td>
@@ -179,7 +181,7 @@ sub makelist
 
     $data=$date_month='';
     $entry_num=$date_num=$date_num_used=0;
-    open(FILE,$infile) || die("Unable to open '$infile': $!");
+    open(FILE,"nkf -e $infile|") || die("Unable to open '$infile': $!");
     foreach( <FILE> )
 	{
 	if( defined($pre) )
@@ -323,7 +325,7 @@ sub makelist
 	{ &fail("Missing <ENDLIST> tag"); }
     if ($data !~ s/<LIST>/$list/)
 	{ &fail("Unable to locate <LIST> tag"); }
-    open(FILE,">$outfile") || die("Unable to write '$outfile': $!");
+    open(FILE,"|nkf -j > $outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data,%extras);
     close(FILE);
     if( $date_num )
