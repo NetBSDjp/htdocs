@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.110 2002/03/13 04:41:35 simonb Exp $
+#	$NetBSD: index.m4,v 1.113 2002/06/07 20:25:47 soda Exp $
 #	Copyright (c) 1994-2001
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -156,7 +156,8 @@ LIST(netbsd-bugs)
   <i>send-pr(1)</i> で送られたバグレポートはすべてここに流れます。
 ENDLIST
 LIST(netbsd-docs)
-  NetBSD の文書に関する議論のためのメーリングリストです。
+  NetBSD の文書に関する議論のためのメーリングリストです。翻訳者用メーリングリスト
+に関する情報は<a href="../../developers/translate.html#ml" origlink="../developers/translate.html#ml">このページ</a>にあります。
 ENDLIST
 LIST(netbsd-help)
   ユーザーが質問を寄せる一般的な場としてのメーリングリストです。
@@ -475,6 +476,10 @@ PORTLIST(port-pc532)
   珍しい PC532 コンピューター上の NetBSD (NetBSD/pc532)
   固有の事項の議論用です。
 ENDLIST
+PORTLIST(port-pdp10)
+  DEC PDP-10 コンピューター上の NetBSD (NetBSD/pdp10)
+  固有の事項の議論用です。
+ENDLIST
 PORTLIST(port-playstation2)
   Sony Playstation 2 マシン上の NetBSD (NetBSD/playstation2)
   固有の事項の議論用です。
@@ -627,7 +632,7 @@ divert(9)
   (連絡先 - <a href="../Misc/feedback.html">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.110 2002/03/13 04:41:35 simonb Exp $<br>
+  $NetBSD: index.m4,v 1.113 2002/06/07 20:25:47 soda Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2001
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
