@@ -1,0 +1,21 @@
+
+ドライバ開発 - wdc MD driver (2)
+
+割り込み処理
+割り込みはかからない → しかたないのでポーリング
+あるアドレスを読むと、割り込み信号線の状態がわかる
+
+wdc_dppbus.c
+callout による割り込みエミュレーションの設定
+callout_init(&sc->sc_intremu);
+callout_reset(&sc->sc_intremu, 1, wdc_dppbus_intr, sc);
+
+wdc_dppbus_intr()
+irqs = *(__volatile u_int16_t *)WDC_DPPBUS_IRQADDR;
+if((irqs & 0x0001) == 0x0001) {
+  s = splbio();
+  wdcintr(&sc->wdc_channel);	← MI 部を呼ぶ
+  splx(s);
+}
+callout_reset(&sc->sc_intremu, 1, wdc_dppbus_intr, sc);
+
