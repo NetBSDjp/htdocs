@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.21 2002/01/23 17:27:26 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.22 2002/01/24 03:08:11 sakamoto Exp $
 #
 
 $|=1;
@@ -31,7 +31,7 @@ close(COMMENT);
 #
 # make diff
 #
-foreach my $file ("all", "category", "pkg", "top") {
+foreach my $file ("all", "ipv6", "category", "pkg", "top") {
 	if (! -f "README.$file") {die "README.$file\n";}
 	open(DIFF, "diff $pkgsrc/templates/README.$file README.$file|") || die "diff:README.$file";
 	while (<DIFF>) {
@@ -62,7 +62,6 @@ open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 if (! -d $wwwdir) {mkdir($wwwdir, $mode) || die "dst:$wwwdir\n";}
 open(DST, "|nkf -j > $wwwdir/README.html") || die "dst:$wwwsrc/README.html\n";
 while (<SRC>) {
-	s/\"(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 	if (/^<TR><TD VALIGN=TOP><a href=\"([^\/]+)/) {
 		my ($p) = $1;
 		my ($cat) = $category{$p};
@@ -88,7 +87,31 @@ close(SRC);
 open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 open(DST, "|nkf -j > $wwwdir/README-all.html") || die "dst:$wwwsrc/README-all.html\n";
 while (<SRC>) {
-	s/\"(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
+	if (/^<TR VALIGN=TOP><TD><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
+		my ($p) = $1;
+		my ($pkg) = $packages{$p};
+		if (defined($pkg)) {
+			s/(\) <TD>).*/$1$pkg/;
+		} else {
+			/\) <TD>(.*)/;
+			$nodata{$p} = $1;
+		}
+	}
+	print DST $_;
+}
+close(SRC);
+close(DST);
+
+#
+# topdir README-IPv6.html
+#
+open(SRC, "|$patch $pkgsrc/README-IPv6.html|") || die "src:$pkgsrc/README-IPv6.html\n";
+print SRC "$diff{'ipv6'}";
+close(SRC);
+&rej("README-IPv6.html");
+open(SRC, "$tmpfile") || die "src:$tmpfile\n";
+open(DST, "|nkf -j > $wwwdir/README-IPv6.html") || die "dst:$wwwsrc/README-IPv6.html\n";
+while (<SRC>) {
 	if (/^<TR VALIGN=TOP><TD><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
 		my ($p) = $1;
 		my ($pkg) = $packages{$p};
@@ -128,9 +151,6 @@ foreach $dir (readdir(TOPDIR)) {
 
 	while (<SRC>) {
 		s/You are now in the directory (".*")./$1 ディレクトリー/;
-		s/\"..\/(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
-		s/Here are the one-line descriptions for each of the items \(/このカテゴリーに含まれるパッケージ (/;
-		s/\) in this directory:/) の一行コメント/;
 
 		if (/^<TR><TD VALIGN=TOP><a href=\"([^\/]+)/) {
 			my ($p) = "$dir/$1";
@@ -172,7 +192,6 @@ foreach $dir (readdir(TOPDIR)) {
 
 		my ($com) = 0;
 		while (<SRC>) {
-			s/\"..\/..\/(templates\/pkg-daemon.gif)\"/\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$1\"/;
 			s/This package has a home page at/ホームページ:/;
 			s/Please note that this package has a (.*) license./このパッケージは $1 ライセンスであることに注意してください。/;
 			s/ftp:\/\/ftp.netbsd/ftp:\/\/ftp.jp.netbsd/;
@@ -180,6 +199,10 @@ foreach $dir (readdir(TOPDIR)) {
 			s/>history<\/A>\./>歴史<\/A>をご覧ください。/;
 			s/<A HREF=\"\.\">/<A HREF=\"ftp:\/\/ftp.jp.netbsd.org\/pub\/NetBSD-current\/pkgsrc\/$dir\/$pkgdir\/\">/;
 			s/no precompiled binaries available/コンパイル済みのパッケージは現在用意されていません/;
+			s/The following security vulnerabilities are known for (.*)/$1 における既知のセキュリティー脆弱性は次の通りです/;
+			s/^at (... \d+ \d+:\d+)/($1 現在)/;
+			s/no vulnerabilities known/既知の脆弱性はありません/;
+
 			if (/<p>.*:<br>/) {
 				$com++;
 				# s///;
