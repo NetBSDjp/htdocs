@@ -1,3 +1,5 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
 <html>
 <head>
 <!-- Copyright (c) 1999, 2000
@@ -5,7 +7,7 @@
 
 
 <!--
-  ==  By Chris Jones
+  ==  Originally by Chris Jones
   -->
 
 
@@ -31,14 +33,17 @@ capabilities are dependent on the underlying hardware.
 The steps involved in this are:
 <ul>
 <li>Edit /etc/rc.conf and change "wscons" to "yes"
-<li>Edit /etc/ttys entries for ttyE{1,2,3} to "on".
+<li>Edit /etc/wscons.conf and ensure that the screens you wish to enable
+for login are being created (note that the first screen, screen 0, is always
+present).
+<li>Edit /etc/ttys and change the entries for ttyE{1,2,3} from "off" to "on".
 <li>Then either reboot or type the following:
 <blockquote>
 sh /etc/rc.wscons<br>
 kill -1 1<br>
 </blockquote>
 </ul>
-You can then use control-alt-{F1,F2,F3,F4} to switch between the virtual
+You can then use Ctrl-Alt-{F1,F2,F3,F4} to switch between the virtual
 terminals.
 
 <ENTRY>keyboard-maps Changing the keyboard mapping from 'US'
@@ -85,12 +90,17 @@ terminals.
     in 
     <a href="http://cvsweb.netbsd.org/cgi-bin/cvsweb.cgi/syssrc/sys/dev/wscons/wsksymdef.h"><tt>sys/dev/wscons/wsksymdef.h</tt></a> and
     <a href="http://cvsweb.netbsd.org/cgi-bin/cvsweb.cgi/syssrc/sys/dev/pckbc/wskbdmap_mfii.c"><tt>sys/dev/pckbc/wskbdmap_mfii.c</tt></a> 
-    to make your own. Be sure to <a href="http://www.netbsd.org/Misc/send-pr.html#submitting">send-pr</a> a change-request PR with your work, so others can
+    to make your own. Be sure to <a href="../../Misc/send-pr.html#submitting">send-pr</a> a change-request PR with your work, so others can
     make use of it!
-    <P>
+    <p>
+    A different way to implement your own keymap is documented in 
+    <a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=10976">PR 10976</a>, which puts the definitions for a russian
+    keymap into a file that's loaded later on. A hungarian keymap is 
+    available that way in <a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=11457">PR 11457</a>.
+    <p>
 
     Configuring the keyboard layout under X is described
-    <a href="../x/index.html#x-keyboard-maps">elsewhere</a>.
+    <a href="../x/#x-keyboard-maps">elsewhere</a>.
 
 <ENTRY>screen0 "WSDISPLAYIO_ADDSCREEN: Device busy"
 This error message usually occurs when wsconscfg tries to add a screen
@@ -99,14 +109,6 @@ which already exists.  One time this occurs is if you have a <code>screen
 kernel always allocates a screen 0 as the console device.  The error
 message is harmless in this case, and you can get rid of it by
 deleting (or commenting out) the <code>screen 0</code> line.
-
-<ENTRY>enabling-logins Enabling 'login' on additional virtual terminals
-As root, edit <tt>/etc/ttys</tt> and switch getty 'on' on ttyE1 to
-ttyE3. Change:
-<pre>	ttyE1   "/usr/libexec/getty Pc"         vt220   off secure</pre>
-to
-<pre>	ttyE1   "/usr/libexec/getty Pc"         vt220   on secure</pre>
-Then 'kill -HUP 1'.
 
 <ENTRY>colors How do I change the text display colors?
 Warning and error messages from the kernel, in addition to messages
@@ -136,7 +138,7 @@ The steps involved in this are:
     <li>Make sure you have "<b>pseudo-device wsmux 2</b>" defined in your kernel
         config.
     <li>Build the kernel.  There is a detailed explanation located in the <a
-        href="http://www.netbsd.org/Documentation/kernel/">Kernel FAQ</a> if
+        href="../kernel/">Kernel FAQ</a> if
         you're not sure how to do that.
     </ul>
 
@@ -171,6 +173,23 @@ After that's done you can do things like use the built-in pointing device on
 your laptop PC while on the go, and hot-plug a USB mouse at any later time and
 and use it without reconfiguring or restarting the X server.
 
+<ENTRY>mouseres How do I change the mouse resolution?
+
+If you're using a PS/2 mouse, the following command will work. <i>nnn</i> is
+an integer between 0 and 100.
+<dl>
+<dd>wsconsctl -m -w resolution=<i>nnn</i>
+</dl>
+
+
+<ENTRY>fontedit Is there a font editor?
+
+There are several fonts in <tt>/usr/share/wscons/fonts</tt> that
+can be loaded as console fonts. If you want to edit any of them, 
+you can use the old pcvt utils that are available in the
+<PKGSRC>sysutils/pcvt-utils package.
+<p>
+
 </LIST>
 
 <DOCLINK>
@@ -179,7 +198,7 @@ and use it without reconfiguring or restarting the X server.
 <address>
   <small>
   <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: index.list,v 1.2 2000/09/08 23:19:51 dent Exp $<br>
+  $NetBSD: index.list,v 1.8 2000/11/09 15:51:38 hubertf Exp $<br>
   <a href="../../Misc/disclaimer.html">Copyright &copy;
     1999, 2000
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
