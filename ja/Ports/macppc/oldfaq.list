@@ -1,0 +1,307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998-2003
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
+<title>NetBSD/macppc Old Frequently Asked Questions</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1>NetBSD/macppc Old Frequently Asked Questions</h1>
+
+This frequently asked questions (and answers) document covers problems
+with NetBSD/macppc prior to the 1.6 release.
+
+<p>If you have encounter a problem listed here as being fixed, 
+have additional information, questions, or answers, send mail to 
+<a href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a>.
+
+<LIST>
+
+<h2>See also the following related information:</h2>
+<ul>
+    <li><a href="faq.html">NetBSD/macppc Frequently Asked Questions</a>
+    <li><a href="SystemDisk-tutorial/">NetBSD/macppc System Disk
+        Tutorial</a>
+    <li><a href="models.html">NetBSD/macppc Model Support Page</a>
+    <li><a href="nvedit.html">NetBSD/macppc nvedit HOW-TO</a>, for
+        info on how to edit the contents of the NVRAMRC
+    <li><a href="partitioning.html">NetBSD/macppc Partitioning HOW-TO</a>
+    <li><a href="x11.html">NetBSD/macppc X11 FAQ</a>
+    <li><a href="../../Documentation/elf.html">NetBSD ELF FAQ</a>
+    <li><a href="../../Documentation/wscons/">wscons
+	FAQ</a>, for NetBSD's platform-independent workstation console
+	driver
+</ul>
+<p>
+
+<h2>Additional information is also available:</h2>
+<ul>
+<li><a href="../../MailingLists/#port-macppc"> port-macppc mail list</a>
+    - if you have any additional questions please subscribe.
+<li><a
+href="../../Documentation/network/netboot/">Diskless NetBSD HOW-TO</a>.
+<li><a href="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial 
+Port Primer</a>
+<li><a href="../../Documentation/">General NetBSD Documentation</a>
+    - for questions not specific to NetBSD/macppc.
+</ul>
+
+
+<ENTRY>usb-keyboard-problems USB keyboard problems
+There are two different types of USB keyboard problems.  One set of
+problems appeared after NetBSD 1.4.3 was released, and applies only to
+some iMac (Bondi Blue) and some PowerMacintosh G3 (Blue and White) machines.  
+This problem seems to have been fixed in NetBSD 1.6.
+<p>
+The other problem occurred on all models with USB keyboards, but was fixed
+prior to the release of NetBSD 1.5.
+
+<p><H3>iMac (Bondi Blue) and PowerMacintosh G3 (Blue and
+White) problems:</h3>
+See Bob Nestor's 
+<a href="http://mail-index.NetBSD.org/port-macppc/2001/06/11/0009.html">post</a>
+to the mailing list describing the problem and a
+workaround for the PowerMacintosh G3 (Blue and White).  This
+workaround doesn't work for the iMac (Bondi Blue), but Rob Gridley reports that 
+unplugging the mouse allows his system to boot and use the keyboard.  Also, 
+see the problem report, 
+<a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=12894">port-macppc/12894</a>
+<p>
+Briefly, what he recommends is:
+<p>
+<ol>
+  <li>Unplug the USB keyboard and plug in an ADB keyboard and mouse
+    <p>
+  <li>Boot NetBSD with the ADB keyboard
+    <p>
+  <li>Enter root, swap and filesystem responses on the ADB keyboard
+    <p>
+  <li>When the system gets to the shell prompt (or login if you went 
+    multi-user), unplug the ADB and plug in the USB keyboard
+</ol>
+<p>
+
+The USB will be usable at this point and you can use the
+system.  You'll notice that the ADB is dead even before you unplugged it.  
+Also you <b>MUST</b> boot without the USB installed or this won't work.
+<p>
+Alternatively, NetBSD 1.4.3 works fine on these two models and does not
+have this USB keyboard problem.
+
+<p><h3>Repeating keypress problems prior to NetBSD 1.5:</h3>
+There is a problem in some kernels that causes the first keypress
+from a USB keyboard to be repeated over and over again. A symptom
+of this would be the install system continually asking "<tt>(I)nstall,
+(S)hell or (H)alt ?</tt>" To avoid this problem, press the
+shift key before anything else.
+<p>
+On some newer machines, NetBSD will hang after configuring the devices but
+before entering single-user mode.  The recommended solution is to unplug
+all USB devices (especially hubs) and plug the mouse into the keyboard and
+the keyboard directly into the back of the mac.
+
+<ENTRY>cannot-allocate-vm-panic <tt>panic: startup: cannot allocate VM for buffers</tt>
+This problem should have been fixed in NetBSD 1.5.
+
+<p>
+On some machines with large quantities of RAM the kernel will run out of
+kernel VM when it tries to allocate the buffer cache.
+You can avoid this by either of:
+<ol>
+<li>Removing some RAM
+<li>Adding <tt>"options BUFPAGES=800"</tt> to the <a
+    href="../../Documentation/kernel/#how_to_build_a_kernel">kernel
+    configuration</a>
+</ol>
+
+<ENTRY>wdc-lost-interrupt <tt>wdc0:0:1: lost interrupt</tt>
+This problem is present in NetBSD 1.5.2 on newer machines that support 
+ATA4 drives.  Unfortunately, there is presently no easy workaround.  Post 
+to <a href="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</a> for 
+assistance.
+
+<p>This has been reported on the iBook (Dual USB) and the iMac (Summer 
+2000) which has been updated to BootROM 4.1.9.
+
+<p>The problem is not present in NetBSD 1.5.3 and later.
+
+<ENTRY>pciide-lost-interrupt <tt>pciide0:0:0: lost interrupt</tt>
+This problem is fixed in NetBSD 1.5.1 and later.
+
+<p>
+The NetBSD initialization code for the CMD 646 IDE controller doesn't
+correctly undo some of the settings that Open Firmware sets.  What happens
+is that Open Firmware sets the IDE controller up in 0646U2 mode and
+changes some of the interrupt settings.  The MI pciide driver doesn't know
+how to deal with this situation and you get a lot of "lost
+interrupt" messages.
+<p>
+What this means is that if you use Open Firmware to load the bootloader
+(i.e. <tt>ofwboot.xcf</tt>) or the kernel from your hard drive, NetBSD
+cannot use that drive.
+<p>
+A workaround is to place the kernel on another bootable
+bus and then use that to mount the drive with your NetBSD filesystem 
+on the drive connected to the CMD 646 IDE bus.  The
+key phrase here is "another bootable bus".  On the G3 and G4 machines which
+have this problem, they have more than one IDE bus (in addition to add-on
+SCSI busses).  The hard drive is typically on the bus which we have
+troubles with, but the CD-ROM and Zip drive are typically on a different
+IDE bus which works just fine.
+<p>
+What you may want to do is move your hard drive to the bus the CD-ROM is
+attached to (paying attention to the master/slave jumpers), and all your
+problems will go away, although your drive is using a slower IDE bus
+protocol.
+
+
+<ENTRY>mesh-fifo <tt>Panic: mesh: FIFO != 0</tt>
+This bug is not present in NetBSD 1.5 and later.
+<p>
+This is usually caused by bad SCSI cabling or devices.  Check your
+internal and external termination.  Check the length and quality of your
+cables.  Disconnect all devices that are not critical.
+<p>
+More often than not, this is caused by having a Zip drive on your MESH
+SCSI bus, as these devices do not behave like good SCSI citizens.
+<p>
+One person
+suggested that the MESH driver is more reliable if you don't reboot
+from MacOS into NetBSD. (That is, if you're running MacOS, shut down
+rather than rebooting, and then power it back on and boot to NetBSD.)
+<p>
+M L Riechers posted a very thorough 
+<a href="http://mail-index.NetBSD.org/port-macppc/2000/08/02/0029.html">
+message</a> on this topic.
+<p>
+Good luck.
+
+
+<ENTRY>bm0-device-timeouts I'm getting device timeouts on bm0
+This problem has been fixed in NetBSD 1.5 and later.
+<p>
+Inserting a 10Mb Hub (forcing bm0 to 10Mb/s instead of 100Mb/s) seems
+to prevent this problem.
+
+
+<ENTRY>old-ofw-load-base What's the deal with the "load-base" setting?
+
+The Open Firmware environment variable <tt>load-base</tt> is the address
+at which Open Firmware loads the bootloader from your <tt>boot-device</tt>.
+The behavior is different for the various versions of Open Firmware and
+<tt>boot-device</tt>s.  The symptom of an incorrectly set <tt>load-base</tt>
+is <tt><a href="#ofw-claim-failed">CLAIM failed</a></tt>.
+
+<p><h3>Open Firmware 3</h3>
+<b>Do not change the <tt>load-base</tt></b>.
+Open Firmware 3 machines have re-writable firmware, and users have found
+that changing the <tt>load-base</tt> has overwritten their flash BootROM,
+rendering their machines dead (requiring an expensive trip back to
+Apple).  <b>Do not change the <tt>load-base</tt> on an Open Firmware 3
+machine.</b>  Apple has fixed Open Firmware 3 such that you needn't change
+<tt>load-base</tt> to boot.
+
+<p><h3>Open Firmware 1.0.5, 1.1.22, 2.0.x, and 2.4</h3>
+The default value of <tt>load-base</tt> on these systems is 4000, which
+isn't very good for our purposes.  <a href="SystemDisk-tutorial/">System
+Disk</a> sets <tt>load-base</tt> to 600000, which suits us just fine for
+NetBSD 1.5.3 and later.  mkLinux uses a different value, which may prevent
+you from booting NetBSD/macppc.  If you're using NetBSD 1.5.3 or later, 
+reading further may simply confuse you -- stop here and just use 600000.
+
+<p>The <tt>load-base</tt> is handled differently by 
+<tt>ofwboot.xcf</tt> and <tt>ofwboot</tt>.  <tt>ofwboot.xcf</tt> is the
+XCOFF bootloader used on MS-DOS floppies, ISO CD-Rs, and with netbooting.  
+<tt>ofwboot</tt> is the "partition zero" bootloader on the install floppies, 
+install CD-R images, and hard drives prepared with <tt>sysinst</tt> or
+<tt>installboot</tt>.
+
+<p><tt>ofwboot</tt> has been set to use 600000.  Therefore,
+you should use a <tt>load-base</tt> of 600000.
+
+<p>The NetBSD 1.5.3 and later versions of <tt>ofwboot.xcf</tt> have been
+set to use 640000. Due to a perculiarity of Apple's Open FIrmware,
+<tt>load-base</tt> must be an address different from the address
+<tt>ofwboot.xcf</tt> is set to use. Therefore, you should use a
+<tt>load-base</tt> of 600000. This value is also the correct one for
+booting MacOS X. 
+
+<p>The <tt>ofwboot.xcf</tt> from NetBSD versions prior to 1.5.3 had been
+set to use 600000.  Therefore, if you're trying to boot using this bootloader,
+you should use a <tt>load-base</tt> of 640000
+or get a newer version of <tt>ofwboot.xcf</tt>
+
+<p>Once you are entirely positive that your machine has Open Firmware
+1.0.5, 1.1.22, 2.0.x, or 2.4 (see <a href="#ofw-version">Which version of
+Open Firmware does my machine have?</a>), run the following commands to
+set your <tt>load-base</tt> properly
+
+<pre>0 &gt; <b>setenv load-base 600000</b>
+0 &gt; <b>reset-all</b></pre>
+
+You should double-check that this value has been set using the
+<tt>printenv</tt> command.
+
+
+<ENTRY>pb418 PowerBook (FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8
+The two models listed above will fail to boot NetBSD 1.5.x and earlier if 
+they have have <a href="#ofw-version">BootROM</a> version 4.1.8 or later.
+<p>
+This problem is fixed in NetBSD 1.6 and later.
+
+<ENTRY>power-off Woah, my machine just powered off!
+Well, that's probably because you're using a recent laptop (iBook,
+PowerBook (FireWire), and some later models) and NetBSD 1.5 or later.
+<p>
+The page up key sequence (<tt>FN-uparrow</tt>) will panic a NetBSD 1.5.1 or
+1.5 kernel.  This is fixed in NetBSD 1.5.2 and later.
+<p>
+The "brightness" keys (F1 and F2) will power off your machine and zap your 
+clock.  You will need to build a new kernel without the <tt>abtn</tt> option.
+Remove the following line from your 
+<a href="../../Documentation/kernel/#how_to_build_a_kernel">
+kernel configuration</a>:
+
+<pre>#abtn*  at adb?</pre>
+
+
+<ENTRY>old-nodisk Where's my disk? (a.k.a. sysinst says <tt>I can not find any hard disk for use by NetBSD</tt>)
+Well, that's a good question!
+
+<p>The root cause is that NetBSD didn't find your hard drive (or, more 
+insidiously, didn't find your drive controller).  There a variety of reasons
+why this happens.
+
+<p>If you have a recent machine which support ATA4, and/or you've 
+installed a recent FirmWare update (late 2001), and you're trying to use 
+NetBSD 1.5.2, you may run into the 
+<a href="#wdc-lost-interrupt"><tt>wdc0:0:1: lost interrupt</tt></a> problem.
+
+<p>The NetBSD 1.5.1 install kernel image does
+not support the IDE controller in the PowerMacintosh G3 (Blue and White).  The
+real kernel does support it.
+
+
+<!-- ======================================== -->
+</LIST>
+
+<a href="./">Up to <em>NetBSD/macppc Port Page</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: oldfaq.list,v 1.1 2004/04/18 22:52:16 mbw Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1998-2003
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
