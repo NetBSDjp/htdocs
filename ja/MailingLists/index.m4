@@ -1,5 +1,5 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.119 2003/02/26 22:57:47 gendalia Exp $
+#	$NetBSD: index.m4,v 1.121 2003/03/14 12:31:50 kim Exp $
 #	Copyright (c) 1994-2003
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.netbsd.org/
@@ -7,7 +7,7 @@ divert(-1)dnl
 undefine(`index')
 
 define(`LISTNEWS',
-`  <a href="http://news.netbsd.org/'`patsubst(patsubst(patsubst($1, `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
+`  <a href="http://news.netbsd.org/'`patsubst(patsubst(patsubst(patsubst($1, `^port-', `ports-'), `-', `.'), `^', `netbsd.'), `netbsd.netbsd.', `netbsd.')'`/"><img src="../images/misc/news.gif" align="bottom" border="0" width="29" height="29" alt="[Newsgroup]"></a>
 </td><td valign=top>', `-', `.')
 
 define(`LISTARCHIVE',
@@ -130,7 +130,7 @@ href="http://mail-index.netbsd.org/">mail-index.netbsd.org</a>
 このページの説明の部分にあるリスト名の後のリンク
 <img src="../../images/misc/news.gif" origlink="../images/misc/news.gif" width="29" height="29"
 alt="[Newsgroup]"> をクリックします。これで <a
-href="http://news.netbsd.org">news.netbsd.org</a> のニュースアーカイブを利用できます。
+href="http://news.netbsd.org/">news.netbsd.org</a> のニュースアーカイブを利用できます。
 <p>
 
 NetBSD のメーリングリストの多くは、普通の unmoderated なものですが、
@@ -656,10 +656,10 @@ divert(9)
 <hr> 
 <address>
   <small>
-  (連絡先 - <a href="../Misc/feedback.html">英語</a>,
+  (連絡先 - <a href="http://www.netbsd.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@JP.NetBSD.ORG">日本語:
        www@JP.NetBSD.ORG</a>)<br>
-  $NetBSD: index.m4,v 1.119 2003/02/26 22:57:47 gendalia Exp $<br>
+  $NetBSD: index.m4,v 1.121 2003/03/14 12:31:50 kim Exp $<br>
   <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
