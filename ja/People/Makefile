@@ -11,8 +11,8 @@ subdirs:
 
 supporting-cast.html: mkdevht supporting-cast.data supporting-cast.head supporting-cast.tail 
 	./mkdevht ./supporting-cast.data
-#	cd ../de/People/ && make && cd ../../People
-#	cd ../se/People && make && cd ../../People
+#	cd ../de/People/ && ${MAKE} && cd ../../People
+#	cd ../sv/People && ${MAKE} && cd ../../People
 
 mkdevht: mkdevht.c
 	gcc -Wall -O2 -o mkdevht mkdevht.c
