@@ -4,7 +4,7 @@
 #       Process .list files into .html files
 
 all:	index.html
-	cd ..; make index; cd Changes;
+	cd ..; ${MAKE} index; cd Changes;
 
 .SUFFIXES:	.list .html
 

@@ -16,9 +16,9 @@ index.html: gallery/events.html Changes/index.html
 	./makeindex.sh
 	
 gallery/events.html: gallery/events.list
-	cd gallery; make events.html; cd ..;
+	cd gallery; ${MAKE} events.html; cd ..;
 
 Changes/index.html: Changes/index.list
-	cd Changes; make; cd ..;
+	cd Changes; ${MAKE}; cd ..;
 
 

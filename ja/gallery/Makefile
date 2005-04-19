@@ -14,7 +14,7 @@ all::
 	done
 
 events: events.html
-	cd ..; make index; cd gallery;
+	cd ..; ${MAKE} index; cd gallery;
 
 sitemap: sitemap.html sitemap.links
 
