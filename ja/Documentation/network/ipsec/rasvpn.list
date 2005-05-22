@@ -1,205 +1,202 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<html>
+<html lang="ja">
 <head>
 <!-- Copyright (c) 2005 Emmanuel Dreyfus.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.org">
+<link rev="made" href="mailto:www@jp.NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>How to build a remote user access VPN</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<HEADING>How to build a remote user access VPN
+<HEADING>リモートユーザーアクセス VPN の構築方法
 
 <LIST>
 
-<SECTION>Software release
-The information in this document applies to the following NetBSD kernel:
+<SECTION>ソフトウェアリリース
+この文書の情報は、以下の NetBSD カーネルを対象としています。
 <ul>
-<li>NetBSD-current as of may 2005 or above
-<li>NetBSD-3.0_BETA as of may 2005 or above
+<li>2005 年 5 月以降の NetBSD-current
+<li>2005 年 5 月以降の NetBSD-3.0_BETA
 </ul>
 <p>
 
-And the following userland (setkey(8), racoon(8), racoonctl(8) and libipsec):
+また、対象としているユーザーランド (setkey(8), racoon(8), racoonctl(8) および libipsec) は以下のものです。
 <ul>
-<li>NetBSD-current as of may 2005 or above
-<li>NetBSD-3.0_BETA as of may 2005 or above
-<li>Earlier NetBSD releases with the ipsec-tools 0.6.beta2 package or
-above from NetBSD's pkgsrc
+<li>2005 年 5 月以降の NetBSD-current
+<li>2005 年 5 月以降の NetBSD-3.0_BETA
+<li>これより前の NetBSD リリースに、NetBSD の pkgsrc を使って
+ipsec-tools 0.6.beta2 以上のパッケージを追加したもの
 </ul>
 
-<SECTION>Remote user access VPN
+<SECTION>リモートユーザーアクセス VPN
 
-<ENTRY>context Context
-Many organisations have a Remote Access Server (RAS) providing users a 
-remote access to the internal network through modem connections over the
-Plain Old Telephone System (POTS). 
+<ENTRY>context 背景となる状況
+多くの組織では、リモートアクセスサーバー (Remote Access Server, RAS)
+を持っており、ユーザーが旧来の公衆電話回線 (Plain Old Telephone System, POTS)
+とモデム接続を使ってリモートアクセスできるようにしています。
 <p>
 
-With the raise of high bandwidth connections like Digital Subscriber Line
-(DSL) and cable, using POTS for the remote access is getting obsolete, 
-and users want a high bandwidth remote access. Using Virtual
-Private Networks (VPN) is a solution to this problem.
+デジタル加入者回線 (Digital Subscriber Line, DSL) やケーブル回線といった
+高帯域接続の普及に伴い、POTS を使ったリモートアクセスは時代遅れとなり、
+ユーザーは高帯域のリモートアクセスを求めるようになっています。
+仮想プライベートネットワーク (Virtual Private Network, VPN) を使うことは、
+この問題に対する解決策のひとつです。
 <p>
 
-User authentication for VPN access can be done by different methods:
+VPN アクセス用のユーザー認証としては、いくつかの方法があります。
 <ul>
-<li>Group password (every users have the same password)
-<li>Login and password
-<li>x509 certificate
+<li>グループパスワード (ユーザー全員が同じパスワードを使う)
+<li>ログイン名とパスワード
+<li>x509 証明書
 </ul>
 <p>
 
-Group password is a weak solution and should not be used, because users
-are not really authenticated. x509 certificate gives you the highest 
-security, but user certificates might be troublesome to manage. If you
-can afford it, then everything you need to know is in the 
-<a href="index.html">IPsec FAQ</a>. Login and password are an average
-security level. Because passwords can be guessed or disclosed by another 
-protocol (e.g.: POP3 without SSL), it is not highly secure, but it can 
-be made reasonably secure if strong passwords are enforced and if the
-protocol used ensures they cannot be sniffed.
+グループパスワードは劣った手法であり、使うべきではありません。
+ユーザーを本当に認証しているわけではないからです。
+x509 証明書は最高のセキュリティーをもたらしますが、ユーザー証明書の管理が面倒かもしれません。
+それでも構わなければ、必要な情報は <a href="index.html">IPsec FAQ</a>
+にすべてあります。ログイン名とパスワードは、並のセキュリティーレベルです。
+パスワードは推測されたり、別のプロトコルで公開されたり (例: SSL を使わない POP3)
+するので、安全性は高くはありません。しかし、強いパスワードを使うようにし、
+また、傍受されないようなプロトコルの使い方をしていれば、
+経済的に安全を実現できます。
 <p>
 
-This HOW-TO covers the situation where login and password
-are to be used for remote user VPN access.
+この HOW-TO では、リモートユーザー VPN アクセス用に
+ログイン名とパスワードが使われている状況を対象とします。
 <p>
 
-<ENTRY>security Security considerations
-In order to establish a secured VPN, the remote user must authenticate to 
-the VPN gateway, and the VPN gateway must authenticate to the remote user. 
-If the mutual authentication is not performed, then there is a loophole
-open for Man in the Middle (MiM) attacks, where an attacker can masquerade
-as athe VPN gateway and collect user passwords.
+<ENTRY>security セキュリティー上の問題
+安全な VPN を確立するために、リモートユーザーは VPN ゲートウェイを認証しなければならず、
+また、VPN ゲートウェイはリモートユーザーを認証しなければなりません。
+お互いの認証がおこなわれないと、中間者攻撃 (Man in the Middle (MiM) attack)
+の抜け穴が開き、攻撃者が VPN ゲートウェイになりすまして
+ユーザーパスワードを収集できてしまいます。
 <p>
 
-We said the remote user will authenticate using login and password. How
-can the VPN gateway authenticate? If a pre-shared key is used, then anyone
-knowing the key will be able to masquerade as the VPN gateway, and all the
-legitimate users will have to know about the pre-shared key. This is really
-weak security. The alternative is to use a x509 certificate on the VPN 
-gateway. This is a server certificate, which is much easier to manage than 
-user certificates. We will assume a certificate is used to authenticate the
-VPN gateway.
+リモートユーザーがログイン名とパスワードで認証すると説明しましたが、
+VPN ゲートウェイはどうやって認証するのでしょうか? 事前共有鍵を使う場合、
+その鍵を知っている人なら誰でも VPN ゲートウェイになりすますことができますし、
+正当なユーザーは事前共有鍵を知っておかねばならなくなります。これは非常に弱いセキュリティーです。
+代替策は、VPN ゲートウェイで x509 証明書を使うことです。これはサーバー証明書であり、
+ユーザー証明書より管理しやすいものです。ここでは、
+VPN ゲートウェイの認証に証明書を使うものとします。
 <p>
 
-<ENTRY>solutions Solutions
-We want user authentication using a login and a password, and VPN gateway
-authentication using a certificate. There are not many solutions available.
-<a href="http://www.openvpn.org">OpenVPN</a> is a Secure Socket Layer (SSL)
-based solution that is able to do what we want. An alternative is to use 
-IPsec, which is what we will cover here.
+<ENTRY>solutions 解決策
+ここでは、ユーザーの認証にはログイン名とパスワードを使い、
+VPN ゲートウェイの認証には証明書を使うことが必要です。これを実現できる手法はあまりありません。
+<a href="http://www.openvpn.org">OpenVPN</a> は、これが実現可能な、
+Secure Socket Layer (SSL) を使った解決策です。別の解決策として、 IPsec を使う方法もあり、
+この HOW-TO ではこちらの方法を取り扱います。
 
-<SECTION>User remote access using IPsec
+<SECTION>IPsec を使ったユーザーリモートアクセス
 
-<ENTRY>ph1auth IPsec phase 1 authentications
-IPsec phase 1 is part of the IPsec Key Exchange (IKE) operations performed
-by the IKE daemon, also known as racoon(8) in NetBSD. Its goal is to 
-authenticate the peers and set up master keys for performing a secured 
-IPsec phase 2. The goal of phase 2 is to derive the keys used for exchanging
-IPsec traffic. Phase 2 rekeying can occur regularly while IPsec traffic
-is exchanged.
+<ENTRY>ph1auth IPsec フェーズ 1 認証
+IPsec フェーズ 1 は、NetBSD では racoon(8) としても知られる IKE デーモンによって行なわれる、
+IPsec 鍵交換 (IPsec Key Exchange, IKE) 操作の一部です。IPsec フェーズ 1 の目的は、
+通信相手を認証したうえで、 IPsec フェーズ 2 を安全に行なうためのマスター鍵の設定をすることです。
+フェーズ 2 の目的は、IPsec トラフィック交換に使われる鍵を得ることです。
+IPsec トラフィック交換がおこなわれている間、フェーズ 2 の鍵は定期的に再生成されます。
 <p>
 
-IPsec phase 1 offers two authentication methods: pre-shared keys and 
-certificates. This is not what we want because
+IPsec フェーズ 1 は、二つの認証方法を提供します。事前共有鍵と、証明書です。
+以下の理由により、IPsec フェーズ 1 はわれわれが求めているものではありません。
 <ul>
-<li>pre-shared keys are not bound to logins. We have no management tools
-to handle them properly, leaving a group password as the only managable
-option.
-<li>IPsec phase 1 authentication is supposed to be symetric: pre-shared keys 
-on both endpoints or certificates on both endpoints. This is not what we 
-are looking for.
+<li>事前共有鍵は、ログイン名に縛られません。グループパスワードとした場合だけは管理可能ですが、
+それを除けば、事前共有鍵を適切に扱うための管理ツールがありません。
+<li>IPsec フェーズ 1 認証は、対称的であることが前提です。
+つまり、両端ともに事前共有鍵認証を、または両端ともに証明書認証を使う、というものです。
+これは、われわれが探しているものではありません。
 </ul>
 
 <ENTRY>xauth Xauth
-Xauth is an IKE extension that occurs after phase 1 and adds a 
-login/password authentication. This solves half of the authentication 
-problem: because Xauth occurs just after phase 1, it is secured by 
-phase 1 authentication. You still need a pre-shared key or a certificate
-in phase 1. Using a pre-shared key is not secure, and using a certificate
-means you use user certificates, which is something we wanted to avoid.
+Xauth は、フェーズ 1 の後に使われ、ログイン名/パスワード認証を追加する IKE 拡張です。
+これは、認証にまつわる問題の半分を解決します。Xauth はフェーズ 1 の直後に使われるので、
+フェーズ 1 認証により安全なものとなります。問題の半分は解決しましたが、まだ
+フェーズ 1 では事前共有鍵か証明書が必要です。事前共有鍵の使用は安全ではありませんし、
+証明書を使うことは、ユーザー証明書を使うことを意味します。
+ユーザー証明書の使用はわれわれが避けたかったことです。
 
 <ENTRY>hybrid Hybrid auth
-Hybrid auth is another IKE extension, that makes phase 1 asymetric. During
-phase 1, the VPN gateway can use a certificate, while the remote user does 
-not have to authenticate. After phase 1 we are in a situation where:
+Hybrid auth はもうひとつの IKE 拡張で、フェーズ 1 を非対称にするものです。
+フェーズ 1 の行なわれている間、VPN ゲートウェイは、リモートユーザーが認証をする必要がなくても、
+証明書を使うことができます。フェーズ 1 が行なわれた後の状況は、以下のとおりです。
 <ul>
-<li>Remote user knows it speaks to the VPN gateway
-<li>Communications between the remote user and the VPN gateway are secure
-<li>The VPN gateway has no idea about who it is talking with
+<li>リモートユーザーは、通信相手が VPN ゲートウェイであることがわかっています
+<li>リモートユーザーと VPN ゲートウェイとの間のやりとりは安全です
+<li>VPN ゲートウェイは、話している相手が誰かわかっていません
 </ul>
 <p>
 
-After this phase 1, an Xauth exchange can occur to securely authenticate
-the remote user. Then phase 2 can take place.
+このフェーズ 1 の後、リモートユーザーのセキュリティー認証のために Xauth 交換をすることができます。
+その後、フェーズ 2 がおこなわれます。
 <p>
 
-The security level of IPsec + Xauth + Hybrid auth is roughtly equivalent
-to SSH using password authentication. 
+IPsec + Xauth + Hybrid auth のセキュリティーの度合は、
+パスワード認証を使った SSH とだいたい同じぐらいです。
 
-<ENTRY>mode_cfg ISAKMP mode config
-So our authentication problem is solved by using IPsec + Xauth + Hybrid auth.
-In order to make the thing really user friendly, we need to make the remote
-user machine configuration automatic. ISAKMP mode config is an IKE extension
-that enable the VPN gateway to provide the network configuration for the 
-remote user's machine: Internal IP address, DNS address, domain name, 
-and so on. 
+<ENTRY>mode_cfg ISAKMP モード設定
+以上のとおり、認証の問題は IPsec + Xauth + Hybrid auth を使うことで解決されました。
+リモートアクセスをユーザーフレンドリーなものにするために、
+リモートユーザーのマシン設定を自動化する必要があります。ISAKMP モード設定は、
+VPN ゲートウェイがリモートユーザーのマシンにネットワーク設定 (内部 IP アドレス、
+DNS アドレス、ドメイン名など) を提供できるようにする IKE 拡張です。
 <p>
 
 <ENTRY>nat_t NAT Traversal
-The remote user might be hidden behind a Network Address Translator (NAT),
-which will not work when using IPsec encrypted streams. When traffic has
-to be encrypted, IPsec uses a layer 4 protocol known as 
-Encapsulated Security Payload (ESP). Unlike TCP or UDP, ESP has no port
-number and cannot easily be handled by NAT devices.
+リモートユーザーは、IPsec 暗号化ストリームを使った場合には機能しない、
+ネットワークアドレス変換器 (Network Address Translator, NAT) の向こうにいるかもしれません。
+トラフィックを暗号化する必要があるときは、IPsec は、暗号ペイロード (Encapsulated Security Payload, ESP)
+というレイヤー 4 のプロトコルを使用します。TCP や UDP とは異なり、ESP
+はポート番号を持たず、 NAT デバイスが簡単に扱うことはできません。
 <p>
 
-RFC 3947 and 3948 describe a method to encapsulate ESP in UDP, and IKE
-extensions to manage NAT in between endpoints of IPsec streams. The
-encapsulation method ans IKE extensions are together known as
-NAT Traversal (NAT-T). 
+RFC 3947 および 3948 では、ESP を UDP でカプセル化する方法と、
+IPsec ストリームの両端の間にある NAT を管理するための IKE 拡張について解説しています。
+このカプセル化の方法と IKE 拡張の組み合わせは、NAT Traversal (NAT-T)
+として知られています。
 <p>
 
-NAT-T <a href="https://datatracker.ietf.org/public/ipr_detail_show.cgi?&ipr_id=78">might be encumbered</a> by a US patent.
+NAT-T は、合衆国特許の<a href="https://datatracker.ietf.org/public/ipr_detail_show.cgi?&ipr_id=78">制約を受けることになるかもしれません</a>。
 
-<ENTRY>ike_frag IKE fragmentation and ESP fragmentation
-Remote users will often connect from behind DSL modem-router appliances.
-Most of these devices are uterly broken when dealing with big UDP packets:
-they assume UDP can only be used for DNS requests and will drop bigger
-or fragmented UDP packets. IKE transactions and ESP over UDP will tend 
-to use big UDP packets, and will therefore be blocked.
+<ENTRY>ike_frag IKE フラグメンテーションおよび ESP フラグメンテーション
+リモートユーザーが DSL モデムルーター機器を介して接続してくるのは、よくあることでしょう。
+これらのデバイスのほとんどは、大きな UDP パケットの扱いに関して、まったく用をなしません。
+UDP が DNS リクエストでしか使われないという想定で作られており、それより大きな
+UDP パケットやフラグメントされた UDP パケットはこぼしてしまいます。
+IKE トランザクションや ESP オーバー UDP は大きくなりがちなので、
+ブロックされてしまいます。
 <p>
 
-In order to address that problem, we use IKE fragmentation, which is an 
-IKE extension used to fragment the IKE packets into smaller fragments. 
-ESP fragmentation addresses the problem of big ESP over UDP packets, by
-performing IP fragmentation before the ESP encapsulation: instead of 
-sending frag(IP/UDP/ESP/IP) on the network, we send IP/UDP/ESP/frag(IP).
-Devices between the IPsec endpoints therefore do not see any fragmented
-packets.
+この問題を処理するため、IKE パケットを小さな断片に分割 IKE 拡張である、
+IKE フラグメンテーションを使います。
+ESP フラグメンテーションは、大きな ESP オーバー UDP パケットの問題を、
+ESP のカプセル化の前に IP フラグメンテーションをすることによって、処理します。
+すなわち、ネットワークに frag(IP/UDP/ESP/IP) を送るのではなく IP/UDP/ESP/frag(IP) を送るのです。
+このため、IPsec 両端点の間にはさまれたデバイスは、
+いかなるフラグメントされたパケットも認識しません。
 
 <ENTRY>dpd Dead Peer Detection
-Last problem: the remote user Internet connection can be unstable, leading
-to spurious deconnections. The only built-in mechanism IPsec has to handle 
-that is to force IKE phase 2 rekeying after some time. If the peer is not
-on-line anymore, it will fail, thus causing the VPN tunnel to be destroyed.
+最後の問題です。リモートユーザーのインターネット接続が不安定で、
+あたかも接続が切れたかのようになることがあります。これに対して、
+IPsec に内蔵されている仕組みは、しばらく後に IKE phase 2 鍵再生成を強制的に行なうことだけです。
+その時に通信相手がオンラインでなかったら、これは失敗し、その結果 VPN トンネルは破棄されます。
 <p>
 
-This is not very convenient as it forces frequent rekeying to detect 
-that the remote user got off-line. Dead Peer Detection (DPD) is an IKE
-extension used to regularly probe the remote IPsec endpoint for activity.
-DPD can be used to detect that the remote host went off-line within a
-few seconds.
+この仕組みは、リモートユーザーがオフラインになったことを確認するため頻繁に鍵再生成を強制されるので、
+あまり便利ではありません。Dead Peer Detection (DPD) は、リモートの IPsec 端点が生きていることを
+定期的に確認するのに使われる IKE 拡張です。
+DPD は、リモートホストが数秒間オフラインになったことを確認するのに使うことができます。
 
-<SECTION>A VPN gateway setup
-Here is a setup example for a VPN gateway using IPsec + Xauth + Hybrid auth +
-ISAKMP mode config + NAT-T + DPD + IKE fragmentation + ESP fragmentation.
+<SECTION>VPN ゲートウェイの設定
+以下に、IPsec + Xauth + Hybrid auth + ISAKMP モード設定 + NAT-T + DPD + IKE フラグメンテーション +
+ESP フラグメンテーションを使った VPN ゲートウェイの設定例を示します。
 
-<ENTRY>kernel Kernel configuration
-First you need to <a href="../../kernel/#how_to_build_a_kernel">build and 
-install a kernel</a> with at least the following options:
+<ENTRY>kernel カーネルコンフィギュレーション
+最初に、少なくとも以下のオプションを含めた<a href="../../kernel/#how_to_build_a_kernel">カーネルを
+構築してインストール</a>する必要があります。
 <pre> 
 options INET
 options GATEWAY
@@ -211,26 +208,25 @@ options IPSEC_NAT_T
 pseudo-device   ipfilter
 </pre>
 
-<ENTRY>forw Packet forwarding
-You need to enable IPv4 packet forwarding, by using the following command:
+<ENTRY>forw パケットフォワーディング
+以下のコマンドを使って、IPv4 パケットフォワーディングを有効化する必要があります。
 <pre>
 # sysctl -w net.inet.ip.forwarding=1
 </pre>
-This can be automatically executed on reboot by adding this line 
-to <tt>/etc/sysctl.conf</tt>: 
+<tt>/etc/sysctl.conf</tt> に以下の行を追加して、
+リブート時に自動的に実行することができます。
 <pre>
 net.inet.ip.forwarding=1
 </pre>
 
-<ENTRY>cert Certificate generation
-If you have not already configured OpenSSL, start by installing the sample
-config file:
+<ENTRY>cert 証明書の作成
+OpenSSL の設定をまだ行なっていない場合は、設定ファイルのサンプルのインストールから始めてください。
 <pre>
 # cp /usr/share/examples/openssl/openssl.cnf /etc/openssl/
 </pre>
 
-Then create a private key and use it to create a Certificate Signing 
-Request (CSR):
+設定ファイルの用意ができたら、秘密鍵を作り、その鍵を使って証明書署名要求 (Certificate Signing 
+Request, CSR) を作ります。
 <pre>
 # cd /etc/openssl
 # umask 077
@@ -239,13 +235,13 @@ Request (CSR):
 # openssl req -new -key certs/vpngw.key -out certs/vpngw.csr
 </pre>
 
-Send the CSR, <tt>vpngw.csr</tt> to a Certificate Authority (CA) for
-signature. You will get a x509 certificate, that we shall name 
-<tt>vpngw.crt</tt>
+この CSR (<tt>vpngw.csr</tt>) を認証局へ送って、署名をしてもらいます。
+これで x509 証明書が交付されます。この証明書を <tt>vpngw.crt</tt>
+という名前にすることにします。
 <p>
 
-If you want to be your own CA, then perform the following steps to 
-generate the CA private key and certificate, and to sign your CSR:
+自分自身が認証局となりたい場合は、以下の手順で
+CA 秘密鍵の生成と署名をおこないます。
 <pre>
 # cd /etc/openssl
 # mkdir -p demoCA/newcerts
@@ -259,12 +255,12 @@ generate the CA private key and certificate, and to sign your CSR:
 </pre>
 <p>
 
-Keep the secret keys secret, as your VPN will not be secure anymore if they
-get disclosed. Give the CA certificate <tt>ca.crt</tt> to remote users, and
-move to the next step.
+秘密鍵が漏れると、 VPN はもう安全ではなくなってしまうので、
+秘密鍵は秘密にするようにしてください。CA 証明書 <tt>ca.crt</tt>
+をリモートユーザーに渡して、次の手順に進んでください。
 
-<ENTRY>config Configuring racoon(8)
-Here is a sample <tt>/etc/racoon.conf</tt> file:
+<ENTRY>config racoon(8) の設定
+以下に <tt>/etc/racoon.conf</tt> ファイルの例を示します。
 <pre>
 path certificate "/etc/openssl/certs";
 
@@ -277,11 +273,11 @@ remote anonymous {
         certificate_type x509 "vpngw.crt" "vpngw.key";
         my_identifier asn1dn;
         proposal_check claim;
-        generate_policy on;		# automatically generate IPsec policies
-	dpd_delay 20;			# DPD poll every 20 seconds
-        nat_traversal force;		# always use NAT-T
-        ike_frag on;			# use IKE fragmentation
-        esp_frag 552;			# use ESP fragmentation at 552 bytes
+        generate_policy on;		# IPsec ポリシーを自動生成する
+	dpd_delay 20;			# 20 秒毎に、 DPD ポーリングする
+        nat_traversal force;		# NAT-T を常に使う
+        ike_frag on;			# IKE フラグメンテーションを使う
+        esp_frag 552;			# ESP フラグメンテーションを使う
         proposal {
                 encryption_algorithm aes;
                 hash_algorithm sha1;
@@ -290,12 +286,12 @@ remote anonymous {
         }
 }
 mode_cfg {
-        network4 10.99.99.1;		# 1st address of VPN IPv4 pool
-        pool_size 253;			# size of the VPN IP pool: 253 addresses
-        auth_source system;		# validate logins against /etc/passwd
-        dns4 10.0.12.1;			# IPv4 DNS server
-        wins4 10.0.12.1;		# IPv4 WINS server
-        banner "/etc/racoon/motd";	# Banner message for clients
+        network4 10.99.99.1;		# VPN 用 IPv4 アドレス在庫の先頭のアドレス
+        pool_size 253;			# VPN 用 IP アドレス在庫のサイズ: 253 アドレス
+        auth_source system;		# /etc/passwd をもとにログインを検証する
+        dns4 10.0.12.1;			# IPv4 DNS サーバー
+        wins4 10.0.12.1;		# IPv4 WINS サーバー
+        banner "/etc/racoon/motd";	# クライアントに対するバナーメッセージ
 	pfs_group 2;
 }
 
@@ -309,121 +305,119 @@ sainfo anonymous {
 </pre>
 <p>
 
-The <tt>mode_cfg</tt> section defines the configuration sent from the
-VPN gateway to the client using ISAKMP mode config. 
-For now only IPv4 configuration is supported. 
-The VPN address pool is defined there, by a base address (<tt>network4</tt>)
-and a pool size (<tt>pool_size</tt>). <tt>auth_source</tt> explains how
-the login and passwrod are validated. Possible values are <tt>system</tt>, 
-to validate against the system user database, <tt>pam</tt> to use the 
-Pluggable Authentication Module (PAM) system (<tt>/etc/pam.d/racoon</tt> 
-will be used), and <tt>radius</tt> to 
-validate logins against RADIUS. 
+<tt>mode_cfg</tt> セクションで、ISAKMP モード設定を使って
+VPN ゲートウェイからクライアントへ送られる設定を定義しています。
+現在のところ、IPv4 の設定だけに対応しています。
+このセクションで、払い出す VPN アドレスの在庫を、先頭のアドレス (<tt>network4</tt>)
+と在庫のサイズ (<tt>pool_size</tt>) により定義しています。<tt>auth_source</tt>
+は、ログイン名とパスワードをどうやって検証するかを表します。ここで指定できる値は、
+システムユーザーデータベースをもとに検証する <tt>system</tt>、Pluggable Authentication Module (PAM)
+システム (<tt>/etc/pam.d/racoon</tt> が使われます) を使う <tt>pam</tt>、
+RADIUS をもとにログインを検証する <tt>radius</tt> です。
 <p>
 
-Once your <tt>/etc/racoon.conf</tt> file is ready, you can launch 
-racoon(8):
+<tt>/etc/racoon.conf</tt> ファイルの準備ができれば、
+racoon(8) を実行することができます。
 <pre>
 # racoon
 </pre>
 <p>
-In order to have racoon(8) started up at boot time, you need the following
-in <tt>/etc/rc.conf</tt>:
+ブート時に racoon(8) を起動するためには、
+<tt>/etc/rc.conf</tt> に以下のように書きます。
 <pre>
 racoon=YES
 </pre>
 
-<ENTRY>more_frag More fragmentation problems
-In the configuration sample, <tt>esp_frag</tt> is specified so that ESP
-fragmentation is used to avoid sending packets bigger than 552 bytes. 
-552 bytes is quite low, but it should work with the most broken DSL 
-modem-routers appliances. The higher <tt>esp_frag</tt> is, the better
-the performances are.
+<ENTRY>more_frag さらなるフラグメンテーション問題
+この設定例では、ESP フラグメンテーションを使って、送出するパケットが
+552 バイトより大きくならないような <tt>esp_frag</tt> の指定をしています。
+552 バイトは非常に小さいですが、これなら最もひどい DSL モデムルーター機器でも使えるはずです。
+<tt>esp_frag</tt> を大きくすれば、性能が向上します。
 <p>
-Using ESP fragmentation, it is possible to exchange IP packets of any
-size through the tunnel. However, there is a special case for TCP, which
-may have trouble with Path Maximum Transmission Unit (PMTU) discovery. 
-The solution is to use Maximum Segment Size (MSS) clamping. This can be 
-done in <tt>/etc/ipnat.conf</tt>, assuming your VPN internal address
-pool is 10.99.99.0/24:
+ESP フラグメンテーションを使えば、どんなサイズの IP パケットでもトンネル経由で交換可能です。
+しかし、TCP には特別な場合があり、Path Maximum Transmission Unit (PMTU)
+探索にまつわる問題が起きるかもしれません。これに対する解決策は、
+最大セグメント長 (Maximum Segment Size, MSS)
+の調節を使うことです。払い出し用の VPN 内部アドレスの範囲が 10.99.99.0/24 であるとすると、
+<tt>/etc/ipnat.conf</tt> に以下のように書けばよいです。
 <pre>
 map ex0 10.99.99.0/24 -> 0/0 mssclamp 552
 </pre>
-And type the following to enable that configuration:
+この設定を有効にするために、以下のようにタイプします。
 <pre>
 # ipf -E; ipnat -f /etc/ipnat.conf
 </pre>
-In order to have those commands executed on startup, you need
-the following in <tt>/etc/rc.conf</tt>:
+起動時にこのコマンドを実行するには、
+<tt>/etc/rc.conf</tt> に以下のように書きます。
 <pre>
 ipfilter=YES
 ipnat=YES
 </pre>
-Note that the system will not boot with <tt>ipfilter=YES</tt> if the
-<tt>/etc/ipf.conf</tt> file is missing. You can create a blank file
-if you do not need any IP filtering.
+注意: <tt>/etc/ipf.conf</tt> ファイルがない場合は、<tt>ipfilter=YES</tt>
+とするとシステムが起動しません。 IP フィルタリングが一切必要ない場合は、
+空のファイルを作っておけばよいです。
 
-<ENTRY>firewall Interraction with firewalls
-In this VPN solution, the client needs to send UDP packets to ports 500 
-and 4500 of the VPN gateway. The first packets are exchanged on port 500, 
-then NAT-T negociation moves the transaction to port 4500.
+<ENTRY>firewall ファイアウォールとの関係
+この VPN の手法では、クライアントは VPN ゲートウェイの 500 番ポートと 4500 番ポートへ
+UDP パケットを送る必要があります。最初のパケットは 500 番ポートで交換され、
+それから NAT-T 交渉で 4500 番ポートにトランザクションが移ります。
 <p>
-Firewalls in front of the VPN gateway must be configured 
-to let udp/500 and udp/4500 pass through to the VPN gateway.
+VPN ゲートウェイの前に立つファイアウォールは、
+VPN ゲートウェイ宛の udp/500 と udp/4500 を通すように設定する必要があります。
 
 
-<ENTRY>radius VPN gateway and RADIUS 
-RADIUS can be used for login validation, IP addresses allocation and 
-accounting. Here is a sample <tt>mode_cfg</tt> section for
-<tt>/etc/racoon.conf</tt> that enforces RADIUS usage:
+<ENTRY>radius VPN ゲートウェイと RADIUS 
+RADIUS は、ログインの検証、IP アドレスの割り当てと、
+アカウンティングに使うことができます。以下に示すのは、
+<tt>/etc/racoon.conf</tt> ファイルの <tt>mode_cfg</tt> セクションで、
+RADIUS を使うようにするための例です。
 <pre>
 mode_cfg {
-	pool_size 253;			# IPv4 pool size
-	auth_source radius;		# login validated against RADIUS
-	conf_source radius;		# IPv4 address obtained by RADIUS
-	accounting radius;		# RADIUS accounting
-        dns4 10.0.12.1;			# IPv4 DNS server
-        wins4 10.0.12.1;		# IPv4 WINS server
-        banner "/etc/racoon/motd";	# Banner message for clients
+	pool_size 253;			# IPv4 アドレス在庫のサイズ
+	auth_source radius;		# RADIUS をもとにログインを検証する
+	conf_source radius;		# RADIUS で IPv4 アドレスを割り当てる
+	accounting radius;		# RADIUS アカウンティング
+        dns4 10.0.12.1;			# IPv4 DNS サーバー
+        wins4 10.0.12.1;		# IPv4 WINS サーバー
+        banner "/etc/racoon/motd";	# クライアントに対するバナーメッセージ
 	pfs_group 2;
 }
 </pre>
 <p>
 
-Additionnaly, you need to create a <tt>/etc/radius.conf</tt> file that
-contains the RADIUS server address and the secret shared with the RADIUS
-server. This file must be owned by root and mode 0600 in order to keep 
-the shared secret secure. Here is an example, see radius.conf(5) for
-the details:
+この設定のほか、RADIUS サーバーのアドレスと RADIUS サーバーとの共有鍵を含んだ
+<tt>/etc/radius.conf</tt> ファイルを作る必要があります。
+このファイルは、共有鍵を安全に保つために、
+root の所有としてパーミッションを 0600 にしなければなりません。
+以下に例を示します。詳細は radius.conf(5) をご覧ください。
 <pre>
 auth radius.example.net MyDirtySecret
 acct radius.example.net MyDirtySecret
 </pre>
 <p>
 
-<SECTION>VPN client
-<ENTRY>client Cisco VPN client
-The VPN gateway setup presented in the previous section is interoperable 
-with the Cisco VPN client configured in mutual group authentication (this is
-a synonym for Hybrid authentication). The group and group password required 
-by Cisco VPN client are ignored by racoon(8), but that does not make user
-authentication unsecure.
+<SECTION>VPN クライアント
+<ENTRY>client Cisco VPN Client
+前章で説明したような設定をした VPN ゲートウェイは、相互グループ認証 (mutual group authentication;
+Hybrid authentication と同義) の設定をした Cisco VPN Client と相互運用することができます。
+Cisco VPN クライアントが要求するグループおよびグループパスワードを、
+racoon(8) は無視しますが、これによってユーザー認証が安全でなくなることはありません。
 <p>
 
-Do not forget to set up the client with IPsec over UDP transport to get 
-NAT-T enabled.
+NAT-T が有効になるよう、クライアントに
+IPsec オーバー UDP トランスポートの設定をすることを忘れないでください。
 <p>
 
-<ENTRY>client_conf racoon(8) as the client: configuration example 
-It is also possible to use racoon(8) as a client. You need to install the
-CA certificate in <tt>/etc/openssl/certs/ca.crt</tt>, and the configuration
-below in <tt>/etc/racoon.conf</tt>
+<ENTRY>client_conf クライアントとしての racoon(8) : 設定例
+racoon(8) はクライアントとして使うことができます。
+CA 証明書を <tt>/etc/openssl/certs/ca.crt</tt> にインストールし、
+<tt>/etc/racoon.conf</tt> を以下のように設定する必要があります。
 <pre>
 path certificate "/etc/openssl/certs";
 path pre_shared_key "/etc/racoon/psk.txt";
 
 listen {
-	# socket used for communication between racoon and racoonctl
+	# racoon と racoonctl との間で使うソケット
         adminsock "/var/racoon/racoon.sock" "root" "operator" 0660;
 }
 
@@ -432,7 +426,7 @@ remote 192.0.2.50 {
         exchange_mode aggressive;
         ca_type x509 "ca.crt";
         proposal_check obey;
-        mode_cfg on;		# accept config through ISAKMP mode config
+        mode_cfg on;		# ISAKMP モード設定による設定を受け入れる
 	dpd_delay 20;
         nat_traversal force;
         ike_frag on;
@@ -457,28 +451,28 @@ sainfo anonymous {
 }
 </pre>
 <p>
-The <tt>phase1-up.sh</tt> and <tt>phase1-down.sh</tt> scripts are called
-when the IKE phase 1 is established and terminated, that is, at VPN 
-connection and disconnect time. They are responsible for setting up
-and deleting the IPsec Security Policies (SP), VPN IP address, and 
-routing entries. The sample scripts should do what you need, but you can
-customize them to fit your particular needs.
+二つのスクリプト <tt>phase1-up.sh</tt> と <tt>phase1-down.sh</tt> は、
+それぞれ IKE phase 1 の確立時と終了時、つまり VPN 接続時と切断時に呼ばれます。
+このスクリプトは IPsec Security Policies (SP), VPN IP アドレス、
+ルーティングエントリーの設定と消去を受け持っています。
+サンプルスクリプトのままでも必要なことはできるはずですが、
+各自の必要に応じてカスタマイズすることもできます。
 <pre>
 # cp /usr/share/examples/ipsec-tools/roadwarrior/client/*.sh /etc/racoon/
 </pre>
 <p>
 
-Once this is ready, you can start racoon(8):
+この準備ができれば、 racoon(8) を起動できます。
 <pre>
 # racoon
 </pre>
-In order to have it started at boot time, add <tt>racoon=YES</tt> to 
-<tt>/etc/rc.conf</tt>.
+ブート時に racoon(8) を起動するには、<tt>/etc/rc.conf</tt> に
+<tt>racoon=YES</tt> を書き加えます。
 
-<ENTRY>connection Connecting to and disconnecting from the VPN
-racoonctl(8) can be used to connect to the VPN and to disconnect from it. The
-login is given through the <tt>-u</tt> option and the password is 
-prompted on the terminal:
+<ENTRY>connection VPN との接続と切断
+racoonctl(8) は、VPN への接続や VPN からの切断に使うことができます。
+ログイン名を <tt>-u</tt> オプションで指定します。
+パスワードは端末上で入力を促されます。
 <pre>
 $ racoonctl vc -u username 192.0.2.50
 Pasword: password
@@ -491,11 +485,11 @@ Bound to address 10.99.99.3
 $ racoonctl vd 192.0.2.50
 VPN connection terminated
 </pre>
-DNS addresses can be used instead of IP addresses in this example.
-Note that if for some reason the routing entries or Security Policy
-Database (SPD) get screwed, the DNS resolution will not work at VPN 
-disconnect time. To recover from such a situation, type the following 
-commands as root:
+この例では IP アドレスを使っていますが、DNS アドレスを使うこともできます。
+注意: 何らかの理由で、ルーティングエントリーかセキュリティーポリシーデータベース
+(Security Policy Database, SPD) にねじれが起きると、
+VPN の切断時に DNS 名前解決ができなくなります。
+この場合は、root で以下のコマンドを使って復旧できます。
 <pre>
 # setkey -F
 # setkey -FP
@@ -504,36 +498,36 @@ commands as root:
 </pre>
 <p>
 
-Anyone with read/write rights to the racoon(8) socket 
-<tt>/var/racoon/racoon.sock</tt> can start or stop the VPN. The
-ownership and rights to the socket can be set using the <tt>adminsock</tt>
-statement in the <tt>listen</tt> section of <tt>/etc/racoon.conf</tt>.
+racoon(8) ソケット <tt>/var/racoon/racoon.sock</tt> への読み書き権限がある人なら、
+誰でも VPN の起動や停止をすることができます。
+このソケットの所有者とアクセス権限は、<tt>/etc/racoon.conf</tt> の
+<tt>listen</tt> セクションで、<tt>adminsock</tt> ステートメントを使って設定できます。
 
-<ENTRY>save_pwd Saving Xauth password
-If you want to avoid typing the Xauth password, you can store it in
-racoon's Pre-Shared Key (PSK) file. Add the following statement in 
-the <tt>remote</tt> section of <tt>/etc/racoon.conf</tt>:
+<ENTRY>save_pwd Xauth パスワードの保存
+Xauth パスワードの入力を省略したい場合、このパスワードを racoon の事前共有鍵 (PSK)
+ファイルに保持することができます。<tt>/etc/racoon.conf</tt> の
+<tt>remote</tt> セクションに、以下の記述を追加します。
 <pre>
 	xauth_login "username";
 </pre>
 <p>
 
-Then add a line in <tt>/etc/racoon/psk.txt</tt> with the login and the
-password:
+そして、 <tt>/etc/racoon/psk.txt</tt> に、
+ログイン名とパスワードを一行で書き足します。
 <pre>
 username	password
 </pre>
 <p>
 
-With that setup, this command will establish the VPN connection using the
-<tt>toto</tt> login, without prompting for a password:
+以上の設定をしておけば、以下のコマンドは、パスワードの入力を求めることなく、
+<tt>toto</tt> ログイン<!-- XXX -->を使って VPN 接続を確立します。
 <pre>
 $ racoonctl vc 192.0.2.50
 </pre>
 
 </LIST>
 
-<a href="../">Up to <em>NetBSD Documentation: Network</em></a>
+<a href="../"><em>NetBSD ドキュメンテーション: ネットワーク</em>へ戻る</a>
 <hr>
 
 <DOCLINK>
@@ -541,8 +535,12 @@ $ racoonctl vc 192.0.2.50
 <hr>
 <address>
   <small>
-  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
+       www@jp.NetBSD.org</a>)<br>
   $NetBSD: rasvpn.list,v 1.3 2005/05/10 12:45:55 manu Exp $<br>
+  <!-- based on english translation: -->
+  <!-- NetBSD: rasvpn.list,v 1.3 2005/05/10 12:45:55 manu Exp   -->
   <a href="../../../Misc/disclaimer.html">Copyright &copy; 2005
     Emmanuel Dreyfus,  ALL RIGHTS RESERVED.</a>
   </small>
