@@ -1,8 +1,8 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $
+#	$NetBSD: index.m4,v 1.169 2005/05/10 16:54:10 reed Exp $
 #	<!-- based on english translation: -->
-#	<!-- NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp   -->
-#	Copyright (c) 1994-2004
+#	<!-- NetBSD: index.m4,v 1.169 2005/05/10 16:54:10 reed Exp   -->
+#	Copyright (c) 1994-2005
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
 
@@ -30,13 +30,13 @@ define(`PORTLISTHEADER',
 `  <a name="$1"><b>$1:</b></a> <a href="../Ports/substr($1,5)/">(homepage)</a><br>')
 
 define(`LISTSECTION',
-`<center><h3>$1</h3></center>
-divert(5)<h3>$1</h3>
+`<center><h3 class="title">$1</h3></center>
+divert(5)<h3 class="title">$1</h3>
 
 divert(0)dnl')
 
 define(`LIST',
-`    <li><a href="#$1">$1</a>
+`    <li><a href="#$1">$1</a></li>
 LISTPREHEADER
 LISTSUBSCRIBE($1)
 LISTARCHIVE($1)
@@ -44,7 +44,7 @@ LISTNEWS($1)
 LISTHEADER($1)')
 
 define(`PORTLIST',
-`    <li><a href="#$1">$1</a>
+`    <li><a href="#$1">$1</a></li>
 LISTPREHEADER
 LISTSUBSCRIBE($1)
 LISTARCHIVE($1)
@@ -52,7 +52,7 @@ LISTNEWS($1)
 PORTLISTHEADER($1)')
 
 define(`OLDLIST',
-`    <li><a href="#$1">$1</a>
+`    <li><a href="#$1">$1</a></li>
 LISTPREHEADER
 LISTARCHIVE($1)
 LISTNEWS($1)
@@ -69,14 +69,16 @@ divert(0)dnl
 <html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
-<!-- Copyright (c) 1994-2004
+<!-- Copyright (c) 1994-2005
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@jp.NetBSD.org">
+<link rel="stylesheet" href="/NetBSD.css" type="text/css">
+
 <title>NetBSD Mailing Lists</title>
 </head>
-<body bgcolor="#FFFFFF" text="#000000">
+<body class="website" bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="webpage">
 
-<h2>NetBSD メーリングリスト</h2>
+<h2 class="title">NetBSD メーリングリスト</h2>
 
 <p>
 (訳註: ここで説明しているのは本家のメーリングリストです。日本語のメーリングリストについては <a href="http://www.jp.NetBSD.org/ja/JP/ml.html">日本語メーリングリストのページ</a>を見てください。)
@@ -123,7 +125,7 @@ href="http://mail-index.NetBSD.org/">mail-index.NetBSD.org</a>
 <a href="mailto:root@garbled.net">Tim Rightnour</a>
 のおかげです) 。
 このほか、メーリングリストのアーカイブは、
-<a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>
+<a href="http://marc.theaimsgroup.com/">MARC list archives</a>
 にもあります。
 <p>
 
@@ -138,11 +140,11 @@ NetBSD のメーリングリストの多くは、普通の unmoderated なものですが、
 管理者によって moderated にされるような状況がたまに起きることに
 ご注意ください。
 
-<h2>メーリングリストアーカイブの検索</h2>
+<h2 class="title">メーリングリストアーカイブの検索</h2>
 
 索引とアーカイブは
 <a href="http://mail-index.NetBSD.org/">http://mail-index.NetBSD.org/</a>
-と <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a> にあります。
+と <a href="http://marc.theaimsgroup.com/">MARC list archives</a> にあります。
 <p>
 
 Google でメーリングリストを簡単に検索 (<a
@@ -163,7 +165,7 @@ href="../Misc/search.html">その他の NetBSD 検索</a>)<br>
   </td></tr></table>
 </blockquote>
 
-<h2><a name="index">The NetBSD Project のメーリングリスト</a></h2>
+<h2 class="title"><a name="index">The NetBSD Project のメーリングリスト</a></h2>
 
 <table><tr><td valign=top>
 
@@ -187,12 +189,36 @@ LIST(netbsd-bugs)
   <i>send-pr(1)</i> で送られた NetBSD のバグレポートはすべてここに流れます。
 ENDLIST
 LIST(pkgsrc-bugs)
-  pkgsrc のバグに関する議論のためのメーリングリストです。
   <i>send-pr(1)</i> で送られた 'pkg' カテゴリーのバグレポートはすべてここに流れます。
+  pkgsrc のバグに関する議論のためのメーリングリストです。
+  ここへバグの報告をしないでください。
 ENDLIST
 LIST(netbsd-docs)
-  NetBSD の文書に関する議論のためのメーリングリストです。翻訳者用メーリングリスト
-に関する情報は<a href="../developers/translate.html#ml">このページ</a>にあります。
+  NetBSD のドキュメンテーションに関する議論のためのメーリングリストです。
+ENDLIST
+LIST(netbsd-docs-de)
+  NetBSD のドキュメンテーションのドイツ語訳に関する議論のためのメーリングリストです。
+ENDLIST
+LIST(netbsd-docs-es)
+  NetBSD のドキュメンテーションのスペイン語訳に関する議論のためのメーリングリストです。
+ENDLIST
+LIST(netbsd-docs-fr)
+  NetBSD のドキュメンテーションのフランス語訳に関する議論のためのメーリングリストです。
+ENDLIST
+LIST(netbsd-docs-nl)
+  NetBSD のドキュメンテーションのオランダ語訳に関する議論のためのメーリングリストです。
+ENDLIST
+LIST(netbsd-docs-se)
+  NetBSD のドキュメンテーションのスウェーデン語訳に関する議論のためのメーリングリストです。
+ENDLIST
+LIST(netbsd-docs-ru)
+  NetBSD のドキュメンテーションのロシア語訳に関する議論のためのメーリングリストです。
+ENDLIST
+LIST(netbsd-docs-zh_cn)
+  NetBSD のドキュメンテーションの簡体字中国語訳に関する議論のためのメーリングリストです。
+ENDLIST
+LIST(netbsd-docs-zh_tw)
+  NetBSD のドキュメンテーションの繁体字中国語訳に関する議論のためのメーリングリストです。
 ENDLIST
 LIST(netbsd-help)
   ユーザーが質問を寄せる一般的な場としてのメーリングリストです。
@@ -707,33 +733,31 @@ ENDLIST
 
 </td></tr></table>
 divert(4)
-<h2><a name="descriptions">リストの説明</a></h2>
+<h2 class="title"><a name="descriptions">リストの説明</a></h2>
 divert(9)
+<div class="navfoot">   
 <hr>
 
-<table><tr><td>
-    <a href="../"><img
-	src="../../images/NetBSD-flag.png" origlink="../images/NetBSD-flag.png" border=0
-	width="90" height="90" alt=""></a>
-  </td><td>
-    <a href="../"><img
-	src="../../images/empty.gif" origlink="../images/empty.gif" border=0
-	width="1" height="1" alt="NetBSD ">ホームページ</a>
-</td></tr></table>
-
-<hr> 
-<address>
-  <small>
+<table border="0" summary="Footer navigation">
+  <tr>
+    <td class="foothome">
+      <span class="foothome"><a href="../"><img src="/images/NetBSD-flag.png"
+        alt="" border="0" width="90" height="90"></a></span></td>
+    <td class="foothome">
+      <span class="foothome"><a href="../">ホームページ</a></span><br>
+    </td>
+  </tr>
+</table>
+<hr>
+</div>
+<p></p>
+<span class="footfeed">
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
-  $NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $<br>
-  <!-- based on english translation: -->
-  <!-- NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp   -->
-  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
-  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
-  </small>
-</address>
+</span>
 
-</body>
+  
+  <span class="foottag">Generated from <em>%NetBSD: products.xml,v 1.6 2005/03/09 03:16:36 jschauma Exp %</em></span><br><span class="footcopy"><a href="../Misc/disclaimer.html" origlink="/Misc/disclaimer.html"><span class="copyright">Copyright &copy; 1994-2005 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.</a></span>
+</div></body>
 </html>

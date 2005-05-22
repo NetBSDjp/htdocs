@@ -2,14 +2,14 @@
 
 <html lang="ja">
 <head>
-<!-- Copyright (c) 1998-2003
+<!-- Copyright (c) 1998-2005
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@jp.NetBSD.org">
 <title>Diskless NetBSD HOW-TO, 序説 (i386固有な部分)</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="../../../../Documentation/network/netboot/intro.html">戻る</a> |
+<a href="intro.html">戻る</a> |
 <a href="nfs.html">進む</a> |
 <a href="./">目次</a>
 
@@ -43,8 +43,45 @@
 
 <li><b>PXE を用いる</b>
     <p>
-    お使いのハードウェアが PXE を使ったネットブートに対応している場合、
-    <tt>/etc/dhcpd.conf</tt> に以下を書き足せば NetBSD を直接ブートできます:
+お使いのハードウェアが PXE を使ったネットブートに対応している場合、
+そのハードウェアは最初に動的ホスト設定プロトコル (DHCP) を使って
+IP アドレスの取得を試みます。 dhcpd サーバーは、クライアントのイーサネットアドレス
+(MAC) をもとに、 IP アドレスとブートローダーのファイル名を決めます。
+この要求が成功すると、PXE は二段階目のブートプログラムを簡易ファイル転送プロトコル
+(TFTP) でダウンロードできるものと判断します。 DHCP 要求に先に応えたサーバーに対して
+TFTP 接続をして、サーバーから返されたファイル名を要求し、
+二段階目のブートプログラムのダウンロードが行なわれます。
+それから、このブートプログラムが、 DHCP 要求によって指定されたサーバーとパスから
+NFS を使ってカーネルをロードします。
+
+<p>NetBSD 配布物の <tt>base.tgz</tt> 中の
+<tt>/usr/mdec/</tt> ディレクトリーには、二つの
+PXE ブートローダーファイルがあります。ほとんどの場合は <tt>pxeboot_ia32.bin</tt>
+を使うべきです。 <tt>pxeboot_ia32_com0.bin</tt>
+は、クライアントの一つ目のシリアルポートをコンソールとして使わせるものだからです。
+後者のシリアルコンソール版 PXE ファイルは、 (Soekris のハードウェアのような)
+シリアルコンソールしかない組み込みシステムで必要になるかもしれません。
+9600 8N1 の設定で使ってください。
+
+<p><tt>/etc/dhcpd.conf</tt>
+には以下のように書くことができます。
+
+<pre>
+host pxehost {
+  hardware ethernet 01:23:45:67:89:ab;       # PXE ホストの MAC アドレス
+  fixed-address 192.168.17.42;               # PXE ホストの IP アドレス
+  
+  # stage 1: 
+  filename "pxeboot_ia32.bin";               # /tftpboot からの相対パス
+  
+  # stage 2:
+  next-server 192.168.42.1;                  # NFS サーバーの IP アドレス
+  option root-path "/usr/tmp/pxestuff/root"; # NFS サーバー上のパス
+}</pre>
+
+
+<p>PXE システムがたくさんある場合、手短に済ます方法として、
+その PXE システム全部に対してまとめて <tt>/etc/dhcpd.conf</tt> を設定することができます。
 
 <pre>
 class "pxe-clients-ia32" {
@@ -54,16 +91,9 @@ class "pxe-clients-ia32" {
 }
 </pre>
 
-    <b>pxeboot</b> ファイルは TFTP ディレクトリーに置いておく必要があります
-    (<a href="tftpd.html">tftp の設定</a>参照) 。上記中の
-    <tt>pxeboot_ia32_com0.bin</tt> は、その名のとおり、 <b>com0</b>
-    として構成されたシリアルポートを使ったブートを行います。
-    キーボード・マウス・ビデオを使った通常のブート用には、
-    <tt>pxeboot_ia32.bin</tt> を使います。これらはいずれも、標準的な
-    NetBSD/i386 インストールでは <tt>/usr/mdec</tt> ディレクトリーにあります。
 <p>
 
-<li><b>GNU GRUB を用いる</b>
+<li><b>GRUB を用いる</b>
     <p>
     <a href="http://www.gnu.org/software/grub/">GRUB</a> は、複数の異なる
     OS のブートに対応したブートローダーで、いくつかの OS のネットワーク経由の
@@ -190,7 +220,6 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 	<p>
 	コンピューターがブートしている間、SHIFT キーを押し続けて
 	config.sys と autoexec.bat を実行させないでください。
-	<p>
     </ul>
 
     DOS プロンプトで、"dosboot.com" とカーネルを置いたディレクトリーに
@@ -213,7 +242,6 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
     <tt>/usr/src/sys/arch/i386/stand/dosboot</tt> に移動して、
     <tt>Makefile</tt> に特別なオプション(シリアルコンソール, ...)を加えて、
     "<tt>make</tt>" を実行してください。
-<p>
 </li>
 
 <li><b>NT boot selector を使用する</b>
@@ -228,6 +256,8 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 <h2>設定を始める (次の順番に読むのが良いでしょう):</h2>
 <dl><dt><dd>
 <ol>
+<li><a href="dhcpd.html"><tt>dhcpd</tt></a>
+<li><a href="tftpd.html"><tt>tftpd</tt></a> (PXE)
 <li><a href="nfs.html"><tt>nfs</tt></a>
 <li><a href="files.html">クライアントのファイルシステム</a>
 <li><a href="finish.html">終了</a>
@@ -236,7 +266,7 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 
 <hr>
 
-<a href="../../../../Documentation/network/netboot/intro.html">戻る</a> |
+<a href="intro.html">戻る</a> |
 <a href="nfs.html">進む</a> |
 <a href="./">目次</a>
 
@@ -245,8 +275,8 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../../images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a> 
+        src="../../../../images/NetBSD-flag.png" origlink="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a> 
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" origlink="../../../images/empty.gif" border="0"
@@ -255,8 +285,8 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../../images/NetBSD-flag.gif" origlink="../../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a>
+        src="../../../../images/NetBSD-flag.png" origlink="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
         src="../../../../images/empty.gif" origlink="../../../images/empty.gif" border="0"
@@ -270,10 +300,10 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
-  $NetBSD: intro.i386.html,v 1.24 2002/11/23 16:01:32 darrenr Exp $<br>
+  $NetBSD: intro.i386.html,v 1.33 2005/05/16 23:09:09 hubertf Exp $<br>
   <!-- based on english translation: -->
-  <!-- NetBSD: intro.i386.html,v 1.24 2002/11/23 16:01:32 darrenr Exp   -->
-  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2003
+  <!-- NetBSD: intro.i386.html,v 1.33 2005/05/16 23:09:09 hubertf Exp   -->
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
