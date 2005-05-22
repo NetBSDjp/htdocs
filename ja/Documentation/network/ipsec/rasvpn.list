@@ -1,0 +1,552 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 2005 Emmanuel Dreyfus.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+<title>How to build a remote user access VPN</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<HEADING>How to build a remote user access VPN
+
+<LIST>
+
+<SECTION>Software release
+The information in this document applies to the following NetBSD kernel:
+<ul>
+<li>NetBSD-current as of may 2005 or above
+<li>NetBSD-3.0_BETA as of may 2005 or above
+</ul>
+<p>
+
+And the following userland (setkey(8), racoon(8), racoonctl(8) and libipsec):
+<ul>
+<li>NetBSD-current as of may 2005 or above
+<li>NetBSD-3.0_BETA as of may 2005 or above
+<li>Earlier NetBSD releases with the ipsec-tools 0.6.beta2 package or
+above from NetBSD's pkgsrc
+</ul>
+
+<SECTION>Remote user access VPN
+
+<ENTRY>context Context
+Many organisations have a Remote Access Server (RAS) providing users a 
+remote access to the internal network through modem connections over the
+Plain Old Telephone System (POTS). 
+<p>
+
+With the raise of high bandwidth connections like Digital Subscriber Line
+(DSL) and cable, using POTS for the remote access is getting obsolete, 
+and users want a high bandwidth remote access. Using Virtual
+Private Networks (VPN) is a solution to this problem.
+<p>
+
+User authentication for VPN access can be done by different methods:
+<ul>
+<li>Group password (every users have the same password)
+<li>Login and password
+<li>x509 certificate
+</ul>
+<p>
+
+Group password is a weak solution and should not be used, because users
+are not really authenticated. x509 certificate gives you the highest 
+security, but user certificates might be troublesome to manage. If you
+can afford it, then everything you need to know is in the 
+<a href="index.html">IPsec FAQ</a>. Login and password are an average
+security level. Because passwords can be guessed or disclosed by another 
+protocol (e.g.: POP3 without SSL), it is not highly secure, but it can 
+be made reasonably secure if strong passwords are enforced and if the
+protocol used ensures they cannot be sniffed.
+<p>
+
+This HOW-TO covers the situation where login and password
+are to be used for remote user VPN access.
+<p>
+
+<ENTRY>security Security considerations
+In order to establish a secured VPN, the remote user must authenticate to 
+the VPN gateway, and the VPN gateway must authenticate to the remote user. 
+If the mutual authentication is not performed, then there is a loophole
+open for Man in the Middle (MiM) attacks, where an attacker can masquerade
+as athe VPN gateway and collect user passwords.
+<p>
+
+We said the remote user will authenticate using login and password. How
+can the VPN gateway authenticate? If a pre-shared key is used, then anyone
+knowing the key will be able to masquerade as the VPN gateway, and all the
+legitimate users will have to know about the pre-shared key. This is really
+weak security. The alternative is to use a x509 certificate on the VPN 
+gateway. This is a server certificate, which is much easier to manage than 
+user certificates. We will assume a certificate is used to authenticate the
+VPN gateway.
+<p>
+
+<ENTRY>solutions Solutions
+We want user authentication using a login and a password, and VPN gateway
+authentication using a certificate. There are not many solutions available.
+<a href="http://www.openvpn.org">OpenVPN</a> is a Secure Socket Layer (SSL)
+based solution that is able to do what we want. An alternative is to use 
+IPsec, which is what we will cover here.
+
+<SECTION>User remote access using IPsec
+
+<ENTRY>ph1auth IPsec phase 1 authentications
+IPsec phase 1 is part of the IPsec Key Exchange (IKE) operations performed
+by the IKE daemon, also known as racoon(8) in NetBSD. Its goal is to 
+authenticate the peers and set up master keys for performing a secured 
+IPsec phase 2. The goal of phase 2 is to derive the keys used for exchanging
+IPsec traffic. Phase 2 rekeying can occur regularly while IPsec traffic
+is exchanged.
+<p>
+
+IPsec phase 1 offers two authentication methods: pre-shared keys and 
+certificates. This is not what we want because
+<ul>
+<li>pre-shared keys are not bound to logins. We have no management tools
+to handle them properly, leaving a group password as the only managable
+option.
+<li>IPsec phase 1 authentication is supposed to be symetric: pre-shared keys 
+on both endpoints or certificates on both endpoints. This is not what we 
+are looking for.
+</ul>
+
+<ENTRY>xauth Xauth
+Xauth is an IKE extension that occurs after phase 1 and adds a 
+login/password authentication. This solves half of the authentication 
+problem: because Xauth occurs just after phase 1, it is secured by 
+phase 1 authentication. You still need a pre-shared key or a certificate
+in phase 1. Using a pre-shared key is not secure, and using a certificate
+means you use user certificates, which is something we wanted to avoid.
+
+<ENTRY>hybrid Hybrid auth
+Hybrid auth is another IKE extension, that makes phase 1 asymetric. During
+phase 1, the VPN gateway can use a certificate, while the remote user does 
+not have to authenticate. After phase 1 we are in a situation where:
+<ul>
+<li>Remote user knows it speaks to the VPN gateway
+<li>Communications between the remote user and the VPN gateway are secure
+<li>The VPN gateway has no idea about who it is talking with
+</ul>
+<p>
+
+After this phase 1, an Xauth exchange can occur to securely authenticate
+the remote user. Then phase 2 can take place.
+<p>
+
+The security level of IPsec + Xauth + Hybrid auth is roughtly equivalent
+to SSH using password authentication. 
+
+<ENTRY>mode_cfg ISAKMP mode config
+So our authentication problem is solved by using IPsec + Xauth + Hybrid auth.
+In order to make the thing really user friendly, we need to make the remote
+user machine configuration automatic. ISAKMP mode config is an IKE extension
+that enable the VPN gateway to provide the network configuration for the 
+remote user's machine: Internal IP address, DNS address, domain name, 
+and so on. 
+<p>
+
+<ENTRY>nat_t NAT Traversal
+The remote user might be hidden behind a Network Address Translator (NAT),
+which will not work when using IPsec encrypted streams. When traffic has
+to be encrypted, IPsec uses a layer 4 protocol known as 
+Encapsulated Security Payload (ESP). Unlike TCP or UDP, ESP has no port
+number and cannot easily be handled by NAT devices.
+<p>
+
+RFC 3947 and 3948 describe a method to encapsulate ESP in UDP, and IKE
+extensions to manage NAT in between endpoints of IPsec streams. The
+encapsulation method ans IKE extensions are together known as
+NAT Traversal (NAT-T). 
+<p>
+
+NAT-T <a href="https://datatracker.ietf.org/public/ipr_detail_show.cgi?&ipr_id=78">might be encumbered</a> by a US patent.
+
+<ENTRY>ike_frag IKE fragmentation and ESP fragmentation
+Remote users will often connect from behind DSL modem-router appliances.
+Most of these devices are uterly broken when dealing with big UDP packets:
+they assume UDP can only be used for DNS requests and will drop bigger
+or fragmented UDP packets. IKE transactions and ESP over UDP will tend 
+to use big UDP packets, and will therefore be blocked.
+<p>
+
+In order to address that problem, we use IKE fragmentation, which is an 
+IKE extension used to fragment the IKE packets into smaller fragments. 
+ESP fragmentation addresses the problem of big ESP over UDP packets, by
+performing IP fragmentation before the ESP encapsulation: instead of 
+sending frag(IP/UDP/ESP/IP) on the network, we send IP/UDP/ESP/frag(IP).
+Devices between the IPsec endpoints therefore do not see any fragmented
+packets.
+
+<ENTRY>dpd Dead Peer Detection
+Last problem: the remote user Internet connection can be unstable, leading
+to spurious deconnections. The only built-in mechanism IPsec has to handle 
+that is to force IKE phase 2 rekeying after some time. If the peer is not
+on-line anymore, it will fail, thus causing the VPN tunnel to be destroyed.
+<p>
+
+This is not very convenient as it forces frequent rekeying to detect 
+that the remote user got off-line. Dead Peer Detection (DPD) is an IKE
+extension used to regularly probe the remote IPsec endpoint for activity.
+DPD can be used to detect that the remote host went off-line within a
+few seconds.
+
+<SECTION>A VPN gateway setup
+Here is a setup example for a VPN gateway using IPsec + Xauth + Hybrid auth +
+ISAKMP mode config + NAT-T + DPD + IKE fragmentation + ESP fragmentation.
+
+<ENTRY>kernel Kernel configuration
+First you need to <a href="../../kernel/#how_to_build_a_kernel">build and 
+install a kernel</a> with at least the following options:
+<pre> 
+options INET
+options GATEWAY
+options PFIL_HOOKS
+options IPSEC
+options IPSEC_ESP
+options IPSEC_NAT_T
+
+pseudo-device   ipfilter
+</pre>
+
+<ENTRY>forw Packet forwarding
+You need to enable IPv4 packet forwarding, by using the following command:
+<pre>
+# sysctl -w net.inet.ip.forwarding=1
+</pre>
+This can be automatically executed on reboot by adding this line 
+to <tt>/etc/sysctl.conf</tt>: 
+<pre>
+net.inet.ip.forwarding=1
+</pre>
+
+<ENTRY>cert Certificate generation
+If you have not already configured OpenSSL, start by installing the sample
+config file:
+<pre>
+# cp /usr/share/examples/openssl/openssl.cnf /etc/openssl/
+</pre>
+
+Then create a private key and use it to create a Certificate Signing 
+Request (CSR):
+<pre>
+# cd /etc/openssl
+# umask 077
+# openssl genrsa > certs/vpngw.key
+# umask 022
+# openssl req -new -key certs/vpngw.key -out certs/vpngw.csr
+</pre>
+
+Send the CSR, <tt>vpngw.csr</tt> to a Certificate Authority (CA) for
+signature. You will get a x509 certificate, that we shall name 
+<tt>vpngw.crt</tt>
+<p>
+
+If you want to be your own CA, then perform the following steps to 
+generate the CA private key and certificate, and to sign your CSR:
+<pre>
+# cd /etc/openssl
+# mkdir -p demoCA/newcerts
+# touch demoCA/index.txt
+# echo "00" > demoCA/serial
+# umask 077
+# openssl genrsa > certs/ca.key
+# umask 022
+# openssl req -days 3650 -x509 -key certs/ca.key -new > certs/ca.crt
+# openssl ca -in certs/vpngw.csr -keyfile certs/ca.key -cert certs/ca.crt -out certs/vpngw.crt
+</pre>
+<p>
+
+Keep the secret keys secret, as your VPN will not be secure anymore if they
+get disclosed. Give the CA certificate <tt>ca.crt</tt> to remote users, and
+move to the next step.
+
+<ENTRY>config Configuring racoon(8)
+Here is a sample <tt>/etc/racoon.conf</tt> file:
+<pre>
+path certificate "/etc/openssl/certs";
+
+listen {
+        adminsock disabled;
+}
+
+remote anonymous {
+        exchange_mode aggressive;
+        certificate_type x509 "vpngw.crt" "vpngw.key";
+        my_identifier asn1dn;
+        proposal_check claim;
+        generate_policy on;		# automatically generate IPsec policies
+	dpd_delay 20;			# DPD poll every 20 seconds
+        nat_traversal force;		# always use NAT-T
+        ike_frag on;			# use IKE fragmentation
+        esp_frag 552;			# use ESP fragmentation at 552 bytes
+        proposal {
+                encryption_algorithm aes;
+                hash_algorithm sha1;
+                authentication_method hybrid_rsa_server;
+                dh_group 2;
+        }
+}
+mode_cfg {
+        network4 10.99.99.1;		# 1st address of VPN IPv4 pool
+        pool_size 253;			# size of the VPN IP pool: 253 addresses
+        auth_source system;		# validate logins against /etc/passwd
+        dns4 10.0.12.1;			# IPv4 DNS server
+        wins4 10.0.12.1;		# IPv4 WINS server
+        banner "/etc/racoon/motd";	# Banner message for clients
+	pfs_group 2;
+}
+
+sainfo anonymous {
+	pfs_group 2;
+        lifetime time 1 hour;
+        encryption_algorithm aes;
+        authentication_algorithm hmac_sha1;
+        compression_algorithm deflate;
+}
+</pre>
+<p>
+
+The <tt>mode_cfg</tt> section defines the configuration sent from the
+VPN gateway to the client using ISAKMP mode config. 
+For now only IPv4 configuration is supported. 
+The VPN address pool is defined there, by a base address (<tt>network4</tt>)
+and a pool size (<tt>pool_size</tt>). <tt>auth_source</tt> explains how
+the login and passwrod are validated. Possible values are <tt>system</tt>, 
+to validate against the system user database, <tt>pam</tt> to use the 
+Pluggable Authentication Module (PAM) system (<tt>/etc/pam.d/racoon</tt> 
+will be used), and <tt>radius</tt> to 
+validate logins against RADIUS. 
+<p>
+
+Once your <tt>/etc/racoon.conf</tt> file is ready, you can launch 
+racoon(8):
+<pre>
+# racoon
+</pre>
+<p>
+In order to have racoon(8) started up at boot time, you need the following
+in <tt>/etc/rc.conf</tt>:
+<pre>
+racoon=YES
+</pre>
+
+<ENTRY>more_frag More fragmentation problems
+In the configuration sample, <tt>esp_frag</tt> is specified so that ESP
+fragmentation is used to avoid sending packets bigger than 552 bytes. 
+552 bytes is quite low, but it should work with the most broken DSL 
+modem-routers appliances. The higher <tt>esp_frag</tt> is, the better
+the performances are.
+<p>
+Using ESP fragmentation, it is possible to exchange IP packets of any
+size through the tunnel. However, there is a special case for TCP, which
+may have trouble with Path Maximum Transmission Unit (PMTU) discovery. 
+The solution is to use Maximum Segment Size (MSS) clamping. This can be 
+done in <tt>/etc/ipnat.conf</tt>, assuming your VPN internal address
+pool is 10.99.99.0/24:
+<pre>
+map ex0 10.99.99.0/24 -> 0/0 mssclamp 552
+</pre>
+And type the following to enable that configuration:
+<pre>
+# ipf -E; ipnat -f /etc/ipnat.conf
+</pre>
+In order to have those commands executed on startup, you need
+the following in <tt>/etc/rc.conf</tt>:
+<pre>
+ipfilter=YES
+ipnat=YES
+</pre>
+Note that the system will not boot with <tt>ipfilter=YES</tt> if the
+<tt>/etc/ipf.conf</tt> file is missing. You can create a blank file
+if you do not need any IP filtering.
+
+<ENTRY>firewall Interraction with firewalls
+In this VPN solution, the client needs to send UDP packets to ports 500 
+and 4500 of the VPN gateway. The first packets are exchanged on port 500, 
+then NAT-T negociation moves the transaction to port 4500.
+<p>
+Firewalls in front of the VPN gateway must be configured 
+to let udp/500 and udp/4500 pass through to the VPN gateway.
+
+
+<ENTRY>radius VPN gateway and RADIUS 
+RADIUS can be used for login validation, IP addresses allocation and 
+accounting. Here is a sample <tt>mode_cfg</tt> section for
+<tt>/etc/racoon.conf</tt> that enforces RADIUS usage:
+<pre>
+mode_cfg {
+	pool_size 253;			# IPv4 pool size
+	auth_source radius;		# login validated against RADIUS
+	conf_source radius;		# IPv4 address obtained by RADIUS
+	accounting radius;		# RADIUS accounting
+        dns4 10.0.12.1;			# IPv4 DNS server
+        wins4 10.0.12.1;		# IPv4 WINS server
+        banner "/etc/racoon/motd";	# Banner message for clients
+	pfs_group 2;
+}
+</pre>
+<p>
+
+Additionnaly, you need to create a <tt>/etc/radius.conf</tt> file that
+contains the RADIUS server address and the secret shared with the RADIUS
+server. This file must be owned by root and mode 0600 in order to keep 
+the shared secret secure. Here is an example, see radius.conf(5) for
+the details:
+<pre>
+auth radius.example.net MyDirtySecret
+acct radius.example.net MyDirtySecret
+</pre>
+<p>
+
+<SECTION>VPN client
+<ENTRY>client Cisco VPN client
+The VPN gateway setup presented in the previous section is interoperable 
+with the Cisco VPN client configured in mutual group authentication (this is
+a synonym for Hybrid authentication). The group and group password required 
+by Cisco VPN client are ignored by racoon(8), but that does not make user
+authentication unsecure.
+<p>
+
+Do not forget to set up the client with IPsec over UDP transport to get 
+NAT-T enabled.
+<p>
+
+<ENTRY>client_conf racoon(8) as the client: configuration example 
+It is also possible to use racoon(8) as a client. You need to install the
+CA certificate in <tt>/etc/openssl/certs/ca.crt</tt>, and the configuration
+below in <tt>/etc/racoon.conf</tt>
+<pre>
+path certificate "/etc/openssl/certs";
+path pre_shared_key "/etc/racoon/psk.txt";
+
+listen {
+	# socket used for communication between racoon and racoonctl
+        adminsock "/var/racoon/racoon.sock" "root" "operator" 0660;
+}
+
+# Here is the address of the VPN gateway
+remote 192.0.2.50 {
+        exchange_mode aggressive;
+        ca_type x509 "ca.crt";
+        proposal_check obey;
+        mode_cfg on;		# accept config through ISAKMP mode config
+	dpd_delay 20;
+        nat_traversal force;
+        ike_frag on;
+        esp_frag 552;
+        script "/etc/racoon/phase1-up.sh" phase1_up;
+        script "/etc/racoon/phase1-down.sh" phase1_down;
+        passive off;
+        proposal {
+                encryption_algorithm aes;
+                hash_algorithm sha1;
+                authentication_method hybrid_rsa_client;
+                dh_group 2;
+       }
+}
+
+
+sainfo anonymous {
+        lifetime time 1 hour;
+        encryption_algorithm aes;
+        authentication_algorithm hmac_sha1;
+        compression_algorithm deflate ;
+}
+</pre>
+<p>
+The <tt>phase1-up.sh</tt> and <tt>phase1-down.sh</tt> scripts are called
+when the IKE phase 1 is established and terminated, that is, at VPN 
+connection and disconnect time. They are responsible for setting up
+and deleting the IPsec Security Policies (SP), VPN IP address, and 
+routing entries. The sample scripts should do what you need, but you can
+customize them to fit your particular needs.
+<pre>
+# cp /usr/share/examples/ipsec-tools/roadwarrior/client/*.sh /etc/racoon/
+</pre>
+<p>
+
+Once this is ready, you can start racoon(8):
+<pre>
+# racoon
+</pre>
+In order to have it started at boot time, add <tt>racoon=YES</tt> to 
+<tt>/etc/rc.conf</tt>.
+
+<ENTRY>connection Connecting to and disconnecting from the VPN
+racoonctl(8) can be used to connect to the VPN and to disconnect from it. The
+login is given through the <tt>-u</tt> option and the password is 
+prompted on the terminal:
+<pre>
+$ racoonctl vc -u username 192.0.2.50
+Pasword: password
+Bound to address 10.99.99.3
+==========================================================
+                     Flying pigs LTD
+
+ Welcome to our internal network, remote user.
+==========================================================
+$ racoonctl vd 192.0.2.50
+VPN connection terminated
+</pre>
+DNS addresses can be used instead of IP addresses in this example.
+Note that if for some reason the routing entries or Security Policy
+Database (SPD) get screwed, the DNS resolution will not work at VPN 
+disconnect time. To recover from such a situation, type the following 
+commands as root:
+<pre>
+# setkey -F
+# setkey -FP
+# route flush
+# route add default your_default_gateway
+</pre>
+<p>
+
+Anyone with read/write rights to the racoon(8) socket 
+<tt>/var/racoon/racoon.sock</tt> can start or stop the VPN. The
+ownership and rights to the socket can be set using the <tt>adminsock</tt>
+statement in the <tt>listen</tt> section of <tt>/etc/racoon.conf</tt>.
+
+<ENTRY>save_pwd Saving Xauth password
+If you want to avoid typing the Xauth password, you can store it in
+racoon's Pre-Shared Key (PSK) file. Add the following statement in 
+the <tt>remote</tt> section of <tt>/etc/racoon.conf</tt>:
+<pre>
+	xauth_login "username";
+</pre>
+<p>
+
+Then add a line in <tt>/etc/racoon/psk.txt</tt> with the login and the
+password:
+<pre>
+username	password
+</pre>
+<p>
+
+With that setup, this command will establish the VPN connection using the
+<tt>toto</tt> login, without prompting for a password:
+<pre>
+$ racoonctl vc 192.0.2.50
+</pre>
+
+</LIST>
+
+<a href="../">Up to <em>NetBSD Documentation: Network</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: rasvpn.list,v 1.3 2005/05/10 12:45:55 manu Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 2005
+    Emmanuel Dreyfus,  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>

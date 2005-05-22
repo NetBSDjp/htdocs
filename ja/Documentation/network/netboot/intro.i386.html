@@ -2,9 +2,9 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1998, 1999, 2000
+<!-- Copyright (c) 1998-2005
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
 <title>Introduction (i386-specific), Diskless NetBSD HOW-TO</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -24,10 +24,10 @@
 <li><b>Via netboot rom</b>
     <p>
     You will need a BIOS supporting boot from network and a matching
-    network card. This is becoming more popular in new PCs, especialy
+    network card. This is becoming more popular in new PCs, especially
     ones with build in network adapters. Setup a server on the
     network (see
-    <a href="http://man.netbsd.org/man/diskless+8+NetBSD-current">diskless(8)</a>)
+    <a href="http://man.NetBSD.org/man/diskless+8+NetBSD-current">diskless(8)</a>)
     and modify your BIOS settings to try the network boot first.
     <p>
     If your BIOS does not support this, but you have a network card
@@ -40,10 +40,46 @@
     and run "<code>make netboot.com</code>".
 <p>
 
-<li><b>via PXE</b>
+<li><b>Via PXE</b>
     <p>
-    If your hardware is capable of netbooting using PXE, you can boot
-    NetBSD directly by adding the following to <tt>/etc/dhcpd.conf</tt>:
+If your hardware is capable of netbooting using PXE, it first tries to
+acquire an IP address using the Dynamic Host Configuration protocol
+(DHCP). The dhcpd server uses the ethernet address (MAC) of the client
+machine to determine its IP address and a bootloader filename.  If this
+request is successful, PXE expects to be able to download a second-stage
+boot program via the Trivial File Transfer Protocol (TFTP). It will do
+this by setting up a TFTP connection to the server that answered the
+earlier DHCP request, and asking for the file name returned by the server.
+The second-stage boot program then loads the kernel using NFS from the
+server and path specified by the DHCP request.
+
+<p>There are two PXE bootloader files available in 
+the <tt>/usr/mdec/</tt> directory of <tt>base.tgz</tt> from the NetBSD 
+distribution.  <tt>pxeboot_ia32.bin</tt> should be used for most cases, 
+since <tt>pxeboot_ia32_com0.bin</tt> will force the client to use its 
+first serial port as the console.  The serial console PXE file may be 
+necessary for embedded systems (such as the Soekris line of hardware) 
+which only have a serial console.  Use 9600 8N1 settings.
+
+<p>Something like the following can be used in
+<tt>/etc/dhcpd.conf</tt>:
+
+<pre>
+host pxehost {
+  hardware ethernet 01:23:45:67:89:ab;       # MAC address of PXE host
+  fixed-address 192.168.17.42;               # IP address of PXE host
+  
+  # stage 1: 
+  filename "pxeboot_ia32.bin";               # relative to /tftpboot
+  
+  # stage 2:
+  next-server 192.168.42.1;                  # IP of NFS server
+  option root-path "/usr/tmp/pxestuff/root"; # path on NFS server
+}</pre>
+
+
+<p>As a shortcut, if you have a lot of PXE systems, you can set up
+<tt>/etc/dhcpd.conf</tt> to group them all together:
 
 <pre>
 class "pxe-clients-ia32" {
@@ -53,16 +89,9 @@ class "pxe-clients-ia32" {
 }
 </pre>
 
-    The <b>pxeboot</b> file should be placed in the TFTP directory
-    (see <a href="tftpd.html">configuring tftp</a>).  As the name above
-    suggests, <tt>pxeboot_ia32_com0.bin</tt> will run boot interacting
-    with the serial port configured for <b>com0</b>.  For a normal boot
-    that interacts with the keyboard, mouse and video, use
-    <tt>pxeboot_ia32.bin</tt>.  Both of these can be found in the
-    directory <tt>/usr/mdec</tt> on a standard NetBSD/i386 install.
 <p>
 
-<li><b>via GNU GRUB</b>
+<li><b>Via GRUB</b>
     <p>
     <a href="http://www.gnu.org/software/grub/">GRUB</a> is a boot loader,
     that is capable of booting different OS types and some of them
@@ -187,7 +216,6 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 	<p>
 	Hold down the SHIFT key when the computer is booting to
 	skip config.sys and autoexec.bat.
-	<p>
     </ul>
 
     At the DOS prompt, change into the directory where you have
@@ -208,7 +236,6 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
     to <tt>/usr/src/sys/arch/i386/stand/dosboot</tt>, edit the
     <tt>Makefile</tt> for special options (serial console, ...)
     and run "<tt>make</tt>".
-<p>
 </li>
  
 <li><b>Via the NT boot selector</b>
@@ -223,6 +250,8 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 <h2>Begin setting things up (suggested order):</h2>
 <dl><dt><dd>
 <ol>
+<li><a href="dhcpd.html"><tt>dhcpd</tt></a>
+<li><a href="tftpd.html"><tt>tftpd</tt></a> (PXE)
 <li><a href="nfs.html"><tt>nfs</tt></a>
 <li><a href="files.html">client filesystem</a>
 <li><a href="finish.html">finishing up</a>
@@ -240,8 +269,8 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a> 
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a> 
   </td><td>
     <a href="../../../"><img
         src="../../../images/empty.gif" border="0"
@@ -250,8 +279,8 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a>
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
         src="../../../images/empty.gif" border="0"
@@ -262,10 +291,9 @@ options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
 <hr>
 <address>
   <small>
-  <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: intro.i386.html,v 1.24 2002/11/23 16:01:32 darrenr Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy;
-    1998, 1999, 2000
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: intro.i386.html,v 1.33 2005/05/16 23:09:09 hubertf Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>

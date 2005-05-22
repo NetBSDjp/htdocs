@@ -1,6 +1,6 @@
 divert(-1)dnl
-#	$NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $
-#	Copyright (c) 1994-2004
+#	$NetBSD: index.m4,v 1.169 2005/05/10 16:54:10 reed Exp $
+#	Copyright (c) 1994-2005
 #	    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.
 # http://mail-index.NetBSD.org/
 
@@ -28,13 +28,13 @@ define(`PORTLISTHEADER',
 `  <a name="$1"><b>$1:</b></a> <a href="../Ports/substr($1,5)/">(homepage)</a><br>')
 
 define(`LISTSECTION',
-`<center><h3>$1</h3></center>
-divert(5)<h3>$1</h3>
+`<center><h3 class="title">$1</h3></center>
+divert(5)<h3 class="title">$1</h3>
 
 divert(0)dnl')
 
 define(`LIST',
-`    <li><a href="#$1">$1</a>
+`    <li><a href="#$1">$1</a></li>
 LISTPREHEADER
 LISTSUBSCRIBE($1)
 LISTARCHIVE($1)
@@ -42,7 +42,7 @@ LISTNEWS($1)
 LISTHEADER($1)')
 
 define(`PORTLIST',
-`    <li><a href="#$1">$1</a>
+`    <li><a href="#$1">$1</a></li>
 LISTPREHEADER
 LISTSUBSCRIBE($1)
 LISTARCHIVE($1)
@@ -50,7 +50,7 @@ LISTNEWS($1)
 PORTLISTHEADER($1)')
 
 define(`OLDLIST',
-`    <li><a href="#$1">$1</a>
+`    <li><a href="#$1">$1</a></li>
 LISTPREHEADER
 LISTARCHIVE($1)
 LISTNEWS($1)
@@ -64,17 +64,19 @@ divert(0)dnl')
 divert(0)dnl
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<html>
+<html xmlns:html="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<!-- Copyright (c) 1994-2004
+<!-- Copyright (c) 1994-2005
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@NetBSD.org">
+<link rel="stylesheet" href="/NetBSD.css" type="text/css">
+
 <title>NetBSD Mailing Lists</title>
 </head>
-<body bgcolor="#FFFFFF" text="#000000">
+<body class="website" bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="webpage">
 
-<h2>NetBSD mailing lists</h2>
+<h2 class="title">NetBSD mailing lists</h2>
 
 The NetBSD Project provides a variety of public mailing lists to
 facilitate communication between the users and developers of NetBSD.
@@ -116,8 +118,8 @@ href="http://mail-index.NetBSD.org/">mail-index.NetBSD.org</a>.
 access and rack space for this machine as well as
 <a href="mailto:root@garbled.net">Tim Rightnour</a> for building and
 maintaining the site..). An alternative index of our mailing lists
-is available at
-<a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>.
+is available at the
+<a href="http://marc.theaimsgroup.com/">MARC list archives</a>.
 <p>
 
 <b>To read the list through a news frontend</b> click on the
@@ -131,11 +133,11 @@ Please note that while the majority of the NetBSD mailing lists are
 normally unmoderated, there are circumstances which will occasionally
 cause a mailing list to be moderated by its manager.
 
-<h2>Searchable mailing list archives</h2>
+<h2 class="title">Searchable mailing list archives</h2>
 
 Indexes and archives are provided on
 <a href="http://mail-index.NetBSD.org/">http://mail-index.NetBSD.org/</a>
-and <a href="http://www.geocrawler.com/lists/3/NetBSD/">Geocrawler</a>.
+and at the <a href="http://marc.theaimsgroup.com/">MARC list archives</a>.
 <p>
 
 Quick search the mailing lists with Google (<a
@@ -156,7 +158,7 @@ href="../Misc/search.html">other NetBSD searches</a>)<br>
   </td></tr></table>
 </blockquote>
 
-<h2><a name="index">The NetBSD Project's mailing lists</a></h2>
+<h2 class="title"><a name="index">The NetBSD Project's mailing lists</a></h2>
 
 <table><tr><td valign=top>
 
@@ -182,12 +184,36 @@ LIST(netbsd-bugs)
   All NetBSD bug reports sent with <i>send-pr(1)</i> appear here.
 ENDLIST
 LIST(pkgsrc-bugs)
-  This mailing list is where you can discuss bugs in pkgsrc.
   All 'pkg' bug reports sent with <i>send-pr(1)</i> appear here.
+  This mailing list is where you can discuss bugs in pkgsrc.
+  Please do not report your bugs here.
 ENDLIST
 LIST(netbsd-docs)
-  This mailing list is for discussing NetBSD docs.  Information regarding
-  mailing lists for translators is available from <a href="../developers/translate.html#ml">this page</a>.
+  This mailing list is for discussing NetBSD documentation.
+ENDLIST
+LIST(netbsd-docs-de)
+  This mailing list is for discussing the German translation of NetBSD docs.
+ENDLIST
+LIST(netbsd-docs-es)
+  This mailing list is for discussing the Spanish translation of NetBSD docs.
+ENDLIST
+LIST(netbsd-docs-fr)
+  This mailing list is for discussing the French translation of NetBSD docs.
+ENDLIST
+LIST(netbsd-docs-nl)
+  This mailing list is for discussing the Dutch translation of NetBSD docs.
+ENDLIST
+LIST(netbsd-docs-se)
+  This mailing list is for discussing the Swedish translation of NetBSD docs.
+ENDLIST
+LIST(netbsd-docs-ru)
+  This mailing list is for discussing the Russian translation of NetBSD docs.
+ENDLIST
+LIST(netbsd-docs-zh_cn)
+  This mailing list is for discussing the simplified Chinese translation of NetBSD docs.
+ENDLIST
+LIST(netbsd-docs-zh_tw)
+  This mailing list is for discussing the traditional Chinese translation of NetBSD docs.
 ENDLIST
 LIST(netbsd-help)
   This list provides a general help forum where users can ask
@@ -711,29 +737,27 @@ ENDLIST
 
 </td></tr></table>
 divert(4)
-<h2><a name="descriptions">List descriptions</a></h2>
+<h2 class="title"><a name="descriptions">List descriptions</a></h2>
 divert(9)
+<div class="navfoot">   
 <hr>
 
-<table><tr><td>
-    <a href="../"><img
-	src="../images/NetBSD-flag.png" border=0
-	width="90" height="90" alt=""></a>
-  </td><td>
-    <a href="../"><img
-	src="../images/empty.gif" border=0
-	width="1" height="1" alt="NetBSD ">Home Page</a>
-</td></tr></table>
+<table border="0" summary="Footer navigation">
+  <tr>
+    <td class="foothome">
+      <span class="foothome"><a href="../"><img src="/images/NetBSD-flag.png"
+        alt="" border="0" width="90" height="90"></a></span></td>
+    <td class="foothome">
+      <span class="foothome"><a href="../">Home page</a></span><br>
+    </td>
+  </tr>
+</table>
+<hr>
+</div>
+<p></p>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(contact us)</a></span>
 
-<hr> 
-<address>
-  <small>
-  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.m4,v 1.162 2004/12/08 06:56:51 cjs Exp $<br>
-  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2004
-  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
-  </small>
-</address>
-
-</body>
+   
+  <span class="foottag">Generated from <em>%NetBSD: products.xml,v 1.6 2005/03/09 03:16:36 jschauma Exp %</em></span><br><span class="footcopy"><a href="/Misc/disclaimer.html"><span class="copyright">Copyright © 1994-2005 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.</a></span>
+</div></body>
 </html>
