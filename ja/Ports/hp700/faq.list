@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2003
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
+<title>NetBSD/hp700: Frequently Asked Questions</title>
+</head>
+<body bgcolor="#ffffff" text="#000000" link="#2020cc" vlink="#700080">
+
+<h1>NetBSD/hp700 Frequently Asked Questions</h1>
+
+<LIST>
+
+<h2>Other sources of information</h2>
+
+<ul>
+<li><a href="http://www.openbsd.org/hppa.html">OpenBSD/hppa</a>
+<li><a href="http://parisc-linux.org/index.html">PA-RISC Linux
+    Development Project</a>
+<li><a href="http://www.openpa.net/">The
+    Cypher HP PA-RISC Project page</a> (good info on hp700 machines)
+<li><a href="http://www.cs.utah.edu/flux/mach4-parisc/html/pamach.html">Utah
+    PA-RISC Mach/Lites/4.4</a> (obsolete)
+<li><a href="ftp://ftp.cirr.com/pub/hppa/mklinux/mkpa.html">MkLinux for HP
+    PA-RISC</a> (obsolete)
+<li><a href="http://www.flux.utah.edu/~mike/hpbsd/hpbsd.html">HPBSD: Utah's
+    4.3bsd port for HP9000 series machines</a> (obsolete)
+<li><a href="http://www.hp.com/workstations/support/archive/">HP
+    Workstation Documentation Archive</a> (some manuals for Series
+    700 machines)
+<p>
+
+<li><a href="../../Documentation/network/netboot/intro.hp700.html">Netbooting
+    NetBSD/hp700</a>.
+<p>
+
+<li><a href="../../Documentation/">General NetBSD Documentation</a>
+    - for questions not specific to NetBSD/hp700.
+</ul>
+
+<SECTION>General Questions
+
+<ENTRY>serial_console Using a serial console
+On most models, you can configure the Boot ROM to use a serial console instead
+of a locally attached keyboard and the framebuffer.  The serial console will 
+typically run at 9600 bps, 8 N 1 on Port "A" or "1".  The procedure varies
+between models, but you <i>will</i> need a keyboard and monitor connected 
+initially to configure the Boot ROM.  The procedure is described below.
+
+<p>There are some tricks you can play to force a serial console without 
+initially connecting a keyboard and monitor.  For models with removable
+framebuffers (such as the 720, 730, 735, and 755), simply remove the SGC
+framebuffer and the system will default to serial console.  Apparently,
+<a href="http://lists.parisc-linux.org/pipermail/parisc-linux/1999-December/008119.html">powering 
+up with the keyboard disconnected</a> and
+<a href="http://lists.parisc-linux.org/pipermail/parisc-linux/1999-December/008138.html">holding
+down the TOC (Transfer of Control) button on the side of the machine for 
+10 seconds while powering up</a> will force a serial console.  The last two
+tricks do not appear to work on older models (such as the 715 and 735).
+See the <a href="serialconsole-712.html">special instructions</a> for model
+712 workstations.
+
+<p>From
+<a href="http://tldp.org/HOWTO/PA-RISC-Linux-Boot-HOWTO/index.html">
+http://tldp.org/HOWTO/PA-RISC-Linux-Boot-HOWTO/index.html</a> by
+ Thomas Marteau, The Puffin Group and Deb Richardson.
+<p>
+
+<ol>
+<li>Turn the PA-RISC machine on.  Have both the keyboard and mouse connected.
+<li>During the boot process, the following message will appear:
+<pre>
+    Searching for Potential Boot Devices.
+    To terminate search, press and hold the ESCAPE key.
+</pre>
+When this message appears, press and hold the Esc key until an options
+menu appears.
+
+<li>By default, you enter the <tt>BOOT_ADMIN</tt> console. In some 715s, 
+the options menu looks like this:
+
+<pre>
+        b)    Boot from specified device
+        s)    Search for bootable devices
+        a)    Enter Boot Administration mode
+        x)    Exit and continue boot sequence
+        ?)    Help
+
+        Select from menu:
+</pre>
+
+  Select <tt>a) Enter Boot Administration mode</tt>. This will bring up a
+  <tt>BOOT_ADMIN&gt;</tt> prompt. Everything else you do will be in 
+  <tt>BOOT_ADMIN</tt> mode.  So now, everybody is in the <tt>BOOT_ADMIN</tt>
+  console!
+
+<li>To change to serial console mode, type the following command at the
+  <tt>BOOT_ADMIN</tt> command prompt:
+
+<pre>
+path console rs232_a.9600.8.none
+</pre>
+
+<li>Power down, power up.  Be ready to hit ESC on your terminal to break
+  into the same options menu as in step 3.
+</ol>
+
+<p><a href="serialconsole.html">This</a> is the full procedure captured
+from my 735/99.
+
+
+<ENTRY>boot_admin How do I configure power-on settings (boot device, console, etc.)
+All 700 series workstations have a Boot Administration command line utility
+in their Boot ROM which lets you configure various settings.  For example,
+you can set whether the system automatically boots an OS, which device to
+try booting from first, determine the ethernet MAC address, set up a serial
+console, and possibly do some low level hardware access.
+
+<p>To get to the <tt>BOOT_ADMIN</tt> prompt, you must press the <tt>ESCAPE</tt>
+key before it tries to boot an OS.  Since these machines often take a long
+time between powering on and the brief window of time where you can hit
+the <tt>ESCAPE</tt> key, you must pay attention.  It may take over a minute
+after pressing the power button before anything will show up on screen.
+
+<p>Once you have escaped out of the <tt>Selecting a system to boot</tt>
+and <tt>Searching for Potential Boot Devices</tt> you need to type the
+"<tt>a</tt>" key to get to the <tt>BOOT_ADMIN</tt> prompt.  Now, use the
+online help with the <tt>HELP</tt> command. 
+
+<p>Have fun (and see this brief <a href="boot_admin.html">transcript</a> of
+some of the <tt>BOOT_ADMIN</tt> menus options on a 735/99).
+
+
+<ENTRY>boot_order What devices does my system try to boot from (and how do I change it)
+Use the <tt>AUTOSELECT</tt> and <tt>PATH</tt> commands in the 
+<a href="#boot_admin"><tt>BOOT_ADMIN</tt></a> environment.
+
+<ENTRY>hpux_compat HP-UX Compatibility
+NetBSD/hp700 will one day feature extensive binary compatibility with
+HP-UX programs, however this work has not been done yet.
+
+<ENTRY>hp700-history History of NetBSD/hp700
+The hp700 port of NetBSD was started by Matt Fredette in October 2001.
+He started working with Michael Shalayeff's 
+<a href="http://www.openbsd.org/hppa.html">OpenBSD/hppa</a> sources
+at that time, and after much work had it booting multiuser in March
+of 2002.  At that time he began merging the port into the NetBSD tree.
+
+</LIST>
+
+<a href="./">Up to <em>NetBSD/hp700 Port Page</em></a>
+<hr>
+
+<DOCLINK>
+
+<hr>
+<address>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: faq.list,v 1.12 2003/09/27 06:06:31 dent Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
