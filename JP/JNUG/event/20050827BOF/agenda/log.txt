@@ -1,0 +1,613 @@
+BOF
+
+o TNF/JNUGへの寄付について				加納さん
+
+	- 先日TNFからアナウンスがあったが、募集は続いてます。
+
+		* 送金方法がわからん。
+		* PayPalのアカウントがない。
+		* クレジットカードは不安
+
+	- TNF: 会場で集めて送金しましょう; 制約事項
+
+		* 領収書の発行は行いません。
+		* 募金時の記名は求めません。
+		* TNFの度ネーションのページには JNUG な名称
+		* 領収書やドネーションページへの記載希望な場合は自分で
+		* BOF終了時に集まった金額を発表
+		* 送金は運営委員(担当個人)が代行します。
+		* 直奏開示にクレジットの明細を持参します。
+		* 為替レートに伴う差額はJNUGの予算で調整します。
+		* JNUG予算には為替レートの差額を計上します。
+
+	- JNUG: 機材のリプレースが必要
+
+		* 懇親会の予銭
+		* 故障に伴うハードディスクの置換
+		* 総会の会場費
+
+		* 領収書は発行しません。
+		* 記名は求めません。
+		* BOF終了時に集まった金額を発表します。
+		* JNUG予算に計上し、次期総会時の収支報告で承認を得ます。
+
+		Q: 目標金額はありますか?
+		A: 時間的な制約もあって、特に決めていません。
+
+o オーディオフレームワークの変更			田村さん
+
+	kent-audio2ブランチ; ここ数年のオーディオに関する紹介します。
+
+	- Sample rate conversion (aurateconv)
+	- struct audio_format (auconv)
+	- Audio filter pipeline (kent-audio1)
+	- High Definition Audio (azalia)
+	- In-kernel audio mixing (kent-audio2)
+
+	- NetBSD 1.5の頃
+
+		userland
+
+		|	uiomove
+
+	audio-ring buffer	(auconv ←→ mulaw)
+
+		| (dma)
+
+		H/W
+
+	- Sample rate conversion
+
+		* Mar 2002 NetBSD 1.6 or later
+		* モチベーション
+			auich(4)が認識されるのに/dev/audioが開けない。
+			USBオーディオ機器も同様
+
+		* 問題
+
+			まいくろ-law 8kHz, モノラルのサポートが必須
+			ハードウェアがサポートしてない
+
+		* 解決策
+
+			周波数変換とステレオ・モノラルの変換を実装
+			8kHzモノラルをサポートしていないデバイスへの救済策と
+			いう位置付け
+
+	- Audio architecture of NetbSD 1.6 and 2.x
+
+		userland
+
+		|	uiomove
+
+	................	(auconv ←→ mulaw)
+	
+		|
+
+	audio-ring buffer
+
+		| (dma)
+
+		H/W
+
+	- struct audio_formatの導入
+
+		* Nov. 2004, NetBSD 3.0 or later
+
+		* 問題
+
+			各オーディオドライバの*_set_params()に
+			似たようなコードが散在
+
+			フレームワークが変換ルーチンを用意しているフォーマット
+			なのに、*_set_params()でサポートし忘れるとユーザには
+			使えない。
+
+		* 解決策
+
+			ハードウェアの能力を表現するaudio_format構造体と、
+			その情報から変換ルーチンを呼ぶサポート関数を用意
+
+	- audio_format構造体
+
+		24/24bitフォーマットと24/32bitフォーマットが区別できない問題
+			validbits, precision
+
+		スピーカー位置の問題 → channel_mask
+
+		能力を記述する手段を用意したが、ユーザランドから指定する
+		手段がない。
+
+	- Audio filter pipeline
+
+		* Dec. 2004 - Jan. 2005, NetBSD 3.0 or later
+
+			kent-audio1ブランチ
+
+		* 問題
+
+			フォーマット変換ルーチンのインターフェイスが汚い
+
+				録音と再生でインターフェイスが異なる。
+				変換は1つしか適用できない。
+
+		* 解決策
+
+			オーディオ変換器一般を表現するインタフェイスを定義
+
+				
+
+	- 
+
+		userland
+
+		|	uiomove
+
+	audio_stream		
+
+		|		strem_filter_t
+
+		...
+
+	audio_stream		
+
+		|		strem_filter_t
+		
+	audio_stream		
+
+		| (dma)
+
+		H/W
+
+	- High Definition Audio
+
+		* Jun. 2005, NetBSD 3.0 or later
+
+		* モチベーション; 息抜き
+
+		* 問題
+			High Definition Audioのドライバがない。
+
+		* 解決策
+			書いた。
+
+			Intelは仕様を公開していて素晴らしい。
+			(VIAはあかん)
+
+		* 課題
+			24/32bitフォーマットを指定する手段がない。
+
+	- In-kernel audio mixing
+
+		* 開発中; NetBSD 4.0 or NetBSD 5.0?
+
+		* 解決したい問題
+
+			オーディオデバイスが1つでも複数の音を再生したい。
+
+		* esound, artsdのようなユーザランドでの実装はあるが、遅延が
+		  大きいので、FreeBSDやWindowsのようにカーネルでしたい。
+
+		* PEACEでダイレクト・サウンド
+
+	- In-kernel audioの要件
+
+		* 再生を合成、録音は排他使用
+
+		* ユーザランドのインターフェイスは変更しない。
+		  (しかし、挙動は多少変更せざるを得ない; stateless,
+		  閉じると以前の設定はなくなる。)
+
+		* ハードウェア用のドライバへの変更は極力少なくする。
+
+	- In-kernel audio実装の課題
+
+		* audio.cはゴチャゴチャしすぎ; やったのは自分。
+		* 簡単にはPCMに変換できない(合成も周波数変換できない)
+		  フォーマットがある; AUDIO_ENCODING_MPEG_*
+		* mmap()をどう扱うか。
+			サポートしないか、推奨しない?
+
+	Q: mmap()は、どのような存在理由なのか? (曽田)
+	A: よくわからないが、mmap(2)で自分でバッファに書き出して遅延を
+	   少なくする。
+	Q: 変換しながらなので意味がない。下の口みたいなのを用意すると難しいか。
+	A: そのとおり。難しい。
+	   mmap()されると、途中は全部なし?
+	Q: ハードウェアがサポートしている形式を知る手段がないのが問題。
+	A: そのとおり。
+
+	I: mmap()は変換をとばすだけではなく、read/writeをとばせる意味は
+	   あった。HighエンドなAudioをサポートする場合には、リングバッファを
+	   とばすような仕組みは必要かもしれない。
+
+	Q: やっぱり、mmap()は欲しい。コピーに時間を取って欲しくなく、一番下の
+	   リング・バッファに書き込めればいい。ioctl(2)でリング・バッファの
+	   位置を得るのではなく、直接ポインタも参照してしまいたい。
+	A: ダイレクト・サウンドっぽいAPIを用意することも必要か。
+
+	Q: みゅーろー8bitを使わないことがわかっているのに、ドライバを入れないと
+	   audioをオープンできないことへの解決策が欲しい。オープン時に固定で
+	   みゅーろー8bitではなくてデバイスの固有の初期値があってもよいのでは?
+	A: /dev/audioではなく、/dev/soundを使えるという可能性がある。
+	Q: カーネルのconfigでデフォルトを変えることができるとよい。
+	A: それはよいアイデアだ。
+
+	Q: CPUのSUSE命令(?)を使いたい、浮動小数点を使いたい。
+	A: 待避すれば良いのだが、...。
+
+	Q: mixerのところは単純なミキシングだけなのか、チャネル毎にミッ
+	   クスできるのか。
+	A: 今のところは単純なミキシング。ボリューム調整程度はよいが、
+	   それを超えると新たなインターフェイスが必要となる。
+	   取り敢えずはソフトウェアで頑張りたい。ハードウェアは仕様書があれば
+	   何とかしたい。
+
+
+o 新しいieee1394の実装					清原さん
+
+  * いろいろあってieee1394の実装を書き換え(FreeBSDのを持ってきた)ました。
+
+  * 今までのieee1394
+
+	- sbpscsi(4)
+		そのままアタッチ時にpanic
+		使えない装置がかなりあった?
+		i386などのメジャなマシンでしか動かない。
+
+	- fw(4)
+		私は使えたことがない。
+		if_ieee1394subr.cにバグ(?)っぽい箇所あり
+
+	- DVキャプチャ
+		出きるの?
+		fwisoのマニュアルって?
+
+  * 新しいieee1394
+
+	- FreeBSDのをそのまま移植
+		* sbp(4), fwip(4), fwmem, fwctl(8)
+	- 複数のportで(簡単な)動作確認
+		* alpha, amd64, cobalt, evppc, i386, macppc, sgmips
+	- コンフィギュレーション
+		sbp*    at ieee1394if? euihi ? euilo ?  # SCSI over IEEE1394
+		
+
+  * sbp(4)
+  	- 他のOSとも共存可能(らしい)
+	- 4回目のバスリセットまではデタッチされない。
+		* 明示的には fwctl(8), scsictl(8)
+	_ exclusive loginを無効にできる。
+		* 複数のマシンで同じハードディスクが見えるようになる。
+
+  * fwctl(8)
+	- FreeBSDのfwcontrol(8)
+	- IEEE1394のバスやデバイスの制御用ツール
+		* ノードやトポロジの確認
+		* バスリセット
+		* DVストリームのキャプチャ
+
+  * DVキャプチャ
+  	- fwctl(8)で
+		* fwctl -R filename
+	- AV/Cを喋るツールを使えば、
+		* IEEE1394接続の機器制御コマンド体系
+		* FreeBSDでIO DATAのチューナつきDVエンコーダを使ってる人もいる。
+		http://...
+
+  * バグ、未実装
+	- sbpでブロックサイズがとれない装置がある。
+	- SMP未対応(ごめんなさい)
+	- 接続した他のホストのメモリ空間が見える。
+		ようになるはずだけど、libkvmをいじる必要あり
+
+	- ターゲット・モードで動作しない。
+	- cromを使ったコンソールって必要?
+	- ieee1394if(4)とsbp(4)のマニュアル間違ってました。
+
+  * 実演
+
+	- iPodは、
+
+		* 何回かバスにリセットかかる。
+		* gtkpodかiPodかわらかないが遅い。8つのファイルで30分も
+		  転送にかかる。
+
+	- いったん外してもdetachされない。
+
+	- novacの装置は変、熱暴走?
+
+    I: SMPって何もしなくても動くのではないか。一部の割り込みを除いては、
+       今は1CPUしか動かないはず。
+
+    Q: ドライバの方でエラーを検知して、無理やりdetachするわけにはいかない
+       のでしょうか。それとも、何かまずいことがある?
+    A: アクセスして長く時間が過ぎたことを検知する方法はあるのかなぁ。
+
+    I: iPod対応をお願いします。
+    A: iPod自体は問題ないが、抜くと変なことが起きる。他にも同様なデバイスが
+       ある。
+
+    Q: FreeBSDからの移植で技術的に困ったことや、はまったことはありますか。
+    A: いくつかあったと思いますが...。
+       FreeBSDを悪く言うつもりはないが、
+		- DMAをしかける際にsyncをかけていない。
+		- キャッシュのsyncのケア。
+
+       報告したけど、放置されてる。
+
+o 懇親会について
+
+	19:00から天狗で宴会があります。40人で2時間、3,500円
+
+
+o LilyVMと仮想化技術					栄楽 英樹
+
+  * 背景
+
+	- 1台の計算機で複数のOSを動かしたい。
+		* OSの以降
+		* 異なるシステムの組み合わせ
+		* 
+
+	- 手段
+		仮想計算機(VM)
+		ユーザレベルOS
+		VM + ユーザレベルOS
+
+	- 仮想計算機(VM): Type-I
+	- 仮想計算機(VM): Type-II
+	- ユーザレベルOS
+	- VM + ユーザレベルOS
+		特権命令や入出力装置など必要な部分だけをエミュレート
+		ユーザレベルOSにわずかな修正
+
+  * NetBSDでLilyVM
+	- ptrace(2)に機能の追加が必要
+		* PTRACE_SYSEMU(or PTRACE_SYSCALL)
+		* 制御レジスタ%cr2, レラーコードなどの取得
+
+  * LilyVMの開発予定
+  	- 高速化
+		* 浮動小数点
+		* MMU
+		* network
+
+  * その他VMなどとの比較
+	- 表は後で。
+
+  * VMWare
+	- x86のVMソフトウェアの老舗
+	- 内部の詳細は不明
+
+  * Bochs
+	- CPUと周辺装置のエミュレート
+	- 移植性が高い
+	- オーバーヘッドが比較的高い
+
+  * Qemu
+	- CPUと周辺装置のエミュレート
+	- 機械語命令を動的に変換して高速化
+	- カーネルモジュールによる、さらなる高速化(5倍から10倍?)
+
+  * Plex86
+	- CPUと周辺装置のエミュレート
+	- ゲストOSの機械語命令を静的に変換
+	- ...
+
+  * Xen
+  	- ゲストOSをXenアーキテクチャに移植
+	- 周辺装置の制御のためのOSを立ち上げ
+
+  * coLinux
+  	- ホストOSのドライバとしてLinuxを動作
+	- MMUや割り込みに関する部分が多く修正されている。
+	- 性能は非常に良い
+
+  * User-mode Linux
+  	- Linux上でプロセスとして動作
+	- ptrace()などOSに依存する機能を使用している。
+
+  * CPUによるVMのサポート
+  	Intel VT(Virtualization Technology)
+	AMD Pacifica
+
+  * Intel VT
+
+  	_ VMCS(Virtual Machine Control data Structure): 制御レジスタや状態などを含む
+	- MMU関連: physical-address extention?
+
+	- VM Entry, VM Exitといった命令?
+
+  * AMD Pacifica
+
+  	- Intelのものと似たような機能
+	- だが、互換性はないらしい。
+
+  * CPUでVMがサポートされると、
+
+	- 命令エミュレーションは基本的に不要
+	- I/Oやハードウェア割り込みは必要
+
+  * CPUでVMがサポートされると何が変わるか。
+
+	- ユーザレベルから使えれば、
+
+		* 大幅な高速化
+	- ...
+
+  * http://lilyvm.sf.net/
+
+	Q: ptrace(2)への機能追加はsend-prとかしていました?
+	A: していません。
+	I: 是非、して下さい。
+
+	Q: VMwareはring0が速い?  どれくらい?
+	A: 詳細はわからないが、qemuとかと比べても。
+	I: 特権命令でないとそのままやらせてる?
+
+	I: AMD64のPacificaはI/Oの仮想化も入っているらしい。
+
+	Q: 竹の子のようにVMが出ているようですが、モチベーションは何ですか?
+	A: 大学の2回生のときにマシンが入れ替った。使いたい
+
+	Q: LilyVMのユーザランドで動いている利点と欠点は何か?
+	A: ゲストとホストのつながりが深い、それがやりやすい。
+	   NetBSDを移植するのはちょっと大変そうだった。
+
+	Q: 他のVMにも説明されていたが、LilyVMとの性能評価みたいなものがあれば教えて欲しい。
+	A: オーバーヘッドが中くらい。Plex86よりは速かった。
+	   計算だけのようなことなら、結構速い。
+
+o あれから3年...					塩崎さん
+
+  lessプレゼン meets 高橋メソッド
+
+  高橋メソッド: やたらとでかい文字で短い文章を並べる。
+
+  かたや
+
+  lessプレゼン
+
+	来る電車の中ででっちあげた。
+
+  高橋メソッドとlessプレゼンの融合
+
+	less + kterm + pcfフォント
+	Xサーバでスケーリング
+
+  もんたメソッド
+
+	Q: どうやって大きくしてるのですか。
+	A: 大きなサイズのフォントでktermを実行、Xサーバが勝手に拡大。
+
+	Q: lessって日本語通りましたっけ?
+	A: jlessです。
+
+	Q: 色を付けるのは簡単ですか?
+	A: 慣れると...。
+
+o 募金について
+
+	- TNF
+	- JNUG
+
+o NetBSDの動く小函自慢
+
+  - OpenBlockS USL-5P
+
+	OpenBlockS50 (NetbSD/mpc860)
+
+	OpenBlockS200 (NetBSD/evbppc)	あんまり動かない?
+
+	OpenBlockS266 (NetBSD/evbppc)
+
+	USL-5P (NetBSD/landisk) sh4
+
+		Lan DiskからHDを取り除いた) by I-O Data
+		64MBのCFが入ってる。
+
+	Armadillo-9 (NetBSD/evbarm)
+
+	netbsd-obs@freeml.com
+	netbsd-landisk@freeml.com
+		majoromo@freeml.com
+	nagoya
+
+	Q: freemlを使うくらいなら、jp.netbsd.orgを使って欲しい。
+	A: あんまり考えてない。
+
+  - I/O Data GIga LAN Disk
+
+	CPU: Intel i80219 (XScale)
+	Memory 128MB
+
+	挑戦者ブランドのLandisk kit(LANTANK)のケーブルが使える。
+
+	redbootがLinuxカーネルを読み込む。代わりにNetBSDカーネルを
+	入れてあげればよい。
+
+	FDISKの最初の基本区画がext2、そこからzimageを読む。
+
+  - LANDISK
+
+	- LANTANK
+	- USL-5P
+	- HDL-GシリーズはXScaleなので別物
+	- HDHシリーズはUSBターゲットになるなどもっと別物
+
+	SH-4 266MHz
+		PCIコントローラ内蔵
+	RAM 64MB
+
+  - 玄箱
+
+  - Samsung製の評価ボード
+
+  - Zeil Engine
+
+	Java + ... + ドライバ書ける。
+
+	2005/4からZeilチーム事業部化; Zeil事業部
+
+	MA410
+
+    Red Boot: ソースをコンパイルしなおすことはできる。FISコマンドで
+	      変えられる。
+
+	      コマンドが削られている?
+
+    いろんな小函の写真撮影; 新郎新婦のケーキ入刀状態の写真撮影
+
+o 3.0からの今後の展望					
+
+	NetBSD 3.0の到達点
+
+	NetBSD 3.0の成果
+
+	NetBSD 4.0
+
+o コミット列伝
+
+	ソースファイルの占有率は止めた; gccをimportすると勝ってしまう。
+
+o NetBSD 3.0の成果
+
+	2.0.1, ... 2.0.3
+	2.1, ...
+
+o NetBSD 4.0に向けて
+
+    Googleコードの夏(SoC)
+
+	- Efficient memory file-system; tmpfs
+	- Wide Character Support for Curese
+	- BSD licensed privacy guard (PGP)
+	- Zeroconfd
+		昔ランデブ、今ボンジュール on Mac OS X?
+	- Regression testing
+	- Userspace file system hooks; LinuxのFUSEと合わせたい?
+	- NDIS network driver
+	- HFS+
+
+    SMP; fine grained, 4.0では終わらない。
+
+
+
+  uPnPは存在自体セキュリティ・ホールだ。
+
+o イベント関連
+
+	2005/9/9	Gファーム(data farm)
+	2005/9/17	オープンソースカンファレンス2005
+	2005/10/7,8,9	Xcast祭り
+	2005/10/28-29	大阪オープンソース2005
+
+70名くらい。
+
+-- 
+
+www@JP.NetBSD.ORG
+$Id: log.txt,v 1.1 2005/09/06 10:16:39 minoura Exp $
+Copyright (C) 2005
+The Japan NetBSD Users' Group.  ALL RIGHTS RESERVED.
