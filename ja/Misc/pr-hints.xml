@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+    "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Misc-pr-hints">
+<config param="desc" value="What Goes In A Problem Report"/>
+<config param="cvstag" value="$NetBSD: pr-hints.xml,v 1.5 2005/07/16 17:13:44 heinz Exp $"/>
+<config param="rcsdate" value="$Date: 2005/07/16 17:13:44 $"/>
+<head>
+<title>What Goes In A Problem Report</title>
+</head>
+
+
+<sect1 id="page-top">
+
+<itemizedlist>
+<listitem><ulink url="#general-advice">General Advice</ulink></listitem>
+<listitem><ulink url="#kernel-panic">When Reporting a Kernel Panic</ulink></listitem>
+</itemizedlist>
+
+<para>
+A database is only as good as the data that goes into it.
+In general, common sense (assuming such an animal exists) dictates the
+kind of information that would be most helpful in tracking down and
+resolving problems in software.
+</para>
+
+<sect2 id="general-advice">
+<title>General Advice</title>
+
+<itemizedlist>
+<listitem>Include anything <emphasis>you</emphasis> would want to know if you were
+looking at the report from the other end. There's no need to include
+every minute detail about your environment, although anything that
+might be different from someone else's environment should be included
+(your path, for instance).
+</listitem>
+
+<listitem>Narratives are often useful, given a certain degree of
+restraint. If a person responsible for a bug can see that A was
+executed, and then B and then C, knowing that sequence of events
+might trigger the realization of an intermediate step that was
+missing, or an extra step that might have changed the environment
+enough to cause a visible problem. Again, restraint is always in
+order ("I set the build running, went to get a cup of coffee
+(Columbian, cream but no sugar), talked to Sheila on the phone,
+and then THIS happened...") but be sure to include anything
+relevant.
+</listitem>
+
+<listitem>Richard Stallman writes,
+<blockquote>
+The fundamental principle of reporting bugs usefully is this:
+<emphasis role="bold">report all the facts.</emphasis>
+If you are not sure whether to state a fact or leave it out, state it!
+</blockquote>
+This holds true across all problem reporting systems, for computer
+software or social injustice or motorcycle maintenance. It is
+especially important in the software field due to the major
+differences seemingly insignificant changes can make (a changed
+variable, a missing semicolon, etc.).
+</listitem>
+
+<listitem>Submit only <emphasis>one</emphasis> problem with each Problem Report.
+If you have multiple problems, use multiple PRs. This aids in
+tracking each problem and also in analyzing the problems associated
+with a given program.
+</listitem>
+
+<listitem>It never hurts to do a little research to find out if the
+bug you've found has already been reported. Most software releases
+contain lists of known bugs in the Release Notes which come with
+the software. In addition, it's a good idea to
+<ulink url="query-pr.html">search the NetBSD GNATS problem report database</ulink>
+to see if someone already reported the problem you're having (who knows?
+there might already be a fix or work-around in the database).
+</listitem>
+
+<listitem>The more closely a PR adheres to the standard format, the
+less interaction is required by a database administrator to route
+the information to the proper place. Keep in mind that anything
+that requires human interaction also requires time that might be
+better spent in actually fixing the problem. It is therefore in
+everyone's best interest that the information contained in a PR be
+as correct as possible (in both format and content) at the time of
+submission. See <ulink url="pr-fields.html">a description of the fields</ulink> in a 
+problem report for more details.
+</listitem>
+</itemizedlist>
+
+</sect2>
+
+<sect2 id="kernel-panic">
+<title>When Reporting a Kernel Panic</title>
+
+<para>
+So, the kernel panic'd, and gave you a whole lot of hexadecimal numbers,
+and halted.
+It's important for you to report this event,
+since real operating systems should never crash or panic,
+unless the computer hardware fails egregiously
+(there's usually not much an OS can do about hardware failure).
+That leaves kernel bugs as the other cause of a panic, and
+we need to track down those bugs and squash them to make NetBSD
+even more stable and robust than it already is.
+</para>
+
+<para>
+The trouble is that the stack dump that the kernel printed is
+specific to your kernel, and the numbers really have to be converted
+back into symbol table references so that someone else who doesn't have
+your system's kernel can get an accurate picture of where it decided to die.
+</para>
+
+<para>
+At a minimum, copy down the "PC" numbers and convert them to symbolic
+references - that's the <emphasis>Program Counter</emphasis> for the computer; where it
+was executing. Ideally, if you can arrange to cut &amp; paste the
+whole thing, that's even better.
+</para>
+
+<para>
+So, when the kernel gives you this (usually several lines of this):
+</para>
+
+<para>
+<programlisting>
+pc = 0xf80ff430  args = (0x0, 0x41001fe5, 0xf8139c00, 0xf8123d20, 0xf8101e38, 0xf8143800, 0xf8123c68) fp = 0xf8123c68
+</programlisting>
+</para>
+
+<para>
+The PC number is specific to the kernel you were running, and is not likely
+to be the same as anyone else's kernel, so it must be converted to a symbol
+reference.
+To convert a hexadecimal PC value to symbolic reference,
+use &man.gdb.1;, in the following way:
+</para>
+
+<para>
+<programlisting>
+gdb -k /netbsd
+x 0xf80ff430
+
+0xf80ff430 &lt;cpu_reboot+196&gt;:     0x40000093
+</programlisting>
+</para>
+
+<para>
+That "&lt;cpureboot+196&gt;" result from &man.gdb.1; is what the
+people who will work on the problem report will need, so put it
+(preferably along with the rest of that "args" line) into your
+problem report.
+</para>
+
+<para>
+See
+<ulink url="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=3765">problem
+report #3765</ulink> for an example of an exhaustive PR on a kernel panic.
+</para>
+</sect2>
+
+<html:hr/>
+<ulink url="#page-top">[Page&nbsp;top]</ulink>
+<ulink url="../Gnats/">[GNATS&nbsp;summary]</ulink>
+<ulink url="query-pr.html">[Query&nbsp;PR]</ulink>
+<ulink url="pr-fields.html">[PR&nbsp;fields]</ulink>
+<ulink url="pr-states.html">[PR&nbsp;states]</ulink>
+
+</sect1>
+</webpage>
