@@ -1,0 +1,801 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//Norman Walsh//DTD Website V2.2//EN"
+    "http://docbook.sourceforge.net/release/website/2.2/website.dtd" [
+
+<!ENTITY % man-refs.ent SYSTEM "../share/xml/man-refs.ent"> %man-refs.ent;
+
+]>
+
+<webpage id="compat">
+<config param="desc" value="NetBSD Binary Emulation"/>
+<config param="cvstag" value="$NetBSD: compat.xml,v 1.1 2005/02/11 16:23:29 jschauma Exp $"/>
+<config param="rcsdate" value="$Date: 2005/02/11 16:23:29 $"/>
+<head>
+
+<!-- Copyright (c) 2000-2005
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD Binary Emulation</title>
+</head>
+
+
+<sect1 role="toc">
+
+<sect2 id="binary-emulation">
+<title>Binary Emulation</title>
+
+<sect3 id="what">
+<title>What is Binary Emulation? Why does it exist?</title>
+<para>
+A large amount of Unix software is distributed in source-code format.
+This means the authors actually provide the C (or other language) program
+code, and the installation process uses a compiler to generate an executable
+to run on the local machine. Carefully written source-code and installation
+utilities can allow the same program to be built on dozens of different
+operating systems.
+</para>
+<para>Commercial software vendors are not inclined to distribute source code
+since it may contain trade-secrets. Commercial vendors normally deliver
+the executable programs which can be run directly. They perform the compilation
+stage in-house, and delivery binary files from which their secrets are
+less easily discernible.
+</para>
+<para>The result of this is that the vendor must make a choice to expend man-power
+for each different operating system they support, normally maintaining
+a system to do testing with, and at least one person to do compilation
+and testing.
+</para>
+<para>This ties together the Operating System and the set of applications
+a consumer may wish to run. One may choose not to run a particular application
+because it is not available on their Operating System of choice, or one
+may be forced to run an Operating System one would rather not, due to the
+availability of some critical application.
+</para>
+<para>Binary Emulation eliminates this forced linkage.
+</para>
+</sect3>
+
+<sect3 id="compat">
+<title>What other binary compatibility is there?</title>
+<para>
+There is another compatibility feature worth being aware of.  NetBSD uses
+the same binary object file format across NetBSD machines with the same CPU. 
+If you build binaries on your NetBSD sun3, you can run them on your NetBSD
+amiga, NetBSD mac68k, NetBSD mvme68k, NetBSD next68k... however, you couldn't
+run them on Intel processor based machines.
+</para>
+</sect3>
+
+<sect3 id="how">
+<title>How does it work?</title>
+<para>
+Unix and Unix-like systems consist of two primary parts, the Kernel,
+and everything else. The kernel is the program which controls devices,
+security, and the programs which wish to use the machine's resources.
+Typically, the kernel provides these services to other programs through
+kernel system calls. An example would be a program requesting to OPEN a
+file, the program calls the kernel OPEN function with a set of parameters
+indicating what it wishes to do, and the kernel allows or denies the request,
+and replies with the information the program requires to continue.
+</para>
+<para>Every Unix and Unix-like system supplies a very similar set of these
+system calls. (They all have an OPEN for example.)</para>
+<para>
+From system to system, the primary differences in syscalls will be in
+the format of parameters passed to these calls. (NetBSD's OPEN takes a
+filename, flags, and a mode)&nbsp; The names of the calls may also differ
+from system to system. If a NetBSD system wishes to run a Linux executable,
+each time the program performs a system call, the kernel performs a mapping
+function to the corresponding NetBSD system call, and re-orders/re-formats
+the parameters as required.
+</para>
+<para>Another important issue is the format of the executable files.
+About every second operating system uses a different file format in which it
+saves its binaries, using different headers, magic cookies, hunks, whatever.
+The one NetBSD supports natively is a.out or ELF(depending on the architecture,
+and version of NetBSD. NetBSD is migrating to ELF, with each port moving
+according to its own schedule). Some other executable formats include b.out,
+COFF, ECOFF, ieee695, PE, SOM, and XCOFF. NetBSD's emulation knows how to
+handle the executable format for the emulated system. 
+</para>
+<para>Across different systems syscalls are accessed in different ways, and 
+parameters are passed differently. As an example, under AmigaOS, this is done
+with an index into a table containing pointers to functions pointed to by
+some address register and the data in some data register. Other operating
+systems use other methods, traps, tables, registers, stacks, etc. and this is
+handled by the binary emulation. 
+</para>
+<para>The final significant requirement is that the CPU the executable was
+compiled for must match the system it will run on. Besides system calls,
+executables consist of raw CPU instructions. Therefore, SCO Unix binaries
+(Intel 386 series CPU) will run on NetBSD i386, but can not be run on NetBSD
+Amiga (Motorola 680x0 CPU). Performing that function would require a much
+more complicated translation system, and would have a significant impact
+on application performance.
+</para>
+</sect3>
+
+<sect3 id="which">
+<title>Which systems can I run binaries from?</title>
+<para>
+Generally speaking, you can run binaries from other unix operating
+systems which run on the same hardware as your NetBSD system. A list of
+supported Binary formats for each port, as well as user's success stories are
+available in the platform specific pages selectable at <ulink url="#ports">the
+bottom of this page</ulink>
+</para>
+</sect3>
+
+<sect3 id="performance">
+<title>How well does it perform?</title>
+<para>
+Since the only additional overhead is the mapping from emulated system calls
+to native NetBSD system calls, and the reformatting of any parameters,
+if needed, the performance is really, really good. A rough estimate would
+be at most a 1-2% performance impact; if you call 2% impact.  This
+varies depending on which system calls a program uses. Most mappings take
+&lt;1% of the time the actual syscall takes to run.
+</para>
+</sect3>
+
+<sect3 id="considerations">
+<title>Any other considerations?</title>
+<para>
+In addition to the CPU being of the same type, and the mapping of system calls,
+there is one other requirement. Many Unix systems support shared libraries.
+This means that a compiled program does not come with all of its functions
+compiled in, (which means it can be smaller) but it requires an external
+set of libraries which must match the ones the program was compiled to
+use (not including minor modifications). If you wish you run a program
+under binary emulation, you can check whether it was statically or dynamically
+linked, by using the 'file' command...
+</para>
+
+<programlisting><html:pre>% file qwsv
+qwsv: BSD/OS i386 compact demand paged executable
+% file arp
+arp: NetBSD/i386 demand paged dynamically linked executable</html:pre></programlisting>
+
+<para>The presence of 'dynamically linked' indicates exactly that, its absence
+indicates static linking. Shared object libraries for most freely available
+Unix systems are available from the NetBSD pkgsrc, under the /compat directory.
+Note that these shared library sets are _not required_ if you are only
+going to run statically linked binaries.
+</para>
+<para>For commercial systems, you may need to supply your own set of libraries.
+See <code>man -k compat</code> for a list, and <code>man compat_<emphasis>os</emphasis></code>
+(where <emphasis>os</emphasis> is the target OS) for some installation instructions:
+
+<programlisting><html:pre>% man -k compat
+compat_freebsd(8) - setup procedure for running FreeBSD binaries
+compat_hpux(8) - setup procedure for running HP/UX binaries
+compat_ibcs2(8) - setup procedure for running binaries that conform to the Intel Binary Compatibility Standard 2, e.g. SCO Unix and others derived from AT&amp;T SVR3.
+compat_linux(8) - setup procedure for running Linux binaries
+compat_osf1(8) - setup procedure for running OSF/1 (AKA Digital Unix, AKA Tru64) binaries
+compat_pecoff(8) - setup procedure for running Win32 binaries
+compat_sunos(8) - setup procedure for m68k and sparc architectures
+compat_svr4(8) - setup procedure for running SVR4/iBCS2 binaries
+compat_ultrix(8) - setup procedure for Ultrix compatibility on mips and vax</html:pre></programlisting>
+</para>
+</sect3>
+
+<sect3 id="ports">
+<title>Which OSs can I emulate on my machine?</title>
+<para>
+NetBSD runs on many CPUs and hardware platforms, for specific information,
+please find yours in the list below. If you have additional emulations to
+report, please <ulink url="http://www.NetBSD.org/cgi-bin/feedback.cgi">let us know</ulink>.
+</para>
+
+<sect4 id="alpha">
+<title>alpha</title>
+
+	<itemizedlist>
+	<listitem>Linux(Alpha)</listitem>
+	<listitem>OSF/1</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="amiga">
+<title>amiga</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="arc">
+<title>arc</title>
+</sect4>
+
+<sect4 id="arm26">
+<title>arm26</title>
+</sect4>
+
+<sect4 id="arm32">
+<title>arm32</title>
+</sect4>
+
+<sect4 id="atari">
+<title>atari</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="bebox">
+<title>bebox</title>
+</sect4>
+
+<sect4 id="cobalt">
+<title>cobalt</title>
+</sect4>
+
+<sect4 id="dreamcast">
+<title>dreamcast</title>
+</sect4>
+
+<sect4 id="hp300">
+<title>hp300</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="hpcmips">
+<title>hpcmips</title>
+</sect4>
+
+<sect4 id="hpcsh">
+<title>hpcsh</title>
+</sect4>
+
+<sect4 id="i386">
+<title>i386</title>
+
+	<itemizedlist>
+	<listitem>BSDI (up to BSDI 3.x binaries)</listitem>
+	<listitem>FreeBSD(x86) (a.out and ELF binaries)</listitem>
+	<listitem>IBCS2 systems
+	<itemizedlist>
+	<listitem>Interactive Unix</listitem>
+	<listitem>SCO Unix</listitem>
+	<listitem>SCO Xenix</listitem>
+	</itemizedlist></listitem>
+	<listitem>Linux(x86)</listitem>
+	<listitem>Solaris(x86)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="luna68k">
+<title>luna68k</title>
+</sect4>
+
+<sect4 id="mac68k">
+<title>mac68k</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="macppc">
+<title>macppc</title>
+</sect4>
+
+<sect4 id="mipsco">
+<title>mipsco</title>
+</sect4>
+
+<sect4 id="mvme68k">
+<title>mvme68k</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="news68k">
+<title>news68k</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="newsmips">
+<title>newsmips</title>
+</sect4>
+
+<sect4 id="next68k">
+<title>next68k</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="ofppc">
+<title>ofppc</title>
+</sect4>
+
+<sect4 id="pc532">
+<title>pc532</title>
+</sect4>
+
+<sect4 id="pmax">
+<title>pmax</title>
+</sect4>
+
+<sect4 id="prep">
+<title>prep</title>
+</sect4>
+
+<sect4 id="sandpoint">
+<title>sandpoint</title>
+</sect4>
+
+<sect4 id="sgimips">
+<title>sgimips</title>
+
+	<itemizedlist>
+	<listitem>IRIX(mips)</listitem>
+	<listitem>Linux(mips)</listitem>
+	<listitem>Ultrix(mips)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="sh3">
+<title>sh3</title>
+</sect4>
+
+<sect4 id="sparc">
+<title>sparc</title>
+
+	<itemizedlist>
+	<listitem>SunOS(sparc)</listitem>
+	<listitem>Solaris(sparc)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="sparc64">
+<title>sparc64</title>
+
+	<itemizedlist>
+	<listitem>32-bit NetBSD/sparc (both ELF and a.out)</listitem>
+	<listitem>SunOS(sparc)</listitem>
+	<listitem>Solaris(sparc) (both 32-bit and 64-bit)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="sun3">
+<title>sun3</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="vax">
+<title>vax</title>
+</sect4>
+
+<sect4 id="x68k">
+<title>x68k</title>
+
+	<itemizedlist>
+	<listitem>Amiga Unix (SVR4)</listitem>
+	<listitem>HPUX(68k)</listitem>
+	<listitem>Linux(m68k)</listitem>
+	<listitem>SunOS(68k)</listitem>
+	</itemizedlist>
+</sect4>
+</sect3>
+
+<sect3 id="applications">
+<title>Which applications have been reported to work on my machine?  </title>
+<para>
+NetBSD runs on many CPUs and hardware platforms, for specific information,
+please find yours in the list below. If you have additional applications to
+report,  please <ulink url="http://www.NetBSD.org/cgi-bin/feedback.cgi">let us know</ulink>.
+</para>
+
+<sect4 id="alpha">
+<title>alpha</title>
+
+	<itemizedlist>
+	<listitem>Acroread - Digital Unix</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="amiga">
+<title>amiga</title>
+</sect4>
+
+<sect4 id="arc">
+<title>arc</title>
+</sect4>
+
+<sect4 id="arm26">
+<title>arm26</title>
+</sect4>
+
+<sect4 id="arm32">
+<title>arm32</title>
+</sect4>
+
+<sect4 id="atari">
+<title>atari</title>
+</sect4>
+
+<sect4 id="bebox">
+<title>bebox</title>
+</sect4>
+
+<sect4 id="cobalt">
+<title>cobalt</title>
+</sect4>
+
+<sect4 id="dreamcast">
+<title>dreamcast</title>
+</sect4>
+
+<sect4 id="hp300">
+<title>hp300</title>
+
+        <itemizedlist>
+        <listitem>Gnat (Gnu Ada Translator) - SunOS</listitem>
+        </itemizedlist>
+</sect4>
+
+<sect4 id="hpcmips">
+<title>hpcmips</title>
+</sect4>
+
+<sect4 id="hpcsh">
+<title>hpcsh</title>
+</sect4>
+
+<sect4 id="i386">
+<title>i386</title>
+
+	<itemizedlist>
+	<listitem>Acroread - Linux(x86)</listitem>
+	<listitem>Honyaku-no-Ousama POWER+ - Linux(x86)</listitem>
+	<listitem>Matlab - Linux(x86)</listitem>
+	<listitem>Maple 6.1, 7 and 8 - RedHat Linux(x86)<para>
+
+	    Maple ships with binaries for SuSE and RedHat Linux, but even
+	    with our SuSE compat pkgs, (only) the RedHat version works.
+	    No big problem, if you have both. A small patch is needed to
+	    get the system to know about NetBSD:</para>
+	<programlisting><html:pre>--- maple.system.type.orig      Mon Apr 30 17:26:11 2001
++++ maple.system.type   Mon Apr 30 17:40:49 2001
+@@ -84,6 +84,11 @@
+                MAPLE_BIN="bin.IBM_INTEL_LINUX_REDHAT"
+        fi
+         ;;
++    "NetBSD")
++       # NetBSD uses SuSE compat per default, but maple works
++       # (only) with the RedHat compat. 
++       MAPLE_BIN="bin.IBM_INTEL_LINUX_REDHAT"
++       ;;
+     *)
+         # currently do not support any other platforms
+         MAPLE_BIN="FAIL"</html:pre></programlisting>
+    	    <para>
+	    Apply this to the <emphasis>mapledir</emphasis>/bin/maple.system.type
+	    script and you can use maple, xmaple, etc.
+	</para>
+	    </listitem>
+	<listitem>Mozilla - FreeBSD(x86)</listitem>
+	<listitem>Mozilla - Linux(x86)</listitem>
+	<listitem>Netscape - BSDI(x86)</listitem>
+	<listitem>Netscape - Linux(x86)</listitem>
+	<listitem>Netscape - Solaris(x86)</listitem>
+	<listitem>Neverwinternights dedicated server - Linux(x86)</listitem>
+	<listitem>Perforce - FreeBSD(x86)</listitem>
+	<listitem>Planmaker - Linux(x86)</listitem>
+	<listitem>Realplayer 5, 7 - Linux(x86)</listitem>
+	<listitem>sqlplus Oracle client - Solaris(x86)</listitem>
+	<listitem>StarOffice 5.1a - Linux(x86) (requires NetBSD 1.5 or later)</listitem>
+	<listitem>Textmaker - Linux(x86)</listitem>
+	<listitem>Quake 1, 2, 3 - Linux(x86)</listitem>
+	<listitem>VMWare ESX/GSX Server - Linux(x86)</listitem>
+	<listitem>WordPerfect 8, 8.1 - Linux(x86)</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="luna68k">
+<title>luna68k</title>
+</sect4>
+
+<sect4 id="mac68k">
+<title>mac68k</title>
+</sect4>
+
+<sect4 id="macppc">
+<title>macppc</title>
+</sect4>
+
+<sect4 id="mipsco">
+<title>mipsco</title>
+</sect4>
+
+<sect4 id="mvme68k">
+<title>mvme68k</title>
+</sect4>
+
+<sect4 id="news68k">
+<title>news68k</title>
+</sect4>
+
+<sect4 id="newsmips">
+<title>newsmips</title>
+</sect4>
+
+<sect4 id="next68k">
+<title>next68k</title>
+</sect4>
+
+<sect4 id="ofppc">
+<title>ofppc</title>
+</sect4>
+
+<sect4 id="pc532">
+<title>pc532</title>
+</sect4>
+
+<sect4 id="pmax">
+<title>pmax</title>
+</sect4>
+
+<sect4 id="prep">
+<title>prep</title>
+</sect4>
+
+<sect4 id="sandpoint">
+<title>sandpoint</title>
+</sect4>
+
+<sect4 id="sgimips">
+<title>sgimips</title>
+</sect4>
+
+<sect4 id="sh3">
+<title>sh3</title>
+</sect4>
+
+<sect4 id="sparc">
+<title>sparc</title>
+
+	<itemizedlist>
+	<listitem>Acroread3 - SunOS(sparc)</listitem>
+	<listitem>Netscape - Solaris(sparc)</listitem>
+ 	<listitem>Networker - SunOS(sparc)</listitem>	
+	<listitem>"Most" of the SunOS(sparc) userland. Kernel grovellers will not usually work.</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="sparc64">
+<title>sparc64</title>
+
+	<itemizedlist>
+	<listitem>"Most" of the SunOS(sparc) userland. Kernel grovellers will not usually work.</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="sun3">
+<title>sun3</title>
+</sect4>
+
+<sect4 id="vax">
+<title>vax</title>
+
+	<itemizedlist>
+	<listitem> The userland that comes with DEC SVR3 via (yes!) iBCS2.</listitem>
+	</itemizedlist>
+</sect4>
+
+<sect4 id="x68k">
+<title>x68k</title>
+</sect4>
+
+</sect3>
+
+<sect3 id="problems">
+<title>Which applications have been reported to <emphasis role="bold">not</emphasis> work on my machine?  </title>
+<para>
+NetBSD runs on many CPUs and hardware platforms, for specific information,
+please find yours in the list below. If you have additional applications to
+report, please <ulink url="http://www.NetBSD.org/cgi-bin/feedback.cgi">let us know</ulink>.
+</para>
+<para>
+In some cases, foreign applications require features not available in the
+emulation layer provided by earlier NetBSD releases. This usually happens when
+a foreign OS implements new syscalls and application authors change their 
+applications to require their availability. Where an application is listed
+below with the phrase 'last unsupported version', all later NetBSD
+releases are able to run the application.
+</para>
+
+<sect4 id="alpha">
+<title>alpha</title>
+</sect4>
+
+<sect4 id="amiga">
+<title>amiga</title>
+</sect4>
+
+<sect4 id="arc">
+<title>arc</title>
+</sect4>
+
+<sect4 id="arm26">
+<title>arm26</title>
+</sect4>
+
+<sect4 id="arm32">
+<title>arm32</title>
+</sect4>
+
+<sect4 id="atari">
+<title>atari</title>
+</sect4>
+
+<sect4 id="bebox">
+<title>bebox</title>
+</sect4>
+
+<sect4 id="cobalt">
+<title>cobalt</title>
+</sect4>
+
+<sect4 id="dreamcast">
+<title>dreamcast</title>
+</sect4>
+
+<sect4 id="hp300">
+<title>hp300</title>
+</sect4>
+
+<sect4 id="hpcmips">
+<title>hpcmips</title>
+</sect4>
+
+<sect4 id="hpcsh">
+<title>hpcsh</title>
+</sect4>
+
+<sect4 id="i386">
+<title>i386</title>
+
+<itemizedlist>
+<listitem>eWnn(Japanese/English translator) - Linux(x86) (requires Mule 2.3, SEGVs)</listitem>
+<listitem>Honyaku-Damasi (Japanese/English translator) - Linux(x86)</listitem>
+<listitem>Ichitaro ARK for Java (Japanese word processor) - Linux(x86) (needs JSDK1.2.2)</listitem>
+<listitem>Objectivity - Linux(x86) (coredumps creating database)</listitem>
+<listitem>Oracle - Linux(x86) (SEGV in install)</listitem>
+<listitem>Shade Preview - Linux(x86) (may need RedHat shared libs)</listitem>
+<listitem>StarOffice 5.1a - Linux(x86) (last unsupported version, NetBSD 1.4.x)</listitem>
+<listitem>Wnn6 Ver3 - Linux(x86) (can't open a needed symlink)</listitem>
+</itemizedlist>
+</sect4>
+
+<sect4 id="luna68k">
+<title>luna68k</title>
+</sect4>
+
+<sect4 id="mac68k">
+<title>mac68k</title>
+</sect4>
+
+<sect4 id="macppc">
+<title>macppc</title>
+</sect4>
+
+<sect4 id="mipsco">
+<title>mipsco</title>
+</sect4>
+
+<sect4 id="mvme68k">
+<title>mvme68k</title>
+</sect4>
+
+<sect4 id="news68k">
+<title>news68k</title>
+</sect4>
+
+<sect4 id="newsmips">
+<title>newsmips</title>
+</sect4>
+
+<sect4 id="next68k">
+<title>next68k</title>
+</sect4>
+
+<sect4 id="ofppc">
+<title>ofppc</title>
+</sect4>
+
+<sect4 id="pc532">
+<title>pc532</title>
+</sect4>
+
+<sect4 id="pmax">
+<title>pmax</title>
+</sect4>
+
+<sect4 id="prep">
+<title>prep</title>
+</sect4>
+
+<sect4 id="sandpoint">
+<title>sandpoint</title>
+</sect4>
+
+<sect4 id="sgimips">
+<title>sgimips</title>
+</sect4>
+
+<sect4 id="sh3">
+<title>sh3</title>
+</sect4>
+
+<sect4 id="sparc">
+<title>sparc</title>
+
+<itemizedlist>
+<listitem>Acroread4 - Solaris(sparc)</listitem>
+</itemizedlist>
+</sect4>
+
+<sect4 id="sparc64">
+<title>sparc64</title>
+</sect4>
+
+<sect4 id="sun3">
+<title>sun3</title>
+</sect4>
+
+<sect4 id="vax">
+<title>vax</title>
+</sect4>
+
+<sect4 id="x68k">
+<title>x68k</title>
+</sect4>
+
+</sect3>
+
+</sect2>
+</sect1>
+<parentsec url="." text="NetBSD Documentation"/>
+</webpage>
