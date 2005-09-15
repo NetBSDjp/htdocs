@@ -1,4 +1,4 @@
-# $NetBSD: Packages.txt,v 1.1.1.1 1999/11/09 09:54:44 sakamoto Exp $
+# $NetBSD: Packages.txt,v 1.1.1.2 2005/09/15 12:01:53 kano Exp $
 ###########################################################################
 
 			==========================
@@ -59,7 +59,7 @@ is a description of all the terminology used within this document:
 
  * The NetBSD package system:
    This is the part of the NetBSD operating system handling building
-   (compiling), installing and removing of packages.
+   (compiling), installing, and removing of packages.
 
  * Distfile:
    This term describes the file or files that are provided by the author
@@ -89,7 +89,7 @@ is a description of all the terminology used within this document:
    all the files in the Distfile by the actions defined in the
    corresponding package. 
 
- * RCS IDs:
+ * NetBSD RCS IDs:
    Some files in a package contain RCS IDs to reflect which version of
    that file this is (inserted automatically by cvs). These IDs are used
    in several examples within this document, but as this document itself
@@ -124,8 +124,8 @@ directory may be rooted somewhere else, probably somewhere below /cdrom.
 Please consult your CDROM's documentation for the exact location!
 
 
- 1.2 How to do
- =============
+ 1.2 How to use
+ ==============
 
 If you have the files on a CDROM or downloaded them to your hard disk, you
 can install them with the following command (be sure to su to root first):
@@ -136,12 +136,14 @@ If you have FTP access and you don't want to download the packages via FTP
 prior to installation, you can do this automatically by giving pkg_add an
 ftp-URL:
 
-	pkg_add ftp://ftp.netbsd.org/pub/packages/`sysctl -n hw.machine_arch`/All/package.tgz
+	pkg_add ftp://ftp.netbsd.org/pub/NetBSD/packages/<OS Ver>/<arch>/All/package.tgz
 
-Please note that sysctl is used here to automatically determine the right
-set of binary files. Also note that any packages needed to run the package
-in question will be installed, too, assuming they are present where you
-install from.
+If there is any doubt, the sysctl utility can be used to determine the
+<OS Ver>, and <arch> by running "sysctl kern.osrelease hw.machine_arch".
+
+Also note that any prerequisite packages needed to run the package in
+question will be installed, too, assuming they are present where you install
+from.
 
 After you've installed packages, be sure to have /usr/pkg in your $PATH so
 you can actually start the just installed program.
@@ -183,12 +185,15 @@ directory /usr/pkgsrc does exist. Then, simply start "sup -v
 
 There is one gotcha: The distribution file (i.e. the unmodified source)
 must exist on your system for the packages system to be able to build it.
-If it's not, then ftp(1) is used to fetch the distribution files
+If it does not, then ftp(1) is used to fetch the distribution files
 automatically.
 
 You can overwrite some of the major distribution sites to fit to sites
 that are close to your own. Have a look at /usr/pkgsrc/mk/mk.conf.example
-to find some examples. This may save some of your bandwith and time.
+to find some examples. This may save some of your bandwidth and time.
+
+When you have selected your settings, install your configuration into
+/etc/mk.conf
 
 If you don't have a permanent Internet connection and you want to know
 which files to download, "make fetch-list" will tell you what you'll need.
@@ -211,7 +216,7 @@ at the shell prompt to install the various components into the correct
 places on your system.
 
 Taking the top system utility as an example, we can install it on our
-system by building as shown in A.1.
+system by building as shown in appendix A.1.
 
 The program is installed under the default root of the packages tree -
 /usr/pkg. Should this not conform to your tastes, simply set the LOCALBASE
@@ -237,7 +242,9 @@ X11 tree.  We are looking at ways to change this.
 
 Some packages look in /etc/mk.conf to alter some configuration options
 at build time. Have a look at /usr/pkgsrc/mk/mk.conf.example to get an
-overview of what you can set there.
+overview of what you can set there. Environment variables such as
+LOCALBASE, and X11BASE can also be set in /etc/mk.conf to save having
+to remember to set them each time you want to use pkgsrc.
 
 
  3 Making a precompiled package
@@ -271,7 +278,7 @@ Part II: Package Constructor's Guide
  ======================================================
 
 Whenever you're preparing a package from the FreeBSD ports collection or
-doing it from scratch, there is a number of files involved which are
+doing it from scratch, there are a number of files involved which are
 described in the following sections. Special directions are given for what
 differs from FreeBSD ports for each file.
 
@@ -314,12 +321,13 @@ MASTER_SITE_SUBDIR will not work.
 Currently the following values are available for CATEGORIES. If more than
 one is used, they need to be separated by spaces:
 
-	archivers   corba      games     meta-pkgs  security
-	audio       cross      graphics  misc       shells
-	benchmarks  databases  lang      net        sysutils
-	cad         devel      mail      news       textproc
-	comms       editors    math      plan9      www
-	converters  emulators  mbone     print      x11
+	archivers   corba      graphics  meta-pkgs  print      
+	audio       cross      ham	 misc       security
+	benchmarks  databases  japanese  net        shells
+	biology     devel      lang      news       sysutils 
+	cad         editors    mail      parallel   textproc
+	comms       emulators  math      pkgtools   www
+	converters  games      mbone     plan9      x11
 
 See the NetBSD packages(7) manual page for a description of all available
 options and variables.
@@ -369,24 +377,23 @@ package from the FreeBSD ports collection:
  4.2 files/*
  ===========
 
-Most important, this directory contains the (mandatory) md5 checksum of all
-the distfiles needed for the package to compile. This file - files/md5 -
-contains an md5 checksum of the distribution file(s) to ensure that the
-distfile retrieved from the Internet has not been altered by a malign force
-to introduce a security hole or was corrupted during transfer. The file
-contains the md5 checksum of the original distribution file used to create
-the NetBSD package, from which any patches were generated etc. It can be
-generated by hand using the md5(1) command or by invoking "make makesum".
+ * files/md5:
+   Most important, the mandatory md5 checksum of all the distfiles needed for
+   the package to compile, confirming they match the original file any patches
+   were generated against. This ensures that the distfile retrieved from the
+   Internet has not been corrupted during transfer or altered by a malign force
+   to introduce a security hole. It can be generated by hand using the md5(1)
+   command or by invoking "make makesum".
 
-The files directory also includes a checksum file for all the official
-patches for the package, found in the patches/ directory (see section
-4.3). This checksum file is called patch-sum, and includes an MD5 checksum
-of all lines in the patch file except the NetBSD RCS Id. This file is
-generated using the "make makepatchsum" command.
+ * files/patch-sum:
+   The checksum file for all the official patches for the package, found in the
+   patches/ directory (see section 4.3). This checksum file includes an MD5
+   checksum of all lines in the patch file except the NetBSD RCS Id. This file
+   is generated by invoking "make makepatchsum".
 
 Besides that, if you have any files that you wish to be placed in the
 package prior to configuration or building, you could place these files
-here and use a cp command in the pre-configure target to achieve this.
+here and use a ${CP} command in the pre-configure target to achieve this.
 Alternatively, you could simply diff the file against /dev/null and use the
 patch mechanism to manage the creation of this file.
 
@@ -400,7 +407,7 @@ will compile and run perfectly on NetBSD. The files are applied
 successively in alphabetic order (as returned by a shell "patches/patch-*"
 glob expansion), so patch-aa is applied before patch-ab etc.
 
-The patch-?? files should be in diff -u format. This is because (not only)
+The patch-?? files should be in diff -bu format. This is because (not only)
 the FreeBSD ports tsar finds this format easier to read than context diffs,
 and so you have more chance of getting your NetBSD package accepted as part
 of the FreeBSD ports system if you format your diffs in a unified fashion.
@@ -424,7 +431,7 @@ to do
 in the package directory.
 
 Besides taking care of any FreeBSDisms, be sure to provide patches to
-replace any occurance of /usr/local in any "Makefile"s in the original
+replace any occurrence of /usr/local in any "Makefile"s in the original
 package with ${PREFIX}.
 
 When you have finished a package, remember to generate the checksums
@@ -452,7 +459,7 @@ witticisms.
  * pkg/DESCR:
    A multi-line description of the piece of software.  This should include
    any credits where they are due.  Please bear in mind that others do not
-   share your sense of humour (or spelling idiosyncracies), and that others
+   share your sense of humour (or spelling idiosyncrasies), and that others
    will read everything that you write here.
 
  * pkg/PLIST:
@@ -468,7 +475,7 @@ attention to the following things in pkg/PLIST:
    ldconfig ...", delete them. NetBSD works out automatically whether to
    call ldconfig, since some NetBSD architectures do not have ldconfig.
  - Add any missing @dirrm statements
- - Any MAN definitions in the package Makefile
+ - Remove any MANx= definitions in the package Makefile
 
 You could also investigate the port2pkg package (pkgsrc/pkgtools/port2pkg),
 which does a lot of the donkey work for you.
@@ -517,6 +524,12 @@ it will be executed at the appropriate time during the build process:
   pre-install        post-install
   pre-package        post-package
 
+Note that you should NOT define a pre-* or post-* target in the Makefile
+which executes the matching scripts/[pre|post]-* script. bsd.pkg.mk runs
+any existing Makefile target first, then searches for scripts/* and runs
+it using sh(1). Running the script from the Makefile would cause it to
+be run twice.
+
 See section 7 for a description of the build process.
 
 
@@ -540,7 +553,7 @@ a release tag of "pkgsrc-base", e.g::
 
 	cvs import pkgsrc/<category>/frobnitz TNF pkgsrc-base
 
-Packages derived from a FreeBSD port could be imported with a vendor tag
+Packages derived from a FreeBSD port should be imported with a vendor tag
 of "FREEBSD" and a release tag of "FreeBSD-current-YYYY-MM-DD" (YYYY-MM-DD
 being the date when the snapshot of the port were taken form the FreeBSD
 tree), and then doing the necessary modifications by normal CVS operations.
@@ -552,22 +565,22 @@ E.g:
 	cvs ci
 
 Please note all package updates/additions in doc/pkg-CHANGES! Its very important
-to keep this file uptodate, cause it will be used from scripts to automatically
-update some pages on www.netbsd.org.
+to keep this file up to date, because it will be used by scripts to
+automatically update some pages on www.netbsd.org.
 
 
  5 PLIST* issues
  ===============
 
-This section addresses some special issues that one needs to take attention
-of when dealing with the PLIST file (or files, see below!).
+This section addresses some special issues that one needs to pay attention
+to when dealing with the PLIST file (or files, see below!).
 
 
  5.1 Miscellaneous
  =================
 
- * RCS Id:
-   Be sure to add a RCS ID line as the first thing in any PLIST file your
+ * NetBSD RCS Id:
+   Be sure to add a RCS ID line as the first thing in any PLIST file you
    write:
 
 	@comment <$>NetBSD<$>
@@ -718,7 +731,7 @@ FreeBSD port, if only from an aesthetic viewpoint.
 
 NetBSD supports many different machines, with different object formats
 like a.out and ELF, and varying abilities to do shared library and
-dynamic loading at all. To accompany this, verying commands and options
+dynamic loading at all. To accompany this, varying commands and options
 have to be passed to the compiler, linker etc. to get the Right Thing,
 which can be pretty annoying especially if you don't have all the
 machines at your hand to test things.  The "libtool" pkg can help
@@ -783,10 +796,14 @@ Here's how to use libtool in a pkg in seven simple steps:
    include the ELF symlink files; those are automatic. 
 
 FOR GNU PKGS THAT ALREADY SUPPORT LIBTOOL: 
-Add USE_LIBTOOL=yes to the package Makefile.  You may possibly have to
-modify the "configure" script not to check for or configure its own
-libtool.  See the libwww pkg, patch-ab, for the quick way to bypass
-the pkg's own libtool.
+Add USE_LIBTOOL=yes and LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig to the
+package Makefile as the quick way to bypass the pkg's own libtool.
+The pkg's own libtool is made by ltconfig script at do-configure target.
+If USE_LIBTOOL and LTCONFIG_OVERRIDE are defined, the specified ltconfig is
+overridden, using the pkgtools/pkglibtool instead of the pkg's own libtool.
+If the pkg already has an original "libtool" which we can replace with
+pkgtools/pkglibtool you may have to specify LIBTOOL_OVERRIDE to the package
+Makefile.
 
 
  6.3 Gotchas of FreeBSD ports
@@ -797,7 +814,7 @@ RCS IDs) and section 4.3 for gotchas on using patches from FreeBSD ports.
 
 One of the biggest problems with FreeBSD ports is that too many of
 them assume they will install into /usr/local, instead of honouring
-any ${PREFX} setting properly.  To change this, add something like the
+any ${PREFIX} setting properly.  To change this, add something like the
 following into your package Makefile:
 
 pre-configure:
@@ -836,11 +853,11 @@ the package Makefile.
  ==========================
 
 If you have found any bugs in the package you make available, if you had to
-do special steps to make it run under NetBSD or if you enhanced the
-software in various other ways, be sure to report these changes back to the
-original author of that program! Only with that kind of support, the next
-release of the program can incorporate these fixes, and also people not
-using the NetBSD packages system can win from your efforts.
+do special steps to make it run under NetBSD or if you enhanced the software
+in various other ways, be sure to report these changes back to the original
+author of the program! With that kind of support, the next release of the
+program can incorporate these fixes, and people not using the NetBSD packages
+system can win from your efforts.
 
 Support the idea of free software!
 
@@ -911,7 +928,8 @@ The main targets used during the build process defined in bsd.pkg.mk are:
    compared with the checksums stored in the files/md5 file. If the
    checksums don't match, the build is aborted. This is to ensure the same
    distfile is used for building, and that the distfile wasn't changed,
-   e.g. by some malign force or network lossage. 
+   e.g. by some malign force, deliberately changed distfiles on the master
+   distribution site or network lossage. 
 
  * extract:
    When the distfiles are present on the local system, they need to be
@@ -935,7 +953,7 @@ The main targets used during the build process defined in bsd.pkg.mk are:
    system calls, and library routines which are available in NetBSD. 
    This is the process known as configuration, and is usually
    automated.  In most cases, a script is supplied with the source,
-   and its invokcation results in generation of header files,
+   and its invocation results in generation of header files,
    Makefiles, etc.
 
    If the program doesn't come with its own configure script, one can be
@@ -1000,7 +1018,7 @@ perform the equivalent of:
    be no variable to fix this, you can redefine it with the do-*
    target.  (Note that redefining the target itself instead of the
    do-* target is a bad idea, as the pre-* and post-* targets won't be
-   called anymore, etc.) You will not usually ned to do this.
+   called anymore, etc.) You will not usually need to do this.
 
  * reinstall:
    If you did a "make install" and you noticed some file was not installed
@@ -1028,15 +1046,21 @@ perform the equivalent of:
    version.  The package and all depending packages first get deinstalled,
    then current versions of the corresponding packages get compiled and
    installed.  This is similar to manually noting which packages are
-   currently installed, then performing a series of "make deinstall",
-   "make clean", and "make install" for these packages.
+   currently installed, then performing a series of "make deinstall" and
+   and "make install" (or whatever DEPENDS_TARGET is set to) for these
+   packages.
 
    You can use the "update" target to resume package updating in case a
-   previous "make update" was interrupted for some reason.  However, make
-   sure you don't call "make clean" or otherwise remove the list of
-   dependent packages in ${WRKDIR}.  Otherwise you lose the ability to
-   automatically update the current package along with the dependent
-   packages you have installed.
+   previous "make update" was interrupted for some reason.  However, in
+   this case, make sure you don't call "make clean" or otherwise remove
+   the list of dependent packages in ${WRKDIR}.  Otherwise you lose the
+   ability to automatically update the current package along with the
+   dependent packages you have installed.
+
+   Resuming an interrupted 'make update' will only work as long as the
+   package tree remains unchanged.  If the source code for one of the
+   packages to be updated has been changed, resuming 'make update' will
+   most certainly fail!
 
    The following variables can be used either on the command line or in
    /etc/mk.conf to alter the behaviour of "make update":
@@ -1105,7 +1129,7 @@ perform the equivalent of:
 
  * show-distfiles:
    This target shows which distfiles and patchfiles are needed to build
-   the package.
+   the package. (DISTFILES and PATCHFILES, but not patches/*)
 
  * show-downlevel:
    This target shows nothing if the package is not installed. If a version
@@ -1115,14 +1139,14 @@ perform the equivalent of:
    the old versions can be deleted, and the current ones added.
 
 
-
  8 Debugging
  ===========
 
-To check out all the gotchas when building a package from a FreeBSD port,
-here are the steps that I do in order to get a package working. Please note
-this is basically the same as what was explained in the previous sections,
-only with some debugging aids.
+To check out all the gotchas when building a package (wither from
+a FreeBSD port, or from scratch), here are the steps that I do in
+order to get a package working. Please note this is basically the
+same as what was explained in the previous sections, only with some
+debugging aids.
 
  - Retrieve port from FreeBSD collection
  - Fix RCS-ID in the package's Makefile, see section 4.1. 
@@ -1157,11 +1181,33 @@ only with some debugging aids.
  - pkg_add .../blub.tgz
  - Play with it :)
  - pkg_delete - still no file should be left (re-run above find)
+ - make clean && touch /tmp/bla && make install && make clean && make deinstall
+   then run the find again. Yes, some software authors write Makefiles that
+   install files during the build target. Sigh. Re-run the find, and fix the
+   PLIST. Repeat until certain the software does not install any files that
+   aren't in PLIST.
  - submit (or commit, if you have cvs access); see section 10.
 
 
  9 FAQs & features of the package system
  =======================================
+
+ 9.1 Packages using GNU autoconfig
+ 9.2  Other distrib methods than .tar.gz
+ 9.3  Packages not creating their own subdirectory
+ 9.4  Custom configuration process
+ 9.5  Packages not building in their DISTNAME directory
+ 9.6  How to fetch all distfiles at once
+ 9.7  How to fetch files from behind a firewall
+ 9.8  If your patch contains an RCS ID
+ 9.9  How to pull in variables from /etc/mk.conf
+ 9.10 Is there a mailing list for pkg-related discussion?
+ 9.11 How do i tell "make fetch" to do passive FTP?
+ 9.12 Dependencies on other packages
+ 9.13 Conflicts with other packages
+ 9.14 Software which has a WWW Home Page
+ 9.15 How to handle modified distfiles with the 'old' name
+
 
  9.1 Packages using GNU autoconfig
  =================================
@@ -1234,9 +1280,9 @@ resulting list.
  9.7 How to fetch files from behind a firewall
  =============================================
 
-If you are sitting behind a firewall, you must specify the relevant proxy
-hosts to enable you to talk to other machines on the Internet which are not
-behind your firewall. This is an environment variable in the form of a URL
+If you are sitting behind a firewall which does not allow direct connections
+to Internet hosts (i.e. non-NAT), you may specify the relevant proxy hosts.
+This is done using an environment variable in the form of a URL
 e.g. in Amdahl, the machine orpheus.amdahl.com is one of the firewalls, and
 it uses port 80 as the proxy port number. So the proxy environment
 variables look like:
@@ -1285,28 +1331,41 @@ issues. To subscribe do:
  9.11 How do i tell "make fetch" to do passive FTP?
  ==================================================
 
-Add the following to your /etc/mk.conf file: PASSIVE_FETCH=1
+This depends on which utility is used to retrieve distfiles. From
+bsd.pkg.mk, FETCH_CMD is assigned the first available command from the
+following list:
+
+/usr/bin/fetch
+${LOCALBASE}/bsd/bin/ftp
+/usr/bin/ftp
+
+On a default NetBSD install, this will be /usr/bin/ftp, which automatically
+tries passive connections first, and falls back to active connections if the
+server refuses to do passive. For the other tools, add the following to your
+/etc/mk.conf file: PASSIVE_FETCH=1
+
+Having that option present will prevent /usr/bin/ftp from falling back to
+active transfers.
 
 
  9.12 Dependencies on other packages
  ===================================
 
-Your package may depend on some other package being present - and
-there are various ways of expressing this dependency.  NetBSD supports
-the BUILD_DEPENDS, RUN_DEPENDS and DEPENDS definitions (beware:  the
-DEPENDS definition is not the same as FreeBSD's deprecated one, and
-NetBSD does not use the FreeBSD LIB_DEPENDS definition any more - it
-proved problematic on ELF NetBSD platforms).
+Your package may depend on some other package being present - and there are
+various ways of expressing this dependency. NetBSD supports the
+BUILD_DEPENDS and DEPENDS definitions (beware: the DEPENDS definition is
+not the same as FreeBSD's deprecated one, and NetBSD does not use the
+FreeBSD LIB_DEPENDS definition any more - it proved problematic on ELF
+NetBSD platforms).
 
-[In the following examples, the BUILD_DEPENDS and RUN_DEPENDS
-dependencies have the format:  <file>:<directory containing package to
-build>[:<stage>] If the <stage> isn't specified, it defaults to
-``install''.  If the file contains a '/', it is interpreted as a
-regular file - otherwise, the name is taken to be an executable file,
-and the PATH is searched for <file>.  If the regular file is not
-found, or the exectable file is not in the path, then the
+[In the following examples, the BUILD_DEPENDS dependencies have the format:
+<file>:<directory containing package to build>[:<stage>] If the <stage>
+isn't specified, it defaults to ``install''. If the file contains a '/', it
+is interpreted as a regular file - otherwise, the name is taken to be an
+executable file, and the PATH is searched for <file>. If the regular file
+is not found, or the executable file is not in the path, then the
 pre-requisite package will be built from the sources in <directory
-containing the package to build>.  The DEPENDS definition specifies a
+containing the package to build>. The DEPENDS definition specifies a
 package name (which contains its version number), and the directory
 containing the package to build if this version of the package is not
 installed.]
@@ -1315,7 +1374,7 @@ installed.]
 print/ghostscript5 package (it relies on the jpeg sources being
 present in source form during the build):
 
-BUILD_DEPENDS=  ../../graphics/jpeg/${WRKDIR:T}/jpeg-6a:../../graphics/jpeg:extract
+BUILD_DEPENDS+=  ../../graphics/jpeg/${WRKDIR:T}/jpeg-6a:../../graphics/jpeg:extract
 
 (b) If your package needs to use another package to build itself, this
 is specified using the BUILD_DEPENDS definition, but without
@@ -1323,7 +1382,7 @@ specifying the stage ``:extract'' in (a) above.  An example is the
 print/lyx package, which uses the latex binary during its build
 process:
 
-BUILD_DEPENDS=  latex:../../print/teTeX
+BUILD_DEPENDS+=  latex:../../print/teTeX
 
 (c) If your package needs a library with which to link, this is
 specified using the DEPENDS definition.  An example of this is the
@@ -1339,13 +1398,13 @@ Note that these wildcards will be expanded while creating binary packages.
 Thus binary package will depend on exactly the version which was installed
 when they were created.
 
-(d) If your package needs some executable to be able to run correctly,
-this is specified using the RUN_DEPENDS definition.  The print/lyx
-package needs to be able to execute the latex and ispell binaries when
-it runs, and that is specified:
+(d) If your package needs some executable to be able to run correctly, this
+is specified using the DEPENDS definition. The print/lyx package needs to
+be able to execute the latex binary from the teTex package when it runs,
+and that is specified:
 
-RUN_DEPENDS=    latex:../../print/teTeX \
-                ispell:../../textproc/ispell
+DEPENDS+=        teTex-*:../../print/teTeX 
+
 
 
  9.13 Conflicts with other packages
@@ -1355,7 +1414,7 @@ Your package may conflict with other packages a user might already have
 installed on his system, e.g. if your package installs the same set of
 files like another package in our pkgsrc tree.
 
-In this case you can set CONFLICTS to a space seperated list of packages
+In this case you can set CONFLICTS to a space separated list of packages
 (including version string) your package conflicts with.
 
 For example pkgsrc/x11/Xaw3d and pkgsrc/x11/Xaw-Xpm install provide the
@@ -1380,12 +1439,41 @@ include the URL for that page in the HOMEPAGE variable. The definition
 of the variable should be placed immediately after the MAINTAINER
 variable.
 
+ 9.15 How to handle modified distfiles with the 'old' name
+ =========================================================
+
+Sometimes authors of a software package make some modifications after the
+software was released, and they put up a new distfile without changing the
+package's version number. If a package is already in pkgsrc at that time, 
+the md5 checksum will no longer match. The correct way to work around this
+is to update the package's md5 checksum to match the package on the master
+site (beware, any mirrors may not be up to date yet!), and to remove the 
+old distfile from ftp.netbsd.org's /pub/NetBSD/packages/distfiles directory.
+Furthermore, a mail to the package's author seems appropriate making sure
+the distfile was really updated on purpose, and that no trojan horse or so
+crept in.
+
+ 9.16 What does "Don't know how to make /usr/share/tmap/tmac.andoc" mean?
+ ========================================================================
+
+When compiling the pkgsrc/pkgtools/pkg_install package, you get the error
+from make that it doesn't know how to make /usr/share/tmap/tmac.andoc? This
+indicates that you don't have installed the "text" set on your machine
+(nroff, ...). Please do that.
+
+ 9.17 How to handle incrementing versions when fixing an existing package
+ ========================================================================
+
+When making fixes to an existing package it can be useful to change
+the version number in PKGNAME. To avoid conflicting with future versions
+by the original author, use a 'nb1' suffix (later versions should
+increment this to give 'nb2' and so on).
 
  10 Submitting
  =============
 
  * precompiled binary packages:
-   Our policy is that we accept only binaries from NetBSD developers to
+   Our policy is that we accept binaries from only NetBSD developers to
    guarantee that the packages don't contain any trojan horses etc. 
    This is not to piss anyone off but rather to protect our users!
    You're still free to put up your home-made binary packages and tell
