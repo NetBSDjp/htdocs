@@ -1,4 +1,4 @@
-# $NetBSD: Packages.txt,v 1.1.1.2 2005/09/15 12:01:53 kano Exp $
+# $NetBSD: Packages.txt,v 1.1.1.3 2005/09/20 11:47:57 kano Exp $
 ###########################################################################
 
 			==========================
@@ -226,25 +226,24 @@ your packages tree. So, to use /usr/local, set
 	LOCALBASE=/usr/local
 
 in your environment.  There is, of course, one exception to this - X11
-packages are traditionally installed in the X11 tree.  The environment
-variable which governs an X11 package's location is X11BASE.  So to
-install an X11 package into /usr/local/X11R6, set
+packages are traditionally installed in the X11 tree. The definition
+used to identify the root of the X11 tree is the X11BASE definition.
 
-	X11BASE=/usr/local/X11R6
-
-in your environment.
-
-However, beware that strange things may happen if you install X11
-packages outside the X11 tree, in that libraries and header files may
-not be found by other software, and Application Defaults may not be
-found.  For that reason, you are advised to leave X11 packages in the
-X11 tree.  We are looking at ways to change this. 
+It is possible to install X11 packages in the LOCALBASE tree, for
+which you must install the xpkgwedge package
+(pkgsrc/pkgtools/xpkgwedge) - see section 7.1 for further details.
 
 Some packages look in /etc/mk.conf to alter some configuration options
-at build time. Have a look at /usr/pkgsrc/mk/mk.conf.example to get an
-overview of what you can set there. Environment variables such as
+at build time.  Have a look at /usr/pkgsrc/mk/mk.conf.example to get
+an overview of what you can set there.  Environment variables such as
 LOCALBASE, and X11BASE can also be set in /etc/mk.conf to save having
 to remember to set them each time you want to use pkgsrc.
+
+If you want to deinstall and re-install a binary package that you've
+created (see next section) or that you put into pkgsrc/packages
+manually, you can use the the "bin-install" target, which will
+install a binary package - if available - via pkg_add, and do a "make
+package" else.
 
 
  3 Making a precompiled package
@@ -321,13 +320,14 @@ MASTER_SITE_SUBDIR will not work.
 Currently the following values are available for CATEGORIES. If more than
 one is used, they need to be separated by spaces:
 
-	archivers   corba      graphics  meta-pkgs  print      
-	audio       cross      ham	 misc       security
-	benchmarks  databases  japanese  net        shells
-	biology     devel      lang      news       sysutils 
-	cad         editors    mail      parallel   textproc
-	comms       emulators  math      pkgtools   www
-	converters  games      mbone     plan9      x11
+	archivers   databases   ham         net         security
+	audio       devel       japanese    news        shells
+	benchmarks  distfiles   lang        packages    sysutils
+	biology     editors     mail        parallel    templates
+	cad         emulators   math        pkglocate   textproc
+	comms       fonts       mbone       pkgtools    www
+	converters  games       meta-pkgs   plan9       x11
+	cross       graphics    misc        print
 
 See the NetBSD packages(7) manual page for a description of all available
 options and variables.
@@ -407,18 +407,27 @@ will compile and run perfectly on NetBSD. The files are applied
 successively in alphabetic order (as returned by a shell "patches/patch-*"
 glob expansion), so patch-aa is applied before patch-ab etc.
 
-The patch-?? files should be in diff -bu format. This is because (not only)
-the FreeBSD ports tsar finds this format easier to read than context diffs,
-and so you have more chance of getting your NetBSD package accepted as part
-of the FreeBSD ports system if you format your diffs in a unified fashion.
-
-Furthermore, do not put changes for more than one file into a single
-patch-file, as this will make future modifications more difficult.
+The patch-?? files should be in diff -bu format, and apply without
+a fuzz to avoid problems. (The latter condition is ensured by
+setting PKG_DEVELOPER in /etc/mk.conf - the build will fail if a
+patch applies with fuzz only).  Furthermore, do not put changes
+for more than one file into a single patch-file, as this will make
+future modifications more difficult.
 
 One important thing to mention is to pay attention that no RCS IDs get
 stored in the patch files, as these will cause problems when later checked
-into the NetBSD CVS tree. To avoid this, use the "-U 2" or -U 1" option to
+into the NetBSD CVS tree. To avoid this, use the "-U 2" or "-U 1" option to
 diff.
+
+If you don't want to worry about the problems in the last two paragraphs
+yourself, use pkgdiff from the pkgtools/pkgdiff package, which takes care
+of any RCS Ids by itself.
+
+For even more automation, we recommend using mkpatches from the same
+package to make a whole set of patches. You just have to backup files
+before you edit them to "filename.orig", e.g. with "cp -p filename
+filename.orig". If you upgrade a package this way, you can easily compare
+the new set of patches with the previously existing one with patchdiff.
 
 When preparing a FreeBSD port for the NetBSD packages system, it's likely
 that the FreeBSD port will work on NetBSD. However, check that the person
@@ -564,9 +573,10 @@ E.g:
 	cvs add patches/patch-aa
 	cvs ci
 
-Please note all package updates/additions in doc/pkg-CHANGES! Its very important
-to keep this file up to date, because it will be used by scripts to
-automatically update some pages on www.netbsd.org.
+Please note all package updates/additions in doc/pkg-CHANGES! It's very
+important to keep this file up to date and conforming to the existing
+format, because it will be used by scripts to automatically update pages on
+www.netbsd.org.
 
 
  5 PLIST* issues
@@ -627,6 +637,12 @@ to when dealing with the PLIST file (or files, see below!).
    according to MANZ and MANCOMPRESSED being set or not, see above for
    details. This modification of the PLIST file is done on a copy of it,
    not pkg/PLIST itself.
+
+ * Semi-automatic PLIST generation:
+   You can use the "make print-PLIST" command to output a PLIST that matches
+   any new files since the package was extracted. If the package installs
+   files via tar(1) or other methods that don't update file access times, be
+   sure to add these files manually to your pkg/PLIST!
 
 
  5.2 MD/MI vs. general PLIST
@@ -739,11 +755,7 @@ here, as it just "knows" how to build both static and dynamic
 libraries from a set our source files, thus being platform
 independent. 
 
-To use "libtool", add a build-dependency on the libtool-pkg, then modify
-the pkg's sources to use libtool for building it's libraries and add the
-resulting patches to your pkg's patches-directory. 
-
-Here's how to use libtool in a pkg in seven simple steps:
+Here's how to use libtool in a pkg in six simple steps:
 
 1. Add USE_LIBTOOL= yes to the package Makefile.
 
@@ -793,20 +805,29 @@ Here's how to use libtool in a pkg in seven simple steps:
    and run "ldconfig."
 
 6. In your PLIST, include the .a, .la, and .so.major.minor files.  Don't
-   include the ELF symlink files; those are automatic. 
+   include the ELF symlink files (.so.major, .so); those are added
+   automatic.  
 
-FOR GNU PKGS THAT ALREADY SUPPORT LIBTOOL: 
+Do not use pkglibtool!  Previously, the package system used its
+own version of libtool from pkgtools.  However, over time, this
+version became outdated and is now deprecated.  You may see some
+definitions of USE_PKGLIBTOOL in existing packages that still use
+this outdated version of libtool.  Please do not use this definition
+in new packages!
+
+ 6.3 Using libtool on GNU packages that already support libtool
+ ==============================================================
+
 Add USE_LIBTOOL=yes and LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig to the
 package Makefile as the quick way to bypass the pkg's own libtool.
 The pkg's own libtool is made by ltconfig script at do-configure target.
 If USE_LIBTOOL and LTCONFIG_OVERRIDE are defined, the specified ltconfig is
-overridden, using the pkgtools/pkglibtool instead of the pkg's own libtool.
+overridden, using the devel/libtool instead of the pkg's own libtool.
 If the pkg already has an original "libtool" which we can replace with
-pkgtools/pkglibtool you may have to specify LIBTOOL_OVERRIDE to the package
+devel/libtool you may have to specify LIBTOOL_OVERRIDE to the package
 Makefile.
 
-
- 6.3 Gotchas of FreeBSD ports
+ 6.4 Gotchas of FreeBSD ports
  ============================
 
 See section 4.1 for Makefile issues (MANx, CATx, MANCOMPRESSED, ldconfig,
@@ -849,7 +870,7 @@ variable MANCOMPRESSED_IF_MANZ should be set to a value of "yes" in
 the package Makefile.
 
 
- 6.4 Feedback to the author
+ 6.5 Feedback to the author
  ==========================
 
 If you have found any bugs in the package you make available, if you had to
@@ -903,10 +924,16 @@ When choosing which of these variables to use, follow the following rules:
    for _standard_ X11 includes (not those installed by a pkg), use ${X11BASE}.
 
  * X11 based pkgs are special in that they may be installed in either
-   X11BASE or LOCALBASE depending on a configuration option in /etc/mk.conf.  
+   X11BASE or LOCALBASE. To install X11 packages in LOCALBASE, simply
+   install the xpkgwedge package (pkgsrc/pkgtools/xpkgwedge).
    If you need to find includes or libraries installed by a pkg that has
    USE_IMAKE, USE_MOTIF, or USE_X11BASE in its pkg Makefile, you need to use
    _both_ ${X11BASE} and ${LOCALBASE}.
+
+ * ${X11BASE} points to the root of the installed X11 tree. To refer to the
+   installed location of an X11 package, use the ${X11PREFIX} definition (this
+   will be ${X11BASE} if xpkgwedge is not installed, and ${LOCALBASE} if
+   xpkgwedge is installed).
 
 
  7.2 Main targets
@@ -947,6 +974,12 @@ The main targets used during the build process defined in bsd.pkg.mk are:
    applied, files ending in .orig or .rej are ignored.  Any special
    options to patch(1) can be handed in PATCH_DIST_ARGS.  See section
    4.3 for more details.
+   
+   If PKG_DEVELOPER is set in /etc/mk.conf, patch is given special args
+   to make it fail if the patches with some lines of fuzz. Please fix
+   (regen) the patches so that they apply cleanly. The rationale behind
+   this is that patches that apply cleanly may end up being applied in the
+   wrong place, and cause severe harm there.
 
  * configure:
    Most pieces of software need information on the header files,
@@ -969,7 +1002,7 @@ The main targets used during the build process defined in bsd.pkg.mk are:
 
    If the program uses an Imakefile for configuration, the appropriate
    steps can be invoked by setting USE_IMAKE to YES. (If you only want the
-   package installed in $X11BASE but xmkmf not being run, set USE_X11BASE
+   package installed in $X11PREFIX but xmkmf not being run, set USE_X11BASE
    instead!)
 
  * build:
@@ -1057,9 +1090,9 @@ perform the equivalent of:
    ability to automatically update the current package along with the
    dependent packages you have installed.
 
-   Resuming an interrupted 'make update' will only work as long as the
+   Resuming an interrupted "make update" will only work as long as the
    package tree remains unchanged.  If the source code for one of the
-   packages to be updated has been changed, resuming 'make update' will
+   packages to be updated has been changed, resuming "make update" will
    most certainly fail!
 
    The following variables can be used either on the command line or in
@@ -1079,9 +1112,9 @@ perform the equivalent of:
       "make" or "make update".
 
     - REINSTALL:
-      Use "reinstall" instead of ${DEPENDS_TARGET} for every package
-      that gets updated.  Be sure you know the implications of using
-      the "reinstall" target when using this variable.
+      Deinstall each package before installing (making ${DEPENDS_TARGET}).
+      This may be necessary if the "clean-update" target (see below) was
+      called after interrupting a running "make update".
 
  * clean-update:
    Clean the source tree for all packages that would get updated if
@@ -1138,6 +1171,19 @@ perform the equivalent of:
    be used to show which of your installed packages are downlevel, and so
    the old versions can be deleted, and the current ones added.
 
+ * show-pkgsrc-dir:
+   This target shows the directory in the pkgsrc hierarchy from which the
+   package can be built and installed. This may not be the same directory
+   as the one from which the package was installed. This target is intended
+   to be used by people who may wish to upgrade many packages on a single
+   host, and can be invoked from the top-level pkgsrc Makefile by using the
+   target "show-host-specific-pkgs"
+
+ * check-shlibs:
+   After a package is installed, check all it's binaries and (on ELF 
+   platforms) shared libraries if they find the shared libs they need.
+   Run by default if PKG_DEVELOPER is set in /etc/mk.conf.
+
 
  8 Debugging
  ===========
@@ -1148,6 +1194,7 @@ order to get a package working. Please note this is basically the
 same as what was explained in the previous sections, only with some
 debugging aids.
 
+ - Make sure PKG_DEVELOPER=1 is in /etc/mk.conf
  - Retrieve port from FreeBSD collection
  - Fix RCS-ID in the package's Makefile, see section 4.1. 
  - Import unchanged FreeBSD source (ONLY if you have cvs access, not needed
@@ -1170,8 +1217,9 @@ debugging aids.
  - find /usr/pkg/ /usr/X11R6/ -newer /tmp/bla >/tmp/x
    (or whatever you set LOCALBASE and X11BASE to)
  - pkg_delete blub
- - find /usr/pkg/ /usr/X11R6/ -newer /tmp/bla: if this brings up any files,
-   they are missing in pkg/PLIST*; add them.
+ - find /usr/pkg/ /usr/X11R6/ -newer /tmp/bla (or diff against output of
+   'make print-PLIST'): if this brings up any files, that are missing in
+   pkg/PLIST*; add them.
  - Compare pkg/PLIST* against /tmp/x, fix the former one
    ( sort /tmp/x >/tmp/x2 ; sort pkg/PLIST >/tmp/P ; sdiff /tmp/x2 /tmp/P )
  - make reinstall && make package
@@ -1207,6 +1255,10 @@ debugging aids.
  9.13 Conflicts with other packages
  9.14 Software which has a WWW Home Page
  9.15 How to handle modified distfiles with the 'old' name
+ 9.16 What does "Don't know how to make /usr/share/tmac/tmac.andoc" mean?
+ 9.17 How to handle incrementing versions when fixing an existing package
+ 9.18 "Could not find bsd.own.mk" - what's wrong?
+ 9.19 Restricted packages
 
 
  9.1 Packages using GNU autoconfig
@@ -1394,9 +1446,17 @@ You can also use wildcards in package dependences:
 
 DEPENDS+=	xpm-*:../../graphics/xpm
 
-Note that these wildcards will be expanded while creating binary packages.
-Thus binary package will depend on exactly the version which was installed
-when they were created.
+Note that such wildcard dependencies are retained when creating
+binary package. The dependency is checked when installing the binary
+package and any package which matches the pattern would be used.
+Beware that wildard dependencies should be used with a bit of care.
+Simple example for package which needs some version of Tk installed,
+but doesn't care which exactly - dependency
+
+DEPENDS+=	tk-*:../../x11/tk80
+
+would also match e.g. tk-postgresql-6.5.3, which is not what was
+needed. ALWAYS ensure that the wildcard doesn't match more than it should.
 
 (d) If your package needs some executable to be able to run correctly, this
 is specified using the DEPENDS definition. The print/lyx package needs to
@@ -1405,6 +1465,8 @@ and that is specified:
 
 DEPENDS+=        teTex-*:../../print/teTeX 
 
+The comment about wildcard dependencies from previous paragraph
+applies here, too.
 
 
  9.13 Conflicts with other packages
@@ -1430,6 +1492,7 @@ Packages will automatically conflict with other packages with the name prefix
 and a different version string. "Xaw3d-1.5" e.g. will automatically conflict
 with the older version "Xaw3d-1.3".
 
+
  9.14 Software which has a WWW Home Page
  =======================================
 
@@ -1438,6 +1501,7 @@ If the software being packaged has a home page, the Makefile should
 include the URL for that page in the HOMEPAGE variable. The definition
 of the variable should be placed immediately after the MAINTAINER
 variable.
+
 
  9.15 How to handle modified distfiles with the 'old' name
  =========================================================
@@ -1453,13 +1517,15 @@ Furthermore, a mail to the package's author seems appropriate making sure
 the distfile was really updated on purpose, and that no trojan horse or so
 crept in.
 
- 9.16 What does "Don't know how to make /usr/share/tmap/tmac.andoc" mean?
+
+ 9.16 What does "Don't know how to make /usr/share/tmac/tmac.andoc" mean?
  ========================================================================
 
 When compiling the pkgsrc/pkgtools/pkg_install package, you get the error
-from make that it doesn't know how to make /usr/share/tmap/tmac.andoc? This
+from make that it doesn't know how to make /usr/share/tmac/tmac.andoc? This
 indicates that you don't have installed the "text" set on your machine
 (nroff, ...). Please do that.
+
 
  9.17 How to handle incrementing versions when fixing an existing package
  ========================================================================
@@ -1469,11 +1535,61 @@ the version number in PKGNAME. To avoid conflicting with future versions
 by the original author, use a 'nb1' suffix (later versions should
 increment this to give 'nb2' and so on).
 
+
+ 9.18 "Could not find bsd.own.mk" - what's wrong?
+ ================================================
+
+You didn't install the compiler set, comp.tgz, when you installed your
+NetBSD machine. Please get it and install it, by extracting it in /:
+
+	tar --unlink -pvxf .../comp.tgz
+
+comp.tgz is part of every NetBSD release, please get the one matching 
+the release you have installed (determine via "uname -r").
+
+
+ 9.19 Restricted packages
+ ========================
+
+Some licenses restrict how software may be re-distributed.  In order to
+satisfy these restrictions, the package system defines five make variables
+that can be set to note these restrictions:
+
+    - RESTRICTED:
+      This variable should be set whenever a restriction exists
+      (regardless of its kind).  Set this variable to a string
+      containing the reason for the restriction.
+
+    - NO_BIN_ON_CDROM:
+      Binaries may not be placed on CD-ROM.  Set this variable to
+      ${RESTRICTED} whenever a binary package may not be included
+      on a CD-ROM.
+
+    - NO_BIN_ON_FTP:
+      Binaries may not be placed on an ftp server.  Set this
+      variable to ${RESTRICTED} whenever a binary package may not
+      not be made available on the internet.
+
+    - NO_SRC_ON_CDROM:
+      Distfiles may not be placed on CD-ROM.  Set this variable to
+      ${RESTRICTED} if re-distribution of the source code or other
+      distfile(s) is not allowed on CD-ROMs.
+
+    - NO_SRC_ON_FTP:
+      Distfiles may not be placed on FTP.  Set this variable to
+      ${RESTRICTED} if re-distribution of the source code or other
+      distfile(s) via the internet is not allowed.
+
+Please note that the use of NO_PACKAGE, IGNORE, NO_CDROM, or other generic
+make variables to denote restrictions is deprecated, because they
+unconditionally prevent users from generating binary packages!
+
+
  10 Submitting
  =============
 
  * precompiled binary packages:
-   Our policy is that we accept binaries from only NetBSD developers to
+   Our policy is that we accept binaries only from NetBSD developers to
    guarantee that the packages don't contain any trojan horses etc. 
    This is not to piss anyone off but rather to protect our users!
    You're still free to put up your home-made binary packages and tell
