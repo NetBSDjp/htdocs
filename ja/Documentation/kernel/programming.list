@@ -2,9 +2,10 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1994-2001
+<!-- Copyright (c) 1994-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>NetBSD Documentation: Kernel Programming FAQ</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -15,12 +16,16 @@
 
 <h2>Other related links</h2>
 <ul>
+<li> driver(9) - NetBSD autoconfiguration interface utilised by device drivers
+<li> autoconf(9) - General description on the NetBSD autoconfiguration
+     framework
+<li> config(9) - The autoconfiguration framework ``device definition'' language
+<li> bus_dma(9) - NetBSD's bus and machine independent DMA framework, 
+        described in its own <a href="bus_dma.ps">paper</a> (120k, postscript)
+<li> bus_space(9) - NetBSD's bus space manipulation interface
 <li><a href="scsidma.html">How SCSI DMA works</a> - by Tohru Nishimura
 <li><a href="lazyfpu.html">How lazy FPU context switch works</a> - by Tohru
 	Nishimura
-<li> bus_dma(9) - NetBSD's bus and machine independent DMA framework, 
-        described in it's own <a href="bus_dma.ps">paper</a> (120k, postscript)
-<li> bus_space(9) - NetBSD's bus space manipulation interface
 <li><a href="converting-ethernet-drivers.html">
 	Converting ancient BSD Ethernet drivers to NetBSD-1.2D and later</a>
 <li><a href="porting-freebsd-net.html">
@@ -98,12 +103,81 @@ has entries in the following files:
 <li><CURRENTSRC>/sys/dev/ic/lance.c
 	- MI core driver code.
 </ul>
+<p>
+See also <a href="#autoconf">the autoconf explanation</a>.
+
+
+<ENTRY>autoconf How does all this autoconf stuff work?
+<p>
+The autoconf machinery is quite simple once you figure out the way
+it works. If you want to ignore the exact details of how the device
+probe tree is built and walked on runtime, the bits needed for
+each individual "leaf" driver are like this:
+<ol>
+    <li> each driver specifies a structure holding three things - size
+         of its private structure, probe function and attach function;
+         this is compiled in and used in runtime - example:
+<p>
+<pre>
+struct cfattach foo_baz_ca = {
+    sizeof(struct foo_baz_softc), foo_baz_match, foo_baz_attach
+};
+</pre>
+    <li> on kernel startup, once the time comes to attach the device,
+         autoconf code calls device's probe routine and passes it
+         pointer to parent (<tt>struct device *parent</tt>), pointer
+         to attach tag structure (<tt>void *aux</tt>), and appropriate
+         autoconf node (<tt>struct cfdata *cf</tt>). The driver is
+         expected to find out if it's where it's supposed to be
+         (commonly, the location and configuration information is
+         passed by the attach tag). If yes, the probe routine should
+         return 1.  If device is not there, probe routine has to
+         return 0.  <b>NO STATE SHOULD BE KEPT</b> in either case.
+    <li> if probe returned success, autoconf allocates chunk of memory
+         sized as specified in device's *_ca and calls its attach
+         routine, passing it pointer to parent (<tt>struct device
+         *parent</tt>), pointer to the freshly allocated memory
+         (<tt>struct device *self</tt>) and the attach tag (<tt>void
+         *aux</tt>). Driver is expected to find out exact ports and
+         memory, allocate resources and initialize its internal
+         structure accordingly. Preferably, all driver instance
+         specific information should be kept in the allocated memory.
+</ol>
+<p>
+Example: Let's have a PCI ethernet device 'baz', kernel config
+chunk looks like this:
+<pre>
+pci*    at mainbus?
+baz*    at pci? dev ? function ?
+</pre>
+<p>
+At runtime, autoconf iterates over all physical devices present on
+machine's pci bus. For each physical device, it iterates over all
+devices registered in kernel to be on pci bus, and calls drivers'
+probe routine. If any probe routine claims the device by returning
+1, autoconf stops iterating and does the job described under 3).
+Once the attach function returns, autoconf continues with next
+physical device.
+<p>
+See also <a href="#adding_a_new_driver">Adding a new driver</a>.
+
 
 <ENTRY>adding_a_system_call Adding a system call
 Add an entry in <tt>syscalls.master</tt>, and add the syscall stub to the
 appropriate place in <tt>
 <CURRENTSRC>/usr/src/lib/libc/sys/Makefile.inc
 </tt>.
+
+<ENTRY>adding_a_sysctl Adding a sysctl
+See a
+<a href="http://mail-index.NetBSD.org/tech-kern/2001/06/24/0000.html">posting</a>
+answering this question on 
+<a href="http://mail-index.NetBSD.org/tech-kern/">tech-kern</a>.
+<p>
+
+Note that NetBSD 1.6 and up will have a special "vendor" sysctl category
+that is reserved for vendor specific entries. See sysctl(8) for more
+information.
 
 <ENTRY>mmap_in_pseudo-device How to implement mmap in a pseudo-device
 Your device is most likely a character device, so you will be using the device
@@ -201,7 +275,7 @@ parallel controller and passes it to the serial or parallel driver.
 
 </LIST>
 
-<a href="">Up to <em>NetBSD Documentation: Kernel</em></a>
+<a href="./">Up to <em>NetBSD Documentation: Kernel</em></a>
 <hr>
 
 <DOCLINK>
@@ -209,9 +283,9 @@ parallel controller and passes it to the serial or parallel driver.
 <hr>
 <address>
   <small>
-  <a href="../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: programming.list,v 1.19 2001/03/16 14:50:45 dent Exp $<br>
-  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2001
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: programming.list,v 1.29 2004/03/20 20:38:25 snj Exp $<br>
+  <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
