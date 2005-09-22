@@ -6,6 +6,7 @@
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
 <link rev="made" href="mailto:www@jp.NetBSD.org">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 <title>NetBSD Documentation: Kernel Programming FAQ</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
@@ -16,16 +17,19 @@
 
 <h2>$BB>$N4XO"$9$k%j%s%/(B</h2>
 <ul>
-<li><a href="scsidma.html">SCSI DMA $B$O$I$N$h$&$KF0:n$9$k$+(B</a> - Tohru Nishimura $B$K$h$k(B
-<li><a href="lazyfpu.html">lazy FPU $B%3%s%F%-%9%H%9%$%C%A$O$I$N$h$&$KF0:n$9$k$+(B</a> - Tohru
-	Nishimura $B$K$h$k(B
+<li> driver(9) - $B%G%P%$%9%I%i%$%P!<$,MxMQ$9$k(B NetBSD $B$N<+F0%3%s%U%#%.%e%l!<%7%g%s$N%$%s%?!<%U%'!<%9(B
+<li> autoconf(9) - NetBSD $B$N<+F0%3%s%U%#%.%e%l!<%7%g%s%U%l!<%`%o!<%/$K$D$$$F$N(B
+     $BA4HLE*$J@bL@(B
+<li> config(9) - $B<+F0%3%s%U%#%.%e%l!<%7%g%s%U%l!<%`%o!<%/$N!V%G%P%$%9Dj5A!W8@8l(B
 <li> bus_dma(9) - NetBSD $B$N%P%9$H%^%7%sFHN)$J(B DMA $B%U%l!<%`%o!<%/!"$3$l$K(B
         $B4X$9$k(B<a href="bus_dma.ps">$BO@J8(B</a> (120k$B!"%]%9%H%9%/%j%W%H(B)
 <li> bus_space(9) - NetBSD $B$N%P%9%9%Z!<%9$NA`:n$N$?$a$N%$%s%?!<%U%'!<%9(B
-
+<li><a href="scsidma.html">SCSI DMA $B$O$I$N$h$&$KF0:n$9$k$+(B</a> - Tohru Nishimura $B$K$h$k(B
+<li><a href="lazyfpu.html">lazy FPU $B%3%s%F%-%9%H%9%$%C%A$O$I$N$h$&$KF0:n$9$k$+(B</a> - Tohru
+	Nishimura $B$K$h$k(B
 <li><a href="/Documentation/kernel/converting-ethernet-drivers.html" origlink="converting-ethernet-drivers.html">
         $B@N$N(B BSD $B$N%$!<%5%M%C%H%I%i%$%P!<$N(B NetBSD-1.2D $B0J9_$X$N0\?"(B</a>
-<li><a href="/Documentation/kernel/porting-freebsd-net.html" origlink="porting-freebsd-net.html">
+<li><a href="porting-freebsd-net.html">
         FreeBSD $B$N%M%C%H%o!<%/%I%i%$%P!<$r(B NetBSD $B$K0\?"$9$k$?$a$N%a%b(B</a>
 </ul>
 
@@ -104,12 +108,81 @@ printf() $B$r;H$&$3$H$G$7$g$&!#%+!<%M%k$N(B printf $B$O(B $B%3%s%=!<%k$K=PN
 <li><CURRENTSRC>/sys/dev/ic/lance.c
        - MI $B%3%"$N%I%i%$%P!<$N%3!<%I!#(B
 </ul>
+<p>
+<a href="#autoconf">autoconf $B$N@bL@(B</a>$B$b$4Mw$/$@$5$$!#(B
+
+
+<ENTRY>autoconf $B$3$N(B autoconf $B$NAG:`$O!"$I$N$h$&$KF0:n$9$k$N$+(B?
+<p>
+autoconf $B$N;EAH$_$O!"$=$NF0:nJ}K!$r0lEYM}2r$7$F$7$^$($PHs>o$KC1=c$J$b$N$G$9!#(B
+$B<B9T;~$K%G%P%$%9%W%m!<%V%D%j!<$,$I$N$h$&$K9=C[$5$l$F;H$o$l$k$N$+$K$D$$$F!"(B
+$B@53N$J>\:Y$OL5;k$7$?$$$N$G$"$l$P!"(B
+$B8D!9$N!VMU!W$N%I%i%$%P!<$K4X$7$FI,MW$J$3$H$O0J2<$N$H$*$j$G$9!#(B
+<ol>
+    <li> $B3F%I%i%$%P!<$O!"(B 3 $B8D$N9=@.MWAG$+$i$J$k9=B$BN$r5,Dj$7$^$9(B -
+         $B9=@.MWAG$O!"$=$N%W%i%$%Y!<%H9=B$BN$N%5%$%:!"%W%m!<%V4X?t!"%"%?%C%A4X?t$G$9!#(B
+         $B$3$l$O%3%s%Q%$%k$5$l$F<B9T;~$K;H$o$l$^$9(B - $B$?$H$($P0J2<$N$h$&$K$J$j$^$9(B:
+<p>
+<pre>
+struct cfattach foo_baz_ca = {
+    sizeof(struct foo_baz_softc), foo_baz_match, foo_baz_attach
+};
+</pre>
+    <li> $B%+!<%M%k5/F0$K:]$7$F!"$3$N%G%P%$%9$r%"%?%C%A$9$k;~$K!"(B
+         autoconf $B$N%3!<%I$O%G%P%$%9$N%W%m!<%V%k!<%A%s$r8F$s$G!"(B
+         $B?F$X$N%]%$%s%?!<(B (<tt>struct device *parent</tt>)$B!&(B
+         $B%"%?%C%A%?%09=B$BN$X$N%]%$%s%?!<(B (<tt>void *aux</tt>)$B!&(B
+         $BE,@Z$J(B autoconf $B%N!<%I(B (<tt>struct cfdata *cf</tt>) $B$rEO$7$^$9!#(B
+         $B%I%i%$%P!<$O!"8F$P$l$k$Y$->l=j$+$I$&$+$rH=CG$9$k$3$H$K$J$C$F$$$^$9(B
+         ($BDL>o!"%m%1!<%7%g%s$*$h$S%3%s%U%#%.%e%l!<%7%g%s>pJs$,%"%?%C%A%?%0$K$h$C$FEO$5$l$^$9(B)$B!#(B
+         $B$=$3$,$7$+$k$Y$->l=j$@$C$?>l9g$O!"%W%m!<%V%k!<%A%s$O(B 1 $B$rJV$9$Y$-$G$9!#(B
+         $B$b$7%G%P%$%9$,$=$3$K$J$1$l$P!"%W%m!<%V%k!<%A%s$O(B 0 $B$rJV$9I,MW$,$"$j$^$9!#(B
+         $B$$$:$l$N>l9g$b!"(B<b>$B$$$+$J$k>uBV$bJ];}$5$l$F$O$$$1$^$;$s(B</b>$B!#(B
+    <li> $B%W%m!<%V$,@.8y$7$FLa$k$H!"(B autoconf $B$O!"%G%P%$%9$N(B *_ca
+         $B$G;XDj$5$l$?%5%$%:$N%a%b%j!<2t$r3d$jEv$F!"$=$N%G%P%$%9$N%"%?%C%A%k!<%A%s$r8F$s$G!"(B
+         $B?F$X$N%]%$%s%?!<(B (<tt>struct device *parent</tt>)$B!&(B
+         $B:#3d$jEv$F$?%a%b%j!<$X$N%]%$%s%?!<(B(<tt>struct device *self</tt>)$B!&(B
+         $B%"%?%C%A%?%09=B$BN$X$N%]%$%s%?!<(B (<tt>void *aux</tt>) $B$rEO$7$^$9!#(B
+         $B%I%i%$%P!<$O!"@53N$J%]!<%H$H%a%b%j!<$r8+$D$1=P$7!";q8;$r3d$jEv$F!"(B
+         $B$3$l$K1~$8$F%I%i%$%P!<Fb$N9=B$BN$r=i4|2=$9$k$3$H$K$J$C$F$$$^$9!#(B
+         $B%I%i%$%P!<$N%$%s%9%?%s%9$K8GM-$J>pJs$O!"(B
+         $B6KNO!"$3$3$G3d$jEv$F$i$l$?%a%b%j!<$KJ];}$9$Y$-$G$9!#(B
+</ol>
+<p>
+$BNc(B: PCI $B%$!<%5%M%C%H%I%i%$%P!<(B 'baz' $B$r9M$($^$7$g$&!#(B
+$B%+!<%M%k%3%s%U%#%0$O0J2<$N$h$&$K$J$C$F$$$^$9(B:
+<pre>
+pci*    at mainbus?
+baz*    at pci? dev ? function ?
+</pre>
+<p>
+$B<B9T;~!"(B autoconf $B$O%^%7%s$N(B pci $B%P%9>e$NJ*M}%G%P%$%9$9$Y$F$KBP$7$F(B
+$B7+$jJV$7<B9T$5$l$^$9!#3FJ*M}%G%P%$%9$KBP$7$F!"(B autoconf $B$O!"(B
+pci $B%P%9>e$K$"$k$3$H$,%+!<%M%k$K@_Dj$5$l$F$$$k$9$Y$F$N%G%P%$%9$N(B
+$B%I%i%$%P!<$N%W%m!<%V%k!<%A%s$r8F$V$3$H$r7+$jJV$7$^$9!#(B
+$B$$$:$l$+$N%W%m!<%V%k!<%A%s$,$=$N%G%P%$%9$K$D$$$F(B 1 $B$rJV$9$H!"(B
+autoconf $B$O$3$l$rCf;_$7!">e=R$N(B 3) $B$G@bL@$7$?:n6H$r$*$3$J$$$^$9!#(B
+$B%"%?%C%A4X?t$,La$k$H!"(B autoconf $B$O<!$NJ*M}%G%P%$%9$N=hM}$rB3$1$^$9!#(B
+<p>
+<a href="#adding_a_new_driver">$B%+!<%M%k$K?7$7$$%I%i%$%P!<$rDI2C$9$k(B</a>$B$b$4Mw$/$@$5$$!#(B
+
 
 <ENTRY>adding_a_system_call $B%7%9%F%`%3!<%k$rDI2C$9$k(B
 <tt>syscalls.master</tt> $B$K%(%s%H%j!<$rDI2C$7!"(Bsyscall $B%9%?%V$r(B
 <tt>
 <CURRENTSRC>/usr/src/lib/libc/sys/Makefile.inc
 </tt> $B$NE,Ev$J>l=j$KDI2C$7$F$/$@$5$$!#(B
+
+<ENTRY>adding_a_sysctl sysctl $B$rDI2C$9$k(B
+<a href="http://mail-index.NetBSD.org/tech-kern/">tech-kern</a>
+$B%a!<%j%s%0%j%9%H$K!"$3$N<ALd$X$NEz$($,(B
+<a href="http://mail-index.NetBSD.org/tech-kern/2001/06/24/0000.html">$BEj9F(B</a>
+$B$5$l$F$$$k$N$G!"$=$A$i$r;2>H$7$F$/$@$5$$!#(B
+<p>
+
+$B$J$*!"(B NetBSD 1.6 $B$H$=$l0J9_$G$O!"%Y%s%@!<FCM-$N9`L\MQ$H$7$F!"(B
+$BFCJL$J(B "vendor" $B%+%F%4%j!<$,M=Ls$5$l$F$$$^$9!#$5$i$J$k>pJs$O(B
+sysctl(8) $B$r;2>H$7$F$/$@$5$$!#(B
 
 <ENTRY>mmap_in_pseudo-device $B2>A[%G%P%$%9$K(B mmap $B$r<BAu$9$kJ}K!(B
 $B$"$J$?$N:n$C$?%G%P%$%9$O!"$*$=$i$/%-%c%i%/%?!<%G%P%$%9$G$7$g$&!#$b$7!"(B
@@ -209,7 +282,7 @@ sys/dev/pci/puc.c $B$r;29M$K$7$F$/$@$5$$!#$3$l$O!":G$b4JC1$J%I%i%$%P!<$N(B
 
 </LIST>
 
-<a href="" origlink=""><em>NetBSD Documentation: Kernel</em> $B$KLa$k(B</a>
+<a href="./"><em>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B%+!<%M%k(B</em> $B$KLa$k(B</a>
 <hr>
 
 <DOCLINK>
@@ -220,9 +293,9 @@ sys/dev/pci/puc.c $B$r;29M$K$7$F$/$@$5$$!#$3$l$O!":G$b4JC1$J%I%i%$%P!<$N(B
   ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
        <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
        www@jp.NetBSD.org</a>)<br>
-  $NetBSD: programming.list,v 1.19 2001/03/16 14:50:45 dent Exp $<br>
+  $NetBSD: programming.list,v 1.29 2004/03/20 20:38:25 snj Exp $<br>
   <!-- based on english translation: -->
-  <!-- NetBSD: programming.list,v 1.19 2001/03/16 14:50:45 dent Exp   -->
+  <!-- NetBSD: programming.list,v 1.29 2004/03/20 20:38:25 snj Exp   -->
   <a href="../../Misc/disclaimer.html">Copyright &copy; 1994-2003
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
