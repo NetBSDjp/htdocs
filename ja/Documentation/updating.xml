@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+"http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Documentation-updating">
+  <config param="desc" value="Updating a stable NetBSD release" />
+  <config param="cvstag"
+  value="$NetBSD: updating.xml,v 1.3 2005/07/16 17:13:26 heinz Exp $" />
+  <config param="rcsdate" value="$Date: 2005/07/16 17:13:26 $" />
+  <head>
+<!-- Copyright (c) 2003-2005
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+    <title>Updating a stable NetBSD release</title>
+  </head>
+  <sect1 role="toc">
+    <sect2 id="top">
+      <sect3 id="update-src">
+        <title>Updating the sources</title>
+        <para>If you are running a stable NetBSD release (such as 
+        <ulink url="../Releases/formal-1.6/">NetBSD 1.6.1</ulink>
+        ), in a production environment, you should occasionally
+        update your sources and rebuild the system or the kernel,
+        in order to incorporate any security fixes that have been
+        applied to the branch since its release.</para>
+        <para>You can retrieve or update the sources for your
+        release using 
+        <ulink url="current/#using-anoncvs-over-ssh">anoncvs over
+        ssh</ulink>
+        by specifying the correct branch tag. For example, to
+        checkout the sources for the NetBSD 1.6.1 release, you
+        could use:</para>
+        <programlisting>  $ cd /usr
+  $ env CVS_RSH=ssh cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot co -r netbsd-1-6 -P src</programlisting>
+        <para>To update an existing source tree:</para>
+        <programlisting>$ cd /usr/src $ env CVS_RSH=ssh cvs update -dP</programlisting>
+      </sect3>
+      <sect3 id="kernel">
+        <title>Building a new kernel</title>
+        <para>Building a new kernel pretty much follows the steps
+        as described in 
+        <ulink url="kernel/#how_to_build_a_kernel">this
+        document</ulink>
+        , but please note the differences in the syntax of the 
+        <code>build.sh</code>
+        script. 
+        <code>build.sh</code>
+        has changed significantly between NetBSD 1.6 and -current;
+        if you are not using -current, you can 
+        <emphasis>not</emphasis>
+        use 
+        <code>build.sh</code>
+        to build the new kernel!</para>
+      </sect3>
+      <sect3 id="userland">
+        <title>Updating the userland</title>
+        <para>Please always refer to 
+        <code>build.sh -h</code>
+        and the files 
+        <emphasis>UPDATING</emphasis>
+        and 
+        <emphasis>BUILDING</emphasis>
+        for details -- it's worth it, there are 
+        <emphasis>many</emphasis>
+        options that can be set on the command line or in 
+        <filename>/etc/mk.conf</filename>
+        . In the end, it all boils down to a single command: 
+        <code>build.sh -d</code>
+        .</para>
+        <para>Note that this will update the 
+        <emphasis>entire</emphasis>
+        userland!</para>
+      </sect3>
+      <sect3 id="parts">
+        <title>Updating only parts of the source tree</title>
+        <para>If a security advisory has been issued, and you want
+        to just rebuild the necessary libraries and applications,
+        your best bet is to follow the instructions provided in the
+        advisory. An example is given below:</para>
+        <programlisting>  $ cd src
+  $ env CVS_RSH=ssh cvs update -d -P -r netbsd-1-6 gnu/dist/sendmail/sendmail
+  $ cd gnu/usr.sbin/sendmail
+  $ make USETOOLS=no cleandir dependall
+  $ su
+  # make USETOOLS=no install</programlisting>
+      </sect3>
+      <sect3 id="summary">
+        <title>Terse summary</title>
+        <itemizedlist>
+          <listitem><para>Update the sources:</para>
+          <programlisting>  $ cd /usr/src
+  $ env CVS_RSH=ssh cvs update -dP</programlisting>
+          </listitem>
+          <listitem><para>Build a new kernel:</para>
+          <programlisting>  $ cd /usr/src/sys/arch/&lt;ARCH&gt;/conf
+  $ config &lt;KERNEL&gt;
+  $ cd /usr/src/sys/arch/&lt;ARCH&gt;/compile/&lt;KERNEL&gt;
+  $ make depend all
+  $ su
+  # mv /netbsd /netbsd.old
+  # mv /usr/src/sys/arch/&lt;ARCH&gt;/compile/&lt;KERNEL&gt;/netbsd /</programlisting>
+          </listitem>
+          <listitem><para>Update the userland:</para>
+          <programlisting>  $ cd /usr/src
+  $ ./build.sh -h
+  $ su
+  # ./build.sh -d &lt;other options&gt;</programlisting>
+          </listitem>
+        </itemizedlist>
+      </sect3>
+      <sect3 id="current">
+        <title>Tracking -current</title>
+        <para>See 
+        <ulink url="current/">this document</ulink>
+        for our documentation on how to track -current.</para>
+      </sect3>
+    </sect2>
+  </sect1>
+</webpage>
+
