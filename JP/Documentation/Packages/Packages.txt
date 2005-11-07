@@ -1,4 +1,4 @@
-# $NetBSD: Packages.txt,v 1.1.1.6 2005/10/28 10:45:21 kano Exp $
+# $NetBSD: Packages.txt,v 1.1.1.7 2005/11/07 10:20:37 kano Exp $
 ###########################################################################
 
 			==========================
@@ -273,10 +273,13 @@ LOCALBASE, and X11BASE can also be set in /etc/mk.conf to save having
 to remember to set them each time you want to use pkgsrc.
 
 If you want to deinstall and re-install a binary package that you've
-created (see next section) or that you put into pkgsrc/packages
-manually, you can use the the "bin-install" target, which will
-install a binary package - if available - via pkg_add, and do a "make
-package" else.
+created (see next section), that you put into pkgsrc/packages manually or
+that's located on a remote FTP server, you can use the the "bin-install"
+target. This target will install a binary package - if available - via
+pkg_add, and do a "make package" else. The list of remote FTP sites
+searched is kept in the variable BINPKG_SITE, which defaults to
+ftp.netbsd.org. Any flags that should be added to pkg_add(8) can be put
+into BIN_INSTALL_FLAGS. See pkgsrc/mk/mk.conf.example for more details. 
 
 A final word of warning: If you setup a system that has a non-standard
 setting for LOCALBASE (or X11BASE, for that matter), be sure to set that
@@ -644,6 +647,11 @@ At the current time, the algorithms provided are:
 
 	md5, rmd160, sha1, sha256, sha384 and sha512
 
+Some packages have different sets of distfiles on a per architecture
+basis. (A good example is www/navigator). These are kept in the
+same distinfo file and care should be taken when upgrading such a
+package to ensure distfile information is not lost.
+
 The message digest/checksum for all the official patches found in the
 patches/ directory (see section 4.3) for the package is also stored in
 the distinfo file.  This is a message digest/checksum of all lines in
@@ -866,6 +874,13 @@ to when dealing with the PLIST file (or files, see below!).
    by output from "uname -s", ${OS_VERSION} will be set to what "uname -r"
    gives.
 
+ * ${PKGLOCALEDIR}:
+   Packages that install locale files should list them in the PLIST as
+   "${PKGLOCALEDIR}/locale/de/LC_MESSAGES/..." instead of
+   "share/locale/de/LC_MESSAGES/...".  This properly handles the fact that
+   different OSes expect locale files to be either in "share" or "lib" by
+   default.
+
  * Manpage-compression:
    Manpages should be installed in compressed form if MANZ is set (in
    bsd.own.mk), and uncompressed otherwise. To handle this in the PLIST
@@ -1007,21 +1022,16 @@ Here's how to use libtool in a pkg in seven simple steps:
    installed, preface the cc or ld line with "${LIBTOOL} --mode=link", and
    it will find the correct libraries (static or shared), but please be
    aware that libtool will not allow you to specify a relative path in -L
-   (such as -L../somelib), because it is trying to force you to change
-   that argument to be the .la file.  For example:
+   (such as -L../somelib), because it expects you to change that argument
+   to be the .la file.  For example:
 
 	${LIBTOOL} --mode=link ${CC} -o someprog -L../somelib -lsomelib
 
-   won't work; it needs to be changed to:
+   should be changed to:
 
 	${LIBTOOL} --mode=link ${CC} -o someprog ../somelib/somelib.la
 
-   and it will DTRT with the libraries.  If you *must* use a relative path 
-   with -L, and you are not going to run this program before installing
-   it, you can omit the use of libtool during link and install of this
-   program if you add the subdirectory ".libs" in your -L command:
-
-	${CC} -o someprog -L../somelib/.libs -lsomelib
+   and it will DTRT with the libraries.
 
 6. When installing libraries, preface the install or cp command with
    "${LIBTOOL} --mode=install", and change the library name to .la.  For
@@ -1045,12 +1055,12 @@ The pkg's own libtool is made by ltconfig script at do-configure target.
 If USE_LIBTOOL and LTCONFIG_OVERRIDE are defined, the specified ltconfig is
 overridden, using the devel/libtool instead of the pkg's own libtool.
 
-If your package makes use of the platform independant method of loading
-dynamic shared objects libltdl then you should add USE_LTDL= yes to the
-Makefile.
+If your package makes use of the platform independant library for loading
+dynamic shared objects, that comes with libtool (libltdl), you should
+add USE_LTDL= yes to the Makefile.
 
-Some packages use libtool incorrectly so that the package may work or build
-on NetBSD. Some common errors are
+Some packages use libtool incorrectly so that the package may not work or
+build in some circumstances. Some common errors are
 
  * The inclusion of a shared object (-module) as a dependent library in an
    executable or library. This in itself isn't a problem if one of two things
@@ -1769,10 +1779,12 @@ build):
 		cd ../../graphics/jpeg && ${MAKE} extract;              \
 	fi
 
-Please also note the BUILD_USES_MSGFMT definition, which is provided
-as a convenience definition.  This definition works out whether
+Please also note the BUILD_USES_MSGFMT and BUILD_USES_GETTEXT_M4 definitions,
+which are provided as convenience definitions.  The former works out whether
 msgfmt(1) is part of the base system, and, if it isn't, installs the
-devel/gettext package.
+devel/gettext package.  The latter adds a build dependency on either an
+installed version of an older gettext package, or if it isn't, installs the
+devel/gettext-m4 package.
 
 
  9.13 Conflicts with other packages
@@ -1920,6 +1932,61 @@ CONFIGURE_ARGS+=	--with-curses=${LOCALBASE}
 
 Please note that the check for NEED_NCURSES has to be below the
 inclusion of bsd.prefs.mk, since the variable is set there.
+
+
+ 9.21 Automated security check
+ =============================
+
+Please be aware that there can often be bugs in third-party software,
+and some of these bugs can leave a machine vulnerable to exploitation
+by attackers.  In an effort to lessen the exposure, the NetBSD
+packages team maintains a database of known-exploits to packages which
+have at one time been included in pkgsrc.  The database can be
+downloaded automatically, and a security audit of all packages
+installed on a system can take place.  To do this, install the
+pkgsrc/security/audit-packages package.  It has two components:
+
+(1) download-vulnerability-list, an easy way to download a list of the
+security vulnerabilities information.  This list is kept up to date by
+the NetBSD security officer and the NetBSD packages team, and is
+distributed from the NetBSD ftp server:
+
+	ftp://ftp.netbsd.org/pub/NetBSD/packages/distfiles/vulnerabilities
+
+(2) audit-packages, an easy way to audit the current machine, checking
+each vulnerability which is known.  If a vulnerable package is
+installed, it will be shown by output to stdout, including a description
+of the type of vulnerability, and a URL containing more information.
+
+Use of the audit-packages package is strongly recommended.
+
+The following message is displayed as part of the audit-packages
+installation procedure:
+
+======================================================================
+You may wish to have the vulnerabilities file downloaded daily so that
+it remains current.  This may be done by adding an appropriate entry
+to the root users crontab(5) entry.  For example the entry
+
+# download vulnerabilities file
+0 3 * * * ${PREFIX}/sbin/download-vulnerability-list >/dev/null 2>&1
+
+will update the vulnerability list every day at 3AM.
+
+In addition, you may wish to run the package audit from the daily
+security script.  This may be accomplished by adding the following
+lines to /etc/security.local
+
+if [ -x ${PREFIX}/sbin/audit-packages ]; then
+        ${PREFIX}/sbin/audit-packages
+fi
+======================================================================
+
+
+Note to package developers: When a vulnerability is found, this should be
+noted in localsrc/security/advisories/pkg-vulnerabilities, and after the
+commit of that file, it should be copied to
+/pub/NetBSD/packages/distfiles/vulnerabilities on ftp.netbsd.org. 
 
 
  10 Submitting & Committing
