@@ -1,0 +1,506 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998-2004
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
+<title>Setting up the rarpd server, Diskless NetBSD HOW-TO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+Previous |
+<a href="bootparams.html">Next (bootparams)</a> |
+<a href="tftpd.html">Next (tftpd)</a> |
+<a href="./">Table of Contents</a>
+
+<hr>
+
+<h1>Setting up the <tt>rarpd</tt> server, Diskless NetBSD HOW-TO</h1>
+
+The next stage of the diskless booting process is for the bootloader to
+determine the client's IP address.  Here, it uses <tt>rarp</tt>,
+Reverse ARP (Address Resolution Protocol).  The rarpd server will map
+the client's ethernet hardware address to an IP address and send this
+information back to the client.
+<p>
+
+Since rarp is not TCP/IP, it cannot be passed through a router (thus the
+stipulation that your client and the server(s) must be on the same
+subnet).  It also means that your server must have device drivers that are
+able to send unspecified data to the ethernet.
+<p>
+
+Setting up rarp, <a href="#netbsd">NetBSD</a><br>
+Setting up rarp, <a href="#openbsd">OpenBSD</a><br>
+Setting up rarp, <a href="#freebsd">FreeBSD</a><br>
+Setting up rarp, <a href="#macosx">MacOS X and Darwin</a><br>
+Setting up rarp, <a href="#linux">Linux</a><br>
+Setting up rarp, <a href="#sunos">SunOS</a><br>
+Setting up rarp, <a href="#solaris">Solaris</a><br>
+Setting up rarp, <a href="#news">NEWS-OS</a><br>
+Setting up rarp, <a href="#next">NEXTSTEP</a> (couldn't get it to work)<br>
+<a href="#hpux9">HP-UX</a> 9 and earlier don't have <tt>rarpd</tt> <br>
+Setting up rarp, <a href="#hpux10">HP-UX</a> 10 and later
+<p>
+
+<hr>
+
+<h3><a name="netbsd">NetBSD</a> and <a name="openbsd">OpenBSD</a></h3>
+<dl><dt><dd>
+If you have built your own kernel, make sure you have the following in
+your config file:
+<pre>pseudo-device   bpfilter        16</pre>
+The <tt>GENERIC</tt> kernel distributed with NetBSD has this compiled in.
+<p>
+
+<ol>
+<li>Create an <tt>/etc/ethers</tt> file, listing your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li>Add your client to the <tt>/etc/hosts</tt> file:<br>
+    <b><tt>192.168.1.10           client</tt></b>
+<p>
+
+<li><tt># <b>ps -aux | grep rarp</b></tt><br>
+   If it's not already running, then run:<br>
+   <tt># <b>/usr/sbin/rarpd -a -d</b></tt>
+</ol>
+<p>
+
+This will start rarpd in debugging mode.  When the rarpd server gets a request,
+it will print this:
+<pre>got a packet</pre>
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="freebsd">FreeBSD</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Create an <tt>/etc/ethers</tt> file, listing your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li>Add your client to the <tt>/etc/hosts</tt> file:<br>
+    <b><tt>192.168.1.10           client</tt></b>
+<p>
+
+<li><tt># <b>ps -aux | grep rarp</b></tt><br>
+   If it's not already running, then run:<br>
+   <tt># <b>/usr/sbin/rarpd -a -s -v -f</b></tt>
+</ol>
+<p>
+
+This will start rarpd in the foreground (i.e. you can <tt>^C</tt> out of it).
+There is no debugging command line option.  If you are having problems with 
+RARP, then you may need to add the following to <tt>/etc/syslog.conf</tt>:<br>
+<pre><b>!rarpd
+*.*                                             /var/log/bootlog</b></pre>
+You will then need to <tt><b>kill -HUP </b></tt> the process for <tt>syslog</tt>.  It will print the following message in <tt>/var/log/bootlog</tt>:
+<pre>Jul 25 23:10:42 rarpserver rarpd[562]: fxp0 CC:CC:CC:CC:CC:CC at 192.168.1.10 REPLIED</pre>
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="macosx">MacOS X and Darwin</a></h3>
+<dl><dt><dd>
+MacOS X and Darwin have a rarpd, and it is very similar to NetBSD and OpenBSD.
+Unfortunately, it doesn't assume the proper directory for the TFTP sever, so
+you need to do the silliness with <tt>/private/tftpboot</tt>
+<p>
+
+<ol>
+<li><tt># <b>mkdir -p /private/tftpboot</b><br>
+# <b>ln -s /private/tftpboot /tftpboot</b></tt>
+<p>
+
+<li>Create an <tt>/etc/ethers</tt> file, listing your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li>Add your client to the NetInfo database:<br>
+    <tt># <b>nicl . -create /machines/client ip_address 
+      192.168.0.10</b></tt><br>
+<p>
+
+<li><tt># <b>ps -aux | grep rarp</b></tt><br>
+   If it's not already running, then run:<br>
+   <tt># <b>/usr/sbin/rarpd -a -d</b></tt>
+</ol>
+<p>
+
+This will start rarpd in debugging mode.  When the rarpd server gets a request,
+it will print this:
+<pre>got a packet</pre>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="linux">Linux</a></h3>
+<dl><dt><dd>
+There are two different ways to run rarp on Linux.  You can use the 
+<a href="#linux.user">userland rarpd</a>, or build it into your (&lt;2.3) 
+<a href="#linux.kernel">kernel</a>.
+<p>
+<b><a name="linux.user">Linux userland rarpd (should work with all kernels)</a></b>
+<p>
+There are at least two known implementations of userland rarp. There is
+an older one (by D.Brashear & J.Hutzelman) at
+<tt><a href="ftp://ftp.dementia.org/pub/net-tools">
+ftp://ftp.dementia.org/pub/net-tools</a></tt> (source only),
+and a newer one (by A. Kuznetsov & J.Jelinek) that comes in all (?)
+recent distributions.
+
+<p>
+<ol>
+  <li>Get the package as an RPM from 
+    <a href="ftp://rawhide.redhat.com">ftp://rawhide.redhat.com</a> or the
+    Debian woody with <tt>apt-get rarpd</tt>.<br>
+    Sources can be found at least on a
+    local debian mirror under <tt>/pool/main/r/rarpd/</tt>.
+  <p><li>Create an <tt>/etc/ethers</tt> file, listing your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+  <p><li>Add your client to the <tt>/etc/hosts</tt> file:<br>
+    <b><tt>192.168.1.10           client</tt></b>
+    <p>
+  <li><tt># <b>/path/to/rarpd -A</b></tt><br>
+    See <tt>rarp(8)</tt> for more details.
+</ol>
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+<p>
+
+<b><a name="linux.kernel">Linux kernel rarp ( kernel&lt;2.3 )</a></b>
+<p>
+
+If you don't want to (or can't) use the userland rarpd, you will need to 
+compile rarp support in the kernel or (if your kernel supports it)
+add it as a loadable module.
+<p>
+<ol>
+  <li>Compile a kernel with RARP support.  Run one of the following:<br>
+    <tt># <b>make config</b></tt><br>
+    <tt># <b>make menuconfig</b></tt><br>
+    <tt># <b>make xconfig</b></tt>
+    <p>
+  <li>Alternatively, add the RARP kernel module:<br>
+    <tt># <b>modprobe rarp</b></tt><br>
+    Note, this does not require rebooting, but you will need to run this command after each reboot to keep RARP enabled.
+    <p>
+  <li>Add your client to the <tt>/etc/hosts</tt> file:<br>
+    <b><tt>192.168.1.10           client</tt></b>
+    <p>
+  <li><tt># <b>/sbin/arp -s client CC:CC:CC:CC:CC:CC</b></tt>
+    <p>
+  <li><tt># <b>/sbin/arp -a</b></tt><br>
+    This will print the arp cache.  Check to make sure your client is there:
+<pre>Address                HWtype  HWaddress           Flags Mask      Iface
+client.test.net        ether   CC:CC:CC:CC:CC:CC   CM    *         eth0</pre>
+  <p>
+  <li><tt># <b>/sbin/rarp -s client CC:CC:CC:CC:CC:CC</b></tt><br>
+    If RARP is not compiled into your kernel, you will get one of the two
+    following error messages:
+<pre>SIOCSRARP: Invalid argument
+This kernel does not support RARP.</pre>
+    <p>
+
+  <li><tt># <b>/sbin/rarp -a</b></tt><br>
+    This will print the rarp cache.  Check to make sure your client is there:
+<pre>IP address       HW type             HW address
+192.168.1.10     10Mbps Ethernet     CC:CC:CC:CC:CC:CC</pre>
+</ol>
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="sunos">SunOS</a></h3>
+<dl><dt><dd>
+If you have already configured your SunOS machine as an NFS server and if
+<tt>/tftpboot</tt> exists, then the RARP daemon may already be running.
+<p>
+
+<ol>
+<li>Create an <tt>/etc/ethers</tt> file, if one doesn't already exist.
+   You should have created this during the <a href="rbootd/#sunos">
+   rbootd</a> or tftp installation.  The <tt>/etc/ethers</tt> file should
+   list your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li><tt># <b>ps aux | grep rarpd</b></tt><br>
+   If both rarp processes are not running, you'll need to:<br>
+   <tt># <b>/usr/etc/rarpd -a -d</b></tt>
+</ol>
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="solaris">Solaris</a></h3>
+<dl><dt><dd>
+If you have already configured your Solaris machine as an NFS server and if
+<tt>/tftpboot</tt> exists, then the RARP daemons may already be running.
+<p>
+
+<ol>
+<li>Create an <tt>/etc/ethers</tt> file, if one doesn't already exist.
+   You should have created this during the <a href="rbootd/#solaris">
+   rbootd</a> or tftp installation.  The <tt>/etc/ethers</tt> file should
+   list your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li><tt># <b>/usr/bin/ps -ef | grep rarpd</b></tt><br>
+   If it's not already running, then you need to:<br>
+   <tt># <b>/usr/sbin/in.rarpd -d -a</b></tt>
+</ol>
+<p>
+
+This will start rarpd in debugging mode.  For Solaris, it prints out
+a bunch of stuff.  Here is an <a href="rarp.solaris.txt">example</a> of the
+Solaris rarpd handling requests from the client.
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="news">NEWS-OS</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Create an <tt>/etc/ethers</tt> file, if one doesn't already exist.
+   You should have created this during the <a href="rbootd/#news">
+   rbootd</a> or tftp installation.  The <tt>/etc/ethers</tt> file should
+   list your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li><tt># <b>/etc/rarpd</b></tt>
+</ol>
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="next">NEXTSTEP</a></h3>
+<dl><dt><dd>
+NEXTSTEP has rarp functionality, since it is capable of netbooting sparc
+hardware.  We tried briefly and couldn't get it to work. Please send us
+feedback and let us know how to set this up properly.  What follows is our
+best guess.
+<p>
+
+<ol>
+<li>Create an <tt>/etc/ethers</tt> file, if one doesn't already exist.
+   The <tt>/etc/ethers</tt> file should list your client:<br>
+<pre><b>#/etc/ethers
+CC:CC:CC:CC:CC:CC     client</b></pre>
+<p>
+
+<li><tt># <b>/usr/etc/arpLoader</b></tt>
+</ol>
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Back to the <a href="rarp.html">top</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="hpux9">HP-UX 9 and earlier</a></h3>
+<dl><dt><dd>
+Sorry, HP-UX 9 does not have rarp services.  It might be possible to find
+source code and compile the daemon, but I couldn't find it.
+<p>
+
+If you find this, please let us know.
+<p>
+
+Back to the <a href="rarp.html">top</a>
+</dd></dl>
+
+<hr>
+
+<h3><a name="hpux10">HP-UX 10</a></h3>
+<dl><dt><dd>
+<ol>
+<li>Create <tt>/etc/rarpd.conf</tt>, with your client addresses (ethernet
+    and IP):<br>
+    <tt><b>CC:CC:CC:CC:CC:CC 192.168.1.10</b></tt>
+<p>
+
+<li><tt># <B>ps -ef | grep rar</b></tt><br>
+   If it's not already running, then you need to run:<br>
+   <tt># <b>/usr/sbin/rarpd -d</b></tt>
+</ol>
+<p>
+
+This will start rarpd in debugging mode.  For HP-UX 10, it prints out
+a lot of stuff.  Here is an <a href="rarp.hpux10.txt">example</a> of the 
+HP-UX 10 rarpd handling requests from the client.
+<p>
+
+Oddly, I couldn't <tt>^C</tt> out of this, I had to launch another shell and
+kill the rarpd process.
+<p>
+
+If RARP fails, the client will print:
+<pre>No response for RARP request
+le(0,0,0,0): Unknown error: code 60
+boot: Unknown error: code 60</pre>
+If RARP succeeds, the client will print:
+<pre>boot: client IP address: 192.168.1.10</pre>
+<p>
+
+Continue on to setting up <a href="bootparams.html">bootparams</a>
+or <a href="tftpd.html">tftpd</a>
+</dd></dl>
+
+<hr>
+
+Previous |
+<a href="bootparams.html">Next (bootparams)</a> |
+<a href="tftpd.html">Next (tftpd)</a> |
+<a href="./">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: rarp.html,v 1.28 2004/10/30 22:33:31 jschauma Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
