@@ -1,4 +1,4 @@
-# $NetBSD: Packages.txt,v 1.1.1.7 2005/11/07 10:20:37 kano Exp $
+# $NetBSD: Packages.txt,v 1.1.1.8 2005/11/28 15:44:40 kano Exp $
 ###########################################################################
 
 			==========================
@@ -17,7 +17,7 @@ Run this command to produce a table of contents:
 
 
  0 Intro
- ========
+ =======
 
 There is a lot of software freely available for Unix based systems, which
 usually runs on NetBSD, too, sometimes with some modifications. The NetBSD
@@ -36,7 +36,7 @@ derived from FreeBSD.
 
 
  0.1 Overview
- =============
+ ============
 
 This document is divided into two parts.  The first, "User's Guide",
 describes how one can use one of the packages in the Package
@@ -146,8 +146,8 @@ Also note that any prerequisite packages needed to run the package in
 question will be installed, too, assuming they are present where you install
 from.
 
-After you've installed packages, be sure to have /usr/pkg in your $PATH so
-you can actually start the just installed program.
+After you've installed packages, be sure to have /usr/pkg/bin in your $PATH
+so you can actually start the just installed program.
 
 
  1.3 A word of warning
@@ -178,8 +178,8 @@ packages the "xbase" and "xcomp" distribution sets are required, too.
  2.2 Where to get pkgsrc
  =======================
 
-There are three ways to get pkgsrc. Either as tar file, via SUP, or via
-CVS. All three ways are described here. 
+There are three ways to get pkgsrc. Either as a tar file, via SUP, or
+via CVS. All three ways are described here. 
 
 To get the package source going, you need to get the pkgsrc.tar.gz file
 from ftp://ftp.netbsd.org/pub/NetBSD-current/tar_files/pkgsrc.tar.gz and
@@ -198,14 +198,14 @@ To do an initial (full) checkout of pkgsrc, do the following steps:
 	% setenv CVSROOT anoncvs@anoncvs.netbsd.org:/cvsroot
 	% setenv CVS_RSH ssh 
 	% cd /usr
-	% cvs checkout pkgsrc
+	% cvs checkout -P pkgsrc
 
 This will create the "pkgsrc" directory in your /usr, and all the package
 source will be stored under /usr/pkgsrc. To update pkgsrc after the initial
 checkout, make sure you have CVS_RSH set as above, then do:
 
 	% cd /usr/pkgsrc
-	% cvs update
+	% cvs -q update -dP
 
 
  2.3 Fetching distfiles
@@ -231,8 +231,8 @@ Put these distfiles into /usr/pkgsrc/distfiles.
  2.4 How to build and install
  ============================
 
-Assuming that has been done, become root and change into the relevant
-directory. Then you can type
+Assuming that the distfile has been fetched (see previous section), become
+root and change into the relevant directory. Then you can type
 
 	make
 
@@ -383,7 +383,7 @@ specific tasks at the end of the pre-build stage.  If the file
 example use of pre-build.local is to have the line:
 
 	echo "I do not have enough disk space to build this pig." \
-		> games/crafty-book-enormous/$BROKENF
+		> pkgsrc/games/crafty-book-enormous/$BROKENF
 
 to prevent the system from trying to build a particular package
 which requires nearly 3 Gb of disk space.
@@ -391,10 +391,15 @@ which requires nearly 3 Gb of disk space.
  3.2.2 Other environmental considerations
  ========================================
 
-Drop your favourite login shell in /usr/local, or install it from
-/etc/rc.local. Also, if you use a OS version below 1.5 or you still want
-to use the pkgsrc version of ssh for some reason, be sure to install 
-ssh before starting it from rc.local:
+As /usr/pkg wil be completely deleted at the start of bulk builds, 
+make sure your login shell is placed somewhere else. Either drop it into
+/usr/local/bin (and adjust your login shell in the password file), or
+(re-)install it via pkg_add from /etc/rc.local, so you can login after a
+reboot (remember that your current process won't die if the package is
+removed, you just can't start any new instances of the shell any more).
+Also, if you use a OS version below 1.5 or you still want to use the
+pkgsrc version of ssh for some reason, be sure to install ssh before
+starting it from rc.local:
 
     ( cd /usr/pkgsrc/security/ssh ; make bulk-install )
     if [ -f /usr/pkg/etc/rc.d/sshd ]; then
@@ -411,8 +416,8 @@ or crashes. You have been warned! :)
 
 Make sure you don't need any of the packages still installed.
 BEWARE: During the bulk build, ALL packages will be removed!!!
-Be sure to remove all other things (from /usr/local, ...).  Become
-root and type:
+Be sure to remove all other things that might interfer with builds, like 
+some libs installed in /usr/local, etc. then become root and type:
 
         # cd /usr/pkgsrc
         # sh mk/bulk/build
@@ -477,13 +482,13 @@ wasted by recompiling.
 
 After your bulk pkgsrc build has completed, you may wish to create a CD-ROM
 set of the resulting binary packages to assist in installing packages on
-other machines.  The package pkgtools/cdpack provides a simple tool for 
+other machines.  The package pkgsrc/pkgtools/cdpack provides a simple tool for 
 creating the ISO 9660 images.  `cdpack' arranges the packages on the CD-ROM's
 in a way that keeps all the dependencies for given package on the same
 CD as that package.
 
  3.3.1 Example of cdpack
- =============================
+ =======================
 
 Complete documentation for cdpack is found in cdpack(1).  The following
 short example assumes that the binary packages are left in
@@ -648,7 +653,7 @@ At the current time, the algorithms provided are:
 	md5, rmd160, sha1, sha256, sha384 and sha512
 
 Some packages have different sets of distfiles on a per architecture
-basis. (A good example is www/navigator). These are kept in the
+basis. (A good example is pkgsrc/www/navigator). These are kept in the
 same distinfo file and care should be taken when upgrading such a
 package to ensure distfile information is not lost.
 
@@ -674,18 +679,19 @@ can set PATCH_FUZZ_FACTOR=-F2).  Furthermore, do not put changes
 for more than one file into a single patch-file, as this will make
 future modifications more difficult.
 
-Similar, a file should be patches at most once, not several times by
+Similar, a file should be patched at most once, not several times by
 several different patches. If a file needs several patches, they should
 be combined into one file.
 
-One important thing to mention is to pay attention that no RCS IDs get
-stored in the patch files, as these will cause problems when later checked
-into the NetBSD CVS tree. To avoid this, use either the "-U 2" or "-U 1"
-option to diff, or let the 'pkgdiff' command from pkgsrc/pkgdiff help you.
+One important thing to mention is to pay attention that no RCS IDs
+get stored in the patch files, as these will cause problems when
+later checked into the NetBSD CVS tree. To avoid this, use either
+the "-U 2" or "-U 1" option to diff, or let the 'pkgdiff' command
+from pkgsrc/pkgtools/pkgdiff help you.
 
 If you don't want to worry about the problems in the last two paragraphs
-yourself, use pkgdiff from the pkgtools/pkgdiff package, which takes care
-of any RCS Ids by itself.
+yourself, use pkgdiff from the pkgsrc/pkgtools/pkgdiff package, which takes
+care of any RCS Ids by itself.
 
 For even more automation, we recommend using mkpatches from the same
 package to make a whole set of patches. You just have to backup files
@@ -710,6 +716,16 @@ package with ${PREFIX}.
 When you have finished a package, remember to generate the checksums
 for the patch files by using the "make makepatchsum" command, see
 section 4.2.
+
+If it is desired to store any patches that should not be committed into
+pkgsrc, they can be kept outside the pkgsrc tree in the $LOCALPATCHES
+directory. The directory tree there is expected to have the same
+"category/package" structure as pkgsrc, and patches are expected to be
+stored inside these dirs (also known as $LOCALPATCHES/$PKGPATH). For
+example if you want to keep a private patch for pkgsrc/graphics/png, keep
+it in $LOCALPATCHES/graphics/png/mypatch. All files in the named directory
+are expected to be patch files, and they are applied after the "normal"
+pkgsrc patches are applied. 
 
 
  4.4 pkg/*
@@ -1053,7 +1069,7 @@ Add USE_LIBTOOL=yes and LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig to the
 package Makefile as the quick way to bypass the pkg's own libtool.
 The pkg's own libtool is made by ltconfig script at do-configure target.
 If USE_LIBTOOL and LTCONFIG_OVERRIDE are defined, the specified ltconfig is
-overridden, using the devel/libtool instead of the pkg's own libtool.
+overridden, using the pkgsrc/devel/libtool instead of the pkg's own libtool.
 
 If your package makes use of the platform independant library for loading
 dynamic shared objects, that comes with libtool (libltdl), you should
@@ -1092,9 +1108,10 @@ pre-configure:
 $f.pdone $$f; \
         done
 
-This is taken from the sysutils/rtty package; be sure this works for your
-package - it may actually make sense to look for some things in /usr/local,
-for example. So don't blindly replace all occurrences of /usr/local!
+This is taken from the pkgsrc/sysutils/rtty package; be sure this works for
+your package - it may actually make sense to look for some things in
+/usr/local, for example. So don't blindly replace all occurrences of
+/usr/local!
 
 FreeBSD has decided to list manual pages in the package Makefile, with
 no corresponding entry in the PLIST.  You will thus need to add any
@@ -1237,12 +1254,13 @@ The main targets used during the build process defined in bsd.pkg.mk are:
    EXTRACT_AFTER_ARGS. 
 
  * patch:
-   After extraction, all the patches named by the PATCHFILES and those
-   present in the patches subdirectory of the package are applied. 
-   Patchfiles ending in .Z or .gz are uncompressed before they are
-   applied, files ending in .orig or .rej are ignored.  Any special
-   options to patch(1) can be handed in PATCH_DIST_ARGS.  See section
-   4.3 for more details.
+   After extraction, all the patches named by the PATCHFILES, those present
+   in the patches subdirectory of the package as well as in
+   $LOCALPATCHES/$PKGPATH (e.g. /usr/local/patches/graphics/png) are
+   applied. Patchfiles ending in .Z or .gz are uncompressed before they are
+   applied, files ending in .orig or .rej are ignored. Any special options
+   to patch(1) can be handed in PATCH_DIST_ARGS. See section 4.3 for more
+   details.
    
    By default patch is given special args to make it fail if the
    patches with some lines of fuzz. Please fix (regen) the patches
@@ -1340,8 +1358,8 @@ perform the equivalent of:
       Remove all packages that require (depend on) the given package.
       This can be used to remove any packages that may have been pulled in
       by a given package, e.g. if "make deinstall DEINSTALLDEPENDS=1" is
-      done in x11/kde, this is likely to remove whole KDE. Works by adding
-      a "-R" to the pkg_delete command line.
+      done in pkgsrc/x11/kde, this is likely to remove whole KDE. Works by
+      adding a "-R" to the pkg_delete command line.
 
  * update:
    This target causes the current package to be updated to the latest
@@ -1488,7 +1506,152 @@ perform the equivalent of:
     - None of the package's required (binary) packages were modified since
       it was built
 
- 8 Debugging
+
+ 8 buildlink.mk methodology
+ ==========================
+
+Many packages that install libraries and headers for use in other packages
+now have buildlink.mk files in their pkgsrc subdirectory.  The purpose of
+these files is two-fold:
+
+  (1) Cause all headers and libraries used by a particular package to be
+      found in a known location during the configure and build process.
+      These packages are said to be "weakly-buildlinked".
+
+  (2) Cause _only_ those headers and libraries used by a particular package
+      to be found during the configure and build process.
+      These packages are said to be "strongly-buildlinked".
+
+
+ 8.1 Using buildlink.mk files
+ ============================
+
+Goal (1) is accomplished by simply including a package dependency's
+buildlink.mk file in a package's Makefile, which does the following:
+
+  (1a) Adds a DEPENDS or BUILD_DEPENDS line for the package;
+
+  (1b) Creates a directory ${BUILDLINK_DIR}, by default set to a
+       subdirectory of ${WRKDIR};
+
+  (1c) Links all the headers and libraries for that dependency into
+       ${BUILDLINK_DIR}/include and ${BUILDLINK_DIR}/lib, respectively;
+
+  (1d) Prepends -I${BUILDLINK_DIR}/include to CPPFLAGS, CFLAGS, CXXFLAGS,
+       and -L${BUILDLINK_DIR}/lib to LDFLAGS;
+
+  (1e) Creates a wrapper script for GTK+-style config scripts, often found
+       in GNOME software, that translates -I${LOCALBASE}/include and
+       -L${LOCALBASE}/lib into references into ${BUILDLINK_DIR}.
+
+Some packages are for software libraries whose functionality is a part of
+recent released versions of NetBSD, e.g. readline, OpenSSL, and ncurses.
+For those packages, the buildlink.mk files link the appropriate system
+headers and libraries into ${BUILDLINK_DIR} so that goal (1) is still met.
+Where possible, the system headers and libraries are renamed when linked
+into ${BUILDLINK_DIR} to match the names of their pkgsrc counterparts so
+that the files may be referenced under a consistent name.
+
+Goal (2) requires some work on the part of the package builder.  As all
+headers and libraries used by a package may be found in ${BUILDLINK_DIR},
+and -I${BUILDLINK_DIR}/include and -L${BUILDLINK_DIR}/lib are already passed
+to the compiler, it is no longer necessary to pass -I${LOCALBASE}/include or
+-L${LOCABASE}/lib to the compiler.  Therefore, those lines should be removed
+from package Makefiles, and where necessary, the package sources should be
+patched to do the same.  Also, if a package uses X11, then by including
+mk/x11.buildlink.mk, -I${BUILDLINK_X11_DIR}/include and
+-L${BUILDLINK_X11_DIR}/lib are also passed to the compiler instead of the
+corresponding directories in ${X11BASE}.  Also, if USE_BUILDLINK_ONLY is
+defined, then -L${LOCALBASE}/lib is not automatically added to LDFLAGS in
+bsd.pkg.mk.
+
+
+ 8.2 Writing buildlink.mk files
+ ==============================
+
+Most of the work done by buildlink.mk files is encapsulated and shared
+through bsd.buildlink.mk, which is included by packages' buildlink.mk files.
+Please see the comments at the top of bsd.buildlink.mk for complete
+documentation on how to use the file.  A simple example of a buildlink.mk
+for a mythical package foo follows:
+
+> .include "../../mk/bsd.buildlink.mk"
+> 
+> BUILDLINK_DEPENDS.foo?=	foo>=1.0
+> DEPENDS+=			${BUILDLINK_DEPENDS.foo}:../../category/foo
+> 
+> EVAL_PREFIX+=			BUILDLINK_PREFIX.foo=foo
+> BUILDLINK_FILES.foo=		include/foo.h
+> BUILDLINK_FILES.foo+=		include/bar.h
+> BUILDLINK_FILES.foo+=		lib/libfoo.*
+> 
+> # We need the libraries to be called "libbar.*".
+> BUILDLINK_TRANSFORM.foo=	-e "s|libfoo|libbar|g"
+> 
+> BUILDLINK_TARGETS+=		foo-buildlink
+> 
+> pre-configure: foo-buildlink
+> foo-buildlink: _BUILDLINK_USE
+
+
+ 8.3 Converting packages to use buildlink.mk files
+ =================================================
+
+The process of converting existing packages to use the buildlink.mk
+infrastructure is fairly straightforward.  If a dependency on a particular
+package is required for its libraries and headers, then rather than
+directly adding a dependency on that package, include that package's
+buildlink.mk instead.  The following variables may also be replaced with
+buildlink.mk files:
+
+    USE_CURSES	-->	.include "../../devel/ncurses/buildlink.mk"
+    USE_LIBINTL	-->	.include "../../devel/gettext-lib/buildlink.mk"
+    USE_LTDL	-->	.include "../../devel/libtool/buildlink.mk"
+    USE_MESA	-->	.include "../../graphics/Mesa/buildlink.mk"
+    USE_MOTIF	-->	.include "../../x11/lesstif/buildlink.mk"
+    USE_MOTIF12	-->	.include "../../x11/lesstif12/buildlink.mk"
+    USE_SSL	-->	.include "../../security/openssl/buildlink.mk"
+    USE_X11	-->	.include "../../mk/x11.buildlink.mk"
+    USE_XAW	-->	.include "../../mk/xaw.buildlink.mk"
+    USE_XPM	-->	.include "../../graphics/xpm/buildlink.mk"
+
+Packages that have an explicit dependency on ncurses should set USE_NCURSES
+to the reason why the system curses is insufficient, and include
+"../../devel/ncurses/buildlink.mk" afterwards.  This helps to identify
+where the system curses differs from ncurses, and when the development of
+the system curses catches up in functionality, the USE_NCURSES setting may
+be removed.
+
+Packages that use OpenSSL that require a specific version of OpenSSL should
+define USE_OPENSSL_VERSION to the minimum version number required prior to
+including "../../security/openssl/buildlink.mk".  The version number is the
+hexadecimal number found in <openssl/opensslv.h>, or the variables
+OPENSSL_VERSION_{095A,096,096A,096B} may be used.
+
+The use of EVAL_PREFIX to find the installation prefix for packages may be
+removed since references to package library and header files are found
+through ${BUILDLINK_DIR}.  If the required dependency pattern for a package
+differs from the default specified in the package's buildlink.mk file, then
+it may be set by defining BUILDLINK_DEPENDS.<pkgname> in the Makefile to
+the dependency pattern required.
+
+Packages will still need LDFLAGS to be set to include the appropriate rpath
+settings in order for built packages to find libraries.  LDFLAGS should
+still contain -Wl,-R${LOCALBASE}/lib, and -Wl,-R${X11BASE}/lib if the
+package requires the X11 libraries.  -Wl,-R should never refer to a
+${BUILDLINK_DIR} library directory, and all such references should be
+purged from the build.
+
+A package that builds correctly with USE_BUILDLINK_ONLY set should have
+that setting added to its Makefile to note that it doesn't use any
+libraries or headers in ${LOCALBASE} directly, but rather references them
+only through ${BUILDLINK_DIR}.  Note that you MUST check the build output
+to verify that no references to ${LOCALBASE} directories occurred during
+the configure or build process, or else the package cannot be marked as
+USE_BUILDLINK_ONLY.
+
+
+ 9 Debugging
  ===========
 
 To check out all the gotchas when building a package (wither from
@@ -1540,11 +1703,11 @@ debugging aids.
  - submit (or commit, if you have cvs access); see section 10.
 
 
- 9 FAQs & features of the package system
- =======================================
+ 10 FAQs & features of the package system
+ ========================================
 
- 9.1 Packages using GNU autoconfig
- =================================
+ 10.1 Packages using GNU autoconfig
+ ==================================
 
 If your package uses GNU autoconf, add the following to your package's
 Makefile:
@@ -1555,11 +1718,11 @@ Note that this appends --prefix=${PREFIX} to CONFIGURE_ARGS, so you don't
 have to do that yourself, and this may not be what you want.
 
 
- 9.2 Other distrib methods than .tar.gz
- ======================================
+ 10.2 Other distrib methods than .tar.gz
+ =======================================
 
 If your package uses a different distribution method from .tar.gz, take a
-look at the package for editors/sam, which uses a gzipped shell archive
+look at the package for pkgsrc/editors/sam, which uses a gzipped shell archive
 (shar), but the quick solution is to set EXTRACT_SUFX to the name after the
 DISTNAME field, and add the following to your package's Makefile:
 
@@ -1569,18 +1732,18 @@ DISTNAME field, and add the following to your package's Makefile:
 > EXTRACT_AFTER_ARGS=     |sh
 
 
- 9.3 Packages not creating their own subdirectory
- ================================================
+ 10.3 Packages not creating their own subdirectory
+ =================================================
 
 Your package doesn't create a subdirectory for itself (like GNU software
 does, for instance), but extracts itself in the current directory: see
-editors/sam again, but the quick answer is:
+pkgsrc/editors/sam again, but the quick answer is:
 
 > NO_WRKSUBDIR=   yes
 
 
- 9.4 Custom configuration process
- ================================
+ 10.4 Custom configuration process
+ =================================
 
 Your package uses a weird Configure script: See the top package, but the
 quick answer is:
@@ -1590,7 +1753,7 @@ quick answer is:
 > CONFIGURE_ARGS+=        netbsd13
 
 
- 9.5 Packages not building in their DISTNAME directory
+ 10.5 Packages not building in their DISTNAME directory
  ======================================================
 
 Your package builds in a different directory from its base DISTNAME - see
@@ -1599,8 +1762,8 @@ tcl and tk packages:
 > WRKSRC=         ${WRKDIR}/${DISTNAME}/unix
 
 
- 9.6 How to fetch all distfiles at once
- ======================================
+ 10.6 How to fetch all distfiles at once
+ =======================================
 
 You would like to download all the distfiles in a single batch from work or
 university, where you can't run a "make fetch". But there's no archive of
@@ -1634,8 +1797,8 @@ get all & everything by typing
 	make fetch NO_IGNORE=yes
 
 
- 9.7 How to fetch files from behind a firewall
- =============================================
+ 10.7 How to fetch files from behind a firewall
+ ==============================================
 
 If you are sitting behind a firewall which does not allow direct connections
 to Internet hosts (i.e. non-NAT), you may specify the relevant proxy hosts.
@@ -1648,14 +1811,14 @@ variables look like:
 	http_proxy=http://orpheus.amdahl.com:80/
 
 
- 9.8 If your patch contains an RCS ID
- ====================================
+ 10.8 If your patch contains an RCS ID
+ =====================================
 
 See section 4.3 on how to remove RCS IDs from patch files. 
 
 
- 9.9 How to pull in variables from /etc/mk.conf
- ==============================================
+ 10.9 How to pull in variables from /etc/mk.conf
+ ===============================================
 
 The problem with package-defined variables that can be overridden via
 MAKECONF or /etc/mk.conf is that make(1) expands a variable as it is
@@ -1676,8 +1839,8 @@ preprocessor-like .if, .ifdef, or .ifndef statements:
 	.endif
 
 
- 9.10 Is there a mailing list for pkg-related discussion?
- ========================================================
+ 10.10 Is there a mailing list for pkg-related discussion?
+ =========================================================
 
 Yes. We are using tech-pkg@netbsd.org for discussing package related
 issues. To subscribe do:
@@ -1685,8 +1848,8 @@ issues. To subscribe do:
     echo subscribe tech-pkg | mail majordomo@netbsd.org
 
 
- 9.11 How do i tell "make fetch" to do passive FTP?
- ==================================================
+ 10.11 How do i tell "make fetch" to do passive FTP?
+ ===================================================
 
 This depends on which utility is used to retrieve distfiles. From
 bsd.pkg.mk, FETCH_CMD is assigned the first available command from the
@@ -1705,8 +1868,8 @@ Having that option present will prevent /usr/bin/ftp from falling back to
 active transfers.
 
 
- 9.12 Dependencies on other packages
- ===================================
+ 10.12 Dependencies on other packages
+ ====================================
 
 Your package may depend on some other package being present - and there are
 various ways of expressing this dependency. NetBSD supports the
@@ -1734,9 +1897,9 @@ is specified using the BUILD_DEPENDS definition.
 
 	BUILD_DEPENDS+=  autoconf-2.13:../../devel/autoconf
 
-(b) If your package needs a library with which to link, this is
-specified using the DEPENDS definition.  An example of this is the
-print/lyx package, which uses the xpm library, version 3.4j to build.
+(b) If your package needs a library with which to link, this is specified
+using the DEPENDS definition.  An example of this is the pkgsrc/print/lyx
+package, which uses the xpm library, version 3.4j to build.
 
 	DEPENDS+=       xpm-3.4j:../../graphics/xpm
 
@@ -1761,8 +1924,8 @@ and perhaps use version numbers to make certain:
 	BUILD_DEPENDS+=	perl-5.*:../../lang/perl
 
 (c) If your package needs some executable to be able to run correctly, this
-is specified using the DEPENDS definition. The print/lyx package needs to
-be able to execute the latex binary from the teTex package when it runs,
+is specified using the DEPENDS definition. The pkgsrc/print/lyx package needs
+to be able to execute the latex binary from the teTex package when it runs,
 and that is specified:
 
 	DEPENDS+=        teTex-*:../../print/teTeX 
@@ -1771,8 +1934,8 @@ The comment about wildcard dependencies from previous paragraph
 applies here, too.
 
 If your package needs files from another package to build, see the
-first part of the "do-configure" target print/ghostscript5 package (it
-relies on the jpeg sources being present in source form during the
+first part of the "do-configure" target pkgsrc/print/ghostscript5 package
+(it relies on the jpeg sources being present in source form during the
 build):
 
 	if [ ! -e ${BUILD_ROOT}/graphics/jpeg/${WRKDIR:T}/jpeg-6b ]; then \
@@ -1782,13 +1945,13 @@ build):
 Please also note the BUILD_USES_MSGFMT and BUILD_USES_GETTEXT_M4 definitions,
 which are provided as convenience definitions.  The former works out whether
 msgfmt(1) is part of the base system, and, if it isn't, installs the
-devel/gettext package.  The latter adds a build dependency on either an
+pkgsrc/devel/gettext package.  The latter adds a build dependency on either an
 installed version of an older gettext package, or if it isn't, installs the
-devel/gettext-m4 package.
+pkgsrc/devel/gettext-m4 package.
 
 
- 9.13 Conflicts with other packages
- ==================================
+ 10.13 Conflicts with other packages
+ ===================================
 
 Your package may conflict with other packages a user might already have
 installed on his system, e.g. if your package installs the same set of
@@ -1811,8 +1974,8 @@ and a different version string. "Xaw3d-1.5" e.g. will automatically conflict
 with the older version "Xaw3d-1.3".
 
 
- 9.14 Software which has a WWW Home Page
- =======================================
+ 10.14 Software which has a WWW Home Page
+ ========================================
 
 The NetBSD packages system now supports a variable called HOMEPAGE.
 If the software being packaged has a home page, the Makefile should
@@ -1821,8 +1984,8 @@ of the variable should be placed immediately after the MAINTAINER
 variable.
 
 
- 9.15 How to handle modified distfiles with the 'old' name
- =========================================================
+ 10.15 How to handle modified distfiles with the 'old' name
+ ==========================================================
 
 Sometimes authors of a software package make some modifications after the
 software was released, and they put up a new distfile without changing the
@@ -1836,8 +1999,8 @@ the distfile was really updated on purpose, and that no trojan horse or so
 crept in.
 
 
- 9.16 What does "Don't know how to make /usr/share/tmac/tmac.andoc" mean?
- ========================================================================
+ 10.16 What does "Don't know how to make /usr/share/tmac/tmac.andoc" mean?
+ =========================================================================
 
 When compiling the pkgsrc/pkgtools/pkg_install package, you get the error
 from make that it doesn't know how to make /usr/share/tmac/tmac.andoc? This
@@ -1848,8 +2011,8 @@ In the case of the pkg_install package, you can get away with setting
 NOMAN=YES either in the environment or in /etc/mk.conf.
 
 
- 9.17 How to handle incrementing versions when fixing an existing package
- ========================================================================
+ 10.17 How to handle incrementing versions when fixing an existing package
+ =========================================================================
 
 When making fixes to an existing package it can be useful to change
 the version number in PKGNAME. To avoid conflicting with future versions
@@ -1857,8 +2020,8 @@ by the original author, use a 'nb1' suffix (later versions should
 increment this to give 'nb2' and so on).
 
 
- 9.18 "Could not find bsd.own.mk" - what's wrong?
- ================================================
+ 10.18 "Could not find bsd.own.mk" - what's wrong?
+ =================================================
 
 You didn't install the compiler set, comp.tgz, when you installed your
 NetBSD machine. Please get it and install it, by extracting it in /:
@@ -1869,8 +2032,8 @@ comp.tgz is part of every NetBSD release, please get the one matching
 the release you have installed (determine via "uname -r").
 
 
- 9.19 Restricted packages
- ========================
+ 10.19 Restricted packages
+ =========================
 
 Some licenses restrict how software may be re-distributed.  In order to
 satisfy these restrictions, the package system defines five make variables
@@ -1905,22 +2068,29 @@ Please note that the use of NO_PACKAGE, IGNORE, NO_CDROM, or other generic
 make variables to denote restrictions is deprecated, because they
 unconditionally prevent users from generating binary packages!
 
- 9.20 Packages using (n)curses
- =============================
+ 10.20 Packages using (n)curses
+ ==============================
 
 Some packages need curses functionality that wasn't present in NetBSD's own
-curses prior to 1.4Y. For packages using such functionality there are some
-variables: If USE_CURSES is set in a package's Makefile, NEED_NCURSES is
-set automatically to YES or NO, depending on whether a dependency on
-ncurses is needed on this system. You can use this variable to e.g. add
-arguments to configure to tell the package whether to use ncurses.
+curses prior to 1.4Y. For packages using such functionality there are two
+options, setting USE_CURSES or including ../../devel/ncurses/buildlink.mk
+in the package's Makefile.
+
+
+ 10.20.1 USE_CURSES
+ ===================
+
+If USE_CURSES is set in a package's Makefile, NEED_NCURSES is set
+automatically to YES or NO, depending on whether a dependency on ncurses is
+needed on this system. You can use this variable to e.g. add arguments to
+configure to tell the package whether to use ncurses.
 
 Additionally, you can set REPLACE_NCURSES to some filenames; in each of
 these files, each occurrence of 'ncurses' is replaced by 'curses' if the
 package doesn't need ncurses. You may need this in some cases if ncurses
 are installed, and the package's configure script prefers ncurses.
 
-For example, in mail/mutt, the relevant lines are:
+For example, in pkgsrc/mail/mutt, the relevant lines are:
 USE_CURSES=		YES
 REPLACE_NCURSES=	configure configure.in
 [...]
@@ -1934,8 +2104,20 @@ Please note that the check for NEED_NCURSES has to be below the
 inclusion of bsd.prefs.mk, since the variable is set there.
 
 
- 9.21 Automated security check
- =============================
+ 10.20.2 devel/ncurses/buildlink.mk
+ ==================================
+
+If ../../devel/ncurses/buildlink.mk is included in a package's Makefile,
+then a curses library and headers with ncurses functionality are linked
+into ${BUILDLINK_DIR} at pre-configure time.  If ncurses is needed, then a
+dependency on ncurses is added to the package, otherwise, if the system
+curses is sufficient, then the library and headers are linked into
+${BUILDLINK_DIR} with ncurses names.  If ncurses is actually required, then
+define USE_NCURSES in the package's Makefile.
+
+
+ 10.21 Automated security check
+ ==============================
 
 Please be aware that there can often be bugs in third-party software,
 and some of these bugs can leave a machine vulnerable to exploitation
@@ -1963,24 +2145,24 @@ Use of the audit-packages package is strongly recommended.
 The following message is displayed as part of the audit-packages
 installation procedure:
 
-======================================================================
-You may wish to have the vulnerabilities file downloaded daily so that
-it remains current.  This may be done by adding an appropriate entry
-to the root users crontab(5) entry.  For example the entry
-
-# download vulnerabilities file
-0 3 * * * ${PREFIX}/sbin/download-vulnerability-list >/dev/null 2>&1
-
-will update the vulnerability list every day at 3AM.
-
-In addition, you may wish to run the package audit from the daily
-security script.  This may be accomplished by adding the following
-lines to /etc/security.local
-
-if [ -x ${PREFIX}/sbin/audit-packages ]; then
-        ${PREFIX}/sbin/audit-packages
-fi
-======================================================================
+  ======================================================================
+  You may wish to have the vulnerabilities file downloaded daily so that
+  it remains current.  This may be done by adding an appropriate entry
+  to the root users crontab(5) entry.  For example the entry
+  
+  # download vulnerabilities file
+  0 3 * * * ${PREFIX}/sbin/download-vulnerability-list >/dev/null 2>&1
+  
+  will update the vulnerability list every day at 3AM.
+  
+  In addition, you may wish to run the package audit from the daily
+  security script.  This may be accomplished by adding the following
+  lines to /etc/security.local
+  
+  if [ -x ${PREFIX}/sbin/audit-packages ]; then
+          ${PREFIX}/sbin/audit-packages
+  fi
+  ======================================================================
 
 
 Note to package developers: When a vulnerability is found, this should be
@@ -1989,10 +2171,16 @@ commit of that file, it should be copied to
 /pub/NetBSD/packages/distfiles/vulnerabilities on ftp.netbsd.org. 
 
 
- 10 Submitting & Committing
+ 10.22 What's the proper way to create an account from a package?
+ ================================================================
+
+Look at what e.g. pkgsrc/sysutils/amanda-common/{Makefile,pkg/INSTALL} do.
+
+
+ 11 Submitting & Committing
  ==========================
 
- 10.1 Submitting your packages
+ 11.1 Submitting your packages
  =============================
 
 You have to separate between binary and "normale" (source) packages here:
@@ -2021,7 +2209,7 @@ You have to separate between binary and "normale" (source) packages here:
    each one, it's easier for us to track things that way.
 
 
- 10.2 Committing: Importing the package into CVS
+ 11.2 Committing: Importing the package into CVS
  ===============================================
 
 This section is only of interest for NetBSD developers with write
@@ -2058,7 +2246,7 @@ format, because it will be used by scripts to automatically update pages on
 www.netbsd.org and other sites.
 
 
- 11 A simple example of a package: bison
+ 12 A simple example of a package: bison
  =======================================
 
 I checked to find a piece of software that isn't in the FreeBSD ports
@@ -2067,13 +2255,13 @@ bison when Berkeley yacc is already present in the tree is beyond me, but
 it's useful for the purposes of this exercise.
 
 
- 11.1 files
+ 12.1 files
  ==========
 
 The file contents in this section must be used without the "> " prefix.
 
 
- 11.1.1 Makefile
+ 12.1.1 Makefile
  ===============
 
 > # <$>NetBSD<$>
@@ -2092,7 +2280,7 @@ The file contents in this section must be used without the "> " prefix.
 > .include "../../mk/bsd.pkg.mk"
 
 
- 11.1.2 pkg/DESCR
+ 12.1.2 pkg/DESCR
  ================
 
 > GNU version of yacc.  Can make re-entrant parsers, and numerous other
@@ -2100,7 +2288,7 @@ The file contents in this section must be used without the "> " prefix.
 > of the NetBSD source tree is beyond me.
 
 
- 11.1.3 pkg/PLIST
+ 12.1.3 pkg/PLIST
  ================
 
 > @comment <$>NetBSD<$>
@@ -2118,7 +2306,7 @@ The file contents in this section must be used without the "> " prefix.
 > share/bison.hairy
 
 
- 11.1.4 Checking a package "pkglint"
+ 12.1.4 Checking a package "pkglint"
  ===================================
 
 The NetBSD package system comes with a tool called "pkglint" (located in the
@@ -2138,7 +2326,7 @@ verbose checks will be performed. Use e.g. "pkglint -v" for a very verbose
 check.
 
 
- 11.2 Steps for building, installing, packaging
+ 12.2 Steps for building, installing, packaging
  ==============================================
 
 Create the directory where the package lives, plus any auxiliary directories:
