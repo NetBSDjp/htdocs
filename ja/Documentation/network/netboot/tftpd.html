@@ -2,9 +2,9 @@
 
 <html>
 <head>
-<!-- Copyright (c) 1998, 1999, 2000
+<!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.ORG">
+<link rev="made" href="mailto:www@NetBSD.org">
 <title>
 Setting up the tftpd server, Diskless NetBSD HOW-TO
 </title>
@@ -21,8 +21,6 @@ Previous |
 
 TFTP (or Trivial File Transfer Protocol) is used by the boot rom in several
 vendors' machines to download the boot loader and/or the kernel.
-<p>
-
 This service runs over TCP/IP, so the client must first obtain an IP address,
 typically via <a href="rarp.html"><tt>rarp</tt></a>, 
 <a href="bootpd.html"><tt>bootp</tt></a>, or 
@@ -68,7 +66,7 @@ Setting up tftpd, <a href="#hpux">HP-UX</a><br>
 <p>
 
 [<em>If you have details for any other platform, <a
-href="../../../Misc/feedback.html">please let us know</a></em>]
+href="http://www.NetBSD.org/cgi-bin/feedback.cgi">please let us know</a></em>]
 <p>
 
 <hr>
@@ -137,15 +135,21 @@ Continue on to setting up <a href="nfs.html">nfs</a>
 <dl><dt><dd>
 These systems recommend placing your <tt>tftpd</tt> files in 
 <tt>/private/tftpboot</tt> due to their inherently clustered behavior.
+Newer version of the OS use <tt>xinetd</tt> instead of <tt>inetd</tt> to 
+handle the <tt>tftpd</tt> service.  If you're running MacOS X 10.2.X or 
+earlier or Darwin 6.X or earlier, then you should follow the 
+<tt>inetd</tt> instructions.
 <p>
 <ol>
 <li><tt># <b>mkdir -p /private/tftpboot</b></tt><br>
-<p><li>Edit <tt>/etc/inetd.conf</tt> and remove the <tt>#</tt> from the 
-   following line:<br>
-   <pre>tftp    dgram   udp     wait    nobody  /usr/libexec/tcpd               tftpd /private/tftpboot</pre>
-<p>
+<p><li> (<tt>xinetd</tt>) <tt># <b>/sbin/service tftp start</b></tt>
 
-<li>Ensure that the last item on the line is <tt>/private/tftpboot</tt><br>
+<p><li> (<tt>inetd</tt>) Edit <tt>/etc/inetd.conf</tt> and remove the 
+   <tt>#</tt> from the following line:<br>
+   <pre>tftp    dgram   udp     wait    nobody  /usr/libexec/tcpd               tftpd /private/tftpboot</pre>
+
+<p><li> (<tt>inetd</tt>) Ensure that the last item on the line is 
+<tt>/private/tftpboot</tt><br>
   Even though the <tt>tftpd(8)</tt> man page says it supports the <tt>-s</tt>
   <tt>chroot(2)</tt> flag, it has permission problems.
 <p>
@@ -195,6 +199,19 @@ In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
 file to get.
 <p>
 
+Under some circumstances, you will need to insert a static
+ARP entry on your tftp server. This may be what you need if
+the client gets to the point that it is trying to tftp the
+bootloader but it never receives it. This is apparently
+common when tftpd is on a Linux server. Under Linux, add
+the ARP entry using:
+<p><pre>
+# <b>arp -s 192.168.1.10 aa:bb:cc:dd:ee:ff</b>
+</pre>
+
+Where both the IP address and MAC address is the client's.
+<p>
+
 Continue on to setting up <a href="nfs.html">nfs</a>
 </dd></dl>
 
@@ -238,6 +255,19 @@ Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
 In this case, we use <tt>C0A8010A.SUN4C</tt>, the sparc kernel name as the test
 file to get.
+<p>
+
+Under some circumstances, you will need to insert a static
+ARP entry on your tftp server. This may be what you need if
+the client gets to the point that it is trying to tftp the
+bootloader but it never receives it. This is apparently
+common when tftpd is on a Linux server. Under Linux, add
+the ARP entry using:
+<p><pre>
+# <b>arp -s 192.168.1.10 aa:bb:cc:dd:ee:ff</b>
+</pre>
+
+Where both the IP address and MAC address is the client's.
 <p>
 
 Continue on to setting up <a href="nfs.html">nfs</a>
@@ -321,8 +351,8 @@ Previous |
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a> 
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a> 
   </td><td>
     <a href="../../../"><img
         src="../../../images/empty.gif" border="0"
@@ -331,8 +361,8 @@ Previous |
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../images/NetBSD-flag.gif" border="0"
-        width="91" height="42" alt=""></a>
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
         src="../../../images/empty.gif" border="0"
@@ -343,10 +373,9 @@ Previous |
 <hr>
 <address>
   <small>
-  <a href="../../../Misc/feedback.html">(Contact us)</a>
-  $NetBSD: tftpd.html,v 1.20 2002/05/10 04:57:00 mbw Exp $<br>
-  <a href="../../../Misc/disclaimer.html">Copyright &copy;
-    1998, 1999, 2000
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: tftpd.html,v 1.28 2004/10/30 22:33:31 jschauma Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>
 </address>
