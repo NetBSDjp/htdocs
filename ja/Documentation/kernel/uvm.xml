@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Documentation-kernel-uvm">
+<config param="desc" value="The UVM virtual memory system"/>
+<config param="cvstag" value="$NetBSD: uvm.xml,v 1.1 2005/12/04 16:21:42 heinz Exp $"/>
+<config param="rcsdate" value="$Date: 2005/12/04 16:21:42 $"/>
+<head>
+
+<!-- Copyright (c) 1994-2005
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD Documentation: UVM, the new Virtual Memory system</title>
+</head>
+
+<sect1 id="misc">
+<sect2 id="other-links">
+<title>Other related links</title>
+<itemizedlist>
+<listitem><ulink url="vfork.html">Why implement a traditional vfork()</ulink>
+</listitem>
+<listitem>Charles D. Cranor's dissertation on <quote>Design and Implementation of UVM</quote>
+(270 pages, <ulink url="http://chuck.cranor.org/p/diss.ps.gz">gzipped PostScript</ulink>,
+<ulink url="http://chuck.cranor.org/p/diss.pdf">pdf</ulink>)
+</listitem>
+<listitem><ulink
+url="http://www.usenix.org/events/usenix99/full_papers/cranor/">The UVM Virtual Memory System</ulink>
+- a paper by Charles D. Cranor and Gurudatta M. Parulkar.
+</listitem>
+</itemizedlist>
+</sect2>
+</sect1>
+
+<sect1 role="toc">
+
+<sect2 id="uvm-faq">
+<title>UVM FAQs</title>
+
+<sect3 id="what-is-uvm">
+<title>What is UVM?</title>
+<para>
+<emphasis role="bold">UVM</emphasis> is a complete rewrite of the NetBSD virtual memory
+system, and has proven to be a much better performer than the Mach VM
+system. <emphasis role="bold">UVM</emphasis> also supports advanced features such as
+page loanout, and is being used in the development of a unified buffer
+and page cache for NetBSD.
+</para>
+</sect3>
+
+<sect3 id="who-wrote-uvm">
+<title>Who wrote UVM?</title>
+<para>
+Chuck Cranor designed and implemented <emphasis role="bold">UVM</emphasis>, Matthew
+Green handled integration issues and wrote the swap subsystem, Chuck
+Silvers wrote the anonymous memory object pager (which added support
+for shared memory), and various other developers have converted the
+appropriate ports across.  Andrew Brown modified <emphasis role="bold">UVM</emphasis>
+to be able to do <emphasis role="bold"><ulink url="#what-is-top-down">top down</ulink></emphasis>
+memory management.
+</para>
+</sect3>
+
+<sect3 id="uvm-out-of-memory">
+<title>How does UVM handle running out of memory?</title>
+<para>
+UVM uses lazy allocation. This means programs can overallocate
+virtual memory.  When UVM detects an out of VM completely condition
+and a lazy allocated bit of memory is accessed, the offending process
+will be KILLed and the system will continue.  There is also a small
+buffer of reserve pages only for use by the paging system, which allows
+the pagedaemon to run comfortably when there is otherwise no free ram.
+Most of this work was done by Chuck Silvers.
+</para>
+</sect3>
+
+<sect3 id="which-ports-use-uvm">
+<title>Which ports use UVM?</title>
+<para>
+<emphasis role="bold">UVM</emphasis> is not available in the 1.3.X distributions, but
+is used on all ports for 1.4 and later.
+</para>
+</sect3>
+
+<sect3 id="for-what-does-the-u-stand">
+<title>For what does the U stand in UVM?</title>
+<para>
+<emphasis role="bold">UVM</emphasis> used to be part of another project worked on by
+Chuck Cranor that started with the letter "U" (for "universal")...
+however, that project mutated into just <emphasis role="bold">UVM</emphasis>...  so the
+"U" doesn't really stand for anything anymore: "<emphasis role="bold">UVM</emphasis>"
+is just a name that is different from (but close to) "vm".
+</para>
+</sect3>
+
+<sect3 id="vm-how-big">
+<title>How much virtual memory do I have?</title>
+<para>
+In UVM, your total virtual memory is equal to the size of your
+physical RAM (minus kernel overhead) plus the size of each swap
+partition.  In other words, physical memory doesn't have to be backed
+by a paging device.
+</para>
+</sect3>
+
+<sect3 id="what-is-top-down">
+<title>What is ``top down'' memory allocation?</title>
+<para>
+This rearranges &man.mmap.2;'ed memory allocations that don't request a
+specific address such that they start directly below the stack and
+work from the <emphasis role="bold">top down</emphasis>, instead of from the middle
+upwards.  By doing this, the area of space reserved for heap growth
+and the area of space reserved for &man.mmap.2;'ed allocations are merged,
+meaning that the heap can grow larger, or a process can mmap more or
+larger objects.  The kernel still uses the traditional ``bottom up''
+scheme for its internal memory management.
+</para>
+</sect3>
+
+<sect3 id="which-ports-use-top-down">
+<title>Which ports use ``top down'' memory allocation?</title>
+<para>
+The <emphasis role="bold">top down</emphasis> memory allocation scheme is currently offered as
+kernel option on the <emphasis role="bold"><ulink url="../../Ports/i386/">i386</ulink></emphasis> port,
+and the PowerPC ports: 
+<emphasis role="bold"><ulink url="../../Ports/bebox/">bebox</ulink></emphasis>,
+<emphasis role="bold"><ulink url="../../Ports/macppc/">macppc</ulink></emphasis>,
+<emphasis role="bold"><ulink url="../../Ports/mvmeppc/">mvmeppc</ulink></emphasis>,
+<emphasis role="bold"><ulink url="../../Ports/ofppc/">ofppc</ulink></emphasis>,
+<emphasis role="bold"><ulink url="../../Ports/pmppc/">pmppc</ulink></emphasis>,
+<emphasis role="bold"><ulink url="../../Ports/prep/">prep</ulink></emphasis>, and
+<emphasis role="bold"><ulink url="../../Ports/sandpoint/">sandpoint</ulink></emphasis>.
+It is expected that most ports will eventually transition to using
+<emphasis role="bold">top down</emphasis> unconditionally at some point.
+Refer to the
+<emphasis role="bold"><ulink url="http://man.NetBSD.org/man/options+4+NetBSD-current">options.4;</ulink></emphasis>
+man page for more information.
+</para>
+</sect3>
+
+</sect2>
+
+<ulink url="./">Up to <emphasis>NetBSD Documentation: Kernel</emphasis></ulink>
+<html:hr/>
+
+<ulink>
+  <small>
+  <ulink url="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</ulink>
+  $NetBSD: uvm.xml,v 1.1 2005/12/04 16:21:42 heinz Exp $
+  <ulink url="../../Misc/disclaimer.html">Copyright &copy; 1994-2005
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</ulink>
+  <ulink url="../../Misc/disclaimer.html">NetBSD<sup>&#174;</sup> is a
+  registered trademark of The NetBSD Foundation, Inc.</ulink>
+  </small>
+</ulink>
+
+</sect1>
+</webpage>
