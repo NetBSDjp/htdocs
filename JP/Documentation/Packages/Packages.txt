@@ -1,4 +1,4 @@
-# $NetBSD: Packages.txt,v 1.1.1.13 2005/12/22 11:58:23 kano Exp $
+# $NetBSD: Packages.txt,v 1.1.1.14 2005/12/26 15:28:26 kano Exp $
 ###########################################################################
 
 			==========================
@@ -127,11 +127,11 @@ binary package that someone else already prepared for your type of machine.
 
 Precompiled packages are stored on ftp.netbsd.org and its mirrors in the
 directory /pub/NetBSD/packages for anon FTP access. Please pick the right
-subdirectory there as indicated by "sysctl hw.machine_arch". In that
-directory, there is a subdirectory for each category plus a subdirectory
-"All" which includes the actual binaries in .tgz-files. The category
-subdirectories use symbolic links to those files. (This is the same
-directory layout as in /usr/pkgsrc/packages).
+subdirectory there as indicated by "uname -p". In that directory, there
+is a subdirectory for each category plus a subdirectory "All" which includes
+the actual binaries in .tgz-files. The category subdirectories use symbolic
+links to those files. (This is the same directory layout as in
+/usr/pkgsrc/packages).
 
 This same directory layout applies for CDROM distributions, only that the
 directory may be rooted somewhere else, probably somewhere below /cdrom.
@@ -152,8 +152,8 @@ ftp-URL:
 
 	# pkg_add ftp://ftp.netbsd.org/pub/NetBSD/packages/<OS Ver>/<arch>/All/package.tgz
 
-If there is any doubt, the sysctl utility can be used to determine the
-<OS Ver>, and <arch> by running "sysctl kern.osrelease hw.machine_arch".
+If there is any doubt, the uname utility can be used to determine the
+<OS Ver>, and <arch> by running "uname -rp".
 
 Also note that any prerequisite packages needed to run the package in
 question will be installed, too, assuming they are present where you install
@@ -247,6 +247,11 @@ and adding the definitions there.
 If you don't have a permanent Internet connection and you want to know
 which files to download, "make fetch-list" will tell you what you'll need.
 Put these distfiles into /usr/pkgsrc/distfiles.
+
+If you need to download from a dynamic URL you can set DYNAMIC_MASTER_SITES
+and a 'make fetch' will call files/getsite.sh with the name of each file
+to download as an argument, expecting it to output the URL of the directory
+from which to download it. graphics/ns-cult3d is an example of this usage.
 
 
  2.4 How to build and install
@@ -364,8 +369,8 @@ policy:
 
     BATCH=                  yes          # required for bulk builds 
     DEPENDS_TARGET?=        bulk-install
-    PACKAGES?=              ${PKGSRCDIR}/packages/${MACHINE_ARCH}
-    OBJMACHINE?=            1                 # use work.${MACHINE_ARCH}
+    PACKAGES?=              ${_PKGSRCDIR}/packages/${MACHINE_ARCH}
+    OBJHOST?=               yes               # use work.`hostname`
     WRKOBJDIR?=             /usr/tmp/pkgsrc   # build here instead of in pkgsrc
     FAILOVER_FETCH=         yes               # insist on the correct checksum
     PKG_DEVELOPER?=         yes
@@ -595,6 +600,18 @@ a subdirectory:
 (Note the trailing slash after the subdirectory name.) Use of the deprecated
 MASTER_SITE_SUBDIR will not work.
 
+If the package has multiple DISTFILES or multiple PATCHFILES from different
+sites, set SITES_foo to a list of URI's where file "foo" may be found. "foo"
+includes the suffix, e.g.
+
+	DISTFILES=${DISTNAME}${EXTRACT_SUFX}
+	DISTFILES+=foo-file.tar.gz
+	SITES_foo-file.tar.gz=http://www.somewhere.com/somehow/ \
+			http://www.somewhereelse.com/mirror/somehow/
+
+Note, that the normal default setting of DISTFILES must be made explicit
+if you want to add to it (rather than replace it), as you usually would.
+
 Currently the following values are available for CATEGORIES. If more than
 one is used, they need to be separated by spaces:
 
@@ -675,7 +692,7 @@ will compile and run perfectly on NetBSD. The files are applied
 successively in alphabetic order (as returned by a shell "patches/patch-*"
 glob expansion), so patch-aa is applied before patch-ab etc.
 
-The patch-?? files should be in diff -bu format, and apply without
+The patch-?? files should be in "diff -bu" format, and apply without
 a fuzz to avoid problems (To force patches to apply with fuzz you
 can set PATCH_FUZZ_FACTOR=-F2).  Furthermore, do not put changes
 for more than one file into a single patch-file, as this will make
@@ -717,50 +734,40 @@ are expected to be patch files, and they are applied after the "normal"
 pkgsrc patches are applied. 
 
 
- 4.4 pkg/*
- =========
+ 4.4 Other mandatory files
+ =========================
 
-This directory contains several files used to manage the creation of binary
-packages. Files from this directory are used in the binary package itself,
-and will thus be installed on other machines, so you should be aware that
-there is a wider audience than you might think for your comments and
-witticisms.
-
-
- 4.4.1 Mandatory files
- =====================
-
- * pkg/DESCR:
+ * DESCR:
    A multi-line description of the piece of software.  This should include
    any credits where they are due.  Please bear in mind that others do not
    share your sense of humour (or spelling idiosyncrasies), and that others
    will read everything that you write here.
 
- * pkg/PLIST:
+ * PLIST:
    This file governs the files that are installed on your system: all the
    binaries, manual pages, etc. There are other directives which may be
    entered in this file, to control the creation and deletion of
    directories, and the location of inserted files.
 
 
- 4.4.2 Optional files
- ====================
+ 4.5 Optional files
+ ==================
 
- * pkg/INSTALL:
+ * INSTALL:
    Shell script invoked twice during pkg_add. First time after package
    extraction and before files are moved in place, the second time after
    the files to install are moved in place. This can be used to do any
    custom procedures not possible with @exec commands in PLIST. See
    pkg_add(1) and pkg_create(1) for more information.
 
- * pkg/DEINSTALL:
+ * DEINSTALL:
    This script is executed before and after any files are removed.  It is
    this script's responsibility to clean up any additional messy details
    around the package's installation, since all pkg_delete knows is how to
    delete the files created in the original distribution. See pkg_delete(1)
    and pkg_create(1) for more information.
 
- * pkg/MESSAGE:
+ * MESSAGE:
    Display this file after installation of the package.
    Useful for things like legal notices on almost-free software, etc.
    Please note that you can modify variables in it easily by using
@@ -772,31 +779,7 @@ witticisms.
    
 	${SOMEVAR}
 	
-   in pkg/MESSAGE with "somevalue" before displaying the message.
-
-
- 4.5 scripts/*
- =============
-
-This directory contains any files that are necessary for configuration of
-your software, etc. If a script with any of the following names is present,
-it will be executed at the appropriate time during the build process:
-
-  pre-fetch          post-fetch
-  pre-extract        post-extract
-  pre-patch          post-patch
-  pre-configure      post-configure     configure
-  pre-build          post-build
-  pre-install        post-install
-  pre-package        post-package
-
-Note that you should NOT define a pre-* or post-* target in the Makefile
-which executes the matching scripts/[pre|post]-* script. bsd.pkg.mk runs
-any existing Makefile target first, then searches for scripts/* and runs
-it using sh(1). Running the script from the Makefile would cause it to
-be run twice.
-
-See section 7 for a description of the build process.
+   in MESSAGE with "somevalue" before displaying the message.
 
 
  4.6 work/*
@@ -811,7 +794,7 @@ at the shell prompt. Also, this directory is used to keep various
 timestamp files. 
 
 
- 4.6 files/*
+ 4.7 files/*
  ===========
 
 If you have any files that you wish to be placed in the package prior
@@ -842,9 +825,9 @@ to when dealing with the PLIST file (or files, see below!).
    architecture they were built on into the pathnames where they install
    their file. To handle this case, PLIST will be preprocessed before
    actually used, and the symbol "${MACHINE_ARCH}" will be replaced by
-   what "sysctl -n hw.machine_arch" gives. The same is done if the string
-   ${MACHINE_GNU_ARCH} is embedded in PLIST somewhere - use this on
-   packages that use GNU autoconfigure.
+   what "uname -p" gives. The same is done if the string ${MACHINE_GNU_ARCH}
+   is embedded in PLIST somewhere - use this on packages that use GNU
+   autoconfigure.
 
    Legacy note: There used to be a symbol "<$ARCH>" that was replaced by
    the output of "uname -m", but that's no longer supported and has been
@@ -869,7 +852,7 @@ to when dealing with the PLIST file (or files, see below!).
    file, the suffix ".gz" is appended/removed automatically for manpages
    according to MANZ and MANCOMPRESSED being set or not, see above for
    details. This modification of the PLIST file is done on a copy of it,
-   not pkg/PLIST itself.
+   not PLIST itself.
 
  * Semi-automatic PLIST generation:
    You can use the "make print-PLIST" command to output a PLIST that matches
@@ -942,14 +925,14 @@ features of NetBSD that are not present in other 4.4-lite derived BSDs.
  6.2 Shared libraries - libtool
  ==============================
 
-NetBSD supports many different machines, with different object formats
+Pkgsrc supports many different machines, with different object formats
 like a.out and ELF, and varying abilities to do shared library and
 dynamic loading at all. To accompany this, varying commands and options
 have to be passed to the compiler, linker etc. to get the Right Thing,
 which can be pretty annoying especially if you don't have all the
 machines at your hand to test things.  The "libtool" pkg can help
 here, as it just "knows" how to build both static and dynamic
-libraries from a set our source files, thus being platform
+libraries from a set of source files, thus being platform
 independent. 
 
 Here's how to use libtool in a pkg in seven simple steps:
@@ -1027,7 +1010,7 @@ libtool is made by ltconfig script at do-configure target. If USE_LIBTOOL
 and LTCONFIG_OVERRIDE are defined, the specified ltconfig is overridden,
 using the pkgsrc/devel/libtool instead of the pkg's own libtool.  For newer
 versions of libtool (without ltconfig) it may be necessary to use
-USE_LIBTOOL_OVERRIDE=${WRKSRC}/libtool instead.
+LIBTOOL_OVERRIDE=${WRKSRC}/libtool instead.
 
 If your package makes use of the platform independent library for loading
 dynamic shared objects, that comes with libtool (libltdl), you should
@@ -1049,7 +1032,60 @@ build in some circumstances. Some common errors are
    LTDL_SET_PRELOADED_SYMBOLS included in executables.
 
 
- 6.4 Feedback to the author
+ 6.4 GNU Autoconf/Automake
+ =========================
+
+If a package needs GNU autoconf or automake to be executed to regenerate
+the configure script and Makefile.in makefile templates, then they should
+be executed in a pre-configure target.  For packages that need only
+autoconf:
+
+	pre-configure:
+		cd ${WRKSRC}; ${LOCALBASE}/bin/autoconf
+
+and for packages that need automake and autoconf:
+
+	pre-configure:
+		cd ${WRKSRC};						\
+		${LOCALBASE}/bin/aclocal;				\
+		${LOCALBASE}/bin/autoheader;				\
+		${LOCALBASE}/bin/automake -a --foreign -i;		\
+		${LOCALBASE}/bin/autoconf
+
+There are times when the configure process makes additional changes to the
+generated files, which then causes the build process to try to re-execute
+the automake sequence.  This is prevented by touching various files in
+the configure stage. If this causes problems with your package you can set
+AUTOMAKE_OVERRIDE to NO in the package Makefile.
+
+
+ 6.5 Package configuration files
+ ===============================
+
+Packages should be taught to look for their configuration files in
+${PKG_SYSCONFDIR}, which is passed through to the configure and build
+processes.  PKG_SYSCONFDIR may be customized in various ways by setting
+other make variables:
+
+* PKG_SYSCONFBASE is the main config directory under which all package
+  configuration files are to be found.  This defaults to ${PREFIX}/etc, but
+  may be overridden in /etc/mk.conf.
+
+* PKG_SYSCONFSUBDIR is the subdirectory of PKG_SYSCONFBASE under which the
+  configuration files for a particular package may be found, e.g. the
+  Apache configuration files may all be found under the "httpd" subdirectory
+  of ${PKG_SYSCONFBASE}.
+
+* PKG_SYSCONFDIR.${PKGBASE} overrides the value of ${PKG_SYSCONFDIR} for a
+  particular package.  This is not meant to be set by a package Makefile, but
+  is reserved for users who wish to override the PKG_SYSCONFDIR setting for
+  a particular package with a special location.
+
+Users will typically want to set PKG_SYSCONFBASE to /etc, or to accept the
+default location of ${PREFIX}/etc.
+
+
+ 6.6 Feedback to the author
  ==========================
 
 If you have found any bugs in the package you make available, if you had to
@@ -1144,11 +1180,17 @@ The main targets used during the build process defined in bsd.pkg.mk are:
  * fetch:
    This will check if the file(s) given in the variables DISTFILES and
    PATCHFILES (as defined in the package's Makefile) are present on the
-   local system in /usr/pkgsrc/distfiles. If they are not present, they
-   will be fetched using ftp(1) from the site(s) given in the variable
-   PATCH_SITES. The location(s) in PATCH_SITES are in the form of URLs
-   and can be ftp://- and http://-URLs, as ftp(1) understands both of
-   them.
+   local system in /usr/pkgsrc/distfiles. If they are not present, an
+   attempt will be made to fetch them using commands of the form
+
+   ${FETCH_CMD} ${FETCH_BEFORE_ARGS} ${site}${file} ${FETCH_AFTER_ARGS}
+
+   where ${site} varies through several possibilities in turn: first,
+   ${MASTER_SITE_OVERRIDE} is tried, then the sites specified in either
+   ${SITES_file}, if defined, else ${MASTER_SITES} or ${PATCH_SITES}, as
+   applies, then finally the value of ${MASTER_SITE_BACKUP}. The order of
+   all except the first can be optionally sorted by the user, via setting
+   either ${MASTER_SORT_AWK} or ${MASTER_SORT_REGEX}.
 
  * checksum:
    After the distfile(s) are fetched, their checksum is generated and
@@ -1189,10 +1231,6 @@ The main targets used during the build process defined in bsd.pkg.mk are:
    automated.  In most cases, a script is supplied with the source,
    and its invocation results in generation of header files,
    Makefiles, etc.
-
-   If the program doesn't come with its own configure script, one can be
-   placed in the package's scripts directory, called "configure". If so, it
-   is executed using sh(1).
 
    If the program's distfile contains its own configure script, this can
    be invoked by setting HAS_CONFIGURE. If the configure script is a GNU
@@ -1242,10 +1280,7 @@ perform the equivalent of:
    for the main target's name.  These targets are invoked before and
    after the main target is called, allowing extra configuration or
    installation steps, for example, which program's configure script
-   or install target omitted.  For any of these auxiliary targets,
-   scripts of the same name can be placed in the package's
-   scripts-subdirectory that will be executed at the given time, see
-   section 4.5.
+   or install target omitted.
 
  * do-*:
    Should one of the main targets do the wrong thing, and should there
@@ -1396,12 +1431,12 @@ perform the equivalent of:
    After a 'make install' from a new or upgraded pkg, this prints out an
    attempt to generate a new PLIST from a 'find -newer work/.extract_done'.
    An attempt is made to care for shared libs etc., but it is STRONGLY 
-   recommended to review the result before putting it into pkg/PLIST. On
+   recommended to review the result before putting it into PLIST. On
    upgrades, it's useful to diff the output of this command against an already
-   existing pkg/PLIST file.
+   existing PLIST file.
 
    If the package installs files via tar(1) or other methods that don't update
-   file access times, be sure to add these files manually to your pkg/PLIST,
+   file access times, be sure to add these files manually to your PLIST,
    as 'find -newer' won't catch them!
 
  * bulk-package:
@@ -1474,7 +1509,7 @@ Goal (2) requires some work on the part of the package builder.  As all
 headers and libraries used by a package may be found in ${BUILDLINK_DIR},
 and -I${BUILDLINK_DIR}/include and -L${BUILDLINK_DIR}/lib are already passed
 to the compiler, it is no longer necessary to pass -I${LOCALBASE}/include or
--L${LOCABASE}/lib to the compiler.  Therefore, those lines should be removed
+-L${LOCALBASE}/lib to the compiler.  Therefore, those lines should be removed
 from package Makefiles, and where necessary, the package sources should be
 patched to do the same.  Also, if a package uses X11, then by including
 mk/x11.buildlink.mk, -I${BUILDLINK_X11_DIR}/include and
@@ -1522,7 +1557,6 @@ directly adding a dependency on that package, include that package's
 buildlink.mk instead.  The following variables may also be replaced with
 buildlink.mk files:
 
-    USE_CURSES	-->	.include "../../devel/ncurses/buildlink.mk"
     USE_LIBINTL	-->	.include "../../devel/gettext-lib/buildlink.mk"
     USE_LTDL	-->	.include "../../devel/libtool/buildlink.mk"
     USE_MESA	-->	.include "../../graphics/Mesa/buildlink.mk"
@@ -1588,7 +1622,7 @@ debugging aids.
 
    You'll need to have pkgsrc/pkgtools/url2pkg installed for that.
  * Edit the Makefile as requested.
- * Fill in pkg/DESCR
+ * Fill in DESCR
  * ``make configure''
  * Add any dependancies glimpsed from the configure step to the package's
    Makefile.
@@ -1609,7 +1643,7 @@ debugging aids.
  * Generate a PLIST:
 
 	# make install
-	# make print-PLIST > pkg/PLIST
+	# make print-PLIST > PLIST
 	# make deinstall
 	# make install
 	# make deinstall
@@ -1619,7 +1653,7 @@ debugging aids.
 
 	# make print-PLIST
 
-   If this brings up any files that are missing in pkg/PLIST*, add them.
+   If this brings up any files that are missing in PLIST, add them.
  * Now that the PLIST is ok, install the package again and make a binary
    package:
    
@@ -1878,8 +1912,8 @@ first part of the "do-configure" target pkgsrc/print/ghostscript5 package
 (it relies on the jpeg sources being present in source form during the
 build):
 
-	if [ ! -e ${PKGSRCDIR}/graphics/jpeg/${WRKDIR:T}/jpeg-6b ]; then \
-		cd ${PKGSRCDIR}/../../graphics/jpeg && ${MAKE} extract;              \
+	if [ ! -e ${_PKGSRCDIR}/graphics/jpeg/${WRKDIR:T}/jpeg-6b ]; then \
+		cd ${_PKGSRCDIR}/../../graphics/jpeg && ${MAKE} extract;              \
 	fi
 
 If you build any other packages that way, please make sure the working
@@ -1887,7 +1921,7 @@ files are deleted too when this package's working files are cleaned up.
 The easiest way to do so is by adding a pre-clean target:
 
 	pre-clean:
-		cd ${PKGSRCDIR}/../../graphics/jpeg && ${MAKE} clean
+		cd ${_PKGSRCDIR}/../../graphics/jpeg && ${MAKE} clean
 
 Please also note the BUILD_USES_MSGFMT and BUILD_USES_GETTEXT_M4 definitions,
 which are provided as convenience definitions.  The former works out whether
@@ -1963,8 +1997,20 @@ NOMAN=YES either in the environment or in /etc/mk.conf.
 
 When making fixes to an existing package it can be useful to change
 the version number in PKGNAME. To avoid conflicting with future versions
-by the original author, use a 'nb1' suffix (later versions should
-increment this to give 'nb2' and so on).
+by the original author, a 'nb1' ('nb2', ...) suffix can be used on package
+versions by setting PKGREVISION=1 (2,. ..). The "nb" is treated like a "."
+by the pkg tools. E.g.
+
+DISTNAME=	foo-17.42
+PKGREVISION=	9
+
+will result in a PKGNAME of foo-17.42nb9.
+
+When a new release of the package is released, the PKGREVISION should be
+removed. E.g. on a new minor release of the above package, things should
+be like:
+
+DISTNAME=	foo-17.43
 
 
  10.18 "Could not find bsd.own.mk" - what's wrong?
@@ -2020,41 +2066,7 @@ unconditionally prevent users from generating binary packages!
  ==============================
 
 Some packages need curses functionality that wasn't present in NetBSD's own
-curses prior to 1.4Y. For packages using such functionality there are two
-options, setting USE_CURSES or including ../../devel/ncurses/buildlink.mk
-in the package's Makefile.
-
-
- 10.20.1 USE_CURSES
- ===================
-
-If USE_CURSES is set in a package's Makefile, NEED_NCURSES is set
-automatically to YES or NO, depending on whether a dependency on ncurses is
-needed on this system. You can use this variable to e.g. add arguments to
-configure to tell the package whether to use ncurses.
-
-Additionally, you can set REPLACE_NCURSES to some filenames; in each of
-these files, each occurrence of 'ncurses' is replaced by 'curses' if the
-package doesn't need ncurses. You may need this in some cases if ncurses
-are installed, and the package's configure script prefers ncurses.
-
-For example, in pkgsrc/mail/mutt, the relevant lines are:
-
-	USE_CURSES=		YES
-	REPLACE_NCURSES=	configure configure.in
-	...
-	.include "../../mk/bsd.prefs.mk"
-
-	.if defined(NEED_NCURSES) && ${NEED_NCURSES} == "YES"
-	CONFIGURE_ARGS+=	--with-curses=${LOCALBASE}
-	.endif
-
-Please note that the check for NEED_NCURSES has to be below the
-inclusion of bsd.prefs.mk, since the variable is set there.
-
-
- 10.20.2 devel/ncurses/buildlink.mk
- ==================================
+curses prior to 1.4Y.
 
 If ../../devel/ncurses/buildlink.mk is included in a package's Makefile,
 then a curses library and headers with ncurses functionality are linked
@@ -2124,7 +2136,46 @@ commit of that file, it should be copied to
  10.22 What's the proper way to create an account from a package?
  ================================================================
 
-Look at what e.g. pkgsrc/sysutils/amanda-common/{Makefile,pkg/INSTALL} do.
+There are two make variables used to control the creation of package-specific
+groups and users at pre-install time.  The first is PKG_GROUPS, which is a
+list of group[:groupid] elements, where the groupid is optional.  The second
+is PKG_USERS, which is a list of elements of the form:
+
+	user:group[:[userid][:[description][:[home][:shell]]]]
+
+where only the user and group are required, the rest being optional.  A
+simple example is:
+
+	PKG_GROUPS=	foogroup
+	PKG_USERS=	foouser:foogroup
+
+A more complex example is that creates two groups and two users is:
+
+	PKG_GROUPS=	group1 group2:1005
+	PKG_USERS=	first:group1::First\\ User			\
+			second:group2::Second\\ User:/home/second:${SH}
+
+By default, a new user will have home directory /nonexistent, and login shell
+/sbin/nologin unless they are specified as part of the user element.
+
+The package Makefile must also include "../../mk/bsd.pkg.install.mk" prior to
+the inclusion of bsd.pkg.mk.  This will cause the users and groups to be
+created at pre-install time, and the admin will be prompted to remove them at
+post-deinstall time.
+
+
+ 10.23 How to handle compiler bugs
+ =================================
+
+Some source files trigger bugs in the compiler, based on combinations
+of compiler version and architecture and almost always relation to
+optimsation being enabled.  Common symptoms are gcc internal errors
+or never finishing compiling a file.
+
+Typically a workaround involves testing the MACHINE_ARCH and compiler
+version, disabling optimisation for that file/MACHINE_ARCH/compiler
+combination, and documenting it in doc/HACKS. See doc/HACKS for
+examples.
 
 
  11 Submitting & Committing
@@ -2179,7 +2230,7 @@ source tree.  Also don't forget to add the new package to the
 category's Makefile.
 
 The commit message of the initial import should include part of the
-pkg/DESCR file, so people reading the mailing lists know what the package
+DESCR file, so people reading the mailing lists know what the package
 is/does.
 
 Please note all package updates/additions in doc/pkg-CHANGES! It's very
@@ -2249,7 +2300,7 @@ The file contents in this section must be used without the "> " prefix.
 	.include "../../mk/bsd.pkg.mk"
 
 
- 12.1.2 pkg/DESCR
+ 12.1.2 DESCR
  ================
 
 	GNU version of yacc.  Can make re-entrant parsers, and numerous other
@@ -2257,7 +2308,7 @@ The file contents in this section must be used without the "> " prefix.
 	of the NetBSD source tree is beyond me.
 
 
- 12.1.3 pkg/PLIST
+ 12.1.3 PLIST
  ================
 
 	@comment <$>NetBSD<$>
@@ -2284,7 +2335,7 @@ files. After installation it is quite easy to use, just change to the
 directory of the package you wish to examine and execute "pkglint":
 
 	% pkglint
-	OK: checking pkg/DESCR.
+	OK: checking ./DESCR.
 	OK: checking Makefile.
 	OK: checking distinfo.
 	OK: checking patches/patch-aa.
@@ -2305,7 +2356,7 @@ Create the directory where the package lives, plus any auxiliary directories:
 	# cd bison
 	# mkdir patches pkg
 
-Create Makefile, pkg/DESCR and pkg/PLIST as in section 11.1,
+Create Makefile, DESCR and PLIST as in section 11.1,
 then continue with fetching the distfile:
 
 	# make fetch
@@ -2534,8 +2585,8 @@ To create:
  - cd /usr/pkgsrc ; make install ; make package
  - upload /usr/pkgsrc/packages to
    ftp://ftp.netbsd.org/pub/NetBSD/packages/\
-    `uname -r | sed 's@\.\([0-9]*\)[\._].*@\.\1@'`/`sysctl -n hw.machine_arch`
- - if necessary ln -s `sysctl -n hw.machine` `sysctl -n hw.machine_arch`
+    `uname -r | sed 's@\.\([0-9]*\)[\._].*@\.\1@'`/`uname -p`
+ - if necessary ln -s `uname -m` `uname -p`
 
 Disk space needed: unknown.
 
