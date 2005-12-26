@@ -1,188 +1,188 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="ISO-2022-JP"?>
 <!DOCTYPE webpage
   PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
          "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
-<webpage id="Documentation-kernel-profiling">
+<webpage id="ja-Documentation-kernel-profiling">
   <config param="desc" value=""/>
   <config param="cvstag" 
     value="$NetBSD: index.xml,v 1.1 2005/08/02 21:12:07 rpaulo Exp $"/>
+<!-- based on english translation: -->
+<!-- NetBSD: index.xml,v 1.1 2005/08/02 21:12:07 rpaulo Exp   -->
   <config param="rcsdate" value="$Date: 2005/08/02 21:12:07 $"/>
 <head>
 
     <!-- Copyright (c) 1994-2005
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-    <title>NetBSD Documentation: Kernel Profiling HOWTO</title>
+    <title>NetBSD ドキュメンテーション: カーネルプロファイリング HOWTO</title>
   </head>
 
 
-  <para>This is a description of how kernel profiling works, and how to
-    use it. This documentation was written by Matthias Drochner
-    <email>drochner@zel459.zel.kfa-juelich.de</email>.</para>
+  <para>この文章にはどのようにカーネルプロファイリングが動作し、
+    どう使うのかが書かれています。このドキュメントは Matthias Drochner
+    <email>drochner@zel459.zel.kfa-juelich.de</email> の筆によります。</para>
 
   <sect1 role="toc">
     <sect2 id="kern-prof">
-      <title>Kernel Profiling</title>
+      <title>カーネルプロファイリング</title>
 
       <sect3 id="how-does-it-work">
-      <title>How does it work</title>
+      <title>どのように動作するのか</title>
 
 
-      <para>Two different sets of data about the behaviour
-	of the profiled code are recorded independently:
-	the frequency of every function call (call graph
-	profiling) and the time spent in each function,
-	estimated by the probability of the program counter
-	being within the function when sampled at a random
-	time which is in turn estimated by the fraction
-	of profiling timer interrupts occurring while the
-	function in question is executing.
-	The &man.gprof.1; utility interprets the data. There are
-	some limitations caused by the missing correlation
-	between the two data sets which are noted in the BUGS
-	section of its man page.</para>
+      <para>プロファイル済みのコードの振る舞いに関する、
+	2種類のデータが個別に記録されます:
+	全関数の呼び出し頻度 (呼び出しグラフプロファイリング)
+	と各関数の処理にかかった時間です。
+	これらは、適当にサンプルされた時に関数内にあるプログラムカウンターの確率によって概算され、
+	その確率は、調べている関数が実行中に起こる、
+	プロファイリングタイマーの割り込み率によって逆に概算されます。
+	&man.gprof.1; というユーティリティーを使って、データを解釈します。
+	しかし、二つのデータの相関性がないため、いくつか制限が出てきます。
+	これは、manページのBUGSの章に書かれています。</para>
 
-      <para>Kernel profiling and user program profiling are
-	mostly similar; there are only small differences
-	in the way the profiling data are accessed and
-	how the profiling is controlled.</para>
+      <para>カーネルのプロファイリングとユーザープログラムのプロファイリングは、
+	よく似ています;
+	プロファイリングデータを処理する方法と、
+	コントロールする方法が若干違う程度です。</para>
 
-      <para>The data related to kernel profiling are located
-	within a global structure <emphasis
-	  role="bold"><code>_gmonparam</code></emphasis> which is
-	initialized by <emphasis
-	  role="bold"><code>kmstartup()</code></emphasis> (in
+      <para>カーネルプロファイリングに関係するデータは、
+	グローバル構造体の <emphasis
+	  role="bold"><code>_gmonparam</code></emphasis> 内にあります。
+	この構造体は、(
 	<emphasis
-	  role="bold"><filename>kern/subr_prof.c</filename></emphasis>)
-	during system initialization.
-	The user level control program <emphasis
-	  role="bold">&man.kgmon.8;</emphasis> uses
-	<emphasis role="bold">&man.sysctl.3;</emphasis> calls for
-	control and data access, and partly <emphasis
-	  role="bold">&man.kvm.3;</emphasis> accesses (also in the
-	standard case where a live kernel is profiled!).</para>
+	  role="bold"><filename>kern/subr_prof.c</filename></emphasis> 中の) <emphasis
+	  role="bold"><code>kmstartup()</code></emphasis> により、
+	システムが初期化する際に初期化されます。
+	ユーザーレベルのコントロールプログラムである <emphasis
+	  role="bold">&man.kgmon.8;</emphasis> は、
+	コントロールとデータアクセスのために
+	<emphasis role="bold">&man.sysctl.3;</emphasis> を呼び出し、
+	一部 <emphasis
+	  role="bold">&man.kvm.3;</emphasis> アクセスを呼び出しています
+	(動作しているカーネルがプロファイルされる標準的な場合もです!) 。</para>
     </sect3>
 
       <sect3 id="call-graph-recording">
-	<title>Call graph recording</title>
+	<title>呼び出しグラフの記録</title>
 
-	<para>The profiling flag (<emphasis
-	    role="bold"><code>-pg</code></emphasis>) causes the
-	  compiler to issue a call to <emphasis
-	    role="bold"><code>mcount()</code></emphasis> on every
-	  function entry.
-	  This is dispatched by machine specific glue to
+	<para>プロファイリングのフラグ (<emphasis
+	    role="bold"><code>-pg</code></emphasis>) により、
+	  コンパイラーは関数のエントリーごとに <emphasis
+	    role="bold"><code>mcount()</code></emphasis>
+	  を呼び出します。
+	  これは、マシン独自の橋渡しによって、
 	  <emphasis
-	    role="bold"><code>_mcount(frompc,selfpc)</code></emphasis>,
-	  which is implemented in 
+	    role="bold"><code>_mcount(frompc,selfpc)</code></emphasis> へ送られます。
 	  <emphasis
-	    role="bold"><filename>sys/lib/libkern/mcount.c</filename></emphasis>.
-	  <emphasis role="bold"><code>frompc</code></emphasis> is
-	  the address the function was called from, and <emphasis
-	    role="bold"><code>selfpc</code></emphasis> is
-	  the address of the called function itself.</para>
+	    role="bold"><code>_mcount(frompc,selfpc)</code></emphasis> は
+	  <emphasis
+	    role="bold"><filename>sys/lib/libkern/mcount.c</filename></emphasis> で実装されます。
+	  <emphasis role="bold"><code>frompc</code></emphasis>
+	  は関数を呼び出すアドレスで、 <emphasis
+	    role="bold"><code>selfpc</code></emphasis>
+	  は呼ばれる関数自体のアドレスです。</para>
 
-	<para>For every (<emphasis
+	<para>プロファイル中に遭遇する全ての (<emphasis
 	    role="bold"><code>frompc</code></emphasis>, <emphasis
-	    role="bold"><code>selfpc</code></emphasis>) pair
-	  encountered during the profiling, a <emphasis
-	    role="bold"><code>struct tostruct</code></emphasis> is
-	  allocated from the array pointed to by <emphasis
-	    role="bold"><code>_gmonparam.tos</code></emphasis>
-	  The entries are simply allocated from the beginning
-	  to the end in the order of first use. Some magic
-	  within <emphasis
-	    role="bold"><code>kmstartup()</code></emphasis> determines
-	  the size of the array from the kernel's text size -- it
-	  seems that this is kind of an "educated guess".</para>
+	    role="bold"><code>selfpc</code></emphasis>)
+	  用に、 <emphasis
+	    role="bold"><code>struct tostruct</code></emphasis>
+	  は <emphasis
+	    role="bold"><code>_gmonparam.tos</code></emphasis> が示す配列から割り当てられます。
+	  エントリーは最初に使用する順番で、
+	  始めから終わりまで単純に割り当てられます。 <emphasis
+	    role="bold"><code>kmstartup()</code></emphasis> 内のあるマジックによって、
+	  カーネルのテキストサイズから配列のサイズが決められます --
+	  一種の"経験則" のようです。</para>
 
-	<para>The <emphasis role="bold"><code>struct tostruct</code></emphasis> 
-	  entries contain the address of the called function
+	<para><emphasis role="bold"><code>struct tostruct</code></emphasis> 
+	  のエントリーは、ヒストグラムカウンターと一緒に、呼ばれた関数
 	  (<emphasis role="bold"><code>selfpc</code></emphasis>)
-	  together with a histogramming counter. Entries belonging to the
-	  same calling address form a linked list. The list
-	  heads (ie the index of the first entry within the
+	  のアドレスを持っています。
+	  同じ呼び出しアドレスにあるエントリーは、リンクした一覧を形成します。
+	  一覧のヘッド (つまり、特定の呼び出しアドレスに属する
 	  <emphasis role="bold"><code>_gmonparam.tos</code></emphasis>
-	  array belonging to a particular calling address) are located
-	  in a second data array 
+	  配列内の最初のエントリーの見出し) は、
 	  <emphasis role="bold"><code>_gmonparam.froms</code></emphasis>
-	  which is indexed by the calling address 
+	  という二つ目のデータ配列にあります。この
+	  <emphasis role="bold"><code>_gmonparam.froms</code></emphasis> は、
+	  ある値によって分割された呼び出しアドレス
 	  (<emphasis role="bold"><code>frompc</code></emphasis>)
-	  divided by some value (which should not be larger than the
-	  minimal distance of two calls within the code - see also the
-	  comments in <emphasis 
-	    role="bold"><filename>sys/sys/gmon.h</filename></emphasis>).</para>
+	  により、見出しを付けられます (ある値は、コード内の二つの呼び出しの最短距離
+	  より長くなることはありません - <emphasis 
+	    role="bold"><filename>sys/sys/gmon.h</filename></emphasis> にあるコメントを見てください) 。</para>
 
-	<para>Note that for standard function calls there is only
-	  one <emphasis role="bold"><code>selfpc</code></emphasis> for
-	  each <emphasis role="bold"><code>frompc</code></emphasis>, so
-	  that the typical list consists of one member only.</para>
+	<para>標準的な関数呼び出しには、それぞれの
+	  <emphasis role="bold"><code>frompc</code></emphasis> に対して
+	  <emphasis role="bold"><code>selfpc</code></emphasis> がひとつしかないことに注意してください。
+	  その結果、典型的な一覧が一つのメンバーのみで構成されるようになります。</para>
       </sect3>
 
       <sect3 id="statistical-profiling">
-	<title>Statistical profiling</title>
+	<title>統計的なプロファイリング</title>
 
-	<para>If profiling is started, a profiling timer interrupt
-	  is set up which calls <emphasis
-	    role="bold"><code>statclock()</code></emphasis> (see
+	<para>プロファイリングが始まると、プロファイリングタイマーの割り込みが
+	  セットされ、 <emphasis
+	    role="bold"><code>statclock()</code></emphasis> を呼び出します (
 	  <emphasis
-	    role="bold"><filename>sys/kern/kern_clock.c</filename></emphasis>).
-	  This should be a timer independent of the normal system
-	  clock to avoid interferences with functions running
-	  synchronously to system clock ticks. <emphasis
-	    role="bold"><code>statclock()</code></emphasis> is used for
-	  both user program and kernel profiling.</para>
+	    role="bold"><filename>sys/kern/kern_clock.c</filename></emphasis> を参照してください) 。
+	  プロファイリングタイマーは、関数への干渉がシステムのクロックと
+	  同期して動かなくならないように、通常のシステムクロックから独立した
+	  タイマーであるべきです。 <emphasis
+	    role="bold"><code>statclock()</code></emphasis> はユーザープログラムでも、
+	  カーネルプロファイリングでも使われます。</para>
 
-	<para>The program counter at the time of the interruption,
-	  divided by some value again, is used as index into
-	  the histogram <emphasis
-	    role="bold"><code>_gmonparam.kcount</code></emphasis> and the
-	  corresponding cell is incremented.</para>
+	<para>ある値で再分割されていれば、
+	  割り込み時にプログラムカウンターは見出しとして使われて、
+	  ヒストグラムの <emphasis
+	    role="bold"><code>_gmonparam.kcount</code></emphasis>
+	  に記録され、該当するセルの値が増えます。</para>
       </sect3>
 
       <sect3 id="how-to-use-it">
-	<title>How to use it</title>
+	<title>使い方</title>
 
 
 	<itemizedlist>
-	  <listitem>Build and boot a profiling kernel. For this, use
-	    the <emphasis role="bold"><code>-p</code></emphasis> flag to
-	    <emphasis role="bold">&man.config.8;</emphasis>.
-	    Otherwise, there is nothing special. The profiling kernel
-	    will print a message like:
+	  <listitem>プロファイリングカーネルを構築し、ブートします。
+	    これには、 <emphasis role="bold"><code>-p</code></emphasis> フラグを用いて
+	    <emphasis role="bold">&man.config.8;</emphasis> します。
+	    用いなければ、特別なことはありません。プロファイリングカーネルは
+	    以下のようなメッセージを自動設定後、ルートファイルシステムが
+	    マウントされる前に出力します。
 	    <screen>Profiling kernel, textsize=1611256 [f0100000..f02895f8]</screen>
-	    after autoconfiguration, before the root filesystem
-	    is mounted.</listitem>
-	  <listitem>Make sure <emphasis
-	      role="bold"><code>/netbsd</code></emphasis> is the
-	    currently running kernel, or use the <emphasis
-	      role="bold"><code>-N</code></emphasis> option in the
-	    <emphasis role="bold">&man.kgmon.8;</emphasis>
-	    invocations below.</listitem>
-	  <listitem>Start profiling with <emphasis
-	      role="bold"><code>kgmon -b</code></emphasis>.</listitem>
-	  <listitem>Run some applications which stress the part of the
-	    system you want to investigate.</listitem>
-	  <listitem>Stop profiling with <emphasis
-	      role="bold"><code>kgmon -h</code></emphasis>.</listitem>
-	  <listitem>Run <emphasis 
-	      role="bold"><code>kgmon -p</code></emphasis> to write
-	    the collected data into a file <emphasis
-	      role="bold"><filename>gmon.out</filename></emphasis>.</listitem>
-	  <listitem>Before measuring different things, reset the
-	    in-kernel profiling data buffers with <emphasis
-	      role="bold"><code>kgmon -r</code></emphasis>.</listitem>
-	  <listitem>To get a human readable interpretation from
-	    <emphasis role="bold"><filename>gmon.out</filename></emphasis>,
-	    run
+	    </listitem>
+	  <listitem><emphasis
+	      role="bold"><code>/netbsd</code></emphasis> が現在動作しているカーネルであるか
+	    確認してください。もし違えば、下の
+	    <emphasis role="bold">&man.kgmon.8;</emphasis> の呼び出しで、 <emphasis
+	      role="bold"><code>-N</code></emphasis>
+	    オプションを使ってください。</listitem>
+	  <listitem><emphasis
+	      role="bold"><code>kgmon -b</code></emphasis> でプロファイリングを開始します。</listitem>
+	  <listitem>いくつかアプリケーションを起動して、システムの中でも調べたい部分に
+	    負担をかけます。</listitem>
+	  <listitem><emphasis
+	      role="bold"><code>kgmon -h</code></emphasis> でプロファイリングを止めます。</listitem>
+	  <listitem><emphasis 
+	      role="bold"><code>kgmon -p</code></emphasis> を起動して、収集したデータを
+	    <emphasis
+	      role="bold"><filename>gmon.out</filename></emphasis> というファイルに書き込みます。</listitem>
+	  <listitem>他のものを計測する前に、 <emphasis
+	      role="bold"><code>kgmon -r</code></emphasis>
+	    でカーネル内のプロファイリングデータのバッファーをリセットします。</listitem>
+	  <listitem><emphasis role="bold"><filename>gmon.out</filename></emphasis>
+	    から人間が判読できる解釈を入手するため、
+	    以下のコマンドを実行します。
 	    <screen>% gprof /netbsd gprof.out &gt; gprof.txt</screen></listitem>
-	  <listitem>Try to make sense of the data.</listitem>
+	  <listitem>データの解釈をします。</listitem>
 	</itemizedlist>
       </sect3>
     </sect2>
   </sect1>
 
-  <parentsec url="../" text="NetBSD Documentation: Kernel"/>
+  <parentsec url="../" text="NetBSD ドキュメンテーション: カーネル"/>
 
 </webpage>
