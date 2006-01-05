@@ -1,0 +1,212 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//Norman Walsh//DTD Website V2.2//EN"
+    "http://docbook.sourceforge.net/release/website/2.2/website.dtd" [
+
+<!ENTITY % man-refs.ent SYSTEM "../../share/xml/man-refs.ent"> %man-refs.ent;
+
+]>
+
+<webpage id="cvs-notes">
+<config param="desc" value="Misc developer CVS notes"/>
+<config param="cvstag" value="$NetBSD: notes.xml,v 1.1 2005/02/13 21:45:11 jschauma Exp $"/>
+<config param="rcsdate" value="$Date: 2005/02/13 21:45:11 $"/>
+<head>
+
+<!-- Copyright (c) 1994-2005
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>Misc developer CVS notes</title>
+</head>
+
+<sect1 role="toc">
+
+<sect2 id="misc">
+
+<sect3 id="head">
+<title>Why 'HEAD' is not as useful as you might expect</title>
+<para>
+
+HEAD is not a synonym for "last revision on main trunk", its actually
+quite a bit more Special than that. Consider, for instance, 'cat'.
+</para>
+
+<itemizedlist>
+<listitem>"<code><emphasis role="bold">cvs update -A</emphasis></code>" (also, "<code><emphasis role="bold">cvs update -Dnow</emphasis></code>") gets the revs:
+<programlisting><html:pre>	Makefile	1.9
+	cat.1		1.16
+	cat.c		1.21</html:pre></programlisting>
+</listitem>
+
+<listitem>"<code><emphasis role="bold">cvs update -r netbsd-1-4-base</emphasis></code>" gets the revs:
+<programlisting><html:pre>	Makefile	1.8
+	cat.1		1.16
+	cat.c		1.19</html:pre></programlisting>
+</listitem>
+
+<listitem>"<code><emphasis role="bold">cvs update -r netbsd-1-4-PATCH001</emphasis></code>" or "<code><emphasis role="bold">cvs
+update -r netbsd-1-4</emphasis></code>" gets the revs:
+<programlisting><html:pre>	Makefile	1.8
+	cat.1		1.16
+	cat.c		1.19.2.1</html:pre></programlisting>
+</listitem>
+</itemizedlist>
+
+<para>
+In all cases, when you then say "<code><emphasis role="bold">cvs update -r HEAD</emphasis></code>"
+you get the same as "<code><emphasis role="bold">cvs update -A</emphasis></code>" or "<code><emphasis role="bold">cvs
+update -Dnow</emphasis></code>".
+</para>
+<para>
+When you do "<code><emphasis role="bold">cvs diff -r HEAD</emphasis></code>", however:
+</para>
+
+<itemizedlist>
+<listitem>When you're current (via "<code><emphasis role="bold">cvs update -A</emphasis></code>",
+    etc.), you get the diffs:
+<programlisting><html:pre>	file:		1st -r:	2nd -r:
+	-----		-------	-------
+	Makefile	1.9	1.9
+	cat.1		1.16	1.16
+	cat.c		1.21	1.21</html:pre></programlisting>
+
+(i.e. no output.)
+</listitem>
+
+<listitem>When you're updated <code>-r netbsd-1-4-base</code>, you get the diffs:
+<programlisting><html:pre>	Makefile	1.9	1.8
+	cat.1		1.16	1.16
+	cat.c		1.21	1.19</html:pre></programlisting>
+(yes, those are backwards, since "<code><emphasis role="bold">cvs diff -r foo</emphasis></code>"
+uses as the 'first' set of files those with rev. foo, and the second
+those that you've got already checked out.)
+</listitem>
+
+<listitem>When you're updated <code>-r netbsd-1-4-PATCH001</code> or <code>-r
+    netbsd-1-4</code>, you get the diffs:
+<programlisting><html:pre>	Makefile	1.9	1.8
+	cat.1		1.16	1.16
+	cat.c		1.19.2.1 1.19.2.1</html:pre></programlisting>
+</listitem>
+</itemizedlist>
+<para>
+In other words, "<code><emphasis role="bold">cvs update -r HEAD</emphasis></code>" is equivalent
+to "<code><emphasis role="bold">cvs update -A</emphasis></code>" or "<code><emphasis role="bold">cvs update -Dnow</emphasis></code>"
+(at least in the simple cases where there's no date-based attic
+lossage).
+</para>
+<para>
+However, "<code><emphasis role="bold">cvs diff -r HEAD</emphasis></code>" compares each file with
+the <emphasis>head of its branch</emphasis>.  For some files on a branch (those
+which have been branched but for which there are no changes on the
+actual branch), the diff will be against the head of the
+branch that they were branched from (e.g. in the <code>cat/Makefile</code> case
+above, the head of the trunk).  For others (those which do have
+changes on the branch), the diff will be against the head of the
+currently-checked out branch.
+</para>
+<para>
+In other words, <emphasis role="bold">you can't reliably use <code>diff</code> against
+<code>-r HEAD</code> to test whether a file matches the head of the
+trunk.</emphasis>
+</para>
+<para>
+You can use <code>-Dnow</code> (but that's occasionally kinda broken, in the
+presence of deleted files... though at least not too verbose about it
+</para>
+<para>
+After a commit to the branch, if you're willing to do multiple updates
+and use -kk, you can also tell by doing something like:
+</para>
+<orderedlist>
+<listitem><code><emphasis role="bold">cvs update -kk</emphasis></code><html:br/>
+    (get the head of the branch you currently have checked out,
+    with -kk.  If you just committed some changes to the branch,
+    this should simply have the effect of -kk-izing your files.)</listitem>
+<listitem><code><emphasis role="bold">cvs update -A
+-kk</emphasis></code></listitem>
+</orderedlist>
+<para>
+and if there are no files modified/added/deleted, the two are in sync.
+</para>
+<para>
+So, in a nutshell, HEAD's pretty evil, i'd suggest avoiding it. (cgd)
+</para>
+</sect3>
+
+<sect3 id="cvsignore">
+<title>Do not use <code>.cvsignore</code> files!</title>
+
+<para><code>.cvsignore</code> files are not to be used in most parts of the
+NetBSD source code repository.  (That is, after discussion, they
+have been banned from the source tree.)  All modules other than
+<code>pkgsrc</code> are currently included in this prohibition.
+</para>
+<para><code>.cvsignore</code> files have been banned because, in a nutshell,
+they cause problems for NetBSD development.  There are two main
+classes of problems which they encourage: incomplete cleaning, and
+bogus files left in distributions.
+</para>
+
+<para>Regarding the problem of incomplete cleaning, NetBSD sources
+should build and clean leaving only the original
+sources.  If other files, e.g. object files or other files created as
+a by-product of building, are left around after a complete clean with
+<code>make cleandir</code>, that is a bug.  <code>.cvsignore</code> files
+are used to mask that bug, and therefore should be avoided.
+</para>
+
+<para>Regarding the problem of building a distribution that does not
+include bogus files, the easiest way to verify that there are no
+bogus files in the distribution is to run "<code>cvs update</code>"
+with the flags "<code>-I! -ICVS</code>".  However, <code>.cvsignore</code>
+entries are added to CVS's list of files to ignore <emphasis>after</emphasis>
+the <code>-I</code> flags are processed, and so it is impossible to
+cause CVS to ignore files mentioned in <code>.cvsignore</code> files!
+The possible consequences of this should be obvious: files can
+accidentally creep into source snapshots because they were mentioned
+in <code>.cvsignore</code> files and, for whatever reason, were not
+properly removed.
+</para>
+
+<para>When importing packages which include <code>.cvsignore</code> files,
+make CVS ignore them by specifying the "<code>-I .cvsignore</code>"
+option to the "<code>cvs import</code>" command.
+</para>
+</sect3>
+
+<sect3 id="moving">
+<title>Moving and copying files in the repository</title>
+<para>
+Now and then a situation occurs in which it is necessary to move 
+or copy files in the CVS repository and keep the CVS history.
+This is not supported by CVS itself, so it can't be done using CVS's
+normal client-server mechanisms.
+</para>
+<para>
+
+Some time ago there were some scripts that moved the actual RCS files
+around -- this is not supported anymore, just remove the file and add
+it in the new place, noting where it was moved from or to
+respectively, to make tracking these moves easier in years to come.
+For more files at once, you can also cvs import them instead of cvs
+adding them.
+</para>
+
+</sect3>
+
+<sect3 id="admin">
+<title>How do I change a log message in the repository?</title>
+
+<para>
+If you need to modify the cvs commit message in the repository after the
+commit has been done, you can use the <code>cvs admin</code> command:
+</para>
+<programlisting><html:pre>$ vi /tmp/newmsg
+$ cvs admin -m 1.1:"`cat /tmp/newmsg`" file</html:pre></programlisting>
+</sect3>
+
+</sect2>
+</sect1>
+<parentsec url="./" text="CVS Repository Issues"/>
+</webpage>
