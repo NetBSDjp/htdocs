@@ -1,4 +1,4 @@
-# $NetBSD: Packages.txt,v 1.1.1.14 2005/12/26 15:28:26 kano Exp $
+# $NetBSD: Packages.txt,v 1.1.1.15 2006/01/06 12:54:06 kano Exp $
 ###########################################################################
 
 			==========================
@@ -13,7 +13,7 @@ Table of contents:
 ==================
 
 Run this command to produce a table of contents:
- grep -B1 '^.====' Packages.txt | egrep -v '^.[-=]'
+ sed '/^.====/{g;p;};h;d' Packages.txt
 
 
  0 Intro
@@ -248,11 +248,6 @@ If you don't have a permanent Internet connection and you want to know
 which files to download, "make fetch-list" will tell you what you'll need.
 Put these distfiles into /usr/pkgsrc/distfiles.
 
-If you need to download from a dynamic URL you can set DYNAMIC_MASTER_SITES
-and a 'make fetch' will call files/getsite.sh with the name of each file
-to download as an argument, expecting it to output the URL of the directory
-from which to download it. graphics/ns-cult3d is an example of this usage.
-
 
  2.4 How to build and install
  ============================
@@ -281,12 +276,15 @@ your packages tree. So, to use /usr/local, set
 
 in your environment.  Please note that you should use a root which is 
 dedicated to packages and not shared with other programs (ie, do not try
-and use LOCALBASE=/usr).  This is to prevent possible conflicts between
-programs and other files installed by the package system and whatever else
-may have been installed there.  There is, of course, one exception to 
-this - X11 packages are traditionally installed in the X11 tree. The
-definition used to identify the root of the X11 tree is the X11BASE
-definition.
+and use LOCALBASE=/usr).  Also, you should not try to add any of your
+own files or directories (such as, for example, src, obj, or pkgsrc) below
+the LOCALBASE tree.  This is to prevent possible conflicts between programs
+and other files installed by the package system and whatever else may have
+been installed there.
+
+There is, of course, one exception to this - X11 packages are traditionally
+installed in the X11 tree. The definition used to identify the root of the
+X11 tree is the X11BASE definition.
 
 It is possible to install X11 packages in the LOCALBASE tree, for
 which you must install the xpkgwedge package
@@ -297,6 +295,27 @@ at build time.  Have a look at pkgsrc/mk/bsd.pkg.defaults.mk to
 get an overview of what will be set there by default.  Environment
 variables such as LOCALBASE, and X11BASE can be set in /etc/mk.conf to
 save having to remember to set them each time you want to use pkgsrc.
+
+Occasionally, people want to "look under the covers" to see what is
+going on when a package is building or being installed. This may be
+for debugging purposes, or out of simple curiosity. A number of utility
+values have been added to help with this.
+
+(1) If you invoke the make(1) command with PKG_DEBUG_LEVEL=2, then a
+huge amount of information will be displayed.  As a worked example,
+
+	make patch PKG_DEBUG_LEVEL=2
+
+will show all the commands that are invoked, up to and including the
+"patch stage".
+
+(2) If you want to know the value of a certain make(1) definition, then
+the VARNAME definition should be used, in conjunction with the show-var
+target. e.g.
+
+	make show-var VARNAME=DISTFILES
+
+will show the expansion of the make(1) variable "DISTFILES".
 
 If you want to de-install and re-install a binary package that you've
 created (see next section), that you put into pkgsrc/packages manually or
@@ -367,23 +386,14 @@ pkgsrc/mk/bsd.pkg.defaults.mk for details of the default settings.
 You will want to make sure that ACCEPTABLE_LICENSES meet your local
 policy:
 
-    BATCH=                  yes          # required for bulk builds 
-    DEPENDS_TARGET?=        bulk-install
     PACKAGES?=              ${_PKGSRCDIR}/packages/${MACHINE_ARCH}
-    OBJHOST?=               yes               # use work.`hostname`
     WRKOBJDIR?=             /usr/tmp/pkgsrc   # build here instead of in pkgsrc
+    BSDSRCDIR=              /usr/src
+    BSDXSRCDIR=             /usr/xsrc         # for x11/xervers
+    OBJHOSTNAME?=           yes               # use work.`hostname`
     FAILOVER_FETCH=         yes               # insist on the correct checksum
     PKG_DEVELOPER?=         yes
-    ACCEPTABLE_LICENSES=    shareware \
-                            fee-based-commercial-use \
-			    mosaic-license \
-                            no-profit \
-                            no-commercial-use \
-                            non-commercial-use \
-                            limited-redistribution \
-			    kermit-license \
-			    sun-swing-license \
-			    sun-jsdk20-license
+    _ACCEPTABLE=            yes
 
 If you wish to use xpkgwedge for the entire build, then add:
 
@@ -505,6 +515,67 @@ binary package, and that work-sources are removed, so there is no huge
 demand to disk space. Afterwards, if the package is needed again, it will
 be installed via pkg_add instead of building again, so there are no cycles
 wasted by recompiling. 
+
+
+ 3.2.6 Setting up a sandbox for chroot'ed builds
+ ===============================================
+
+If you don't want all the pkgs nuked from a machine (rendering it useless
+for anything but pkg compiling), there is the possibility of doing the pkg
+bulk build inside a chroot environment. 
+
+The first step to do so is setting up a chroot sandbox, e.g. /usr/sandbox.
+After extracting all the sets from a NetBSD installation or doing a
+"make distribution DESTDIR=/usr/sandbox" in src/etc, make sure the following
+items are present and properly configures:
+
+ * kernel:
+   cp /netbsd /usr/sandbox
+ * /dev/*:
+   cd /usr/sandbox/dev ; sh MAKEDEV all
+ * /etc/resolv.conf (for security/snmpd and mail):
+   cp /etc/resolv.conf /usr/sandbox/etc
+ * working(!) mail config (hostname, sendmail.cf):
+   cp /etc/mail/sendmail.cf /usr/sandbox/etc/mail
+ * /etc/localtime (for security/snmpd):
+   ln -sf /usr/share/zoneinfo/GMT /usr/sandbox/etc/localtime
+ * /usr/src (system sources, for sysutils/aperture, net/ppp-mppe):
+   ln -s ../disk1/cvs .
+   ln -s cvs/src-1.6 src
+   ln -s cvs/pkgsrc .
+ * create /var/db/pkg (not part of default install):
+   mkdir /usr/sandbox/var/db/pkg
+ * create /usr/pkg (not part of default install)
+   mkdir /usr/sandbox/usr/pkg
+ * checkout pkgsrc from cvs, into /usr/sandbox/usr/pkgsrc
+   cvs -d cvs.netbsd.org:/cvsroot co pkgsrc
+ * /usr/pkgsrc/packages & .../distfiles (point outside of sandbox)
+ * /etc/mk.conf, see 3.2.1.1
+ * adjust .../mk/bulk/build.conf
+
+!!! Don't forget to install X !!!
+If you are a developer and want to upload the resulting binary packages 
+to ftp.netbsd.org, make sure you are using the default X version for your
+architecture and release (up to 1.6, that is 3.3.6 for all architectures).
+
+Next thing you will want to is make sure /usr/sandbox/usr/pkgsrc contains a
+fresh checkout of pkgsrc (e.g. from anoncvs). Do not mount/link this to the
+copy of your pkgsrc tree you do development in, as this will likely cause
+problems! Adjust .../pkgsrc/packages and .../pkgsrc/distfiles to point to
+some places outside the sandbox if you want to make the files public. 
+
+Then, configure .../pkgsrc/mk/bulk/build.conf to fit your needs!
+
+When the chroot sandbox is setup, you can start the build with the following
+steps:
+
+	# cd /usr/sandbox/usr/pkgsrc
+	# sh mk/bulk/do-sandbox-build
+
+This will just jump inside the sandbox and start thrash^Wbuilding.
+At the end of the build, mail will be sent with the results of the build.
+Created binary pkgs will be in /usr/sandbox/usr/pkgsrc/packages (whereever
+that points/mounts to/from).
 
 
  3.3 Creating a multiple CD-ROM packages collection
@@ -632,17 +703,8 @@ Please pay attention to the following gotchas:
  - Add MANCOMPRESSED (if not already there) if manpages are installed in
    compressed form by the package; see comment in bsd.pkg.mk
  - Replace /usr/local by ${PREFIX} in all files  (see patches below)
- - If the package installs any info files, the main info directory file
-   needs to be updated to reflect this fact. NetBSD has an INFO_FILES
-   definition, which is used to do this. For example, to install the
-   indent.info entry into the info directory file, simply use the
-
-	INFO_FILES=	indent.info
-
-   definition in the package Makefile. If the package does this insertion
-   for you, you should specify USE_GTEXINFO in the package Makefile, to
-   ensure that the pre-requisite GNU texinfo package is installed on your
-   system.
+ - If the package installs any info files, see the section `Packages providing
+   info files' in this document.
  - Adjust MAINTAINER to be either yourself, if you plan to maintain the
    package for future updates, or set it to the default MAINTAINER
    packages@netbsd.org.
@@ -826,8 +888,8 @@ to when dealing with the PLIST file (or files, see below!).
    their file. To handle this case, PLIST will be preprocessed before
    actually used, and the symbol "${MACHINE_ARCH}" will be replaced by
    what "uname -p" gives. The same is done if the string ${MACHINE_GNU_ARCH}
-   is embedded in PLIST somewhere - use this on packages that use GNU
-   autoconfigure.
+   is embedded in PLIST somewhere - use this on packages that have GNU
+   autoconf created configure scripts.
 
    Legacy note: There used to be a symbol "<$ARCH>" that was replaced by
    the output of "uname -m", but that's no longer supported and has been
@@ -896,6 +958,28 @@ The variables PERL5_SITELIB, PERL5_SITEARCH, and PERL5_ARCHLIB represent
 the three locations in which perl5 modules may be installed, and may be
 used by perl5 packages that don't have a packlist.  These three variables
 are also substituted for in the PLIST.
+
+ 5.5 User Interaction
+ ====================
+
+Occasionally, packages require interaction from the user, and this can be
+in a number of ways: 
+
++ help in fetching the distfiles
++ help to configure the package before it is built
++ help during the build process
++ help during the installation of a package
+
+The INTERACTIVE_STAGE definition is provided, to notify the pkgsrc mechanism
+of an interactive stage which will be needed, and this should be set in the
+package's Makefile. e.g.
+
+INTERACTIVE_STAGE= build
+
+Multiple interactive stages can be specified:
+
+INTERACTIVE_STAGE= configure install
+
 
  6 Notes on fixes for packages
  =============================
@@ -1014,7 +1098,7 @@ LIBTOOL_OVERRIDE=${WRKSRC}/libtool instead.
 
 If your package makes use of the platform independent library for loading
 dynamic shared objects, that comes with libtool (libltdl), you should
-add USE_LTDL= yes to the Makefile.
+include the libtool buildlink2.mk (and set USE_BUILDLINK2 to YES).
 
 Some packages use libtool incorrectly so that the package may not work or
 build in some circumstances. Some common errors are
@@ -1074,15 +1158,18 @@ other make variables:
 * PKG_SYSCONFSUBDIR is the subdirectory of PKG_SYSCONFBASE under which the
   configuration files for a particular package may be found, e.g. the
   Apache configuration files may all be found under the "httpd" subdirectory
-  of ${PKG_SYSCONFBASE}.
+  of ${PKG_SYSCONFBASE}.  This is meant to be set in a package Makefile.
 
-* PKG_SYSCONFDIR.${PKGBASE} overrides the value of ${PKG_SYSCONFDIR} for a
-  particular package.  This is not meant to be set by a package Makefile, but
-  is reserved for users who wish to override the PKG_SYSCONFDIR setting for
-  a particular package with a special location.
+* By default PKG_SYSCONFDIR=${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}, but
+  the default may be overridden by setting PKG_SYSCONFDIR.${PKG_SYSCONFVAR}
+  for a particular package, where PKG_SYSCONFVAR defaults to ${PKGBASE}.
+  This is not meant to be set by a package Makefile, but is reserved for
+  users who wish to override the PKG_SYSCONFDIR setting for a particular
+  package with a special location.
 
-Users will typically want to set PKG_SYSCONFBASE to /etc, or to accept the
-default location of ${PREFIX}/etc.
+The only variables that users should customize are PKG_SYSCONFBASE and
+PKG_SYSCONFDIR.${PKG_SYSCONFVAR}.  Users will typically want to set
+PKG_SYSCONFBASE to /etc, or to accept the default location of ${PREFIX}/etc.
 
 
  6.6 Feedback to the author
@@ -1316,7 +1403,7 @@ perform the equivalent of:
    then current versions of the corresponding packages get compiled and
    installed.  This is similar to manually noting which packages are
    currently installed, then performing a series of "make deinstall" and
-   "make install" (or whatever DEPENDS_TARGET is set to) for these packages.
+   "make install" (or whatever UPDATE_TARGET is set to) for these packages.
 
    You can use the "update" target to resume package updating in case a
    previous "make update" was interrupted for some reason.  However, in
@@ -1333,10 +1420,11 @@ perform the equivalent of:
    The following variables can be used either on the command line or in
    /etc/mk.conf to alter the behaviour of "make update":
 
-    - DEPENDS_TARGET:
-      Install target to use for the updated package and the
-      dependent packages.  Defaults to "install".  E.g.
-      "make update DEPENDS_TARGET=package"
+    - UPDATE_TARGET:
+      Install target to recursively use for the updated package and the
+      dependent packages.  Defaults to ${DEPENDS_TARGET} if set, "install"
+      otherwise for "make update".
+      E.g. "make update UPDATE_TARGET=package"
 
     - NOCLEAN:
       Don't clean up after updating.  Useful if you want to leave the
@@ -1351,6 +1439,14 @@ perform the equivalent of:
       This may be necessary if the "clean-update" target (see below) was
       called after interrupting a running "make update".
 
+    - DEPENDS_TARGET:
+      Allows you to disable recursion and hardcode the target for
+      packages.  The default is "update" for the update target,
+      facilitating a recursive update of prerequisite packages.
+      Only set DEPENDS_TARGET if you want to disable recursive updates.
+      Use "UPDATE_TARGET" instead to just set a specific target for
+      each package to be installed during "make update" (see above).
+
  * clean-update:
    Clean the source tree for all packages that would get updated if
    "make update" was called from the current directory.  This target
@@ -1359,9 +1455,20 @@ perform the equivalent of:
    update") or you may lose some packages you intended to update.
    As a rule of thumb: only use this target _before_ the first time
    you call "make update" and only if you have a dirty package tree
-   (e.g., if you used NOCLEAN).  The following variables can be used
-   either on the command line or in /etc/mk.conf to alter the behaviour
-   of "make clean-update":
+   (e.g., if you used NOCLEAN).
+
+   If you unsure about whether your tree is clean you can either perform
+   a "make clean" at the top of the tree, or use the following sequence
+   of commands from the directory of the package you want to update
+   (*before* running "make update" for the first time, otherwise you lose
+   all the packages you wanted to update!):
+
+      make clean-update
+      make clean CLEANDEPENDS=YES
+      make update
+
+   The following variables can be used either on the command line or in
+   /etc/mk.conf to alter the behaviour of "make clean-update":
 
     - CLEAR_DIRLIST:
       After "make clean", do not reconstruct the list of directories to
@@ -1557,14 +1664,7 @@ directly adding a dependency on that package, include that package's
 buildlink.mk instead.  The following variables may also be replaced with
 buildlink.mk files:
 
-    USE_LIBINTL	-->	.include "../../devel/gettext-lib/buildlink.mk"
-    USE_LTDL	-->	.include "../../devel/libtool/buildlink.mk"
-    USE_MESA	-->	.include "../../graphics/Mesa/buildlink.mk"
-    USE_MOTIF	-->	.include "../../mk/motif.buildlink.mk"
-    USE_SSL	-->	.include "../../security/openssl/buildlink.mk"
     USE_X11	-->	.include "../../mk/x11.buildlink.mk"
-    USE_XAW	-->	.include "../../mk/xaw.buildlink.mk"
-    USE_XPM	-->	.include "../../graphics/xpm/buildlink.mk"
 
 Packages that have an explicit dependency on ncurses should set USE_NCURSES
 to the reason why the system curses is insufficient, and include
@@ -1576,7 +1676,7 @@ be removed.
 Package that need a Motif-1.2-compatible installation should define
 USE_MOTIF12, otherwise assume the need for a Motif-2.0-compatible
 installation.  If MOTIFBASE or MOTIF12BASE is set, then it is assumed that
-they point to valid 1.2-compatible or 2.0-compatible Motif, respectively.
+they point to valid 2.0-compatible or 1.2-compatible Motif, respectively.
 
 Packages that use OpenSSL that require a specific version of OpenSSL should
 define USE_OPENSSL_VERSION to the minimum version number required prior to
@@ -1682,11 +1782,11 @@ debugging aids.
  10 FAQs & features of the package system
  ========================================
 
- 10.1 Packages using GNU autoconfig
- ==================================
+ 10.1 Packages using GNU autoconf
+ ================================
 
-If your package uses GNU autoconf, add the following to your package's
-Makefile:
+If your package uses GNU autoconf created configure scripts, add the following
+to your package's Makefile:
 
 	GNU_CONFIGURE= yes
 
@@ -2161,7 +2261,9 @@ By default, a new user will have home directory /nonexistent, and login shell
 The package Makefile must also include "../../mk/bsd.pkg.install.mk" prior to
 the inclusion of bsd.pkg.mk.  This will cause the users and groups to be
 created at pre-install time, and the admin will be prompted to remove them at
-post-deinstall time.
+post-deinstall time.  Automatic creation of the users and groups can be
+toggled on and off by setting the environment variable PKG_CREATE_USERGROUP
+prior to package installation.
 
 
  10.23 How to handle compiler bugs
@@ -2176,6 +2278,147 @@ Typically a workaround involves testing the MACHINE_ARCH and compiler
 version, disabling optimisation for that file/MACHINE_ARCH/compiler
 combination, and documenting it in doc/HACKS. See doc/HACKS for
 examples.
+
+
+ 10.24 Packages providing info files
+ ===================================
+
+Some packages install info files or use the makeinfo or install-info
+commands. In such cases, the makefile fragment mk/texinfo.mk should be
+included in the package Makefile before the inclusion of mk/bsd.pkg.mk.
+Newer versions of texinfo (version 4 and above) are, unfortunately,
+incompatible from previous versions at the command line level and some
+extensions were introduced in the TeXinfo macro set. So the package creator
+should ensure that the correct binaries are selected, rather than relying
+on the contents of the PATH variable in the shell.
+
+The main info directory file needs to be updated to reflect the
+installation of info files. Some packages' installation processes take care
+of this for you. Otherwise the NetBSD Packages Collection has an INFO_FILES
+definition which can be used to do this. Simply use the
+
+	INFO_FILES=	ident.info
+
+definition in the package Makefile, where "ident.info" is the name of the
+info file which installs an info dir entry.
+
+A package creator should also take care that the package build and install
+process uses the correct version of the makeinfo and install-info commands.
+Some Makefiles and configure scripts from recent software packages include
+the pathnames to the makeinfo and install-info commands. Unfortunately,
+older software packages tend not to do this, and, should this be the case,
+further action is required of the package creator.
+
+The mk/texinfo.mk makefile fragment will ensure that the proper makeinfo
+and install-info commands are available on the system as well as help the
+configure and build process of the package to use known binaries for these
+commands.
+
+If a minimum version of makeinfo and install-info commands are required,
+define TEXINFO_REQD in the package's Makefile to this mininum version.
+
+If a package is not well behaved (i.e., it does not pick MAKEINFO or
+INSTALL_INFO in the environment at configure or build time) you should do
+one of the following, whichever is more appropriate:
+ a) patch the package files so MAKEINFO or INSTALL_INFO are picked from the
+    environment at configure or build time and get used instead of
+    relying on makeinfo or install-info being accessible in PATH;
+ b) put TEXINFO_OVERRIDE=YES in the package Makefile to let some sed
+    manipulation happen on some packages source files (see contents of
+    mk/texinfo.mk).
+
+
+ 10.25 Packages whose distfiles aren't available for plain downloading
+ =====================================================================
+
+If you need to download from a dynamic URL you can set DYNAMIC_MASTER_SITES
+and a 'make fetch' will call files/getsite.sh with the name of each file
+to download as an argument, expecting it to output the URL of the directory
+from which to download it. graphics/ns-cult3d is an example of this usage.
+
+If the download can't be automated, because the user must submit personal
+information to apply for a password, or must pay for the source, or whatever,
+you can set _FETCH_MESSAGE to a macro which displays a message explaining
+the situation. _FETCH_MESSAGE must be executable shell commands, not just a
+message. (Generally, it executes ${ECHO}). As of this writing, the following
+packages use this: audio/realplayer, cad/simian, devel/ipv6socket,
+emulators/vmare-module, fonts/acroread-jpnfont, sysutils/storage-manager,
+www/ap-aolserver, www/openacs. Try to be consistent with them.
+
+
+ 10.26 Using pkgsrc on non-NetBSD (Linux, Solaris, Darwin, MacOS X)
+ ==================================================================
+
+In order to use pkgsrc on a non-NetBSD operating system, you must first
+bootstrap the necessary utilities (BSD make, pkg_*, ...). See 
+http://www.zoularis.org/ for information on boostrapping.
+
+
+ 10.27 Configuration files handling and placement
+ ================================================
+
+The global variable PKG_SYSCONFBASE (and some others) can be set by the
+system administrator in /etc/mk.conf to define the place where
+configuration files get installed. Therefore, packages must be adapted to
+support this feature. Keep in mind that you should only install files that
+are strictly necessary in the configuration directory, files that can
+go to $PREFIX/share should go there.
+
+We will take a look at available variables first (bsd.pkg.mk contains more
+information). PKG_SYSCONFDIR is where the configuration files for a package
+may be found (that is, the full path, e.g. /etc or /usr/pkg/etc). This
+value may be customized in various ways:
+
+ 1) PKG_SYSCONFBASE is the main config directory under which all package
+    configuration files are to be found. Users will typically want to set
+    it to /etc, or accept the default location of $PREFIX/etc.
+
+ 2) PKG_SYSCONFSUBDIR is the subdirectory of PKG_SYSCONFBASE under which
+    the configuration files for a particular package may be found. Defaults
+    to $SYSCONFBASE
+
+ 3) PKG_SYSCONFVAR is the special suffix used to distinguish any overriding
+    values for a particular package (see next item). It defaults to
+    ${PKGBASE}, but for a collection of related packages that should all
+    have the same PKG_SYSCONFDIR value, it can be set in each of the
+    package Makefiles to a common value.
+
+ 4) PKG_SYSCONFDIR.${PKG_SYSCONFVAR} overrides the value of
+    ${PKG_SYSCONFDIR} for packages with the same value for PKG_SYSCONFVAR.
+
+    As an example, all the various KDE packages may want to set
+    PKG_SYSCONFVAR to "kde" so admins can set ${PKG_SYSCONFDIR.kde} in
+    /etc/mk.conf to define where to install KDE config files.
+
+Programs' configuration directory should be defined during the configure
+stage. Packages that use GNU autoconf can usually do this by using the
+--sysconfdir parameter, but this brings some problems as we will see now.
+When you change this pathname in packages, you should not allow them to
+install files in that directory directly. Instead they need to install
+those files under share/examples/${PKGNAME} so PLIST can register them.
+
+Once you have the required configuration files in place (under the
+share/examples directory) the variable CONF_FILES should be set to copy
+them into PKG_SYSCONFDIR. The contents of this variable is formed by pairs
+of filenames; the first element of the pair specifies the file inside the
+examples directory (registered by PLIST) and the second element specifies
+the target file. This is done this way to allow binary packages to place
+files in the right directory using INSTALL/DEINSTALL scripts which are
+created automatically.  The package Makefile must also include
+"../../mk/bsd.pkg.install.mk" prior to the inclusion of bsd.pkg.mk to use
+these automatically generated scripts.  The automatic copying of config
+files can be toggled by setting the environment variable PKG_CONFIG prior
+to package installation.
+
+Here is an example, taken from mail/mutt/Makefile:
+
+	EGDIR=	${PREFIX}/share/doc/mutt/samples
+	CONF_FILES=	${EGDIR}/Muttrc ${PKG_SYSCONFDIR}/Muttrc
+
+As you can see, this package installs configuration files inside EGDIR,
+which are registered by PLIST. After that, the variable CONF_FILES lists
+the installed file first and then the target file. Users will also get an
+automatic message when files are installed using this method.
 
 
  11 Submitting & Committing
@@ -2195,7 +2438,7 @@ You have to separate between binary and "normal" (source) packages here:
 
  * packages:
    First, check that your package is complete, compiles and runs well; see
-   section 8 and the rest of this document. Next, generate a gzipped
+   section 9 and the rest of this document. Next, generate a gzipped
    tar-file of all the files needed for the package, preferably with all
    files in a single directory. Place this tar-file to a place where the
    package maintainers can fetch it using FTP or HTTP (WWW). Finally,
@@ -2233,10 +2476,14 @@ The commit message of the initial import should include part of the
 DESCR file, so people reading the mailing lists know what the package
 is/does.
 
-Please note all package updates/additions in doc/pkg-CHANGES! It's very
+Please note all package updates/additions in pkgsrc/doc/CHANGES! It's very
 important to keep this file up to date and conforming to the existing
 format, because it will be used by scripts to automatically update pages on
 www.netbsd.org and other sites.
+
+For new packages, "cvs import" is preferred to "cvs add" because
+the former gets everything with a single command, and provides a
+consistent tag.
 
 
  11.3 Updating a Package to a Newer Version
@@ -2265,6 +2512,28 @@ best thing for most places in which pkgsrc is used. Please use your
 judgement about what should go into pkgsrc, and bear in mind that
 stability is to be preferred above new and possibly untested features.
 
+
+ 11.4 Moving a Package in pkgsrc
+ ===============================
+
+ 1. Make a copy of the directory somewhere else.
+ 2. Remove all CVS dirs.
+    Alternatively to the first two steps you can also do:
+	  cvs -d user@cvs.netbsd.org:/cvsroot export -D today pkgsrc/category/package
+    and use that for further work.
+ 3. Fix CATEGORIES and any DEPENDS paths that just did ../package
+    instead of ../../category/package.
+ 4. "cvs import" the modified package in the new place.
+ 5. Check if any package depends on it:
+	cd /usr/pkgsrc
+	grep /package */*/Makefile* */*/buildlink*
+ 6. Fix paths in packages from step 5 to point to new location.
+ 7. "cvs rm (-f)" the package at the old location.
+ 8. Remove from oldcategory/Makefile.
+ 9. Add to newcategory/Makefile.
+10. Commit the changed and removed files:
+	cvs commit oldcategory/package oldcategory/Makefile newcategory/Makefile
+    and any packages from step 5, of course.
 
 
  12 A simple example of a package: bison
@@ -2297,6 +2566,7 @@ The file contents in this section must be used without the "> " prefix.
 	GNU_CONFIGURE=  yes
 	INFO_FILES=     bison.info
 	 
+	.include "../../mk/texinfo.mk"
 	.include "../../mk/bsd.pkg.mk"
 
 
