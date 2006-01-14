@@ -1,0 +1,255 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Documentation-network-pf">
+<config param="desc" value=""/>
+<config param="cvstag" value="$NetBSD: pf.xml,v 1.2 2006/01/12 06:26:49 reed Exp $"/>
+<config param="rcsdate" value="$Date: 2006/01/12 06:26:49 $"/>
+
+<head>
+<!-- Copyright (c) 1994-2006
+The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<title>NetBSD Packet Filter information</title>
+</head>
+
+<para>
+The <ulink url="http://www.benzedrine.cx/pf.html">OpenBSD Packet Filter</ulink>
+has been integrated in NetBSD since July 2004 and the first supporting
+release is
+<ulink url="../../Releases/formal-3/NetBSD-3.0.html">NetBSD 3.0</ulink>.
+Usage of PF is NetBSD basically the same as in OpenBSD, but there are a few
+differences. This page tries to explain such differences and provides
+additional information about the port and integration of PF in NetBSD.
+</para>
+
+<sect1 role="toc">
+
+<sect2 id="overview">
+<title>Information</title>
+
+<sect3 id="availability">
+<title>Availability</title>
+<para>
+NetBSD -current includes PF from OpenBSD 3.7 with patches from the 3.7 branch.
+</para>
+
+<para>
+NetBSD 3.0 is the first release with official support for PF.
+It includes PF from OpenBSD 3.6 with patches from the 3.6 branch.
+</para>
+
+<para>
+NetBSD 2.x does not have support for PF in the base system, but there's a
+LKM available in pkgsrc (<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/security/pflkm/README.html">security/pflkm</ulink>)
+that provides support for PF. See the
+<ulink url="http://nedbsd.nl/~ppostma/pf/">PF loadable kernel module for NetBSD 2</ulink>
+page for more information.
+</para>
+
+<para>
+NetBSD 1.6 or older does not have support for PF.
+</para>
+</sect3>
+
+<sect3 id="kernel">
+<title>Kernel options</title>
+<para>
+To use PF, you don't need to compile your own kernel, you can use the LKM
+<filename>/usr/lkm/pf.o</filename>. Use &man.modload.8; to load the LKM:
+<screen>
+# modload /usr/lkm/pf.o
+</screen>
+But if you prefer to use PF in the kernel, then you need least the
+following option enabled:
+<screen>
+options 	PFIL_HOOKS	# &man.pfil.9; packet filter hooks
+</screen>
+This option should be enabled in the GENERIC kernel by default.
+To enable PF in the kernel, the following pseudo-devices should be added
+to the kernel configuration:
+<screen>
+pseudo-device	pf		# PF packet filter
+pseudo-device	pflog		# PF log interface
+</screen>
+If you're not interested in logging packets with PF, then you might want
+to leave out the pflog device.
+</para>
+
+<para>
+You need to recompile and install the kernel for the settings to take effect.
+</para>
+</sect3>
+
+<sect3 id="enable">
+<title>Enabling PF</title>
+<para>
+To enable PF at boot-time, set <userinput>pf=YES</userinput> in
+<filename>/etc/rc.conf</filename>.
+
+Please note that the boot procedure will be aborted if the PF configuration
+file doesn't exist
+(see also <ulink url="#configuration">Configuration</ulink>).
+
+To start, stop, restart or reload PF manually, you can use the rc.d script
+<filename>/etc/rc.d/pf</filename>.
+</para>
+
+<para>
+To enable &man.pflogd.8; (the pf logging daemon) at boot-time,
+set <userinput>pflogd=YES</userinput> in <filename>/etc/rc.conf</filename>.
+To start, stop or restart &man.pflogd.8; manually, you can use the rc.d
+script <filename>/etc/rc.d/pflogd</filename>.
+</para>
+
+<para>
+To load the LKM at boot-time, you need to set <userinput>lkm=YES</userinput>
+in <filename>/etc/rc.conf</filename> and add the following line to
+<filename>/etc/lkm.conf</filename>:
+<screen>
+/usr/lkm/pf.o - - - - AFTERMOUNT
+</screen>
+
+</para>
+</sect3>
+
+<sect3 id="configuration">
+<title>Configuration</title>
+<para>
+The default configuration file is <filename>/etc/pf.conf</filename>.
+This can be changed by setting the variable <userinput>pf_rules</userinput>
+in <filename>/etc/rc.conf</filename>.
+</para>
+
+<para>
+The initial configuration file is
+<filename>/etc/defaults/pf.boot.conf</filename>. This configuration is only
+used during the network configuration to protect the machine from
+possible attacks. You can override the default initial configuration by
+creating a file named <filename>/etc/pf.boot.conf</filename>, but that
+should not be needed in most setups.
+Please see &man.pf.boot.conf.5; for more information about this file.
+</para>
+
+<para>
+The syntax of both configuration files are described in the manual page
+&man.pf.conf.5;.
+</para>
+</sect3>
+
+<sect3 id="bridge">
+<title>PF in bridge setup</title>
+<para>
+PF in bridging mode is supported, but you need to compile a new kernel
+to enable packet filtering on a bridge. The following line should be added
+to the kernel configuration:
+<screen>
+options         BRIDGE_IPF	# bridge uses IP/IPv6 pfil hooks too
+</screen>
+Configure the bridge as described in the
+<ulink url="../../guide/en/chap-net-misc.html#chap-net-misc-bridge">NetBSD Guide</ulink>.
+Then use the &man.brconfig.8; command to enable packet filtering on the bridge:
+<screen>
+# brconfig bridgeN ipf
+</screen>
+The "ipf" option also applies to PF, because this option actually enables
+the &man.pfil.9; interface.
+PF should now be able to filter packets on the interfaces configured as
+the bridge. Note that it's only needed to filter on one interface because
+the same data goes through both interfaces.
+</para>
+</sect3>
+
+<sect3 id="differences">
+<title>Differences with OpenBSD</title>
+<para>
+There are a few differences in PF for NetBSD when compared to OpenBSD.
+Most of them are missing features.
+
+<itemizedlist>
+<listitem>
+<ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=pfsync">pfsync(4)</ulink>
+is not supported (due to protocol # assignment issues).
+This will hopefully be solved in a future release.
+</listitem>
+<listitem>
+ALTQ is not supported. Enabling it in the kernel will result in compile
+errors. You can only use ALTQ by using PF as LKM and having ALTQ enabled
+in the kernel. There's ongoing work to make a decent ALTQ API and change
+PF to use that API.
+</listitem>
+<listitem>
+<ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=carp">carp(4)</ulink>
+is not supported (not really part of pf).
+</listitem>
+<listitem>
+The 'group' keyword does nothing, because NetBSD doesn't keep the GID
+in the uidinfo structure. This issue will probably be solved in a future
+release.
+</listitem>
+<listitem>
+Filtering on route labels is not working, NetBSD doesn't have labels
+for routes. It is unknown whether this will be supported in a future release
+or not.
+</listitem>
+<listitem>
+The initial configuration file &man.pf.boot.conf.5; is a NetBSD specific
+file. OpenBSD loads the initial configuration for PF from /etc/rc which is
+a bit clumsy in case you need to change it. For this reason has NetBSD
+added a new file for the initial PF configuration.
+</listitem>
+<listitem>
+<ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=spamd">spamd</ulink>
+was orginally imported into NetBSD, but it was removed before 3.0 was released.
+It is not considered to be part of PF and has been made available via pkgsrc
+(<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/mail/spamd/README.html">mail/spamd</ulink>).
+</listitem>
+</itemizedlist>
+</para>
+</sect3>
+
+</sect2>
+
+<sect2 id="links">
+<title>Links</title>
+
+<sect3 id="misclinks">
+<title>Miscellaneous links</title>
+<itemizedlist>
+<listitem>
+<ulink url="http://www.openbsd.org/faq/pf/index.html">OpenBSD PF User's Guide</ulink>
+</listitem>
+<listitem>
+<ulink url="http://www.bgnett.no/~peter/pf/">Peter N. M. Hansteen's Firewalling with PF</ulink>
+</listitem>
+<listitem>
+<ulink url="http://nedbsd.nl/~ppostma/pf/">PF loadable kernel module for NetBSD 2</ulink>
+</listitem>
+<listitem>
+<ulink url="http://nedbsd.nl/~ppostma/pf/altq.html">ALTQ patches for NetBSD</ulink>
+</listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manpages">
+<title>Manual pages</title>
+<itemizedlist>
+<listitem>&man.pf.4; - packet filter</listitem>
+<listitem>&man.pflog.4; - packet filter logging interface</listitem>
+<listitem>&man.pf.boot.conf.5; - initial configuration for packet filter</listitem>
+<listitem>&man.pf.conf.5; - packet filter configuration file</listitem>
+<listitem>&man.pf.os.5; - format of the operating system fingerprints file</listitem>
+<listitem>&man.authpf.8; - authenticating gateway user shell</listitem>
+<listitem>&man.ftp-proxy.8; - Internet File Transfer Protocol proxy server</listitem>
+<listitem>&man.pfctl.8; - control the packet filter (PF) and network address translation (NAT) device</listitem>
+<listitem>&man.pflogd.8; - packet filter logging daemon</listitem>
+</itemizedlist>
+</sect3>
+
+</sect2>
+
+</sect1>
+
+<parentsec url="./" text="Networking documentation"/>
+</webpage>
