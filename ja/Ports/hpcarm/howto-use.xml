@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="hpcarm-user-howto">
+<config param="desc" value="NetBSD/hpcarm User How-To page"/>
+<config param="cvstag" value="$NetBSD: howto-use.xml,v 1.1 2005/07/09 12:40:22 hubertf Exp $"/>
+<config param="rcsdate" value="$Date: 2005/07/09 12:40:22 $"/>
+
+<head>
+<!-- Copyright (c) 2001-2003
+     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD/hpcarm User How-To page</title>
+</head>
+
+
+<sect1>
+<title>Using NetBSD/<html:font color="#657595">hpcarm</html:font></title>
+
+<para>
+  This page contains information that current and potential users of
+  NetBSD/hpcarm can use to help them set up and maintain their
+  systems.
+</para>
+
+<sect2>
+<title>Getting started with NetBSD/hpcarm</title>
+
+<sect3 id="files">
+<title> Files to prepare</title>
+
+<para>
+  You need at least 3 files to start NetBSD/hpcarm.
+</para>
+
+<variablelist>
+  <varlistentry>
+    <term>hpcboot.exe</term>
+    <listitem>bootloader which runs in the WindowsCE environment.
+	It currently supports WinCE2.11 and PocketPC(WinCE 3.xx) machines.
+	It is available at sys/arch/hpc/stand/binary/ARM/. (From the
+        NetBSD-current sources; see <ulink
+        url="http://www.NetBSD.org/Documentation/current/">Tracking
+        NetBSD-current</ulink>.)
+     </listitem>	
+  </varlistentry>
+  <varlistentry>
+    <term>netbsd (kernel)</term>
+    <listitem>
+      <para>
+        For testing(iPAQ): <ulink
+        url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/hpcarm/snapshot/kernel/netbsd-IPAQ20010708.gz" />
+      </para>
+      <para>
+        For testing(JORNADA720): <ulink
+        url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/hpcarm/snapshot/kernel/netbsd-JORNADA720-20010623.gz" />
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>miniroot.fs (filesystem image, generated with vnconfig) </term>
+    <listitem>
+      Coming soon.
+    </listitem>
+  </varlistentry>
+</variablelist>
+</sect3>
+
+<sect3 id="boot-flash">
+<title> Booting from memory card</title>
+
+<para>
+  This is probably the easiest way, for now.
+</para>
+
+<para>
+  Connect some device to the serial port.
+  Use 19200bps, no parity, 8bits.
+</para>
+
+<para>
+  Prepare a DOS-formatted memory card, and copy the above 3 files
+  (currently only 2 files) onto the card.
+</para>
+
+<para>
+  Insert the card into your WinCE machine.
+</para>
+
+<para>
+  Checking: did you connect the serial cable already?  The serial cable
+  MUST be plugged into WinCE machine before starting hpcboot.exe.
+</para>
+
+<para>
+  Go into "Explorer" (not "Internet Explorer"), go one directory down to
+  your memory card (the name of the memory card differs by
+  localization), and invoke hpcboot.exe.  Alternatively, you may want to
+  setup autoboot, if your WinCE product allows you to.
+</para>
+
+<para>
+  In hpcboot, setup the following items.
+</para>
+
+<para>
+  "kernel" screen:
+</para>
+
+<itemizedlist>
+  <listitem>
+    Line 1: set the pathname to "netbsd".
+    Should be "\Storage Card 1\" (without the quotes) and
+    "netbsd", or whatever is suitable.
+  </listitem>
+  <listitem>
+    Line 2: specify the machine type you are using.
+    At this moment this should not matter too much.
+    In the future, when we got X support, the information will be used to
+    determine screen size and keyboard type.
+  </listitem>
+  <listitem>
+    Line 3 and 4: specify the filesystem type.
+    At present, we have no miniroot.fs, so this option is meaningless. 
+  </listitem>
+  <listitem>
+    Line 5: You definitely want "Serial console". 
+    For other items, choose as you like. 
+  </listitem>
+</itemizedlist>
+
+<para>
+  Pray.
+  Tap "boot" at the bottom.
+  You will see "Last chance: Push OK to boot" dialog.
+  Tap OK or return (obviously).
+  If you are successful, you will see
+  <ulink url="dmesg-iPAQ-2000-02-24.txt">boot message like this</ulink>
+  on your serial port.
+  Congratulations!
+</para>
+</sect3>
+</sect2>
+
+<sect2>
+<title>Cross compiling a kernel</title>
+
+<sect3 id="cross-tools">
+<title>Preparing cross tools</title>
+
+<para>
+  You need to cvs checkout <code>gnusrc/gnu/dist/toolchain</code>.
+  Refer the <ulink url="../../Documentation/current/">Tracking
+  NetBSD-current</ulink> document for cvs usage.
+</para>
+
+<para>
+  Configure for <code>arm-unknown-netbsdelf</code> target and run
+  <code>gmake -k</code>.
+</para>
+
+<itemizedlist>
+  <listitem><code>cd gnusrc/gnu/dist/toolchain</code></listitem>
+  <listitem><code>./configure --target=arm-unknown-netbsdelf --prefix=/usr/local/cross</code></listitem>
+  <listitem><code>gmake -k</code></listitem>
+  <listitem><code>gmake -k install</code></listitem>
+</itemizedlist>
+
+<para>
+  The above build process may cause some errors, but you don't need to worry
+  as long as you have binutils, gas, gcc and ld.
+</para>
+</sect3>
+
+<sect3 id="kernel-build">
+<title>Building a kernel</title>
+
+<para>
+  At least, the following environment variables should be passed to
+  <code>make</code>. Adjust pathnames if you choose to install the above
+  cross tools into other than <code>/usr/local/cross</code>.
+</para>
+
+<screen>
+MACHINE=hpcarm
+MACHINE_ARCH=arm32
+CC=/usr/local/cross/bin/arm-unknown-netbsdelf-gcc
+AS=/usr/local/cross/bin/arm-unknown-netbsdelf-as
+LD=/usr/local/cross/bin/arm-unknown-netbsdelf-ld
+NM=/usr/local/cross/bin/arm-unknown-netbsdelf-nm
+RANLIB=/usr/local/cross/bin/arm-unknown-netbsdelf-ranlib
+SIZE=/usr/local/cross/bin/arm-unknown-netbsdelf-size
+</screen>
+</sect3>
+</sect2>
+</sect1>
+</webpage>
+
