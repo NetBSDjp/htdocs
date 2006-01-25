@@ -1,0 +1,212 @@
+<!-- $NetBSD: chapter.xml,v 1.1 2003/04/07 15:39:43 grant Exp $ -->
+
+<chapter id="plist"> <?dbhtml filename="plist.html"?>
+<title>PLIST issues</title>
+<para>
+This section addresses some special issues that one needs to pay attention
+to when dealing with the <filename>PLIST</filename> file (or files, see below!).
+</para>
+
+<sect1>
+<title>Miscellaneous</title>
+
+<itemizedlist>
+<listitem>
+<para>NetBSD RCS Id</para>
+<para>
+   Be sure to add a RCS ID line as the first thing in any
+   <filename>PLIST</filename> file you write:
+</para>
+
+<para>
+<programlisting>@comment &lt;$&gt;NetBSD&lt;$&gt;</programlisting>
+</para>
+</listitem>
+
+<listitem>
+<para>${MACHINE_ARCH}, ${MACHINE_GNU_ARCH}</para>
+<para>
+   Some packages like emacs and perl embed information about which
+   architecture they were built on into the pathnames where they install
+   their file. To handle this case, PLIST will be preprocessed before
+   actually used, and the symbol "${MACHINE_ARCH}" will be replaced by
+   what <command>uname -p</command> gives. The same is done if the string
+   ${MACHINE_GNU_ARCH} is embedded in PLIST somewhere - use this on
+   packages that have GNU autoconf created configure scripts.
+</para>
+
+<para>
+   Legacy note: There used to be a symbol "&lt;$ARCH&gt;" that was replaced by
+   the output of <command>uname -m</command>, but that's no longer supported
+   and has been removed.
+</para>
+</listitem>
+
+<listitem>
+<para>${OPSYS}, ${LOWER_OPSYS}, ${OS_VERSION}</para>
+<para>
+   Some packages want to embed the OS name and version into some paths.
+   To do this, use these variables in the <filename>PLIST</filename>:
+</para>
+
+<itemizedlist>
+<listitem>${OPSYS} - output of "uname -s"</listitem>
+<listitem>${LOWER_OPSYS} - lowercase common name (eg. "solaris")</listitem>
+<listitem>${OS_VERSION} - "uname -r"</listitem>
+</itemizedlist>
+
+</listitem>
+
+<listitem>
+<para>${PKGLOCALEDIR}</para>
+<para>
+   Packages that install locale files should list them in the PLIST as
+   <quote>${PKGLOCALEDIR}/locale/de/LC_MESSAGES/...</quote> instead of
+   <quote>share/locale/de/LC_MESSAGES/...</quote>.  This properly handles
+   the fact that different OS's expect locale files to be either in
+   <filename>share</filename> or <filename>lib</filename> by default.
+</para>
+</listitem>
+
+<listitem>
+<para>Manpage-compression</para>
+<para>
+   Manpages should be installed in compressed form if
+   <varname>MANZ</varname> is set (in <filename>bsd.own.mk</filename>),
+   and uncompressed otherwise. To handle this in the
+   <filename>PLIST</filename> file, the suffix <quote>.gz</quote> is
+   appended/removed automatically for manpages according to
+   <varname>MANZ</varname> and <varname>MANCOMPRESSED</varname> being set
+   or not, see above for details. This modification of the
+   <filename>PLIST</filename> file is done on a copy of it, not
+   <filename>PLIST</filename> itself.
+</para>
+</listitem>
+
+<listitem>
+<para>Platform specific and differing PLISTs</para>
+<para>
+   Some packages decide to install a different set of files based on
+   the operating system being used. These differences can be
+   automatically handled by using the following files:
+</para>
+
+  <itemizedlist>
+  <listitem><filename>PLIST.common</filename></listitem>
+  <listitem><filename>PLIST.${OPSYS}</filename></listitem>
+  <listitem><filename>PLIST.common_end</filename></listitem>
+  </itemizedlist>
+
+<para>
+   If <filename>PLIST.${OPSYS}</filename> exists, these files are used
+   instead of <filename>PLIST</filename>. This allows packages which
+   behave in this way to be handled gracefully.  Manually overriding
+   <varname>PLIST_SRC</varname> for other more exotic uses is also
+   possible.
+</para>
+</listitem>
+
+<listitem>
+<para>Semi-automatic <filename>PLIST</filename> generation</para>
+<para>
+   You can use the <command>make print-PLIST</command> command to output
+   a PLIST that matches any new files since the package was extracted.
+   See below for more information on this target.
+</para>
+</listitem>
+
+</itemizedlist>
+
+</sect1>
+
+<sect1>
+<title>PLIST_SRC</title>
+<para>
+To use one or more files as source for the <filename>PLIST</filename> used
+in generating the binary package, set the variable
+<varname>PLIST_SRC</varname> to the names of that file(s).
+The files are later concatenated using cat(1), and order of things is
+important.
+</para>
+</sect1>
+
+<sect1>
+<title>PLIST_SUBST</title>
+<para>
+Similar to <varname>MESSAGE_SUBST</varname> (see above), you can add
+variables and their expansions to this variable in the following way:
+</para>
+
+<programlisting>PLIST_SUBST+=    SOMEVAR="somevalue"</programlisting>
+
+<para>
+which replaces all occurrences of <quote>${SOMEVAR}</quote> in the
+<filename>PLIST</filename> with <quote>somevalue</quote>.
+For the values which are replaced by default, please look in
+<filename>bsd.pkg.mk</filename> (and search for
+<emphasis>PLIST_SUBST</emphasis>).
+</para>
+</sect1>
+
+<sect1>
+<title>Perl5 modules</title>
+<para>
+Makefile of packages providing perl5 modules should include the
+makefile fragment <filename>lang/perl5/module.mk</filename>.  It provides
+a do-configure
+target for the standard perl configuration for such modules as well
+as various hooks to tune this configuration.  See comments in this
+file for details.
+</para>
+
+<para>
+Perl5 modules will install into different places depending on the version
+of perl used during the build process.  To address this, the NetBSD
+packages system will append lines to the <filename>PLIST</filename>
+corresponding to the files
+listed in the installed .packlist file generated by most perl5 modules.
+This is invoked by defining <varname>PERL5_PACKLIST</varname> to a
+space-separated list of paths to packlist files:
+</para>
+
+<programlisting>PERL5_PACKLIST=	${PERL5_SITEARCH}/auto/Pg/.packlist</programlisting>
+
+<para>
+The variables <varname>PERL5_SITELIB</varname>,
+<varname>PERL5_SITEARCH</varname>, and <varname>PERL5_ARCHLIB</varname>
+represent the three locations in which perl5 modules may be installed, and
+may be used by perl5 packages that don't have a packlist.  These three
+variables are also substituted for in the <filename>PLIST</filename>.
+</para>
+</sect1>
+
+<sect1>
+<title>User Interaction</title>
+<para>
+Occasionally, packages require interaction from the user, and this can be
+in a number of ways: 
+</para>
+
+<itemizedlist>
+<listitem>help in fetching the distfiles</listitem>
+<listitem>help to configure the package before it is built</listitem>
+<listitem>help during the build process</listitem>
+<listitem>help during the installation of a package</listitem>
+</itemizedlist>
+
+<para>
+The <varname>INTERACTIVE_STAGE</varname> definition is provided to notify
+the pkgsrc mechanism of an interactive stage which will be needed, and
+this should be set in the package's <filename>Makefile</filename>. e.g.
+</para>
+
+<programlisting>INTERACTIVE_STAGE= build</programlisting>
+
+<para>
+Multiple interactive stages can be specified:
+</para>
+
+<programlisting>INTERACTIVE_STAGE= configure install</programlisting>
+</sect1>
+
+</chapter>

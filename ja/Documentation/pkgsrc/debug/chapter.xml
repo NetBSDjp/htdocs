@@ -1,0 +1,152 @@
+<!-- $NetBSD: chapter.xml,v 1.1 2003/04/07 15:39:41 grant Exp $ -->
+
+<chapter id="debug"> <?dbhtml filename="debug.html"?>
+<title>Debugging</title>
+<para>
+To check out all the gotchas when building a package, here are the steps
+that I do in order to get a package working. Please note this is basically
+the same as what was explained in the previous sections, only with some
+debugging aids.
+</para>
+
+<itemizedlist>
+<listitem>
+<para>
+Be sure to set <varname>PKG_DEVELOPER=1</varname> in <filename>/etc/mk.conf</filename>
+</para>
+</listitem>
+
+<listitem>
+<para>
+Install <pkg>pkgtools/url2pkg</pkg> and run
+</para>
+
+<programlisting># url2pkg http://www.example.com/path/to/distfile.tar.gz</programlisting>
+</listitem>
+
+<listitem>
+<para>
+Edit the Makefile as requested.
+</para>
+</listitem>
+
+<listitem>
+<para>Fill in DESCR
+</para>
+</listitem>
+
+<listitem>
+<para>
+<command>make configure</command>
+</para>
+</listitem>
+
+<listitem>
+<para>
+Add any dependencies glimpsed from the configure step to the
+package's Makefile.
+</para>
+</listitem>
+
+<listitem>
+<para>
+Make the package compile, doing multiple rounds of
+</para>
+
+<programlisting># make
+# pkgvi ${WRKSRC}/some/file/that/does/not/compile
+# mkpatches
+# patchdiff
+# mv ${WRKDIR}/.newpatches/* patches
+# make mps
+# make clean</programlisting>
+
+<para>
+Doing as non-root user will assure that no files are modified that
+shouldn't, esp. not during the build phase.
+</para>
+</listitem>
+<listitem>
+<para>
+Look at Makefile, fix if necessary; see section 4.1. XXX
+</para>
+</listitem>
+
+<listitem>
+<para>
+Generate a PLIST:
+</para>
+
+<programlisting># make install
+# make print-PLIST > PLIST
+# make deinstall
+# make install
+# make deinstall</programlisting>
+
+<para>
+You usually need to be root to do this. Look if there are any files left:
+</para>
+
+<programlisting># make print-PLIST</programlisting>
+
+<para>
+If this brings up any files that are missing in PLIST, add them.
+</para>
+</listitem>
+
+<listitem>
+<para>
+Now that the PLIST is ok, install the package again and
+make a binary package:
+</para>
+
+<programlisting># make reinstall &amp;&amp; make package</programlisting>
+</listitem>
+
+<listitem>
+<para>
+Delete the installed package:
+</para>
+ 
+<programlisting># pkg_delete blub</programlisting>
+</listitem>
+
+<listitem>
+<para>
+Repeat the above find command, which shouldn't find anything now:
+</para>
+
+<programlisting># make print-PLIST</programlisting>
+
+</listitem>
+<listitem>
+<para>
+Reinstall the binary package:
+</para>
+ 
+<programlisting># pkg_add .../blub.tgz</programlisting>
+</listitem>
+
+<listitem>
+<para>
+Play with it. Make sure everything works.
+</para>
+</listitem>
+
+<listitem>
+<para>
+Run <command>pkglint</command> from <pkg>pkgtools/pkglint</pkg>, and fix the
+problems it reports.
+</para>
+
+<programlisting># pkglint</programlisting>
+</listitem>
+
+<listitem>
+<para>
+Submit (or commit, if you have cvs access); see section 11.XXX
+</para>
+</listitem>
+</itemizedlist>
+
+</chapter>

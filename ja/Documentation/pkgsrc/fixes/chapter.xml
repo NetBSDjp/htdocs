@@ -1,0 +1,325 @@
+<!-- $NetBSD: chapter.xml,v 1.1 2003/04/07 15:39:42 grant Exp $ -->
+
+<chapter id="fixes"> <?dbhtml filename="fixes.html"?>
+<title>Notes on fixes for packages</title>
+
+<sect1>
+<title>CPP defines</title>
+<para>
+To port an application to NetBSD, it's usually necessary for the compiler
+to be able to judge the system on which it's compiling, and we use
+definitions so that the C pre-processor can do this.
+</para>
+
+<para>
+To test whether you are working on a 4.4 BSD-derived system, you should use
+the BSD definition, which is defined in
+<filename>&lt;sys/param.h&gt;</filename> on said systems.
+</para>
+
+<programlisting><![CDATA[#include <sys/param.h>]]></programlisting>
+
+<para>
+and then you can surround the BSD-specific parts of your port using the
+conditional:
+</para>
+
+<programlisting><![CDATA[#if (defined(BSD) && BSD >= 199306)
+  ...
+#endif]]></programlisting>
+
+<para>
+Please use the __NetBSD__ definition sparingly - it should only apply to
+features of NetBSD that are not present in other 4.4-lite derived BSDs.
+</para>
+</sect1>
+
+<sect1>
+<title>Shared libraries - libtool</title>
+<para>
+pkgsrc supports many different machines, with different object formats
+like a.out and ELF, and varying abilities to do shared library and
+dynamic loading at all. To accompany this, varying commands and options
+have to be passed to the compiler, linker etc. to get the Right Thing,
+which can be pretty annoying especially if you don't have all the
+machines at your hand to test things.  The "libtool" pkg can help
+here, as it just "knows" how to build both static and dynamic
+libraries from a set of source files, thus being platform
+independent. 
+</para>
+
+<para>
+Here's how to use libtool in a pkg in seven simple steps:
+</para>
+
+<orderedlist>
+
+<listitem>
+<para>
+Add USE_LIBTOOL= yes to the package Makefile.
+</para>
+</listitem>
+
+<listitem>
+<para>
+   For library objects, use <quote>${LIBTOOL} --mode=compile ${CC}</quote>
+   in place of ${CC}.  You could even add it to the definition of CC, if only
+   libraries are being built in a given Makefile.  This one command will
+   build both PIC and non-PIC library objects, so you need not have
+   separate shared and non-shared library rules.
+</para>
+</listitem>
+
+<listitem>
+<para>
+   For the linking of the library, remove any <quote>ar</quote>,
+   <quote>ranlib</quote>, and <quote>ld -Bshareable</quote> commands,
+   and use instead:
+</para>
+
+<programlisting>${LIBTOOL} --mode=link ${CC} -o ${.TARGET:.a=.la} ${OBJS:.o=.lo} -rpath ${PREFIX}/lib -version-info major:minor</programlisting>
+
+<para>
+   Note that the library is changed to have a .la extension, and the
+   objects are changed to have a .lo extension.  Change OBJS as necessary.
+   This automatically creates all of the .a, .so.major.minor, and ELF
+   symlinks (if necessary) in the build directory. Be sure to include
+   the -version-info especially when major and minor are zero, as libtool
+   will otherwise strip off the shared library version.
+</para>
+
+<para>
+   The <quote>-release</quote> option will produce different results for
+   a.out and ELF (excluding symlinks) in only one case. An ELF library of
+   the form libfoo-release.so.x.y will have a symlink of libfoo.so.x.y on
+   an a.out platform. This is handled automatically.
+</para>
+
+<para>
+   The <quote>-rpath argument</quote> is the install directory of the
+   library being built.
+</para>
+
+<para>
+   <filename>PLIST</filename> should include all of the .a, .la and so,
+   .so.major and .so.major.minor entries.
+</para>
+</listitem>
+
+<listitem>
+<para>
+   When linking shared object (.so) files, i.e. files that are loaded via
+   dlopen(3), NOT shared libraries, use <quote>-module -avoid-version</quote>
+   to prevent them getting version tacked on.
+</para>
+
+<para>
+   <filename>PLIST</filename> gets the foo.so entry.
+</para>
+</listitem>
+
+<listitem>
+<para>
+   When linking programs that depend on these libraries _before_ they are
+   installed, preface the cc or ld line with <quote>${LIBTOOL}
+   --mode=link</quote>, and it will find the correct libraries (static or
+   shared), but please be aware that libtool will not allow you to specify
+   a relative path in -L (such as <quote>-L../somelib</quote>), because it
+   expects you to change that argument to be the .la file.  For example:
+</para>
+
+<programlisting>${LIBTOOL} --mode=link ${CC} -o someprog -L../somelib -lsomelib</programlisting>
+
+<para>
+   should be changed to:
+</para>
+
+<programlisting>${LIBTOOL} --mode=link ${CC} -o someprog ../somelib/somelib.la</programlisting>
+
+<para>
+   and it will DTRT with the libraries.
+</para>
+</listitem>
+
+<listitem>
+<para>
+   When installing libraries, preface the install or cp command with
+   <quote>${LIBTOOL} --mode=install</quote>, and change the library name
+   to .la.  For example:
+</para>
+
+<programlisting>${LIBTOOL} --mode=install ${BSD_INSTALL_DATA} ${SOMELIB:.a=.la} ${PREFIX}/lib</programlisting>
+
+<para>
+   This will install the static .a, shared library, any needed symlinks,
+   and run <command>ldconfig</command>.
+</para>
+</listitem>
+
+<listitem>
+<para>
+   In your <filename>PLIST</filename>, include all of the .a, .la, and so,
+   .so.major and .so.major.minor files (this is a change from the previous
+   behaviour).
+</para>
+</listitem>
+</orderedlist>
+
+</sect1>
+
+<sect1>
+<title>Using libtool on GNU packages that already support libtool</title>
+<para>
+Add USE_LIBTOOL=yes and LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig to the package
+Makefile as the quick way to bypass the pkg's own libtool. The pkg's own
+libtool is made by ltconfig script at do-configure target. If USE_LIBTOOL
+and LTCONFIG_OVERRIDE are defined, the specified ltconfig is overridden,
+using the pkgsrc/devel/libtool instead of the pkg's own libtool.  For newer
+versions of libtool (without ltconfig) it may be necessary to use
+LIBTOOL_OVERRIDE=${WRKSRC}/libtool instead.
+</para>
+
+<para>
+If your package makes use of the platform independent library for loading
+dynamic shared objects, that comes with libtool (libltdl), you should
+include the libtool buildlink2.mk (and set USE_BUILDLINK2 to YES).
+</para>
+
+<para>
+Some packages use libtool incorrectly so that the package may not work or
+build in some circumstances. Some common errors are
+</para>
+
+<itemizedlist>
+<listitem>
+   The inclusion of a shared object (-module) as a dependent library in an
+   executable or library. This in itself isn't a problem if one of two things
+   has been done:
+   <orderedlist>
+   <listitem>The shared object is named correctly, i.e. libfoo.la and
+not foo.la</listitem>
+   <listitem>The -dlopen option is used when linking an executable.</listitem>
+   </orderedlist>
+</listitem>
+
+<listitem>
+   The use of libltdl without the correct calls to initialisation routines.
+   The function lt_dlinit() should be called and the macro 
+   LTDL_SET_PRELOADED_SYMBOLS included in executables.
+</listitem>
+</itemizedlist>
+
+</sect1>
+
+<sect1>
+<title>GNU Autoconf/Automake</title>
+<para>
+If a package needs GNU autoconf or automake to be executed to regenerate
+the configure script and Makefile.in makefile templates, then they should
+be executed in a pre-configure target. Two makefile fragments are provided
+in pkgsrc/mk/autoconf.mk and pkgsrc/mk/automake.mk to help dealing with
+these tools. See comments in these files for details.
+</para>
+
+<para>
+For packages that need only autoconf:
+</para>
+
+<programlisting>AUTOCONF_REQD=	2.50	# if default version is not good enough
+...
+
+pre-configure:
+	cd ${WRKSRC}; ${AUTOCONF}
+
+...
+.include "../../mk/autoconf.mk"</programlisting>
+
+<para>
+and for packages that need automake and autoconf:
+</para>
+
+<programlisting>AUTOMAKE_REQD=	1.7.1	# if default version is not good enough
+...
+
+pre-configure:
+	cd ${WRKSRC};						\
+	${ACLOCAL};						\
+	${AUTOHEADER};						\
+	${AUTOMAKE} -a --foreign -i;				\
+	${AUTOCONF}
+
+...
+.include "../mk/automake.mk"</programlisting>
+
+<para>
+There are times when the configure process makes additional changes to the
+generated files, which then causes the build process to try to re-execute
+the automake sequence.  This is prevented by touching various files in
+the configure stage. If this causes problems with your package you can set
+AUTOMAKE_OVERRIDE to NO in the package Makefile.
+</para>
+</sect1>
+
+<sect1>
+<title>Package configuration files</title>
+<para>
+Packages should be taught to look for their configuration files in
+${PKG_SYSCONFDIR}, which is passed through to the configure and build
+processes.  PKG_SYSCONFDIR may be customized in various ways by setting
+other make variables:
+</para>
+
+<itemizedlist>
+<listitem>
+<para>
+PKG_SYSCONFBASE is the main config directory under which all package
+  configuration files are to be found.  This defaults to ${PREFIX}/etc, but
+  may be overridden in /etc/mk.conf.
+</para>
+</listitem>
+
+<listitem>
+<para>
+PKG_SYSCONFSUBDIR is the subdirectory of PKG_SYSCONFBASE under which the
+  configuration files for a particular package may be found, e.g. the
+  Apache configuration files may all be found under the "httpd" subdirectory
+  of ${PKG_SYSCONFBASE}.  This is meant to be set in a package Makefile.
+</para>
+</listitem>
+
+<listitem>
+<para>
+By default PKG_SYSCONFDIR=${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}, but
+  the default may be overridden by setting PKG_SYSCONFDIR.${PKG_SYSCONFVAR}
+  for a particular package, where PKG_SYSCONFVAR defaults to ${PKGBASE}.
+  This is not meant to be set by a package Makefile, but is reserved for
+  users who wish to override the PKG_SYSCONFDIR setting for a particular
+  package with a special location.
+</para>
+</listitem>
+</itemizedlist>
+
+<para>
+The only variables that users should customize are PKG_SYSCONFBASE and
+PKG_SYSCONFDIR.${PKG_SYSCONFVAR}.  Users will typically want to set
+PKG_SYSCONFBASE to /etc, or to accept the default location of ${PREFIX}/etc.
+</para>
+</sect1>
+
+<sect1>
+<title>Feedback to the author</title>
+<para>
+If you have found any bugs in the package you make available, if you had to
+do special steps to make it run under NetBSD or if you enhanced the software
+in various other ways, be sure to report these changes back to the original
+author of the program! With that kind of support, the next release of the
+program can incorporate these fixes, and people not using the NetBSD packages
+system can win from your efforts.
+</para>
+
+<para>
+Support the idea of free software!
+</para>
+</sect1>
+
+</chapter>
