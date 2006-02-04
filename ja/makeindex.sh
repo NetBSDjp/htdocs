@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # $NetBSD: makeindex.sh,v 1.8 2004/07/18 20:46:10 jschauma Exp $
-# <!-- based on english translation: -->
+# <!-- Based on english version: -->
 # <!-- NetBSD: makeindex.sh,v 1.8 2004/07/18 20:46:10 jschauma Exp   -->
 #
 # update index.html with NEWS and EVENTS from /htdocs/ja/Changes/index.html and

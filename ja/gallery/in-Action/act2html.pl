@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #
 # $NetBSD: act2html.pl,v 1.5 2002/10/22 15:04:17 wiz Exp $
-# <!-- based on english translation: -->
+# <!-- Based on english version: -->
 # <!-- NetBSD: act2html.pl,v 1.5 2002/10/22 15:04:17 wiz Exp   -->
 # Process index.act file into index.html for the in-Action
 # gallery.  Customized version of DKBrownlee's list2html.pl.

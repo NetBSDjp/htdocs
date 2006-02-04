@@ -1,5 +1,5 @@
-#	$NetBSD: Makefile,v 1.3 2005/02/07 16:46:33 kano Exp $
-#	<!-- based on english translation: -->
+#	$NetBSD: Makefile,v 1.4 2006/02/04 00:42:59 kano Exp $
+#	<!-- Based on english version: -->
 #	<!-- NetBSD: Makefile,v 1.3 2002/08/01 20:25:05 jschauma Exp   -->
 #	Process .list files into .html files
 

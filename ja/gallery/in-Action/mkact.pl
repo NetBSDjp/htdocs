@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #	$NetBSD: mkact.pl,v 1.4 2003/01/02 00:36:49 jschauma Exp $
-#	<!-- based on english translation: -->
+#	<!-- Based on english version: -->
 #	<!-- NetBSD: mkact.pl,v 1.4 2003/01/02 00:36:49 jschauma Exp   -->
 #
 # Reads index.act-template, and inserts and entries of the form
