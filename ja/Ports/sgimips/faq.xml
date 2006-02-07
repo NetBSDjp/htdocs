@@ -1,0 +1,292 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//Norman Walsh//DTD Website V2.2//EN"
+    "http://docbook.sourceforge.net/release/website/2.2/website.dtd" [
+
+<!ENTITY % man-refs.ent SYSTEM "../../share/xml/man-refs.ent"> %man-refs.ent;
+
+]>
+
+<webpage id="sgimips-faq">
+<config param="desc" value="NetBSD/sgimips: Frequently Asked Questions"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.1 2005/05/13 15:19:33 jschauma Exp $"/>
+<config param="rcsdate" value="$Date: 2005/05/13 15:19:33 $"/>
+<head>
+
+<!-- Copyright (c) 1994-2005
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD/sgimips: Frequently Asked Questions</title>
+</head>
+
+
+<sect1 role="toc">
+
+<sect2 id="general">
+<title>General Questions</title>
+
+<sect3 id="serialconsole">
+<title>Things worth knowing about the Indy serial console</title>
+<para>
+Note this information may apply to other models too. To get the machine
+boot up with a serial console, make sure the keyboard is unplugged when
+turning on the machine. The serial console runs on serial #1, at 9600,
+8N1 by default.
+</para>
+<para>
+It is also possible to do a "<code>setenv console d</code>" in the PROM
+monitor to get the console to serial #1, or a "<code>setenv console d2</code>"
+to get it to serial #2 (default is "<code>g</code>"). Optionally, the console's
+speed can be set with "<code>setenv dbaud &lt;bps&gt;</code>". After setting
+these PROM variables either do an "<code>init</code>" or a reboot of the machine
+is needed.
+</para>
+<para>
+
+When booting up Irix on the console, logins on the serial console
+might be disabled. You can enable them by editing /etc/inittab
+and adding the following line:
+</para>
+
+<programlisting>st:23:respawn:/sbin/getty systty co_9600        # serial console - HF</programlisting>
+
+<para>
+Don't forget to re-read the inittab then with "<code>init q</code>".
+</para>
+<para>
+
+The serial port pinouts are the same as SPARC systems' serial ports, so
+Macintosh serial cables work great for serial-console cables, as long as
+you are willing to do it without hardware handshaking lines.  See the <ulink
+url="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial Port
+Primer</ulink> for more information. 
+</para>
+</sect3>
+
+
+<sect3 id="bootstrapping">
+<title>How to bootstrap NetBSD/sgimips?</title>
+<para>
+<itemizedlist>
+<listitem><para>To bootstrap the port, you need to netboot the kernel using the SGI's
+     ARCS firmware. See the <ulink url="../../Documentation/network/netboot/">Diskless NetBSD HOW-TO</ulink> for more information on 
+     setting up netbooting. Some rought steps are:
+     </para>
+
+     <orderedlist>
+     <listitem> Unpack the etc.tgz and base.tgz e.g. in /home/indy/root.
+          Run "<code>sh MAKEDEV all</code>" in the root/dev dir. </listitem>
+     <listitem> Go into the machine's PROM, and retrieve the MAC
+          address. Use "<code>printenv eaddr</code>" to do so.</listitem>
+     <listitem><para>Setup DHCP. Put something like this into <filename>/etc/dhcpd.conf</filename>:</para>
+<programlisting>ddns-update-style       none;
+subnet 10.0.0.0 netmask 255.255.255.0 {			# Adjust
+	host indy {
+		hardware ethernet 08:00:69:09:93:78;    # Adjust to your MAC address
+		fixed-address 10.0.0.15;                # Adjust
+		#filename "/netbsd";                    # XXX Do NOT set!
+		option root-path "/home/indy/root";
+		server-name="10.0.0.3";
+	}
+}</programlisting>
+     <para>
+     Make sure you don not set the "<code>filename</code>", else you
+     cannot specify a different name for the kernel on the PROM's
+     <code>boot</code> command later.
+     </para>
+     </listitem>
+
+     <listitem> Enter the machine's PROM again, and be sure the IP address
+          is set properly:
+     <programlisting>&gt;&gt; <emphasis role="bold">printenv netaddr</emphasis>
+netaddr=1.2.3.4
+&gt;&gt; <emphasis role="bold">setenv netaddr 10.0.0.15</emphasis>
+&gt;&gt; <emphasis role="bold">printenv netaddr</emphasis>
+netaddr=10.0.0.15</programlisting>
+     </listitem>
+
+     <listitem>Make sure you have tftp enabled in <filename>/etc/inetd.conf</filename>, then
+          drop a proper kernel into <filename>/tftpboot</filename>, e.g. <filename>netbsd.IP22</filename>.
+	</listitem>
+
+     <listitem> Tell the PROM to do a netboot, loading the "netbsd.IP22"
+          kernel: 
+     <programlisting>&gt;&gt; <emphasis role="bold">boot -f bootp():/netbsd.IP22</emphasis>
+Setting $netaddr to 10.0.0.15 (from server 10.0.0.3)
+Obtaining /netbsd-IP22 from server 10.0.0.3
+...</programlisting>
+     </listitem>
+
+     <listitem> When asked for root device, enter "<code>?</code>" to get a list of
+          choices. E.g. "<code>sq0</code>" is the Indy's ethernet.</listitem>
+     <listitem> Just press RETURN for the dump device</listitem>
+     <listitem> Unless you have prepared your disk to boot from it, your
+          root filesystem will most probably be via nfs, so give that
+          for root device: "<code>nfs</code>". </listitem>
+     </orderedlist>
+
+     If you encounter trouble, use &man.tcpdump.8; or pkgsrc/net/ethereal
+     to debug the network traffic. See the Irix
+     <ulink url="http://www.mcsr.olemiss.edu/cgi-bin/man-cgi?prom">prom</ulink>
+     manpage for more help on PROM commands.</listitem>
+
+<listitem> Then prepare a second hard disk with NetBSD's FFS and
+     disklabel. You then tell the kernel to use root/swap on the second
+     disk. The firmware can't currently boot the kernel from an FFS
+     filesystem, though, and you'll need to boot that via the net for
+     now.</listitem>
+</itemizedlist>
+</para>
+
+<para>
+To start bootstrapping, the following files are needed:
+</para>
+
+<variablelist>
+<varlistentry>
+<term>Snapshot:</term>
+<listitem><ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/snapshot/">ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/snapshot/</ulink>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>Kernel:</term>
+<listitem><ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/netbsd.ip32">ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/netbsd.ip32</ulink></listitem>
+</varlistentry>
+</variablelist>
+</sect3>
+
+<sect3 id="crosscompiling">
+<title>How to crosscompile a sgimips kernel?</title>
+<para>
+
+NetBSD 1.6 and later systems have full support for cross-compilation
+of the base system, even as a non-root user and even on non-NetBSD hosts.
+See the <ulink url="../../Documentation/cross/">Cross-building NetBSD</ulink>
+under <ulink url="../../Documentation/">NetBSD Documentation pages</ulink>
+for details.
+</para>
+</sect3>
+
+<sect3 id="cross-build-boot-cd">
+<title>How can I cross-build an sgimips bootable install CD?</title>
+<para>
+Follow the <ulink url="#crosscompiling">crosscompiling instructions</ulink> to
+cross-build an sgimips release (ie <code>build.sh release</code>), then go to
+the <filename>src/etc</filename> directory and use the nbmake-sgimips wrapper
+created in your tool directory to make a bootable cd:
+</para>
+<programlisting>$TOOLDIR/bin/nbmake-sgimips iso-image</programlisting>
+<para>
+The resulting image can be burnt to CD-RW using your regular cd-writing tools.
+</para>
+</sect3>
+
+<sect3 id="resetting-eaddr">
+<title>How to reset $eaddr on IP22 etc.?</title>
+<para>
+Here's a method to set the ethernet address that works on at
+least the Indy, and perhaps also other machines with HPC3's.
+</para>
+<para>
+
+All disclaimers apply yadda yadda.
+</para>
+<para>
+
+At the PROM prompt:
+</para>
+<programlisting>dump -w -x 0xbfbe04e8</programlisting>
+<para>
+
+Sanity check the output here to see if it matches the address
+given in the 'ec0: bad ethernet address' error message. If not,
+you may not want to overwrite whatever is there instead.
+</para>
+
+<programlisting>fill -w -v 0xGG 0xbfbe04e8
+fill -w -v 0xHH 0xbfbe04ec
+fill -w -v 0xII 0xbfbe04f0
+fill -w -v 0xJJ 0xbfbe04f4
+fill -w -v 0xKK 0xbfbe04f8
+fill -w -v 0xLL 0xbfbe04fc</programlisting>
+
+<para>
+
+Where GG:HH:II:JJ:KK:LL is the intended ethernet address. It's a
+very good idea to reuse the address the machine was shipped with.
+Check the back of the machine if you cannot remember it.
+</para>
+<para>
+
+Power down, wait one full minute and then power up. All variables
+will have been reset as with the resetenv command, except $eaddr.
+</para>
+</sect3>
+
+<sect3 id="prom-tftp-client-failing">
+<title>PROM tftp client failing with default NetBSD tftpd settings</title>
+<para>
+
+The PROM tftp client on SGI machines can fail with default NetBSD tftpd
+settings.  The problem is that your current PROM may not support port
+numbers with the sign bit set.  The workaround is to limit the port
+numbers of anonymous connections to 32767.  The following tunables
+should fix your problem:
+</para>
+<programlisting># sysctl -w net.inet.ip.anonportmin=20000
+# sysctl -w net.inet.ip.anonportmax=32767</programlisting>
+</sect3>
+
+
+<sect3 id="prom-issues">
+<title>Other PROM issues you might encounter</title>
+<para>
+
+There are a few gotchas depending on your PROM version and the
+OS (SASH) version installed:
+</para>
+
+<orderedlist>
+<listitem> Old versions of SASH have an issue with incorrectly reporting
+     the memory map... If the kernel panics with a UVM related msg
+     on boot (even before the copyright message), try booting the
+     kernel directly from the PROM rather than via sash (An I2 also
+     had this problem before upgrading to IRIX 6.x -- it was running
+     5.3 before).</listitem>
+
+<listitem> Another old PROM issue -- old PROMs don't understand ELF, so
+     you may need an ECOFF kernel.  A workaround for this is to use
+     sash, which seems to understand ELF even in IRIX 5.x, but see
+     problem #1.</listitem>
+</orderedlist>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="other">
+<title>Other sources of information</title>
+
+<sect3 id="on-site">
+<title>Other NetBSD Documentation</title>
+
+<itemizedlist>
+<listitem><ulink url="../../Documentation/network/netboot">Diskless NetBSD HOW-TO</ulink></listitem>
+<listitem><ulink url="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial 
+Port Primer</ulink></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="off-site">
+<title>Other Off-Site Documentation</title>
+
+<itemizedlist>
+<listitem> The <ulink url="http://www.reputable.com/indytech.html">Indy tech</ulink>
+     site has a lot of information on the SGI Indy hardware.</listitem>
+</itemizedlist>
+</sect3>
+</sect2>
+
+</sect1>
+<parentsec url="./" text="NetBSD/sgimips Port Page"/>
+</webpage>
