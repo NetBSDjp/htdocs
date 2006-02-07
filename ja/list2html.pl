@@ -123,7 +123,7 @@ if ($opt{'q'})
      align="middle" src="../$HOME/images/BSD-daemon.jpg" origlink="$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
-    <h1>NetBSD 開発者ドキュメント:</h1>
+    <h1>NetBSD 開発者ドキュメンテーション:</h1>
     <h1>$SUB1</h1>
 </td></tr></table>
 <p>'
