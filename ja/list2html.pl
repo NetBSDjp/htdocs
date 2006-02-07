@@ -150,7 +150,7 @@ if ($opt{'q'})
 <table border="0" summary="Footer navigation"><tr>
 <td class="foothome"><span class="foothome"><a href="$DEVELOPERS"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
-<span class="foothome"><a href="$DEVELOPERS">開発者ドキュメント</a></span><br>
+<span class="foothome"><a href="$DEVELOPERS">開発者ドキュメンテーション</a></span><br>
 </td>
 </tr></table>
 
