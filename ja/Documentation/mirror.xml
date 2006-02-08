@@ -6,8 +6,8 @@
 <webpage id="Documentation-mirror">
   <config param="desc" value="NetBSD Mirror FAQ"/>
   <config param="cvstag" 
-    value="$NetBSD: mirror.xml,v 1.1 2005/07/25 16:06:30 rpaulo Exp $"/>
-  <config param="rcsdate" value="$Date: 2005/07/25 16:06:30 $"/>
+    value="$NetBSD: mirror.xml,v 1.5 2006/02/05 20:35:59 kano Exp $"/>
+  <config param="rcsdate" value="$Date: 2006/02/05 20:35:59 $"/>
 
   <head>
 
@@ -24,17 +24,18 @@
   <sect1 role="toc">
 
     <sect2 id="ftp-mirror">
-      <title>FTP Mirror FAQ</title>
+      <title>FTP and ISO Mirror FAQ</title>
 
       <sect3 id="ftp-overview">
-	<title>Overview for setting up a NetBSD FTP Mirror</title>
+	<title>Overview for setting up a NetBSD FTP/ISO Mirror</title>
 
-	<para>The basic steps for setting up a NetBSD FTP Mirror
+	<para>The basic steps for setting up a NetBSD FTP or ISO Mirror
 	  are:</para>
 
 	<orderedlist>
 	  <listitem>Prepare disk space.  See "<ulink
-	      url="#ftp-diskspace">How much disk space is needed fora FTP mirror</ulink>" 
+	      url="#ftp-diskspace">How much disk space is needed
+	      for an FTP/ISO mirror</ulink>" 
 	    entry below for information on amount of space
 	    required.</listitem>
 	  <listitem>Retrieve a copy of the NetBSD FTP site
@@ -44,24 +45,34 @@
 
 	  <listitem>Send in the information about your mirror to
 	    <email>mirrors@NetBSD.org</email>. See "<ulink 
-	      url="#ftp-contactinfo">Contact information format for FTP Mirrors</ulink>" 
+	      url="#ftp-contactinfo">Contact information format for
+	      FTP/ISO Mirrors</ulink>" 
 	    for details on that.</listitem>
 	</orderedlist>
       </sect3>
 
       <sect3 id="ftp-diskspace">
-	<title>How much disk space is needed for a FTP mirror?</title>
+	<title>How much disk space is needed for an FTP/ISO mirror?</title>
 
 	<para>The amount of disk space needed fluctuates due to things
 	  such as pre-built packages being added, binary snapshots
-	  being deprecated, and new formal releases of NetBSD. At this
-	  time (September 2004) a complete mirror of NetBSD needs
-	  about 150 GB and a new release of NetBSD adds between 10 and
-	  15 GB (including binary packages).</para>
+	  being deprecated, and new formal releases of NetBSD. At
+	  this time (2005-11) a complete mirror of NetBSD needs
+	  about 220 GB and a new release of NetBSD adds between 10
+	  and 25 GB (including binary packages and ISO images).</para>
+
+	<para>Space requirements for ISO files are dependent on
+	  how many binary releases are supported at the time. The
+	  size may be severely decreased when old branches becomes
+	  obsolete and would grew when new versions of NetBSD will
+	  be released. Each release takes from 7 up to 9 GB, and
+	  currently (2005-11) the complete iso area needs around
+	  36 GB space.</para>
       </sect3>
 
       <sect3 id="ftp-retrieve-sync">
-	<title>Retrieving/Syncing a copy of the NetBSD FTP site</title>
+	<title>Retrieving/Syncing a copy of the NetBSD FTP site
+	  and ISO images area</title>
 
 	<para>There are several ways that you can retrieve and sync
 	  the files. Depending on your personal preference, your
@@ -72,18 +83,28 @@
 	  working as it should, create a script to be run by
 	  &man.cron.8;.</para>
 
+	<para>All ISO images of the NetBSD distributions are stored on
+	  the FTP site inside <filename>iso/</filename> subdirectory.
+	  Thus, mirroring of ISO images is very similar to mirroring
+	  the entire FTP site.</para>
+
 	<para>Below you can find some examples of how to keep your
 	  local copy in sync. Simply replace "&lt;FTPROOT&gt;" with
 	  the actual root of your ftp server.</para>
 
 	<itemizedlist>
 	  <listitem>Using <filename role="pkg">net/rsync</filename>:
-	    <screen>$ rsync -v -Wartz --delete rsync://rsync.NetBSD.org/NetBSD &lt;FTPROOT&gt;/pub/NetBSD/</screen></listitem>
+	    <screen>$ rsync -v -Wartz --delete rsync://rsync.NetBSD.org/NetBSD &lt;FTPROOT&gt;/pub/NetBSD/</screen>
+	    For ISO files only:
+	    <screen>$ rsync -v -Wartz --delete rsync://rsync.NetBSD.org/NetBSD/iso &lt;FTPROOT&gt;/pub/NetBSD/iso</screen></listitem>
 	  <listitem>Using <filename role="pkg">net/wget</filename>:
 	    <screen>$ cd &lt;FTPROOT&gt;
-$ wget -v -xnH -m ftp://ftp.NetBSD.org/pub/NetBSD/</screen></listitem>
+$ wget -v -xnH -m ftp://ftp.NetBSD.org/pub/NetBSD/</screen>
+	    For ISO files only:
+	    <screen>$ cd &lt;FTPROOT&gt;
+$ wget -v -xnH -m ftp://ftp.NetBSD.org/pub/NetBSD/iso/</screen></listitem>
 	  <listitem>Using <filename role="pkg">net/mirror</filename>:
-	    <screen>$ cat &gt; NetBSD.org &lt;&lt;EOF
+	    <screen>$ cat &gt; ftp.NetBSD.org &lt;&lt;EOF
 package=netbsd
 comment=NetBSD
 site=ftp.NetBSD.org
@@ -92,16 +113,28 @@ local_dir=&lt;FTPROOT&gt;/pub/NetBSD
 do_deletes=true
 algorithm=1
 EOF
-$ mirror NetBSD.org</screen></listitem>
+$ mirror ftp.NetBSD.org</screen>
+	    For ISO files only:
+	    <screen>$ cat &gt; iso.NetBSD.org &lt;&lt;EOF
+package=netbsd
+comment=NetBSD
+site=iso.NetBSD.org
+remote_dir=/pub/NetBSD/iso
+local_dir=&lt;FTPROOT&gt;/pub/NetBSD/iso
+do_deletes=true
+algorithm=1
+EOF
+$ mirror iso.NetBSD.org</screen></listitem>
 	</itemizedlist>
       </sect3>
 
       <sect3 id="ftp-notes">
-	<title>Notes about a NetBSD FTP mirror</title>
+	<title>Notes about a NetBSD FTP/ISO mirror</title>
 
-	<para>As a NetBSD FTP mirror, it's important that you
-	  synchronize your copy of the NetBSD FTP tree regularly.
-	  Otherwise, old and/or obsolete files may confuse users.</para>
+	<para>As a NetBSD FTP/ISO mirror, it's important that you
+	  synchronize your copy of the NetBSD FTP tree and ISO
+	  images area regularly. Otherwise, old and/or obsolete
+	  files may confuse users.</para>
 
 	<para>Also, it might happen that due to an e.g. security
 	  issue, file removal (or another administrative task) may be
@@ -111,7 +144,7 @@ $ mirror NetBSD.org</screen></listitem>
       <sect3 id="ftp-outage">
 	<title>Where should an outage be announced</title>
 	
-	<para>If your FTP mirror experiences any significant system
+	<para>If your FTP/ISO mirror experiences any significant system
 	  outage, you should notify <email>mirrors@NetBSD.org</email>
 	  as soon as possible so that we can temporarily redirect your
 	  CNAME (if there is one) to a nearby alternative. Also, you
@@ -124,7 +157,7 @@ $ mirror NetBSD.org</screen></listitem>
       </sect3>
       
       <sect3 id="ftp-contactinfo">
-	<title>Contact information format for FTP mirrors</title>
+	<title>Contact information format for FTP/ISO mirrors</title>
 
 	<para>Contact information needs to be submitted to
 	  <email>mirrors@NetBSD.org</email>.</para>
@@ -132,15 +165,17 @@ $ mirror NetBSD.org</screen></listitem>
 	<para>This information gets added to an internal mirrors
 	  database, from which the mirror-related documentation gets
 	  generated. The "<code>contact*</code>" fields are never made
-	  public. Contact information for NetBSD FTP mirrors should be
+	  public. Contact information for NetBSD FTP/ISO mirrors should be
 	  sent in the following format:</para>
 
 	<screen>mirror          *machine name*
 country         *location (country) of host*
 location        *more specific location (e.g, ``University of Foo'')*
-ftp             ftp://ftp.foo-univ.ac.jp/pub/NetBSD/
-ftp-host        ftp.foo-univ.ac.jp
-ftp-releng	ftp://ftp.foo-univ.ac.jp/pub/NetBSD-daily/
+ftp		*url to NetBSD ftp mirror area*
+ftp-host	*fqdn of the host providing ftp mirror service*
+ftp-releng	*url to NetBSD release engineering files, aka NetBSD-daily*
+iso		*url to NetBSD iso images area*
+iso-host	*fqdn of the host providing iso images mirror service*
 organisation    *organisation name*
 contactperson   *contact person's name*
 contactemail    *contact person's electronic mail address*
@@ -154,6 +189,8 @@ country         Japan
 location        Department of Computer Science, Foo University
 ftp             ftp://ftp.foo-univ.ac.jp/pub/NetBSD/
 ftp-host        ftp.foo-univ.ac.jp
+iso		ftp://iso.foo-univ.ac.jp/pub/NetBSD/iso/
+iso-host	iso.foo-univ.ac.jp
 organisation    Foo University
 contactperson   Foo Bar
 contactemail    Bar@foo-univ.ac.jp
@@ -161,23 +198,30 @@ contactkeyid	GA23FG12
 contactphone    +81 3 xxxx yyyy
 contactaddress  9876 Foo City, Tokyo 1234567 Japan</screen>
 
+	<para>Please use <literal>ftp*</literal> and
+	  <literal>iso*</literal> fileds in case only if you
+	  providing appropriate mirror services.  For example, omit
+	  <literal>ftp-releng</literal> field if there are no releng
+	  files on your server, or don't use any of <literal>ftp*</literal>
+	  fields if you running ISO mirror only.</para>
+
 	<para>If the contact information for your mirror ever needs to
 	  be changed, please feel free to let us know at
 	  <email>mirrors@NetBSD.org</email>.</para>
       </sect3>
 
       <sect3 id="ftp-cname">
-	<title>How to get ftp.country-code.NetBSD.org</title>
+	<title>How to get (ftp|iso).country-code.NetBSD.org</title>
 
-	<para>If you would like a ftp.country-code (e.g. ftp.jp) CNAME
-	  for your mirror, please ask
+	<para>If you would like a ftp.country-code or iso.country-code
+	  (e.g. ftp.jp) CNAME for your mirror, please ask
 	  <email>mirrors@NetBSD.org</email>. We do not normally do
 	  subdomain delegation, so you cannot run a nameserver for
 	  "country-code.NetBSD.org".</para>
       </sect3>
 
       <sect3 id="ftp-teardown">
-	<title>If you can no longer provide a FTP mirror</title>
+	<title>If you can no longer provide a FTP/ISO mirror</title>
 
 	<para>Please let us know at <email>mirrors@NetBSD.org</email>
 	  so that we can remove your site from our list and redirect
@@ -217,7 +261,7 @@ contactaddress  9876 Foo City, Tokyo 1234567 Japan</screen>
 	    <filename>/pub/NetBSD/iso/&lt;release&gt;</filename>
 	    subdirectory, so if you already are mirroring this
 	    directory, you're all set. For more information see <ulink
-	      url="../mirrors/torrents/info.html">this page</ulink>.</listitem>
+	      url="../mirrors/torrents/">this page</ulink>.</listitem>
 	  <listitem>Start BitTorrent: 
 	    <screen>cd /ftp/pub/NetBSD/iso/&lt;release&gt;; (btlaunchmany.py .) &gt;/dev/null 2&gt;/dev/null &amp;</screen>.
 	    If you didn't download the ISO images already, they will be
@@ -256,7 +300,7 @@ contactaddress  *contact person's postal address*</screen>
 	<screen>mirror           ftp.NetBSD.org
 country         USA
 location        Silicon Valley, California
-bittorrent	http://www.NetBSD.org/mirrors/torrents/info.html
+bittorrent	http://www.NetBSD.org/mirrors/torrents/
 ipv6            yes
 organisation    The NetBSD Foundation, Inc.
 contactperson   Admins
@@ -281,7 +325,7 @@ contactaddress 	Somwhere in Silicon Valley, California</screen>
 	    you'll need cvs, ssh, and wget. Both cvs and ssh ship with
 	    NetBSD versions after 1.5, and wget is available from the
 	    <ulink url="software/packages.html">NetBSD packages collection</ulink> 
-	    (see net/<filename role="pkg">net/wget</filename>).Of
+	    (see <filename role="pkg">net/wget</filename>).Of
 	    course you'll also need a web server, such as apache.</listitem>
 	  <listitem>Retrieve a copy of the NetBSD WWW site.  See "<ulink
 	      url="#www-retrieve">Retrieving a copy of the NetBSD WWW site</ulink>"
@@ -301,7 +345,7 @@ contactaddress 	Somwhere in Silicon Valley, California</screen>
 	<title>How much disk space is needed for a WWW mirror?</title>
 
 	<para>The amount of diskspace needed for a complete copy of
-	  the htdocs repository is currently (2004-03) around 85 MB.
+	  the htdocs repository is currently (2005-11) around 96 MB.
 	  The total amount should not vary too much, but will
 	  obviously grow with time.</para>
       </sect3>
@@ -477,8 +521,8 @@ contactaddress  9876 Foo City, Tokyo 1234567 Japan</screen>
 	<para>The amount of disk space needed is rather large due to
 	  the fact that you are providing an interface to the
 	  <emphasis>entire CVS repository</emphasis>. Currently
-	  (2004-03), the total disk space required for all sources in
-	  CVS is around 2.5 GB.</para>
+	  (2005-11), the total disk space required for all sources in
+	  CVS is around 3.5 GB.</para>
       </sect3>
 
       <sect3 id="cvsweb-retrieve">
