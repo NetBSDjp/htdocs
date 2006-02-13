@@ -1,0 +1,459 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//Norman Walsh//DTD Website V2.2//EN"
+    "http://docbook.sourceforge.net/release/website/2.2/website.dtd" [
+
+<!ENTITY % man-refs.ent SYSTEM "../share/xml/man-refs.ent"> %man-refs.ent;
+
+]>
+
+<webpage id="htdocs">
+<config param="desc" value="Editing htdocs"/>
+<config param="cvstag" value="$NetBSD: htdocs.xml,v 1.1 2004/11/15 23:15:53 jschauma Exp $"/>
+<config param="rcsdate" value="$Date: 2004/11/15 23:15:53 $"/>
+<head>
+<title>Editing htdocs</title>
+</head>
+
+<sect1 id="editing-htdocs">
+
+<itemizedlist>
+	<listitem>
+		<ulink url="#general">General notes on htdocs</ulink>
+		<itemizedlist>
+			<listitem><ulink url="#who-can-edit">Who can edit htdocs</ulink></listitem>
+			<listitem><ulink url="#what-is-required">What is required to edit htdocs</ulink></listitem>
+			<listitem><ulink url="#validate-html">Validate your HTML</ulink></listitem>
+			<listitem><ulink url="#netbsd-org">NetBSD.org naming scheme</ulink></listitem>
+			<listitem><ulink url="#dotlist-files">What are .list files?</ulink></listitem>
+			<listitem><ulink url="#convert-to-xml">Converting to XML</ulink></listitem>
+			<listitem><ulink url="#dotxml-files">Processing .xml (docbook-website) files</ulink></listitem>
+			<listitem><ulink url="#moving-files">Renaming or moving files</ulink></listitem>
+			<listitem><ulink url="#flaglinks">What is the reasoning behind the flag links with empty.gif?</ulink></listitem>
+			<listitem><ulink url="#webserver">How do the pages get to the web server, and when?</ulink></listitem>
+		</itemizedlist>
+	</listitem>
+	<listitem>
+		<ulink url="#specific">Adding to specific areas</ulink>
+		<itemizedlist>
+			<listitem><ulink url="#adding-news-items">Adding News Items</ulink></listitem>
+			<listitem><ulink url="#adding-events">Adding Events</ulink></listitem>
+			<listitem><ulink url="#adding-mailinglists">Adding to/editing the MailingLists page</ulink></listitem>
+			<listitem><ulink url="#consultants">Consultants for hire</ulink></listitem>
+		</itemizedlist>
+	</listitem>
+	<listitem>
+		Related Documentation:
+		<itemizedlist>
+  			<listitem><ulink url="announce.html">News story guidelines</ulink></listitem>
+  			<listitem><ulink url="translate.html">Translating htdocs</ulink></listitem>
+		</itemizedlist>
+	</listitem>
+</itemizedlist>
+
+<html:hr/>
+
+<sect2 id="general">
+<title>General notes on htdocs</title>
+
+<sect3 id="who-can-edit">
+<title>Who can edit htdocs</title>
+<para>
+    Anyone with write access to the NetBSD CVS tree can checkout
+    htdocs and make changes, and in fact is encouraged to do so.
+    In particular as developers add features and drivers they should
+    update the appropriate hardware or port homepage. Use your
+    NetBSD.org login against cvs.NetBSD.org and checkout 'htdocs'.
+</para>
+<para>
+    Users without CVS commit access are encouraged to check out htdocs
+    via anoncvs, and mail patches to www@NetBSD.org, see 
+    <ulink url="#dotlist-files">below</ulink>.
+</para>
+</sect3>
+
+<sect3 id="what-is-required">
+<title>What is required to edit htdocs</title>
+<para>
+    <itemizedlist>
+    <listitem>Read <ulink url="cvs-repos/cvs_intro.html">the CVS introduction</ulink>.</listitem>
+    <listitem>Install <pkg>meta-pkgs/netbsd-www,</pkg> which provides the tools
+	required to build the web site.</listitem>
+    <listitem>Set your CVSROOT as indicated and run
+	<para><programlisting>cvs checkout htdocs</programlisting></para></listitem>
+    <listitem>Edit your preferred file, type <code><emphasis role="bold">make</emphasis></code> to rebuild
+	the output files (if necessary).</listitem>
+    <listitem>Check the results using <code><emphasis role="bold">cvs diff</emphasis></code>, and <code><emphasis role="bold">cvs
+	commit</emphasis></code> if everything is good.</listitem>
+    </itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="validate-html">
+<title>Validate your HTML</title>
+<para>
+    After making any changes you should run your html through an HTML
+    verifier such as <pkg>www/weblint,</pkg> or better still <ulink
+    url="http://validator.w3.org/">http://validator.w3.org/</ulink>.
+    The URL for a link to an index.html file should not include the
+    trailing index.html.
+    If you use weblint you may want to add the following to your
+    <code>~/.weblintrc</code>.
+</para>
+<para>
+    <programlisting>extension Netscape</programlisting>
+</para>
+</sect3>
+
+<sect3 id="netbsd-org">
+<title>NetBSD.org naming scheme</title>
+<para>
+    Make sure you use NetBSD.org and not any other scheme (&#78;etbsd.org,
+    &#110;etbsd.org, ...) in links, mailto's or other pointers. 
+</para>
+</sect3>
+
+<sect3 id="dotlist-files">
+<title>What are .list files?</title>
+<para>
+    <emphasis role="bold">The <code>.list</code> files are
+    obsolete!</emphasis><html:br/>
+    Please see <ulink url="#dotxml-files">this section</ulink> for details.
+    The paragraphs below still apply to the currently existing <code>.list</code>
+    files.
+</para>
+<para>
+    A <code>.list</code> file contains standard HTML with additional special
+    tags to simplify formatting. It used to be processed by <code><ulink
+    url="../list2html.pl">list2html.pl</ulink></code> into the desired .html
+    file.  Since the <code>.list</code> files are no obsolete, they should not be
+    edited anymore.  If they need to be changed, they should be <ulink
+    url="#convert-to-xml">converted to XML</ulink>.
+</para>
+<para>
+    There should be a Makefile in each directory which handles processing
+    the .list files into .html, and will recurse into any subdirs
+    containing Makefiles.
+</para>
+<para>
+    Continuation lines are understood (useful for the special tags).
+</para>
+<para>
+    If you do not have CVS access and wish to submit changes, you
+    can check out htdocs via anonymous CVS (see the <ulink
+    url="cvs-repos/cvs_intro.html">NetBSD CVS HOWTO</ulink>). The best
+    approach is usually to:
+    <orderedlist>
+	<listitem>Checkout the <emphasis>htdocs</emphasis> module
+	    <para><programlisting>cvs checkout htdocs</programlisting></para></listitem>
+	<listitem>Edit the desired file. Most FAQ-style documents are
+	    generated from <code>.list</code> files, so it is best to check
+	    before editing.</listitem>
+	<listitem>Run 'make' if you have edited .list or similar files.</listitem>
+	<listitem><ulink url="#validate-html">Validate</ulink> the HTML. (Repeat
+	    these three steps as necessary).</listitem>
+	<listitem>Submit a diff to &lt;<ulink url="mailto:www@NetBSD.org">www@NetBSD.org</ulink>&gt;
+	    using <emphasis role="bold">cvs diff</emphasis>, eg.
+            <para><programlisting>cvs diff -u <emphasis>htdocs/path/to/file.list</emphasis></programlisting></para>
+        </listitem>
+    </orderedlist>
+</para>
+<para>
+    You should run <emphasis role="bold">make</emphasis> before committing. You will need
+    <pkg>lang/perl5</pkg> installed.
+</para>
+</sect3>
+
+<sect3 id="convert-to-xml">
+<title>Converting to XML</title>
+<para>
+    In order to facilitate global changes, we are currently converting the
+    NetBSD website to XML (docbook-website).  As of 2004-11-15, any non-XML
+    file that needs to be edited shall be converted to XML at the same time.
+    You may find the script <code>htutils/scripts/list2xml</code> helpful to
+    initiate the conversion of the old <code>.list</code> as well as plain
+    <code>.html</code> files.
+</para>
+<para>
+    After converting a file to XML, remember to add it to the
+    <code>htdocs/layout.xml</code> file and regenerate the website.
+</para>
+</sect3>
+
+<sect3 id="dotxml-files">
+<title>Processing .xml (docbook-website) files</title>
+<para>
+    In order to build .html files from .xml files, you will need at
+    least <pkg>textproc/libxslt</pkg> and <pkg>textproc/docbook-website</pkg>
+    installed. These are installed as part of <pkg>meta-pkgs/netbsd-www</pkg>
+</para>
+<para>
+    To regenerate, cd to htdocs/ and run
+      <para><programlisting>make ./autolayout.xml</programlisting></para>
+    Then run <code><emphasis role="bold">make</emphasis></code> in the target directory.
+</para>
+</sect3>
+
+<sect3 id="moving-files">
+<title>Renaming or moving files</title>
+<para>
+In order to move or rename files within htdocs, the following procedure is
+recommended:
+
+<itemizedlist>
+ <listitem>copy the file from the original location to new location</listitem>
+ <listitem>modify html of the original file:
+   <itemizedlist>
+     <listitem>include a
+         <code>&lt;META HTTP-EQUIV=Refresh CONTENT="5; URL=new-location"&gt;</code>
+         tag in the header</listitem>
+     <listitem>remove all content except the header and the footer</listitem>
+     <listitem>add a sentence saying that the page moved and hyperlink it to the new
+         location</listitem>
+   </itemizedlist></listitem>
+  <listitem>cvs add the new file</listitem>
+  <listitem>cvs commit the new file and the changes of the old file at the same
+      time, so we have some cvs reference of when and why things moved</listitem>
+</itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="flaglinks">
+<title>What is the reasoning behind the flag links with empty.gif?</title>
+<para>
+    Each NetBSD 'flag' links at the base of each page has:
+    <itemizedlist>
+    <listitem>href containing netbsd-banner with no alt tag</listitem>
+    <listitem>href containing empty gif with "NetBSD" alt tag and the
+        words "Home Page"</listitem>
+    </itemizedlist>
+    This has the effect of:
+    <itemizedlist>
+    <listitem>Making the "NetBSD Home Page" link a single link in lynx,
+	i.e. not a NetBSD link and a Home Page link.</listitem>
+    <listitem>In netscape, causing the additional text to be centered and
+        aligned "better" w.r.t the graphic.  Without it, at least
+        in netscape, they show up at the bottom not centered
+        vertically, and abut the graphic (or, if you include spaces,
+        include nasty underlined blanks which looks broken).</listitem>
+    </itemizedlist>
+    It's a grotty hack, but it makes things look right.
+</para>
+</sect3>
+
+<sect3 id="webserver">
+<title>How do the pages get to the web server, and when?</title>
+<para>
+    The NetBSD webpages are stored in CVS in the "htdocs" repository.
+    For security reasons, the htdocs repository is copied (via rsync)
+    to www.NetBSD.org each hour, and the a local checkout is done from
+    that copy of the repository. The checked out tree can be found in
+    "<code>/NetBSD-www</code>". The repository is updated and checked out
+    every hour, about 40 minutes after the full hour (*:40). If you
+    make a commit to htdocs, it will take up to an hour before the
+    changes show up.
+</para>
+<para>
+    Note that there are several files like the Gnats database
+    (<ulink url="http://www.NetBSD.org/Gnats/"/>), the pkgsrc and source changes
+    in Changes/changes*.html and Changes/pkg-changes*.html, the RSS
+    files in Changes/rss-*.xml etc. that are not part of htdocs but
+    that get generated by various scripts out of cron jobs directly on
+    the web server. Check out "htutils/changes/*" to get access to the
+    scripts.
+</para>
+</sect3>
+
+</sect2>
+
+<sect2 id="specific">
+<title>Adding to specific areas</title>
+
+<sect3 id="adding-gallery-entries">
+<title>Adding to the 'Sites running NetBSD' gallery</title>
+<para>
+If you have a <code>NETBSD GALLERY ADDITION</code> email from the <ulink
+url="../gallery/addsite.html">htdocs/gallery/addsite.html</ulink> page:
+<orderedlist>
+<listitem>Ensure you have perl installed</listitem>
+<listitem>Save the message in your copy/paste buffer </listitem>
+<listitem><code>cd htdocs/gallery</code></listitem>
+<listitem><code>./addsite.pl</code>, paste the buffer, add a ^D, and answer '<code>y</code>' if it parsed OK.</listitem>
+<listitem><code>cvs commit</code></listitem>
+</orderedlist>
+Alternatively you can manually edit <code>htdocs/gallery/sites.data</code>, and
+run <code>make</code>.
+</para>
+</sect3>
+
+<sect3 id="adding-news-items">
+<title>Adding News Items</title>
+<para>
+Most news items go into <ulink
+url="../Changes/">htdocs/Changes/index.list</ulink> (see note on
+<ulink url="#dotlist-files">.list files</ulink>).  Changes affecting a
+specific port should also be linked to from their htdocs/Port/*/ news section.
+</para>
+<para>
+Important code news items should also be noted in the text
+<currentsrc>doc/CHANGES</currentsrc>
+file.
+</para>
+<para>Quick ``howto'' for the impatient (but please do read on for details):
+<itemizedlist>
+<listitem>cd htdocs/Changes</listitem>
+<listitem>make update</listitem>
+<listitem>${EDITOR} index.list</listitem>
+<listitem>make</listitem>
+<listitem>make MSG="I added important NEWS!" commit</listitem>
+</itemizedlist>
+</para>
+
+<sect4 id="before-anything">
+<title>Before you do anything with htdocs:</title>
+<orderedlist>
+<listitem>Ensure you have perl installed for the <ulink url="#dotlist-files">.list
+    files</ulink>.</listitem>
+<listitem>Check out <code>htdocs</code> from the CVS repository.</listitem>
+<listitem>If you already have a copy of htdocs in your tree, make sure you update it
+regularly.  In particular, when adding news items, make sure that
+gallery/events.* is up to date as well, as the events are pulled in from
+there!</listitem>
+</orderedlist>
+</sect4>
+
+<sect4 id="change-entry">
+<title>To add a change entry:</title>
+<orderedlist>
+<listitem>Edit htdocs/Changes/index.list and search for the first line
+    starting &lt;DATE&gt;.</listitem>
+<listitem>Insert a new line of the form
+    <para><programlisting>&lt;DATE&gt;<emphasis>tag</emphasis> <emphasis>date</emphasis> - <emphasis>title</emphasis></programlisting></para>
+    where
+    <itemizedlist>
+    <listitem><emphasis>tag</emphasis> - A lowercase/number/hyphen identifier. eg: 'new-xx-driver'</listitem>
+    <listitem><emphasis>date</emphasis> - In the form DAY MONTH YEAR. eg: '23 Jan 1999'</listitem>
+    <listitem><emphasis>title</emphasis> - Freeform text for the entry title - can use \ to
+	escape the end of line.</listitem>
+    </itemizedlist>
+</listitem>
+<listitem>Add the body of the item. manual pages (eg: &man.ls.1;), and email
+    addresses (eg: &lt;user@domain&gt;) will be automatically expanded. Feel
+    free to use HTML tags, though this is not compulsory.</listitem>
+<listitem>Run '<code>make</code>'</listitem>
+</orderedlist>
+</sect4>
+
+<sect4 id="adding-links">
+<title>Adding links from the main pages:</title>
+<para>
+By running <code>make</code> from within htdocs/Changes, you will automatically 
+update <ulink url="../">htdocs/index.html</ulink> and the index pages of all supported
+translations.  No further action on your part is required.
+</para>
+<para>
+Alternatively, you can run <code>make index</code> from the htdocs toplevel
+directory.
+</para>
+</sect4>
+
+<sect4 id="link-specific">
+<title>If you want to add a link from a port specific page:</title>
+<orderedlist>
+<listitem>Edit htdocs/Ports/<emphasis>arch</emphasis>/index.html, and search for the
+    '&lt;!-- news --&gt;' block.</listitem>
+<listitem>Add a new entry to the subsequent list in the form:
+<para>
+<programlisting>&lt;dt&gt;&lt;b&gt;<emphasis>date</emphasis>:&lt;/b&gt; <emphasis>title</emphasis>
+    &lt;dd&gt;<emphasis>body of item</emphasis>
+    &lt;p&gt;</programlisting>
+</para>
+    where
+    <itemizedlist>
+    <listitem><emphasis>date</emphasis> - Normally as YEAR.MONTH.DATE</listitem>
+    <listitem><emphasis>title</emphasis> - Freeform (short) text title</listitem>
+    <listitem><emphasis>body of item</emphasis> - Freeform text for the entry. Can span mutltiple
+	lines and may use HTML tags and links.</listitem>
+    </itemizedlist>
+</listitem>
+</orderedlist>
+</sect4>
+
+<sect4 id="finally">
+<title>Finally:</title>
+<orderedlist>
+<listitem>You may want to <ulink url="#validate-html">validate the HTML</ulink> in
+    your modified files.</listitem>
+<listitem>Check in the files - do not forget any <code>.list</code> files will
+    update the matching <code>.html</code>.  The command 'make commit', when
+	issued from the htdocs toplevel directory, will commit the main
+	index-page, Changes/index.* and all the translations index pages with
+	a default message of "NEWS; regen".  If you would like to add a more
+	specific message, use 'MSG="Added News regarding FooBar" make
+	commit'.</listitem>
+<listitem>If the news is noteworthy it is a good idea to submit it to some news
+    sites, like 
+    <ulink url="http://daily.daemonnews.org/add_story.php3">Daily Daemonnews</ulink>,
+    <ulink url="http://www.osnews.com/submit.php">OSNews</ulink>,
+    <ulink url="http://slashdot.org/submit.pl">Slashdot</ulink>,
+    <ulink url="http://www.newsforge.com/submit.pl">Newsforge</ulink> and
+    <ulink url="http://www.bsdforums.org/submitnews.php">BSDForums</ulink>.</listitem>
+</orderedlist>
+</sect4>
+
+</sect3>
+
+<sect3 id="adding-events">
+<title>Adding Events</title>
+<para>
+The main index page also contains links to "Upcoming Events".  These links are
+updated much like the <ulink url="#adding-news-items">News entries</ulink>:
+</para>
+<para>
+  <programlisting>
+cd .../htdocs/gallery
+$EDITOR events.list
+make events</programlisting>
+</para>
+
+<para>
+Since the events are included on all the translations index pages, all these
+pages need to be generated and committed as well.  This can be achieved by
+issuing the 'make index' command from the htdocs directory.	
+</para>
+<para>
+  <programlisting>
+cd .../htdocs
+make index
+MSG="Added Event Foo" make commit</programlisting>
+</para>
+</sect3>
+
+<sect3 id="adding-mailinglists">
+<title>Adding to/editing the MailingLists page </title>
+<para>
+If a mailing-list is missing from the
+<ulink url="../MailingLists/">MailingLists</ulink> page:
+<orderedlist>
+<listitem>Edit the htdocs/MailingLists/index.m4 file</listitem>
+<listitem>Run the makefile in htdocs/MailingLists, it will generate the index.html</listitem>
+<listitem>Confirm the generated html is good.</listitem>
+<listitem>commit the index.m4 and index.html files.</listitem>
+</orderedlist>
+</para>
+</sect3>
+
+<sect3 id="consultants">
+<title>Consultants for hire</title>
+<para>
+Before adding an entry to the ``Consultants for hire'' page (<ulink
+url="../gallery/consultants.html">gallery/consultants.html</ulink>), please ask
+that the person in question provides a link back to our homepage and/or
+mentions NetBSD on their website.  Needless to say that you should make sure
+that the URL given is active and accessible.
+</para>
+
+</sect3>
+</sect2>
+</sect1>
+</webpage>
