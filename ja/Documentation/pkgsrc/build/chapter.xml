@@ -1,105 +1,106 @@
-<!-- $NetBSD: chapter.xml,v 1.2 2003/05/24 04:12:27 grant Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.3 2003/06/19 12:43:24 grant Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: chapter.xml,v 1.2 2003/05/24 04:12:27 grant Exp   -->
+<!-- NetBSD: chapter.xml,v 1.3 2003/06/19 12:43:24 grant Exp   -->
 
 <chapter id="build"> <?dbhtml filename="build.html"?>
 <title>構築の手順</title>
 <para>
-プログラムを構築するための基本的な手順は常に同じです。最初に、プログラムの
-ソースファイル(distfile)をローカル・システムへ持ってきて展開します。NetBSD
-上でコンパイルするためのいくつかのパッチを適用した後に、ソフトウェアを設定
-し、構築(通常、コンパイルすることによって)します。最後に作成されたバイナリー
-等を、システムにインストールします。これはまさにNetBSDパッケージ・システム
-によって実行される手順です。この手順は、中心となるMakefile、
-<filename>pkgsrc/mk/bsd.pkg.mk</filename>の中で一連のターゲットとして実装されています
+  プログラムを構築するための基本的な手順は常に同じです。最初に、プログラムの
+  ソースファイル(<emphasis>distfile</emphasis>)をローカル・システムへ持ってきて展開します。NetBSD
+  上でコンパイルするためのいくつかのパッチを適用した後に、ソフトウェアを設定
+  し、構築(通常、コンパイルすることによって)します。最後に作成されたバイナリー
+  等を、システムにインストールします。これはまさにNetBSDパッケージ・システム
+  によって実行される手順です。この手順は、中心となるMakefile、
+  <filename>pkgsrc/mk/bsd.pkg.mk</filename>の中で一連のターゲットとして実装されています
 </para>
 
 <sect1 id="build.prefix">
 <title>プログラムの場所</title>
 <para>
-次のセクションでNetBSDパッケージ・システムによって実行される手順の概略を述
-べる前に、プログラムがインストールされる場所、その場所に影響をおよぼす変数
-について簡単に記述します。
+  次のセクションでNetBSDパッケージ・システムによって実行される手順の概略を述
+  べる前に、プログラムがインストールされる場所、その場所に影響をおよぼす変数
+  について簡単に記述します。
 </para>
 
 <para>
-自動変数<varname>PREFIX</varname>は、最終的にプログラムのすべてのファイルがインストールされる
-場所をしめします。通常、<varname>LOCALBASE</varname> (<filename>/usr/pkg</filename>)、または<quote>cross</quote>カテゴリーの
-パッケージのための<varname>CROSSBASE</varname>と同じ場所になっています。もし<varname>USE_IMAKE</varname> あるい
-は<varname>USE_X11BASE</varname>が定義されていれば、その値は<varname>X11BASE</varname>と同じになります。
-<varname>PREFIX</varname>の値は、プログラムのソース中でこれらのファイルが符号化されるさまざ
-まな場所に使用されるべきです。
-<!-- XXX ; 詳細に関しては、セクション4.3および6.2を参照して下さい。 -->
+  自動変数<varname>PREFIX</varname>は、最終的にプログラムのすべてのファイルがインストールされる
+  場所をしめします。通常、<varname>LOCALBASE</varname> (<filename>/usr/pkg</filename>)、または<quote>cross</quote>カテゴリーの
+  パッケージのための<varname>CROSSBASE</varname>と同じ場所になっています。もし<varname>USE_IMAKE</varname> あるい
+  は<varname>USE_X11BASE</varname>が定義されていれば、その値は<varname>X11BASE</varname>と同じになります。
+  <varname>PREFIX</varname>の値は、プログラムのソース中でこれらのファイルが符号化されるさまざ
+  まな場所に使用されるべきです。
+  詳細に関しては、<xref linkend="components.patches"/>および<xref
+  linkend="fixes.libtool"/>を参照して下さい。
 </para>
 
 <para>
-これらの変数のどれかを選択し使用する場合には、以下のルールに従ってください。
+  これらの変数のどれかを選択し使用する場合には、以下のルールに従ってください。
 </para>
 
 <itemizedlist>
 <listitem>
 <para>
-<varname>PREFIX</varname>は常に現在のパッケージがインストールされる場所を指します。パッ
-ケージ自身のインストール先のパスを参照する時に、<quote>${PREFIX}</quote>を使用してくだ
-さい。
+  <varname>PREFIX</varname>は常に現在のパッケージがインストールされる場所を指します。パッ
+  ケージ自身のインストール先のパスを参照する時に、<quote>${PREFIX}</quote>を使用してくだ
+  さい。
 </para>
 </listitem>
 
 <listitem>
 <para>
-<varname>LOCALBASE</varname>は、すべての非X11パッケージがインストールされる場所です。他
-の非X11パッケージによってインストールされたインクルードファイルやライブ
-ラリーの場所をさがすためのコンパイラーの-Iや-Lオプションを指定する場合に、
-<quote>${LOCALBASE}</quote>を使用してください。
+  <varname>LOCALBASE</varname>は、すべての非X11パッケージがインストールされる場所です。他
+  の非X11パッケージによってインストールされたインクルードファイルやライブ
+  ラリーの場所をさがすためのコンパイラーの-Iや-Lオプションを指定する場合に、
+  <quote>${LOCALBASE}</quote>を使用してください。
 </para>
 </listitem>
 
 <listitem>
 <para>
-<varname>X11BASE</varname>は、実際に(xsrcなどに由来する)X11ディストリビューションがイン
-ストールされる場所です。通常のX11のインクルードファイル(パッケージとして
-インストールされていない)をさがす場合、<quote>${X11BASE}</quote>を使用してください。
+  <varname>X11BASE</varname>は、実際に(xsrcなどに由来する)X11ディストリビューションがイン
+  ストールされる場所です。通常のX11のインクルードファイル(パッケージとして
+  インストールされていない)をさがす場合、<quote>${X11BASE}</quote>を使用してください。
 </para>
 </listitem>
 
 <listitem>
 <para>
-X11ベースのパッケージは特別です。<varname>X11BASE</varname>、または<varname>LOCALBASE</varname>に依存するかも
-しれません。X11パッケージを<varname>LOCALBASE</varname>にインストールする方法は、単に
-<pkg>pkgtools/xpkgwedge</pkg>をインストールするだけです。
-もし、<varname>USE_IMAKE</varname>や<varname>USE_X11BASE</varname>をMakefileで定義したpkgとしてインストールさ
-れたインクルードファイルやライブラリーをさがす場合、<quote>${X11BASE}</quote> と
-<quote>${LOCALBASE}</quote>の両方を使用する必要があります。
+  X11ベースのパッケージは特別です。<varname>X11BASE</varname>、または<varname>LOCALBASE</varname>に依存するかも
+  しれません。X11パッケージを<varname>LOCALBASE</varname>にインストールする方法は、単に
+  <pkg>pkgtools/xpkgwedge</pkg>をインストールするだけです。
+  もし、<varname>USE_IMAKE</varname>や<varname>USE_X11BASE</varname>をMakefileで定義したpkgとしてインストールさ
+  れたインクルードファイルやライブラリーをさがす場合、<quote>${X11BASE}</quote> と
+  <quote>${LOCALBASE}</quote>の両方を使用する必要があります。
 </para>
 </listitem>
 
 <listitem>
 <para>
-X11パッケージのインストール場所を参照する用途には、<varname>X11PREFIX</varname>を使って
-ください。<varname>X11PREFIX</varname>は、xpkgwedgeがインストールされていない場合は
-<varname>X11BASE</varname>となり、xpkgwedgeがインストールされている場合は<varname>LOCALBASE</varname>と
-なります。
+  X11パッケージのインストール場所を参照する用途には、<varname>X11PREFIX</varname>を使って
+  ください。<varname>X11PREFIX</varname>は、xpkgwedgeがインストールされていない場合は
+  <varname>X11BASE</varname>となり、xpkgwedgeがインストールされている場合は<varname>LOCALBASE</varname>と
+  なります。
 </para>
 </listitem>
 
 <listitem>
 <para>
-xpkgwedgeがインストールされている場合、パッケージによってインストール先
-が<varname>X11BASE</varname>になっていたり<varname>LOCALBASE</varname>になっていたりすることがあります。インス
-トールされているパッケージのprefixを決めるために、<varname>EVAL_PREFIX</varname>定義を使う
-ことができます。この定義に<quote>DIRNAME=&lt;package&gt;</quote>の形式の組を書くと、make(1)変
-数<varname>DIRNAME</varname>が、インストールされているパッケージpackage &lt;package&gt;のprefixに設定され
-ます。そのパッケージがインストールされていない場合は<quote>${X11PREFIX}</quote>に設定さ
-れます。
+  xpkgwedgeがインストールされている場合、パッケージによってインストール先
+  が<varname>X11BASE</varname>になっていたり<varname>LOCALBASE</varname>になっていたりすることがあります。インス
+  トールされているパッケージのprefixを決めるために、<varname>EVAL_PREFIX</varname>定義を使う
+  ことができます。この定義に<quote>DIRNAME=&lt;package&gt;</quote>の形式の組を書くと、make(1)変
+  数<varname>DIRNAME</varname>が、インストールされているパッケージpackage &lt;package&gt;のprefixに設定され
+  ます。そのパッケージがインストールされていない場合は<quote>${X11PREFIX}</quote>に設定さ
+  れます。
 </para>
 
 <para>
-例を使って説明するのが一番いいでしょう。
+  例を使って説明するのが一番いいでしょう。
 </para>
 
 <para>
-以下は、
-<filename>pkgsrc/wm/scwm/Makefile</filename>からの抜粋です。
+  以下は、
+  <filename>pkgsrc/wm/scwm/Makefile</filename>からの抜粋です。
 </para>
 
 <programlisting>EVAL_PREFIX+=		GTKDIR=gtk+
@@ -108,14 +109,14 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 			--enable-multibyte</programlisting>
 
 <para>
-<varname>EVAL_PREFIX</varname>を使って評価するパッケージに対して、以下のような定義を使って
-デフォルトを定義することができます。
+  <varname>EVAL_PREFIX</varname>を使って評価するパッケージに対して、以下のような定義を使って
+  デフォルトを定義することができます。
 </para>
 
 <programlisting>GTKDIR_DEFAULT= ${LOCALBASE}</programlisting>
 
 <para>
-ここで<varname>GTKDIR</varname>は、<varname>EVAL_PREFIX</varname>での最初の定義の組に対応します。
+  ここで<varname>GTKDIR</varname>は、<varname>EVAL_PREFIX</varname>での最初の定義の組に対応します。
 </para>
 </listitem>
 </itemizedlist>
@@ -125,131 +126,131 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 <sect1>
 <title>主なターゲット</title>
 <para>
-<filename>bsd.pkg.mk</filename>で定義された、構築手順で使用される主なターゲットについて述べます。
+  <filename>bsd.pkg.mk</filename>で定義された、構築手順で使用される主なターゲットについて述べます。
 </para>
 
 <itemizedlist>
 <listitem>
 <para>fetch</para>
 <para>
-   これは、変数<varname>DISTFILES</varname>と<varname>PATCHFILES</varname> (パッケージのMakefileで定義された)で指
-   定されたファイルが、ローカルシステムの<filename>/usr/pkgsrc/distfiles</filename>に存在するか
-   どうかをチェックします。もし、存在しなければ、そのファイルを以下のような
-   コマンドを使って取得しようとします。
+  これは、変数<varname>DISTFILES</varname>と<varname>PATCHFILES</varname> (パッケージのMakefileで定義された)で指
+  定されたファイルが、ローカルシステムの<filename>/usr/pkgsrc/distfiles</filename>に存在するか
+  どうかをチェックします。もし、存在しなければ、そのファイルを以下のような
+  コマンドを使って取得しようとします。
 </para>
 
 <programlisting>${FETCH_CMD} ${FETCH_BEFORE_ARGS} ${site}${file} ${FETCH_AFTER_ARGS}</programlisting>
 
 <para>
-   この${site}には、複数の候補が決まった順序で使われます: 最初に
-   <varname>MASTER_SITE_OVERRIDE</varname>を試み、次に、<varname>SITES_file</varname>が定義されていればそれ
-   を、定義されていなければ、<varname>MASTER_SITES</varname>か<varname>PATCH_SITES</varname>のどちらかを試
-   みます。そして、最後に<varname>MASTER_SITE_BACKUP</varname>の値を試みます。最初のもの以
-   外の順序は、<varname>MASTER_SORT_AWK</varname>か<varname>MASTER_SORT_REGEX</varname>を設定して、ユーザー
-   が入れ換えることができます。
+  この${site}には、複数の候補が決まった順序で使われます: 最初に
+  <varname>MASTER_SITE_OVERRIDE</varname>を試み、次に、<varname>SITES_file</varname>が定義されていればそれ
+  を、定義されていなければ、<varname>MASTER_SITES</varname>か<varname>PATCH_SITES</varname>のどちらかを試
+  みます。そして、最後に<varname>MASTER_SITE_BACKUP</varname>の値を試みます。最初のもの以
+  外の順序は、<varname>MASTER_SORT_AWK</varname>か<varname>MASTER_SORT_REGEX</varname>を設定して、ユーザー
+  が入れ換えることができます。
 </para>
 </listitem>
 
 <listitem>
 <para>checksum</para>
 <para>
-   distfileを取得した後に、チェックサムを生成し、distinfoファイルに保存され
-   たチェックサムと比較します。もし、チェックサムが一致しなければ、構築は中
-   断されます。これはパッケージ作成時と同じdistfileが、構築に使用されている
-   こと、つまり、悪意や一次配布サイトでの意図的な差し替えやネットワークの損
-   失によってdistfileが変更されていないことを保証するためです。
+  distfileを取得した後に、チェックサムを生成し、distinfoファイルに保存され
+  たチェックサムと比較します。もし、チェックサムが一致しなければ、構築は中
+  断されます。これはパッケージ作成時と同じdistfileが、構築に使用されている
+  こと、つまり、悪意や一次配布サイトでの意図的な差し替えやネットワークの損
+  失によってdistfileが変更されていないことを保証するためです。
 </para>
 </listitem>
 
 <listitem>
 <para>extract</para>
 <para>
-   distfileがローカルシステム上に存在している場合、通常、それらは圧縮アーカ
-   イブフォーマットで保存されているので、展開する必要があります。もっとも一
-   般なフォーマットは<filename>.tar.gz</filename>です。もし、すべてのdistfileを伸張する必要がな
-   いのであれば、伸張するファイルを<varname>EXTRACT_ONLY</varname>に設定してください。もし
-   distfileが<filename>.tar.gz</filename>フォーマットでなければ、<varname>EXTRACT_CMD</varname>、
-   <varname>EXTRACT_BEFORE_ARGS</varname>、そして<varname>EXTRACT_AFTER_ARGS</varname>を設定することにより、それ
-   らを展開することができます。
+  distfileがローカルシステム上に存在している場合、通常、それらは圧縮アーカ
+  イブフォーマットで保存されているので、展開する必要があります。もっとも一
+  般なフォーマットは<filename>.tar.gz</filename>です。もし、すべてのdistfileを伸張する必要がな
+  いのであれば、伸張するファイルを<varname>EXTRACT_ONLY</varname>に設定してください。もし
+  distfileが<filename>.tar.gz</filename>フォーマットでなければ、<varname>EXTRACT_CMD</varname>、
+  <varname>EXTRACT_BEFORE_ARGS</varname>、そして<varname>EXTRACT_AFTER_ARGS</varname>を設定することにより、それ
+  らを展開することができます。
 </para>
 </listitem>
 
 <listitem>
 <para>patch</para>
 <para>
-   展開の後で、<varname>PATCHFILES</varname>で指定されたパッチとパッケージのpatchesサブディレ
-   クトリーに存在するパッチ、さらに、$LOCALPATCHES/$PKGPATH (たとえば 
-   <filename>/usr/local/patches/graphics/png</filename>)に存在するパッチのすべてが適用されます。
-   <filename>.Z</filename>、あるいは<filename>.gz</filename>で終る名前のパッチファイルは、適用する前に伸張されます。
-   <filename>.orig</filename>、<filename>.rej</filename>で終るものは無視されます。patch(1)のためのいくつかのオプショ
-   ンは、<varname>PATCH_DIST_ARGS</varname>で指定する事ができます。
-   <!-- XXX 詳細に関してはセクション4.3を参照して下さい。 -->
+  展開の後で、<varname>PATCHFILES</varname>で指定されたパッチとパッケージのpatchesサブディレ
+  クトリーに存在するパッチ、さらに、$LOCALPATCHES/$PKGPATH (たとえば 
+  <filename>/usr/local/patches/graphics/png</filename>)に存在するパッチのすべてが適用されます。
+  <filename>.Z</filename>、あるいは<filename>.gz</filename>で終る名前のパッチファイルは、適用する前に伸張されます。
+  <filename>.orig</filename>、<filename>.rej</filename>で終るものは無視されます。patch(1)のためのいくつかのオプショ
+  ンは、<varname>PATCH_DIST_ARGS</varname>で指定する事ができます。
+  詳細に関しては<xref linkend="components.patches"/>を参照して下さい。
 </para>
 
 <para> 
-   デフォルトでは、パッチに曖昧さがあった場合にはpatchが異常終了するような
-   特別な引数が渡されます。パッチを修正(再作成)して、きれいに適用できるよう
-   にしてください。そうする理由は、パッチがうまく適用できても、実は誤った場
-   所に適用されていて、深刻な問題を起こす可能性があるからです。
+  デフォルトでは、パッチに曖昧さがあった場合にはpatchが異常終了するような
+  特別な引数が渡されます。パッチを修正(再作成)して、きれいに適用できるよう
+  にしてください。そうする理由は、パッチがうまく適用できても、実は誤った場
+  所に適用されていて、深刻な問題を起こす可能性があるからです。
 </para> 
 </listitem>
 
 <listitem>
 <para>configure</para>
 <para>
-   ほとんどのソフトウェアは、NetBSDで利用できるヘッダーファイル、システムコー
-   ル、およびライブラリールーチンについての情報を必要とします。これはコンフィ
-   ギュレーションとして知られているプロセスであり、通常、自動化されています。
-   大抵の場合、スクリプトがソースと一緒に提供され、それを実行することにより
-   ヘッダーファイルやMakefile等が生成されます。
+  ほとんどのソフトウェアは、NetBSDで利用できるヘッダーファイル、システムコー
+  ル、およびライブラリールーチンについての情報を必要とします。これはコンフィ
+  ギュレーションとして知られているプロセスであり、通常、自動化されています。
+  大抵の場合、スクリプトがソースと一緒に提供され、それを実行することにより
+  ヘッダーファイルやMakefile等が生成されます。
 </para>
 
 <para>
-   もし、プログラムのdistfileが専用のconfigureスクリプトを含んでいる場合、
-   <varname>HAS_CONFIGURE</varname>を設定することにより、実行することができます。もし、そのス
-   クリプトがGNUのautoconfスクリプトである場合は、かわりに、<varname>GNU_CONFIGURE</varname>を
-   指定してください。どちらの場合も、configureスクリプトの引数は、変数
-   <varname>CONFIGURE_ARGS</varname>で指定されます。もし設定スクリプトの名前がデフォルトの
-   <quote>configure</quote>でない場合は、その名前を<varname>CONFIGURE_SCRIPT</varname>に設定してください。
+  もし、プログラムのdistfileが専用のconfigureスクリプトを含んでいる場合、
+  <varname>HAS_CONFIGURE</varname>を設定することにより、実行することができます。もし、そのス
+  クリプトがGNUのautoconfスクリプトである場合は、かわりに、<varname>GNU_CONFIGURE</varname>を
+  指定してください。どちらの場合も、configureスクリプトの引数は、変数
+  <varname>CONFIGURE_ARGS</varname>で指定されます。もし設定スクリプトの名前がデフォルトの
+  <quote>configure</quote>でない場合は、その名前を<varname>CONFIGURE_SCRIPT</varname>に設定してください。
 </para>
 
 <para>
-   もし、プログラムがコンフィギュレーションのためにImakefileを使用するので
-   あれば、<varname>USE_IMAKE</varname>を<quote>YES</quote>に設定することにより、適切な手順が実行されます。
-   (もし、<varname>$X11PREFIX</varname>にインストールされるパッケージが欲しいだけで、xmkmfを実
-   行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください!)
+  もし、プログラムがコンフィギュレーションのためにImakefileを使用するので
+  あれば、<varname>USE_IMAKE</varname>を<quote>YES</quote>に設定することにより、適切な手順が実行されます。
+  (もし、<varname>$X11PREFIX</varname>にインストールされるパッケージが欲しいだけで、xmkmfを実
+  行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください!)
 </para>
 </listitem>
 
 <listitem>
 <para>build</para>
 <para>
-   コンフィギュレーションが終ったら、<varname>$MAKEFILE</varname>の中で、構築のターゲットとし
-   て<varname>$ALL_TARGET</varname>を指定し<varname>$MAKE_PROGRAM</varname>を起動することにより、NetBSD上にソフト
-   ウェアを構築することができます。もし、<varname>USE_GMAKE</varname>が設定されていれば、デフォ
-   ルトの<varname>MAKE_PROGRAM</varname>は<quote>gmake</quote>です。そうでなければ、<quote>make</quote>が使用されます。
-   <varname>MAKEFILE</varname>にはデフォルトで<quote>Makefile</quote>が設定されます。そして、<varname>ALL_TARGET</varname>のデフォ
-   ルトは<quote>all</quote>です。デフォルトの構築手順を変更するために、これらの変数を設定
-   することができます。
+  コンフィギュレーションが終ったら、<varname>$MAKEFILE</varname>の中で、構築のターゲットとし
+  て<varname>$ALL_TARGET</varname>を指定し<varname>$MAKE_PROGRAM</varname>を起動することにより、NetBSD上にソフト
+  ウェアを構築することができます。もし、<varname>USE_GMAKE</varname>が設定されていれば、デフォ
+  ルトの<varname>MAKE_PROGRAM</varname>は<quote>gmake</quote>です。そうでなければ、<quote>make</quote>が使用されます。
+  <varname>MAKEFILE</varname>にはデフォルトで<quote>Makefile</quote>が設定されます。そして、<varname>ALL_TARGET</varname>のデフォ
+  ルトは<quote>all</quote>です。デフォルトの構築手順を変更するために、これらの変数を設定
+  することができます。
 </para>
 </listitem>
 
 <listitem>
 <para>install</para>
 <para>
-   構築の段階が完了すると、ユーザーのためにソフトウェアをパブリックなディレ
-   クトリーにインストールする必要があります。buildターゲットと同様に、
-   <varname>$MAKE_PROGRAM</varname>が<varname>$MAKEFILE</varname>中で起動されます。ただし、<varname>$INSTALL_TARGET</varname>が指定
-   されます。この変数のデフォルトは<quote>install</quote>です。(もし<varname>USE_IMAKE</varname>が設定さ
-   れていれば、<quote>install.man</quote>も追加されます)。
+  構築の段階が完了すると、ユーザーのためにソフトウェアをパブリックなディレ
+  クトリーにインストールする必要があります。buildターゲットと同様に、
+  <varname>$MAKE_PROGRAM</varname>が<varname>$MAKEFILE</varname>中で起動されます。ただし、<varname>$INSTALL_TARGET</varname>が指定
+  されます。この変数のデフォルトは<quote>install</quote>です。(もし<varname>USE_IMAKE</varname>が設定さ
+  れていれば、<quote>install.man</quote>も追加されます)。
 </para>
 </listitem>
 </itemizedlist>
 
 <para>
-もし、ターゲットが指定されなければ、デフォルトは<quote>build</quote>です。手順の途中の
-ターゲットが指定された場合、それ以前のすべての手順が実行されます。例えば
-<command>make build</command>は、以下と同等のことを実行します。
+  もし、ターゲットが指定されなければ、デフォルトは<quote>build</quote>です。手順の途中の
+  ターゲットが指定された場合、それ以前のすべての手順が実行されます。例えば
+  <command>make build</command>は、以下と同等のことを実行します。
 </para>
 
 <programlisting>make fetch
@@ -268,144 +269,163 @@ make build</programlisting>
 <listitem>
 <para>pre/post-*</para>
 <para>
-   前のセクションで述べた主ターゲットのために、二つの補助ターゲットが存在し
-   ます。これは主ターゲットに<quote>pre-</quote>や<quote>post-</quote>というプレフィックスをつけ
-   たものです。これらのターゲットは、特別な設定やインストール手順のために、
-   主ターゲットが実行される前や後に実行されます。例えば、プログラムのコンフィ
-   ギュレーションスクリプトやインストールターゲットが省略された場合に有用で
-   す。
+  前のセクションで述べた主ターゲットのために、二つの補助ターゲットが存在し
+  ます。これは主ターゲットに<quote>pre-</quote>や<quote>post-</quote>というプレフィックスをつけ
+  たものです。これらのターゲットは、特別な設定やインストール手順のために、
+  主ターゲットが実行される前や後に実行されます。例えば、プログラムのコンフィ
+  ギュレーションスクリプトやインストールターゲットが省略された場合に有用で
+  す。
 </para>
 </listitem>
 
 <listitem>
 <para>do-*</para>
 <para>
-   主なターゲットがおかしな動作をし、それを修正するための変数が存在しない場
-   合、do-*ターゲットを使用することにより、それらを再定義することができます
-   (do-*ターゲットのかわりに、ターゲット自体を再定義してはいけません。pre-*
-   やpost-*ターゲットが実行されなくなってしまいます)。通常、再定義する必要
-   はありません。
+  主なターゲットがおかしな動作をし、それを修正するための変数が存在しない場
+  合、do-*ターゲットを使用することにより、それらを再定義することができます
+  (do-*ターゲットのかわりに、ターゲット自体を再定義してはいけません。pre-*
+  やpost-*ターゲットが実行されなくなってしまいます)。通常、再定義する必要
+  はありません。
 </para>
 </listitem>
 
 <listitem>
 <para>reinstall</para>
 <para>
-   もし、<command>make install</command>実行後に、いくつかのファイルがきちんとインストール
-   されなかった事に気がついた場合、このターゲットを使い、再びインストールす
-   る事ができます。この場合、<quote>インストール済み</quote>フラグは無視されます。
+  もし、<command>make install</command>実行後に、いくつかのファイルがきちんとインストール
+  されなかった事に気がついた場合、このターゲットを使い、再びインストールす
+  る事ができます。この場合、<quote>インストール済み</quote>フラグは無視されます。
 </para>
 </listitem>
 
 <listitem>
 <para>deinstall</para>
 <para>
-   このターゲットは、パッケージをアンインストールするためにカレントディレク
-   トリーでpkg_delete(1)を実行します。動作を制御するために、以下の変数をコ
-   マンドライン、または<filename>/etc/mk.conf</filename>で使用することができます。
+  このターゲットは、パッケージをアンインストールするためにカレントディレク
+  トリーでpkg_delete(1)を実行します。動作を制御するために、以下の変数をコ
+  マンドライン、または<filename>/etc/mk.conf</filename>で使用することができます。
 </para>
 
-	<itemizedlist>
-	<listitem>
-	<para>PKG_VERBOSE</para>
-	<para>pkg_delete(1)コマンドに「-v」オプションを渡します。</para>
-	</listitem>
+<itemizedlist>
+<listitem>
+<para>PKG_VERBOSE</para>
+<para>
+  pkg_delete(1)コマンドに「-v」オプションを渡します。
+</para>
+</listitem>
 
-	<listitem>
-	<para>DEINSTALLDEPENDS</para>
-	<para>
-      指定されたパッケージに必要な(依存する)すべてのパッケージを削除します。
-      このターゲットは、指定されたパッケージによってインストールされたパッ
-      ケージを削除するために使用されます。例えば、<command>make deinstall
-      DEINSTALLDEPENDS=1</command>が<filename>pkgsrc/x11/kde</filename>で実行された場合、KDE全体を削除し
-      ます。pkg_deleteのコマンドラインに<quote>-R</quote>を指定すると設定されます。
-	</para>
-	</listitem>
-	</itemizedlist>
+<listitem>
+<para>DEINSTALLDEPENDS</para>
+<para>
+  指定されたパッケージに必要な(依存する)すべてのパッケージを削除します。
+  このターゲットは、指定されたパッケージによってインストールされたパッ
+  ケージを削除するために使用されます。例えば、<command>make deinstall
+  DEINSTALLDEPENDS=1</command>が<filename>pkgsrc/x11/kde</filename>で実行された場合、KDE全体を削除し
+  ます。pkg_deleteのコマンドラインに<quote>-R</quote>を指定すると設定されます。
+</para>
+</listitem>
+</itemizedlist>
 
 </listitem>
 
 <listitem>
 <para>update</para>
 <para>
-   このターゲットは、現在のパッケージを最新のものに更新します。最初にパッケー
-   ジと、それに依存するすべてのパッケージをアンインストールします。それから
-   最新のバージョンのパッケージをコンパイル、インストールします。これは、現
-   在どのパッケージがインストールされているかを調べ、<quote>make deinstall</quote>、
-   <quote>make install</quote>(または、<varname>UPDATE_TARGET</varname>で設定されたターゲット)を続けて実
-   行するのと同じです。
+  このターゲットは、現在のパッケージを最新のものに更新します。最初にパッケー
+  ジと、それに依存するすべてのパッケージをアンインストールします。それから
+  最新のバージョンのパッケージをコンパイル、インストールします。これは、現
+  在どのパッケージがインストールされているかを調べ、<command>make deinstall</command>、
+  <command>make install</command>(または、<varname>UPDATE_TARGET</varname>で設定されたターゲット)を続けて実
+  行するのと同じです。
 </para>
 
 <para>
-   以前に実行した<quote>make update</quote>がさまざまな理由で中断された場合、パッケー
-   ジの更新のために、このターゲットを使用することができます。ただし、この場
-   合は、<quote>make clean</quote>を実行していない事、あるいは<varname>${WRKDIR}</varname>の依存パッケー
-   ジのリストを削除していない事を確認してください。そうでなければ、インストー
-   ル済みの依存パッケージを使用し、現在のパッケージを自動更新することができ
-   ません。
+  以前に実行した<command>make update</command>がさまざまな理由で中断された場合、パッケー
+  ジの更新のために、このターゲットを使用することができます。ただし、この場
+  合は、<command>make clean</command>を実行していない事、あるいは<varname>$WRKDIR</varname>の依存パッケー
+  ジのリストを削除していない事を確認してください。そうでなければ、インストー
+  ル済みの依存パッケージを使用し、現在のパッケージを自動更新することができ
+  ません。
 </para>
 
 <para>
-   中断された<quote>make update</quote>の再開は、パッケージツリーの他の部分が変更され
-   ていない場合に限って動作します。更新対象のパッケージのソースコードが変更
-   されていた場合は、<quote>make update</quote>の再開はきっと失敗するでしょう。
+  中断された<command>make update</command>の再開は、パッケージツリーの他の部分が変更され
+  ていない場合に限って動作します。更新対象のパッケージのソースコードが変更
+  されていた場合は、<command>make update</command>の再開はきっと失敗するでしょう。
 </para>
 
 <para>
-   <quote>make update</quote>の動作を変更するために、以下の変数をコマンドライン、また
-   は<filename>/etc/mk.conf</filename>で使うことができます。
+  <command>make update</command>の動作を変更するために、以下の変数をコマンドライン、また
+  は<filename>/etc/mk.conf</filename>で使うことができます。
 </para>
 
-<!-- XXX -->
+<itemizedlist>
 
-    - UPDATE_TARGET:
-      更新されたパッケージや依存パッケージのために再帰的に使用されるインス
-      トールターゲット。"make update"用のデフォルトは、${DEPENDS_TARGET}が
-      設定されている場合はその値、それ以外の場合は"install"です。
-      例えば、"make update UPDATE_TARGET=package"のように使用します。
+<listitem>
+<varname>UPDATE_TARGET</varname>
+<para>
+  更新されたパッケージや依存パッケージのために再帰的に使用されるインス
+  トールターゲット。<command>make update</command>用のデフォルトは、<varname>DEPENDS_TARGET</varname>が
+  設定されている場合はその値、それ以外の場合は<quote>install</quote>です。
+  例えば、<command>make update UPDATE_TARGET=package</command>のように使用します。
+</para>
+</listitem>
 
-    - NOCLEAN:
-      更新した後、きれいに掃除をしません。調査やその他の目的のために、更新
-      されたパッケージの作業用ソース等をそのままにしておきたい場合に役に立
-      ちます。最終的にはソースツリーを掃除してください(以下の
-     「clean-update」ターゲットを見てください)。そうしなければ、次回の
-     「make」や「make update」の時に古いソースコードが残っていることで
-      トラブルがおこるかもしれません。
+<listitem>
+<varname>NOCLEAN</varname>
+<para>
+  更新した後、きれいに掃除をしません。調査やその他の目的のために、更新
+  されたパッケージの作業用ソース等をそのままにしておきたい場合に役に立
+  ちます。最終的にはソースツリーを掃除してください(以下の
+  <quote>clean-update</quote>ターゲットを見てください)。そうしなければ、次回の
+  <command>make</command>や<command>make update</command>の時に古いソースコードが残っていることで
+  トラブルがおこるかもしれません。
+</para>
+</listitem>
 
-    - REINSTALL:
-      インストール(make ${DEPENDS_TARGET})の前に各パッケージをアンインストー
-      ルします。これは、"make update"の実行中断後に"clean-update"ターゲット
-      (以下参照)が呼ばれた場合に必要となることがあります。
+<listitem>
+<varname>REINSTALL</varname>
+<para>
+  インストール(make <varname>DEPENDS_TARGET</varname>)の前に各パッケージをアンインストー
+  ルします。これは、<command>make update</command>の実行中断後に<quote>clean-update</quote>ターゲット
+  (以下参照)が呼ばれた場合に必要となることがあります。
+</para>
+</listitem>
 
-    - DEPENDS_TARGET:
-      再帰を無効化し、パッケージのターゲットをハードコードすることができま
-      す。updateターゲット用のデフォルトは"update"であり、事前に必要なパッ
-      ケージを再帰的に更新するようになっています。DEPENDS_TARGETを設定する
-      のは、再帰的な更新を無効化したいときだけにしてください。"make update"
-      (後述します)の最中にインストールされる各パッケージに対して、特定のター
-      ゲットを指定するだけの場合は、これのかわりに"UPDATE_TARGET"を使ってく
-      ださい。
+<listitem>
+<varname>DEPENDS_TARGET</varname>
+<para>
+  再帰を無効化し、パッケージのターゲットをハードコードすることができま
+  す。updateターゲット用のデフォルトは<quote>update</quote>であり、事前に必要なパッ
+  ケージを再帰的に更新するようになっています。<varname>DEPENDS_TARGET</varname>を設定する
+  のは、再帰的な更新を無効化したいときだけにしてください。<command>make update</command>
+  (後述します)の最中にインストールされる各パッケージに対して、特定のター
+  ゲットを指定するだけの場合は、これのかわりに<varname>UPDATE_TARGET</varname>を使ってく
+  ださい。
+</para>
+</listitem>
+</itemizedlist>
 
 </listitem>
 
 <listitem>
 <para>clean-update</para>
 <para>
-   カレントディレクトリーで<quote>make update</quote>が実行された時に更新されるすべて
-   のパッケージのソースツリーを掃除します。カレントパッケージ(あるいは、依
-   存パッケージ)がすでにアンインストールされている(例えば<quote>make update</quote>を実行
-   した後)場合には、このターゲットを使ってはいけません。もし使用すると、更
-   新するつもりのパッケージのいくつかを失う可能性があります。経験的には、初
-   めて<quote>make update</quote>を実行する<emphasis>前</emphasis>、あるいは汚れたパッケージツリーがある場
-   合(例えば<varname>NOCLEAN</varname>を使用した場合)にのみ使用するとよいでしょう。
+  カレントディレクトリーで<command>make update</command>が実行された時に更新されるすべて
+  のパッケージのソースツリーを掃除します。カレントパッケージ(あるいは、依
+  存パッケージ)がすでにアンインストールされている(例えば<command>make update</command>を実行
+  した後)場合には、このターゲットを使ってはいけません。もし使用すると、更
+  新するつもりのパッケージのいくつかを失う可能性があります。経験的には、初
+  めて<command>make update</command>を実行する<emphasis>前</emphasis>、あるいは汚れたパッケージツリーがある場
+  合(例えば<varname>NOCLEAN</varname>を使用した場合)にのみ使用するとよいでしょう。
 </para>
 
 <para>
-   パッケージのツリーが掃除されているかどうかわからない場合は、ツリーの最上
-   層で<quote>make clean</quote>を実行するか、更新しようとしているパッケージのディレクト
-   リーで以下のコマンドをこの順に使うか、どちらかをおこなうことができます。
-   (<quote>make update</quote>を初めて実行するより<emphasis>前</emphasis>におこなってください。それ以外の場
-   合、更新しようとしているパッケージをすべて失ってしまいます)
+  パッケージのツリーが掃除されているかどうかわからない場合は、ツリーの最上
+  層で<command>make clean</command>を実行するか、更新しようとしているパッケージのディレクト
+  リーで以下のコマンドをこの順に使うか、どちらかをおこなうことができます。
+  (<command>make update</command>を初めて実行するより<emphasis>前</emphasis>におこなってください。それ以外の場
+  合、更新しようとしているパッケージをすべて失ってしまいます)
 </para>
 
 <programlisting>make clean-update
@@ -413,149 +433,149 @@ make clean CLEANDEPENDS=YES
 make update</programlisting>
 
 <para>
-   <command>make clean-update</command>の動作を変更するために、以下の変数をコマンドライン、
-   または<filename>/etc/mk.conf</filename>で使うことができます。
+  <command>make clean-update</command>の動作を変更するために、以下の変数をコマンドライン、
+  または<filename>/etc/mk.conf</filename>で使うことができます。
 </para>
 
-   <itemizedlist>
-   <listitem><para>CLEAR_DIRLIST</para>
-   <para>
-   <quote>make clean</quote>の後で、パッケージのためのディレクトリーのリストを再構
-   築しません。<quote>make update</quote>で、更新したいすべてのパッケージがインストー
-   ルされた場合にのみ使用してください。通常、これは<quote>make update</quote>で自動
-   的に実行されます。ただし、<varname>NOCLEAN</varname>変数の設定によって実行されない事もあ
-   ります(上を参照してください)。
-   </para>
-   </listitem>
-   </itemizedlist>
+<itemizedlist>
+<listitem><varname>CLEAR_DIRLIST</varname>
+<para>
+  <command>make clean</command>の後で、パッケージのためのディレクトリーのリストを再構
+  築しません。<command>make update</command>で、更新したいすべてのパッケージがインストー
+  ルされた場合にのみ使用してください。通常、これは<command>make update</command>で自動
+  的に実行されます。ただし、<varname>NOCLEAN</varname>変数の設定によって実行されない事もあ
+ります(上を参照してください)。
+</para>
+</listitem>
+</itemizedlist>
 
 </listitem>
 
 <listitem>
 <para>info</para>
 <para>
-   このターゲットは、現在のパッケージに対して<command>pkg_info</command>をおこないます。これ
-   を使って、たとえば、インストールされているパッケージのバージョンを調べる
-   ことができます。
+  このターゲットは、現在のパッケージに対して<command>pkg_info</command>をおこないます。これ
+  を使って、インストールされているパッケージのバージョンを調べる
+  ことができます。
 </para>
 </listitem>
 
 <listitem>
 <para>readme</para>
 <para>
-   このターゲットは、<filename>README.html</filename>ファイルを作成します。このファイルは
-   <pkg>www/navigator</pkg>や<pkg>www/lynx</pkg>のようなブラウザー
-   で閲覧することができます。作成されたファイルは、ローカルホストの
-   <varname>${PACKAGES}</varname>ディレクトリーにあるパッケージへの参照を含んでいます。また、
-   <varname>FTP_PKG_URL_HOST</varname>と<varname>FTP_PKG_URL_DIR</varname>を元にしたURLを参照させることもできます。
-   例えば、ローカルマシン上の<filename>/usr/packages</filename>ディレクトリーのバイナリー・パッ
-   ケージを参照する<filename>README.html</filename>ファイルを作成したい場合、
-   <varname>FTP_PKG_URL_HOST=file://localhost</varname>と<varname>FTP_PKG_URL_DIR=/usr/packages</varname>をセット
-   してください。<varname>${PACKAGES}</varname>ディレクトリーと、そのサブディレクトリーはすべ
-   てのバイナリー・パッケージで検索されます。
+  このターゲットは、<filename>README.html</filename>ファイルを作成します。このファイルは
+  <pkg>www/navigator</pkg>や<pkg>www/lynx</pkg>のようなブラウザー
+  で閲覧することができます。作成されたファイルは、ローカルホストの
+  <varname>PACKAGES</varname>ディレクトリーにあるパッケージへの参照を含んでいます。また、
+  <varname>FTP_PKG_URL_HOST</varname>と<varname>FTP_PKG_URL_DIR</varname>を元にしたURLを参照させることもできます。
+  例えば、ローカルマシン上の<filename>/usr/packages</filename>ディレクトリーのバイナリー・パッ
+  ケージを参照する<filename>README.html</filename>ファイルを作成したい場合、
+  <varname>FTP_PKG_URL_HOST=file://localhost</varname>と<varname>FTP_PKG_URL_DIR=/usr/packages</varname>をセット
+  してください。<varname>${PACKAGES}</varname>ディレクトリーと、そのサブディレクトリーはすべ
+  てのバイナリー・パッケージで検索されます。
 </para>
 </listitem>
 
 <listitem>
 <para>readme-all</para>
 <para>
-   このターゲットを使い、<filename>README-all.html</filename>を作成することができます。このファ
-   イルはNetBSDパッケージコレクションの中の、現在利用可能なすべてのパッケー
-   ジのリスト、また、それらが属するカテゴリーと簡単な説明を含んでいます。こ
-   のファイルは<filename>pkgsrc/*/README.html</filename>から作りだされます。したがって、<command>make readme</command>
-   の<emphasis>後</emphasis>に、このターゲットを実行してください。
+  このターゲットを使い、<filename>README-all.html</filename>を作成することができます。このファ
+  イルはNetBSDパッケージコレクションの中の、現在利用可能なすべてのパッケー
+  ジのリスト、また、それらが属するカテゴリーと簡単な説明を含んでいます。こ
+  のファイルは<filename>pkgsrc/*/README.html</filename>から作りだされます。したがって、<command>make readme</command>
+  の<emphasis>後</emphasis>に、このターゲットを実行してください。
 </para>
 </listitem>
 
 <listitem>
 <para>cdrom-readme</para>
 <para>
-   これは<quote>readme</quote>ターゲット(上を見てください)とほとんど同じですが、CD-ROMに焼
-   かれるpkgsrcツリーを作る時に使われます。また、このターゲットは
-   <filename>README.html</filename>ファイルを作成し、<varname>CDROM_PKG_URL_HOST</varname>と<varname>CDROM_PKG_URL_DIR</varname>に基づ
-   くURLへの参照を作ります。
+  これは<quote>readme</quote>ターゲット(上を見てください)とほとんど同じですが、CD-ROMに焼
+  かれるpkgsrcツリーを作る時に使われます。また、このターゲットは
+  <filename>README.html</filename>ファイルを作成し、<varname>CDROM_PKG_URL_HOST</varname>と<varname>CDROM_PKG_URL_DIR</varname>に基づ
+  くURLへの参照を作ります。
 </para>
 </listitem>
 
 <listitem>
 <para>show-distfiles</para>
 <para>
-   このターゲットは、パッケージを構築するために、どのdistfileやパッチファイ
-   ルが必要かを表示します。(<varname>DISTFILES</varname>および<varname>PATCHFILES</varname>であって、patches/*は
-   含みません)
+  このターゲットは、パッケージを構築するために、どのdistfileやパッチファイ
+  ルが必要かを表示します。(<varname>DISTFILES</varname>および<varname>PATCHFILES</varname>であって、<filename>patches/*</filename>は
+  含みません)
 </para>
 </listitem>
 
 <listitem>
 <para>show-downlevel</para>
 <para>
-   このターゲットは、パッケージがインストールされていない場合は何も表示しま
-   せん。もし、あるバージョンのパッケージがインストールされているが、現在の
-   pkgsrcのバージョンでインストールされたものでない場合、警告メッセージを表
-   示します。このターゲットは、インストール済みのパッケージが古いバージョン
-   であり、そのバージョンが削除可能で、最新の物が追加されることを表示するた
-   めに使用されます。
+  このターゲットは、パッケージがインストールされていない場合は何も表示しま
+  せん。もし、あるバージョンのパッケージがインストールされているが、現在の
+  pkgsrcのバージョンでインストールされたものでない場合、警告メッセージを表
+  示します。このターゲットは、インストール済みのパッケージが古いバージョン
+  であり、そのバージョンが削除可能で、最新の物が追加されることを表示するた
+  めに使用されます。
 </para>
 </listitem>
 
 <listitem>
 <para>show-pkgsrc-dir</para>
 <para>
-   当該パッケージの構築とインストールが可能な、パッケージ階層におけるディレ
-   クトリーを表示します。このディレクトリーは、そのパッケージがインストール
-   された際のディレクトリーと同じとは限りません。このターゲットは、単一ホス
-   ト上で多数のパッケージの更新をしたい場合に使うためのもので、pkgsrc の最
-   上層のMakefileから<quote>show-host-specific-pkgs</quote>ターゲットで呼び出すことがで
-   きます。
+  当該パッケージの構築とインストールが可能な、パッケージ階層におけるディレ
+  クトリーを表示します。このディレクトリーは、そのパッケージがインストール
+  された際のディレクトリーと同じとは限りません。このターゲットは、単一ホス
+  ト上で多数のパッケージの更新をしたい場合に使うためのもので、pkgsrc の最
+  上層のMakefileから<quote>show-host-specific-pkgs</quote>ターゲットで呼び出すことがで
+  きます。
 </para>
 </listitem>
 
 <listitem>
 <para>show-installed-depends</para>
 <para>
-   このターゲットは、インストールされているパッケージのうち、どれが当該パッ
-   ケージの<varname>${DEPENDS}</varname>と合致するかを表示します。DEPENDSが古いせいで構築に問題が
-   起きる場合に便利です。
+  このターゲットは、インストールされているパッケージのうち、どれが当該パッ
+  ケージの<varname>DEPENDS</varname>と合致するかを表示します。DEPENDSが古いせいで構築に問題が
+  起きる場合に便利です。
 </para>
 </listitem>
 
 <listitem>
 <para>check-shlibs</para>
 <para>
-   パッケージのインストール後に、すべてのバイナリーおよび(ELFプラットフォー
-   ムでは) 共有ライブラリーが必要な共有ライブラリーを見つけられるかどうか確
-   認します。<filename>/etc/mk.conf</filename>で<varname>PKG_DEVELOPER</varname>が設定されている場合はデフォルトで
-   実行します。
+  パッケージのインストール後に、すべてのバイナリーおよび(ELFプラットフォー
+  ムでは) 共有ライブラリーが必要な共有ライブラリーを見つけられるかどうか確
+  認します。<filename>/etc/mk.conf</filename>で<varname>PKG_DEVELOPER</varname>が設定されている場合はデフォルトで
+  実行します。
 </para>
 </listitem>
 
 <listitem>
 <para>print-PLIST</para>
 <para>
-   パッケージを新規に、または更新のために<quote>make install</quote>した後、
-   <command>find -newer work/.extract_done</command>をもとに新しい<filename>PLIST</filename>を生成して表示します。PLIST生成は、
-   共有ライブラリーなどに配慮して行われますが、生成した結果を<filename>PLIST</filename>に置く前
-   に再確認するよう*強く*おすすめします。パッケージ更新時には、このコマンド
-   の出力と、更新前の<filename>PLIST</filename>ファイルとを比較すると便利でしょう。
+  パッケージを新規に、または更新のために<quote>make install</quote>した後、
+  <command>find -newer work/.extract_done</command>をもとに新しい<filename>PLIST</filename>を生成して表示します。PLIST生成は、
+  共有ライブラリーなどに配慮して行われますが、生成した結果を<filename>PLIST</filename>に置く前
+  に再確認するよう<emphasis>強く</emphasis>おすすめします。パッケージ更新時には、このコマンド
+  の出力と、更新前の<filename>PLIST</filename>ファイルとを比較すると便利でしょう。
 </para>
 
 <para>
-   パッケージが、tar(1)その他のファイルのアクセス時刻を更新しない方法を使っ
-   てファイルをインストールする場合は、それらのファイルは<quote>find -newer</quote>で検
-   出されないので、手で<filename>PLIST</filename>に書き足すよう注意してください!
+  パッケージが、tar(1)その他のファイルのアクセス時刻を更新しない方法を使っ
+  てファイルをインストールする場合は、それらのファイルは<quote>find -newer</quote>で検
+  出されないので、手で<filename>PLIST</filename>に書き足すよう注意してください!
 </para>
 </listitem>
 
 <listitem>
 <para>bulk-package</para>
 <para>
-   バルクビルドの実行に使われます。適切なバイナリーパッケージがすでに存在す
-   る場合は、何もしません。そうでない場合は、コンパイル、インストール、パッ
-   ケージ作成をおこないます
-   (<varname>PKG_DEPENDS</varname>が適切に設定されている場合は、依存するパッケージも。 <!-- 3.2.1節参照)。 -->
-   バイナリーパッケージ作成後、ディスクの空き領域
-   を確保するために、ソース、インストールしたばかりのパッケージと依存パッケー
-   ジは削除されます。
+  バルクビルドの実行に使われます。適切なバイナリーパッケージがすでに存在す
+  る場合は、何もしません。そうでない場合は、コンパイル、インストール、パッ
+  ケージ作成をおこないます
+  (<varname>PKG_DEPENDS</varname>が適切に設定されている場合は、依存するパッケージも。<xref linkend="binary.configuration"/>参照)。
+  バイナリーパッケージ作成後、ディスクの空き領域
+  を確保するために、ソース、インストールしたばかりのパッケージと依存パッケー
+  ジは削除されます。
 </para>
 </listitem>
 
