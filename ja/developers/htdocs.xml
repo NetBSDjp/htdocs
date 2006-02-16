@@ -9,10 +9,10 @@
 
 <webpage id="ja-htdocs">
 <config param="desc" value="htdocsを編集する"/>
-<config param="cvstag" value="$NetBSD: htdocs.xml,v 1.1 2004/11/15 23:15:53 jschauma Exp $"/>
+<config param="cvstag" value="$NetBSD: htdocs.xml,v 1.9 2004/11/27 23:00:53 jschauma Exp $"/>
 <!-- Based on english version: -->
-<!-- NetBSD: htdocs.xml,v 1.1 2004/11/15 23:15:53 jschauma Exp   -->
-<config param="rcsdate" value="$Date: 2004/11/15 23:15:53 $"/>
+<!-- NetBSD: htdocs.xml,v 1.9 2004/11/27 23:00:53 jschauma Exp   -->
+<config param="rcsdate" value="$Date: 2004/11/27 23:00:53 $"/>
 <head>
 <title>htdocsを編集する</title>
 </head>
@@ -111,7 +111,7 @@
 </para>
 </sect3>
 
-<sect3 id="netbsd-org">
+<sect3 id="NetBSD-org">
 <title>NetBSD.org の表記法</title>
 <para>
     リンク、 mailto その他の参照においては必ず NetBSD.org と書くようにし、
@@ -132,7 +132,7 @@
     A <code>.list</code> file contains standard HTML with additional special
     tags to simplify formatting. It used to be processed by <code><ulink
     url="../list2html.pl">list2html.pl</ulink></code> into the desired .html
-    file.  Since the <code>.list</code> files are no obsolete, they should not be
+    file.  Since the <code>.list</code> files are now obsolete, they should not be
     edited anymore.  If they need to be changed, they should be <ulink
     url="#convert-to-xml">converted to XML</ulink>.
 </para>
@@ -178,10 +178,35 @@
     XML 以外のファイルを編集する必要があるときは、編集と同時に XML に変換することになっています。
     <code>htutils/scripts/list2xml</code> スクリプトは、通常の <code>.html</code>
     ファイルの変換のほか、旧来の <code>.list</code> の変換にも役立つでしょう。
+    ただし、このスクリプトはタグの単純な置換をいくつかするだけであり、
+    実行後に多くの手作業が必要ですので、どうぞご注意ください。
+    特に、すべてのタグを適切な順序で閉じることが必要です。
+</para>
+<para>
+    <code>.xml</code> ファイルを生成あるいは変換した際には、各
+    <code>&lt;table&gt;</code> タグや <code>&lt;sect[1-4]&gt;</code> タグに
+    <quote>id</quote> 属性をつけたことを確認してください。これは、
+    <command>xsltproc</command> が独自に ID 属性を生成して、
+    <code>.html</code> ファイルを再生成する度に
+    ID 属性が更新されることがないようにするためです。
+</para>
+<para>
+    ある HTML タグを、等価な XML に変換する方法がわからない場合は、
+    システムにインストールされている <pkg>textproc/docbook-website</pkg>
+    のなかに便利な例があるかもしれません。そしてもちろん、
+    www@ メーリングリストに遠慮なく助けを求めていただいて結構です。
+</para>
+<para>
+    目次を自動生成する場合は、 Makefile で目次の深さを (たとえば) 
+    <code>TOC_LEVEL=3</code> のように指定する必要があります。
+    目次に含めたくない節がある場合は、その節に
+    <code>role=<quote><emphasis>NotInToc</emphasis></quote></code> 属性をつけることができます。
+    <programlisting>&lt;sect2 id="not-in-toc" role="NotInToc"&gt;</programlisting>
 </para>
 <para>
     ファイルを XML に変換した後は、そのファイルを <code>htdocs/layout.xml</code>
     ファイルに書き加えて web サイトを再生成することを忘れないでください。
+    詳細は<ulink url="#dotxml-files">この後の項目</ulink>をご覧ください。
 </para>
 </sect3>
 
@@ -294,21 +319,21 @@ htdocs 以下でファイルの移動や名称変更をする場合は、以下の手順をとることを
 <sect3 id="adding-news-items">
 <title>ニュースの項目を追加する</title>
 <para>
-ほとんどのニュース項目は<ulink url="../Changes/">htdocs/Changes/index.list</ulink>にあります
-(<ulink url="#dotlist-files">.list ファイル</ulink>に関する記述をごらんください) 。
+ほとんどのニュース項目は<ulink url="../Changes/">htdocs/Changes/index.xml</ulink>にあります
+(<ulink url="#dotxml-files">.xml ファイル</ulink>に関する記述をごらんください) 。
 特定のポートに影響する変更はhtdocs/Port/*/にあるニュースの章からも
 リンクをはってください。
 </para>
 <para>
 重要なコードのニュース項目は
-<currentsrc>doc/CHANGES</currentsrc>
+<currentsrc>src/doc/CHANGES</currentsrc>
 ファイルにも記述すべきです。
 </para>
 <para>せっかちな人向けのお手軽 ``howto'' (ただし、詳細な説明も読んでください):
 <itemizedlist>
 <listitem>cd htdocs/Changes</listitem>
 <listitem>make update</listitem>
-<listitem>${EDITOR} index.list</listitem>
+<listitem>${EDITOR} index.xml</listitem>
 <listitem>make</listitem>
 <listitem>make MSG="I added important NEWS!" commit</listitem>
 </itemizedlist>
@@ -317,36 +342,44 @@ htdocs 以下でファイルの移動や名称変更をする場合は、以下の手順をとることを
 <sect4 id="before-anything">
 <title>htdocsに変更を加える前に:</title>
 <orderedlist>
-<listitem><ulink url="#dotlist-files">.list ファイル</ulink>用にperlが
-インストールされていることを確認します。</listitem>
+<listitem><ulink url="#dotlist-files">.list ファイル</ulink>用に <pkg>lang/perl5</pkg> が
+    インストールされていることを確認します。<ulink url="#what-is-required">前の項目</ulink>もご覧ください。</listitem>
 <listitem>CVSリポジトリーから<code>htdocs</code>をチェックアウトします。</listitem>
 <listitem>htdocs ツリーのコピーがすでにある場合は、定期的に更新するように
 してください。特に、ニュース項目を追加する際には、 gallery/events.*
 も最新の状態になっていなければなりません。このファイルから今後のイベントを
-抜き出して利用しているからです。</listitem>
+抜き出して利用しているからです。以下のようにすれば一番よいでしょう。
+<programlisting>
+  $ cd htdocs
+  $ make update</programlisting>
+</listitem>
 </orderedlist>
 </sect4>
 
 <sect4 id="change-entry">
 <title>変更項目を付け加えるには:</title>
 <orderedlist>
-<listitem>htdocs/Changes/index.listを編集し、&lt;DATE&gt;で始まる最初の行を
-    探します。</listitem>
-<listitem>以下の形式で新しい行を追加します
-    <para><programlisting>&lt;DATE&gt;<emphasis>tag</emphasis> <emphasis>date</emphasis> - <emphasis>title</emphasis></programlisting></para>
-    それぞれの項目は以下のように書きます
-    <itemizedlist>
-    <listitem><emphasis>タグ</emphasis> - 小文字/数字/ハイフンを識別します。例: 'new-xx-driver'</listitem>
-    <listitem><emphasis>日付</emphasis> - DAY MONTH YEARの形式です。例: '23 Jan 1999'</listitem>
-    <listitem><emphasis>タイトル</emphasis> - エントリータイトル用の自由形式のテキストです - 
-        行末をエスケープするのに\を使えます。</listitem>
-    </itemizedlist>
+<listitem>htdocs/Changes/index.xml を編集します</listitem>
+<listitem>目次に以下のような形式の行を追加します
+<programlisting>
+  &lt;listitem&gt;&lt;ulink url="#link-name"&gt;XX Mon XXX - FREEFORM TITLE&lt;/ulink&gt;&lt;/listitem&gt;</programlisting>
 </listitem>
-<listitem>項目の本体を追加します。マニュアルページ (例: &man.ls.1;) とemailアドレス
-    (例: &lt;user@domain&gt;) は自動的に展開されます。
-    自由にHTMLタグを使えますが、必須ではありません。</listitem>
+<listitem>目次より後の、適切な節に、以下のような形式で項目の本体を追加します
+  <programlisting>
+  &lt;sect3 id="link-name&gt;
+  &lt;title&gt;XX Mon XXX - 自由形式のタイトル (&lt;ulink url="#monXXXX"&gt;top&lt;/ulink&gt;)&lt;/title&gt;
+  &lt;para&gt;
+    項目の本文をここに書きます。マニュアルページは <quote>&amp;man.command.X;</quote> として、
+    email アドレスは &lt;email&gt;full@address&lt;/email&gt; として参照できます。
+  &lt;para&gt;
+  &lt;/sect3&gt;</programlisting>
+  </listitem>
 <listitem>'<code>make</code>' を実行します。</listitem>
 </orderedlist>
+<para>
+(www チームでは、目次の生成を自動化して項目追加が簡単にできるようにするため、
+作業中です。)
+</para>
 </sect4>
 
 <sect4 id="adding-links">
@@ -416,7 +449,7 @@ htdocs/Changes で <code>make</code> を実行すると、
 <para>
   <programlisting>
 cd .../htdocs/gallery
-$EDITOR events.list
+$EDITOR events.xml
 make events</programlisting>
 </para>
 
