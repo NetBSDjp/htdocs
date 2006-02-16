@@ -1,4 +1,4 @@
-<!-- $NetBSD: chapter.xml,v 1.7 2003/06/20 04:13:59 grant Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.8 2003/06/20 04:44:42 grant Exp $ -->
 
 <chapter id="binary"> <?dbhtml filename="binary.html"?>
 <title>Making precompiled packages</title>
@@ -6,24 +6,27 @@
 <sect1>
 <title>Packaging a single package</title>
 <para> 
-Once you have built and installed the package as mentioned above, you can
-build it into a <emphasis>binary package</emphasis> - you might want to do
-this so that you can use the binaries you have just built on another system,
-or to provide a simple means for others to use your binary package instead
-of wasting CPU time - this is done by changing to the appropriate directory
-in the pkgsrc tree, and typing the command
+Once you have built and installed a package, you can create a
+<emphasis>binary package</emphasis> which can be installed on another
+system with pkg_add(1). This saves having to build the same package on
+a group of hosts and wasting CPU time. It also provides a simple means
+for others to install your package, should you distribute it.
 </para>
 
-<screen><prompt>#</prompt> make package</screen>
+<para>
+Creating a binary package:
+</para>
+
+<screen><prompt>#</prompt> <userinput>cd sysutils/top</userinput>
+<prompt>#</prompt> <userinput>make package</userinput></screen>
 
 <para>
-at the shell prompt. This will build and install your package (if not
-already done), and then construct a binary package out of the results so
-that you can use the <command>pkg_*</command> tools to manipulate this.
-The binary package is
-stored under <filename>/usr/pkgsrc/packages</filename>, it's in the form
-of a gzipped file at the present time. See <xref linkend="logs.package"/>
-for a continuation of the above top example.
+This will build and install your package (if not already done), and then
+build a binary package from what was installed. You can then use the
+<command>pkg_*</command> tools to manipulate it. Binary packages are
+created by default in <filename>/usr/pkgsrc/packages</filename>, in the
+form of a gzip or bzip2 tar file. See <xref linkend="logs.package"/> for
+a continuation of the above <pkg>sysutils/top</pkg> example.
 </para>
 
 <para>
@@ -59,7 +62,7 @@ actually compile on NFS storage, as this slows things down a lot.
 <para>
 You may want to set things in <filename>/etc/mk.conf</filename>.  Look at
 <filename>pkgsrc/mk/bsd.pkg.defaults.mk</filename> for details of the default settings. 
-You will want to make sure that <varname>ACCEPTABLE_LICENSES</varname>
+You will want to ensure that <varname>ACCEPTABLE_LICENSES</varname>
 meet your local policy. As used in this example,
 <varname>_ACCEPTABLE=yes</varname> accepts <emphasis>all</emphasis> licenses.
 </para>
@@ -109,8 +112,8 @@ specific tasks at the end of the pre-build stage.  If the file
 example use of pre-build.local is to have the line:
 </para>
 
-<screen><prompt>#</prompt> echo "I do not have enough disk space to build this pig." \
-    &gt; pkgsrc/games/crafty-book-enormous/$BROKENF</screen>
+<screen><prompt>#</prompt> <userinput>echo "I do not have enough disk space to build this pig." \
+    &gt; pkgsrc/games/crafty-book-enormous/$BROKENF</userinput></screen>
 
 <para>
 to prevent the system from trying to build a particular package
@@ -154,15 +157,15 @@ Be sure to remove all other things that might interfere with builds, like
 some libs installed in <filename>/usr/local</filename>, etc. then become root and type:
 </para>
 
-<screen><prompt>#</prompt> cd /usr/pkgsrc
-<prompt>#</prompt> sh mk/bulk/build</screen>
+<screen><prompt>#</prompt> <userinput>cd /usr/pkgsrc</userinput>
+<prompt>#</prompt> <userinput>sh mk/bulk/build</userinput></screen>
 
 <para>
 If for some reason your last build didn't complete (power failure,
 system panic, ...), you can continue it by running:
 </para>
 
-<screen><prompt>#</prompt> sh mk/bulk/build restart</screen>
+<screen><prompt>#</prompt> <userinput>sh mk/bulk/build restart</userinput></screen>
 
 <para>
 At the end of the bulk run, you will get a summary via mail, and find
@@ -256,7 +259,8 @@ bulk build inside a chroot environment.
 <para>
 The first step to do so is setting up a chroot sandbox, e.g. <filename>/usr/sandbox</filename>.
 After extracting all the sets from a NetBSD installation or doing a
-<command>make distribution DESTDIR=/usr/sandbox</command> in <filename>/usr/src/etc</filename>, make sure the following
+<command>make distribution DESTDIR=/usr/sandbox</command> in
+<filename>/usr/src/etc</filename>, be sure the following
 items are present and properly configured:
 </para>
 
@@ -264,36 +268,35 @@ items are present and properly configured:
 <listitem>
 kernel
 <para>
-<screen><prompt>#</prompt> cp /netbsd /usr/sandbox</screen>
+<screen><prompt>#</prompt> <userinput>cp /netbsd /usr/sandbox</userinput></screen>
 </para>
 </listitem>
 
 <listitem>
 <filename>/dev/*</filename>
 <para>
-<screen><prompt>#</prompt> cd /usr/sandbox/dev ; sh MAKEDEV all</screen>
+<screen><prompt>#</prompt> <userinput>cd /usr/sandbox/dev ; sh MAKEDEV all</userinput></screen>
 </para>
 </listitem>
 
 <listitem>
 <filename>/etc/resolv.conf</filename> (for <pkg>security/smtpd</pkg> and mail):
 <para>
-<screen><prompt>#</prompt> cp /etc/resolv.conf /usr/sandbox/etc</screen>
+<screen><prompt>#</prompt> <userinput>cp /etc/resolv.conf /usr/sandbox/etc</userinput></screen>
 </para>
 </listitem>
 
 <listitem>
 working(!) mail config (hostname, sendmail.cf):
 <para>
-<screen><prompt>#</prompt> cp /etc/mail/sendmail.cf /usr/sandbox/etc/mail</screen>
+<screen><prompt>#</prompt> <userinput>cp /etc/mail/sendmail.cf /usr/sandbox/etc/mail</userinput></screen>
 </para>
 </listitem>
 
 <listitem>
 <filename>/etc/localtime</filename> (for <pkg>security/smtpd</pkg>):
 <para>
-<screen><prompt>#</prompt> ln -sf /usr/share/zoneinfo/GMT
-/usr/sandbox/etc/localtime</screen>
+<screen><prompt>#</prompt> <userinput>ln -sf /usr/share/zoneinfo/GMT /usr/sandbox/etc/localtime</userinput></screen>
 </para>
 </listitem>
 
@@ -301,62 +304,66 @@ working(!) mail config (hostname, sendmail.cf):
 <filename>/usr/src</filename> (system sources, for <pkg>sysutils/aperture</pkg>,
 <pkg>net/ppp-mppe</pkg>):
 <para>
-<screen><prompt>#</prompt> ln -s ../disk1/cvs .
-<prompt>#</prompt> ln -s cvs/src-1.6 src
-<prompt>#</prompt> ln -s cvs/pkgsrc .</screen>
+<screen><prompt>#</prompt> <userinput>ln -s ../disk1/cvs .</userinput>
+<prompt>#</prompt> <userinput>ln -s cvs/src-1.6 src</userinput>
+<prompt>#</prompt> <userinput>ln -s cvs/pkgsrc .</userinput></screen>
 </para>
 </listitem>
 
 <listitem>
 create <filename>/var/db/pkg</filename> (not part of default install):
 <para>
-<screen><prompt>#</prompt> mkdir /usr/sandbox/var/db/pkg</screen>
+<screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/var/db/pkg</userinput></screen>
 </para>
 </listitem>
 
 <listitem>
 create <filename>/usr/pkg</filename> (not part of default install):
 <para>
-<screen><prompt>#</prompt> mkdir /usr/sandbox/usr/pkg</screen>
+<screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/usr/pkg</userinput></screen>
 </para>
 </listitem>
 
 <listitem>
-checkout pkgsrc from cvs into
+checkout pkgsrc into
 <filename>/usr/sandbox/usr/pkgsrc</filename>:
 <para>
-<screen><prompt>#</prompt> cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot checkout -d -P pkgsrc</screen>
+<screen><prompt>#</prompt> <userinput>cd /usr/sandbox/usr</userinput>
+<prompt>#</prompt> <userinput>cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot checkout -d -P pkgsrc</userinput></screen>
 </para>
-/usr/pkgsrc/packages &amp; .../distfiles (point outside of sandbox)
 </listitem>
 
 <listitem>
-<filename>/etc/mk.conf</filename>, see <xref linkend="binary.mk.conf"/>.
+edit <filename>/etc/mk.conf</filename>, see <xref linkend="binary.mk.conf"/>.
 </listitem>
 
 <listitem>
-adjust <filename>mk/bulk/build.conf</filename>
+adjust <filename>mk/bulk/build.conf</filename> to suit your needs.
 </listitem>
 
 </itemizedlist>
 
+<note>
+Don't forget to install X.
+</note>
+
 <para>
-!!! Don't forget to install X !!!
 If you are a developer and want to upload the resulting binary packages 
-to ftp.NetBSD.org, make sure you are using the default X version for your
-architecture and release (up to 1.6, that is 3.3.6 for all architectures).
+to ftp.NetBSD.org, be sure you are using the default X version for your
+architecture and release (that is XFree86 3.3.6 for 1.5.x, and XFree86
+4.2.1 for NetBSD 1.6.1 on <ulink url="../../Ports/cats/">cats</ulink>,
+<ulink url="../../Ports/i386/">i386</ulink> and <ulink
+url="../../Ports/macppc/">macppc</ulink> ports, 3.3.6 on all other
+ports).
 </para>
 
 <para>
-Next thing you will want to is make sure <filename>/usr/sandbox/usr/pkgsrc</filename> contains a
-fresh checkout of pkgsrc (e.g. from anoncvs). Do not mount/link this to the
-copy of your pkgsrc tree you do development in, as this will likely cause
-problems! Adjust <filename>.../pkgsrc/packages</filename> and <filename>.../pkgsrc/distfiles</filename> to point to
-some places outside the sandbox if you want to make the files public. 
-</para>
-
-<para>
-Then, configure <filename>.../pkgsrc/mk/bulk/build.conf</filename> to fit your needs!
+The next thing you need is a <emphasis>fresh checkout of pkgsrc</emphasis>
+(e.g. from anoncvs). Do not mount/link this to the copy of your pkgsrc tree
+you do development in, as this will likely cause problems! Adjust
+<filename>.../pkgsrc/packages</filename> and
+<filename>.../pkgsrc/distfiles</filename> to point to some places
+outside the sandbox if you want to make the files public. 
 </para>
 
 <para>
@@ -364,13 +371,14 @@ When the chroot sandbox is setup, you can start the build with the following
 steps:
 </para>
 
-<screen><prompt>#</prompt> cd /usr/sandbox/usr/pkgsrc
-<prompt>#</prompt> sh mk/bulk/do-sandbox-build</screen>
+<screen><prompt>#</prompt> <userinput>cd /usr/sandbox/usr/pkgsrc</userinput>
+<prompt>#</prompt> <userinput>sh mk/bulk/do-sandbox-build</userinput></screen>
 
 <para>
-This will just jump inside the sandbox and start thrash^Wbuilding.
+This will just jump inside the sandbox and start building.
 At the end of the build, mail will be sent with the results of the build.
-Created binary pkgs will be in <filename>/usr/sandbox/usr/pkgsrc/packages</filename> (wherever
+Created binary pkgs will be in
+<filename>/usr/sandbox/usr/pkgsrc/packages</filename> (wherever
 that points/mounts to/from).
 </para>
 </sect2>
@@ -382,9 +390,9 @@ that points/mounts to/from).
 After your bulk pkgsrc build has completed, you may wish to create a CD-ROM
 set of the resulting binary packages to assist in installing packages on
 other machines.  The package pkgsrc/pkgtools/cdpack provides a simple tool for 
-creating the ISO 9660 images. <command>cdpack</command> arranges the packages on the CD-ROMs
-in a way that keeps all the dependencies for given package on the same
-CD as that package.
+creating the ISO 9660 images. <command>cdpack</command> arranges the
+packages on the CD-ROMs in a way that keeps all the dependencies for
+given package on the same CD as that package.
 </para>
 
 <sect2>
@@ -392,36 +400,38 @@ CD as that package.
 <para>
 Complete documentation for cdpack is found in cdpack(1).  The following
 short example assumes that the binary packages are left in
-<filename>/usr/pkgsrc/packages/All</filename> and that sufficient disk space exists in <filename>/u2</filename>
-to hold the ISO 9660 images.
+<filename>/usr/pkgsrc/packages/All</filename> and that sufficient disk
+space exists in <filename>/u2</filename> to hold the ISO 9660 images.
 </para>
 
-<screen><prompt>#</prompt> mkdir /u2/images
-<prompt>#</prompt> pkg_add /usr/pkgsrc/packages/All/cdpack
-<prompt>#</prompt> cdpack /usr/pkgsrc/packages/All /u2/images</screen>
+<screen><prompt>#</prompt> <userinput>mkdir /u2/images</userinput>
+<prompt>#</prompt> <userinput>pkg_add /usr/pkgsrc/packages/All/cdpack</userinput>
+<prompt>#</prompt> <userinput>cdpack /usr/pkgsrc/packages/All /u2/images</userinput></screen>
 
 <para>
-If you wish to include a common set of files (<filename>COPYRIGHT</filename>, <filename>README</filename>, etc.)
+If you wish to include a common set of files
+(<filename>COPYRIGHT</filename>, <filename>README</filename>, etc.)
 on each CD in the collection, then you need to create a directory which
-contains these files.  For example
+contains these files. e.g.
 </para>
 
-<screen><prompt>#</prompt> mkdir /tmp/common
-<prompt>#</prompt> echo "This is a README" &gt; /tmp/common/README
-<prompt>#</prompt> echo "Another file" &gt; /tmp/common/COPYING
-<prompt>#</prompt> mkdir /tmp/common/bin
-<prompt>#</prompt> echo "#!/bin/sh" &gt; /tmp/common/bin/myscript
-<prompt>#</prompt> echo "echo Hello world" &gt;&gt; /tmp/common/bin/myscript
-<prompt>#</prompt> chmod 755 /tmp/common/bin/myscript</screen>
+<screen><prompt>#</prompt> <userinput>mkdir /tmp/common</userinput>
+<prompt>#</prompt> <userinput>echo "This is a README" &gt; /tmp/common/README</userinput>
+<prompt>#</prompt> <userinput>echo "Another file" &gt; /tmp/common/COPYING</userinput>
+<prompt>#</prompt> <userinput>mkdir /tmp/common/bin</userinput>
+<prompt>#</prompt> <userinput>echo "#!/bin/sh" &gt; /tmp/common/bin/myscript</userinput>
+<prompt>#</prompt> <userinput>echo "echo Hello world" &gt;&gt; /tmp/common/bin/myscript</userinput>
+<prompt>#</prompt> <userinput>chmod 755 /tmp/common/bin/myscript</userinput></screen>
 
 <para>
-Now create the images with
+Now create the images:
 </para>
 
-<screen><prompt>#</prompt> cdpack -x /tmp/common /usr/pkgsrc/packages/All /u2/images</screen>
+<screen><prompt>#</prompt> <userinput>cdpack -x /tmp/common /usr/pkgsrc/packages/All /u2/images</userinput></screen>
 
 <para>
-and each image will contain <filename>README</filename>, <filename>COPYING</filename>, and <filename>bin/myscript</filename>
+Each image will contain <filename>README</filename>,
+<filename>COPYING</filename>, and <filename>bin/myscript</filename>
 in their root directories.
 </para>
 </sect2>
