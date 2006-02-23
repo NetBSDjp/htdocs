@@ -1,0 +1,1228 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//Norman Walsh//DTD Website V2.2//EN"
+    "http://docbook.sourceforge.net/release/website/2.2/website.dtd" [
+
+<!ENTITY % man-refs.ent SYSTEM "../../share/xml/man-refs.ent"> %man-refs.ent;
+
+]>
+
+<webpage id="documentation-network">
+<config param="desc" value="basic NetBSD networking"/>
+<config param="cvstag" value="$NetBSD: index.xml,v 1.1 2005/01/30 23:34:16 heinz Exp $"/>
+<config param="rcsdate" value="$Date: 2005/01/30 23:34:16 $"/>
+
+<head>
+<!-- Copyright (c) 1994-2005
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>The NetBSD Network FAQ</title>
+</head>
+
+<para>
+This page is developing, and we welcome any
+<ulink url="http://www.NetBSD.org/cgi-bin/feedback.cgi">comments or suggestions</ulink>.
+</para>
+
+<sect1 role="toc">
+
+<sect2 id="NetworkingFAQ">
+<title>Networking FAQ</title>
+
+<sect3 id="getting_started">
+<title>Getting started</title>
+<para>
+The NetBSD install process includes basic network configuration, which
+implements a standard workstation setup. This configuration can be
+extended to take advantage of NetBSD's many networking features.
+</para>
+<itemizedlist>
+  <listitem>
+    See also:
+    <itemizedlist>
+      <listitem><ulink url="http://www.cis.ohio-state.edu/cgi-bin/rfc/rfc1918.htmlRFC">RFC 1918</ulink>
+       - Address Allocation for Private Internets
+      </listitem>
+    </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="configuration_files">
+<title> Network configuration files</title>
+<para>
+The network configuration is defined in a set of text
+configuration files.
+</para>
+
+<itemizedlist>
+  <listitem><filename>/etc/rc.conf</filename> - &man.rc.conf.5; specifies system services,
+      including the network services, to be automatically
+      started at system initialisation.
+  </listitem>
+  <listitem><filename>/etc/hosts</filename> - &man.hosts.5; the most basic hostname/IP map.
+  </listitem>
+  <listitem><filename>/etc/myname</filename> - the fully qualified hostname (unless set via
+      <userinput>hostname</userinput> in <filename>/etc/rc.conf</filename>).  
+  </listitem>
+  <listitem><filename>/etc/mygate</filename> - default gateway. Usually better put as
+      <userinput>defaultroute</userinput> in <filename>/etc/rc.conf</filename>, or 
+      you can run &man.routed.8;.
+  </listitem>
+  <listitem><filename>/etc/ifconfig.{<emphasis>IF</emphasis>}</filename>. - the definition of
+      network interface <emphasis>IF</emphasis>, used by
+      <filename>/etc/rc.d/network</filename> at system initialisation, to
+     configure
+     a network interface. See &man.ifconfig.if.5;. An alternative is
+     setting <userinput>ifconfig_IF="..."</userinput> in <filename>/etc/rc.conf</filename>.
+  </listitem>
+  <listitem><filename>/etc/ifaliases</filename> - &man.ifaliases.5; a single
+      interface can be aliased to more
+      than one IP number. The aliases are specified here, and used by
+      <filename>/etc/rc.d/network</filename> at system initialisation.
+  </listitem>
+  <listitem><filename>/etc/resolv.conf</filename> - &man.resolv.conf.5;
+      specifies how to resolve IP numbers to
+      their hostnames.  Most commonly, this contains a line specifying the
+      domains to search and one or more IPs of the nameservers to query:
+<screen>
+search subdomain.yourdomain.tld yourdomain.tld
+nameserver 192.168.253.10
+nameserver 192.168.253.11
+</screen>
+
+      Beware, this file is overwritten by &man.dhclient.8;!
+  </listitem>
+</itemizedlist>
+
+<itemizedlist>
+  <listitem>
+    See also:
+      <itemizedlist>
+        <listitem> &man.hostname.7; </listitem>
+      </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="configuration_programs">
+<title> Network configuration programs</title>
+<para>
+
+Two important network configuration programs are used in the network
+startup script (/etc/rc.d/network), and can be used to manually
+configure an active network. 
+</para>
+
+<itemizedlist>
+  <listitem>
+  &man.ifconfig.8; - change or view the characteristics of a network interface.
+  </listitem>
+  <listitem>
+  &man.route.8; - manipulate the network routing tables.
+  </listitem>
+</itemizedlist>
+
+<itemizedlist>
+  <listitem>
+    See also:
+      <itemizedlist>
+	<listitem>&man.domainname.1;</listitem>
+        <listitem>&man.hostname.1;, &man.hostname.7;</listitem>
+      </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="adding_a_host">
+<title> Adding a new host to the network</title>
+<para>
+If your network is setup to use DHCP, all you need to do is set
+<userinput>dhclient=yes</userinput> in <filename>/etc/rc.conf</filename>,
+and the DHCP client will be
+started at boot time to automatically configure your machine's IP
+address, hostname, default router, nameservers and domainname used.
+See <ulink url="dhcp.html">here</ulink> for more information on DHCP.
+</para>
+
+<para>
+If no DHCP is available, the minimum software requirement for a host
+to be added to a network is a configured interface with an address on
+the local network. If you provide network information during the
+NetBSD installation process, the new host can be immediately connected
+to the network and accessed by its IP number.
+</para>
+
+<para>
+The following is a simple example of how to configure networking, assuming
+that you have one <systemitem>ex</systemitem> network interface and want your IP to be
+192.168.253.2, using a default route of 192.168.253.1:
+</para>
+
+<screen>
+  # ifconfig lo0 127.0.0.1
+  # ifconfig ex0 192.168.253.2 netmask 255.255.255.0
+  # route add default 192.168.253.1
+</screen>
+
+</sect3>
+
+<sect3 id="naming_a_host">
+<title> Naming a new host on the network</title>
+<para>
+To allow access by hostname as well as by IP number, the new hostname
+and its IP number are added to the network configuration files. There
+are a number of ways to manage this;
+</para>
+
+<orderedlist>
+  <listitem>
+      <filename>/etc/hosts</filename>: &man.hosts.5; For small networks of a
+      few hosts, the
+      hostname/IP maps can be manually duplicated in the
+      <filename>/etc/hosts</filename>
+      files of each host.
+      <screen>
+      192.168.1.2  host2.mydomain.org.au host2
+      </screen>
+  </listitem>
+
+  <listitem>
+      NIS (Network Information Service, formerly known as Yellow Pages
+      (YP) enables the /etc/hosts files on the network to be   
+      automatically
+      synchronised (along with other configuration files like passwd
+      and group information). 
+      See &man.domainname.1;, &man.ypinit.8; and &man.yp.8; as well as the
+      <userinput>ypbind</userinput> and <userinput>domainname</userinput>
+      variables in &man.rc.conf.5;
+      for more information.
+  </listitem>
+
+  <listitem>
+      DNS: The hostname maps can be centralised into zone-files which
+      are accessed by the name-server, &man.named.8;.
+      (there are many documents at
+      <ulink url="http://www.dns.net/dnsrd/docs/">www.dns.net</ulink>
+      dealing with setting up and maintaining DNS files).
+
+      <para>
+      <emphasis>Forward zone file entry</emphasis>
+      <screen>
+      host2  IN A     192.168.1.2
+      </screen>
+
+      <emphasis>Reverse zone file entry</emphasis>
+      <screen>
+      2      IN PTR   host2.mydomain.org.au.
+      </screen>
+      </para>
+  </listitem>
+</orderedlist>
+
+<itemizedlist>
+  <listitem>
+    See also:
+      <itemizedlist>
+        <listitem>&man.named.conf.5;</listitem>
+	<listitem>&man.nsswitch.conf.5;</listitem>
+      </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="internetworking">
+<title> Inter-networking</title>
+<para>
+Connecting your network (which may consist of a single host) to
+another network requires that at least one host acts as a gateway
+between the two networks. The gateway host has two network interfaces
+- one configured for each network.
+</para>
+
+<itemizedlist>
+  <listitem>
+      <para>
+       Create an interface configuration file
+      (<filename>/etc/ifconfig.{<emphasis>interface</emphasis>}</filename>)
+      for the second ethernet interface.
+      </para>
+      <para>
+      <filename>/etc/ifconfig.we1</filename>
+      <screen>
+      192.168.2.30 netmask 0xffffff00 media 10base2/BNC
+      </screen>
+
+      As an alternative, put the following line into
+      <filename>/etc/rc.conf</filename>:
+
+      <screen>
+      ifconfig_we1="192.168.2.30 netmask 0xffffff00 media 10base2/BNC"
+      </screen>
+      </para>
+  </listitem>
+
+  <listitem>Reboot your computer to activate the new interface.
+  </listitem>
+  <listitem>
+      If needed, enable IP packet forwarding.  You can either compile
+      a kernel with <userinput>options GATEWAY</userinput>, or you can
+<command>sysctl -w net.inet.ip.forwarding=1</command> each time your machine boots,
+      or put <command>net.inet.ip.forwarding=1</command> into
+      <filename>/etc/sysctl.conf</filename>. 
+  </listitem>
+</itemizedlist>
+
+<itemizedlist>
+  <listitem>
+    See also:
+      <itemizedlist>
+        <listitem>&man.ipnat.5;,&man.ipnat.8;</listitem>
+	<listitem>&man.ipf.conf.5;,&man.ipf.8;</listitem>
+	<listitem>&man.sysctl.conf.5;,&man.sysctl.8;</listitem>
+      </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="ppp">
+<title> Inter-networking with PPP</title>
+<para>
+A special type of network interface can be created on a serial port (with
+or without a modem attached) using &man.pppd.8;.
+</para>
+
+<para>
+There are many ways to setup PPP. One simple method, suitable for
+connecting to your ISP is:
+</para>
+<orderedlist>
+  <listitem>
+      Create a peer options file <filename>/etc/ppp/peers/myisp</filename>
+      <screen>
+      # Example pppd options
+      # Specific for myisp
+      /dev/tty01
+      local_IP_address:remote_IP_address
+      connect '/usr/sbin/chat -v -f /etc/ppp/peers/myisp.chat'
+      defaultroute
+      persist
+      ipparam myisp
+      asyncmap 0
+      noauth
+      </screen>
+  </listitem>
+
+  <listitem>
+      Create a device options file
+      <filename>/etc/ppp/options.{ttyname}</filename>
+      <screen>
+      # Example pppd options
+      # Specific for ttyname
+      lock
+      crtscts
+      57600
+      modem
+      </screen>
+  </listitem>
+
+  <listitem>
+      Create a chat file
+      <filename>/etc/ppp/peers/myisp.chat</filename>
+      <screen>
+      # Example chat file
+      # Specific for myisp
+      ABORT BUSY ABORT 'NO CARRIER' ""
+      \da\ptz0 OK
+      \da\ptdt8887776655 CONNECT
+      </screen>
+  </listitem>
+
+  <listitem>
+      Establish the connection with;
+      <command>
+      pppd call myisp
+      </command>
+  </listitem>
+
+  <listitem>
+      Set the variable <userinput>ppp_peers="myisp"</userinput>
+      in <filename>/etc/rc.conf</filename> &man.rc.conf.5;.
+      and the connection will be established automatically at boot-time.
+  </listitem>
+</orderedlist>
+
+<para>
+Unlike an ethernet interface, you do not need to create a
+<filename>/etc/ifconfig.{interface}</filename> file for a PPP interface.
+</para>
+<para>
+If you are using demand dial ppp and do not wish certain traffic to
+bring up the link (for example &man.xntpd.8; ntp traffic), you can use
+<userinput>active-filter</userinput> in your <filename>ppd.conf</filename> file:
+<screen>	active-filter   'not udp port ntp'</screen>
+</para>
+
+<itemizedlist>
+  <listitem>
+    See also:
+      <itemizedlist>
+        <listitem>&man.chat.8; - Automated conversational script</listitem>
+        <!-- http://www.macbsd.com/macbsd/howto/pppnat
+             How to setup PPP for multiple ISPs, including
+             IP-NAT and DNS setup. -->
+      </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="pppleased">
+<title>Setting up pppd to use a leased line</title>
+<para>
+A leased line is a fixed point-to-point link.  Setting this up under NetBSD is
+a very simple process.  On the server build an
+<filename>/etc/ppp/options</filename> like
+this:
+</para>
+     <screen>
+     /dev/tty00
+     57600
+     noauth
+     crtscts
+     passive
+     &lt;local_IP_address&gt;:&lt;remote_IP_address&gt;
+     debug
+     netmask 255.255.255.255
+     proxyarp
+     </screen>
+<para>
+You need to change <literal>&lt;local_IP_address&gt;</literal>
+and <literal>&lt;remote_IP_address&gt;</literal> to
+the appropriate values for your network
+(<literal>&lt;local_IP_address&gt;</literal> can be the
+same as your ethernet, <literal>&lt;remote_IP_address&gt;</literal> must be one valid addr for
+your ethernet segment).
+</para>
+
+<para>
+On the client build an <filename>/etc/ppp/options</filename> with:
+     <screen>
+     /dev/tty00
+     57600
+     noauth
+     crtscts
+     defaultroute
+     debug
+     </screen>
+</para>
+On both sides adjust <filename>/dev/tty00</filename> to the name of your serial port.
+
+</sect3>
+
+<sect3 id="isdn-ta">
+<title>How to use a ISDN modem (terminal adapter, TA)?</title>
+<para>
+
+To NetBSD, the TA will look like a normal modem, and it will speak
+asynchronous PPP if you switch it to the right mode.  Depending on
+your ISP, you may can choose from the following modes:
+</para>
+
+<itemizedlist>
+  <listitem>
+	sync-to-async-HDLC conversion: Translates synchronous HDLC frames into
+        async-HDLC frames. Use this if your provider offers "real" PPP over
+	HDLC on the B-Channel directly, which is the standard nowadays.
+  </listitem>
+  <listitem>X75: X.25 over ISDN B-channel
+  </listitem>
+  <listitem>V120: which is intended to simulate lower bandwidth modems to slow
+	computer terminal lines; unfortunately this wastes some of the
+	bandwidth of your ISDN line, though
+  </listitem>
+  <listitem> V110: which is an old version of V120
+  </listitem>
+</itemizedlist>
+
+<para>
+You set the TA's mode with some Hayes <command>AT</command> modem commands, please
+consult your manual for the exact commands. You can then add these
+<command>AT</command> commands to your chat script used for your usual PPP dialing, as
+you do with a "normal" (analog) modem.
+</para>
+
+</sect3>
+
+<sect3 id="isdn4bsd">
+<title>Inter-networking with ISDN cards</title>
+<para>
+Please see <ulink url="isdn/">here</ulink>.
+</para>
+
+</sect3>
+
+<sect3 id="pppoe">
+<title>Inter-networking with DSL / PPPoE</title>
+<para>
+Please see <ulink url="pppoe/">here</ulink> for general instructions on DSL /
+PPPoE. There's also <ulink url="pppoe/#t-online">some more help</ulink> for users
+of the german ISP T-Online. 
+</para>
+
+</sect3>
+
+<sect3 id="gprs">
+<title>Inter-networking with GPRS / CDPD</title>
+<para>
+Please see <ulink url="gprs.html">here</ulink>.
+</para>
+
+</sect3>
+
+<sect3 id="simplenat">
+<title>A simple NAT (&quot;IP Masquerading&quot;) setup</title>
+<para>
+To allow hosts that you have on a local private network (say:
+10.0.0.0/24) use your NetBSD machine as router, and setup Network
+Address Translation (NAT, also called &quot;IP Masquerading&quot; in another
+universe), do the following:
+</para>
+
+<orderedlist>
+  <listitem>
+        On your clients, use the NAT machine as default router (put
+	<userinput>defaultroute="<emphasis>a.b.c.d</emphasis>"</userinput> into their
+        <filename>/etc/rc.conf</filename> if
+	they run NetBSD, where
+        <userinput><emphasis>a.b.c.d</emphasis></userinput> is the internal
+	IP number (from the 10.0.0.0 net, i.e.)).
+  </listitem>
+  <listitem>
+        On your NAT machine, first make sure your kernel has ipfilter
+	enabled (Most recently compiled GENERIC kernels include this by default.):
+  <literallayout>
+options         PFIL_HOOKS    	        # &man.pfil.9; packet filter hooks
+pseudo-device   ipfilter                # IP filter (firewall) and NAT
+  </literallayout>
+  </listitem>
+
+  <listitem>Put this into your &man.ipf.conf.5;:
+  <literallayout>
+pass in from any to any
+pass out from any to any
+  </literallayout>
+  </listitem>
+
+  <listitem> Put this into your &man.ipnat.conf.5;:
+  <literallayout>
+map ppp0 10.0.0.0/24 -> 0/32 proxy port ftp ftp/tcp
+map ppp0 10.0.0.0/24 -> 0/32 portmap tcp/udp 40000:60000
+map ppp0 10.0.0.0/24 -> 0/32
+  </literallayout>
+  </listitem>
+
+  <listitem> Enable everything in your <filename>/etc/rc.conf</filename>:
+  <literallayout>
+ipfilter=YES                                    # uses /etc/ipf.conf
+ipnat=YES                                       # uses /etc/ipnat.conf
+  </literallayout>
+  </listitem>
+
+  <listitem> Turn on IPv4 packet forwarding in <filename>/etc/sysctl.conf</filename>:
+  <literallayout>
+net.inet.ip.forwarding=1
+  </literallayout>
+  </listitem>
+
+  <listitem> Reboot.
+  </listitem>
+
+  <listitem> Use &man.ping.8;, &man.tcpdump.8;, &man.ipfstat.8; and &man.ipnat.8; to debug.
+  </listitem>
+  </orderedlist>
+
+<para>
+If you want to use NAT on a PPPoE link (as usually used on DSL links),
+then you may want to enable <ulink url="pppoe/#clamping">MSS clamping</ulink> too.
+</para>
+
+</sect3>
+
+<sect3 id="maintenance">
+<title>Maintenance</title>
+<itemizedlist>
+  <listitem>Monitoring activity - useful tools
+      <itemizedlist>
+	<listitem>
+        &man.ifconfig.8; - configure and display network interface parameters.
+	</listitem>
+	<listitem>
+        &man.route.8; - manipulate the routing tables.
+	</listitem>
+	<listitem>
+        &man.ping.8; - send ICMP ECHO_REQUEST packets to network hosts
+	</listitem>
+	<listitem>
+        &man.traceroute.8; - print the route packets take to reach a network host
+	</listitem>
+	<listitem>
+        &man.tcpdump.8; - selectively view traffic on a network interface
+	</listitem>
+	<listitem>
+        &man.netstat.1; - show network status
+	</listitem>
+	<listitem>
+        &man.systat.1; 'systat netstat' - dynamically display network connections
+	</listitem>
+      </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+<itemizedlist>
+  <listitem>
+    See also:
+      <itemizedlist>
+        <listitem><pkg>net/mrtg</pkg> - This utility from the packages collection
+			lets you monitor your network activity graphically.
+	</listitem>
+      </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="security">
+<title>Security</title>
+<itemizedlist>
+  <listitem><filename>/etc/hosts.{allow,deny}</filename>: The configuration files for
+      tcp-wrappers (&man.hosts_access.5;)
+      which is built into the master daemon &man.inetd.8;.
+  </listitem>
+  <listitem>If you want a full-featured firewall that also does
+      Network Address Translation (NAT, sometimes called IP
+      masquerading), use IPfilter, which comes with NetBSD.
+      Check out its <ulink
+      url="http://coombs.anu.edu.au/ipfilter/">homepage</ulink>.
+      Config files for NetBSD are &man.ipf.conf.5;, &man.ipf6.conf.5;,
+      &man.ipnat.conf.5;, commands and other useful manpages are &man.ipf.4;,
+      &man.ipf.8;, &man.ipfs.8; and &man.ipfstat.8;. 
+  </listitem>
+</itemizedlist>
+
+<itemizedlist>
+  <listitem>
+    See also:
+      <itemizedlist>
+        <listitem>The <ulink url="http://www.cert.org/">CERT* Coordination Center</ulink>
+            studies Internet security vulnerabilities.
+	</listitem>
+        <listitem><ulink url="http://www.cert.org/tech_tips/root_compromise.html">
+            Steps for Recovering from a UNIX Root Compromise</ulink>
+	</listitem>
+        <listitem><ulink url="http://www.obfuscation.org/ipf/ipf-howto.txt">IP Filter
+            Based Firewalls HOWTO</ulink>
+	</listitem>
+      </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="appletalk">
+<title>Running Appletalk</title>
+<para>
+NetBSD supports '<pkg>net/netatalk'</pkg>, which enables unix machines
+to communicate with appletalk machines over ethernet (but not
+localtalk). This allows MacOS machines to read filesystems and
+print to printers via a NetBSD machine, and for the NetBSD machine
+to print to AppleTalk printers.  The necessary source is available
+via the NetBSD <ulink url="../software/packages.html">Packages
+Collection</ulink>.
+</para>
+
+</sect3>
+
+<sect3 id="kerberos">
+<title>Kerberos</title>
+<para>
+Kerberos is a network authentication system designed to provide strong
+authentication for client/server applications by using secret-key
+cryptography.
+NetBSD ships with the KTH Heimdal Kerberos 5 implementation.
+</para>
+<para>
+This section provides some simple instructions to get your NetBSD systems
+configured to use Kerberos.  For those not familiar with Kerberos, this
+serves as a basic how-to.  For those of you familar with Kerberos, it may
+document some differences between NetBSD's Kerberos and the Kerberos on
+other systems you may have used in the past.
+</para>
+<para>
+For the purpose of these instructions, let's assume your DNS domain name
+is "foo.com".  Let's also assume that there are two machines in the foo.com
+domain, called <emphasis>mach1.foo.com</emphasis> and <emphasis>mach2.foo.com</emphasis>.
+</para>
+<para>
+A Kerberos administrative domain is called a <systemitem>realm</systemitem>.
+A realm can
+be named anything you like, although the convention is to use the
+organization's DNS domain name in upper-case letters.  So, for your example
+domain of "foo.com", the Kerberos realm would be called "FOO.COM".
+</para>
+<para>
+An identity in Kerberos is called a <systemitem>principal</systemitem>.
+Users, hosts, and
+even individual services on hosts are all principals.  Principal names have
+the form "name@REALM".  If the "@REALM" portion is omitted, the default
+realm is assumed.  Service principal names have the form
+"service/hostname@REALM".  The hostname should be the fully-qualified name
+of the host.  All hosts have a "host/..." service principal.  The "host/..."
+principal is generally used by login programs (e.g. &man.telnetd.8;, &man.sshd.8;)
+and other things that want to authenticate the host to another principal
+(e.g. certain IPsec key management protocols).
+</para>
+<para>
+An instance of a Kerberos credential is called a
+<systemitem>ticket</systemitem>.  There is a special kind of ticked called
+a <systemitem>ticket granting ticket</systemitem>, or
+<systemitem>TGT</systemitem>.  The <systemitem>TGT</systemitem> is your
+initial set of credentials, acquired for you when
+you log in using the &man.login.1; program, or by running &man.kinit.1;.
+The <systemitem>TGT</systemitem> is used to acquire service tickets that allow you to use services that
+use Kerberos for authentication.  Tickets are stored in a special database
+called a <systemitem>credential cache</systemitem>.  For login sessions, the
+credential cache
+is generally stored in a file in <filename>/tmp</filename>.  The credential
+cache should be
+destroyed when you log out by the &man.kdestroy.1; command. 
+<para>
+<emphasis>It is important to keep your credential cache safe!</emphasis>
+</para>
+If you don't someone else could
+use your credentials to gain access to services they might not otherwise
+have.
+</para>
+<para>
+Credentials are centrally managed by the <systemitem>Key Distribution
+Center</systemitem>,
+or <systemitem>KDC</systemitem>.  A user authenticates with the
+<systemitem>KDC</systemitem> by providing a password when
+acquiring a <systemitem>TGT</systemitem>.  Services authenticate with
+the <systemitem>KDC</systemitem> using a similar
+mechanism, although the service's "password" comes from a
+<systemitem>key table</systemitem>, or keytab, stored on the host.
+</para>
+<para>
+Note that Kerberos requires that all hosts within a realm have
+synchronized time.  The best way to achieve this is to use NTP on
+your network.
+</para>
+<para>
+The following is a step-by-step description of how to get your network
+configured to use Kerberos.
+</para>
+
+<orderedlist>
+  <listitem>
+     <para>
+     Select a system to be the Kerberos <systemitem>KDC</systemitem>.  This
+     system must be
+     secure; if the <systemitem>KDC</systemitem> is compromised, all
+     principals are compromised.
+     For our example, we will give this task to <emphasis>mach1.foo.com</emphasis>.
+     </para>
+     <para>
+     The <systemitem>KDC</systemitem> system will also play the role of the
+     Kerberos administration
+     server and the Kerberos password change server.
+     </para>
+     <para>
+     The easiest way to provide information about the
+     <systemitem>KDC</systemitem> is through
+     DNS SRV records.  If you wish to do this, these are the entries
+     that would be required for our sample FOO.COM realm:
+     </para>
+     <screen>
+     _kerberos._udp      IN  SRV     01 00 88 mach1.foo.com.
+     _kerberos._tcp      IN  SRV     01 00 88 mach1.foo.com.
+     _kpasswd._udp       IN  SRV     01 00 464 mach1.foo.com.
+     _kerberos-adm._tcp  IN  SRV     01 00 749 mach1.foo.com.
+     _kerberos           IN  TXT     FOO.COM
+     </screen>
+     <para>
+     To understand the format of the SRV record, look at RFC 2782.
+     Note that you can configure this information manually on each
+     host in the realm if you don't wish to use the DNS method.
+     </para>
+  </listitem>
+  <listitem>
+     <para>
+     Configure <filename>/etc/krb5.conf</filename> on each system in the realm.
+     You will want
+     to specify the default realm in this file.  NOTE: With some Kerberos
+     implementations, you don't need to do this (Kerberos can find it by
+     looking up the TXT record "_kerberos" in DNS), but NetBSD's Kerberos
+     is disabled unless the <filename>/etc/krb5.conf</filename> file exists,
+     so you might as
+     well configure it there.
+     </para>
+     <screen>
+     # cat > /etc/krb5.conf
+     [libdefaults]
+             default_realm = FOO.COM
+     ^D
+     #
+     </screen>
+     <para>
+     If you are <emphasis>not</emphasis> using DNS SRV records to configure your
+     realm, you must also list the <systemitem>KDC</systemitem>, kadmin, and kpasswd servers
+     in your <filename>/etc/krb5.conf</filename>, like so:
+     </para>
+     <screen>
+     # cat >> /etc/krb5.conf
+     [realms]
+             FOO.COM = {
+                     kdc = mach1.foo.com
+                     admin_server = mach1.foo.com
+                     # optional, defaults to admin_server
+                     kpasswd_server = mach1.foo.com
+             }
+     ^D
+     #
+     </screen>
+     <para>
+     Note that if you bring a mobile host into another realm in which it
+     participates, the _kerberos TXT record from DNS will override the
+     default realm in the <filename>/etc/krb5.conf</filename> file.
+     </para>
+  </listitem>
+  <listitem>
+     <para>
+     Ensure the <filename>/var/heimdal</filename> directory
+     exists on the <systemitem>KDC</systemitem> system.  It
+     should be owned by root:wheel, and be mode 0755.
+     </para>
+     <screen>
+     mach1# ls -ld /var/heimdal
+     1 drwxr-xr-x  2 root  wheel  512 Nov 30 15:21 /var/heimdal/
+     mach1#
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Create the master key that will encrypt the principal keys stored
+     in the <systemitem>KDC</systemitem> database.
+     </para>
+     <screen>
+     mach1# kstash
+     Master key:
+     Verifying password - Master key:
+     mach1#
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Create the <systemitem>KDC</systemitem>'s database using &man.kadmin.8;.  You must use the "local
+     database" option in order to do this.
+     </para>
+     <screen>
+     mach1# kadmin -l
+     kadmin> init FOO.COM
+     Realm max ticket life [unlimited]:
+     Realm max renewable ticket life [unlimited]:
+     kadmin>
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Create a principal for the system the <systemitem>KDC</systemitem> is running on.
+     </para>
+     <screen>
+     kadmin> add --random-key host/mach1.foo.com
+     Max ticket life [1 day]:
+     Max renewable life [1 week]:
+     Principal expiration time [never]:
+     Password expiration time [never]:
+     Attributes []:
+     kadmin>
+     </screen>
+     <para>
+     Now that the principal has been created, you should extract its
+     key into the <systemitem>KDC</systemitem> system's keytab.
+     </para>
+     <screen>
+     kadmin> ext -k /etc/krb5.keytab host/mach1.foo.com
+     kadmin>
+     </screen>
+     <para>
+     You can list the keys in the keytab using the &man.ktutil.8; command:
+     </para>
+     <screen>
+     mach1# ktutil list
+     Vno  Type           Principal
+       1  des-cbc-crc    host/mach1.foo.com
+       1  des-cbc-md4    host/mach1.foo.com
+       1  des-cbc-md5    host/mach1.foo.com
+       1  des3-cbc-sha1  host/mach1.foo.com
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Create principals for the users you wish to authenticate using Kerberos.
+     </para>
+     <screen>
+     kadmin> add joe
+     Max ticket life [1 day]:
+     Max renewable life [1 week]:
+     Principal expiration time [never]:
+     Attributes []:
+     joe@FOO.COM's Password:
+     Verifying password - joe@FOO.COM's Password:
+     kadmin>
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Configure the <systemitem>KDC</systemitem> to start at boot time and start it.
+     </para>
+     <screen>
+     mach1# echo "kdc=YES" >> /etc/rc.conf
+     mach1# /etc/rc.d/kdc start
+     Starting kdc.
+     mach1#
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Configure inetd to start the kadmin (Kerberos administration) and
+     kpasswd (Kerberos password change) servers.  Do this by making sure
+     the following lines exist in <filename>/etc/inetd.conf</filename> on
+     the <systemitem>KDC</systemitem> system:
+     </para>
+     <literallayout>
+     kerberos-adm stream tcp  nowait root /usr/libexec/kadmind  kadmind
+     kerberos-adm stream tcp6 nowait root /usr/libexec/kadmind  kadmind
+     kpasswd      dgram  udp  wait   root /usr/libexec/kpasswdd kpasswdd
+     kpasswd      dgram  udp6 wait   root /usr/libexec/kpasswdd kpasswdd
+     </literallayout>
+     <para>
+     Make &man.inetd.8; reload its configuration.
+     </para>
+     <screen>
+     mach1# /etc/rc.d/inetd reload
+     Reloading inetd config files.
+     mach1#
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Test your <systemitem>KDC</systemitem> by obtaining a
+     <systemitem>TGT</systemitem> and attempting to log in to the
+     <systemitem>KDC</systemitem>
+     system from itself, using Kerberos.
+     </para>
+     <screen>
+     mach1:joe$ kinit
+     joe@FOO.COM's Password:
+     joe$ klist
+     Credentials cache: FILE:/tmp/krb5cc_100
+             Principal: joe@FOO.COM
+
+       Issued           Expires          Principal
+     Nov 30 14:10:16  Dec  1 00:10:16  krbtgt/FOO.COM@FOO.COM
+     Nov 30 14:10:16  Dec  1 00:10:16  krbtgt/FOO.COM@FOO.COM
+     mach1:joe$ telnet -ax mach1.foo.com
+     Trying 10.0.0.1
+     Connected to mach1.foo.com.
+     Escape character is '^]'.
+     [ Trying KERBEROS5 ... ]
+     [ Kerberos V5 accepts you as ``joe@FOO.COM'' ]
+     Last login: Thu Nov 30 14:08:33 2000 from mach1
+     ...
+     mach1:joe$ exit
+     Connection closed by foreign host.
+     mach1:joe$
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Now that you've verified that things are working, add principals for
+     the other hosts you wish to participate in the Kerberos realm.
+     </para>
+     <screen>
+     mach1# kadmin -l
+     kadmin> add --random-key host/mach2.foo.com
+     Max ticket life [1 day]:
+     Max renewable life [1 week]:
+     Principal expiration time [never]:
+     Password expiration time [never]:
+     Attributes []:
+     kadmin>
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     It would now be a good idea to add "admin" principals for the system
+     administrator(s).  You can be a cheat, and only add a "root/admin"
+     principal if you plan on doing all of your Kerberos administration as
+     root.
+     </para>
+     <screen>
+     mach1# kadmin -l
+     kadmin> add root/admin
+     Max ticket life [1 day]:
+     Max renewable life [1 week]:
+     Principal expiration time [never]:
+     Password expiration time [never]:
+     Attributes []:
+     root/admin@FOO.COM's Password:
+     Verifying password - root/admin@FOO.COM's Password:
+     kadmin>
+     </screen>
+     <para>
+     Make sure you add the principal to the kadmind ACL:
+     </para>
+     <screen>
+     mach1# echo "root/admin@FOO.COM all" >> /var/heimdal/kadmind.acl
+     mach1#
+     </screen>
+  </listitem>
+  <listitem>
+     <para>
+     Now that you have an "admin" principal, you can easily extract the
+     host/... principals into the keytabs on the machines they correspond
+     to.
+     </para>
+     <screen>
+     mach2# kadmin
+     kadmin> ext -k /etc/krb5.keytab host/mach2.foo.com
+     root/admin@FOO.COM's Password:
+     kadmin>
+     </screen>
+     <para>
+     Test this by attempting to log into the machine using Kerberos.
+     </para>
+     <screen>
+     mach1:joe$ telnet -ax mach2.foo.com
+     Trying 10.0.0.2
+     Connected to mach2.foo.com.
+     Escape character is '^]'.
+     [ Trying KERBEROS5 ... ]
+     [ Kerberos V5 accepts you as ``joe@FOO.COM'' ]
+     Last login: Thu Nov 30 16:26:51 2000 from mach1
+     ...
+     mach2:joe$ exit
+     Connection closed by foreign host.
+     mach1:joe$
+     </screen>
+  </listitem>
+</orderedlist>
+
+<para>
+Congratulations!  You now have a working Kerberos realm!
+</para>
+
+</sect3>
+
+<sect3 id="win2k">
+<title>Authentication for Windows 2000</title>
+<para>
+For those of you using Windows 2000, it is also possible to use
+your NetBSD <systemitem>KDC</systemitem> as an authentication server for
+your Windows 2000
+hosts.  Windows 2000 uses Kerberos to authenticate Windows Domain
+logins.  NetBSD cannot act as a Windows 2000 Domain Controller,
+but using Samba, it can act as a Workgroup server.
+</para>
+<para>
+For the purpose of these instructions, we assume you have already
+configured Samba on your server, and configured your Windows 2000
+hosts to use it.
+</para>
+<orderedlist>
+  <listitem>
+     Make sure the <emphasis>Supplemental Tools</emphasis> are installed on
+     the Windows 2000 system.  These can be found on the
+     Windows 2000 distribution media.
+  </listitem>
+  <listitem> On the <systemitem>KDC</systemitem>, add a host principal for the Windows 2000 host:
+     <screen>
+     mach1# kadmin -l
+     kadmin> add host/win2k.foo.com
+     Max ticket life [1 day]:
+     Max renewable life [1 week]:
+     Principal expiration time [never]:
+     Password expiration time [never]:
+     Attributes []:
+     host/win2k.foo.com@FOO.COM's Password: 
+     Verifying password - host/win2k.foo.com@FOO.COM's Password: 
+     kadmin> 
+     </screen>
+     <emphasis role="bold">REMEMBER THE PASSWORD YOU ENTER!</emphasis>  You must type this password
+     in again later on the Windows 2000 host.
+  </listitem>
+  <listitem>
+     On the Windows 2000 host, configure the realm,
+     <systemitem>KDC</systemitem>, and <emphasis>machine
+     password</emphasis> entries using the <command>ksetup</command> command:
+     <screen>
+     C:> ksetup /setdomain FOO.COM
+     C:> ksetup /addkdc FOO.COM mach1.foo.com
+     C:> ksetup /setmachpassword <emphasis>password</emphasis>
+     </screen>
+  </listitem>
+  <listitem> Reboot your Windows 2000 system.
+  </listitem>
+  <listitem> Map local users on the Windows 2000 system to Kerberos principals
+     using the <command>ksetup</command> command:
+     <screen>
+     C:> ksetup /mapuser * *
+     </screen>
+     You may also map specific users to specific Kerberos principals
+     like so:
+     <screen>
+     C:> ksetup /mapuser user@FOO.COM localuser
+     </screen>
+  </listitem>
+  <listitem> Reboot your Windows 2000 system.
+  </listitem>
+</orderedlist>
+
+<para>
+Using these steps, you will now be able to select to log into a
+Kerberos realm when logging into your Windows 2000 system.  Note
+that for the most seamless user experience, the Samba password
+should be kept in-sync with the user's Kerberos password.
+</para>
+
+<para>
+For more information about Kerberos, refer to these links:
+</para>
+<itemizedlist>
+  <listitem><ulink url="http://web.mit.edu/kerberos/www/">MIT Kerberos</ulink>
+  </listitem>
+  <listitem><ulink url="http://www.pdc.kth.se/kth-krb/">KTH Kerberos</ulink>
+  </listitem>
+  <listitem><ulink url="http://www.nrl.navy.mil/CCS/people/kenh/kerberos-faq.html">Kerberos FAQ</ulink>
+  </listitem>
+  <listitem><ulink url="http://members.nbci.com/_XMCM/jtruitt/ferret/kerberos.html">Meta information (Links)</ulink>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="network-problems">
+<title>Network problems</title>
+
+<sect3 id="unable-to-ping">
+  <title>Unable to ping other hostnames</title>
+  <para>
+    If you can &man.ping.8; another machine by IP address
+    ("<command><emphasis role="bold">ping
+    -n <emphasis>W.X.Y.Z</emphasis></emphasis></command>"), but not by hostname, then there
+    is probably a problem with your &man.resolv.conf.5; file. Check your
+    nameservers are set correctly and responding.
+  </para>
+
+</sect3>
+
+<sect3 id="connection-delays">
+  <title>Connections seem to have a 30 second delay</title>
+  <para>
+    This is usually either:
+    <orderedlist>
+      <listitem>Incorrect &man.resolv.conf.5; causing hostname lookups to timeout
+	against non responding nameservers,
+      </listitem>
+      <listitem>Remote mail servers attempting to connect back to your local
+	hosts &man.identd.8; while &man.ipf.8; has been configured to drop packets
+	to tcp port 113 without sending any response.
+      </listitem>
+    </orderedlist>
+  </para>
+</sect3>
+
+</sect2>
+
+<sect2 id="otherlinks">
+<title>Other links</title>
+<sect3 id="linklist">
+  <title>Miscellaneous links</title>
+<!--
+If you add entries here, please add them to ../index.html as well.
+Note that the relative URL path needs to be modified.
+-->
+<itemizedlist>
+  <listitem><ulink url="../../guide/en/chap-inetd.html">The Internet Super Server (inetd)</ulink>
+  </listitem>
+  <listitem><ulink url="nsps/">NetBSD Security Processes and Services</ulink>
+  </listitem>
+  <listitem><ulink url="wavelan.html">Wireless networking using the Lucent WaveLAN</ulink>
+  </listitem>
+  <listitem><ulink url="netboot/">HOWTO Netboot a diskless machine</ulink>
+  </listitem>
+  <listitem><ulink url="isdn/">Steps to connect via ISDN</ulink>
+  </listitem>
+  <listitem><ulink url="gprs.html">Steps to connect via GPRS / CDPD</ulink>
+  </listitem>
+  <listitem><ulink url="pppoe/">Steps to connect via PPPoE (DSL)</ulink>
+  </listitem>
+  <listitem><ulink url="http://www.static.net/~armenb/ipnat.html">Network
+      Address Translation (NAT) FAQ</ulink>, using
+      <ulink url="http://coombs.anu.edu.au/~avalon/ip-filter.html">IP-Filter</ulink>
+  </listitem>
+  <listitem><ulink url="dhcp.html">HOWTO setup DHCP clients and servers</ulink>
+  </listitem>
+  <listitem><ulink url="http://www.feyrer.de/NetBSD/NWF/">
+      NetBSD/amiga Guide to Networking FAQ</ulink>
+  </listitem>
+  <listitem><ulink url="ipv6/">IPv6 Networking FAQ</ulink>
+  </listitem>
+  <listitem><ulink url="ipsec/">IPsec FAQ</ulink>
+  </listitem>
+  <listitem><ulink url="http://www.macbsd.com/macbsd/howto/index.html">
+      PPP, cross compiling, and other HOW-TOs</ulink>
+  </listitem>
+  <listitem><ulink url="http://www.obfuscation.org/ipf/ipf-howto.txt">IP Filter Based Firewalls HOWTO</ulink>
+  </listitem>
+
+<!--  XXX: BSDToday.com disappeared, so let's comment these links -->
+
+<!--
+  <listitem>Network Flight Instructions, Part I: <ulink
+      url="http://www.bsdtoday.com/2001/February/Features401.html">Digital
+      Subscriber Line - Overview and Configuration</ulink>: Overview of using
+      DSL under NetBSD
+  </listitem>
+  <listitem>Network Flight Instructions, Part II: <ulink
+      url="http://www.bsdtoday.com/2001/February/Features409.html">Internet
+      gateway configuration &amp; basic online security rules</ulink>
+  </listitem>
+-->
+
+	<!-- XXX: Who is "I"?  We can put the article up now! -->
+	<!--
+           - I have the source of the NFI articles, and we can put them
+           - up on www.NetBSD.org after the BSDtoday privilege to publish
+           - expires on May 13th 2001
+          -->
+
+  <listitem> The <ulink url="ftp://ftp.csl.sony.co.jp/pub/kjc/papers/altq98.ps.gz">AltQ Paper</ulink>
+  </listitem>
+  <listitem> <ulink url="http://caunter.ca/nsupdate.txt">nsupdate HOWTO</ulink>
+  </listitem>
+</itemizedlist>
+</sect3>
+</sect2>
+
+
+</sect1>
+</webpage>
