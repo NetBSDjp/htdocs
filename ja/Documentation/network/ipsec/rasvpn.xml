@@ -1,16 +1,12 @@
 <?xml version="1.0"?>
 <!DOCTYPE webpage
-  PUBLIC "-//Norman Walsh//DTD Website V2.2//EN"
-    "http://docbook.sourceforge.net/release/website/2.2/website.dtd" [
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+	 "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
-<!ENTITY % man-refs.ent SYSTEM "../../../share/xml/man-refs.ent"> %man-refs.ent;
-
-]>
-
-<webpage id="remote-user-vpn">
+<webpage id="Documentation-network-ipsec-rasvpn">
 <config param="desc" value="How to build a remote user access VPN"/>
-<config param="cvstag" value="$NetBSD: rasvpn.xml,v 1.2 2005/05/10 18:42:05 jschauma Exp $"/>
-<config param="rcsdate" value="$Date: 2005/05/10 18:42:05 $"/>
+<config param="cvstag" value="$NetBSD: rasvpn.xml,v 1.6 2005/06/02 21:56:09 manu Exp $"/>
+<config param="rcsdate" value="$Date: 2005/06/02 21:56:09 $"/>
 <head>
 
 <!-- Copyright (c) 2005 Emmanuel Dreyfus.  ALL RIGHTS RESERVED. -->
@@ -294,7 +290,7 @@ pseudo-device   ipfilter</programlisting>
 You need to enable IPv4 packet forwarding, by using the following command:
 <programlisting># sysctl -w net.inet.ip.forwarding=1</programlisting>
 This can be automatically executed on reboot by adding this line 
-to <code>/etc/sysctl.conf</code>: 
+to <filename>/etc/sysctl.conf</filename>: 
 <programlisting>net.inet.ip.forwarding=1</programlisting>
 </para>
 </sect3>
@@ -344,7 +340,7 @@ move to the next step.
 <sect3 id="config">
 <title>Configuring &man.racoon.8;</title>
 <para>
-Here is a sample <code>/etc/racoon.conf</code> file:
+Here is a sample <filename>/etc/racoon/racoon.conf</filename> file:
 <programlisting>path certificate "/etc/openssl/certs";
 
 listen {
@@ -395,19 +391,19 @@ The VPN address pool is defined there, by a base address (<code>network4</code>)
 and a pool size (<code>pool_size</code>). <code>auth_source</code> explains how
 the login and passwrod are validated. Possible values are <code>system</code>, 
 to validate against the system user database, <code>pam</code> to use the 
-Pluggable Authentication Module (PAM) system (<code>/etc/pam.d/racoon</code> 
+Pluggable Authentication Module (PAM) system (<filename>/etc/pam.d/racoon</filename> 
 will be used), and <code>radius</code> to 
 validate logins against RADIUS. 
 </para>
 <para>
 
-Once your <code>/etc/racoon.conf</code> file is ready, you can launch 
+Once your <filename>/etc/racoon/racoon.conf</filename> file is ready, you can launch 
 &man.racoon.8;:
 <programlisting># racoon</programlisting>
 </para>
 <para>
 In order to have &man.racoon.8; started up at boot time, you need the following
-in <code>/etc/rc.conf</code>:
+in <filename>/etc/rc.conf</filename>:
 <programlisting>
 racoon=YES
 </programlisting>
@@ -428,23 +424,23 @@ Using ESP fragmentation, it is possible to exchange IP packets of any
 size through the tunnel. However, there is a special case for TCP, which
 may have trouble with Path Maximum Transmission Unit (PMTU) discovery. 
 The solution is to use Maximum Segment Size (MSS) clamping. This can be 
-done in <code>/etc/ipnat.conf</code>, assuming your VPN internal address
+done in <filename>/etc/ipnat.conf</filename>, assuming your VPN internal address
 pool is 10.99.99.0/24:
 <programlisting>map ex0 10.99.99.0/24 -> 0/0 mssclamp 552</programlisting>
 And type the following to enable that configuration:
 <programlisting># ipf -E; ipnat -f /etc/ipnat.conf</programlisting>
 In order to have those commands executed on startup, you need
-the following in <code>/etc/rc.conf</code>:
+the following in <filename>/etc/rc.conf</filename>:
 <programlisting>ipfilter=YES
 ipnat=YES</programlisting>
 Note that the system will not boot with <code>ipfilter=YES</code> if the
-<code>/etc/ipf.conf</code> file is missing. You can create a blank file
+<filename>/etc/ipf.conf</filename> file is missing. You can create a blank file
 if you do not need any IP filtering.
 </para>
 </sect3>
 
 <sect3 id="firewall">
-<title>Interraction with firewalls</title>
+<title>Interaction with firewalls</title>
 <para>
 In this VPN solution, the client needs to send UDP packets to ports 500 
 and 4500 of the VPN gateway. The first packets are exchanged on port 500, 
@@ -461,7 +457,7 @@ to let udp/500 and udp/4500 pass through to the VPN gateway.
 <para>
 RADIUS can be used for login validation, IP addresses allocation and 
 accounting. Here is a sample <code>mode_cfg</code> section for
-<code>/etc/racoon.conf</code> that enforces RADIUS usage:
+<filename>/etc/racoon/racoon.conf</filename> that enforces RADIUS usage:
 <programlisting>mode_cfg {
 	pool_size 253;			# IPv4 pool size
 	auth_source radius;		# login validated against RADIUS
@@ -475,7 +471,7 @@ accounting. Here is a sample <code>mode_cfg</code> section for
 </para>
 <para>
 
-Additionnaly, you need to create a <code>/etc/radius.conf</code> file that
+Additionally, you need to create a <filename>/etc/radius.conf</filename> file that
 contains the RADIUS server address and the secret shared with the RADIUS
 server. This file must be owned by root and mode 0600 in order to keep 
 the shared secret secure. Here is an example, see &man.radius.conf.5; for
@@ -508,8 +504,8 @@ NAT-T enabled.
 <title>&man.racoon.8; as the client: configuration example </title>
 <para>
 It is also possible to use &man.racoon.8; as a client. You need to install the
-CA certificate in <code>/etc/openssl/certs/ca.crt</code>, and the configuration
-below in <code>/etc/racoon.conf</code>
+CA certificate in <filename>/etc/openssl/certs/ca.crt</filename>, and the configuration
+below in <filename>/etc/racoon/racoon.conf</filename>
 <programlisting>path certificate "/etc/openssl/certs";
 path pre_shared_key "/etc/racoon/psk.txt";
 
@@ -548,20 +544,20 @@ sainfo anonymous {
 }</programlisting>
 </para>
 <para>
-The <code>phase1-up.sh</code> and <code>phase1-down.sh</code> scripts are called
+The <filename>phase1-up.sh</filename> and <filename>phase1-down.sh</filename> scripts are called
 when the IKE phase 1 is established and terminated, that is, at VPN 
 connection and disconnect time. They are responsible for setting up
 and deleting the IPsec Security Policies (SP), VPN IP address, and 
 routing entries. The sample scripts should do what you need, but you can
 customize them to fit your particular needs.
-<programlisting># cp /usr/share/examples/ipsec-tools/roadwarrior/client/*.sh /etc/racoon/</programlisting>
+<programlisting># cp /usr/share/examples/racoon/roadwarrior/client/*.sh /etc/racoon/</programlisting>
 </para>
 <para>
 
 Once this is ready, you can start &man.racoon.8;:
 <programlisting># racoon</programlisting>
 In order to have it started at boot time, add <code>racoon=YES</code> to 
-<code>/etc/rc.conf</code>.
+<filename>/etc/rc.conf</filename>.
 </para>
 </sect3>
 
@@ -594,9 +590,9 @@ commands as root:
 <para>
 
 Anyone with read/write rights to the &man.racoon.8; socket 
-<code>/var/racoon/racoon.sock</code> can start or stop the VPN. The
+<filename>/var/racoon/racoon.sock</filename> can start or stop the VPN. The
 ownership and rights to the socket can be set using the <code>adminsock</code>
-statement in the <code>listen</code> section of <code>/etc/racoon.conf</code>.
+statement in the <code>listen</code> section of <filename>/etc/racoon/racoon.conf</filename>.
 </para>
 </sect3>
 
@@ -605,12 +601,12 @@ statement in the <code>listen</code> section of <code>/etc/racoon.conf</code>.
 <para>
 If you want to avoid typing the Xauth password, you can store it in
 racoon's Pre-Shared Key (PSK) file. Add the following statement in 
-the <code>remote</code> section of <code>/etc/racoon.conf</code>:
+the <code>remote</code> section of <filename>/etc/racoon/racoon.conf</filename>:
 <programlisting>xauth_login "username";</programlisting>
 </para>
 <para>
 
-Then add a line in <code>/etc/racoon/psk.txt</code> with the login and the
+Then add a line in <filename>/etc/racoon/psk.txt</filename> with the login and the
 password:
 <programlisting>username	password</programlisting>
 </para>
@@ -625,5 +621,5 @@ With that setup, this command will establish the VPN connection using the
 </sect2>
 
 </sect1>
-<parentsec url="../" text="NetBSD Documentation: Network"/>
+<parentsec url="./" text="NetBSD Documentation: NetBSD IPSec"/>
 </webpage>
