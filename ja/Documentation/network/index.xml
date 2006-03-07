@@ -9,8 +9,8 @@
 
 <webpage id="documentation-network">
 <config param="desc" value="basic NetBSD networking"/>
-<config param="cvstag" value="$NetBSD: index.xml,v 1.2 2005/01/30 23:45:02 heinz Exp $"/>
-<config param="rcsdate" value="$Date: 2005/01/30 23:45:02 $"/>
+<config param="cvstag" value="$NetBSD: index.xml,v 1.3 2005/02/03 22:00:22 heinz Exp $"/>
+<config param="rcsdate" value="$Date: 2005/02/03 22:00:22 $"/>
 
 <head>
 <!-- Copyright (c) 1994-2005
@@ -82,17 +82,25 @@ configuration files.
       than one IP number. The aliases are specified here, and used by
       <filename>/etc/rc.d/network</filename> at system initialisation.
   </listitem>
-  <listitem><filename>/etc/resolv.conf</filename> - &man.resolv.conf.5;
-      specifies how to resolve IP numbers to
-      their hostnames.  Most commonly, this contains a line specifying the
-      domains to search and one or more IPs of the nameservers to query:
-<screen>
+  <listitem>
+      <para>
+        <filename>/etc/resolv.conf</filename> - &man.resolv.conf.5;
+        specifies how to resolve IP numbers to
+        their hostnames.  Most commonly, this contains a line specifying the
+        domains to search and one or more IPs of the nameservers to query:
+      </para>
+
+      <para>
+      <screen>
 search subdomain.yourdomain.tld yourdomain.tld
 nameserver 192.168.253.10
 nameserver 192.168.253.11
-</screen>
+      </screen>
+      </para>
 
-      Beware, this file is overwritten by &man.dhclient.8;!
+      <para>
+        Beware, this file is overwritten by &man.dhclient.8;!
+      </para>
   </listitem>
 </itemizedlist>
 
@@ -162,11 +170,13 @@ that you have one <systemitem>ex</systemitem> network interface and want your IP
 192.168.253.2, using a default route of 192.168.253.1:
 </para>
 
+<para>
 <screen>
   # ifconfig lo0 127.0.0.1
   # ifconfig ex0 192.168.253.2 netmask 255.255.255.0
   # route add default 192.168.253.1
 </screen>
+</para>
 
 </sect3>
 
@@ -180,14 +190,19 @@ are a number of ways to manage this;
 
 <orderedlist>
   <listitem>
+      <para>
       <filename>/etc/hosts</filename>: &man.hosts.5; For small networks of a
       few hosts, the
       hostname/IP maps can be manually duplicated in the
       <filename>/etc/hosts</filename>
       files of each host.
+      </para>
+
+      <para>
       <screen>
       192.168.1.2  host2.mydomain.org.au host2
       </screen>
+      </para>
   </listitem>
 
   <listitem>
@@ -251,6 +266,7 @@ between the two networks. The gateway host has two network interfaces
       (<filename>/etc/ifconfig.{<emphasis>interface</emphasis>}</filename>)
       for the second ethernet interface.
       </para>
+
       <para>
       <filename>/etc/ifconfig.we1</filename>
       <screen>
@@ -303,7 +319,11 @@ connecting to your ISP is:
 </para>
 <orderedlist>
   <listitem>
+      <para>
       Create a peer options file <filename>/etc/ppp/peers/myisp</filename>
+      </para>
+
+      <para>
       <screen>
       # Example pppd options
       # Specific for myisp
@@ -316,11 +336,16 @@ connecting to your ISP is:
       asyncmap 0
       noauth
       </screen>
+      </para>
   </listitem>
 
   <listitem>
+      <para>
       Create a device options file
       <filename>/etc/ppp/options.{ttyname}</filename>
+      </para>
+
+      <para>
       <screen>
       # Example pppd options
       # Specific for ttyname
@@ -329,11 +354,16 @@ connecting to your ISP is:
       57600
       modem
       </screen>
+      </para>
   </listitem>
 
   <listitem>
+      <para>
       Create a chat file
       <filename>/etc/ppp/peers/myisp.chat</filename>
+      </para>
+
+      <para>
       <screen>
       # Example chat file
       # Specific for myisp
@@ -341,6 +371,7 @@ connecting to your ISP is:
       \da\ptz0 OK
       \da\ptdt8887776655 CONNECT
       </screen>
+      </para>
   </listitem>
 
   <listitem>
@@ -390,6 +421,8 @@ a very simple process.  On the server build an
 <filename>/etc/ppp/options</filename> like
 this:
 </para>
+
+<para>
      <screen>
      /dev/tty00
      57600
@@ -401,6 +434,8 @@ this:
      netmask 255.255.255.255
      proxyarp
      </screen>
+</para>
+
 <para>
 You need to change <literal>&lt;local_IP_address&gt;</literal>
 and <literal>&lt;remote_IP_address&gt;</literal> to
@@ -504,40 +539,57 @@ universe), do the following:
 	IP number (from the 10.0.0.0 net, i.e.)).
   </listitem>
   <listitem>
+	<para>
         On your NAT machine, first make sure your kernel has ipfilter
 	enabled (Most recently compiled GENERIC kernels include this by default.):
-  <literallayout>
+	</para>
+
+	<para>
+	<screen>
 options         PFIL_HOOKS    	        # &man.pfil.9; packet filter hooks
 pseudo-device   ipfilter                # IP filter (firewall) and NAT
-  </literallayout>
+	</screen>
+	</para>
   </listitem>
 
-  <listitem>Put this into your &man.ipf.conf.5;:
-  <literallayout>
+  <listitem>
+  <para>
+  Put this into your &man.ipf.conf.5;:
+  <screen>
 pass in from any to any
 pass out from any to any
-  </literallayout>
+  </screen>
+  </para>
   </listitem>
 
-  <listitem> Put this into your &man.ipnat.conf.5;:
-  <literallayout>
+  <listitem>
+  <para>
+  Put this into your &man.ipnat.conf.5;:
+  <screen>
 map ppp0 10.0.0.0/24 -> 0/32 proxy port ftp ftp/tcp
 map ppp0 10.0.0.0/24 -> 0/32 portmap tcp/udp 40000:60000
 map ppp0 10.0.0.0/24 -> 0/32
-  </literallayout>
+  </screen>
+  </para>
   </listitem>
 
-  <listitem> Enable everything in your <filename>/etc/rc.conf</filename>:
-  <literallayout>
+  <listitem>
+  <para>
+  Enable everything in your <filename>/etc/rc.conf</filename>:
+  <screen>
 ipfilter=YES                                    # uses /etc/ipf.conf
 ipnat=YES                                       # uses /etc/ipnat.conf
-  </literallayout>
+  </screen>
+  </para>
   </listitem>
 
-  <listitem> Turn on IPv4 packet forwarding in <filename>/etc/sysctl.conf</filename>:
-  <literallayout>
+  <listitem>
+  <para>
+  Turn on IPv4 packet forwarding in <filename>/etc/sysctl.conf</filename>:
+  <screen>
 net.inet.ip.forwarding=1
-  </literallayout>
+  </screen>
+  </para>
   </listitem>
 
   <listitem> Reboot.
@@ -747,7 +799,7 @@ configured to use Kerberos.
      <systemitem>KDC</systemitem> is through
      DNS SRV records.  If you wish to do this, these are the entries
      that would be required for our sample FOO.COM realm:
-     </para>
+
      <screen>
      _kerberos._udp      IN  SRV     01 00 88 mach1.foo.com.
      _kerberos._tcp      IN  SRV     01 00 88 mach1.foo.com.
@@ -755,6 +807,8 @@ configured to use Kerberos.
      _kerberos-adm._tcp  IN  SRV     01 00 749 mach1.foo.com.
      _kerberos           IN  TXT     FOO.COM
      </screen>
+     </para>
+
      <para>
      To understand the format of the SRV record, look at RFC 2782.
      Note that you can configure this information manually on each
@@ -771,7 +825,7 @@ configured to use Kerberos.
      is disabled unless the <filename>/etc/krb5.conf</filename> file exists,
      so you might as
      well configure it there.
-     </para>
+
      <screen>
      # cat > /etc/krb5.conf
      [libdefaults]
@@ -779,11 +833,13 @@ configured to use Kerberos.
      ^D
      #
      </screen>
+     </para>
+
      <para>
      If you are <emphasis>not</emphasis> using DNS SRV records to configure your
      realm, you must also list the <systemitem>KDC</systemitem>, kadmin, and kpasswd servers
      in your <filename>/etc/krb5.conf</filename>, like so:
-     </para>
+
      <screen>
      # cat >> /etc/krb5.conf
      [realms]
@@ -796,6 +852,8 @@ configured to use Kerberos.
      ^D
      #
      </screen>
+     </para>
+
      <para>
      Note that if you bring a mobile host into another realm in which it
      participates, the _kerberos TXT record from DNS will override the
@@ -807,30 +865,32 @@ configured to use Kerberos.
      Ensure the <filename>/var/heimdal</filename> directory
      exists on the <systemitem>KDC</systemitem> system.  It
      should be owned by root:wheel, and be mode 0755.
-     </para>
+
      <screen>
      mach1# ls -ld /var/heimdal
      1 drwxr-xr-x  2 root  wheel  512 Nov 30 15:21 /var/heimdal/
      mach1#
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
      Create the master key that will encrypt the principal keys stored
      in the <systemitem>KDC</systemitem> database.
-     </para>
+
      <screen>
      mach1# kstash
      Master key:
      Verifying password - Master key:
      mach1#
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
      Create the <systemitem>KDC</systemitem>'s database using &man.kadmin.8;.  You must use the "local
      database" option in order to do this.
-     </para>
+
      <screen>
      mach1# kadmin -l
      kadmin> init FOO.COM
@@ -838,11 +898,12 @@ configured to use Kerberos.
      Realm max renewable ticket life [unlimited]:
      kadmin>
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
      Create a principal for the system the <systemitem>KDC</systemitem> is running on.
-     </para>
+     
      <screen>
      kadmin> add --random-key host/mach1.foo.com
      Max ticket life [1 day]:
@@ -852,17 +913,20 @@ configured to use Kerberos.
      Attributes []:
      kadmin>
      </screen>
+     </para>
+
      <para>
      Now that the principal has been created, you should extract its
      key into the <systemitem>KDC</systemitem> system's keytab.
-     </para>
+
      <screen>
      kadmin> ext -k /etc/krb5.keytab host/mach1.foo.com
      kadmin>
      </screen>
+     </para>
+
      <para>
      You can list the keys in the keytab using the &man.ktutil.8; command:
-     </para>
      <screen>
      mach1# ktutil list
      Vno  Type           Principal
@@ -871,11 +935,12 @@ configured to use Kerberos.
        1  des-cbc-md5    host/mach1.foo.com
        1  des3-cbc-sha1  host/mach1.foo.com
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
      Create principals for the users you wish to authenticate using Kerberos.
-     </para>
+
      <screen>
      kadmin> add joe
      Max ticket life [1 day]:
@@ -886,17 +951,19 @@ configured to use Kerberos.
      Verifying password - joe@FOO.COM's Password:
      kadmin>
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
      Configure the <systemitem>KDC</systemitem> to start at boot time and start it.
-     </para>
+
      <screen>
      mach1# echo "kdc=YES" >> /etc/rc.conf
      mach1# /etc/rc.d/kdc start
      Starting kdc.
      mach1#
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
@@ -904,21 +971,24 @@ configured to use Kerberos.
      kpasswd (Kerberos password change) servers.  Do this by making sure
      the following lines exist in <filename>/etc/inetd.conf</filename> on
      the <systemitem>KDC</systemitem> system:
-     </para>
-     <literallayout>
+
+     <screen>
      kerberos-adm stream tcp  nowait root /usr/libexec/kadmind  kadmind
      kerberos-adm stream tcp6 nowait root /usr/libexec/kadmind  kadmind
      kpasswd      dgram  udp  wait   root /usr/libexec/kpasswdd kpasswdd
      kpasswd      dgram  udp6 wait   root /usr/libexec/kpasswdd kpasswdd
-     </literallayout>
+     </screen>
+     </para>
+
      <para>
      Make &man.inetd.8; reload its configuration.
-     </para>
+
      <screen>
      mach1# /etc/rc.d/inetd reload
      Reloading inetd config files.
      mach1#
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
@@ -926,7 +996,7 @@ configured to use Kerberos.
      <systemitem>TGT</systemitem> and attempting to log in to the
      <systemitem>KDC</systemitem>
      system from itself, using Kerberos.
-     </para>
+
      <screen>
      mach1:joe$ kinit
      joe@FOO.COM's Password:
@@ -949,12 +1019,13 @@ configured to use Kerberos.
      Connection closed by foreign host.
      mach1:joe$
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
      Now that you've verified that things are working, add principals for
      the other hosts you wish to participate in the Kerberos realm.
-     </para>
+
      <screen>
      mach1# kadmin -l
      kadmin> add --random-key host/mach2.foo.com
@@ -965,6 +1036,7 @@ configured to use Kerberos.
      Attributes []:
      kadmin>
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
@@ -972,7 +1044,7 @@ configured to use Kerberos.
      administrator(s).  You can be a cheat, and only add a "root/admin"
      principal if you plan on doing all of your Kerberos administration as
      root.
-     </para>
+
      <screen>
      mach1# kadmin -l
      kadmin> add root/admin
@@ -985,29 +1057,34 @@ configured to use Kerberos.
      Verifying password - root/admin@FOO.COM's Password:
      kadmin>
      </screen>
+     </para>
+
      <para>
      Make sure you add the principal to the kadmind ACL:
-     </para>
+
      <screen>
      mach1# echo "root/admin@FOO.COM all" >> /var/heimdal/kadmind.acl
      mach1#
      </screen>
+     </para>
   </listitem>
   <listitem>
      <para>
      Now that you have an "admin" principal, you can easily extract the
      host/... principals into the keytabs on the machines they correspond
      to.
-     </para>
+
      <screen>
      mach2# kadmin
      kadmin> ext -k /etc/krb5.keytab host/mach2.foo.com
      root/admin@FOO.COM's Password:
      kadmin>
      </screen>
+     </para>
+
      <para>
      Test this by attempting to log into the machine using Kerberos.
-     </para>
+
      <screen>
      mach1:joe$ telnet -ax mach2.foo.com
      Trying 10.0.0.2
@@ -1021,6 +1098,7 @@ configured to use Kerberos.
      Connection closed by foreign host.
      mach1:joe$
      </screen>
+     </para>
   </listitem>
 </orderedlist>
 
@@ -1051,7 +1129,10 @@ hosts to use it.
      the Windows 2000 system.  These can be found on the
      Windows 2000 distribution media.
   </listitem>
-  <listitem> On the <systemitem>KDC</systemitem>, add a host principal for the Windows 2000 host:
+  <listitem>
+     <para>
+     On the <systemitem>KDC</systemitem>, add a host principal for the Windows 2000 host:
+
      <screen>
      mach1# kadmin -l
      kadmin> add host/win2k.foo.com
@@ -1064,31 +1145,46 @@ hosts to use it.
      Verifying password - host/win2k.foo.com@FOO.COM's Password: 
      kadmin> 
      </screen>
+     </para>
+
+     <para>
      <emphasis role="bold">REMEMBER THE PASSWORD YOU ENTER!</emphasis>  You must type this password
      in again later on the Windows 2000 host.
+     </para>
   </listitem>
   <listitem>
+     <para>
      On the Windows 2000 host, configure the realm,
      <systemitem>KDC</systemitem>, and <emphasis>machine
      password</emphasis> entries using the <command>ksetup</command> command:
+
      <screen>
      C:> ksetup /setdomain FOO.COM
      C:> ksetup /addkdc FOO.COM mach1.foo.com
      C:> ksetup /setmachpassword <emphasis>password</emphasis>
      </screen>
+     </para>
   </listitem>
   <listitem> Reboot your Windows 2000 system.
   </listitem>
-  <listitem> Map local users on the Windows 2000 system to Kerberos principals
+  <listitem>
+     <para>
+     Map local users on the Windows 2000 system to Kerberos principals
      using the <command>ksetup</command> command:
+
      <screen>
      C:> ksetup /mapuser * *
      </screen>
+     </para>
+
+     <para>
      You may also map specific users to specific Kerberos principals
      like so:
+
      <screen>
      C:> ksetup /mapuser user@FOO.COM localuser
      </screen>
+     </para>
   </listitem>
   <listitem> Reboot your Windows 2000 system.
   </listitem>
