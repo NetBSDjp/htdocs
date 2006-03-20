@@ -5,8 +5,8 @@
 
 <webpage id="Documentation-network-ipv6-index">
 <config param="desc" value=""/>
-<config param="cvstag" value="$NetBSD: index.xml,v 1.7 2006/03/11 13:53:06 kano Exp $"/>
-<config param="rcsdate" value="$Date: 2006/03/11 13:53:06 $"/>
+<config param="cvstag" value="$NetBSD: index.xml,v 1.8 2006/03/17 03:54:03 hubertf Exp $"/>
+<config param="rcsdate" value="$Date: 2006/03/17 03:54:03 $"/>
 <head>
 
 <!-- Copyright (c) 1994-2006
@@ -31,7 +31,6 @@
 	<listitem><ulink url="http://www.ipv6.org/">ipv6.org</ulink></listitem>
 	<listitem><ulink url="http://www.feyrer.de/NetBSD/6to4.html">6to4 Explained</ulink></listitem>
 	<listitem><ulink url="http://orange.kame.net/dev/cvsweb.cgi/kame/IMPLEMENTATION">detailed information on the implementation</ulink></listitem>
-	<listitem><ulink url="http://www.hs247.com/">hs247.com</ulink></listitem>
 	<listitem><ulink url="http://www.onlamp.com/pub/a/onlamp/2001/05/24/ipv6_tutorial.html">Introduction to IPv6</ulink> by Hubert Feyrer</listitem>
 	<listitem><ulink url="http://www.onlamp.com/pub/a/onlamp/2001/06/01/ipv6_tutorial.html">Getting Connected with 6to4</ulink> by Hubert Feyrer</listitem>
 	<listitem>Some <ulink url="http://www.ipv6tools.com/">IPv6 tools</ulink> accessible through a web page.</listitem>
@@ -45,7 +44,7 @@
 <title>Getting Started</title>
 
 	<para>IPv6 code was merged into NetBSD in June 1999, and is part 
-	of  NetBSD. IPv6 configuration is mostly the same as IPv4
+	of NetBSD. IPv6 configuration is mostly the same as IPv4
 	configuration, so you may want to check the documentation for
 	IPv4 networking.</para>
 
@@ -451,7 +450,7 @@ ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 150
 
 <programlisting>
     inet 10.1.1.1 netmask 0xffffff00
-    inet6 3ffe:501:ffff::1 prefixlen 64 alias
+    inet6 2001:db8:1234::1 prefixlen 64 alias
 </programlisting>
 
 	<para>Note <code>"alias"</code> at the end of the line. As there
@@ -487,7 +486,7 @@ ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 150
 
       <para><emphasis>/etc/hosts:</emphasis></para>
       <programlisting>
-3ffe:501:ffff::a:b:c:d  host2.mydomain.org.au host2
+2001:db8:1234::a:b:c:d  host2.example.net host2
       </programlisting>
       </listitem>
 
@@ -502,14 +501,14 @@ ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 150
 	<para><emphasis>Forward zone file entry</emphasis></para>
 
 <programlisting>
-host2  IN AAAA     3ffe:501:ffff::a:b:c:d
+host2  IN AAAA     2001:db8:1234::a:b:c:d
 </programlisting>
 
 	<para><emphasis>Reverse zone file entry</emphasis></para>
 
 <programlisting>
-d.0.0.0.c.0.0.0.b.0.0.0.a.0.0.0.0.0.0.0.f.f.f.f.1.0.5.0.e.f.f.3.ip6.arpa.
-	IN PTR   host2.mydomain.org.au.
+d.0.0.0.c.0.0.0.b.0.0.0.a.0.0.0.0.0.0.0.4.3.2.1.8.b.d.0.1.0.0.2.ip6.arpa.
+	IN PTR   host2.example.net
 </programlisting>
 
 	<para>Note: If you have heard about A6 records and bitstring
@@ -528,12 +527,12 @@ d.0.0.0.c.0.0.0.b.0.0.0.a.0.0.0.0.0.0.0.f.f.f.f.1.0.5.0.e.f.f.3.ip6.arpa.
 	</orderedlist>
 
 	<para>Please note that the following addresses MUST NOT appear
-	on global DNS cloud:</para>
+	in the global DNS cloud:</para>
 
 	<variablelist>
 	<varlistentry><term>link-local addresses (matches fe80::/10, like fe80::1)</term>
 		<listitem><para>This one is not globally reachable.</para></listitem></varlistentry>
-	<varlistentry><term>site-local addresses (matches fec0::/10, like fec0::1)</term>
+	<varlistentry><term>unique-local addresses (matches fc00::/7, like fd00::1)</term>
 		<listitem><para>This one is not globally reachable either.
 		This one somewhat like a private address, so you can put it
 		into your intranet DNS cloud.</para></listitem></varlistentry>
@@ -694,7 +693,7 @@ tunnel x.x.x.x y.y.y.y
 <sect3 id="typical1">
 <title> Typical IPv6 network setup - with /48 prefix from upstream</title>
 
-	<para>Suppose you have obtained your address prefix, 3ffe:0501:ffff::/48
+	<para>Suppose you have obtained your address prefix, 2001:db8:1234::/48
 	from your upstream for your home network.
 	You have two ethernet segments in your home, like below.
 	Both myrouter A and myrouter B run IPv6-capable NetBSD.
@@ -745,23 +744,23 @@ PING6(56=40+8+8 bytes) fe80::a00:5aff:fe38:6f86 --&gt; ff02::1
 	<listitem>
 
 	<para>Next, you need to assign a subnet address from your
-	address block, 3ffe:0501:ffff::/48, to two of your ethernet
+	address block, 2001:db8:1234::/48, to two of your ethernet
 	segments. Since the prefix length for IPv6 subnet is always /64,
 	you have 65536 subnets available for you! Let's just assign
-	3ffe:0501:ffff:0000::/64 to ethernet 0, and
-	3ffe:0501:ffff:0001::/64 to ethernet 1.</para>
+	2001:db8:1234:0::/64 to ethernet 0, and
+	2001:db8:1234:1::/64 to ethernet 1.</para>
 
 <programlisting>
 myrouter A ---- tunnel -------&gt;	upstream
   | IPv4 x.x.0.1/24		IPv4 y.y.y.10
   |
-==+=== ethernet 0: x.x.0.0/24, 3ffe:501:ffff:0::/64
+==+=== ethernet 0: x.x.0.0/24, 2001:db8:1234:0::/64
   |
   | IPv4 x.x.0.2/24
 myrouter B
   | IPv4 x.x.1.2/24
   |
-==+=== ethernet 1: x.x.1.0/24, 3ffe:501:ffff:1::/64
+==+=== ethernet 1: x.x.1.0/24, 2001:db8:1234:1::/64
 </programlisting>
 
 	</listitem>
@@ -784,16 +783,16 @@ ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 150
 	media: Ethernet manual
 	inet x.x.0.1 netmask 0xffffff00 broadcast x.x.0.255
 	inet6 fe80::a00:5aff:fe38:6f86%ne2 prefixlen 64 scopeid 0x1
-# ifconfig ne2 inet6 3ffe:501:ffff:0:a00:5aff:fe38:6f86 prefixlen 64 alias
-# echo 'inet6 3ffe:501:ffff:0:a00:5aff:fe38:6f86 prefixlen 64 alias' &gt;&gt; /etc/ifconfig.ne2
+# ifconfig ne2 inet6 2001:db8:1234:0:a00:5aff:fe38:6f86 prefixlen 64 alias
+# echo 'inet6 2001:db8:1234:0:a00:5aff:fe38:6f86 prefixlen 64 alias' &gt;&gt; /etc/ifconfig.ne2
 </programlisting>
 
 	<para>For myrouter B, do the similar thing.</para>
 
 <programlisting>
-# ifconfig tlp0 inet6 3ffe:501:ffff:0:a00:5aff:fe38:8765 prefixlen 64 alias
+# ifconfig tlp0 inet6 2001:db8:1234:0:a00:5aff:fe38:8765 prefixlen 64 alias
 	(ethernet 0 side)
-# ifconfig tlp1 inet6 3ffe:501:ffff:1:a00:5aff:fe38:9710 prefixlen 64 alias
+# ifconfig tlp1 inet6 2001:db8:1234:1:a00:5aff:fe38:9710 prefixlen 64 alias
 	(ethernet 1 side)
 </programlisting>
 
@@ -804,7 +803,7 @@ ne2: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 150
 	<para>To exchange routing information, run &man.route6d.8; on
 	both routers. If the upstream asks you to aggregate route
 	announcements, please consult the manual page for command line
-	options. Now that connectivity to yourupstream should be okay,
+	options. Now that connectivity to your upstream should be okay,
 	try to ping external IPv6 nodes. Do not forget to specify "-n"
 	to &man.ping6.8;; IPv6 reverse address lookup can take a very
 	long time and should be avoided when you do tests.</para>
@@ -960,7 +959,7 @@ myrouter B
 	configuration would be like this:</para>
 
 <programlisting>
-    nameserver 3ffe:501:4819::42
+    nameserver 2001:240::1
 </programlisting>
 
 	<para>There's a working IPv6-ready DNS server running on the
@@ -1125,12 +1124,11 @@ IPv4/v6 router						IPv4/v6 router
 	  applications (applications that use &man.getaddrinfo.3; can handle this).</listitem>
       </itemizedlist></listitem>
   <listitem>When you perform some experiments in your local network, do not
-      try to use site-local unicast addresses.
-      The way the specification is written is too vague.  Both the
-      specification and implementations
-      should be improved before putting site-local addresses into real use.
-      Even if you wish to run partitioned networks (which does not connect
-      to the outside), always use IPv6 aggregable global unicast addresses.</listitem>
+      use site-local unicast addresses.
+      The way the specification is written is too vague.
+      If you wish to run partitioned networks (which does not connect
+      to the outside), it is advisable to use unique-local addresses.
+      Unique-local addressing is specified in <!-- RFC -->RFC2893.</listitem>
   <listitem>Other implementation details can be found in 
 	<ulink url="http://orange.kame.net/dev/cvsweb.cgi/kame/IMPLEMENTATION">
 	KAME implementation document</ulink>.</listitem>
@@ -1287,8 +1285,6 @@ The following programs in the base system are known to be IPv6-enabled:
 
 </sect3>
 
-<center>
-
 <para>This <ulink url="http://www.ipv6.euronet.be/webring/">IPv6
 Configuration Help</ulink> site is owned by <ulink url="/">The NetBSD
 Project</ulink>.</para>
@@ -1302,10 +1298,8 @@ Project</ulink>.</para>
 ]
 </para>
 
-</center>
-
 <simplelist type="vert">
-  <listitem><small><ulink url="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</ulink> $NetBSD: index.xml,v 1.7 2006/03/11 13:53:06 kano Exp $</small></listitem>
+  <listitem><small><ulink url="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</ulink> $NetBSD: index.xml,v 1.8 2006/03/17 03:54:03 hubertf Exp $</small></listitem>
   <listitem><small><ulink url="../../../Misc/disclaimer.html">Copyright &copy; 1994-2006 The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</ulink></small></listitem>
   <listitem><small><ulink url="../../../Misc/disclaimer.html">NetBSD<sup>&#174;</sup> is a registered trademark of The NetBSD Foundation, Inc.</ulink></small></listitem>
 </simplelist>

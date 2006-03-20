@@ -1,16 +1,12 @@
 <?xml version="1.0"?>
 <!DOCTYPE webpage
-  PUBLIC "-//Norman Walsh//DTD Website V2.2//EN"
-    "http://docbook.sourceforge.net/release/website/2.2/website.dtd" [
-
-<!ENTITY % man-refs.ent SYSTEM "../share/xml/man-refs.ent"> %man-refs.ent;
-
-]>
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+    "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
 <webpage id="htdocs">
 <config param="desc" value="Editing htdocs"/>
-<config param="cvstag" value="$NetBSD: htdocs.xml,v 1.16 2005/01/22 18:44:55 jschauma Exp $"/>
-<config param="rcsdate" value="$Date: 2005/01/22 18:44:55 $"/>
+<config param="cvstag" value="$NetBSD: htdocs.xml,v 1.25 2005/06/28 11:47:59 darcy Exp $"/>
+<config param="rcsdate" value="$Date: 2005/06/28 11:47:59 $"/>
 <head>
 <title>Editing htdocs</title>
 </head>
@@ -45,9 +41,10 @@
     </listitem>
     <listitem>Install <pkg>meta-pkgs/netbsd-www</pkg>, which provides the tools
 	required to build the web site.  Please make sure that you have at
-        least <pkg>textproc/docbook-xsl</pkg> &gt;= 1.67.0 (automatically
-        requried by <pkg>meta-pkgs/netbsd-www</pkg> 1.2, but earlier versions
-        also accepted earlier versions of docbook-xsl).
+	least <pkg>textproc/docbook-xsl</pkg> &gt;= 1.68.1 and
+	<pkg>textproc/docbook-website</pkg> &gt;= 2.5.0 (automatically
+	required by <pkg>meta-pkgs/netbsd-www</pkg> 1.3, but earlier
+	versions also accepted earlier versions of docbook-xsl).
     </listitem>
     <listitem>Set your CVSROOT as indicated and run
       <para><programlisting>cvs checkout htdocs</programlisting></para>
@@ -94,56 +91,8 @@
 <para>
     <emphasis role="bold">The <code>.list</code> files are
     obsolete!</emphasis><html:br/>
-    Please see <ulink url="#dotxml-files">this section</ulink> for details.
-    The paragraphs below still apply to the currently existing <code>.list</code>
-    files.
-</para>
-<para>
-    A <code>.list</code> file contains standard HTML with additional special
-    tags to simplify formatting. It used to be processed by <code><ulink
-    url="../list2html.pl">list2html.pl</ulink></code> into the desired .html
-    file.  Since the <code>.list</code> files are now obsolete, they should
-    not be edited anymore.  If they need to be changed, they should be <ulink
-    url="#convert-to-xml">converted to XML</ulink>.
-</para>
-<para>
-    There should be a Makefile in each directory which handles processing
-    the .list files into .html, and will recurse into any subdirs
-    containing Makefiles.
-</para>
-<para>
-    Continuation lines are understood (useful for the special tags).
-</para>
-<para>
-    If you do not have CVS access and wish to submit changes, you
-    can check out htdocs via anonymous CVS (see the <ulink
-    url="cvs-repos/cvs_intro.html">NetBSD CVS HOWTO</ulink>). The best
-    approach is usually to:
-    <orderedlist>
-	<listitem>Checkout the <emphasis>htdocs</emphasis> module
-	    <para><programlisting>cvs checkout htdocs</programlisting></para>
-        </listitem>
-	<listitem>Edit the desired file. Most FAQ-style documents are
-	    generated from <code>.list</code> files, so it is best to check
-	    before editing.
-        </listitem>
-	<listitem>
-          Run 'make' if you have edited .list or similar files.
-        </listitem>
-	<listitem><ulink url="#validate-html">Validate</ulink> the HTML.
-            (Repeat these three steps as necessary).
-        </listitem>
-	<listitem>Submit a diff to <email>www@NetBSD.org</email>
-	    using <emphasis role="bold">cvs diff</emphasis>, eg.
-            <para>
-              <programlisting>cvs diff -u <emphasis>htdocs/path/to/file.list</emphasis></programlisting>
-            </para>
-        </listitem>
-    </orderedlist>
-</para>
-<para>
-    You should run <emphasis role="bold">make</emphasis> before committing.
-    You will need <pkg>lang/perl5</pkg> installed.
+    You should convert any existing <code>.list</code> files to XML.
+    Please see <ulink url="#convert-to-xml">this section</ulink> for details.
 </para>
 </sect3>
 
@@ -166,7 +115,8 @@
     as well as each <code>&lt;table&gt;</code> tag:  this will prevent
     <command>xsltproc</command> to generate an ID
     itself, which would require an update of the resulting <code>.html</code>
-    file after each regeneration.
+    file after each regeneration.  Also remember to replace each
+    <quote>&amp;</quote> with <quote>&amp;amp;</quote>.
 </para>
 <para>
     If you are unsure how to convert a given HTML tag to the XML equivalent,
@@ -186,6 +136,16 @@
     <code>htdocs/layout.xml</code> file and regenerate the website.  See
     <ulink url="#dotxml-files">below</ulink> for details.
 </para>
+<!--
+XXX: put back when we do switch
+<para>
+    Finally, remember that as of 2005-02-05 file generated
+    <emphasis>from</emphasis> XML need no longer be added to CVS, as these
+    files are generated <ulink url="#webserver">on nbwww</ulink>.  In fact,
+    these <quote>object files</quote> will likely be removed from CVS control
+    altogether.
+</para>
+-->
 </sect3>
 
 <sect3 id="dotxml-files">
@@ -194,22 +154,18 @@
     In order to build .html files from .xml files, you will need at
     least <pkg>textproc/libxslt</pkg> and <pkg>textproc/docbook-website</pkg>
     installed. These are installed as part of <pkg>meta-pkgs/netbsd-www</pkg>.
-    Please make sure that you have <pkg>meta-pkgs/netbsd-www</pkg> version 1.2
-    (which is in the latest stable branch, pkgsrc-2004Q4).
+    Please make sure that you have <pkg>meta-pkgs/netbsd-www</pkg> version
+    1.3.
 </para>
 <para>
-    To regenerate, cd to htdocs/ and run
-      <para><programlisting>make ./autolayout.xml</programlisting></para>
-    Then run <code><emphasis role="bold">make</emphasis></code> in the target
-    directory.
+    To regenerate, just run
+    <code><emphasis role="bold">make</emphasis></code> in the target directory.
+    You must do this after committing the .xml file so that the .html file
+    will include the proper "Generated from" statement.
 </para>
 <para>
-    If <command>make</command> complains
-    <programlisting>
-    Warning! layout.xml has changed. The whole website needs to be rebuilt.</programlisting>
+    If you added a new file to <filename>layout.xml</filename>,
     then you do need to run <command>make</command> in the htdocs top level.
-    If <command>xsltproc</command> fails and complains about running out of
-    memory, then you should increase the data segment ulimit of your shell.
 </para>
 </sect3>
 
@@ -270,10 +226,13 @@ recommended:
 <para>
     The NetBSD webpages are stored in CVS in the "htdocs" repository.
     For security reasons, the htdocs repository is copied (via rsync)
-    to www.NetBSD.org each hour, and the a local checkout is done from
-    that copy of the repository. The checked out tree can be found in
-    "<code>/NetBSD-www</code>". The repository is updated and checked out
-    every hour, about 40 minutes after the full hour (*:40). If you
+    to www.NetBSD.org each hour, and then a local checkout is done from
+    that copy of the repository.  <!-- As of 2005-02-05, nbwww builds the
+    website from the CVS checkout in a staging directory, then copies any
+    modified files into the live website under
+    <quote><code>/NetBSD-www</code></quote>. -->The script performing this
+    functionality is <filename>htutils/scripts/update.http</filename> and it
+    is run about 40 minutes after the full hour (*:40). If you
     make a commit to htdocs, it will take up to an hour before the
     changes show up.
 </para>
@@ -340,9 +299,8 @@ file.
 <sect4 id="before-anything">
 <title>Before you do anything with htdocs:</title>
 <orderedlist>
-  <listitem>Ensure you have <pkg>lang/perl5</pkg> installed for the <ulink
-    url="#dotlist-files">.list files</ulink>.  Also, see <ulink
-    url="#what-is-required">above</ulink>.</listitem>
+  <listitem>Ensure you have <pkg>meta-pkgs/netbsd-www</pkg> installed.
+    Also, see <ulink url="#what-is-required">above</ulink>.</listitem>
   <listitem>Check out <code>htdocs</code> from the CVS repository.</listitem>
   <listitem>If you already have a copy of htdocs in your tree, make sure you
     update it regularly.  In particular, when adding news items, make sure that
@@ -413,8 +371,7 @@ directory.
 <orderedlist>
   <listitem>You may want to <ulink url="#validate-html">validate the
     HTML</ulink> in your modified files.</listitem>
-  <listitem>Check in the files - do not forget any <code>.list</code> files will
-    update the matching <code>.html</code>.  The command 'make commit', when
+  <listitem>Check in the files.  The command 'make commit', when
     issued from the htdocs toplevel directory, will commit the main
     index-page, Changes/index.* and all the translations index pages with
     a default message of "NEWS; regen".  If you would like to add a more
