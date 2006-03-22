@@ -1,0 +1,418 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Documentation-wscons-index">
+  <config param="desc" value=""/>
+  <config param="cvstag" 
+    value="$NetBSD: index.xml,v 1.1 2005/07/13 23:27:55 rpaulo Exp $"/>
+  <config param="rcsdate" value="$Date: 2005/07/13 23:27:55 $"/>
+  <head>
+    
+    <!-- Copyright (c) 1994-2005
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+    
+    <!--
+    ==  Originally by Chris Jones
+    -->
+    <title>NetBSD wscons FAQ</title>
+  </head>
+
+  <sect1 role="toc">
+    <sect2 id="wscons-console-driver">
+      <title>The wscons console driver</title>
+
+      <sect3 id="whats-wscons">
+	<title>What is wscons?</title>
+
+	<para>Wscons is the platform-independent workstation console
+	  driver for NetBSD. As of this writing, not all platforms
+	  support wscons, but more are being added as time goes on.
+	  Wscons should have all the features (plus some extras) of
+	  the old i386 pcvt driver, but its exact capabilities are
+	  dependent on the underlying hardware.</para>
+      </sect3>
+
+      <sect3 id="enablingwscons">
+	<title>How do I enable wscons and virtual terminals?</title>
+
+	<para>Currently, virtual terminals are not supported on
+	  bitmap-only screens, like macppc, mac68k, and alpha to name
+	  a few.</para>
+
+	<para>For systems on which they are supported, the
+	  installation procedure will take care to set them up upon
+	  installation. The steps involved to do so manually are:
+
+	  <itemizedlist>
+	    <listitem>Edit <filename>/etc/rc.conf</filename> and
+	      change "wscons" to "yes"</listitem>
+	    <listitem>Edit <filename>/etc/wscons.conf</filename> and
+	      ensure that the screens you wish to enable for login are
+	      being created (note that the first screen, screen 0, is
+	      always present).</listitem>
+	    <listitem>Edit <filename>/etc/ttys</filename> and change
+	      the entries for <code>ttyE{1,2,3}</code> from
+	      <quote>off</quote> to <quote>on</quote>.</listitem>
+	    <listitem>Then either reboot or type the following:
+	      <screen>
+sh /etc/rc.d/wscons
+kill -1 1</screen></listitem>
+	  </itemizedlist>
+	  You can then use <code>Ctrl-Alt-{F1,F2,F3,F4}</code> to
+	  switch between the virtual terminals.</para>
+      </sect3>
+
+      <sect3 id="keyboard-maps">
+	<title>Changing the keyboard mapping from 'US'</title>
+
+	<para>This is done with &man.wsconsctl.8;, for example
+	  selecting a French keyboard map is done via "<emphasis
+	  role="bold"><code>wsconsctl -w encoding=fr</code></emphasis>".
+	  A full list of keyboard mappings is in <ulink
+	  url="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/wscons/wsksymdef.h,?rev=HEAD&amp;content-type=text/x-cvsweb-markup">/sys/dev/wscons/wsksymdef.h,</ulink>
+	  but some of the more common maps are:
+	  <itemizedlist>
+	    <listitem><code>de</code></listitem>
+	    <listitem><code>dk</code></listitem>
+	    <listitem><code>es</code></listitem>
+	    <listitem><code>fr</code></listitem>
+	    <listitem><code>it</code></listitem>
+	    <listitem><code>jp</code></listitem>
+	    <listitem><code>sv</code></listitem>
+	    <listitem><code>uk</code></listitem>
+	    <listitem><code>us</code></listitem>
+	  </itemizedlist></para>
+
+	<para>There are also several "variants" that can be used to
+	  modify a map:
+	  <itemizedlist>
+	    <listitem><code>dvorak</code></listitem>
+	    <listitem><code>swapctrlcaps</code></listitem>
+	    <listitem><code>iopener</code></listitem>
+	  </itemizedlist></para>
+
+	<para><quote>dvorak</quote> uses the Dvorak keyboard
+	  layout.<quote>swapctrlcaps</quote> switches the functions of the
+	  Caps Lock and Left Control keys. <quote>iopener</quote>
+	  is for the nonstandard keyboard layout on the Netpliance
+	  i-opener and makes F1 into Escape and F2 through F12 into F1
+	  through F11.
+	  These can be combined with another map by appending a dot
+	  and then the variant name, for example,
+	  <quote>us.iopener</quote>. Multiple variants can
+	  be combined, such as
+	  <quote>us.dvorak.swapctrlcaps</quote>. Note that not all
+	  combinations are allowed.</para>
+
+	<para>You can change the compiled in kernel default by adding
+	  <code>options PCKBD_LAYOUT=KB_<emphasis>encoding</emphasis></code>
+	  where <emphasis>encoding</emphasis> is an uppercase entry
+	  from the list above
+	  (eg: <code>PCKBD_LAYOUT=KB_FR</code>). Variants can be
+	  bitwise or'd in
+	  (eg: <code>PCKBD_LAYOUT=KB_US|KB_SWAPCTRLCAPS</code>).</para>
+
+	<para>If your favourite keymap is not supported, you can start
+	  digging in <ulink 
+	    url="http://cvsweb.NetBSD.org/cgi-bin/cvsweb.cgi/src/sys/dev/wscons/wsksymdef.h"><filename>sys/dev/wscons/wsksymdef.h</filename></ulink> and
+	  <ulink url="http://cvsweb.NetBSD.org/cgi-bin/cvsweb.cgi/src/sys/dev/pckbc/wskbdmap_mfii.c"><filename>sys/dev/pckbc/wskbdmap_mfii.c</filename></ulink>
+	  to make your own. Be sure to <ulink url="../../Misc/send-pr.html#submitting">send-pr</ulink> a change-request PR with your work, so others can
+	  make use of it!</para>
+
+    <para>A different way to implement your own keymap is documented
+         in <gnatspr><category>misc</category><number>10976</number></gnatspr>,
+	  which puts the definitions for a russian
+	  keymap into a file that's loaded later on. A hungarian keymap is
+	  available that way in 
+	  <gnatspr><category>misc</category><number>11457</number></gnatspr>
+	  there are also pointers to <ulink
+	  url="http://mail-index.NetBSD.org/regional-de/2004/02/07/0009.html">swiss-german for i386 and german for HP Jornada 720</ulink> 
+	  in the mailing list archives.</para>
+
+	<para>Configuring the keyboard layout under X is described
+	  <ulink url="../x/#x-keyboard-maps">elsewhere</ulink>.</para>
+      </sect3>
+      
+      <sect3 id="keyboard-speed">
+	<title>How do I change keyboard repeat speed?</title>
+
+	<para>Keyboard repeat speed can be tuned using the
+	  <emphasis role="bold">&man.wsconsctl.8;</emphasis> utility. 
+	  There are two variables of interest:
+	  <code>repeat.del1</code>, which specifies the delay before
+	  character repetition starts, and <code>repeat.deln</code>,
+	  which sets the delay between each character repetition (once
+	  started).</para>
+
+	<para>Lets see an example, assuming you want to accelerate keyboard
+	  speed. You could do, from the command line:</para>
+
+	<screen>wsconsctl -w repeat.del1=300
+wsconsctl -w repeat.deln=40</screen>
+	
+	<para>Or, if you want this to happen automatically every time
+	  you boot up the system, you could add the following lines to
+	  <filename>/etc/wscons.conf</filename>:
+	  <screen>setvar repeat.del1=300
+setvar repeat.deln=40</screen></para>
+      </sect3>
+
+      <sect3 id="screen0">
+	<title><quote>WSDISPLAYIO_ADDSCREEN: Device busy</quote></title>
+
+	<para>This error message usually occurs when wsconscfg tries
+	  to add a screen which already exists.  One time this occurs
+	  is if you have a <code>screen 0</code> line in your
+	  <filename>/etc/wscons.conf</filename> file, because the
+	  kernel always allocates a screen 0 as the console device.
+	  The error message is harmless in this case, and you can get
+	  rid of it by deleting (or commenting out) the 
+	  <code>screen 0</code> line.</para>
+      </sect3>
+
+      <sect3 id="colors">
+	<title>How do I change the text display colors?</title>
+
+	<para>It is possible to change the foreground and background
+	  color of kernel messages setting the following options in
+	  kernel config files:</para> 
+
+	<programlisting>options WS_KERNEL_FG=WSCOL_xxx
+options WS_KERNEL_BG=WSCOL_xxx</programlisting>
+
+	<para>The <code>WSCOL_xxx</code> color constants are defined in
+	  <filename>src/sys/dev/wscons/wsdisplayvar.h</filename>.</para>
+
+	<para>Starting from NetBSD 2.0G (-current after NetBSD 2.0),
+	  you can easily customize many aspects of your display
+	  appearance: the colors used to print normal messages, the
+	  colors used to print kernel messages and the color used to
+	  draw a border around the screen.</para>
+
+	<para>All of these details can be changed either from kernel
+	  options or through the &man.wsconsctl.8; utility; the later
+	  may be preferable if you don't want to compile your own
+	  kernel, as the default options in <code>GENERIC</code> are
+	  suitable to get this tip working.</para>
+
+	<para>The following options can be set through
+	  &man.wsconsctl.8;:</para>
+
+	<itemizedlist>
+	  <listitem><emphasis role="bold">border</emphasis>: The color
+	    of the screen border. Its respective kernel
+	    option is <code>WSDISPLAY_BORDER_COLOR</code>.</listitem>
+
+	  <listitem><emphasis
+	      role="bold">msg.default.attrs</emphasis>: The attributes
+	    used to print normal console messages. Its respective
+	    kernel options are <code>WS_DEFAULT_COLATTR</code>
+	    and <code>WS_DEFAULT_MONOATTR</code> (the former is used
+	    in color displays, while the later is used in monochrome
+	    displays).</listitem>
+
+	  <listitem><emphasis role="bold">msg.default.bg</emphasis>:
+	    The background color used to print normal console	    
+	    messages. Its respective kernel option is
+	    <code>WS_DEFAULT_BG</code>.</listitem>
+
+	  <listitem><emphasis role="bold">msg.default.fg</emphasis>:
+	    The foreground color used to print normal console
+	    messages.  Its respective kernel option is
+	    <code>WS_DEFAULT_FG</code>.</listitem>
+
+	  <listitem><emphasis role="bold">msg.kernel.attrs</emphasis>:
+	    The attributes used to print kernel messages and warnings.
+	    Its respective kernel options are
+	    <code>WS_KERNEL_COLATTR</code> and
+	    <code>WS_KERNEL_MONOATTR</code> (the
+	    former is used in color displays, while the later is used
+	    in monochrome displays).</listitem>
+
+	  <listitem><emphasis role="bold">msg.kernel.bg</emphasis>:
+	    The background color used to print kernel messages and
+	    warnings. Its respective kernel option is
+	    <code>WS_KERNEL_BG</code>.</listitem>
+
+	  <listitem><emphasis role="bold">msg.kernel.fg</emphasis>:
+	    The foreground color used to print kernel messages and
+	    warnings. Its respective kernel option is
+	    <code>WS_KERNEL_FG</code>.</listitem>
+	</itemizedlist>
+
+	<para>The values accepted as colors are: black, red, green,
+	  brown, blue, magenta, cyan and white. The attributes are a
+	  comma separated list of one or more flags, which can be:
+	  reverse, hilit, blink and/or underline.</para>
+
+	<para>For example, to emulate the look of one of those old
+	  Amstrad machines:</para>
+
+	<screen>wsconsctl -d -w border=blue msg.default.bg=blue msg.default.fg=white msg.default.attrs=hilit</screen>
+
+	<para>Or, to make your kernel messages appear red:</para>
+
+	<screen>wsconsctl -d -w msg.kernel.fg=red</screen>
+
+	<para>Note that, in older versions of NetBSD, only a subset of
+	  this functionality is available; more specifically, you can
+	  only change the kernel colors by changing kernel options, as
+	  explained above.
+	  Also note that not all drivers support these features, so
+	  you may not get correct results on all architectures.</para>
+      </sect3>
+
+      <sect3 id="muxdevices">
+	<title>How do I use the wscons <quote>mux</quote> devices?</title>
+
+	<para>The wscons <quote>mux</quote> devices let you multiplex the input
+	  streams from more than one 
+	  wskbd/wsmouse device.  The multiplexed device for wsmouse
+	  devices is <filename>/dev/wsmouse</filename>, and for wskbd
+	  devices it is <filename>/dev/wskbd</filename>. If you
+	  configure the X server to use
+	  <filename>/dev/wsmouse</filename>
+	  instead of hardwiring the pointing device, you can
+	  use any wsmouse-compatible pointing device available, or two
+	  or more of them at the same time.</para>
+
+	<para>The steps involved in this are:
+
+	  <orderedlist>
+	    <listitem>Configure and rebuild your kernel
+	      <itemizedlist>
+		<listitem>Add the option <quote>mux 0</quote>" to each 
+		  <quote>wsmouse* at ...</quote> line in your kernel
+		  config (example: <emphasis 
+		    role="bold">wsmouse* at ums? mux 0</emphasis>).</listitem>
+		<listitem>Add the option <quote>mux 1</quote> to 
+		  each <quote>wskbd* at ...</quote> line in your
+		  kernel config, just like in the example above.</listitem>
+		<listitem>Make sure you have <quote><emphasis
+		  role="bold">pseudo-device wsmux 2</emphasis></quote>
+		  defined in your kernel config.</listitem>
+		<listitem>Build the kernel.  There is a detailed
+		  explanation located in the <ulink
+		    url="../kernel/">Kernel FAQ</ulink> if
+		  you're not sure how to do that.</listitem>
+	      </itemizedlist>
+	    </listitem>
+	    <listitem>Make <filename>/dev/wsmouse</filename> and
+	      <filename>/dev/wskbd</filename>
+	      <itemizedlist>
+		<listitem>As root, cd to <filename>/dev</filename> and
+		  run <quote><filename>./MAKEDEV wsmux</filename></quote>. 
+		  If it fails, you can create these devices by hand in
+		  the <filename>/dev</filename> directory:
+		  <screen>mknod wsmouse c 65 0
+mknod wskbd c 65 1
+chown root:wheel wsmouse wskbd
+chmod 600 wsmouse wskbd</screen>
+		</listitem>
+	      </itemizedlist>
+	    </listitem>
+	    <listitem>If you're using X, edit
+	      <filename>/etc/XF86Config</filename>
+	      <itemizedlist>
+		<listitem>If the rest of your XF86Config is set up
+		  correctly, you can just edit the Protocol and
+		  Device lines in the "Pointer" section to match
+		  the following:
+		  <screen>Protocol "wsmouse"
+Device "/dev/wsmouse"</screen>
+		</listitem>
+	      </itemizedlist>
+	    </listitem>
+	  </orderedlist>
+	</para>
+
+	<para>After that's done you can do things like use the
+	  built-in pointing device on your laptop PC while on the go,
+	  and hot-plug a USB mouse at any later time and and use it
+	  without reconfiguring or restarting the X server.</para>
+      </sect3>
+
+      <sect3 id="mouseres">
+	<title>How do I change the mouse resolution?</title>
+
+	<para>If you're using a PS/2 mouse, the following command will
+	  work. <emphasis>nnn</emphasis> is an integer between 0 and 100.
+
+	  <screen>wsconsctl -m -w resolution=<emphasis>nnn</emphasis></screen>
+	</para>
+      </sect3>
+
+      <sect3 id="fontedit">
+	<title>Is there a font editor?</title>
+
+	<para>There are several fonts in
+	  <filename>/usr/share/wscons/fonts</filename> that
+	  can be loaded as console fonts. If you want to edit any of
+	  them, you can use the old pcvt utils that are available in the
+	  <pkg>sysutils/pcvt-utils</pkg> package.</para>
+      </sect3>
+
+      <sect3 id="moused">
+	<title>How do I use a serial mouse?</title>
+
+	<para>The wsmouse device (part of wscons) does not directly
+	  support serial mice. The &man.moused.8; daemon is provided
+	  to read serial mouse data, convert it into wsmouse events
+	  and inject them in wscons' event queue, so the mouse can be
+	  used through the abstraction layer provided by wsmouse.</para>
+
+	<para>A typical use can be: <code>moused -p /dev/tty00</code>. 
+	  This will try to determine the type of mouse connected to
+	  the first serial port and start reading its data. The
+	  &man.moused.8; man page contains more examples.</para>
+      </sect3>
+
+      <sect3 id="wsmoused">
+	<title>How do I enable mouse console support?</title>
+
+	<para>Mouse console support is available since NetBSD 1.6B through the
+	  &man.wsmoused.8; daemon. This program provides
+	  <emphasis>copy &amp; paste</emphasis> support
+	  to the wscons console using the mouse pointer.</para>
+
+	<para>This is currently available in all architectures that
+	  use the &man.vga.4; video driver as a backend of wscons, to
+	  know: alpha, arc, bebox, cats, hp700, i386 and prep.</para>
+
+	<para>Here is a step by step list of things to do to get
+	  &man.wsmoused.8; working (note that the man page contains
+	  more information):
+
+	  <orderedlist>
+	    <listitem>Enable the <code>WSDISPLAY_CHARFUNCS</code>
+	      option in your  kernel configuration file, recompile and
+	      install.</listitem>
+
+	    <listitem>Edit <filename>/etc/ttys</filename>: disable
+	      <filename>/dev/console</filename> and enable
+	      <filename>/dev/ttyE0</filename>;
+	      wsmoused will use the later.</listitem>
+
+	    <listitem>Optionally edit
+	      <filename>/etc/wscons.conf</filename> to enable
+	      <code>screen 0</code> (<filename>/dev/ttyE0</filename>)
+	      if needed.</listitem>
+
+	    <listitem>Add <code>wsmoused=yes</code> to your
+	      <filename>/etc/rc.conf</filename>. If you use
+	      the X Window System, you may also want to add
+	      <code>wsmoused_flags="-X 4"</code> to the file; this tells the
+	      daemon which console is X11 running on.</listitem>
+
+	    <listitem>Reboot and have fun!</listitem>
+	  </orderedlist>
+	</para>
+      </sect3>
+    </sect2>
+  </sect1>
+
+  <parensec url="../" text="NetBSD Documentation Top Level"/>
+  
+</webpage>
