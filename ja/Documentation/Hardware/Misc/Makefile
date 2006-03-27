@@ -1,9 +1,5 @@
-# $NetBSD: Makefile,v 1.2 2002/08/01 20:26:01 jschauma Exp $
-# Nasty makefile to recurse into subdirs to ensure faq files are up to date
+# $NetBSD: Makefile,v 1.5 2005/10/14 08:59:55 rillig Exp $
 
-all::	serial.html
+LISTDOCS+=	serial.list
 
-.SUFFIXES:	.list .html
-
-.list.html:
-	perl ../../../list2html.pl $< $@
+.include "../../../share/mk/web.site.mk"

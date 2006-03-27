@@ -1,18 +1,35 @@
-#	$NetBSD: Makefile,v 1.20 2002/11/09 16:05:22 darcy Exp $
-#       Process .list files into .html files
+#	$NetBSD: Makefile,v 1.45 2005/10/14 09:00:03 rillig Exp $
 
-all::  articles.html consultants.html devotionalia.html \
-	groups.html hardware.html logos.html preinstalled.html \
-	products.html research.html resources.html sites.html \
-	software.html testimonial.html events sitemap
+XMLDOCS+=	addsite
+XMLDOCS+=	articles
+XMLDOCS+=	devotionalia
+XMLDOCS+=	consultants
+XMLDOCS+=	events
+XMLDOCS+=	groups
+XMLDOCS+=	hardware
+XMLDOCS+=	index
+XMLDOCS+=	logos
+XMLDOCS+=	mobile-logos
+XMLDOCS+=	other-logos
+XMLDOCS+=	preinstalled
+XMLDOCS+=	products
+XMLDOCS+=	resources
+XMLDOCS+=	research
+XMLDOCS+=	sites
+XMLDOCS+=	software
+XMLDOCS+=	testimonial
 
-all::
-	@for dir in `echo */Makefile | sed 's:/Makefile::g'` ; do \
-	    echo "-> ${PDIR}$$dir";cd $$dir;${MAKE} PDIR=${PDIR}$$dir/; cd .. ;\
-	done
+SUBDIR=		advocacy
+SUBDIR+=	events
+SUBDIR+=	in-Action
+SUBDIR+=	xearth
+
+.SUFFIXES:	.data .html .xml
+
+all: events sitemap
 
 events: events.html
-	cd ..; make index; cd gallery;
+	cd ..; ${MAKE} index; cd gallery;
 
 sitemap: sitemap.html sitemap.links
 
@@ -22,11 +39,13 @@ sitemap.html: sitemap.head sitemap.links sitemap.tail
 sitemap.links:
 	./makesitemap.sh .. > sitemap.links
 
+# This file is not in CVS!  We have a dependency on it in
+# ${WEB_PREFIX}/share/mk/web.site.mk.
+CLEANFILES+=	sites.xml
 
-.SUFFIXES:	.data .list .html
+sites.xml:	sites.data sites.tail sites.head makesites.pl
 
-.list.html:
-	perl ../list2html.pl $< $@
-
-.data.html:
+.data.xml:
 	perl ./makesites.pl $< $@
+
+.include "../share/mk/web.site.mk"

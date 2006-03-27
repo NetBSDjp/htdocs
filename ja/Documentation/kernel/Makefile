@@ -1,15 +1,11 @@
-#	$NetBSD: Makefile,v 1.5 2000/05/17 11:57:43 blymn Exp $
-#	Process .list files into .html files
+#	$NetBSD: Makefile,v 1.17 2005/12/04 19:16:46 heinz Exp $
 
-all::	index.html programming.html uvm.html kgdb.html
+SUBDIR+=	profiling
+SUBDIR+=	pseudo
 
-all::
-	@for dir in `echo */Makefile | sed 's:/Makefile::g'` ; do \
-	    echo "-> ${PDIR}$$dir";cd $$dir;${MAKE} PDIR=${PDIR}$$dir/; cd .. ;\
-	done
+LISTDOCS=	kgdb.list
+LISTDOCS+=	scsidma.list
 
+XMLDOCS+=	index non-exec ddwg programming lazyfpu uvm
 
-.SUFFIXES:	.list .html
-
-.list.html:
-	../../list2html.pl $< $@
+.include "../../share/mk/web.site.mk"

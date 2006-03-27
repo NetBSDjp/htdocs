@@ -1,9 +1,7 @@
-#	$NetBSD: Makefile,v 1.5 2001/04/09 00:24:32 dent Exp $
-#	Process .list files into .html files
+#	$NetBSD: Makefile,v 1.9 2005/11/17 15:30:46 jschauma Exp $
 
-all:	faq.html
+XMLDOCS+=       index
 
-.SUFFIXES:	.list .html
+LISTDOCS+=	faq.list
 
-.list.html:
-	../../list2html.pl -a i386 $< $@
+.include "../../share/mk/web.site.mk"

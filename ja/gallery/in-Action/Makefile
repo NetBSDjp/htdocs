@@ -1,4 +1,4 @@
-#       $NetBSD: Makefile,v 1.6 2002/06/14 01:35:13 hubertf Exp $
+#       $NetBSD: Makefile,v 1.7 2004/02/28 09:51:18 grant Exp $
 #
 # Process .act files into .html files
 #
@@ -16,7 +16,7 @@ index.html: index.act-template mkact.pl Makefile
 	rm $*.act
 
 clean:
-	-rm new2.act
-	-rm new2.html
-	-rm index-new.act
-	-rm index-new.html
+	rm -f new2.act
+	rm -f new2.html
+	rm -f index-new.act
+	rm -f index-new.html
