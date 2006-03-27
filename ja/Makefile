@@ -1,12 +1,13 @@
 # $NetBSD$
 
-.include "Makefile.inc"
-.if exists(../Makefile.inc)
-.include "../Makefile.inc"
-.endif
+SUBDIR+=	Documentation
+SUBDIR+=	Ports
+SUBDIR+=	Releases
+SUBDIR+=	developers
+SUBDIR+=	gallery
 
 all: index
 
 index: lang-index
 
-.include "${WEB_PREFIX}/share/mk/web.site.mk"
+.include "../share/mk/web.site.mk"
