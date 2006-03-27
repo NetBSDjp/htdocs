@@ -1,11 +1,9 @@
-#	$NetBSD: Makefile,v 1.2 2002/08/01 20:24:59 jschauma Exp $
+#	$NetBSD: Makefile,v 1.10 2005/10/14 08:59:58 rillig Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.2 2002/08/01 20:24:59 jschauma Exp   -->
-#	Process .list files into .html files
+#	<!-- NetBSD: Makefile,v 1.10 2005/10/14 08:59:58 rillig Exp   -->
 
-all:	faq.html
+LISTDOCS+=	faq.list
 
-.SUFFIXES:	.list .html
+# XMLDOCS+=	index
 
-.list.html:
-	perl ../../list2html.pl -a sun3 $< $@
+.include "../../../share/mk/web.site.mk"

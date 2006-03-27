@@ -1,18 +1,29 @@
-# $NetBSD: Makefile,v 1.18 2002/11/09 21:54:55 jschauma Exp $
+#	$NetBSD: Makefile,v 1.41 2005/10/14 09:00:01 rillig Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: Makefile,v 1.18 2002/11/09 21:54:55 jschauma Exp   -->
-# Nasty makefile to recurse into subdirs to ensure faq files are up to date
+# <!-- NetBSD: Makefile,v 1.41 2005/10/14 09:00:01 rillig Exp   -->
 
-all::	PR.html announce.html gnats-admin.html \
-	translate-german.html translate-french.html translate-spanish.html \
-	mirrors.html new-port.html notes.html security.html style.html www.html
+SUBDIR+=	cvs-repos
+# SUBDIR+=	features
+# SUBDIR+=	pkgsrc
+# SUBDIR+=	releng
 
-all::
-	@for dir in `echo */Makefile | sed 's:/Makefile::g'` ; do \
-	    echo "-> ${PDIR}$$dir";cd $$dir;${MAKE} PDIR=${PDIR}$$dir/; cd .. ;\
-	done
+# XMLDOCS+=	index
+# XMLDOCS+=	announce
+# XMLDOCS+=	commit-guidelines
+# XMLDOCS+=	de-lint
+# XMLDOCS+=	htdocs
+# XMLDOCS+=	manpages
+# XMLDOCS+=	mirrors
+# XMLDOCS+=	new-port
+# XMLDOCS+=	pgp
+# XMLDOCS+=	restricted
+# XMLDOCS+=	security
+# XMLDOCS+=	translate
+# XMLDOCS+=	style
+# XMLDOCS+=	www
 
-.SUFFIXES:	.list .html
+# LISTDOCS=	PR.list
+# LISTDOCS+=	translate-german.list translate-french.list
+# LISTDOCS+=	translate-spanish.list notes.list
 
-.list.html:
-	perl ../list2html.pl $< $@
+.include "../../share/mk/web.site.mk"

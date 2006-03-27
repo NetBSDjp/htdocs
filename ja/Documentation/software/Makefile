@@ -1,11 +1,13 @@
-#	$NetBSD: Makefile,v 1.2 2002/08/01 20:25:08 jschauma Exp $
+#	$NetBSD: Makefile,v 1.17 2005/10/14 08:59:56 rillig Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.2 2002/08/01 20:25:08 jschauma Exp   -->
-#	Process .list files into .html files
+#	<!-- NetBSD: Makefile,v 1.17 2005/10/14 08:59:56 rillig Exp   -->
 
-all:	pkg-growth.html pkg-growth-jpg.html
+# XMLDOCS+=		compiling
 
-.SUFFIXES:	.list .html
+# XMLDOCS+=		packages:pkgsrc-home.xsl:packages.xml:packages.html
+# PARAMS.packages=	--stringparam autolayout-file ${AUTOLAYOUTFILE}
 
-.list.html:
-	perl ../../list2html.pl $< $@
+LISTDOCS=	pkg-growth.list pkg-growth-jpg.list
+
+.include "../../../share/mk/web.site.mk"
+

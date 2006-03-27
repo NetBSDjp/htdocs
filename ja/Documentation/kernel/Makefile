@@ -1,17 +1,13 @@
-#	$NetBSD: Makefile,v 1.4 2002/08/01 20:25:12 jschauma Exp $
+#	$NetBSD: Makefile,v 1.17 2005/12/04 19:16:46 heinz Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.4 2002/08/01 20:25:12 jschauma Exp   -->
-#	Process .list files into .html files
+#	<!-- NetBSD: Makefile,v 1.17 2005/12/04 19:16:46 heinz Exp   -->
 
-all::	uvm.html kgdb.html
+# SUBDIR+=	profiling
+SUBDIR+=	pseudo
 
-all::
-	@for dir in `echo */Makefile | sed 's:/Makefile::g'` ; do \
-	    echo "-> ${PDIR}$$dir";cd $$dir;${MAKE} PDIR=${PDIR}$$dir/; cd .. ;\
-	done
+LISTDOCS=	kgdb.list
+# LISTDOCS+=	scsidma.list
 
+# XMLDOCS+=	index non-exec ddwg programming lazyfpu uvm
 
-.SUFFIXES:	.list .html
-
-.list.html:
-	perl ../../list2html.pl $< $@
+.include "../../../share/mk/web.site.mk"

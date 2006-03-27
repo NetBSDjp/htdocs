@@ -1,16 +1,10 @@
-#	$NetBSD: Makefile,v 1.7 2002/08/01 20:25:57 jschauma Exp $
+#	$NetBSD: Makefile,v 1.17 2006/02/04 00:39:26 rpaulo Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.7 2002/08/01 20:25:57 jschauma Exp   -->
-#	Process .list files into .html files
+#	<!-- NetBSD: Makefile,v 1.17 2006/02/04 00:39:26 rpaulo Exp   -->
 
-all::	wavelan.html gprs.html
+# SUBDIR+=	ipsec ipv6 isdn nsps pppoe netboot
+SUBDIR+=	ipsec pppoe
 
-all::
-	@for dir in `echo */Makefile | sed 's:/Makefile::g'` ; do \
-	    echo "-> ${PDIR}$$dir";cd $$dir;${MAKE} PDIR=${PDIR}$$dir/; cd .. ;\
-	done
+# XMLDOCS+=	dhcp index gprs pf wavelan
 
-.SUFFIXES:	.list .html
-
-.list.html:
-	perl ../../list2html.pl $< $@
+.include "../../../share/mk/web.site.mk"

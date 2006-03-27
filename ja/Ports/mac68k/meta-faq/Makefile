@@ -1,12 +1,15 @@
-#	$NetBSD: Makefile,v 1.3 2002/08/01 20:25:45 jschauma Exp $
+#	$NetBSD: Makefile,v 1.5 2005/10/14 08:59:58 rillig Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.3 2002/08/01 20:25:45 jschauma Exp   -->
+#	<!-- NetBSD: Makefile,v 1.5 2005/10/14 08:59:58 rillig Exp   -->
 #	Process .list files into .html files
 
-all:	meta-faq-1.html meta-faq-2.html meta-faq-3.html meta-faq-4.html \
-	meta-faq-5.html meta-faq-6.html meta-faq-7.html meta-faq-8.html
+LISTDOCS=	meta-faq-1.list
+LISTDOCS+=	meta-faq-2.list
+LISTDOCS+=	meta-faq-3.list
+LISTDOCS+=	meta-faq-4.list
+LISTDOCS+=	meta-faq-5.list
+LISTDOCS+=	meta-faq-6.list
+LISTDOCS+=	meta-faq-7.list
+LISTDOCS+=	meta-faq-8.list
 
-.SUFFIXES:	.list .html
-
-.list.html:
-	perl ../../../list2html.pl $< $@
+.include "../../../../share/mk/web.site.mk"
