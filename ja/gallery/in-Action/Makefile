@@ -5,7 +5,7 @@
 # Process .act files into .html files
 #
 
-all:    index.html screenshots.html   # index-new.html
+all:    index.html # screenshots.html   # index-new.html
 
 index.html: index.act-template mkact.pl Makefile
 
