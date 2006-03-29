@@ -14,6 +14,9 @@ $debug=0;
 
 sub printfile {
     local($file)=@_;
+    if ( ! -f $file && -f "../../../gallery/in-Action/$file" ) {
+	$file = "../../../gallery/in-Action/$file";
+    }
     open(F, "iconv -f iso-2022-jp -t euc-jp $file|") or die "Cannot open $file for reading: $!\n";
     while(<F>) {
 	s/<!--.*//g;
