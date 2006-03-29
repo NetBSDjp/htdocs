@@ -351,7 +351,7 @@ sub makelist
 
     $data = $date_month = '';
     $entry_num = $date_num = $date_num_used = 0;
-    open(FILE, "nkf -e $infile|") || die("Unable to open '$infile': $!");
+    open(FILE, "iconv -f iso-2022-jp -t euc-jp $infile|") || die("Unable to open '$infile': $!");
     foreach( <FILE> )
 	{
 	foreach $rcstag (%rcsmap)
@@ -584,7 +584,7 @@ sub makelist
     if ($data !~ s/(<head[^>]*>)/$1$_/i)
 	{ &fail("Unable to locate <head> tag"); }
 
-    open(FILE, "|nkf -j >$outfile") || die("Unable to write '$outfile': $!");
+    open(FILE, "|iconv -f euc-jp -t iso-2022-jp >$outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data, %extras);
     close(FILE);
     if ($date_num) {

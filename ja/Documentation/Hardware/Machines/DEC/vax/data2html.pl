@@ -97,9 +97,9 @@ sub output_all
     {
     my($section,$loop,$elapsed);
 
-    open(OUT_FULL,'| nkf -j >full.html') || &fail("Cannot write full.html: $!");
-    open(OUT_INDEX,'| nkf -j >sections.html')||&fail("Cannot write sections.html: $!");
-    open(OUT_INTRO,'| nkf -j >index.html')||&fail("Cannot write index.html: $!");
+    open(OUT_FULL,'| iconv -f euc-jp -t iso-2022-jp >full.html') || &fail("Cannot write full.html: $!");
+    open(OUT_INDEX,'| iconv -f euc-jp -t iso-2022-jp >sections.html')||&fail("Cannot write sections.html: $!");
+    open(OUT_INTRO,'| iconv -f euc-jp -t iso-2022-jp >index.html')||&fail("Cannot write index.html: $!");
     @fhs=('OUT_FULL','OUT_INDEX','OUT_INTRO',@sections);
     foreach $section ( @sections )
 	{
@@ -334,7 +334,7 @@ sub read_datafile
     my($key,$value,$name,$last_key);
     my(%sectioncount);
 
-    open(DATA, "nkf -e $file|") || &fail("Unable to open '$file': $!");
+    open(DATA, "iconv -f iso-2022-jp -t euc-jp $file|") || &fail("Unable to open '$file': $!");
     while( <DATA> )
 	{
 	s/#.*//;
@@ -396,7 +396,7 @@ sub read_file
     my($data);
 
     $data='';
-    open(FILE,"nkf -e $file|") || &fail("Unable to read '$file': $!");
+    open(FILE,"iconv -f iso-2022-jp -t euc-jp $file|") || &fail("Unable to read '$file': $!");
     read(FILE,$data,-s $file);
     close(FILE);
     $data =~ s/\$NetBSD[^\$]+\$/\$NetBSD\$/g;
