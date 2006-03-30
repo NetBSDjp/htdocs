@@ -1,6 +1,6 @@
-<!-- $NetBSD: chapter.xml,v 1.3 2003/06/19 13:31:27 grant Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.4 2003/06/19 17:32:58 grant Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: chapter.xml,v 1.3 2003/06/19 13:31:27 grant Exp   -->
+<!-- NetBSD: chapter.xml,v 1.4 2003/06/19 17:32:58 grant Exp   -->
 
 <chapter id="platforms"> <?dbhtml filename="platforms.html"?>
 <title>NetBSD 以外のシステムで pkgsrc を使う</title>
@@ -60,41 +60,82 @@ cd othersrc/bootstrap-pkgsrc
 <title>Darwin</title>
 <para>
 対応は、 Darwin 5.x および 6.x に対しておこなわれています。
+Mac OS X で pkgsrc を使う方法としては、<link linkend="platform.osx-image">ディスクイメージ
+</link>を使う方法と<link linkend="platform.osx-ufs">UFS
+パーティション</link>を使う方法の二種類があります。
 </para>
 
 <para>
-以下、簡単に説明します。
+UFS パーティションがすでにある場合、または、
+UFS でフォーマット可能な未使用のパーティションがある場合は、
+ディスクイメージではなくそれを使うことをおすすめします。
+多少速くなりますし、ブート時に自動的にマウントすることができます
+(ディスクイメージは手動でマウントすることが必要です)。
 </para>
 
-<programlisting># ./ufsdiskimage create ~/Documents/NetBSD 512  # megabytes - season to taste
+<para>
+なぜ、既存の HFS+ ファイルシステムを使えないのでしょうか?
+それは、 pkgsrc は現在のところ、大文字と小文字を区別するファイルシステム上にあることを必要とするのですが、
+HFS+ は大文字と小文字を区別しないからです。
+</para>
+
+<sect3 id="platform.osx-image">
+<title>ディスクイメージを使う</title>
+<para>
+ディスクイメージを作ります。
+</para>
+
+<programlisting># cd bootstrap-pkgsrc
+# ./ufsdiskimage create ~/Documents/NetBSD 512  # megabytes - season to taste
 # ./ufsdiskimage mount ~/Documents/NetBSD
 # sudo chown `id -u`:`id -g` /Volumes/NetBSD
-# ftp \
-  ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/pkgsrc.tar.gz
-# tar -C /Volumes/NetBSD -zxvf pkgsrc.tar.gz &amp;&amp; rm pkgsrc.tar.gz
-# sudo ./bootstrap \
-  --pkgdir=/Volumes/NetBSD/pkg \
-  --pkgdbdir=/Volumes/NetBSD/pkgdb \
-  --pkgsrcdir=/Volumes/NetBSD/pkgsrc
 </programlisting>
 
 <para>
-註: UFS パーティションがすでにある場合、または、 UFS でフォーマット可能な未使用のパーティション[*]
-がある場合は、UFS ディスクイメージではなくそれを使ってください。
-多少速くなりますし、ブート時に自動的にマウントすることができます。
+これで、できあがりです。
+</para>
+</sect3>
+
+<sect3 id="platform.osx-ufs">
+<title>UFS パーティションを使う</title>
+<para>
+ほとんどの Mac にはディスクが一つしかありませんので、
+そこに pkgsrc 用の UFS パーティションを用意したい場合は、
+ちょっとした細工が必要です。
 </para>
 
 <para>
-(なぜ、既存の HFS+ ファイルシステムを使えないのでしょうか?
-それは、 pkgsrc は現在のところ、大文字と小文字を区別するファイルシステム上にあることを必要とするのですが、
-HFS+ は大文字と小文字を区別しないからです。)
+問題は、ディスクツールではブートに使ったディスクを変更できないことです。
+たとえば、30Gb のドライブを、Classic/OS9 用に 4Gb、pkgsrc 用に 4Gb、
+残りを OS X 用の HFS+、のように分割しているとします。
+この場合、pkgsrc 用のパーティションをアンマウントすることはできますが、
+たとえこのパーティションを newfs したとしても、
+パーティションマップ上は Apple_UFS (こちらであることが automounter には必要)
+ではなく Apple_HFS とされます。
+このため、 newfs すると、このパーティションは自動マウントされず、
+手動でマウントしても Finder では見られません。
 </para>
 
 <para>
-[*] - Mac OS X を使って HFS+ から UFS へ変換したいパーティションが
-ブートディスクである場合、ディスクツールでは変換ができません。
-"README.MacOSX" をご覧ください。
+OS X Installation (User) CD からブートする必要があります。
+インストールプログラムが起動したら、メニューから Disk
+Utility を選択します。これで、 UFS にしたいパーティションを選んで
+Apple UFS でフォーマットすることができます。
 </para>
+
+<para>
+以上が完了したら、 Disk Utility を終了し、インストーラーを終了します
+……するとコンピューターが再起動します。これで、新しい UFS
+パーティションが見られますが、パーミッションが root に設定されているので、
+書き込みができません。マウントポイント (<filename>/Volumes/whatever</filename>)
+を自分のものに chown する必要があります。
+</para>
+
+<para>
+この覚書は 10.2 (Jaguar) にもとづくもので、これより前のバージョンも該当します。
+うまくいけば、Apple は 10.3 (Panther) で Disk Utility を修正してくれるでしょう。
+</para>
+</sect3>
 </sect2>
 
 <sect2>
@@ -285,26 +326,25 @@ Solaris 8 でのブートストラップ過程およびパッケージの構築では、
 </itemizedlist>
 
 <para>
-<filename>/etc/mk.conf</filename> で CC および CXX を設定します。たとえば以下のようにします。
+<filename>/etc/mk.conf</filename> で <varname>CC</varname> および <varname>CXX</varname>
+を設定します。<varname>CPP</varname> もここで設定して結構です。
+たとえば以下のようにします。
 </para>
 
-<programlisting>
-CC=	cc
+<programlisting>CC=	cc
 CXX=	CC
-</programlisting>
+CPP=	/usr/ccs/lib/cpp</programlisting>
 
 <para>
 64 ビットバイナリーを構築したい場合は、以下のようにします。
 </para>
 
-<programlisting>
-CFLAGS=	-xtarget=ultra -xarch=v9
-</programlisting>
+<programlisting>CFLAGS=	-xtarget=ultra -xarch=v9</programlisting>
 </sect3>
 
 <para>
 どのコンパイラーを使うにせよ、コンパイラーのツールと
-$prefix が PATH にあることを確認してください。
+$prefix が <varname>PATH</varname> にあることを確認してください。
 これは <filename>/usr/ccs/{bin,lib}</filename> と、
 たとえば <filename>/usr/pkg/{bin,sbin}</filename> などです。
 </para>
