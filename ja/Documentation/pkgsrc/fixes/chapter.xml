@@ -1,6 +1,6 @@
-<!-- $NetBSD: chapter.xml,v 1.2 2003/06/19 12:42:34 grant Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.3 2003/06/23 07:03:04 grant Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: chapter.xml,v 1.2 2003/06/19 12:42:34 grant Exp   -->
+<!-- NetBSD: chapter.xml,v 1.3 2003/06/23 07:03:04 grant Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
 <title>パッケージの修正に関する注意</title>
@@ -8,21 +8,21 @@
 <sect1>
 <title>CPP定義</title>
 <para>
-アプリケーションをNetBSDに移植するためには、コンパイラーがコンパイルしてい
-るシステムを判断する必要があります。したがって、Cのプリプロセッサーがシステ
-ムを判断できるように、CPPの定義を使います。
+  アプリケーションをNetBSDに移植するためには、コンパイラーがコンパイルしてい
+  るシステムを判断する必要があります。したがって、Cのプリプロセッサーがシステ
+  ムを判断できるように、CPPの定義を使います。
 </para>
 
 <para>
-4.4 BSDから派生したシステム上で作業しているかどうかをテストするためには、
-BSD定義を使用します。これは
-<filename>&lt;sys/param.h&gt;</filename>で定義されています。
+  4.4 BSDから派生したシステム上で作業しているかどうかをテストするためには、
+  BSD定義を使用します。これは
+  <filename>&lt;sys/param.h&gt;</filename>で定義されています。
 </para>
 
 <programlisting><![CDATA[#include <sys/param.h>]]></programlisting>
 
 <para>
-また、BSDに固有の部分を、以下の条件でかこむこともできます。
+  また、BSDに固有の部分を、以下の条件でかこむこともできます。
 </para>
 
 <programlisting><![CDATA[#if (defined(BSD) && BSD >= 199306)
@@ -30,138 +30,151 @@ BSD定義を使用します。これは
 #endif]]></programlisting>
 
 <para>
-どうか注意して__NetBSD__定義を使って下さい。4.4-liteから派生した他のBSDにな
-いNetBSD固有の特徴にのみ適用してください。
+  どうか注意して<quote>__NetBSD__</quote>定義を使って下さい。4.4-liteから派生した他のBSDにな
+  いNetBSD固有の特徴にのみ適用してください。
 </para>
 </sect1>
 
 <sect1 id="fixes.libtool">
 <title>共有ライブラリー - libtool</title>
 <para>
-pkgsrcはさまざまな種類のマシンをサポートします。それらはa.outとELFのような
-異なるオブジェクトフォーマットを使い、共有ライブラリー、ダイナミックローディ
-ングの有無すらも異なります。これに対応するためにコマンドそのもの、およびオ
-プションがコンパイラー、リンカーなどに渡される必要があります。すべてのマシ
-ンで正しく動作させることは非常にむずかしく、テストのためにすべてのマシンを
-持っていない場合は特にそうでしょう。「libtool」パッケージはこれを助けます。
-「libtool」はソースファイルから、静的、動的なライブラリー両方を構築する方法
-を知っています。したがって、プラットフォーム独立です。
+  pkgsrcはさまざまな種類のマシンをサポートします。それらはa.outとELFのような
+  異なるオブジェクトフォーマットを使い、共有ライブラリー、ダイナミックローディ
+  ングの有無すらも異なります。これに対応するためにコマンドそのもの、およびオ
+  プションがコンパイラー、リンカーなどに渡される必要があります。すべてのマシ
+  ンで正しく動作させることは非常にむずかしく、テストのためにすべてのマシンを
+  持っていない場合は特にそうでしょう。<pkg>devel/libtool</pkg>パッケージはこれを助けます。
+  <pkg>devel/libtool</pkg>はプラットフォームによらずに、
+  ソースファイルから、静的、動的なライブラリー両方を構築する方法
+  を<quote>知って</quote>いるからです。
 </para>
 
 <para>
-以下に、libtoolをパッケージで使用するための7つの手順を記述します。
+  以下に、libtoolをパッケージで使用するための7つの手順を記述します。
 </para>
 
 <orderedlist>
 
 <listitem>
 <para>
-USE_LIBTOOL=yesをパッケージのMakefileへ追加します。
+  <varname>USE_LIBTOOL=yes</varname>をパッケージのMakefileへ追加します。
 </para>
 </listitem>
 
 <listitem>
 <para>
-   ライブラリーオブジェクトのために、<quote>${LIBTOOL} --mode=compile ${CC}</quote>を${CC}
-   に設定します。ライブラリーが、提供されたMakefileだけを使用して構築される
-   のであれば、CCの定義にこれを追加するだけです。このコマンドひとつだけで、
-   PICと非PICのライブラリーオブジェクトを作成します。したがって、共有ライブ
-   ラリーとそうでないライブラリーの構築規則を別々に記述する必要はありません。
+  ライブラリーオブジェクトのために、<quote>${LIBTOOL} --mode=compile ${CC}</quote>を<quote>${CC}</quote>
+  に設定します。ライブラリーが、提供されたMakefileだけを使用して構築される
+  のであれば、<varname>CC</varname>の定義にこれを追加するだけです。このコマンドひとつだけで、
+  PICと非PICのライブラリーオブジェクトを作成します。したがって、共有ライブ
+  ラリーとそうでないライブラリーの構築規則を別々に記述する必要はありません。
 </para>
 </listitem>
 
 <listitem>
 <para>
-   ライブラリーのリンクのための<quote>ar</quote>、<quote>ranlib</quote>、<quote>ld -Bshareable</quote>コマン
-   ドを削除してください。そしてその代わりに以下のコマンドを使用してください。
+  ライブラリーのリンクのための<quote>ar</quote>、<quote>ranlib</quote>、<quote>ld -Bshareable</quote>コマン
+  ドを削除してください。そしてその代わりに以下のコマンドを使用してください。
 </para>
 
 <programlisting>${LIBTOOL} --mode=link ${CC} -o ${.TARGET:.a=.la} ${OBJS:.o=.lo} -rpath ${PREFIX}/lib -version-info major:minor</programlisting>
 
 <para>
-   ライブラリーの拡張子は.laに、オブジェクトの拡張子は.loに変更されることに
-   注意してください。OBJSを必要に応じて変更してください。このコマンドは、必
-   要なものすべて、.a、.so.major.minor、そしてELFのシンボリックリンク(必要
-   なら)を自動的にカレントディレクトリーに作成します。特に、メジャー番号と
-   マイナー番号がゼロの場合は、-version-infoをかならず含めるようにしてくだ
-   さい。そうしないとlibtoolは共有ライブラリーのバージョンを取り除きます。
+  ライブラリーの拡張子は<filename>.la</filename>に、オブジェクトの拡張子は
+  <filename>.lo</filename>に変更されることに
+  注意してください。<varname>OBJS</varname>
+  を必要に応じて変更してください。このコマンドは、必
+  要なものすべて、
+  <filename>.a</filename>、<filename>.so.major.minor</filename>、
+  そしてELFのシンボリックリンク(必要
+  なら)を自動的にカレントディレクトリーに作成します。特に、メジャー番号と
+  マイナー番号がゼロの場合は、<quote>-version-info</quote>をかならず含めるようにしてくだ
+  さい。そうしないとlibtoolは共有ライブラリーのバージョンを取り除きます。
 </para>
 
 <para>
-   また、<quote>-release</quote>オプションは、ある一つの場合に限って、a.outとELF(シンボ
-   リックリンクを除く)との間で異なる結果をもたらします。
-   libfoo-release.so.x.yの形式のELFライブラリーは、a.outプラットフォーム上
-   ではlibfoo.so.x.yのシンボリックリンクを持ちます。これは自動的に処理され
-   ます。
+  また、<quote>-release</quote>オプションは、ある一つの場合に限って、a.outとELF(シンボ
+  リックリンクを除く)との間で異なる結果をもたらします。
+  <quote>libfoo-release.so.<emphasis>x</emphasis>.<emphasis>y</emphasis></quote>
+  の形式のELFライブラリーは、a.outプラットフォーム上
+  では
+  <quote>libfoo.so.<emphasis>x</emphasis>.<emphasis>y</emphasis></quote>
+  のシンボリックリンクを持ちます。これは自動的に処理され
+  ます。
 </para>
 
 <para>
-   <quote>-rpath引数</quote>は構築されたライブラリーのインストール先ディレクトリーです。
+  <quote>-rpath引数</quote>は構築されたライブラリーのインストール先ディレクトリーです。
 </para>
 
 <para>
-   <filename>PLIST</filename>には、.a, .laおよびso, .so.major, .so.major.minorがすべて含まれるべ
-   きです。
+  <filename>PLIST</filename>には、
+  <filename>.a</filename>, <filename>.la</filename> および、
+  <filename>.so</filename>,
+  <filename>.so.<emphasis>major</emphasis></filename> と
+  <filename>.so.<emphasis>major</emphasis>.<emphasis>minor</emphasis></filename>
+  ファイルをすべて含めます。
 </para>
 </listitem>
 
 <listitem>
 <para>
-   共有オブジェクト(.so)ファイル(すなわち、dlopen(3)でロードされるファイル
-   であって、共有ライブラリーでは*ありません*)のリンク時には、ファイルにバー
-   ジョンが加えられないようにするため、<quote>-module -avoid-version</quote>を使ってくだ
-   さい。
+  共有オブジェクト(<filename>.so</filename>)ファイル(すなわち、dlopen(3)でロードされるファイル
+  であって、共有ライブラリーでは*ありません*)のリンク時には、ファイルにバー
+  ジョンが加えられないようにするため、<quote>-module -avoid-version</quote>を使ってくだ
+  さい。
 </para>
 
 <para>
-   <filename>PLIST</filename>にはfoo.soの一覧が加わります。
+  <filename>PLIST</filename>には<filename>foo.so</filename>
+  の一覧が加わります。
 </para>
 </listitem>
 
 <listitem>
 <para>
-   インストールする前のライブラリーに依存するプログラムをリンクする時に、cc
-   かldの前に<quote>${LIBTOOL} --mode=link</quote>を書いてください。このコマンドは、正
-   しいライブラリー(静的、または共有)を見つけます。ただし、libtoolを使う時
-   には-Lオプションで相対パスを指定すること(<quote>-L../somelib</quote>のように)ができない
-   ことに注意してください。引数として.laファイルを使うように修正しなければ
-   なりません。例えば、
+  インストールする<emphasis>前</emphasis>のライブラリーに依存するプログラムをリンクする時に、
+  <command>cc</command>か<command>ld</command>の前に
+  <quote>${LIBTOOL} --mode=link</quote>を書いてください。このコマンドは、正
+  しいライブラリー(静的、または共有)を見つけます。ただし、libtoolを使う時
+  には-Lオプションで相対パスを指定すること(<quote>-L../somelib</quote>のように)ができない
+  ことに注意してください。引数として<filename>.la</filename>ファイルを使うように修正しなければ
+  なりません。例えば、
 </para>
 
+<informalexample>
 <programlisting>${LIBTOOL} --mode=link ${CC} -o someprog -L../somelib -lsomelib</programlisting>
+</informalexample>
 
 <para>
-   は、以下のように変更する必要があります。
+  は、以下のように変更する必要があります。
 </para>
 
 <programlisting>${LIBTOOL} --mode=link ${CC} -o someprog ../somelib/somelib.la</programlisting>
 
 <para>
-   これで、ライブラリーを正しく扱う事ができます。
+  これで、ライブラリーを正しく扱う事ができます。
 </para>
 </listitem>
 
 <listitem>
 <para>
-   ライブラリーをインストールするときに、installあるいはcpコマンドの前に
-   <quote>${LIBTOOL} --mode=install</quote>を書いて下さい。そしてライブラリーの名前を
-   .laに変えてください。例えば、以下のように書く必要があります。
+  ライブラリーをインストールするときに、<command>install</command>
+  あるいは<command>cp</command>コマンドの前に
+  <quote>${LIBTOOL} --mode=install</quote>を書いて下さい。そしてライブラリーの名前を
+  <filename>.la</filename>に変えてください。例えば、以下のように書く必要があります。
 </para>
 
+<informalexample>
 <programlisting>${LIBTOOL} --mode=install ${BSD_INSTALL_DATA} ${SOMELIB:.a=.la} ${PREFIX}/lib</programlisting>
+</informalexample>
 
 <para>
-   これは、静的リンクのための.a、共有ライブラリー、必要なシンボリックリンク
-   をインストールし、<command>ldconfig</command>を実行します。
+  これは、静的リンクのための<filename>.a</filename>、共有ライブラリー、必要なシンボリックリンク
+  をインストールし、<command>ldconfig</command>を実行します。
 </para>
 </listitem>
 
-<listitem>
-<para>
-   <filename>PLIST</filename> の中に、.a、.la、そしてso, .so.major, .so.major.minor ファイルを追
-   加してください(以前とはやり方が変わっています)。
-</para>
-</listitem>
 </orderedlist>
 
 </sect1>
@@ -169,44 +182,48 @@ USE_LIBTOOL=yesをパッケージのMakefileへ追加します。
 <sect1>
 <title>すでにlibtoolをサポートしているGNUパッケージでlibtoolを使う</title>
 <para>
-パッケージのlibtoolを簡単に回避する方法として、USE_LIBTOOL=yesおよび
-LTCONFIG_OVERRIDE=${WRKSRC}/ltconfigをパッケージのMakefileに追加してくださ
-い。パッケージのlibtoolは、do-configureターゲットでltconfigスクリプトにより
-作られます。USE_LIBTOOL および LTCONFIG_OVERRIDE が定義されている場合、指定
-されたltconfigは、パッケージのlibtoolのかわりにpkgsrc/devel/libtoolを使うよ
-う上書きされます。新しい(ltconfigを持たない)バージョンのlibtoolの場合は、上
-で説明したもののかわりにLIBTOOL_OVERRIDE=${WRKSRC}/libtoolを使う必要がある
-かもしれません。
+  パッケージの<emphasis>libtool</emphasis>を簡単に回避する方法として、
+  <varname>USE_LIBTOOL=yes</varname>および
+  <varname>LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig</varname>をパッケージのMakefileに追加してくださ
+  い。パッケージの<emphasis>libtool</emphasis>は、do-configureターゲットでltconfigスクリプトにより
+  作られます。<varname>USE_LIBTOOL</varname> および
+  <varname>LTCONFIG_OVERRIDE</varname> が定義されている場合、指定
+  されたltconfigは、パッケージのlibtoolのかわりに<pkg>devel/libtool</pkg>を使うよ
+  う上書きされます。新しい(ltconfigを持たない)バージョンのlibtoolの場合は、上
+  で説明したもののかわりに
+  <varname>LIBTOOL_OVERRIDE=${WRKSRC}/libtool</varname>を使う必要がある
+  かもしれません。
 </para>
 
 <para>
-パッケージが動的共有オブジェクトのロードに、libtool (libltdl)のプラットフォー
-ム独立なライブラリーを使う場合は、libtoolのbuildlink2.mkをインクルード(さら
-に、USE_BUILDLINK2をYESに設定)してください。
+  パッケージが動的共有オブジェクトのロードに、libtool (libltdl)のプラットフォー
+  ム独立なライブラリーを使う場合は、libtoolのbuildlink2.mkをインクルード(さら
+  に、<varname>USE_BUILDLINK2=YES</varname>を設定)してください。
 </para>
 
 <para>
-パッケージによっては、環境により動作や構築ができなくなるような、正しくない
-libtoolの使い方をしているものがあります。ありがちな間違いは以下のようなもの
-です。
+  パッケージによっては、環境により動作や構築ができなくなるような、正しくない
+  libtoolの使い方をしているものがあります。ありがちな間違いは以下のようなもの
+  です。
 </para>
 
 <itemizedlist>
 <listitem>
-   実行形式やライブラリーで、共有オブジェクト(-module)を依存ライブラリーと
-   してインクルードする。このこと自体は、以下の二つのうちいずれかが行なわれ
-   ている場合は、問題になりません。
-   <orderedlist>
-   <listitem>その共有オブジェクトが正しく命名されている。すなわち、foo.laではなく
-libfoo.laとなっている。</listitem>
-   <listitem>-dlopenオプションが実行形式のリンク時に使われている。</listitem>
-   </orderedlist>
+  実行形式やライブラリーで、共有オブジェクト(-module)を依存ライブラリーと
+  してインクルードする。このこと自体は、以下の二つのうちいずれかが行なわれ
+  ている場合は、問題になりません。
+  <orderedlist>
+  <listitem>その共有オブジェクトが正しく命名されている。すなわち、
+            <filename>libfoo.la</filename>ではなく
+            <filename>libfoo.la</filename>となっている。</listitem>
+  <listitem>-dlopenオプションが実行形式のリンク時に使われている。</listitem>
+  </orderedlist>
 </listitem>
 
 <listitem>
-   ルーチンの初期化を適切に呼ばずにlibltdlを使う。関数lt_dlinit()を呼んで、
-   マクロLTDL_SET_PRELOADED_SYMBOLSを実行形式にインクルードするようにしましょ
-   う。
+  ルーチンの初期化を適切に呼ばずにlibltdlを使う。関数lt_dlinit()を呼んで、
+  マクロLTDL_SET_PRELOADED_SYMBOLSを実行形式にインクルードするようにしましょ
+  う。
 </listitem>
 </itemizedlist>
 
@@ -215,15 +232,15 @@ libfoo.laとなっている。</listitem>
 <sect1>
 <title>GNU Autoconf/Automake</title>
 <para>
-パッケージが、configureスクリプトやmakefileの雛型Makefile.inを再生成するた
-めにGNU autoconfまたはautomakeを実行する必要がある場合、これらの実行は
-pre-configureターゲットでおこないます。これらのツールの扱いを補助するための
-makefileの断片が二つ、pkgsrc/mk/autoconf.mkおよびpkgsrc/mk/automake.mkで用
-意されています。詳細は、このファイル中のコメントをご覧ください。
+  パッケージが、configureスクリプトやmakefileの雛型Makefile.inを再生成するた
+  めにGNU autoconfまたはautomakeを実行する必要がある場合、これらの実行は
+  pre-configureターゲットでおこないます。これらのツールの扱いを補助するための
+  Makefileの断片が二つ、pkgsrc/mk/autoconf.mkおよびpkgsrc/mk/automake.mkで用
+  意されています。詳細は、このファイル中のコメントをご覧ください。
 </para>
 
 <para>
-autoconfのみを必要とするパッケージでは以下のようになります:
+  autoconfのみを必要とするパッケージでは以下のようになります:
 </para>
 
 <programlisting>AUTOCONF_REQD=	2.50	# if default version is not good enough
@@ -253,72 +270,81 @@ pre-configure:
 .include "../mk/automake.mk"</programlisting>
 
 <para>
-生成されたファイルに対して、configureプロセスがさらに変更を加える時がありま
-すが、この時には構築プロセスが一連のautomakeの手順を再実行しようとします。
-configureの段階でさまざまなファイルに手を加えると、この挙動は止められます。
-この挙動が問題が起こす場合は、そのパッケージのMakefileでAUTOMAKE_OVERRIDEを
-NOに設定することができます。
+  生成されたファイルに対して、configureプロセスがさらに変更を加える時がありま
+  すが、この時には構築プロセスが一連のautomakeの手順を再実行しようとします。
+  configureの段階でさまざまなファイルに手を加えると、この挙動は止められます。
+  この挙動が問題が起こす場合は、そのパッケージのMakefileで
+  <varname>AUTOMAKE_OVERRIDE=NO</varname>を設定することができます。
 </para>
 </sect1>
 
 <sect1>
 <title>パッケージの設定ファイル</title>
 <para>
-パッケージの設定ファイルの場所は、${PKG_SYSCONFDIR}として指示され、この値は
-configureおよびbuildのプロセスに渡されます。PKG_SYSCONFDIRは、他のmake変数
-のさまざまな設定によってカスタマイズすることができます:
+  パッケージの設定ファイルの場所は、<varname>${PKG_SYSCONFDIR}</varname>として指示され、この値は
+  configureおよびbuildのプロセスに渡されます。
+  <varname>PKG_SYSCONFDIR</varname>は、他のmake変数
+  のさまざまな設定によってカスタマイズすることができます:
 </para>
 
 <itemizedlist>
 <listitem>
 <para>
-PKG_SYSCONFBASEは主たる設定ディレクトリーで、パッケージ用の設定ファイルす
-  べてがこれ以下に置かれます。デフォルトは${PREFIX}/etcですが、/etc/mk.conf
-  で上書きすることができます。
+  <varname>PKG_SYSCONFBASE</varname>は主たる設定ディレクトリーで、パッケージ用の設定ファイルす
+  べてがこれ以下に置かれます。デフォルトは<filename>${PREFIX}/etc</filename>ですが、
+  <filename>/etc/mk.conf</filename>で上書きすることができます。
 </para>
 </listitem>
 
 <listitem>
 <para>
-PKG_SYSCONFSUBDIRはPKG_SYSCONFBASEのサブディレクトリーで、個々のパッケー
+  <varname>PKG_SYSCONFSUBDIR</varname>は
+  <varname>PKG_SYSCONFBASE</varname>のサブディレクトリーで、個々のパッケー
   ジ用の設定ファイルはこの下に置かれます。たとえば、Apacheの設定ファイルは
-  すべて、${PKG_SYSCONFBASE}のサブディレクトリー"httpd"の下に置かれます。こ
+  すべて、
+  <varname>${PKG_SYSCONFBASE}</varname>のサブディレクトリー
+  <filename>httpd/</filename>の下に置かれます。こ
   れは、パッケージのMakefileで設定することを想定しています。
 </para>
 </listitem>
 
 <listitem>
 <para>
-デフォルトではPKG_SYSCONFDIR=${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}にな
+  デフォルトでは
+  <varname>PKG_SYSCONFDIR=${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}</varname>にな
   りますが、このデフォルト値は、個々のパッケージに対して 
-  PKG_SYSCONFDIR.${PKG_SYSCONFVAR} を設定することで上書きすることができます。
-  このPKG_SYSCONFVARは、デフォルトでは${PKGBASE}です。これは、パッケージの
+  <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname> を設定することで上書きすることができます。
+  この<varname>PKG_SYSCONFVAR</varname>
+  は、デフォルトでは<varname>${PKGBASE}</varname>です。これは、パッケージの
   Makefileで設定するためのものではなく、ユーザーが個々のパッケージについて
-  PKG_SYSCONFDIRの設定を特別な場所に上書きするために予約されているものです。
+  <varname>PKG_SYSCONFDIR</varname>の設定を特別な場所に上書きするために予約されているものです。
 </para>
 </listitem>
 </itemizedlist>
 
 <para>
-ユーザーがカスタマイズすべき変数は、PKG_SYSCONFBASEと
-PKG_SYSCONFDIR.${PKG_SYSCONFVAR}だけです。通常、ユーザーはPKG_SYSCONFBASEを
-/etcに設定するか、またはデフォルトの場所の${PREFIX}/etcのままにするでしょう。
+  ユーザーがカスタマイズすべき変数は、
+  <varname>PKG_SYSCONFBASE</varname>と
+  <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname>だけです。通常、ユーザーは
+  <varname>PKG_SYSCONFBASE</varname>を
+  <filename>/etc</filename>に設定するか、またはデフォルトの場所の
+  <filename>${PREFIX}/etc</filename>のままにするでしょう。
 </para>
 </sect1>
 
 <sect1>
 <title>作者へのフィードバック</title>
 <para>
-もしパッケージの不具合を発見し動作するように修正した場合、NetBSD上で動作さ
-せるために特別な手順が必要だった場合、あるいはさまざまなソフトウェアの拡張
-をおこなった場合、これらの修正をプログラムのオリジナルの作者へ報告してくだ
-さい。このようなサポートによって、プログラムの次のリリースにそれらの修正を
-反映することができます。そして、NetBSDパッケージシステムを使用していない人々
-も、あなたの努力のおかげで幸せになれます。
+  もしパッケージの不具合を発見し動作するように修正した場合、NetBSD上で動作さ
+  せるために特別な手順が必要だった場合、あるいはさまざまなソフトウェアの拡張
+  をおこなった場合、これらの修正をプログラムのオリジナルの作者へ報告してくだ
+  さい。このようなサポートによって、プログラムの次のリリースにそれらの修正を
+  反映することができます。そして、NetBSDパッケージシステムを使用していない人々
+  も、あなたの努力のおかげで幸せになれます。
 </para>
 
 <para>
-フリーソフトウェアの理念をサポートして下さい。
+  フリーソフトウェアの理念をサポートして下さい。
 </para>
 </sect1>
 
