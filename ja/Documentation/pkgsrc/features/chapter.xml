@@ -1,4 +1,4 @@
-<!-- $NetBSD: chapter.xml,v 1.12 2003/06/20 05:36:27 grant Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.13 2003/06/23 07:05:50 grant Exp $ -->
 
 <chapter id="features"> <?dbhtml filename="features.html"?>
 <title>FAQs &amp; features of the package system</title>
@@ -737,8 +737,8 @@ or never finishing compiling a file.
 
 <para>
 Typically a workaround involves testing the <varname>MACHINE_ARCH</varname>
-and compiler
-version, disabling optimisation for that file/MACHINE_ARCH/compiler
+and compiler version, disabling optimisation for that
+file/<varname>MACHINE_ARCH</varname>/compiler
 combination, and documenting it in <filename>doc/HACKS</filename>. See
 <filename>doc/HACKS</filename> for examples.
 </para>
@@ -749,89 +749,68 @@ combination, and documenting it in <filename>doc/HACKS</filename>. See
 <title>Packages providing info files</title>
 
 <para>
-Some packages install info files or use the <command>makeinfo</command>
-or <command>install-info</command> commands. In such cases, the
-makefile fragment <filename>mk/texinfo.mk</filename> should be included
-in the package <filename>Makefile</filename> before the inclusion of
-<filename>mk/bsd.pkg.mk</filename>.
-Newer versions of texinfo (version 4 and above) are, unfortunately,
-incompatible from previous versions at the command line level and some
-extensions were introduced in the TeXinfo macro set. So the package creator
-should ensure that the correct binaries are selected, rather than relying
-on the contents of the <varname>PATH</varname> variable in the shell.
+Some packages install info files or use the <quote>makeinfo</quote>
+or <quote>install-info</quote> commands. Each info file:
+<itemizedlist>
+<listitem>is considered to be installed in the directory
+          <filename>${PREFIX}/${INFO_DIR}</filename>,</listitem>
+<listitem>is registered in the Info directory file
+          <filename>${PREFIX}/${INFO_DIR}/dir</filename>,</listitem>
+<listitem>and must be listed as a filename in the
+          <varname>INFO_FILES</varname> variable in the package
+          Makefile.</listitem>
+</itemizedlist>
 </para>
 
 <para>
-The main info directory file needs to be updated to reflect the
-installation of info files. Some packages' installation processes take care
-of this for you. Otherwise the NetBSD Packages Collection has an
-<varname>INFO_FILES</varname>
-definition which can be used to do this. Simply use the
-</para>
-
-<programlisting>INFO_FILES=	ident.info</programlisting>
-
-<para>
-definition in the package Makefile, where <quote>ident.info</quote> is the name of the
-info file which installs an info dir entry.
+<varname>INFO_DIR</varname> defaults to <quote>info</quote> and can be
+overridden in the package Makefile. <filename>INSTALL</filename> and
+<filename>DEINSTALL</filename> scripts will be generated for handling
+registration of the info files in the Info directory file. The command
+<quote>install-info</quote> used for the info files registration is
+either provided by the system, or by a special purpose package
+automatically added as dependency if needed.
 </para>
 
 <para>
-A package creator should also take care that the package build and install
-process uses the correct version of the <command>makeinfo</command> and
-<command>install-info</command> commands.
-Some Makefiles and configure scripts from recent software packages include
-the pathnames to the <quote>makeinfo</quote> and
-<quote>install-info</quote> commands. Unfortunately,
-older software packages tend not to do this, and, should this be the case,
-further action is required of the package creator.
+A package which need the <quote>makeinfo</quote> command at build
+time must define the variable <varname>USE_MAKEINFO</varname> in its
+Makefile. If a minimum version of the <quote>makeinfo</quote> command
+is needed it should be noted with the <varname>TEXINFO_REQD</varname>
+variable in the package Makefile. By default, a minimum version of 3.12
+is required. If the system does not provide a <quote>makeinfo</quote>
+command or if it does not match the required minimum, a build dependency
+on the <pkg>devel/gtexinfo</pkg> package is added automatically.
 </para>
 
 <para>
-The <filename>mk/texinfo.mk</filename> makefile fragment will ensure
-that the proper <quote>makeinfo</quote>
-and <quote>install-info</quote> commands are available on the system as well as help the
-configure and build process of the package to use known binaries for these
-commands.
+The installation process of the software provided by the package must not
+use <quote>install-info</quote>, as the registration of info files
+is the task of the package INSTALL sript, and it must use
+the right <quote>makeinfo</quote>.
 </para>
 
 <para>
-If a minimum version of <quote>makeinfo</quote> and
-<quote>install-info</quote> commands are required,
-define <varname>TEXINFO_REQD</varname> in the package's Makefile to this
-minimum version.
+If the package use buildlink2 framework no special action should be needed
+to achieve this goal.
 </para>
 
 <para>
-If a package is not well behaved (i.e., it does not pick
-<varname>MAKEINFO</varname> or <varname>INSTALL_INFO</varname> in the
-environment at configure or build time) you should do
-one of the following, whichever is more appropriate:
+If the package does not use the buildlink2 framework patch files are likely
+to be needed so the build and installation process of the software
+picks up the <emphasis>possibly dummy</emphasis> values of
+<varname>INSTALL_INFO</varname> and <varname>MAKEINFO</varname>
+variables.
 </para>
 
-<orderedlist>
-
-<listitem>
-<para>
-    patch the package files so <varname>MAKEINFO</varname> or
-    <varname>INSTALL_INFO</varname> are picked from the
-    environment at configure or build time and get used instead of
-    relying on makeinfo or install-info being accessible in
-    <varname>PATH</varname>;
-</para>
-</listitem>
-
-<listitem>
-<para>
-    put <varname>TEXINFO_OVERRIDE=YES</varname> in the package Makefile
-    to let some sed manipulation happen on some packages source files
-    (see contents of <filename>mk/texinfo.mk</filename>).
-</para>
-</listitem>
-
-</orderedlist>
+<note>
+Temporarily, the variable <varname>USE_NEW_TEXINFO</varname> must be
+defined in the package Makefile. Previously, info files,
+<quote>install-info</quote> and <quote>makeinfo</quote>
+were handled somewhat differently and the two ways will coexist for
+a short period of time until all older packages are updated.
+</note>
 </sect1>
-
 
 <sect1>
 <title>Packages whose distfiles aren't available for plain downloading</title>
