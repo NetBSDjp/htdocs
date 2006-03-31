@@ -1,6 +1,6 @@
-<!-- $NetBSD: chapter.xml,v 1.12 2003/06/20 05:36:27 grant Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.13 2003/06/23 07:05:50 grant Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: chapter.xml,v 1.12 2003/06/20 05:36:27 grant Exp   -->
+<!-- NetBSD: chapter.xml,v 1.13 2003/06/23 07:05:50 grant Exp   -->
 
 <chapter id="features"> <?dbhtml filename="features.html"?>
 <title>FAQとパッケージシステムの特徴</title>
@@ -719,7 +719,7 @@ post-deinstall時にはこのユーザーとグループの削除を管理者に促すようになりま
 <para>
 たいていは、回避策として、<varname>MACHINE_ARCH</varname>
 とコンパイラーのバージョンを確認し、
-問題のあるファイル/MACHINE_ARCH/コンパイラーの組合せに対して最適化を無効に
+問題のあるファイル/<varname>MACHINE_ARCH</varname>/コンパイラーの組合せに対して最適化を無効に
 し、そのことを<filename>doc/HACKS</filename>に文書化しておくことが必要となります。例については
 <filename>doc/HACKS</filename>を参照してください。
 </para>
@@ -730,84 +730,68 @@ post-deinstall時にはこのユーザーとグループの削除を管理者に促すようになりま
 <title>infoファイルが附属するパッケージ</title>
 
 <para>
-パッケージによっては、infoファイルをインストールしたり、<command>makeinfo</command>または
-<command>install-info</command>コマンドを使ったりします。この場合、パッケージの<filename>Makefile</filename>で、
-<filename>mk/bsd.pkg.mk</filename>をインクルードする前に、makefileの断片<filename>mk/texinfo.mk</filename>をインクルー
-ドする必要があります。texinfoの新しいバージョン(バージョン4以上)は、困った
-ことに、それより前のバージョンとコマンド行のレベルで互換性がありません。ま
-た、TeXinfoマクロセットに拡張がいくつか導入されています。このため、パッケー
-ジ作者は、シェルの<varname>PATH</varname>変数の内容に依存したりせずに、適切なバイナリーが選ば
-れるようにしてください。
+パッケージによっては、infoファイルをインストールしたり、<quote>makeinfo</quote>または
+<quote>install-info</quote>コマンドを使ったりします。各 info ファイルは、
+<itemizedlist>
+<listitem><filename>${PREFIX}/${INFO_DIR}</filename>
+          ディレクトリーにインストールされるものとして扱われます。</listitem>
+<listitem>Info ディレクトリーファイル
+          <filename>${PREFIX}/${INFO_DIR}/dir</filename> に登録されます。</listitem>
+<listitem>パッケージの Makefile で、
+          <varname>INFO_FILES</varname> 変数に、
+          ファイル名の形で列挙する必要があります。</listitem>
+</itemizedlist>
 </para>
 
 <para>
-主たるinfoディレクトリーファイルは、infoファイルがインストールされたことを
-反映するために更新する必要があります。パッケージによっては、インストール過
-程でこの更新をおこなってくれます。そうしてくれないパッケージでは、NetBSDパッ
-ケージコレクションの
-<varname>INFO_FILES</varname>
-定義を、この更新用に使うことができます。パッ
-ケージのMakefileで、
-</para>
-
-<programlisting>INFO_FILES=	ident.info</programlisting>
-
-<para>
-と定義するだけです。この<quote>ident.info</quote>は、infoディレクトリーファイルにインス
-トールされるinfoファイルの名前にします。
+<varname>INFO_DIR</varname> のデフォルトは <quote>info</quote> ですが、
+パッケージの Makefile で上書きすることができます。 info ファイルを
+Info ディレクトリーファイルに登録するために、<filename>INSTALL</filename> および
+<filename>DEINSTALL</filename> スクリプトが作られます。
+info ファイルの登録用の <quote>install-info</quote> コマンドは、
+システム附属のものが使われるか、
+または、必要があればそれ用のパッケージが自動的に追加されて使われます。
 </para>
 
 <para>
-パッケージ作者は、パッケージの構築とインストールのプロセスが、適切なバージョ
-ンの<command>makeinfo</command>および
-<command>install-info</command>コマンドを使うようにするよう、注意を払ってく
-ださい。最近のソフトウェアパッケージに附属するMakefilesやconfigureスクリプ
-トのなかには、<quote>makeinfo</quote>および<quote>install-info</quote>コマンドへのパス名を含めているもの
-があります。残念ながら、古いソフトウェアパッケージは、そのようにはしない傾
-向があります。問題となるのはこのケースで、パッケージ作者が手間をかける必要
-があります。
+構築時に <quote>makeinfo</quote> コマンドが必要なパッケージは、
+Makefile で <varname>USE_MAKEINFO</varname> 変数を定義する必要があります。
+あるバージョン以上の<quote>makeinfo</quote>コマンドが必要な場合は、
+パッケージの Makefile で <varname>TEXINFO_REQD</varname> 変数を必要な最低バージョンに設定します。
+デフォルトでは、 3.12 が最低限必要なバージョンとなります。
+<quote>makeinfo</quote> コマンドがシステムにないか、
+最低限必要なバージョンを満たさない場合は、<pkg>devel/gtexinfo</pkg>
+パッケージへの構築時の依存関係が自動的に追加されます。
 </para>
 
 <para>
-makefileの断片<filename>mk/texinfo.mk</filename>は、適切な<quote>makeinfo</quote>および<quote>install-info</quote>コマンドをシ
-ステム上で利用可能な状態にして、パッケージのconfigureおよびbuildプロセスが
-これらのコマンドのバイナリーを使うようにします。
+パッケージで提供されるソフトウェアのインストール過程では、
+<quote>install-info</quote> を使ってはいけません。
+info ファイルの登録は INSTALL スクリプトの仕事であって、
+<quote>makeinfo</quote> を適切に使う必要があるからです。
 </para>
 
 <para>
-あるバージョン以上の<quote>makeinfo</quote>および<quote>install-info</quote>コマンドが必要な場合は、パッ
-ケージのMakefileで、 <varname>TEXINFO_REQD</varname>を必要な最低バージョンに設定します。
+パッケージが buildlink2 の枠組を使っている場合は、
+以上の方針を満たすために特別な操作を追加する必要はないはずです。
 </para>
 
 <para>
-パッケージが適切な挙動をしない(つまり、configureやbuildの際に環境変数
-<varname>MAKEINFO</varname>や<varname>INSTALL_INFO</varname>を参照しない) 場合は、以下のいずれか適切な方をおこな
-うようにします:
+パッケージが buildlink2 の枠組を使っていない場合は、
+ソフトウェアの構築およびインストールの過程で
+<varname>INSTALL_INFO</varname> および <varname>MAKEINFO</varname>
+変数値 (<emphasis>ダミーの場合もあります</emphasis>) を拾うようにするための
+パッチファイルがおそらく必要になるでしょう。
 </para>
 
-<orderedlist>
-
-<listitem>
-<para>
-    パッケージのファイルにパッチを当てて、configureやbuildの際に、makeinfo
-    やinstall-infoが
-    <varname>PATH</varname>中にあることを前提にするのではなく、環境変数
-    <varname>MAKEINFO</varname>や
-    <varname>INSTALL_INFO</varname>を使うようにする;
-</para>
-</listitem>
-
-<listitem>
-<para>
-    パッケージのMakefileに<varname>TEXINFO_OVERRIDE=YES</varname>を書いておき、パッケージのソー
-    スファイルの内容を置換するようにする(<filename>mk/texinfo.mk</filename>の内容を参考にしてく
-    ださい)。
-</para>
-</listitem>
-
-</orderedlist>
+<note>
+現在、一時的な措置として、パッケージの Makefile で <varname>USE_NEW_TEXINFO</varname>
+を定義する必要があります。以前は、info ファイル、
+<quote>install-info</quote> および <quote>makeinfo</quote>
+は現在とは異なる方法で扱われており、古い方法を使ったパッケージがすべて更新されるまでの間は、
+新旧の 2 方式が共存することになります。
+</note>
 </sect1>
-
 
 <sect1>
 <title>distfileのダウンロードが単純にできないパッケージ</title>
