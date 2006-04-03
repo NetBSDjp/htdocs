@@ -1,4 +1,4 @@
-<!-- $NetBSD: chapter.xml,v 1.13 2003/06/23 07:05:50 grant Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.16 2003/09/27 22:04:04 dent Exp $ -->
 
 <chapter id="features"> <?dbhtml filename="features.html"?>
 <title>FAQs &amp; features of the package system</title>
@@ -106,7 +106,7 @@ The answer here is to do a <command>make fetch-list</command> in
 <filename>/usr/pkgsrc</filename>, carry the 
 resulting list to your machine at work/school and use it there If you don't
 have a NetBSD-compatible ftp(1) (like lukemftp) at work, don't forget to
-set <varname>FETCH_CMD</varname> to something that fetches an URL:
+set <varname>FETCH_CMD</varname> to something that fetches a URL:
 </para>
 
 <para>
@@ -714,12 +714,11 @@ the user element.
 </para>
 
 <para>
-The package Makefile must also include
-<filename>../../mk/bsd.pkg.install.mk</filename> prior to
-the inclusion of <filename>bsd.pkg.mk</filename>.  This will cause the users and groups to be
-created at pre-install time, and the admin will be prompted to remove them at
-post-deinstall time.  Automatic creation of the users and groups can be
-toggled on and off by setting the environment variable
+The package Makefile must also set
+<varname>USE_PKGINSTALL=YES</varname>. This will cause the users and groups
+to be created at pre-install time, and the admin will be prompted to remove
+them at post-deinstall time.  Automatic creation of the users and groups
+can be toggled on and off by setting the environment variable
 <varname>PKG_CREATE_USERGROUP</varname> prior to package installation.
 </para>
 </sect1>
@@ -831,13 +830,21 @@ you can set <varname>_FETCH_MESSAGE</varname> to a macro which displays
 a message explaining the situation. <varname>_FETCH_MESSAGE</varname> must
 be executable shell commands, not just a message. (Generally, it executes
 <varname>${ECHO}</varname>). As of this writing, the following
-packages use this: <pkg>audio/realplayer</pkg>,
-<pkg>cad/simian</pkg>, <pkg>devel/ipv6socket</pkg>,
-<pkg>emulators/vmare-module</pkg>,
+packages use this: <pkg>archivers/xmill</pkg>,
+<pkg>audio/realplayer</pkg>,
+<pkg>cad/simian</pkg>,
+<pkg>devel/ipv6socket_scrub</pkg>,
 <pkg>fonts/acroread-jpnfont</pkg>,
+<pkg>lang/jini</pkg>,
+<pkg>lang/sun-jdk13</pkg>,
+<pkg>lang/sun-jdk14</pkg>,
+<pkg>lang/sun-jre13</pkg>,
+<pkg>lang/sun-jre14</pkg>,
+<pkg>misc/molden</pkg>,
+<pkg>net/tspc</pkg>,
 <pkg>sysutils/storage-manager</pkg>,
-<pkg>www/ap-aolserver</pkg>, <pkg>www/openacs</pkg>. Try to be consistent
-with them.
+<pkg>www/openacs</pkg>, and
+<pkg>x11/swing</pkg>. Try to be consistent with them.
 </para>
 </sect1>
 
@@ -937,8 +944,7 @@ the target file. This is done this way to allow binary packages to place
 files in the right directory using
 <filename>INSTALL</filename>/<filename>DEINSTALL</filename> scripts which are
 created automatically.  The package <filename>Makefile</filename> must also
-include <filename>../../mk/bsd.pkg.install.mk</filename> prior to the
-inclusion of <filename>bsd.pkg.mk</filename> to use
+set <varname>USE_PKGINSTALL=YES</varname> to use
 these automatically generated scripts.  The automatic copying of config
 files can be toggled by setting the environment variable
 <varname>PKG_CONFIG</varname> prior to package installation.
@@ -969,10 +975,8 @@ automatic message when files are installed using this method.
 If the purpose of the package is to provide a login shell, the variable
 <varname>PKG_SHELL</varname> should contain the full pathname of the
 shell executable installed by this package. The package
-<filename>Makefile</filename> also must include
-<filename>../../mk/bsd.pkg.install.mk</filename> prior to the inclusion of
-<filename>bsd.pkg.mk</filename> to use the
-automatically generated
+<filename>Makefile</filename> must also set
+<varname>USE_PKGINSTALL=YES</varname> to use the automatically generated
 <filename>INSTALL</filename>/<filename>DEINSTALL</filename> scripts.
 </para>
 
@@ -980,13 +984,14 @@ automatically generated
 An example taken from shells/zsh:
 </para>
 
-<programlisting>PKG_SHELL=	${PREFIX}/bin/zsh
-.include "../../mk/bsd.pkg.install.mk"</programlisting>
+<programlisting>USE_PKGINSTALL=	YES
+...
+PKG_SHELL=	${PREFIX}/bin/zsh</programlisting>
 
 <para>
 The shell is registered into <filename>/etc/shells</filename> file automatically in the
-post-install target by the <filename>INSTALL</filename> script generated
-by <filename>bsd.pkg.install.mk</filename> and removed in the deinstall
+post-install target by the generated <filename>INSTALL</filename> script
+and removed in the deinstall
 target by the <filename>DEINSTALL</filename> script.
 </para>
 </sect1>
