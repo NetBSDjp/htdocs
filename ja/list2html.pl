@@ -52,6 +52,10 @@
 #
 
 use strict;
+
+use open IN=>':encoding(iso-2022-jp)', OUT=>':encoding(iso-2022-jp)';
+use encoding "euc-jp";
+
 use File::Basename;
 use Getopt::Std;
 # use Text::Wrap;
@@ -351,7 +355,7 @@ sub makelist
 
     $data = $date_month = '';
     $entry_num = $date_num = $date_num_used = 0;
-    open(FILE, "iconv -f iso-2022-jp -t euc-jp $infile|") || die("Unable to open '$infile': $!");
+    open(FILE, $infile) || die("Unable to open '$infile': $!");
     foreach( <FILE> )
 	{
 	foreach $rcstag (%rcsmap)
@@ -584,7 +588,7 @@ sub makelist
     if ($data !~ s/(<head[^>]*>)/$1$_/i)
 	{ &fail("Unable to locate <head> tag"); }
 
-    open(FILE, "|iconv -f euc-jp -t iso-2022-jp >$outfile") || die("Unable to write '$outfile': $!");
+    open(FILE, ">$outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data, %extras);
     close(FILE);
     if ($date_num) {
