@@ -1,8 +1,8 @@
-<!-- $NetBSD: chapter.xml,v 1.12 2003/07/16 02:18:10 jschauma Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.13 2003/12/06 22:18:26 hrs Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: chapter.xml,v 1.12 2003/07/16 02:18:10 jschauma Exp   -->
+<!-- NetBSD: chapter.xml,v 1.13 2003/12/06 22:18:26 hrs Exp   -->
 
-<chapter id="binary"> <?dbhtml filename="binary.html"?>
+<chapter id="binary">
 <title>バイナリーパッケージを作る</title>
 
 <sect1>
@@ -59,8 +59,8 @@
   さい。
 </para>
 
-<sect2>
-<title id="binary.configuration">設定</title>
+<sect2 id="binary.configuration">
+<title>設定</title>
 
 <sect3 id="binary.mk.conf">
 <title>/etc/mk.conf</title>
@@ -156,8 +156,8 @@ fi</programlisting>
 <para>
   すでにインストールされているどのパッケージも必要ない状態にしてください。
   <warning>
-    バルクビルドの過程で、<emphasis>すべてのパッケージが
-    削除されます!</emphasis>
+    <para>バルクビルドの過程で、<emphasis>すべてのパッケージが
+    削除されます!</emphasis></para>
   </warning>
   その他、
   構築の妨げになりうるもの(<filename>/usr/local</filename>にインストールされているライブラリーなど) 
@@ -186,17 +186,23 @@ fi</programlisting>
   バルクビルドは三つの段階からなります:
 </para>
 
-<orderedlist>
+<variablelist>
+<varlistentry>
+<term>ビルド前</term>
 
-<listitem>ビルド前
+<listitem>
 <para>
   スクリプトがpkgsrcを(anon)cvsで更新します。そして、壊れている
   distfileをすべて一掃し、インストールされているパッケージをすべて削
   除します。
 </para>
 </listitem>
+</varlistentry>
 
-<listitem>バルクビルド
+<varlistentry>
+<term>バルクビルド</term>
+
+<listitem>
 <para>
   これは基本的に、<quote>make bulk-package</quote>を、パッケージの構築順
   序を最適化しておこなうものです。他のパッケージに依存しないパッケー
@@ -204,16 +210,20 @@ fi</programlisting>
   す。
 </para>
 </listitem>
+</varlistentry>
 
-<listitem>ビルド後
+<varlistentry>
+<term>ビルド後</term>
+
+<listitem>
 <para>
   報告を作成し、<filename>build.conf</filename>で指定されたディレクトリーに
   <filename>broken.html</filename> という名前で置きます。あわせて、この報告の簡略版が
   構築管理者にメールで送られます。
 </para>
 </listitem>
-
-</orderedlist>
+</varlistentry>
+</variablelist>
 
 <para>
   構築中、壊れているパッケージの一覧が<filename>/usr/pkgsrc/.broken</filename>
@@ -235,9 +245,9 @@ fi</programlisting>
 </para>
 
 <itemizedlist>
-<listitem>1500MB - distfile (NFSでも可)</listitem>
-<listitem>1000MB - 全バイナリー一式 (NFSでも可)</listitem>
-<listitem>1500MB - コンパイル用の一時領域 (ローカルディスクを推奨)</listitem>
+<listitem><para>1500MB - distfile (NFSでも可)</para></listitem>
+<listitem><para>1000MB - 全バイナリー一式 (NFSでも可)</para></listitem>
+<listitem><para>1500MB - コンパイル用の一時領域 (ローカルディスクを推奨)</para></listitem>
 </itemizedlist>
 
 <para>
@@ -245,7 +255,7 @@ fi</programlisting>
 </para>
 
 <itemizedlist>
-<listitem>1300MB - 全バイナリー一式 (NFSでも可)</listitem>
+<listitem><para>1300MB - 全バイナリー一式 (NFSでも可)</para></listitem>
 </itemizedlist>
 
 <para>
@@ -272,87 +282,74 @@ fi</programlisting>
   適切に設定された状態にします。
 </para>
 
-<itemizedlist>
-<listitem>
-カーネル
-<para>
-<screen><prompt>#</prompt> <userinput>cp /netbsd /usr/sandbox</userinput></screen>
-</para>
-</listitem>
+<procedure>
+	<step>
+	  <para>カーネル</para>
 
-<listitem>
-<filename>/dev/*</filename>
-<para>
-<screen><prompt>#</prompt> <userinput>cd /usr/sandbox/dev ; sh MAKEDEV all</userinput></screen>
-</para>
-</listitem>
+	  <screen><prompt>#</prompt> <userinput>cp /netbsd /usr/sandbox</userinput></screen>
+	</step>
 
-<listitem>
-<filename>/etc/resolv.conf</filename> (<pkg>security/smtpd</pkg>およびメール用):
-<para>
-<screen><prompt>#</prompt> <userinput>cp /etc/resolv.conf /usr/sandbox/etc</userinput></screen>
-</para>
-</listitem>
+	<step><para><filename>/dev/*</filename></para>
 
-<listitem>
-動作する(!)ようなメールの設定 (hostname, sendmail.cf):
-<para>
-<screen><prompt>#</prompt> <userinput>cp /etc/mail/sendmail.cf /usr/sandbox/etc/mail</userinput></screen>
-</para>
-</listitem>
+	  <screen><prompt>#</prompt> <userinput>cd /usr/sandbox/dev ; sh MAKEDEV all</userinput></screen>
+	</step>
 
-<listitem>
-<filename>/etc/localtime</filename> (<pkg>security/smtpd</pkg>用):
-<para>
-<screen><prompt>#</prompt> <userinput>ln -sf /usr/share/zoneinfo/GMT /usr/sandbox/etc/localtime</userinput></screen>
-</para>
-</listitem>
+	<step>
+	  <para><filename>/etc/resolv.conf</filename> (<pkg>security/smtpd</pkg>およびメール用):</para>
 
-<listitem>
-<filename>/usr/src</filename> (<pkg>sysutils/aperture</pkg>,
-<pkg>net/ppp-mppe</pkg>用のシステムソース):
-<para>
-<screen><prompt>#</prompt> <userinput>ln -s ../disk1/cvs .</userinput>
+	  <screen><prompt>#</prompt> <userinput>cp /etc/resolv.conf /usr/sandbox/etc</userinput></screen>
+	</step>
+
+	<step>
+	  <para>動作する(!)ようなメールの設定 (hostname, sendmail.cf):</para>
+
+	  <screen><prompt>#</prompt> <userinput>cp /etc/mail/sendmail.cf /usr/sandbox/etc/mail</userinput></screen>
+	</step>
+
+	<step><para><filename>/etc/localtime</filename> (<pkg>security/smtpd</pkg>用):</para>
+
+	  <screen><prompt>#</prompt> <userinput>ln -sf /usr/share/zoneinfo/GMT /usr/sandbox/etc/localtime</userinput></screen>
+	</step>
+
+	<step>
+	  <para><filename>/usr/src</filename> (<pkg>sysutils/aperture</pkg>,
+	    <pkg>net/ppp-mppe</pkg>用のシステムソース):</para>
+
+	  <screen><prompt>#</prompt> <userinput>ln -s ../disk1/cvs .</userinput>
 <prompt>#</prompt> <userinput>ln -s cvs/src-1.6 src</userinput>
 <prompt>#</prompt> <userinput>ln -s cvs/pkgsrc .</userinput></screen>
-</para>
-</listitem>
+	</step>
 
-<listitem>
-<filename>/var/db/pkg</filename>を作成する(デフォルトのインストールには含まれません):
-<para>
-<screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/var/db/pkg</userinput></screen>
-</para>
-</listitem>
+	<step><para><filename>/var/db/pkg</filename>を作成する(デフォルトのインストールには含まれません):</para>
 
-<listitem>
-<filename>/usr/pkg</filename>を作成する(デフォルトのインストールには含まれません):
-<para>
-<screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/usr/pkg</userinput></screen>
-</para>
-</listitem>
+	  <screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/var/db/pkg</userinput></screen>
+	</step>
 
-<listitem>
-<filename>/usr/sandbox/usr/pkgsrc</filename>
-内にpkgsrcをチェックアウトする:
-<para>
-<screen><prompt>#</prompt> <userinput>cd /usr/sandbox/usr</userinput>
+	<step>
+	  <para><filename>/usr/pkg</filename>を作成する(デフォルトのインストールには含まれません):</para>
+
+	  <screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/usr/pkg</userinput></screen>
+	</step>
+
+	<step>
+	  <para><filename>/usr/sandbox/usr/pkgsrc</filename>
+	    内にpkgsrcをチェックアウトする:</para>
+
+	  <screen><prompt>#</prompt> <userinput>cd /usr/sandbox/usr</userinput>
 <prompt>#</prompt> <userinput>cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot checkout -d -P pkgsrc</userinput></screen>
-</para>
-</listitem>
+	</step>
 
-<listitem>
-<filename>/etc/mk.conf</filename> を編集する。<xref linkend="binary.mk.conf"/>参照。
-</listitem>
+	<step>
+	  <para><filename>/etc/mk.conf</filename> を編集する。<xref linkend="binary.mk.conf"/>参照。</para>
+	</step>
 
-<listitem>
-<filename>mk/bulk/build.conf</filename>を必要に合わせて調整する
-</listitem>
-
-</itemizedlist>
+	<step>
+	  <para><filename>mk/bulk/build.conf</filename>を必要に合わせて調整する。</para>
+	</step>
+      </procedure>
 
 <note>
-  Xをインストールするのを忘れないでください。
+<para>Xをインストールするのを忘れないでください。</para>
 </note>
 
 <para>
