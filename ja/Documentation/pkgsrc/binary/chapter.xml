@@ -1,6 +1,6 @@
-<!-- $NetBSD: chapter.xml,v 1.12 2003/07/16 02:18:10 jschauma Exp $ -->
+<!-- $NetBSD: chapter.xml,v 1.13 2003/12/06 22:18:26 hrs Exp $ -->
 
-<chapter id="binary"> <?dbhtml filename="binary.html"?>
+<chapter id="binary">
 <title>Creating binary packages</title>
 
 <sect1>
@@ -54,8 +54,8 @@
   actually compile on NFS storage, as this slows things down a lot.
 </para>
 
-<sect2>
-<title id="binary.configuration">Configuration</title>
+<sect2 id="binary.configuration">
+<title>Configuration</title>
 
 <sect3 id="binary.mk.conf">
 <title>/etc/mk.conf</title>
@@ -158,8 +158,8 @@ fi</programlisting>
 <para>
   Make sure you don't need any of the packages still installed.
   <warning>
-    During the bulk build, <emphasis>all packages will be
-    removed!</emphasis>
+    <para>During the bulk build, <emphasis>all packages will be
+    removed!</emphasis></para>
   </warning>
   Be sure to remove all other things that might
   interfere with builds, like some libs installed in
@@ -189,16 +189,22 @@ fi</programlisting>
   The bulk builds consist of three steps:
 </para>
 
-<orderedlist>
+<variablelist>
+<varlistentry>
+<term>pre-build</term>
 
-<listitem>pre-build
+<listitem>
 <para>
   The script updates your pkgsrc via (anon)cvs, then cleans
   out any broken distfiles, and removes all packages installed.
 </para>
 </listitem>
+</varlistentry>
 
-<listitem>the bulk build
+<varlistentry>
+<term>the bulk build</term>
+
+<listitem>
 <para>
   This is basically <quote>make bulk-package</quote> with an optimised
   order in which packages will be built. Packages that don't require
@@ -206,8 +212,12 @@ fi</programlisting>
   will be built later.
 </para>
 </listitem>
+</varlistentry>
 
-<listitem>post-build
+<varlistentry>
+<term>post-build</term>
+
+<listitem>
 <para>
   Generates a report that's placed in the directory specified
   in the <filename>build.conf</filename> file named
@@ -215,8 +225,8 @@ fi</programlisting>
   that report will also be mailed to the build's admin.
 </para>
 </listitem>
-
-</orderedlist>
+</varlistentry>
+</variablelist>
 
 <para>
   During the build, a list of broken packages will be compiled in
@@ -238,9 +248,9 @@ fi</programlisting>
 </para>
 
 <itemizedlist>
-<listitem>1500MB - distfiles (NFS ok)</listitem>
-<listitem>1000MB - full set of all binaries (NFS ok)</listitem>
-<listitem>1500MB - temp space for compiling (local disk recommended)</listitem>
+<listitem><para>1500MB - distfiles (NFS ok)</para></listitem>
+<listitem><para>1000MB - full set of all binaries (NFS ok)</para></listitem>
+<listitem><para>1500MB - temp space for compiling (local disk recommended)</para></listitem>
 </itemizedlist>
 
 <para>
@@ -248,7 +258,7 @@ fi</programlisting>
 </para>
 
 <itemizedlist>
-<listitem>1300MB - full set of all binaries (NFS ok)</listitem>
+<listitem><para>1300MB - full set of all binaries (NFS ok)</para></listitem>
 </itemizedlist>
 
 <para>
@@ -276,87 +286,74 @@ fi</programlisting>
   items are present and properly configured:
 </para>
 
-<itemizedlist>
-<listitem>
-kernel
-<para>
-<screen><prompt>#</prompt> <userinput>cp /netbsd /usr/sandbox</userinput></screen>
-</para>
-</listitem>
+<procedure>
+	<step>
+	  <para>kernel</para>
 
-<listitem>
-<filename>/dev/*</filename>
-<para>
-<screen><prompt>#</prompt> <userinput>cd /usr/sandbox/dev ; sh MAKEDEV all</userinput></screen>
-</para>
-</listitem>
+	  <screen><prompt>#</prompt> <userinput>cp /netbsd /usr/sandbox</userinput></screen>
+	</step>
 
-<listitem>
-<filename>/etc/resolv.conf</filename> (for <pkg>security/smtpd</pkg> and mail):
-<para>
-<screen><prompt>#</prompt> <userinput>cp /etc/resolv.conf /usr/sandbox/etc</userinput></screen>
-</para>
-</listitem>
+	<step><para><filename>/dev/*</filename></para>
 
-<listitem>
-working(!) mail config (hostname, sendmail.cf):
-<para>
-<screen><prompt>#</prompt> <userinput>cp /etc/mail/sendmail.cf /usr/sandbox/etc/mail</userinput></screen>
-</para>
-</listitem>
+	  <screen><prompt>#</prompt> <userinput>cd /usr/sandbox/dev ; sh MAKEDEV all</userinput></screen>
+	</step>
 
-<listitem>
-<filename>/etc/localtime</filename> (for <pkg>security/smtpd</pkg>):
-<para>
-<screen><prompt>#</prompt> <userinput>ln -sf /usr/share/zoneinfo/GMT /usr/sandbox/etc/localtime</userinput></screen>
-</para>
-</listitem>
+	<step>
+	  <para><filename>/etc/resolv.conf</filename> (for <pkg>security/smtpd</pkg> and mail):</para>
 
-<listitem>
-<filename>/usr/src</filename> (system sources, for <pkg>sysutils/aperture</pkg>,
-<pkg>net/ppp-mppe</pkg>):
-<para>
-<screen><prompt>#</prompt> <userinput>ln -s ../disk1/cvs .</userinput>
+	  <screen><prompt>#</prompt> <userinput>cp /etc/resolv.conf /usr/sandbox/etc</userinput></screen>
+	</step>
+
+	<step>
+	  <para>working(!) mail config (hostname, sendmail.cf):</para>
+
+	  <screen><prompt>#</prompt> <userinput>cp /etc/mail/sendmail.cf /usr/sandbox/etc/mail</userinput></screen>
+	</step>
+
+	<step><para><filename>/etc/localtime</filename> (for <pkg>security/smtpd</pkg>):</para>
+
+	  <screen><prompt>#</prompt> <userinput>ln -sf /usr/share/zoneinfo/GMT /usr/sandbox/etc/localtime</userinput></screen>
+	</step>
+
+	<step>
+	  <para><filename>/usr/src</filename> (system sources, for <pkg>sysutils/aperture</pkg>,
+	    <pkg>net/ppp-mppe</pkg>):</para>
+
+	  <screen><prompt>#</prompt> <userinput>ln -s ../disk1/cvs .</userinput>
 <prompt>#</prompt> <userinput>ln -s cvs/src-1.6 src</userinput>
 <prompt>#</prompt> <userinput>ln -s cvs/pkgsrc .</userinput></screen>
-</para>
-</listitem>
+	</step>
 
-<listitem>
-create <filename>/var/db/pkg</filename> (not part of default install):
-<para>
-<screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/var/db/pkg</userinput></screen>
-</para>
-</listitem>
+	<step><para>create <filename>/var/db/pkg</filename> (not part of default install):</para>
 
-<listitem>
-create <filename>/usr/pkg</filename> (not part of default install):
-<para>
-<screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/usr/pkg</userinput></screen>
-</para>
-</listitem>
+	  <screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/var/db/pkg</userinput></screen>
+	</step>
 
-<listitem>
-checkout pkgsrc into
-<filename>/usr/sandbox/usr/pkgsrc</filename>:
-<para>
-<screen><prompt>#</prompt> <userinput>cd /usr/sandbox/usr</userinput>
+	<step>
+	  <para>create <filename>/usr/pkg</filename> (not part of default install):</para>
+
+	  <screen><prompt>#</prompt> <userinput>mkdir /usr/sandbox/usr/pkg</userinput></screen>
+	</step>
+
+	<step>
+	  <para>checkout pkgsrc into
+	    <filename>/usr/sandbox/usr/pkgsrc</filename>:</para>
+
+	  <screen><prompt>#</prompt> <userinput>cd /usr/sandbox/usr</userinput>
 <prompt>#</prompt> <userinput>cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot checkout -d -P pkgsrc</userinput></screen>
-</para>
-</listitem>
+	</step>
 
-<listitem>
-edit <filename>/etc/mk.conf</filename>, see <xref linkend="binary.mk.conf"/>.
-</listitem>
+	<step>
+	  <para>edit <filename>/etc/mk.conf</filename>, see <xref linkend="binary.mk.conf"/>.</para>
+	</step>
 
-<listitem>
-adjust <filename>mk/bulk/build.conf</filename> to suit your needs.
-</listitem>
-
-</itemizedlist>
+	<step>
+	  <para>adjust <filename>mk/bulk/build.conf</filename> to suit your needs.</para>
+	</step>
+      </procedure>
 
 <note>
-  Don't forget to install X.
+<para>Don't forget to install X.</para>
 </note>
 
 <para>
