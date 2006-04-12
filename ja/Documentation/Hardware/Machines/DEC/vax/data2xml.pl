@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 
 #	$NetBSD: data2xml.pl,v 1.1 2004/12/04 21:07:36 jschauma Exp $
+#	<!-- Based on english version: -->
+#	<!-- NetBSD: data2xml.pl,v 1.1 2004/12/04 21:07:36 jschauma Exp   -->
 #
 # Copyright (c) 1997 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -41,9 +43,16 @@
 # Documentation would help...		<abs>
 # Dynamically determining links from the text is going to get _really_ slow
 # with large amounts of data, but just too convenient for now...
+#
+# Add Japanese support. I stole the basic idea from sakamoto's work
+# in htdocs/ja/list2html.pl. <yyamano>
+#
 
 # use strict;
 use Getopt::Std;
+
+use open IN=>':encoding(iso-2022-jp)', OUT=>':encoding(iso-2022-jp)';
+use encoding "euc-jp";
 
 my(%opt);
 &getopts('vq',\%opt);
@@ -93,29 +102,29 @@ sub output_all
     my($section, $loop, $elapsed);
 
     $_ = $head;
-    $_ =~ s/\$title/All in one page/g;
+    $_ =~ s/\$title/オール・イン・ワン・ページ/g;
     $file{'full'} = $_;
 
     $_ = $head;
-    $_ =~ s/\$title/Sections Index/g;
+    $_ =~ s/\$title/セクション・インデックス/g;
     $file{'sections'} = $_;
 
     $_ = $head;
-    $_ =~ s/\$title/Introduction/g;
+    $_ =~ s/\$title/イントロダクション/g;
     $file{'index'} = $_;
 
     $file{'index'} .= qq#
 <sect2 id="available-formats">
-<title>This information is available in three forms</title>
+<title>この情報は三つのフォーマットで提供されています</title>
 <itemizedlist>
-  <listitem><ulink url="sections.html">Index page, with a separate page for each
-							    section</ulink><html:br/>
-      Useful if you only want specific information and do not want to
-      wait for everything to download.</listitem>
-  <listitem><ulink url="full.html">All in one page</ulink><html:br/>
-      Recommended if you want to use the inline links to flip between sections.</listitem>
-  <listitem><ulink url="$datafile">Plain text table</ulink><html:br/>
-      The text database used to generate the above two forms</listitem>
+  <listitem><ulink url="sections.html">インデックス・ページ、セクション毎にわかれた
+							    ページ</ulink><html:br/>
+      特定の情報だけが必要で、すべての情報をダウンロードしたくない場合に
+      便利です。</listitem>
+  <listitem><ulink url="full.html">オール・イン・ワン・ページ</ulink><html:br/>
+      各セクションへ移動するためのインライン・リンクを使いたい場合に便利です。</listitem>
+  <listitem><ulink url="$datafile">プレイン・テキストのテーブル</ulink><html:br/>
+      上記の二つのフォーマットを生成するために使われるテキストデータベース</listitem>
 </itemizedlist>
 </sect2>
 #;
@@ -195,11 +204,11 @@ sub output_main_index
 
     if ($section eq 'full' || $section eq 'sections' )
 	{
-	$data = qq{<sect2 id="main_index">\n<title>Main Index</title>\n};
+	$data = qq{<sect2 id="main_index">\n<title>メイン・インデックス</title>\n};
 	}
     else
-	{ $data = qq{<sect2 id="main_index">\n<title>Index</title>\n}; }
-    $data .= qq{<itemizedlist>\n  <listitem><ulink url=".">Introduction page</ulink></listitem>\n};
+	{ $data = qq{<sect2 id="main_index">\n<title>インデックス</title>\n}; }
+    $data .= qq{<itemizedlist>\n  <listitem><ulink url=".">イントロダクション・ページ</ulink></listitem>\n};
     foreach $secloop ( @sections )
 	{
 	if ($section eq 'full')
@@ -224,7 +233,7 @@ sub output_section_entries
 	$all = "\n\n<sect3 id=\"$section:$name\">\n".
      		"<title>$name2title{$name}&nbsp;<small>".
 	     "<ulink url=\"#section:$section\">".
-	     "($secdata{$section}{'title'} index)</ulink></small></title>\n<table id=\"$section:$name:table\" border=\"\1\">\n";
+	     "($secdata{$section}{'title'} インデックス)</ulink></small></title>\n<table id=\"$section:$name:table\" border=\"\1\">\n";
 	$file{'full'} .= $all;
 	$file{$section} .= $all;
 	$all='';
@@ -313,25 +322,25 @@ sub output_section_index
 	    {
 	    $file{$secloop} .= "    <td valign=\"top\"><small><ulink url=\"".
 		    &section_url($prev_section, $secloop).
-		    "\">(Previous - $secdata{$prev_section}{'title'})</ulink>".
+		    "\">(前 - $secdata{$prev_section}{'title'})</ulink>".
 		    "</small></td>\n";
 	    }
 	if ($next_section)
 	    {
 	    $file{$secloop} .= "    <td valign=\"top\"><small><ulink url=\"".
 		    &section_url($next_section, $secloop).
-		    "\">(Next - $secdata{$next_section}{'title'})</ulink>".
+		    "\">(次 - $secdata{$next_section}{'title'})</ulink>".
 		    "</small></td>\n";
 	    }
 	$file{$secloop} .= "    <td valign=\"top\"><small>".
-		    "<ulink url=\"#main_index\">(Main Index)".
+		    "<ulink url=\"#main_index\">(メイン・インデックス)".
 		    "</ulink></small></td>\n";
 	if ($secloop ne 'full' && $secloop ne 'sections' )
 	    {
 	    $file{$secloop} .= 
 		"    <td valign=\"top\"><small>".
 		"<ulink url=\"sections.html#main_index\">".
-			"(All Indexes)</ulink></small></td>\n";
+			"(すべてのインデックス)</ulink></small></td>\n";
 	    }
 	$file{$secloop} .= "    </tr></table>\n\n".
 		"  </td></tr>\n".
