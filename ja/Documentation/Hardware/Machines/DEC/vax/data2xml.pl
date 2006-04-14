@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-#	$NetBSD: data2xml.pl,v 1.1 2004/12/04 21:07:36 jschauma Exp $
+#	$NetBSD: data2xml.pl,v 1.4 2005/04/09 19:45:09 heinz Exp $
 #
 # Copyright (c) 1997 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -108,14 +108,13 @@ sub output_all
 <sect2 id="available-formats">
 <title>This information is available in three forms</title>
 <itemizedlist>
-  <listitem><ulink url="sections.html">Index page, with a separate page for each
-							    section</ulink><html:br/>
-      Useful if you only want specific information and do not want to
-      wait for everything to download.</listitem>
-  <listitem><ulink url="full.html">All in one page</ulink><html:br/>
-      Recommended if you want to use the inline links to flip between sections.</listitem>
-  <listitem><ulink url="$datafile">Plain text table</ulink><html:br/>
-      The text database used to generate the above two forms</listitem>
+  <listitem><para><ulink url="sections.html">Index page, with a separate page for each section</ulink></para>
+  	<para>Useful if you only want specific information and do not want to
+      wait for everything to download.</para></listitem>
+  <listitem><para><ulink url="full.html">All in one page</ulink></para>
+      <para>Recommended if you want to use the inline links to flip between sections.</para></listitem>
+  <listitem><para><ulink url="$datafile">Plain text table</ulink></para>
+      <para>The text database used to generate the above two forms.</para></listitem>
 </itemizedlist>
 </sect2>
 #;
@@ -151,14 +150,18 @@ sub output_all
     foreach $file (keys %file)
 	{
 	print "$file: ";
-	if (open(FILE, "$file.html"))
+	if (open(FILE, "$file.xml"))
 	    {
-	    my($tag, $olddata);
+	    my($tag, $date, $olddata);
 	    while (<FILE>)
 		{
 		if (/(\$NetBSD[^\$]*\$)/)
 		    {
 		    $tag = $1;
+		    }
+		if (/(\$Date[^\$]*\$)/)
+		    {
+		    $date = $1;
 		    last;
 		    }
 		}
@@ -167,10 +170,12 @@ sub output_all
 	    close(FILE);
 	    if ($tag) # substitute in existing CVS tag to reduce diffs
 		{ $file{$file} =~ s/\$NetBSD[^\$]*\$/$tag/g; }
+	    if ($date) # substitute in existing CVS tag to reduce diffs
+		{ $file{$file} =~ s/\$Date[^\$]*\$/$date/g; }
 	    if ($file{$file} eq $olddata)
-		{
-		if (open(FILE, ">>$file.xml")) # Update timestamp
-		    { close(FILE); }
+		{ # Update timestamp
+		my $now = time();
+		utime($now, $now, $file.".xml");
 		print "Unchanged\n";
 		next;
 		}
@@ -304,10 +309,10 @@ sub output_section_index
 	    { $ref = "$section.html#$section"; }
 	else
 	    { next; }
-	$file{$secloop} .= qq#<html:hr/><table width="100%">
+	$file{$secloop} .= qq#<html:hr/><table width="100%" id="section:$section:sections-table">
   <tr>
     <td><sect2 id="section:$section">\n<title>$secdata{$section}{'title'}</title></sect2></td><td align="right" valign="top">\n
-    <table border="0"><tr>\n#;
+    <table border="0" id="section:$section:nav-table"><tr>\n#;
 
 	if ($prev_section)
 	    {
