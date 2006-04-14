@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 
-#	$NetBSD: data2xml.pl,v 1.1 2004/12/04 21:07:36 jschauma Exp $
+#	$NetBSD: data2xml.pl,v 1.4 2005/04/09 19:45:09 heinz Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: data2xml.pl,v 1.1 2004/12/04 21:07:36 jschauma Exp   -->
+#	<!-- NetBSD: data2xml.pl,v 1.4 2005/04/09 19:45:09 heinz Exp   -->
 #
 # Copyright (c) 1997 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -117,14 +117,13 @@ sub output_all
 <sect2 id="available-formats">
 <title>この情報は三つのフォーマットで提供されています</title>
 <itemizedlist>
-  <listitem><ulink url="sections.html">インデックス・ページ、セクション毎にわかれた
-							    ページ</ulink><html:br/>
-      特定の情報だけが必要で、すべての情報をダウンロードしたくない場合に
-      便利です。</listitem>
-  <listitem><ulink url="full.html">オール・イン・ワン・ページ</ulink><html:br/>
-      各セクションへ移動するためのインライン・リンクを使いたい場合に便利です。</listitem>
-  <listitem><ulink url="$datafile">プレイン・テキストのテーブル</ulink><html:br/>
-      上記の二つのフォーマットを生成するために使われるテキストデータベース</listitem>
+  <listitem><para><ulink url="sections.html">インデックス・ページ、セクション毎にわかれたページ</ulink></para>
+  	<para>特定の情報だけが必要で、すべての情報をダウンロードしたくない場合に
+      便利です。</para></listitem>
+  <listitem><para><ulink url="full.html">オール・イン・ワン・ページ</ulink></para>
+      <para>各セクションへ移動するためのインライン・リンクを使いたい場合に便利です。</para></listitem>
+  <listitem><para><ulink url="$datafile">プレイン・テキストのテーブル</ulink></para>
+      <para>上記の二つのフォーマットを生成するために使われるテキストデータベース。</para></listitem>
 </itemizedlist>
 </sect2>
 #;
@@ -160,14 +159,18 @@ sub output_all
     foreach $file (keys %file)
 	{
 	print "$file: ";
-	if (open(FILE, "$file.html"))
+	if (open(FILE, "$file.xml"))
 	    {
-	    my($tag, $olddata);
+	    my($tag, $date, $olddata);
 	    while (<FILE>)
 		{
 		if (/(\$NetBSD[^\$]*\$)/)
 		    {
 		    $tag = $1;
+		    }
+		if (/(\$Date[^\$]*\$)/)
+		    {
+		    $date = $1;
 		    last;
 		    }
 		}
@@ -176,10 +179,12 @@ sub output_all
 	    close(FILE);
 	    if ($tag) # substitute in existing CVS tag to reduce diffs
 		{ $file{$file} =~ s/\$NetBSD[^\$]*\$/$tag/g; }
+	    if ($date) # substitute in existing CVS tag to reduce diffs
+		{ $file{$file} =~ s/\$Date[^\$]*\$/$date/g; }
 	    if ($file{$file} eq $olddata)
-		{
-		if (open(FILE, ">>$file.xml")) # Update timestamp
-		    { close(FILE); }
+		{ # Update timestamp
+		my $now = time();
+		utime($now, $now, $file.".xml");
 		print "Unchanged\n";
 		next;
 		}
@@ -313,10 +318,10 @@ sub output_section_index
 	    { $ref = "$section.html#$section"; }
 	else
 	    { next; }
-	$file{$secloop} .= qq#<html:hr/><table width="100%">
+	$file{$secloop} .= qq#<html:hr/><table width="100%" id="section:$section:sections-table">
   <tr>
     <td><sect2 id="section:$section">\n<title>$secdata{$section}{'title'}</title></sect2></td><td align="right" valign="top">\n
-    <table border="0"><tr>\n#;
+    <table border="0" id="section:$section:nav-table"><tr>\n#;
 
 	if ($prev_section)
 	    {
