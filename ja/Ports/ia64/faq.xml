@@ -5,8 +5,8 @@
 
 <webpage id="Ports-ia64-faq">
 <config param="desc" value="NetBSD/ia64 Frequently Asked Questions"/>
-<config param="cvstag" value="$NetBSD: faq.xml,v 1.6 2006/02/10 04:00:41 kochi Exp $"/>
-<config param="rcsdate" value="$Date: 2006/02/10 04:00:41 $"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.9 2006/04/20 13:35:52 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2006/04/20 13:35:52 $"/>
 <head>
 <!-- Copyright (c) 2005
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -22,77 +22,134 @@
 <title>Where to start?</title>
 
   <para>
-    As of this writing, the process to get started with NetBSD/ia64 is to
-    first install HP's "SKI" emulator, then download or compile a
-    bootloader and kernel, then start SKI with that:
+    Development for NetBSD/ia64 is on HP's "SKI" emulator:
   </para>
 
   <orderedlist>
     <listitem>
-      The SKI ia64 emulator can be found in 
-      <ulink url="http://www.NetBSD.org/packages/emulators/ski/">pkgsrc/emulators/ski</ulink>,
-      more documentation is
-      <ulink url="http://wiki.onetbsd.org/index.php/SkiSimulator">available</ulink>.
+      Install the ski emulator:
+      <ulink url="http://www.NetBSD.org/packages/emulators/ski/">pkgsrc/emulators/ski</ulink>
+      See the 
+      <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/emulators/ski/DESCR">DESCR</ulink>
+      file for details about installing and running ski on NetBSD/i386.
     </listitem>
 
     <listitem>
       <para>
-        Get the <ulink
-      url="http://cherry.beevomit.org/downloads/netbsd-anvil/">modified
-      sources</ulink> -- they are currently not merged with the main
-      NetBSD source tree. 
+        Build the ia64 toolchain:
+	<screen>
+	  build.sh -mia64 tools
+	</screen>
+      </para>
+
+      <para>
+        Build the bootloader:
+	<screen>
+	  cd arch/ia64/stand/ia64/ski
+	  $TOOLDIR/bin/nbmake-ia64
+	</screen>
+	The bootloader binary is arch/ia64/stand/ia64/skiload
+      </para>
+
+      <para>
+        Build the kernel:
+	<screen>
+	  build.sh -mia64 kernel=GENERIC.SKI
+	</screen>
+	The kernel binary is arch/ia64/compile/GENERIC.SKI/netbsd
       </para>
     </listitem>
-    
+
     <listitem>
       <para>
-        Information on building the bootloader and kernel came into a
-        mail that never made it to the mailing list archive, so here is
-        a copy:
+        With both bootloader and kernel binaries, or softlinks to
+	them, in the current directory, type:
+	<screen>
+	  ski skiload
+	</screen>
+
+	This will launch the ski debugger prompt.
       </para>
 
-      <screen>
-Date: Tue, 27 Dec 2005 10:23:27 +0530
-From: Cherry G. Mathew &lt;cherry@mahiti.org&gt;
-To: Hubert Feyrer &lt;hubert@feyrer.de&gt;
-Cc: port-ia64@NetBSD.org, sunil@mahiti.org
-Subject: Re: Announce DDB:
-
-[...]
-
-Since things are pretty much in dev, yes, you need to build both the
-bootloader and the kernel.
-
-You need to build the bootloader first:
-
-cd arch/ia64/stand/ia64/ski
-$TOOLDIR/bin/nbmake-ia64
-will give you a binary called 'skiload' which is the bootloader.
-
-Then you need to build the kernel.
-
-Its the usual: 
-
-build.sh -mia64 tools
-build.sh -mia64 kernel=GENERIC.SKI
-
-[...]      
-      </screen>
-    </listitem>
-    <listitem>
       <para>
-        Information about starting the emulator and booting NetBSD in it
-        is 
-        <ulink url="http://mail-index.NetBSD.org/port-ia64/2005/12/12/0001.html">in this mail</ulink>
+	Type 'c' to continue. 	This will launch the bootloader in a
+	pseudo terminal window. Type 'boot netbsd' to boot the
+	kernel. Have fun!
       </para>
+
     </listitem>
-    <listitem>
-      <para>
-        More information is available in
-        <ulink url="http://wiki.onetbsd.org/index.php/Ia64">porting project's Wiki</ulink>.
-      </para>
-    </listitem>
+
   </orderedlist>
+</sect3>
+
+<sect3 id="XXX1">
+<title> What needs to be done, to make the port functional ? </title>
+
+      <para>
+        Must have tasks:
+      </para>
+
+      <orderedlist>
+        <listitem>
+	  pmap module: Clean ups and debug.
+	</listitem>
+        <listitem>
+	  Boot Code Cleanup: clean up glue code between FreeBSD's boot
+	  code and NetBSD's standalone library.
+	</listitem>
+        <listitem>
+	  IA64 Stack unwind code: Support remaining unwind descriptor
+	  types. ( See: arch/ia64/unwind/TODO )
+	</listitem>
+      </orderedlist>
+      
+      <para>
+        Nice to have tasks:
+      </para>
+
+      <orderedlist>
+        <listitem>
+	  Kernel module pre-loading via the bootloader.
+        </listitem>
+        <listitem>
+	  Write a ski network driver.
+        </listitem>
+	<listitem>
+	  Enable SMP support.
+	</listitem>
+      </orderedlist>
+</sect3>
+
+<sect3 id="XXX2">
+<title> How can I help ? </title>
+
+      <para>
+        Pick a task you like, send a mail to port-ia64@NetBSD.org to
+	avoid duplication of work, and start hacking!
+      </para>
+</sect3>
+
+<sect3 id="XXX3">
+<title> What is the platform port ? </title>
+
+      <para>
+        Currently our focus is to enable NetBSD/ia64 to run reasonably
+        well on the ski emulator. In order to enable NetBSD to run on
+        a real Itanium machine, further code needs to be written.
+	Some important tasks are:
+      </para>
+
+      <orderedlist>
+        <listitem>
+	  The uga console driver.
+        </listitem>
+	<listitem>
+	  The bus_dma framework.
+	</listitem>
+	<listitem>
+	  device drivers.
+	</listitem>
+      </orderedlist>
 
 </sect3>
 
