@@ -1,192 +1,189 @@
 <!-- $NetBSD: fixes.xml,v 1.1 2004/06/06 13:31:54 grant Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: fixes.xml,v 1.1 2004/06/06 13:31:54 grant Exp   -->
 
 <chapter id="fixes">
-  <title>Notes on fixes for packages</title>
+  <title>パッケージの修正に関する注意</title>
 
   <sect1>
-    <title>CPP defines</title>
+    <title>CPP定義</title>
 
-    <para>To port an application to &os;, it's usually necessary for the
-      compiler to be able to judge the system on which it's compiling, and
-      we use definitions so that the C pre-processor can do this.</para>
+    <para>アプリケーションを&os;に移植するためには、コンパイラーがコンパイルしてい
+      るシステムを判断する必要があります。したがって、Cのプリプロセッサーがシステ
+      ムを判断できるように、CPPの定義を使います。</para>
 
-    <para>To test whether you are working on a 4.4 BSD-derived system, you
-      should use the BSD definition, which is defined in
-      <filename>&lt;sys/param.h&gt;</filename> on said systems.</para>
+    <para>4.4 BSDから派生したシステム上で作業しているかどうかをテストするためには、
+      BSD定義を使用します。これは
+      <filename>&lt;sys/param.h&gt;</filename>で定義されています。</para>
 
     <programlisting><![CDATA[#include <sys/param.h>]]></programlisting>
 
-    <para>and then you can surround the BSD-specific parts of your port using
-      the conditional:</para>
+    <para>また、BSDに固有の部分を、以下の条件でかこむこともできます。</para>
 
     <programlisting><![CDATA[#if (defined(BSD) && BSD >= 199306)
   ...
 #endif]]></programlisting>
 
-    <para>Please use the <quote>__NetBSD__</quote> definition sparingly - it
-      should only apply to features of &os; that are not present in other
-      4.4-lite derived BSDs.</para>
+    <para>どうか注意して<quote>__NetBSD__</quote>定義を使って下さい。4.4-liteから派生した他のBSDにな
+      い&os;固有の特徴にのみ適用してください。</para>
   </sect1>
 
   <sect1 id="fixes.libtool">
-    <title>Shared libraries - libtool</title>
+    <title>共有ライブラリー - libtool</title>
 
-    <para>pkgsrc supports many different machines, with different object formats
-      like a.out and ELF, and varying abilities to do shared library and
-      dynamic loading at all. To accompany this, varying commands and options
-      have to be passed to the compiler, linker, etc. to get the Right Thing,
-      which can be pretty annoying especially if you don't have all the
-      machines at your hand to test things.  The <pkg>devel/libtool</pkg> pkg
-      can help here, as it just <quote>knows</quote> how to build both static
-      and dynamic libraries from a set of source files, thus being platform
-      independent.</para>
+    <para>pkgsrcはさまざまな種類のマシンをサポートします。それらはa.outとELFのような
+      異なるオブジェクトフォーマットを使い、共有ライブラリー、ダイナミックローディ
+      ングの有無すらも異なります。これに対応するためにコマンドそのもの、およびオ
+      プションがコンパイラー、リンカーなどに渡される必要があります。すべてのマシ
+      ンで正しく動作させることは非常にむずかしく、テストのためにすべてのマシンを
+      持っていない場合は特にそうでしょう。<pkg>devel/libtool</pkg>パッケージはこれを助けます。
+      <pkg>devel/libtool</pkg>はプラットフォームによらずに、
+      ソースファイルから、静的、動的なライブラリー両方を構築する方法
+      を<quote>知って</quote>いるからです。</para>
 
-    <para>Here's how to use libtool in a pkg in seven simple steps:</para>
+    <para>以下に、libtoolをパッケージで使用するための7つの手順を記述します。</para>
 
     <orderedlist>
       <listitem>
-	<para>Add <varname>USE_LIBTOOL=yes</varname> to the package Makefile.</para>
+	<para><varname>USE_LIBTOOL=yes</varname>をパッケージのMakefileへ追加します。</para>
       </listitem>
 
       <listitem>
-	<para>For library objects, use <quote>${LIBTOOL} --mode=compile
-	    ${CC}</quote> in place of <quote>${CC}</quote>. You could even
-	  add it to the definition of <varname>CC</varname>, if only
-	  libraries are being built in a given Makefile. This one command
-	  will build both PIC and non-PIC library objects, so you need not
-	  have separate shared and non-shared library rules.</para>
+	<para>ライブラリーオブジェクトのために、<quote>${LIBTOOL} --mode=compile ${CC}</quote>を<quote>${CC}</quote>
+	  に設定します。ライブラリーが、提供されたMakefileだけを使用して構築される
+	  のであれば、<varname>CC</varname>の定義にこれを追加するだけです。このコマンドひとつだけで、
+	  PICと非PICのライブラリーオブジェクトを作成します。したがって、共有ライブ
+	  ラリーとそうでないライブラリーの構築規則を別々に記述する必要はありません。</para>
       </listitem>
 
       <listitem>
-	<para>For the linking of the library, remove any <quote>ar</quote>,
-	  <quote>ranlib</quote>, and <quote>ld -Bshareable</quote> commands,
-	  and use instead:</para>
+	<para>ライブラリーのリンクのための<quote>ar</quote>、<quote>ranlib</quote>、<quote>ld -Bshareable</quote>コマン
+	  ドを削除してください。そしてその代わりに以下のコマンドを使用してください。</para>
 
 	<programlisting>${LIBTOOL} --mode=link ${CC} -o ${.TARGET:.a=.la} ${OBJS:.o=.lo} -rpath ${PREFIX}/lib -version-info major:minor</programlisting>
 
-	<para>Note that the library is changed to have a <filename>.la</filename>
-	  extension, and the objects are changed to have a
-	  <filename>.lo</filename> extension. Change <varname>OBJS</varname>
-	  as necessary. This automatically creates all of the
-	  <filename>.a</filename>, <filename>.so.major.minor</filename>,
-	  and ELF symlinks (if necessary) in the build directory. Be sure
-	  to include <quote>-version-info</quote>, especially when major
-	  and minor are zero, as libtool will otherwise strip off the
-	  shared library version.</para>
+	<para>ライブラリーの拡張子は<filename>.la</filename>に、オブジェクトの拡張子は
+	  <filename>.lo</filename>に変更されることに
+	  注意してください。<varname>OBJS</varname>
+	  を必要に応じて変更してください。このコマンドは、必
+	  要なものすべて、
+	  <filename>.a</filename>、<filename>.so.major.minor</filename>、
+	  そしてELFのシンボリックリンク(必要
+	  なら)を自動的にカレントディレクトリーに作成します。特に、メジャー番号と
+	  マイナー番号がゼロの場合は、<quote>-version-info</quote>をかならず含めるようにしてくだ
+	  さい。そうしないとlibtoolは共有ライブラリーのバージョンを取り除きます。</para>
 
-	<para>The <quote>-release</quote> option will produce different results for
-	  a.out and ELF (excluding symlinks) in only one case. An ELF library of
-	  the form
+	<para>また、<quote>-release</quote>オプションは、ある一つの場合に限って、a.outとELF(シンボ
+	  リックリンクを除く)との間で異なる結果をもたらします。
 	  <quote>libfoo-release.so.<emphasis>x</emphasis>.<emphasis>y</emphasis></quote>
-	  will have a symlink of
+	  の形式のELFライブラリーは、a.outプラットフォーム上
+	  では
 	  <quote>libfoo.so.<emphasis>x</emphasis>.<emphasis>y</emphasis></quote>
-	  on an a.out platform. This is handled automatically.</para>
+	  のシンボリックリンクを持ちます。これは自動的に処理され
+	  ます。</para>
 
-	<para>The <quote>-rpath argument</quote> is the install directory of the
-	  library being built.</para>
+	<para><quote>-rpath引数</quote>は構築されたライブラリーのインストール先ディレクトリーです。</para>
 
-	<para>In the <filename>PLIST</filename>, include all of the
-	  <filename>.a</filename>, <filename>.la</filename>, and
+	<para><filename>PLIST</filename>には、
+	  <filename>.a</filename>, <filename>.la</filename> および、
 	  <filename>.so</filename>,
-	  <filename>.so.<replaceable>major</replaceable></filename> and
+	  <filename>.so.<replaceable>major</replaceable></filename> と
 	  <filename>.so.<replaceable>major</replaceable>.<replaceable>minor</replaceable></filename>
-	  files.</para>
+	  ファイルをすべて含めます。</para>
       </listitem>
 
       <listitem>
-	<para>When linking shared object (<filename>.so</filename>) files,
-	  i.e. files that are loaded via dlopen(3), NOT shared libraries,
-	  use <quote>-module -avoid-version</quote> to prevent them
-	  getting version tacked on.</para>
+	<para>共有オブジェクト(<filename>.so</filename>)ファイル(すなわち、dlopen(3)でロードされるファイル
+	  であって、共有ライブラリーでは*ありません*)のリンク時には、ファイルにバー
+	  ジョンが加えられないようにするため、<quote>-module -avoid-version</quote>を使ってくだ
+	  さい。</para>
 
-	<para><filename>PLIST</filename> gets the <filename>foo.so</filename>
-	  entry.</para>
+	<para><filename>PLIST</filename>には<filename>foo.so</filename>
+	  の一覧が加わります。</para>
       </listitem>
 
       <listitem>
-	<para>When linking programs that depend on these libraries
-	  <emphasis>before</emphasis> they are installed, preface the
-	  &man.cc.1; or &man.ld.1; line with
-	  <quote>${LIBTOOL} --mode=link</quote>, and
-	  it will find the correct libraries (static or shared), but
-	  please be aware that libtool will not allow you to specify
-	  a relative path in -L (such as <quote>-L../somelib</quote>),
-	  because it expects you to change that argument to be the
-	  <filename>.la</filename> file. e.g.</para>
+	<para>インストールする<emphasis>前</emphasis>のライブラリーに依存するプログラムをリンクする時に、
+	  &man.cc.1;か&man.ld.1;の前に
+	  <quote>${LIBTOOL} --mode=link</quote>を書いてください。このコマンドは、正
+	  しいライブラリー(静的、または共有)を見つけます。ただし、libtoolを使う時
+	  には-Lオプションで相対パスを指定すること(<quote>-L../somelib</quote>のように)ができない
+	  ことに注意してください。引数として<filename>.la</filename>ファイルを使うように修正しなければ
+	  なりません。例えば、</para>
 
 	<informalexample>
 	  <programlisting>${LIBTOOL} --mode=link ${CC} -o someprog -L../somelib -lsomelib</programlisting>
 	</informalexample>
 
-	<para>should be changed to:</para>
+	<para>は、以下のように変更する必要があります。</para>
 
 	<programlisting>${LIBTOOL} --mode=link ${CC} -o <replaceable>someprog</replaceable> <replaceable>../somelib/somelib.la</replaceable></programlisting>
 
-	<para>and it will do the right thing with the libraries.</para>
+	<para>これで、ライブラリーを正しく扱う事ができます。</para>
       </listitem>
 
       <listitem>
-	<para>When installing libraries, preface the &man.install.1;
-	  or &man.cp.1; command with
-	  <quote>${LIBTOOL} --mode=install</quote>, and change the library
-	  name to <filename>.la</filename>. e.g.</para>
+	<para>ライブラリーをインストールするときに、&man.install.1;
+	  あるいは&man.cp.1;コマンドの前に
+	  <quote>${LIBTOOL} --mode=install</quote>を書いて下さい。そしてライブラリーの名前を
+	  <filename>.la</filename>に変えてください。例えば、以下のように書く必要があります。</para>
 
 	<informalexample>
 	  <programlisting>${LIBTOOL} --mode=install ${BSD_INSTALL_DATA} ${SOMELIB:.a=.la} ${PREFIX}/lib</programlisting>
 	</informalexample>
 
-	<para>This will install the static <filename>.a</filename>, shared
-	  library, any needed symlinks, and run &man.ldconfig.8;.</para>
+	<para>これは、静的リンクのための<filename>.a</filename>、共有ライブラリー、必要なシンボリックリンク
+	  をインストールし、&man.ldconfig.8;を実行します。</para>
       </listitem>
     </orderedlist>
   </sect1>
 
   <sect1>
-    <title>Using libtool on GNU packages that already support libtool</title>
+    <title>すでにlibtoolをサポートしているGNUパッケージでlibtoolを使う</title>
 
-    <para>Add <varname>USE_LIBTOOL=yes</varname> and
-      <varname>LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig</varname> to the
-      package Makefile as the quick way to bypass the pkg's own
-      <emphasis>libtool</emphasis>. The pkg's own
-      <emphasis>libtool</emphasis> is created by ltconfig script at
-      do-configure target. If <varname>USE_LIBTOOL</varname> and
-      <varname>LTCONFIG_OVERRIDE</varname> are defined, the specified
-      ltconfig is overridden, using <pkg>devel/libtool</pkg> instead of
-      the pkg's own libtool. For newer versions of libtool (without
-      ltconfig) it may be necessary to use
-      <varname>LIBTOOL_OVERRIDE=${WRKSRC}/libtool</varname> instead.</para>
+    <para>パッケージの<emphasis>libtool</emphasis>を簡単に回避する方法として、
+      <varname>USE_LIBTOOL=yes</varname>および
+      <varname>LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig</varname>をパッケージのMakefileに追加してくださ
+      い。パッケージの<emphasis>libtool</emphasis>は、do-configureターゲットでltconfigスクリプトにより
+      作られます。<varname>USE_LIBTOOL</varname> および
+      <varname>LTCONFIG_OVERRIDE</varname> が定義されている場合、指定
+      されたltconfigは、パッケージのlibtoolのかわりに<pkg>devel/libtool</pkg>を使うよ
+      う上書きされます。新しい(ltconfigを持たない)バージョンのlibtoolの場合は、上
+      で説明したもののかわりに
+      <varname>LIBTOOL_OVERRIDE=${WRKSRC}/libtool</varname>を使う必要がある
+      かもしれません。</para>
 
-    <para>If your package makes use of the platform independent library
-      for loading dynamic shared objects, that comes with libtool
-      (libltdl), you should include the libtool buildlink2.mk (and
-      set <varname>USE_BUILDLINK2=YES</varname>).</para>
+    <para>パッケージが動的共有オブジェクトのロードに、libtool (libltdl)のプラットフォー
+      ム独立なライブラリーを使う場合は、libtoolのbuildlink2.mkをインクルード(さら
+      に、<varname>USE_BUILDLINK2=YES</varname>を設定)してください。</para>
 
-    <para>Some packages use libtool incorrectly so that the package may not work or
-      build in some circumstances. Some of the more common errors are:</para>
+    <para>パッケージによっては、環境により動作や構築ができなくなるような、正しくない
+      libtoolの使い方をしているものがあります。ありがちな間違いは以下のようなもの
+      です。</para>
 
     <itemizedlist>
       <listitem>
-	<para>The inclusion of a shared object (-module) as a dependent library in an
-	  executable or library. This in itself isn't a problem if one of two things
-	  has been done:</para>
+	<para>実行形式やライブラリーで、共有オブジェクト(-module)を依存ライブラリーと
+	  してインクルードする。このこと自体は、以下の二つのうちいずれかが行なわれ
+	  ている場合は、問題になりません。</para>
 
 	<orderedlist>
 	  <listitem>
-	    <para>The shared object is named correctly, i.e.
-	      <filename>libfoo.la</filename>, not
-	      <filename>foo.la</filename></para>
+	    <para>その共有オブジェクトが正しく命名されている。すなわち、
+	      <filename>libfoo.la</filename>ではなく
+	      <filename>libfoo.la</filename>となっている。</para>
 	  </listitem>
 
 	  <listitem>
-	    <para>The -dlopen option is used when linking an executable.</para>
+	    <para>-dlopenオプションが実行形式のリンク時に使われている。</para>
 	  </listitem>
 	</orderedlist>
       </listitem>
 
       <listitem>
-	<para>The use of libltdl without the correct calls to initialisation routines.
-	  The function lt_dlinit() should be called and the macro
-	  LTDL_SET_PRELOADED_SYMBOLS included in executables.</para>
+	<para>ルーチンの初期化を適切に呼ばずにlibltdlを使う。関数lt_dlinit()を呼んで、
+	  マクロLTDL_SET_PRELOADED_SYMBOLSを実行形式にインクルードするようにしましょ
+	  う。</para>
       </listitem>
     </itemizedlist>
   </sect1>
@@ -194,16 +191,15 @@
   <sect1>
     <title>GNU Autoconf/Automake</title>
 
-    <para>If a package needs GNU autoconf or automake to be executed
-      to regenerate the configure script and Makefile.in makefile
-      templates, then they should be executed in a pre-configure
-      target. Two Makefile fragments are provided in
-      <filename>pkgsrc/mk/autoconf.mk</filename> and
-      <filename>pkgsrc/mk/automake.mk</filename> to help
-      dealing with these tools. See comments in these files for
-      details.</para>
+    <para>パッケージが、configureスクリプトやmakefileの雛型Makefile.inを再生成するた
+      めにGNU autoconfまたはautomakeを実行する必要がある場合、これらの実行は
+      pre-configureターゲットでおこないます。これらのツールの扱いを補助するための
+      Makefileの断片が二つ、
+      <filename>pkgsrc/mk/autoconf.mk</filename>および
+      <filename>pkgsrc/mk/automake.mk</filename>で用
+      意されています。詳細は、このファイル中のコメントをご覧ください。</para>
 
-    <para>For packages that need only autoconf:</para>
+    <para>autoconfのみを必要とするパッケージでは以下のようになります:</para>
 
     <programlisting>AUTOCONF_REQD=	2.50	# if default version is not good enough
 ...
@@ -215,7 +211,7 @@ pre-configure:
 .include "../../mk/autoconf.mk"</programlisting>
 
 <para>
-and for packages that need automake and autoconf:
+また、automakeとautoconfを必要とするパッケージでは以下のようになります:
 </para>
 
 <programlisting>AUTOMAKE_REQD=	1.7.1	# if default version is not good enough
@@ -231,75 +227,68 @@ pre-configure:
 ...
 .include "../mk/automake.mk"</programlisting>
 
-    <para>There are times when the configure process makes additional
-      changes to the generated files, which then causes the build
-      process to try to re-execute the automake sequence.  This is
-      prevented by touching various files in the configure stage. If
-      this causes problems with your package you can set
-      <varname>AUTOMAKE_OVERRIDE=NO</varname> in the package
-      Makefile.</para>
+    <para>生成されたファイルに対して、configureプロセスがさらに変更を加える時がありま
+      すが、この時には構築プロセスが一連のautomakeの手順を再実行しようとします。
+      configureの段階でさまざまなファイルに手を加えると、この挙動は止められます。
+      この挙動が問題が起こす場合は、そのパッケージのMakefileで
+      <varname>AUTOMAKE_OVERRIDE=NO</varname>を設定することができます。</para>
   </sect1>
 
   <sect1>
-    <title>Package configuration files</title>
+    <title>パッケージの設定ファイル</title>
 
-    <para>Packages should be taught to look for their configuration
-      files in <varname>${PKG_SYSCONFDIR}</varname>, which is passed
-      through to the configure and build processes.
-      <varname>PKG_SYSCONFDIR</varname> may be customized in various
-      ways by setting other make variables:</para>
+    <para>パッケージの設定ファイルの場所は、<varname>${PKG_SYSCONFDIR}</varname>として指示され、この値は
+      configureおよびbuildのプロセスに渡されます。
+      <varname>PKG_SYSCONFDIR</varname>は、他のmake変数
+      のさまざまな設定によってカスタマイズすることができます:</para>
 
     <itemizedlist>
       <listitem>
-	<para><varname>PKG_SYSCONFBASE</varname> is the main config directory
-	  under which all package configuration files are to be found.
-	  This defaults to <filename>${PREFIX}/etc</filename>, but may
-	  be overridden in <filename>/etc/mk.conf</filename>.</para>
+	<para><varname>PKG_SYSCONFBASE</varname>は主たる設定ディレクトリーで、パッケージ用の設定ファイルす
+	  べてがこれ以下に置かれます。デフォルトは<filename>${PREFIX}/etc</filename>ですが、
+	  <filename>/etc/mk.conf</filename>で上書きすることができます。</para>
       </listitem>
 
       <listitem>
-	<para><varname>PKG_SYSCONFSUBDIR</varname> is the subdirectory of
-	  <varname>PKG_SYSCONFBASE</varname> under which the
-	  configuration files for a particular package may be found, e.g.
-	  the Apache configuration files may all be found under the
-	  <filename>httpd/</filename> subdirectory of
-	  <varname>${PKG_SYSCONFBASE}</varname>. This should be set in
-	  the package Makefile.</para>
+	<para><varname>PKG_SYSCONFSUBDIR</varname>は
+	  <varname>PKG_SYSCONFBASE</varname>のサブディレクトリーで、個々のパッケー
+	  ジ用の設定ファイルはこの下に置かれます。たとえば、Apacheの設定ファイルは
+	  すべて、
+	  <varname>${PKG_SYSCONFBASE}</varname>のサブディレクトリー
+	  <filename>httpd/</filename>の下に置かれます。こ
+	  れは、パッケージのMakefileで設定することを想定しています。</para>
       </listitem>
 
       <listitem>
-	<para>By default,
-	  <varname>PKG_SYSCONFDIR=${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}</varname>,
-	  but this may be overridden by setting
-	  <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname> for a
-	  particular package, where <varname>PKG_SYSCONFVAR</varname>
-	  defaults to <varname>${PKGBASE}</varname>. This is not meant to
-	  be set by a package Makefile, but is reserved for users who wish
-	  to override the <varname>PKG_SYSCONFDIR</varname> setting for
-	  a particular package with a special location.</para>
+	<para>デフォルトでは
+	  <varname>PKG_SYSCONFDIR=${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}</varname>にな
+	  りますが、このデフォルト値は、個々のパッケージに対して
+	  <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname> を設定することで上書きすることができます。
+	  この<varname>PKG_SYSCONFVAR</varname>
+	  は、デフォルトでは<varname>${PKGBASE}</varname>です。これは、パッケージの
+	  Makefileで設定するためのものではなく、ユーザーが個々のパッケージについて
+	  <varname>PKG_SYSCONFDIR</varname>の設定を特別な場所に上書きするために予約されているものです。</para>
       </listitem>
     </itemizedlist>
 
-    <para>The only variables that users should customize are
-      <varname>PKG_SYSCONFBASE</varname> and
-      <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname>.
-      Users will typically want to set
-      <varname>PKG_SYSCONFBASE</varname> to
-      <filename>/etc</filename>, or to accept the default location
-      of <filename>${PREFIX}/etc</filename>.</para>
+    <para>ユーザーがカスタマイズすべき変数は、
+      <varname>PKG_SYSCONFBASE</varname>と
+      <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname>だけです。通常、ユーザーは
+      <varname>PKG_SYSCONFBASE</varname>を
+      <filename>/etc</filename>に設定するか、またはデフォルトの場所の
+      <filename>${PREFIX}/etc</filename>のままにするでしょう。</para>
   </sect1>
 
   <sect1>
-    <title>Feedback to the author</title>
+    <title>作者へのフィードバック</title>
 
-    <para>If you have found any bugs in the package you make available,
-      if you had to do special steps to make it run under &os; or
-      if you enhanced the software in various other ways, be sure
-      to report these changes back to the original author of the
-      program! With that kind of support, the next release of the
-      program can incorporate these fixes, and people not using the
-      &os; packages system can win from your efforts.</para>
+    <para>もしパッケージの不具合を発見し動作するように修正した場合、&os;上で動作さ
+      せるために特別な手順が必要だった場合、あるいはさまざまなソフトウェアの拡張
+      をおこなった場合、これらの修正をプログラムのオリジナルの作者へ報告してくだ
+      さい。このようなサポートによって、プログラムの次のリリースにそれらの修正を
+      反映することができます。そして、&os;パッケージシステムを使用していない人々
+      も、あなたの努力のおかげで幸せになれます。</para>
 
-    <para>Support the idea of free software!</para>
+    <para>フリーソフトウェアの理念をサポートして下さい。</para>
   </sect1>
 </chapter>
