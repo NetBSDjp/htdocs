@@ -264,11 +264,13 @@ sub extras_generate
     my($pathtodoc, $pathtodev, $pathtoports, $pathtogal, $str, $home);
 
     $home = $0;
-    # extract the relative pathname from our name, no trailing /
+    # extract the relative pathname from our name, no trailing / or
+    # language
     if ($home =~ m#^/#) {
 	$home = dirname($home);
-	if ($home =~ m#.*/(\.\.?/?.*)/?$#) {
-	    $home = $1;
+	if ($home =~ m#.*?/(\.\.?/?.*)$#) {
+	    ($home = $1) =~ s#/$##;
+	    $home =~ s#/../[a-z]{2}##;
 	}
     } else {
 	if ($home !~ m#(.*)/[^/]+.pl#) {
