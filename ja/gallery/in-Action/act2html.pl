@@ -21,10 +21,6 @@
 #				    ls(1+1.4.3), ls(1.i386+1.4.3)
 
 use strict;
-
-use open OUT=>':encoding(iso-2022-jp)';
-use encoding "euc-jp";
-
 use Getopt::Std;
 $^W=1;
 my($verbose,%extras,$months_previous);
@@ -177,7 +173,7 @@ sub makeact
     if ($data !~ s/(<head[^>]*>)/$1$_/i)
 	{ &fail("Unable to locate <head> tag"); }
 
-    open(FILE,">$outfile") || die("Unable to write '$outfile': $!");
+    open(FILE,"|iconv -f euc-jp -t iso-2022-jp >$outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data,%extras);
     close(FILE);
     if ($date_num)

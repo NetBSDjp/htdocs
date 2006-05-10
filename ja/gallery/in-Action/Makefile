@@ -13,7 +13,7 @@ index.html: index.act-template mkact.pl Makefile
 .SUFFIXES:      .act-template .html
 
 .act-template.html:
-	perl mkact.pl <$< >$*.act
+	iconv -f iso-2022-jp -t euc-jp < $< | perl mkact.pl >$*.act
 	perl ./act2html.pl $*.act $@
 	rm $*.act
 

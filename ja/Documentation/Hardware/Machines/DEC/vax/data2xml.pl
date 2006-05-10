@@ -51,9 +51,6 @@
 # use strict;
 use Getopt::Std;
 
-use open IN=>':encoding(iso-2022-jp)', OUT=>':encoding(iso-2022-jp)';
-use encoding "euc-jp";
-
 my(%opt);
 &getopts('vq',\%opt);
 
@@ -189,7 +186,7 @@ sub output_all
 		next;
 		}
 	    }
-	open(FILE, ">$file.xml") || &fail("Cannot write $file.xml: $!");
+	open(FILE, "| iconv -f euc-jp -t iso-2022-jp >$file.xml") || &fail("Cannot write $file.xml: $!");
 	print FILE $file{$file};
 	close(FILE);
 	print "Written\n";
@@ -365,7 +362,7 @@ sub read_datafile
     my($key,$value,$name,$last_key);
     my(%sectioncount);
 
-    open(DATA,$file) || &fail("Unable to open '$file': $!");
+    open(DATA,"iconv -f iso-2022-jp -t euc-jp $file|") || &fail("Unable to open '$file': $!");
     while( <DATA> )
 	{
 	s/#.*//;
@@ -428,7 +425,7 @@ sub read_file
     my($data);
 
     $data='';
-    open(FILE,$file) || &fail("Unable to read '$file': $!");
+    open(FILE,"iconv -f iso-2022-jp -t euc-jp $file|") || &fail("Unable to read '$file': $!");
     read(FILE,$data,-s $file);
     close(FILE);
     $data =~ s/\$NetBSD[^\$]+\$/\$NetBSD\$/g;

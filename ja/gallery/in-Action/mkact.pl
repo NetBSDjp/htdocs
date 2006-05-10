@@ -8,9 +8,6 @@
 # html files containing <IMG> tags are expected as $entry-img.html
 # html files containing descriptions are expected as $entry-txt.html
 
-use open IN=>':encoding(iso-2022-jp)';
-use encoding "euc-jp", STDIN=>"iso-2022-jp";
-
 
 $pic_left=0; 
 $debug=0;
@@ -20,7 +17,7 @@ sub printfile {
     if ( ! -f $file && -f "../../../gallery/in-Action/$file" ) {
 	$file = "../../../gallery/in-Action/$file";
     }
-    open(F, "$file") or die "Cannot open $file for reading: $!\n";
+    open(F, "iconv -f iso-2022-jp -t euc-jp $file|") or die "Cannot open $file for reading: $!\n";
     while(<F>) {
 	s/<!--.*//g;
 	print "$_";
