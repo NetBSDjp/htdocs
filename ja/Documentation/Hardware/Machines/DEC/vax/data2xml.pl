@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 
-#	$NetBSD: data2xml.pl,v 1.4 2005/04/09 19:45:09 heinz Exp $
+#	$NetBSD: data2xml.pl,v 1.5 2006/05/10 15:32:59 kano Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: data2xml.pl,v 1.4 2005/04/09 19:45:09 heinz Exp   -->
+#	<!-- NetBSD: data2xml.pl,v 1.5 2006/05/10 15:32:59 kano Exp   -->
 #
 # Copyright (c) 1997 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -235,7 +235,7 @@ sub output_section_entries
 	$all = "\n\n<sect3 id=\"$section:$name\">\n".
      		"<title>$name2title{$name}&nbsp;<small>".
 	     "<ulink url=\"#section:$section\">".
-	     "($secdata{$section}{'title'} インデックス)</ulink></small></title>\n<table id=\"$section:$name:table\" border=\"\1\">\n";
+	     "($secdata{$section}{'title'} インデックス)</ulink></small></title>\n<table id=\"$section:$name:table\" border=\"1\">\n";
 	$file{'full'} .= $all;
 	$file{$section} .= $all;
 	$all='';
