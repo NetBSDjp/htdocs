@@ -1,24 +1,29 @@
-<!-- $NetBSD: fixes.xml,v 1.1 2004/06/06 13:31:54 grant Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.4 2004/09/29 13:08:36 hubertf Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.1 2004/06/06 13:31:54 grant Exp   -->
+<!-- NetBSD: fixes.xml,v 1.4 2004/09/29 13:08:36 hubertf Exp   -->
 
-<chapter id="fixes">
+<chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージの修正に関する注意</title>
 
   <sect1>
     <title>CPP定義</title>
-
-    <para>アプリケーションを&os;に移植するためには、コンパイラーがコンパイルしてい
+  
+    <para>
+      アプリケーションをNetBSDに移植するためには、コンパイラーがコンパイルしてい
       るシステムを判断する必要があります。したがって、Cのプリプロセッサーがシステ
-      ムを判断できるように、CPPの定義を使います。</para>
+      ムを判断できるように、CPPの定義を使います。
+    </para>
 
-    <para>4.4 BSDから派生したシステム上で作業しているかどうかをテストするためには、
+    <para>
+      4.4 BSDから派生したシステム上で作業しているかどうかをテストするためには、
       BSD定義を使用します。これは
-      <filename>&lt;sys/param.h&gt;</filename>で定義されています。</para>
+      <filename>&lt;sys/param.h&gt;</filename>で定義されています。
+    </para>
 
     <programlisting><![CDATA[#include <sys/param.h>]]></programlisting>
 
-    <para>また、BSDに固有の部分を、以下の条件でかこむこともできます。</para>
+    <para>また、パッケージの C や C++ のコードのうち BSDに固有の部分を、
+      以下の条件でかこむこともできます。</para>
 
     <programlisting><![CDATA[#if (defined(BSD) && BSD >= 199306)
   ...
@@ -26,7 +31,7 @@
 
     <para>どうか注意して<quote>__NetBSD__</quote>定義を使って下さい。4.4-liteから派生した他のBSDにな
       い&os;固有の特徴にのみ適用してください。</para>
-  </sect1>
+</sect1>      
 
   <sect1 id="fixes.libtool">
     <title>共有ライブラリー - libtool</title>
@@ -73,6 +78,26 @@
 	  マイナー番号がゼロの場合は、<quote>-version-info</quote>をかならず含めるようにしてくだ
 	  さい。そうしないとlibtoolは共有ライブラリーのバージョンを取り除きます。</para>
 
+	<para> libtool のマニュアルより:</para>
+
+	<programlisting>
+   libtool のライブラリーのバージョンは、以下の三つの整数で表されます。
+
+CURRENT
+     このライブラリーが実装しているインターフェース番号のうち最新のもの。
+
+REVISION
+     CURRENT インターフェースの実装番号。
+
+AGE
+     このライブラリーが実装しているインターフェースの最新のものと最古のものの間の差。
+     すなわち、このライブラリーが実装しているのは、
+      `CURRENT - AGE' から `CURRENT' までの番号の範囲にある、
+     すべてのインターフェース番号です。
+     
+   二つのファイブラリーの CURRENT と AGE 番号がいずれも同じ場合、
+ダイナミックリンカーは REVISION 番号が大きいほうのライブラリーを選びます。</programlisting>
+
 	<para>また、<quote>-release</quote>オプションは、ある一つの場合に限って、a.outとELF(シンボ
 	  リックリンクを除く)との間で異なる結果をもたらします。
 	  <quote>libfoo-release.so.<emphasis>x</emphasis>.<emphasis>y</emphasis></quote>
@@ -98,7 +123,7 @@
 	  ジョンが加えられないようにするため、<quote>-module -avoid-version</quote>を使ってくだ
 	  さい。</para>
 
-	<para><filename>PLIST</filename>には<filename>foo.so</filename>
+	<para><filename>PLIST</filename>ファイルには<filename>foo.so</filename>
 	  の一覧が加わります。</para>
       </listitem>
 
@@ -111,9 +136,7 @@
 	  ことに注意してください。引数として<filename>.la</filename>ファイルを使うように修正しなければ
 	  なりません。例えば、</para>
 
-	<informalexample>
-	  <programlisting>${LIBTOOL} --mode=link ${CC} -o someprog -L../somelib -lsomelib</programlisting>
-	</informalexample>
+	<programlisting>${LIBTOOL} --mode=link ${CC} -o someprog -L../somelib -lsomelib</programlisting>
 
 	<para>は、以下のように変更する必要があります。</para>
 
@@ -128,34 +151,46 @@
 	  <quote>${LIBTOOL} --mode=install</quote>を書いて下さい。そしてライブラリーの名前を
 	  <filename>.la</filename>に変えてください。例えば、以下のように書く必要があります。</para>
 
-	<informalexample>
-	  <programlisting>${LIBTOOL} --mode=install ${BSD_INSTALL_DATA} ${SOMELIB:.a=.la} ${PREFIX}/lib</programlisting>
-	</informalexample>
+	<programlisting>${LIBTOOL} --mode=install ${BSD_INSTALL_DATA} ${SOMELIB:.a=.la} ${PREFIX}/lib</programlisting>
 
 	<para>これは、静的リンクのための<filename>.a</filename>、共有ライブラリー、必要なシンボリックリンク
 	  をインストールし、&man.ldconfig.8;を実行します。</para>
       </listitem>
+
+      <listitem>
+        <para> <filename>PLIST</filename> に、
+	  <filename>.a</filename>, <filename>.la</filename>,
+	  <filename>.so</filename>, <filename>.so.CURRENT</filename>, 
+	  <filename>.so.CURRENT.REVISION</filename> ファイルをすべて含めます
+	  (これは、以前のものから変わった点です)。 </para>	  
+      </listitem>
+      
     </orderedlist>
   </sect1>
 
   <sect1>
     <title>すでにlibtoolをサポートしているGNUパッケージでlibtoolを使う</title>
 
-    <para>パッケージの<emphasis>libtool</emphasis>を簡単に回避する方法として、
-      <varname>USE_LIBTOOL=yes</varname>および
-      <varname>LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig</varname>をパッケージのMakefileに追加してくださ
-      い。パッケージの<emphasis>libtool</emphasis>は、do-configureターゲットでltconfigスクリプトにより
-      作られます。<varname>USE_LIBTOOL</varname> および
-      <varname>LTCONFIG_OVERRIDE</varname> が定義されている場合、指定
-      されたltconfigは、パッケージのlibtoolのかわりに<pkg>devel/libtool</pkg>を使うよ
-      う上書きされます。新しい(ltconfigを持たない)バージョンのlibtoolの場合は、上
-      で説明したもののかわりに
-      <varname>LIBTOOL_OVERRIDE=${WRKSRC}/libtool</varname>を使う必要がある
-      かもしれません。</para>
+    <para><varname>USE_LIBTOOL=yes</varname> をパッケージの
+      Makefile に追加します。こうするとほとんどの場合、パッケージ固有の
+      libtool を無視します。古い libtool を使っているパッケージでは、
+      libtool はdo-configureターゲットでltconfigスクリプトにより作られます。<command>make
+      configure; find work*/ -name libtool</command>
+      のようにして、libtool スクリプトの場所を確認することができます。</para>
+
+    <para> <varname>LIBTOOL_OVERRIDE</varname> で、どの libtool
+      スクリプトを無視するかを、<varname>WRKSRC</varname> からの相対位置で指定します。
+      指定しなかった場合、<quote>libtool */libtool
+      */*/libtool</quote> に設定されますので、パッケージ固有の libtool
+      スクリプトの場所がこのいずれとも異なる場合は、適宜設定してください。 </para>
+
+    <para> 静的ライブラリー <filename>*.a</filename>
+      の構築やインストールが必要ない場合は、かわりに
+      <varname>SHLIBTOOL_OVERRIDE</varname> を使います。 </para>
 
     <para>パッケージが動的共有オブジェクトのロードに、libtool (libltdl)のプラットフォー
-      ム独立なライブラリーを使う場合は、libtoolのbuildlink2.mkをインクルード(さら
-      に、<varname>USE_BUILDLINK2=YES</varname>を設定)してください。</para>
+      ム独立なライブラリーを使う場合は、libtoolのbuildlink3.mkをインクルード(さら
+      に、<varname>USE_BUILDLINK3=YES</varname>を設定)してください。</para>
 
     <para>パッケージによっては、環境により動作や構築ができなくなるような、正しくない
       libtoolの使い方をしているものがあります。ありがちな間違いは以下のようなもの
@@ -182,7 +217,8 @@
 
       <listitem>
 	<para>ルーチンの初期化を適切に呼ばずにlibltdlを使う。関数lt_dlinit()を呼んで、
-	  マクロLTDL_SET_PRELOADED_SYMBOLSを実行形式にインクルードするようにしましょ
+	  マクロ
+	  <varname>LTDL_SET_PRELOADED_SYMBOLS</varname>を実行形式にインクルードするようにしましょ
 	  う。</para>
       </listitem>
     </itemizedlist>
@@ -199,9 +235,9 @@
       <filename>pkgsrc/mk/automake.mk</filename>で用
       意されています。詳細は、このファイル中のコメントをご覧ください。</para>
 
-    <para>autoconfのみを必要とするパッケージでは以下のようになります:</para>
+      <para>autoconfのみを必要とするパッケージでは以下のようになります: </para>
 
-    <programlisting>AUTOCONF_REQD=	2.50	# if default version is not good enough
+      <programlisting>AUTOCONF_REQD=	2.50	# if default version is not good enough
 ...
 
 pre-configure:
@@ -210,9 +246,7 @@ pre-configure:
 ...
 .include "../../mk/autoconf.mk"</programlisting>
 
-<para>
-また、automakeとautoconfを必要とするパッケージでは以下のようになります:
-</para>
+      <para> また、automakeとautoconfを必要とするパッケージでは以下のようになります: </para> 
 
 <programlisting>AUTOMAKE_REQD=	1.7.1	# if default version is not good enough
 ...
@@ -227,68 +261,138 @@ pre-configure:
 ...
 .include "../mk/automake.mk"</programlisting>
 
-    <para>生成されたファイルに対して、configureプロセスがさらに変更を加える時がありま
+      <para> GNU Automake を使うパッケージは、ほぼ確実に
+        GNU Make を必要としますが、この依存関係は
+        <filename>mk/automake.mk</filename> で自動的に処理されます。 </para> 
+
+    <para> 生成されたファイルに対して、configureプロセスがさらに変更を加える時がありま
       すが、この時には構築プロセスが一連のautomakeの手順を再実行しようとします。
       configureの段階でさまざまなファイルに手を加えると、この挙動は止められます。
       この挙動が問題が起こす場合は、そのパッケージのMakefileで
-      <varname>AUTOMAKE_OVERRIDE=NO</varname>を設定することができます。</para>
+      <varname>AUTOMAKE_OVERRIDE=NO</varname>を設定することができます。 </para>
   </sect1>
 
   <sect1>
     <title>パッケージの設定ファイル</title>
-
-    <para>パッケージの設定ファイルの場所は、<varname>${PKG_SYSCONFDIR}</varname>として指示され、この値は
+    
+    <para> パッケージの設定ファイルの場所は、<varname>${PKG_SYSCONFDIR}</varname>として指示され、この値は
       configureおよびbuildのプロセスに渡されます。
       <varname>PKG_SYSCONFDIR</varname>は、他のmake変数
-      のさまざまな設定によってカスタマイズすることができます:</para>
+      のさまざまな設定によってカスタマイズすることができます: </para>
 
     <itemizedlist>
       <listitem>
-	<para><varname>PKG_SYSCONFBASE</varname>は主たる設定ディレクトリーで、パッケージ用の設定ファイルす
-	  べてがこれ以下に置かれます。デフォルトは<filename>${PREFIX}/etc</filename>ですが、
-	  <filename>/etc/mk.conf</filename>で上書きすることができます。</para>
+        <para> <varname>PKG_SYSCONFBASE</varname>は主たる設定ディレクトリーで、パッケージ用の設定ファイルす
+          べてがこれ以下に置かれます。デフォルトは<filename>${PREFIX}/etc</filename>ですが、
+          <filename>/etc/mk.conf</filename>で上書きすることができます。 </para>
       </listitem>
 
       <listitem>
-	<para><varname>PKG_SYSCONFSUBDIR</varname>は
+        <para>  <varname>PKG_SYSCONFSUBDIR</varname>は
 	  <varname>PKG_SYSCONFBASE</varname>のサブディレクトリーで、個々のパッケー
 	  ジ用の設定ファイルはこの下に置かれます。たとえば、Apacheの設定ファイルは
 	  すべて、
 	  <varname>${PKG_SYSCONFBASE}</varname>のサブディレクトリー
 	  <filename>httpd/</filename>の下に置かれます。こ
-	  れは、パッケージのMakefileで設定することを想定しています。</para>
+	  れは、パッケージのMakefileで設定することを想定しています。
+	  </para>
       </listitem>
 
       <listitem>
-	<para>デフォルトでは
-	  <varname>PKG_SYSCONFDIR=${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}</varname>にな
-	  りますが、このデフォルト値は、個々のパッケージに対して
+        <para> デフォルトでは
+	  <varname>PKG_SYSCONFDIR</varname> は
+          <varname>${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}</varname> に設定されますが、
+	  このデフォルト値は、個々のパッケージに対して
 	  <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname> を設定することで上書きすることができます。
 	  この<varname>PKG_SYSCONFVAR</varname>
 	  は、デフォルトでは<varname>${PKGBASE}</varname>です。これは、パッケージの
 	  Makefileで設定するためのものではなく、ユーザーが個々のパッケージについて
-	  <varname>PKG_SYSCONFDIR</varname>の設定を特別な場所に上書きするために予約されているものです。</para>
-      </listitem>
-    </itemizedlist>
+	  <varname>PKG_SYSCONFDIR</varname>の設定を特別な場所に上書きするために予約されているものです。
+	  </para>
+	</listitem>
+      </itemizedlist>
 
-    <para>ユーザーがカスタマイズすべき変数は、
-      <varname>PKG_SYSCONFBASE</varname>と
-      <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname>だけです。通常、ユーザーは
-      <varname>PKG_SYSCONFBASE</varname>を
-      <filename>/etc</filename>に設定するか、またはデフォルトの場所の
-      <filename>${PREFIX}/etc</filename>のままにするでしょう。</para>
+    <para> ユーザーがカスタマイズすべき変数は、
+        <varname>PKG_SYSCONFBASE</varname>と <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname>だけです。
+	通常、ユーザーは
+	<varname>PKG_SYSCONFBASE</varname>を
+	<filename>/etc</filename>に設定するか、またはデフォルトの場所の
+	<filename>${PREFIX}/etc</filename>のままにするでしょう。 </para>
   </sect1>
 
   <sect1>
-    <title>作者へのフィードバック</title>
+    <title>ユーザーとの対話</title>
 
-    <para>もしパッケージの不具合を発見し動作するように修正した場合、&os;上で動作さ
+    <para>時々、パッケージがユーザーとの対話を必要とする場合がありますが、そのような
+      状況は何通りもありえます:</para>
+
+    <itemizedlist>
+      <listitem>
+	<para>distfileの取得に関する補助</para>
+      </listitem>
+
+      <listitem>
+	<para>パッケージの構築前の設定の補助</para>
+      </listitem>
+
+      <listitem>
+	<para>構築過程の最中の補助</para>
+      </listitem>
+
+      <listitem>
+	<para>パッケージのインストール中の補助</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>どの段階で対話が必要になるかをpkgsrcの機構に知らせるため、<varname>INTERACTIVE_STAGE</varname>
+      定義が用意されており、パッケージの<filename>Makefile</filename>で定義します。たとえば以下のよう
+      にします。</para>
+
+    <programlisting>INTERACTIVE_STAGE= build</programlisting>
+
+    <para>複数の段階を指定することもできます:</para>
+
+    <programlisting>INTERACTIVE_STAGE= configure install</programlisting>
+  </sect1>
+
+  <sect1>
+    <title>パッケージの移植性</title>
+
+    <para>pkgsrc の目玉の一つは、多くのプラットフォームで動作することです。
+      そのため、pkgsrc のパッケージの移植性をできるかぎり高めることが重要になります。
+      pkgsrc の作業に際して、
+      具体的には以下のような事項に注意してください。</para>
+
+    <sect2>
+      <title>${INSTALL}, ${INSTALL_DATA_DIR}, ...</title>
+
+      <para>一部のプラットフォームに附属する BSD 互換の <command>install</command> は、
+	一度に複数の操作をおこなうことができません。
+	このため、 <quote>${INSTALL}</quote> などを使うときは、以下のようにします。</para>
+
+	<programlisting>${INSTALL_DATA_DIR} ${PREFIX}/dir1
+${INSTALL_DATA_DIR} ${PREFIX}/dir2</programlisting>
+    </sect2>
+
+<!--
+    <sect2>
+XXX more portability stuff
+XXX USE_PKGLOCALEDIR
+XXX ???
+    </sect2>
+-->
+  </sect1>  
+  
+  <sect1>
+    <title>作者へのフィードバック</title>
+    
+    <para> もしパッケージの不具合を発見し動作するように修正した場合、NetBSD上で動作さ
       せるために特別な手順が必要だった場合、あるいはさまざまなソフトウェアの拡張
       をおこなった場合、これらの修正をプログラムのオリジナルの作者へ報告してくだ
       さい。このようなサポートによって、プログラムの次のリリースにそれらの修正を
-      反映することができます。そして、&os;パッケージシステムを使用していない人々
-      も、あなたの努力のおかげで幸せになれます。</para>
+      反映することができます。そして、NetBSDパッケージシステムを使用していない人々
+      も、あなたの努力のおかげで幸せになれます。 </para>
 
-    <para>フリーソフトウェアの理念をサポートして下さい。</para>
+    <para> フリーソフトウェアの理念をサポートして下さい。 </para>
   </sect1>
 </chapter>
