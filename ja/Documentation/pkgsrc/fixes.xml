@@ -1,23 +1,27 @@
-<!-- $NetBSD: fixes.xml,v 1.1 2004/06/06 13:31:54 grant Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.4 2004/09/29 13:08:36 hubertf Exp $ -->
 
-<chapter id="fixes">
+<chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>Notes on fixes for packages</title>
 
   <sect1>
     <title>CPP defines</title>
-
-    <para>To port an application to &os;, it's usually necessary for the
+  
+    <para>
+      To port an application to NetBSD, it's usually necessary for the
       compiler to be able to judge the system on which it's compiling, and
-      we use definitions so that the C pre-processor can do this.</para>
+      we use definitions so that the C pre-processor can do this.
+    </para>
 
-    <para>To test whether you are working on a 4.4 BSD-derived system, you
+    <para>
+      To test whether you are working on a 4.4 BSD-derived system, you
       should use the BSD definition, which is defined in
-      <filename>&lt;sys/param.h&gt;</filename> on said systems.</para>
+      <filename>&lt;sys/param.h&gt;</filename> on said systems.
+    </para>
 
     <programlisting><![CDATA[#include <sys/param.h>]]></programlisting>
 
-    <para>and then you can surround the BSD-specific parts of your port using
-      the conditional:</para>
+    <para>and then you can surround the BSD-specific parts of your
+      package's C/C++ code using this conditional:</para>
 
     <programlisting><![CDATA[#if (defined(BSD) && BSD >= 199306)
   ...
@@ -26,7 +30,7 @@
     <para>Please use the <quote>__NetBSD__</quote> definition sparingly - it
       should only apply to features of &os; that are not present in other
       4.4-lite derived BSDs.</para>
-  </sect1>
+</sect1>      
 
   <sect1 id="fixes.libtool">
     <title>Shared libraries - libtool</title>
@@ -60,7 +64,7 @@
       <listitem>
 	<para>For the linking of the library, remove any <quote>ar</quote>,
 	  <quote>ranlib</quote>, and <quote>ld -Bshareable</quote> commands,
-	  and use instead:</para>
+	  and instead use:</para>
 
 	<programlisting>${LIBTOOL} --mode=link ${CC} -o ${.TARGET:.a=.la} ${OBJS:.o=.lo} -rpath ${PREFIX}/lib -version-info major:minor</programlisting>
 
@@ -73,6 +77,26 @@
 	  to include <quote>-version-info</quote>, especially when major
 	  and minor are zero, as libtool will otherwise strip off the
 	  shared library version.</para>
+
+	<para> From the libtool manual:</para>
+
+	<programlisting>
+   So, libtool library versions are described by three integers:
+
+CURRENT
+     The most recent interface number that this library implements.
+
+REVISION
+     The implementation number of the CURRENT interface.
+
+AGE
+     The difference between the newest and oldest interfaces that this
+     library implements.  In other words, the library implements all the
+     interface numbers in the range from number `CURRENT - AGE' to
+     `CURRENT'.
+     
+   If two libraries have identical CURRENT and AGE numbers, then the
+dynamic linker chooses the library with the greater REVISION number. </programlisting>
 
 	<para>The <quote>-release</quote> option will produce different results for
 	  a.out and ELF (excluding symlinks) in only one case. An ELF library of
@@ -99,7 +123,7 @@
 	  use <quote>-module -avoid-version</quote> to prevent them
 	  getting version tacked on.</para>
 
-	<para><filename>PLIST</filename> gets the <filename>foo.so</filename>
+	<para>The <filename>PLIST</filename> file gets the <filename>foo.so</filename>
 	  entry.</para>
       </listitem>
 
@@ -114,9 +138,7 @@
 	  because it expects you to change that argument to be the
 	  <filename>.la</filename> file. e.g.</para>
 
-	<informalexample>
-	  <programlisting>${LIBTOOL} --mode=link ${CC} -o someprog -L../somelib -lsomelib</programlisting>
-	</informalexample>
+	<programlisting>${LIBTOOL} --mode=link ${CC} -o someprog -L../somelib -lsomelib</programlisting>
 
 	<para>should be changed to:</para>
 
@@ -131,35 +153,47 @@
 	  <quote>${LIBTOOL} --mode=install</quote>, and change the library
 	  name to <filename>.la</filename>. e.g.</para>
 
-	<informalexample>
-	  <programlisting>${LIBTOOL} --mode=install ${BSD_INSTALL_DATA} ${SOMELIB:.a=.la} ${PREFIX}/lib</programlisting>
-	</informalexample>
+	<programlisting>${LIBTOOL} --mode=install ${BSD_INSTALL_DATA} ${SOMELIB:.a=.la} ${PREFIX}/lib</programlisting>
 
 	<para>This will install the static <filename>.a</filename>, shared
 	  library, any needed symlinks, and run &man.ldconfig.8;.</para>
       </listitem>
+
+      <listitem>
+        <para> In your <filename>PLIST</filename>, include all of the
+	  <filename>.a</filename>, <filename>.la</filename>, and
+	  <filename>.so</filename>, <filename>.so.CURRENT</filename>
+	  and <filename>.so.CURRENT.REVISION</filename> files 
+	  (this is a change from the previous behaviour). </para>	  
+      </listitem>
+      
     </orderedlist>
   </sect1>
 
   <sect1>
     <title>Using libtool on GNU packages that already support libtool</title>
 
-    <para>Add <varname>USE_LIBTOOL=yes</varname> and
-      <varname>LTCONFIG_OVERRIDE=${WRKSRC}/ltconfig</varname> to the
-      package Makefile as the quick way to bypass the pkg's own
-      <emphasis>libtool</emphasis>. The pkg's own
-      <emphasis>libtool</emphasis> is created by ltconfig script at
-      do-configure target. If <varname>USE_LIBTOOL</varname> and
-      <varname>LTCONFIG_OVERRIDE</varname> are defined, the specified
-      ltconfig is overridden, using <pkg>devel/libtool</pkg> instead of
-      the pkg's own libtool. For newer versions of libtool (without
-      ltconfig) it may be necessary to use
-      <varname>LIBTOOL_OVERRIDE=${WRKSRC}/libtool</varname> instead.</para>
+    <para>Add <varname>USE_LIBTOOL=yes</varname> to the
+      package Makefile. This will override the package's own libtool
+      in most cases.  For older libtool using packages,  libtool is
+      made by ltconfig script during the do-configure step; you can
+      check the libtool script location by doing <command>make
+      configure; find work*/ -name libtool</command>. </para>
+
+    <para> <varname>LIBTOOL_OVERRIDE</varname> specifies which libtool
+      scripts, relative to <varname>WRKSRC</varname>, to override.  By
+      default, it is set to <quote>libtool */libtool
+      */*/libtool</quote>.  If this does not match the location of the
+      package's libtool script(s), set it as appropriate. </para>
+
+    <para> If you do not need <filename>*.a</filename> static
+      libraries built and installed, then use
+      <varname>SHLIBTOOL_OVERRIDE</varname> instead. </para>
 
     <para>If your package makes use of the platform independent library
       for loading dynamic shared objects, that comes with libtool
-      (libltdl), you should include the libtool buildlink2.mk (and
-      set <varname>USE_BUILDLINK2=YES</varname>).</para>
+      (libltdl), you should include the libtool buildlink3.mk (and
+      set <varname>USE_BUILDLINK3=YES</varname>).</para>
 
     <para>Some packages use libtool incorrectly so that the package may not work or
       build in some circumstances. Some of the more common errors are:</para>
@@ -186,7 +220,8 @@
       <listitem>
 	<para>The use of libltdl without the correct calls to initialisation routines.
 	  The function lt_dlinit() should be called and the macro
-	  LTDL_SET_PRELOADED_SYMBOLS included in executables.</para>
+	  <varname>LTDL_SET_PRELOADED_SYMBOLS</varname> included in
+	  executables.</para> 
       </listitem>
     </itemizedlist>
   </sect1>
@@ -203,9 +238,9 @@
       dealing with these tools. See comments in these files for
       details.</para>
 
-    <para>For packages that need only autoconf:</para>
+      <para> For packages that need only autoconf: </para>
 
-    <programlisting>AUTOCONF_REQD=	2.50	# if default version is not good enough
+      <programlisting>AUTOCONF_REQD=	2.50	# if default version is not good enough
 ...
 
 pre-configure:
@@ -214,9 +249,7 @@ pre-configure:
 ...
 .include "../../mk/autoconf.mk"</programlisting>
 
-<para>
-and for packages that need automake and autoconf:
-</para>
+      <para> and for packages that need automake and autoconf: </para> 
 
 <programlisting>AUTOMAKE_REQD=	1.7.1	# if default version is not good enough
 ...
@@ -231,75 +264,145 @@ pre-configure:
 ...
 .include "../mk/automake.mk"</programlisting>
 
-    <para>There are times when the configure process makes additional
-      changes to the generated files, which then causes the build
-      process to try to re-execute the automake sequence.  This is
-      prevented by touching various files in the configure stage. If
-      this causes problems with your package you can set
-      <varname>AUTOMAKE_OVERRIDE=NO</varname> in the package
-      Makefile.</para>
+      <para> Packages which use GNU Automake will almost certainly
+        require GNU Make, but that's automatically provided for you in
+        <filename>mk/automake.mk</filename>. </para> 
+
+      <para> There are times when the configure process makes
+        additional  changes to the generated files, which then causes
+        the build  process to try to re-execute the automake sequence.
+        This is  prevented by touching various files in the configure
+        stage. If  this causes problems with your package you can set
+        <varname>AUTOMAKE_OVERRIDE=NO</varname> in the package
+        Makefile. </para>
   </sect1>
 
   <sect1>
     <title>Package configuration files</title>
-
-    <para>Packages should be taught to look for their configuration
+    
+    <para> Packages should be taught to look for their configuration
       files in <varname>${PKG_SYSCONFDIR}</varname>, which is passed
       through to the configure and build processes.
       <varname>PKG_SYSCONFDIR</varname> may be customized in various
-      ways by setting other make variables:</para>
+      ways by setting other make variables: </para>
 
     <itemizedlist>
       <listitem>
-	<para><varname>PKG_SYSCONFBASE</varname> is the main config directory
-	  under which all package configuration files are to be found.
-	  This defaults to <filename>${PREFIX}/etc</filename>, but may
-	  be overridden in <filename>/etc/mk.conf</filename>.</para>
+        <para> <varname>PKG_SYSCONFBASE</varname> is the main config
+          directory   under which all package configuration files are
+          to be found.  This defaults to
+          <filename>${PREFIX}/etc</filename>, but may  be overridden
+          in <filename>/etc/mk.conf</filename>.</para> 
       </listitem>
 
       <listitem>
-	<para><varname>PKG_SYSCONFSUBDIR</varname> is the subdirectory of
+        <para>  <varname>PKG_SYSCONFSUBDIR</varname> is the subdirectory of
 	  <varname>PKG_SYSCONFBASE</varname> under which the
 	  configuration files for a particular package may be found, e.g.
 	  the Apache configuration files may all be found under the
 	  <filename>httpd/</filename> subdirectory of
 	  <varname>${PKG_SYSCONFBASE}</varname>. This should be set in
-	  the package Makefile.</para>
+	  the package Makefile.
+	  </para>
       </listitem>
 
-      <listitem>
-	<para>By default,
-	  <varname>PKG_SYSCONFDIR=${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}</varname>,
+      <listitem>     
+        <para> By default,
+	  <varname>PKG_SYSCONFDIR</varname> is set to
+          <varname>${PKG_SYSCONFBASE}/${PKG_SYSCONFSUBDIR}</varname>, 
 	  but this may be overridden by setting
 	  <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname> for a
 	  particular package, where <varname>PKG_SYSCONFVAR</varname>
 	  defaults to <varname>${PKGBASE}</varname>. This is not meant to
 	  be set by a package Makefile, but is reserved for users who wish
 	  to override the <varname>PKG_SYSCONFDIR</varname> setting for
-	  a particular package with a special location.</para>
-      </listitem>
-    </itemizedlist>
+	  a particular package with a special location.
+	  </para>
+	</listitem>
+      </itemizedlist>
 
-    <para>The only variables that users should customize are
-      <varname>PKG_SYSCONFBASE</varname> and
-      <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname>.
-      Users will typically want to set
-      <varname>PKG_SYSCONFBASE</varname> to
-      <filename>/etc</filename>, or to accept the default location
-      of <filename>${PREFIX}/etc</filename>.</para>
+      <para> The only variables that users should customize are
+        <varname>PKG_SYSCONFBASE</varname> and  <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname>.
+	Users will typically want to set
+	<varname>PKG_SYSCONFBASE</varname> to
+	<filename>/etc</filename>, or to accept the default location
+	of <filename>${PREFIX}/etc</filename>. </para>
   </sect1>
 
   <sect1>
-    <title>Feedback to the author</title>
+    <title>User Interaction</title>
 
-    <para>If you have found any bugs in the package you make available,
-      if you had to do special steps to make it run under &os; or
+    <para>Occasionally, packages require interaction from the user, and this can be
+      in a number of ways:</para>
+
+    <itemizedlist>
+      <listitem>
+	<para>help in fetching the distfiles</para>
+      </listitem>
+
+      <listitem>
+	<para>help to configure the package before it is built</para>
+      </listitem>
+
+      <listitem>
+	<para>help during the build process</para>
+      </listitem>
+
+      <listitem>
+	<para>help during the installation of a package</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The <varname>INTERACTIVE_STAGE</varname> definition is provided to notify
+      the pkgsrc mechanism of an interactive stage which will be needed, and
+      this should be set in the package's <filename>Makefile</filename>. e.g.</para>
+
+    <programlisting>INTERACTIVE_STAGE= build</programlisting>
+
+    <para>Multiple interactive stages can be specified:</para>
+
+    <programlisting>INTERACTIVE_STAGE= configure install</programlisting>
+  </sect1>
+
+  <sect1>
+    <title>Portability of packages</title>
+
+    <para>One appealing feature of pkgsrc is that it runs on many different
+      platforms. As a result, it is important to ensure, where possible,
+      that packages in pkgsrc are portable. There are some particular
+      details you should pay attention to while working on pkgsrc.</para>
+
+    <sect2>
+      <title>${INSTALL}, ${INSTALL_DATA_DIR}, ...</title>
+
+      <para>The BSD-compatible <command>install</command> supplied with some
+	operating systems will not perform more than one operation at a time.
+	As such, you should call <quote>${INSTALL}</quote>, etc. like this:</para>
+
+	<programlisting>${INSTALL_DATA_DIR} ${PREFIX}/dir1
+${INSTALL_DATA_DIR} ${PREFIX}/dir2</programlisting>
+    </sect2>
+
+<!--
+    <sect2>
+XXX more portability stuff
+XXX USE_PKGLOCALEDIR
+XXX ???
+    </sect2>
+-->
+  </sect1>  
+  
+  <sect1>
+    <title>Feedback to the author</title>
+    
+    <para> If you have found any bugs in the package you make available,
+      if you had to do special steps to make it run under NetBSD or
       if you enhanced the software in various other ways, be sure
       to report these changes back to the original author of the
       program! With that kind of support, the next release of the
       program can incorporate these fixes, and people not using the
-      &os; packages system can win from your efforts.</para>
+      NetBSD packages system can win from your efforts. </para>
 
-    <para>Support the idea of free software!</para>
+    <para> Support the idea of free software! </para>
   </sect1>
 </chapter>
