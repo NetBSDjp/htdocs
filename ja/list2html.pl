@@ -108,7 +108,7 @@ if ($opt{'q'})
 '<HEADING>\s*(.*)',
 '<table><tr><td>
     <a href="$HOME/Misc/disclaimer.html#bsd-daemon"><img
-     align="middle" src="../$HOME/images/BSD-daemon.jpg" origlink="$HOME/images/BSD-daemon.jpg" border="0"
+     align="middle" src="../$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
     <h1>NetBSD ドキュメンテーション:</h1>
@@ -120,7 +120,7 @@ if ($opt{'q'})
 '<DEVHEADING>\s*(.*)',
 '<table><tr><td>
     <a href="$HOME/Misc/disclaimer.html#bsd-daemon"><img
-     align="middle" src="../$HOME/images/BSD-daemon.jpg" origlink="$HOME/images/BSD-daemon.jpg" border="0"
+     align="middle" src="../$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
     <h1>NetBSD 開発者ドキュメンテーション:</h1>
@@ -131,7 +131,7 @@ if ($opt{'q'})
 
 '<HOMELINK>',
 '<table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
 </td>
@@ -141,14 +141,14 @@ if ($opt{'q'})
 '<DEVLINK>',
 '<table width="100%"><tr><td>
 <table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
 </td>
 </tr></table>
 </td><td>
 <table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$DEVELOPERS"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$DEVELOPERS"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$DEVELOPERS">開発者ドキュメンテーション</a></span><br>
 </td>
@@ -160,14 +160,14 @@ if ($opt{'q'})
 '<DOCLINK>',
 '<table width="100%"><tr><td>
 <table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
 </td>
 </tr></table>
 </td><td>
 <table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$DOCS"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$DOCS"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$DOCS">Documentation top level</a></span><br>
 </td>
@@ -179,14 +179,14 @@ if ($opt{'q'})
 '<PORTLINK>',
 '<table width="100%"><tr><td>
 <table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
 </td>
 </tr></table>
 </td><td>
 <table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$PORTS"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$PORTS"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$PORTS">対応機種</a></span><br>
 </td>
@@ -198,14 +198,14 @@ if ($opt{'q'})
 '<GALLINK>',
 '<table width="100%"><tr><td>
 <table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$HOME/">ホームページ</a></span><br>
 </td>
 </tr></table>
 </td><td>
 <table border="0" summary="Footer navigation"><tr>
-<td class="foothome"><span class="foothome"><a href="$GALLERY"><img src="../$HOME/images/NetBSD-flag.png" origlink="$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
+<td class="foothome"><span class="foothome"><a href="$GALLERY"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
 <span class="foothome"><a href="$GALLERY">Gallery Page</a></span><br>
 </td>

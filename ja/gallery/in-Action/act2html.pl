@@ -55,11 +55,11 @@ $verbose=1;
 
 %extras=(
 
-'<TOPACTION','<td bgcolor="#000000"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>
-<td bgcolor="#000000"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>
-<td bgcolor="#000000"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>
-<td bgcolor="#d8d8d8"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>
-<td bgcolor="#d8d8d8"><img src="../../../images/empty.gif" origlink="../../images/empty.gif" width="1" height="1" alt=" "></td>'
+'<TOPACTION','<td bgcolor="#000000"><img src="../../../images/empty.gif" width="1" height="1" alt=" "></td>
+<td bgcolor="#000000"><img src="../../../images/empty.gif" width="1" height="1" alt=" "></td>
+<td bgcolor="#000000"><img src="../../../images/empty.gif" width="1" height="1" alt=" "></td>
+<td bgcolor="#d8d8d8"><img src="../../../images/empty.gif" width="1" height="1" alt=" "></td>
+<td bgcolor="#d8d8d8"><img src="../../../images/empty.gif" width="1" height="1" alt=" "></td>'
 
 );
 
