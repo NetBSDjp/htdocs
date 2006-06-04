@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.96 2004/10/30 22:33:23 jschauma Exp $
+# $NetBSD: list2html.pl,v 1.97 2006/05/31 11:52:09 kano Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: list2html.pl,v 1.96 2004/10/30 22:33:23 jschauma Exp   -->
+# <!-- NetBSD: list2html.pl,v 1.97 2006/05/31 11:52:09 kano Exp   -->
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -72,7 +72,7 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.96 $';
+$version = '$Revision: 1.97 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:qhV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -578,6 +578,7 @@ sub makelist
 
     close(FILE);
     $list .= "</ul>\n";
+    $list =~ s#<ul>\n</ul>\n##g;
     if (!$endlist)
 	{ &warn("Unable to locate </LIST> tag, check header to see if this is desired\n"); }
     if ($data !~ s/<LIST>/$list/)
