@@ -1,111 +1,108 @@
 # $NetBSD: ARIES2_HOWTO.txt,v 1.3 2006/06/09 14:40:44 kano Exp $
+# <!-- Based on english version: -->
+# <!-- NetBSD: ARIES2_HOWTO.txt,v 1.3 2006/06/09 14:40:44 kano Exp   -->
 
-This document describes setting up NetBSD on a Senao 5354AP1 Aries2 access
-point, which is based on the Atheros AP30 development board containing
-an AR5312 chip.
+この文書では、AR5312 チップを搭載した Atheros AP30 開発ボードにもとづく
+Senao 5354AP1 Aries2 アクセスポイント上の NetBSD のセットアップについて
+説明します。
 
-Hardware configuration:
------------------------
+ハードウェア構成
+----------------
 
-	AR5312 processor (MIPS4Kc core) running at 220MHz
+	220MHz で動作する AR5312 プロセッサー (MIPS4Kc コア)
 	8MB RAM
-	2MB SST 39VF160 flash
-	onboard 10/100 ethernet
-	onboard 802.11a wlan device
-	onboard 802.11b/g wlan device
-	external RS232 port (DB9)
+	2MB SST 39VF160 フラッシュメモリー
+	オンボード 10/100 イーサネット
+	オンボード 802.11a wlan デバイス
+	オンボード 802.11b/g wlan デバイス
+	外部 RS232 ポート (DB9)
 	
-	Caveat:
-	------- 
-	As shipped from Senao, these boxes have a stock vxworks bootloader in
-	flash.  I have not figured out how to safely update the flash without
-	turning the box into a paperweight, so we will not be using the flash
-	device, although a basic driver for it is provided.
+	警告:
+	-----
+	Senao からの出荷時には、フラッシュメモリーに vxworks ブートローダーが
+	書き込まれています。このマシンをただの文鎮にしてしまうことなく
+	安全にフラッシュメモリーを更新する方法が見つけられなかったため、
+	フラッシュメモリー用の基本的なドライバーが提供されてはいますが、
+	このデバイスは使わないことにします。
 
 
-Requirements
-------------
+必要なこと
+----------
 
-You will need a machine with a serial port and a matching that you can
-use to connect to the DB9 port on the Senao box.  You may also need a
-null modem, depending on the configuration of the serial port on the
-host you use.
+Senao マシンの  DB9 ポートに接続できるシリアルポート付きのマシンが必要です。
+使用するホストの構成によっては、ヌルモデムも必要な場合があります。
 
-You will also need a system that can serve files via NFS to host a
-root filesystem for this box.  (See the Caveats about flash above.  A
-memory disk system can be used, but very very little useful software
-can fit in the 8MB of RAM we have available, and even less in the 2MB
-flash.)
+また、Senao マシンのルートファイルシステムを NFS 経由で提供するシステムも必要です。
+(上述したフラッシュに関する警告をご覧ください。メモリーディスクを使うこともできますが、
+使用可能な 8MB の RAM に収まるのは、ほとんど使い物にならないソフトウェアだけですし、
+2MB のフラッシュではなおさらです。)
 
-You will also need a way to serve the kernel to the box over the
-network.  The Senao unit can load kernels via either TFTP or FTP.
-TFTP is usually preferable, since it involves no username/password,
-and is simple enough that configuring it will probably not introduce
-any security holes in your host system.
-
-You will need a DHCP server that you can configure to supply necessary
-boot information for the unit.  In particular, the root filesystem and
-initial IP configuration are gathered via DHCP.
-
-You will also need either a system that can build NetBSD software, or
-you will need to obtain prebuilt software from some other source.
-(Most of the software is available on ftp.NetBSD.org, for example.)
+さらに、カーネルをネットワーク経由で提供する方法も必要です。
+この Senao マシンは、TFTP か FTP のいずれかを使ってカーネルをロードすることができます。
+おそらく TFTP のほうがよいでしょう。TFTP は、ユーザー名やパスワードを使いませんし、
+ホストシステムの設定も、おそらくセキュリティーホールを開けることなくできる程度には簡単だからです。
 
 
-Kernel Compilation
-------------------
+必要なブート情報を供給するために DHCP サーバーが必要です。
+特に、ルートファイルシステムおよび初期 IP 設定は DHCP で収集されます。
 
-The AP30 kernel is part of the evbmips port of NetBSD.  Unlike other
-evbmips machines, the AP30 (as with all Atheros WiSoCs) can only run
-in big-endian mode. So we will use the evbmips-eb port.  (On
-ftp.NetBSD.org directory names are evbmips-mipseb.)
+また、NetBSD ソフトウェアを構築することができるシステムも必要です。
+または、どこからか、構築済みのソフトウェアを入手する必要があります。
+(ほとんどのソフトウェアは、たとえば ftp.NetBSD.org で入手できます。)
 
-To build a kernel, on a NetBSD system you can use the following
-command in a source tree that has been updated to contain the relevant
-sources (updated in -current as of June 7, 2006):
+
+カーネルのコンパイル
+--------------------
+AP30 カーネルは NetBSD の evbmips ポートの一部となっています。
+他の evbmips マシンとは異なり、AP30 は (すべての Atheros WiSoC と同じく)
+ビッグエンディアンモードでしか動きません。
+このため、ここでは evbmips-eb ポートを使うことにします。
+(ftp.NetBSD.org のディレクトリー名は evbmips-mipseb です。)
+
+カーネルを構築するには、NetBSD システム上で、
+更新済みの必要なソース (2006 年 6 月 7 日以降の -current)
+が含まれているソースツリーにおいて、以下のコマンドを実行すればできます。
 
 	./build.sh -m evbmips-eb kernel=AP30
 
-This will generate a kernel image for the AP30 in with the file name
+これにより、AP30 用のカーネルイメージが以下のファイル名で作成されます。
 
 	src/sys/arch/evbmips/compile/obj/AP30/netbsd
 
-That file should be placed somewhere where it can be located via tftp or
-FTP.  For the purposes of demonstration, we will assume you copied that file
-to /tftpboot/ap30 on your TFTP server.
+このファイルを、tftp または FTP で取得できる場所に置いてください。
+実演のため、TFTP サーバーの /tftpboot/ap30 にこのファイルをコピーするものとします。
 
 
-Root Filesystem
----------------
+ルートファイルシステム
+----------------------
 
-The root filesystem for our system can be prepared by downloading the
-"sets" from the ftp.NetBSD.org server.  Make sure you use the
-evbmips-mipseb sets, as the little endian sets WILL NOT WORK.  Only
-base.tgz and etc.tgz are absolutely necessary, but you might want to
-pick up the others while you are there.
+このシステム用のルートファイルシステムは、ftp.NetBSD.org サーバーから
+"sets" をダウンロードすれば用意できます。リトルエンディアンの sets は
+*動きません*ので、かならず evbmips-mipseb を使ってください。
+どうしても必要なのは base.tgz と etc.tgz だけですが、
+これ以外のものもあってもよいでしょう。
 
-Normally it is sufficient to extract these into a directory that is
-being exported via NFS.  The directory should be exported to no more
-than one Access Point (/etc in particular doesn't share well), and you
-probably want to allow read/write root access.  (There are ways using
-memory disks to work around this to have read-only filesystems, but
-these techniques are beyond the scope of this document.)
+ふつうは、これらは NFS でエクスポートされるディレクトリーの中に展開すれば十分です。
+このディレクトリーは、ひとつのアクセスポイントだけに対してエクスポートするようにします
+(特に、/etc は共有できません)。また、おそらく root の読み書きを許可するのがよいでしょう。
+(ファイルシステムが読み込み専用の場合の次善策として、
+メモリーディスクを使うという方法もありますが、
+これについてはこの文書では対象としません。)
 
-You may wish to perform additional configuration in the root
-filesystem, such as editing /etc/rc.conf.
+ルートファイルシステムに対しては、/etc/rc.conf を書き換えるなど、
+さらなる設定をおこなってもよいでしょう。
 
-I also *highly* recommend creating a swap file and exporting that over
-NFS.  As painfully slow as swapping over NFS is, its even more painful
-running out of RAM, which is really, really likely on this platform
-with only 8MB RAM.
+また、スワップファイルを作って NFS でエクスポートすることを、*強く* おすすめします。
+NFS 越しのスワップはとてつもなく遅いものですが、
+RAM が不足する場合はもっと大変ですし、
+RAM が 8MB しかないこのプラットフォームの場合は実際にそうなるでしょう。
 
 
-DHCP Configuration
-------------------
+DHCP の設定
+-----------
 
-You will need to configure DHCP to provide basic configuration
-parameters for your unit.  Here is an example configuration entry that
-I use with ISC DHCP:
+DHCP を設定して、基本的な設定値をホストに対して提供する必要があります。
+ISC DHCP を使う場合の設定例を以下に示します。
 
 	host ap30 {
 	  hardware ethernet 00:02:6f:34:ea:30;
@@ -117,33 +114,33 @@ I use with ISC DHCP:
 	  ddns-updates off;
 	}
 
-My server (192.168.251.21) exports via NFS the root directory for my AP30 in
-/export/ap30/root.
+サーバー (192.168.251.21) は、/export/ap30/root にある AP30 用のルートディレクトリーを
+NFS 経由でエクスポートします。
 
-Note that I have my unit with a fixed IP address because it makes it
-easier to configure NFS permissions.  It also make the vxworks
-configuration a bit simpler.
-
-
-Cabling
--------
-
-Connect the serial port of the AP30 to your terminal server or host
-running a terminal application.  The default configuration is 115200
-baud, 8 data bits, no parity, 1 stop bit.  (115200,8n1)
-
-Connect the AP30's ethernet port to the network of the server.
-
-You'll need power, too, of course.
+なお、ここでは AP30 の IP アドレスを固定しています。
+そうしたほうが NFS のアクセス許可の設定が簡単だからです。
+また、このほうが vxworks の設定も若干ですが簡単になります。
 
 
-Firmware Configuration
-----------------------
+配線
+----
 
-Having taken care of all of the above, you're ready to configure the
-device.  Go ahead and power the unit on, while you have the serial
-port connected.  In your terminal window, press ESC.  You should see
-something like this:
+AP30 のシリアルポートに、端末サーバーまたは端末エミュレーターを動かしているホストを接続します。
+デフォルトの設定値は、115200 ボー、8 データビット、パリティーなし、1 ストップビット
+(115200,8n1) です。
+
+AP30 のイーサネットポートを、サーバーのあるネットワークに接続します。
+
+もちろん、電源も必要です。
+
+
+ファームウェアの設定
+--------------------
+
+上述のことがすべてできていれば、デバイスの設定をすることができます。
+シリアルポートを接続した状態で、電源を入れます。
+そして、端末ウィンドウで、ESC キーを押します。
+すると、以下のように表示されるはずです。
 
 
 	ar531x rev 0x00005742 firmware startup...
@@ -153,21 +150,21 @@ something like this:
 	Atheros AR5001AP default version 1.4
 
 
-and then a countdown from about 4 seconds.  If you press ESC while
-counting down, you will get a [Boot:] prompt.  (Which may be cut of
-slightly, e.g. "oot:]" or something similar.)
+また、4 秒ほどのカウントダウンが表示されます。カウントダウンの最中に
+ESC を押すと、[Boot:] プロンプトが表示されます。
+("oot:]" のように、途切れて表示されることもあります。)
 
-Press "?" to get help from the bootloader.
+"?" を押すと、ブートローダーのヘルプが表示されます。
 
-Press "p" to print the current configuration.  I recommend making a
-print out of this and saving, it case you ever want to restore the
-original configuration.  We're not touching the flash, so in theory
-you could switch back and forth between NetBSD and the original
-firmware that the unit came with.
+"p" を押すと、現在の設定が表示されます。
+設定を元に戻す必要がある場合に備えて、
+初期設定を表示して保存しておくようおすすめします。
+フラッシュメモリーには手を加えませんので、
+理屈の上では、NetBSD と、標準添付されている元のファームウェアとを切替えることができます。
 
-After doing that, press "c" to change the parameters. 
+設定を保存したら、"c" を押して設定値を変更します。
 
-Here's a sample of how I have my unit configured
+設定例を以下に示します。
 
 boot device          : ae
 unit number          : 0 
@@ -177,47 +174,49 @@ inet on ethernet (e) : 192.168.251.17:0xffffff00
 host inet (h)        : 192.168.251.21
 flags (f)            : 0x84 
 
-This disables automatic booting, and will tftp a kernel file named
-"ap30" from my server at 192.168.251.21, and it will use
-192.168.251.17/24 as my local IP address.
+この例では、自動ブートはしないようになり、
+カーネルファイル "ap30" を 192.168.251.21 のサーバーから tftp で取得し、
+ローカル IP アドレスとして 192.168.251.17/24 を使うようになります。
 
-The flags bit is interesting, because with that you can configure the
-unit to boot using tftp or ftp, select whether the unit autoboots or
-not, and even configure proxy arp or bootp.  (I've not tested the last
-two.)  Here are the flags from the help:
+flags ビットは興味深いものです。
+これを使って、ブート時に tftp や ftp を使うよう設定したり、
+自動ブートの可否を切替えたり、
+proxy arp や bootp の設定をすることまでできるからです。
+(最後の二つは確認していません。) 以下はヘルプによる flags です。
 
  Boot flags:           
-   0x02  - load local system symbols 
-   0x04  - don't autoboot 
-   0x08  - quick autoboot (no countdown) 
-   0x20  - disable login security 
-   0x40  - use bootp to get boot parameters 
-   0x80  - use tftp to get boot image 
-   0x100 - use proxy arp 
+   0x02  - load local system symbols (ローカルシステムシンボルをロードする)
+   0x04  - don't autoboot (自動ブートしない)
+   0x08  - quick autoboot (no countdown) (カウントダウンせずに、すぐ自動ブートする)
+   0x20  - disable login security (ログインセキュリティーを無効化する)
+   0x40  - use bootp to get boot parameters  (bootp を使ってブートパラメーターを取得する)
+   0x80  - use tftp to get boot image (tftp を使ってブートイメージを取得する)
+   0x100 - use proxy arp (proxy arp を使う)
 
-0x20 has no effect for NetBSD, but it allows you to login to the stock
-firmware (if you left the other boot configuration alone) without a
-password.
+0x20 は NetBSD に対しては影響のないものですが、これにより、
+(異なるブート設定をしていた場合も)
+パスワードなしで保持されているファームウェアにログインすることができます。
 
-I've not tried 0x08, and I don't recommend you do so either.  Its
-quite likely that using that option will make it impossible to get
-back to the firmware later.
+0x08 は試したことがありませんし、試さないことをおすすめします。
+どうやらこれを使うと、
+ファームウェアを元に戻すことができなくなるようです。
 
-You can use either TFTP or FTP, but I've had more luck with TFTP.  FTP
-seems to occasionally have problems -- I suspect that the FTP code in
-the client isn't quite as robust as the TFTP code.
+TFTP と FTP のいずれも使うことができますが、TFTP を使ったほうがうまくいきました。
+FTP は時々問題があるようです -- クライアントの FTP のコードは、
+TFTP のコードほど堅固ではないのではないかと思っています。
 
 
-Booting
--------
+ブート
+------
 
-Once you're done changing configuration, simply use the "@" command to
-boot using the selected configuration.
+設定の変更が済んだら、単に "@" コマンドを使い、
+変更した設定を使ってブートします。
 
-There is no way to send boot options to the kernel at the moment.
-I.e. you cannot send "-v" or "-a" to the kernel.  This is a limitation
-of the firmware, and to change it I would have to introduce an
-intermediate bootloader stage.  For the moment, I have no plans to do
-this, as doing so would probably be of very limited use, and
-ultimately it would reduce the available memory, which on this
-platform is a particularly limited resource.
+現在、カーネルにブートオプションを渡す仕組みはありません。
+つまり、カーネルに "-v" や "-a" を渡すことはできません。
+これはファームウェアの制約によるものであり、これを変えるためには、
+中間段階のブートローダーを導入する必要があるでしょう。
+今のところ、私はそういうことをする予定はありません。
+そのようにしても用途が非常に限られたものになるうえ、
+特にこのプラットフォームでは資源が限られているのに、
+利用可能なメモリーを減らしてしまうからです。
