@@ -3,7 +3,7 @@
 # <!-- NetBSD: Makefile,v 1.41 2005/10/14 09:00:01 rillig Exp   -->
 
 SUBDIR+=	cvs-repos
-# SUBDIR+=	features
+SUBDIR+=	features
 # SUBDIR+=	pkgsrc
 # SUBDIR+=	releng
 
