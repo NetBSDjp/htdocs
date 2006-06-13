@@ -1,6 +1,8 @@
 #! /usr/bin/awk -f
 #
 #	$NetBSD: gentab.awk,v 1.25 2004/03/02 15:21:56 wiz Exp $
+#	<!-- Based on english version: -->
+#	<!-- NetBSD: gentab.awk,v 1.25 2004/03/02 15:21:56 wiz Exp   -->
 #
 # Copyright (c) 1998 Tyler C. Sarna
 # All rights reserved.
@@ -232,7 +234,7 @@ END {
 	printf("</tfoot>\n");
 
 	printf("</table>\n")
-	printf("\n<h3>Description of features</h3>\n")
+	printf("\n<h3>各機能の説明</h3>\n")
 	
 	printf("<dl>\n")
 	for (i = 0; i < nfeature; i++) {
@@ -251,7 +253,7 @@ END {
 	printf("</dl>\n")
 
 
-	printf("\n<hr>\n<h3>Features supported by all ports</h3>\n")
+	printf("\n<hr>\n<h3>全ポートが対応している機能</h3>\n")
 
 	printf("<dl>\n")
 
