@@ -22,7 +22,7 @@ SUBDIR+=	features
 # XMLDOCS+=	style
 # XMLDOCS+=	www
 
-# LISTDOCS=	PR.list
+LISTDOCS=	PR.list
 # LISTDOCS+=	translate-german.list translate-french.list
 # LISTDOCS+=	translate-spanish.list notes.list
 
