@@ -1,0 +1,362 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1994-2003
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:hubertf@NetBSD.org">
+<title>Resolving Problem Reports</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<DEVHEADING>Resolving Problem Reports
+
+The NetBSD Project uses the GNATS "Problem Report" database to
+accept and track bug/problem reports from all users of NetBSD. When
+used properly, this facility allows us to make sure that no problem
+with the NetBSD software goes unfixed.
+<p>
+The GNATS database uses Internet E-mail as its principal
+submission mechanism, and keeps the problem reports (commonly
+abbreviated "PR") in Internet E-mail format, with an extended header
+format in the body of the message. The database uses one file per
+PR, and each category is a directory, in a manner similar to the
+MH mail system, and NetNews.
+
+<LIST>
+
+<SECTION>Accessing the Problem Report Database
+
+<ENTRY>webinterface Web Interface
+There is a web-based interface to the GNATS database that has both
+a <a href="../Gnats/">tree of database summary pages</a>, and a <a
+href="../Misc/query-pr.html">search</a> facility. The web interface
+has some limitations:
+<p>
+<ul>
+<li>The web interface is several hours behind the actual database
+because it operates on a copy of the database for security.
+<p>
+<li>The web interface <strong>does not</strong> provide access
+to any PR marked "confidential."
+<p>
+<li>PRs displayed by a web browser have been through sufficient
+transformation that "cut &amp; paste" is not likely to do what you
+expect (i.e. patches will not apply properly because of white space
+substitution, uuencoded text will not decode properly).
+</ul>
+
+<ENTRY>netbsd-bugs The netbsd-bugs Mailing List
+All PRs, confidential or not, are sent to the 
+<A HREF="/MailingLists/#netbsd-bugs">netbsd-bugs</A> mailing list,
+so that subscribers can see each PR as it is added to the database.
+
+<ENTRY>gnatscommands The GNATS commands on gnats.NetBSD.org
+The GNATS database lives on the host <b>gnats.NetBSD.org</b>.
+All developers are given an account on that host so that they can
+directly manipulate PRs, and access confidential PRs. The commands 
+<b>edit-pr</b> and <b>query-pr</b> live in <b>/usr/pkg/bin</b>;
+Make sure you have that directory in your <b>$PATH</b>.
+<p>
+There are no UNIX Manual pages for these commands.
+As with most GNU software, there are "info" pages available through
+the <b>info</b> command. Also, invoking <b>query-pr</b> without
+any arguments will cause it to give its usage message.
+<p>
+The <b>query-pr</b> command is a proper database query interface; it
+has a large number of options to search the database. Once you know the
+PR number of the PR you wish to manipulate, you can:
+<p>
+<ul>
+<li><b>query-pr --full</b> <i>number</i>
+<p>
+This will dump out the full PR without any transformation to
+standard output.
+<p>
+<li><p><b>edit-pr</b> <i>number</i>
+<p>This command will start up a text editor (<b>vi</b> by default;
+but this can be overridden by the <b>$EDITOR</b> or <b>$VISUAL</b>
+environment variables), so that changes can be made to the PR.
+</ul>
+<p>
+
+<b>The Common Reasons to "edit-pr"</b>
+<p>
+The most common changes made to a PR are:
+<p>
+<ol>
+<li>Change the PR's <b>&gt;State:</b> field to one of the values
+listed in <A HREF="../Misc/pr-states.html">state</A> as it progresses
+through the process of resolving it.
+<p>
+The person listed in the <b>&gt;Responsible:</b> field of the
+PR should be making these state changes, as it is necessary.
+<p>
+
+<li>Change the PR's <b>&gt;Responsible:</b> field to the account name
+of a developer who will handle the PR.
+This person becomes the PR Submitter's primary contact for
+getting the problem resolved.
+<p>
+This field can have any username from /etc/passwd on <b>gnats.NetBSD.org</b>
+and anyone listed in the
+<b>/usr/pkg/share/gnats/gnats-db/gnats-adm/responsible</b>
+file.
+<p>
+All PRs get a default Responsible Person when they are initially
+filed, appropriate to the category in which the PR was filed (e.g.
+"security-officer" for PRs in the "security" category). The
+<b>/usr/pkg/share/gnats/gnats-db/gnats-adm/categories</b> file
+lists the default Responsible Person for each category.
+<p>
+There is also a table of <a href="../Gnats/#table-responsible">developers
+responsible for current PRs</a>.
+<p>
+
+<li>Change the PR's <b>&gt;Category:</b> field.
+<p>
+It is not unusual for a PR Submitter to have made a poor category
+choice. There is a list of <a href="../Gnats/#category-descriptions">PR
+categories and their definitions</a> and a table of <a
+href="../Gnats/#table-category">current PRs by category</a>.
+<p>
+The <b>/usr/pkg/share/gnats/gnats-db/gnats-adm/categories</b> file
+lists the valid categories and the default Responsible Person.
+It is usually necessary to change the <b>&gt;Responsible:</b> field at
+the same time to a more appropriate person. Most often, the correct
+Responsible Person is the default Responsible Person for the new
+category.
+<p>
+
+<li>Change other <a href="../Misc/pr-fields.html">PR Fields</a> according
+to the analysis of the responsible developer.
+</ol>
+<p>
+
+Edit each field you think needs modifying, then save the file and
+exit the editor. The <b>edit-pr</b> will then prompt for a short
+explanation to be typed for each key field change (mostly
+<b>&gt;State:</b> and <b>&gt;Responsible:</b>). This text is entered
+one line at time, ending with ^D.
+<p>
+This text is then sent via e-mail to the PR Submitter, the
+Responsible developer, and gnats-admin@NetBSD.org.  It is also
+appended to the PR by <b>edit-pr</b> along with the user ID of the
+developer making the change, a timestamp, and the entered text.
+<p>
+Unfortunately, no external editor can be invoked at this
+point; if you make a mistake, you'll have to use <b>edit-pr</b> to
+correct it.
+
+<SECTION>Resolving Problem Reports
+
+<ENTRY>ideal The Ideal Process
+In an ideal world, the process for a problem report is as follows:
+<p>
+<ol>
+<li>A NetBSD user has a problem with NetBSD. He invokes the
+<b>send-pr</b> command on his system (assuming it's still stable
+enough to do that), and files a Problem Report. Hopefully, he
+follows all the advice found in <a
+href="../Misc/pr-hints.html">"What goes into a
+Problem Report."</a>
+<p>
+If the user's own system is not stable enough to use <b>send-pr</b>,
+there is a <a href="../Misc/send-pr.html">web interface</a> that can
+be used to submit problem reports.
+<p>
+
+<li>When the PR arrives at <b>gnats.NetBSD.org</b>, the GNATS
+database system examines it, and files it. If the PR is malformed,
+it will be filed in the <b>pending</b> category, marked confidential,
+awaiting manual intervention by the GNATS database administrator.
+<p>
+If the format is OK, the PR is assigned a PR number, filed into
+the requested category, and E-mailed out again to the default
+responsible party for the category, and to the <a
+href="../MailingLists/#netbsd-bugs">netbsd-bugs</a> mailing list.
+A notice of the PR number and default Responsible Person is also
+E-mailed back to the PR Submitter.
+<p>
+
+<li>The Responsible Person should read and analyze the PR. Any
+other person who has insight into the problem should also <a
+href="../Misc/send-pr.html#appending">add whatever information they
+can to the problem report</a> (this is why the report is mailed
+out to a mailing list; a wide audience increases the probability
+that a key insight needed to solve the problem will be discovered).
+<p>
+If the default Responsible Person determines that another
+developer is a more appropriate Responsible Person, the PR should
+be reassigned with <b>edit-pr</b>. The new Responsible Person
+should read and analyze the PR.
+<p>
+
+<li>Once a cause and potential fix has been identified, a
+description should be added to the PR, and the <a
+href="../Misc/pr-states.html">state</a> should be changed to
+<b>analyzed</b>. At this point, implementation of the fix for the
+problem begins.
+<p>
+This part of the process should begin as quickly as possible,
+since a user with a current problem is suffering, but also has his
+attention engaged, and his hardware available for testing potential
+fixes. If a PR is allowed to languish, the opportunity to reproduce
+the problem and test potential fixes may be lost.
+<p>
+
+<li>Once the implementation of the fix is completed and communicated
+to the PR submitter, the PR <a href="/Misc/pr-states.html">state</a>
+should be changed to <b>feedback</b>, awaiting response from the PR
+submitter that the fix really works.
+<p>
+A PR should also be put into <b>feedback</b> state when input
+is required from the submitter to complete the analysis of the PR
+(i.e. when you ask them a question), or when you need information
+from some other source (essentially, <b>feedback</b> is a wait
+state).
+<p>
+
+<li>Once the PR submitter confirms that the fix works, the PR
+can be <b>closed</b>.
+</ol>
+<p>
+
+At each step of the PR handling process, make sure that feedback
+and other analysis and commentary is <a
+href="../Misc/send-pr.html#appending">appended to the PR</a> by using
+a proper E-mail subject line and making sure that the messages are
+copied to gnats-bugs@NetBSD.org. Having a complete record of
+information about the PR is valuable both while hunting down the
+bug and for future system maintenance.
+<p>
+If at all possible, it is important to get any fix committed to
+the CVS trunk <a href="releng/pullups.html">pulled
+up</a> by <a href="releng/">NetBSD Release Engineering</a>
+to the "-release" branch, so that people who are tracking that
+branch can get the fix right away rather than waiting for the next
+major release of NetBSD. This also makes it possible for the next
+point release of NetBSD to have the fix.
+<p>
+The NetBSD Community is a whole lot of very smart, and very
+experienced people. If you're having trouble analyzing a problem
+report, ask questions in the appropriate <a href="../MailingLists/">mailing
+list</a>; more than likely, someone will be able to help.
+
+<ENTRY>otherways Other Ways Things Get Done
+The Ideal Process was described above. That's not the only way
+that problem reports get handled. All of the principal people
+involved in NetBSD are pretty busy, and can't devote full attention
+to this project. As such, if you see a PR that you can solve that
+hasn't been attended to yet, go claim it by setting yourself as
+the Responsible Person with <b>edit-pr</b>, and solve it.
+<p>
+Even if you don't feel qualified to hack the code yourself, if
+you can offer a test case or other information, send it along to
+GNATS to be <a href="../Misc/send-pr.html#appending">appended to the
+PR</a>. "Many hands make light work."
+<p>
+Some problem reports are so trivial that the fix is obvious (or
+perhaps the fix was provided by the submitter), that they go directly
+from <b>open</b> to <b>closed</b> immediately after the fix is
+committed.
+<p>
+If for some reason you find that you're unable to finish handling
+the PR, reset the <b>&gt;Responsible:</b> field to whoever had
+responsibility before you took the PR over.  Don't prevent others
+from making progress on the PR because they think you're taking
+care of it.
+<p>
+As long as you're marked as the Responsible Person for a PR,
+you'll receive a monthly E-mail reminder about it. Use those
+reminders to drive you to review PRs and put them into their correct
+states as time passes.
+<p>
+When a PR is in <b>feedback</b> state, the PR submitter gets an
+E-mail monthly reminder at the same time as the Responsible Persons
+do, to prompt or prod them into responding. Generally, if there
+has been no response for more than three months (three reminder
+cycles), it's pretty safe to assume that the submitter is gone or
+no longer cares.  At that point, whether to close the PR becomes
+a judgement call for the Responsible Person - how serious is it?
+Should it be solved without further input from the Submitter?
+<p>
+The other way we use the GNATS PR database is to keep track of
+problems which are waiting for larger issues to be solved. The
+oldest PR in the database at this writing, <a
+href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=13">lib/13</a>
+(yes, of course it would be 13!) begs the entire internationalization
+of the NetBSD system. I18N is a hard problem that requires a
+wholesale overhaul of the system, which is why that PR is still
+open after seven years. This doesn't mean we'll never solve it; just that
+it isn't as critical as some other problems reported in the database.
+<p>
+In effect, this usage of the GNATS PR database is as a long-term
+project tracking system.
+
+<SECTION>Priorities, Severities, and Releases
+
+<ENTRY>priorities Priorities, Severities, and Releases
+In an ideal world, the GNATS PR database would be empty, we'd
+release perfect software, and Microsoft would be a shadow of its
+current self.
+<p>
+The <b>&gt;Priority:</b> field in the PR reflects this ideal,
+in that <b>high</b> priority is supposed to be fixed immediately;
+<b>medium</b> is supposed to be resolved before the next release
+of NetBSD (major or minor?), and <b>low</b> priority gets solved
+"eventually."
+<p>
+In practice, PR resolution is dependent on the right mix of
+submitter interest, developer interest, problem reproduceability,
+hardware availability, and good timing. If any of the required
+elements is missing from the mix, the PR will sit.
+<p>
+If we were really diligent about PRs, we would adjust the priority
+of each PR to reflect its actual importance, and probability of
+getting fixed according to the definitions. Unfortunately, that
+requires an overall evaluation of Release Engineering goals and
+targets and all PRs relative to each other, which is difficult for
+a dispersed group to do in an organized fashion.
+<p>
+In contrast, the <b>&gt;Severity:</b> field is really an expression
+of the amount of pain the user is going through with the problem
+being reported, and it's something we really shouldn't adjust
+without careful consideration.
+<p>
+The proper procedure would be to review all PRs in the database
+at each release point, to decide on a per-PR basis whether to "fix
+now", "fix later", "suspend" and adjust priorities. Perhaps one
+day we'll have the resources and manpower for that.
+
+
+<SECTION>Remote GNATS Operations
+
+<ENTRY>remotegnats Remote GNATS Operations
+For people who find logging into a remote host tedious, the
+following csh aliases might be useful:
+<p>
+<PRE>
+alias query-pr  'ssh gnats.NetBSD.org query-pr --full \!* | tee pr-\!*'
+alias edit-pr   ssh -t gnats.NetBSD.org edit-pr
+</PRE>
+
+</LIST>
+
+<DEVLINK>
+
+<hr>
+<address>
+  <small>
+  hubertf@NetBSD.org<br>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: PR.list,v 1.10 2006/07/03 14:56:26 kano Exp $<br>
+  <a href="../Misc/disclaimer.html">Copyright &copy; 1994-2005
+  The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a><br>
+  <a href="../Misc/disclaimer.html">NetBSD<sup>&#174;</sup> is a
+  registered trademark of The NetBSD Foundation, Inc.</a><br>
+  </small>
+</address>
+
+</body>
+</html>
