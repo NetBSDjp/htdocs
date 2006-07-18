@@ -1,6 +1,6 @@
-<!-- $NetBSD: debug.xml,v 1.1 2004/06/06 13:31:53 grant Exp $ -->
+<!-- $NetBSD: debug.xml,v 1.2 2004/09/29 13:08:36 hubertf Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: debug.xml,v 1.1 2004/06/06 13:31:53 grant Exp   -->
+<!-- NetBSD: debug.xml,v 1.2 2004/09/29 13:08:36 hubertf Exp   -->
 
 <chapter id="debug">
   <title>デバッグ</title>
@@ -16,9 +16,13 @@
     </listitem>
 
     <listitem>
-      <para><pkg>pkgtools/url2pkg</pkg> をインストールして、以下を実行します</para>
+      <para><pkg>pkgtools/url2pkg</pkg>をインストールし、
+        デバッグ対象のパッケージ用にディレクトリーを作ってそこに移動してから、
+        <command>url2pkg</command> を実行します。</para>  
 
-      <screen>&rprompt; <userinput>url2pkg http://www.example.com/path/to/distfile.tar.gz</userinput></screen>
+      <screen>&cprompt; <userinput>mkdir /usr/pkgsrc/<replaceable>category</replaceable>/<replaceable>examplepkg</replaceable></userinput>
+&cprompt; <userinput>cd /usr/pkgsrc/<replaceable>category</replaceable>/<replaceable>examplepkg</replaceable></userinput>
+&cprompt; <userinput>url2pkg http://www.example.com/path/to/distfile.tar.gz</userinput></screen>
     </listitem>
 
     <listitem>
@@ -35,23 +39,27 @@
     </listitem>
 
     <listitem>
-      <para>configureの段階でわかった依存関係をすべて、
+      <para>ドキュメンテーション、
+	およびconfigureの段階でわかった依存関係をすべて、
 	パッケージの<filename>Makefile</filename>に書き加えます。</para>
     </listitem>
 
     <listitem>
       <para>以下を繰り返しおこなって、パッケージを作り上げます</para>
 
-      <screen>&rprompt; <userinput>make</userinput>
-&rprompt; <userinput>pkgvi ${WRKSRC}/some/file/that/does/not/compile</userinput>
-&rprompt; <userinput>mkpatches</userinput>
-&rprompt; <userinput>patchdiff</userinput>
-&rprompt; <userinput>mv ${WRKDIR}/.newpatches/* patches</userinput>
-&rprompt; <userinput>make mps</userinput>
-&rprompt; <userinput>make clean</userinput></screen>
+      <screen>&cprompt; <userinput>make</userinput>
+&cprompt; <userinput>pkgvi ${WRKSRC}/some/file/that/does/not/compile</userinput>
+&cprompt; <userinput>mkpatches</userinput>
+&cprompt; <userinput>patchdiff</userinput>
+&cprompt; <userinput>mv ${WRKDIR}/.newpatches/* patches</userinput>
+&cprompt; <userinput>make mps</userinput>
+&cprompt; <userinput>make clean</userinput></screen>
 
       <para>root以外のユーザーで作業をおこなうと、改変すべきでないファイルは改変され
-	ません。特に、構築の段階以外では。</para>
+	ません。特に、構築の段階以外では。
+	<command>mkpatches</command>, 
+	<command>patchdiff</command> および <command>pkgvi</command>
+	は、<pkg>pkgtools/pkgdiff</pkg> パッケージに入っています。 </para>  
     </listitem>
 
     <listitem>
@@ -63,7 +71,7 @@
       <para><filename>PLIST</filename>を作成します:</para>
 
       <screen>&rprompt; <userinput>make install</userinput>
-&rprompt; <userinput>make print-PLIST &gt; PLIST</userinput>
+&rprompt; <userinput>make print-PLIST &gt;PLIST</userinput>
 &rprompt; <userinput>make deinstall</userinput>
 &rprompt; <userinput>make install</userinput>
 &rprompt; <userinput>make deinstall</userinput></screen>
@@ -81,7 +89,8 @@
       <para>これで<filename>PLIST</filename>の修正ができました。
 	パッケージを再度インストールして、バイナリーパッケージを作ります:</para>
 
-      <screen>&rprompt; <userinput>make reinstall &amp;&amp; make package</userinput></screen>
+      <screen>&rprompt; <userinput>make reinstall</userinput>
+&rprompt; <userinput>make package</userinput></screen>
     </listitem>
 
     <listitem>
@@ -91,7 +100,7 @@
     </listitem>
 
     <listitem>
-      <para>上記のfindコマンドを繰り返します。
+      <para>上記の <command>make print-PLIST</command> コマンドを繰り返します。
 	今度は何も見つからないはずです:</para>
 
       <screen>&rprompt; <userinput>make print-PLIST</userinput></screen>
