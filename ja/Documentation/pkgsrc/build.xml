@@ -1,6 +1,6 @@
-<!-- $NetBSD: build.xml,v 1.2 2004/09/28 09:58:20 grant Exp $ -->
+<!-- $NetBSD: build.xml,v 1.3 2004/09/29 13:08:36 hubertf Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.2 2004/09/28 09:58:20 grant Exp   -->
+<!-- NetBSD: build.xml,v 1.3 2004/09/29 13:08:36 hubertf Exp   -->
 
 <chapter id="build">
   <title>構築の手順</title>
@@ -22,12 +22,11 @@
 
     <para>自動変数<varname>PREFIX</varname>は、最終的にプログラムのすべてのファイルがインストールされる
       場所をしめします。通常、<varname>LOCALBASE</varname> (<filename>/usr/pkg</filename>)、または<quote>cross</quote>カテゴリーの
-      パッケージのための<varname>CROSSBASE</varname>と同じ場所になっています。もし<varname>USE_IMAKE</varname> あるい
-      は<varname>USE_X11BASE</varname>が定義されていれば、その値は<varname>X11BASE</varname>と同じになります。
+      パッケージのための<varname>CROSSBASE</varname>と同じ場所になっています。
       <varname>PREFIX</varname>の値は、プログラムのソース中でこれらのファイルが符号化されるさまざ
       まな場所に使用されるべきです。
       詳細に関しては、<xref linkend="components.patches"/>および<xref
-	linkend="fixes.libtool"/>を参照して下さい。</para>
+      linkend="fixes.libtool"/>を参照して下さい。</para>
 
     <para>これらの変数のどれかを選択し使用する場合には、
       以下のルールに従ってください。</para>
@@ -75,8 +74,8 @@
 	  を定義したパッケージによってインストールされたインクルードファイルやライブラリーをさがす場合、
 	  <filename>${X11BASE}</filename> と
 	  <filename>${LOCALBASE}</filename> を<emphasis>両方</emphasis>使う必要があります。
-	  X11 パッケージをすべて <varname>LOCALBASE</varname> にインストールする方法は、単に
-	  <pkg>pkgtools/xpkgwedge</pkg> パッケージをインストールするだけです。</para>
+	  X11 パッケージをすべて強制的に <varname>LOCALBASE</varname> にインストールさせるために、
+	  <pkg>pkgtools/xpkgwedge</pkg> が標準で有効になっています。</para>
       </listitem>
 
       <listitem>
@@ -113,6 +112,13 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	<para>ここで<varname>GTKDIR</varname>は、
 	  <varname>EVAL_PREFIX</varname>
 	  での最初の定義の組に対応します。</para>
+      </listitem>
+      
+      <listitem>
+        <para>パッケージは <filename>${PREFIX}</filename> 以下に、
+          hier(7) に準じてファイルをインストールするようにします。
+          ただしマニュアルページは例外で、<filename>${PREFIX}/share/man</filename>
+          ではなく <filename>${PREFIX}/man</filename> にインストールします。</para> 
       </listitem>
     </itemizedlist>
   </sect1>
@@ -181,9 +187,9 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	    ンは、<varname>PATCH_DIST_ARGS</varname>で指定する事ができます。
 	    詳細に関しては<xref linkend="components.patches"/>を参照して下さい。</para>
 
-	  <para>デフォルトでは、パッチに曖昧さがあった場合にはpatchが異常終了するような
+	  <para>デフォルトでは、パッチに曖昧さがあった場合にはpatch(1)が異常終了するような
 	    特別な引数が渡されます。パッチを修正(再作成)して、きれいに適用できるよう
-	    にしてください。そうする理由は、パッチがうまく適用できても、実は誤った場
+	    にしてください。そうする理由は、曖昧さがあるパッチが一見うまく適用できても、実は誤った場
 	    所に適用されていて、深刻な問題を起こす可能性があるからです。</para>
 	</listitem>
       </varlistentry>
@@ -217,11 +223,11 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 
 	<listitem>
 	  <para>コンフィギュレーションが終ったら、<varname>$MAKEFILE</varname>の中で、構築のターゲットとし
-	    て<varname>$ALL_TARGET</varname>を指定し<varname>$MAKE_PROGRAM</varname>を起動することにより、&os;上にソフト
+	    て<varname>$ALL_TARGET</varname>を指定し<varname>$MAKE_PROGRAM</varname>を起動することにより、ソフト
 	    ウェアを構築することができます。もし、<varname>USE_GMAKE</varname>が設定されていれば、デフォ
 	    ルトの<varname>MAKE_PROGRAM</varname>は<quote>gmake</quote>です。そうでなければ、<quote>make</quote>が使用されます。
 	    <varname>MAKEFILE</varname>にはデフォルトで<quote>Makefile</quote>が設定されます。そして、<varname>ALL_TARGET</varname>のデフォ
-	    ルトは<quote>all</quote>です。デフォルトの構築手順を変更するために、これらの変数を設定
+	    ルトは<quote>all</quote>です。デフォルトの構築手順を変更するために、パッケージの Makefile でこれらの変数を設定
 	    することができます。</para>
 	</listitem>
       </varlistentry>
@@ -230,7 +236,7 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	<term>install</term>
 
 	<listitem>
-	  <para>構築の段階が完了すると、ユーザーのためにソフトウェアをパブリックなディレ
+	  <para>構築の段階が完了すると、ユーザーが構築されたプログラムやファイルを使えるようにするため、ソフトウェアをパブリックなディレ
 	    クトリーにインストールする必要があります。buildターゲットと同様に、
 	    <varname>$MAKE_PROGRAM</varname>が<varname>$MAKEFILE</varname>中で起動されます。ただし、<varname>$INSTALL_TARGET</varname>が指定
 	    されます。この変数のデフォルトは<quote>install</quote>です。(もし<varname>USE_IMAKE</varname>が設定さ
@@ -243,7 +249,8 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
       ターゲットが指定された場合、それ以前のすべての手順が実行されます。例えば
       <command>make build</command>は、以下と同等のことを実行します。</para>
 
-    <programlisting>make fetch
+    <programlisting>
+make fetch
 make checksum
 make extract
 make patch
@@ -262,7 +269,7 @@ make build</programlisting>
 	  <para>前のセクションで述べた主ターゲットのために、二つの補助ターゲットが存在し
 	    ます。これは主ターゲットに<quote>pre-</quote>や<quote>post-</quote>というプレフィックスをつけ
 	    たものです。これらのターゲットは、特別な設定やインストール手順のために、
-	    主ターゲットが実行される前や後に実行されます。例えば、プログラムのコンフィ
+	    主ターゲットが実行される前や後に、パッケージの Makefile から実行されます。例えば、プログラムのコンフィ
 	    ギュレーションスクリプトやインストールターゲットが省略された場合に有用で
 	    す。</para>
 	</listitem>
@@ -295,8 +302,8 @@ make build</programlisting>
 
 	<listitem>
 	  <para>このターゲットは、パッケージをアンインストールするためにカレントディレク
-	    トリーでpkg_delete(1)を実行します。動作を制御するために、以下の変数をコ
-	    マンドライン、または<filename>/etc/mk.conf</filename>で使用することができます。</para>
+	    トリーでpkg_delete(1)を実行します。動作を制御するために、以下の変数を
+	    使用することができます。</para>
 
 	  <variablelist>
 	    <varlistentry>
@@ -455,7 +462,7 @@ make build</programlisting>
 
 	<listitem>
 	  <para>このターゲットは、<filename>README.html</filename>ファイルを作成します。このファイルは
-	    <pkg>www/navigator</pkg>や<pkg>www/lynx</pkg>のようなブラウザー
+	    <pkg>www/mozilla</pkg>や<pkg>www/links</pkg>のようなブラウザー
 	    で閲覧することができます。作成されたファイルは、ローカルホストの
 	    <varname>PACKAGES</varname>ディレクトリーにあるパッケージへの参照を含んでいます。また、
 	    <varname>FTP_PKG_URL_HOST</varname>と<varname>FTP_PKG_URL_DIR</varname>を元にしたURLを参照させることもできます。
@@ -531,7 +538,7 @@ make build</programlisting>
 
 	<listitem>
 	  <para>このターゲットは、インストールされているパッケージのうち、どれが当該パッ
-	    ケージの<varname>DEPENDS</varname>と合致するかを表示します。DEPENDSが古いせいで構築に問題が
+	    ケージの<varname>DEPENDS</varname>と合致するかを表示します。依存関係が古いせいで構築に問題が
 	    起きる場合に便利です。</para>
 	</listitem>
       </varlistentry>
@@ -558,7 +565,8 @@ make build</programlisting>
 	    の出力と、更新前の<filename>PLIST</filename>ファイルとを比較すると便利でしょう。</para>
 
 	  <para>パッケージが、tar(1)その他のファイルのアクセス時刻を更新しない方法を使っ
-	    てファイルをインストールする場合は、それらのファイルは<quote>find -newer</quote>で検
+	    てファイルをインストールする場合は、それらのファイルはこのターゲットで使われる <quote>find
+	    -newer</quote> コマンドで検
 	    出されないので、手で<filename>PLIST</filename>に書き足すよう注意してください!</para>
 	</listitem>
       </varlistentry>
@@ -574,6 +582,10 @@ make build</programlisting>
 	    バイナリーパッケージ作成後、ディスクの空き領域
 	    を確保するために、ソース、インストールしたばかりのパッケージと依存パッケー
 	    ジは削除されます。</para>
+
+	  <para><emphasis>このターゲットを使うと、
+	    システムにインストールされているパッケージをすべてアンインストールすることもあるので、
+	    注意してください。</emphasis></para>
 	</listitem>
       </varlistentry>
 
@@ -582,10 +594,12 @@ make build</programlisting>
 
 	<listitem>
 	  <para>依存パッケージ群をインストールするためのバルクインストールで使われます。
-	    適切なバイナリーパッケージが利用可能な場合、pkg_addでそれをインストール
+	    最新のバイナリーパッケージが利用可能な場合、&man.pkg.add.1;でそれをインストール
 	    します。そうでない場合は、<command>make bulk-package</command>が実行されますが、インストー
-	    ルされたバイナリーは削除されません。バイナリーパッケージが&man.pkg.add.1;でイン
-	    ストールされるのに<quote>適切</quote>である条件は、以下のとおりです:</para>
+	    ルされたバイナリーは削除されません。</para>
+
+	  <para> バイナリーパッケージが<quote>最新</quote>であるとみなされる (&man.pkg.add.1; でインストールされる)
+	    条件は、以下のとおりです。</para>
 
 	  <itemizedlist>
 	    <listitem>
@@ -598,6 +612,10 @@ make build</programlisting>
 		から変更されていないこと。</para>
 	    </listitem>
 	  </itemizedlist>
+
+	  <para><emphasis>このターゲットを使うと、
+	    システムにインストールされているパッケージをすべてアンインストールすることもあるので、
+	    注意してください。</emphasis></para>
 	</listitem>
       </varlistentry>
     </variablelist>
