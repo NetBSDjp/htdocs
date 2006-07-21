@@ -1,4 +1,4 @@
-<!-- $NetBSD: build.xml,v 1.2 2004/09/28 09:58:20 grant Exp $ -->
+<!-- $NetBSD: build.xml,v 1.3 2004/09/29 13:08:36 hubertf Exp $ -->
 
 <chapter id="build">
   <title>The build process</title>
@@ -19,16 +19,16 @@
       the next section, here's a brief discussion on where programs are
       installed, and which variables influence this.</para>
 
-    <para>The automatic variable <varname>PREFIX</varname> indicates where all
-      files of the final program shall be installed. It is usually set to
-      <varname>LOCALBASE</varname> (<filename>/usr/pkg</filename>), or
-      <varname>CROSSBASE</varname> for pkgs in the <quote>cross</quote>
-      category, though its value becomes that of <varname>X11BASE</varname> if
-      <varname>USE_IMAKE</varname> or <varname>USE_X11BASE</varname> is set.
-      The value of <varname>PREFIX</varname> needs to be put into the various
-      places in the program's source where paths to these files are encoded.
-      See <xref linkend="components.patches"/> and <xref
-	linkend="fixes.libtool"/> for more details.</para>
+    <para>The automatic variable <varname>PREFIX</varname> indicates
+      where all files of the final program shall be installed. It is
+      usually set to <varname>LOCALBASE</varname>
+      (<filename>/usr/pkg</filename>), or <varname>CROSSBASE</varname>
+      for pkgs in the <quote>cross</quote> category.  The value of
+      <varname>PREFIX</varname> needs to be put 
+      into the various places in the program's source where paths to
+      these files are encoded.  See <xref
+      linkend="components.patches"/> and <xref
+      linkend="fixes.libtool"/> for more details.</para>
 
     <para>When choosing which of these variables to use,
       follow the following rules:</para>
@@ -76,9 +76,9 @@
 	  <varname>USE_IMAKE</varname> or <varname>USE_X11BASE</varname> in
 	  its pkg <filename>Makefile</filename>, you need to use
 	  <emphasis>both</emphasis> <filename>${X11BASE}</filename> and
-	  <filename>${LOCALBASE}</filename>. To install all X11 packages in
-	  <varname>LOCALBASE</varname>, simply install the
-	  <pkg>pkgtools/xpkgwedge</pkg> package.</para>
+	  <filename>${LOCALBASE}</filename>. To force installation of
+	  all X11 packages in <varname>LOCALBASE</varname>, the 
+	  <pkg>pkgtools/xpkgwedge</pkg> is enabled by default.</para>
       </listitem>
 
       <listitem>
@@ -116,6 +116,13 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	<para>where <varname>GTKDIR</varname> corresponds
 	  to the first definition in
 	  the <varname>EVAL_PREFIX</varname> pair.</para>
+      </listitem>
+      
+      <listitem>
+        <para>Within <filename>${PREFIX}</filename>, packages should
+          install files according to hier(7), with the exception that
+          manual pages go into <filename>${PREFIX}/man</filename>, not
+          <filename>${PREFIX}/share/man</filename>.</para> 
       </listitem>
     </itemizedlist>
   </sect1>
@@ -196,10 +203,10 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	    can be handed in <varname>PATCH_DIST_ARGS</varname>.
 	    See <xref linkend="components.patches"/> for more details.</para>
 
-	  <para>By default patch is given special args to make it fail if the
-	    patches with some lines of fuzz. Please fix (regen) the patches
+	  <para>By default patch(1) is given special args to make it fail if the
+	    patches apply with some lines of fuzz. Please fix (regen) the patches
 	    so that they apply cleanly. The rationale behind this is that
-	    patches that apply cleanly may end up being applied in the wrong
+	    patches that don't apply cleanly may end up being applied in the wrong
 	    place, and cause severe harm there.</para>
 	</listitem>
       </varlistentry>
@@ -236,15 +243,16 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	<term>build</term>
 
 	<listitem>
-	  <para>Once configuration has taken place, the software can be built on
-	    &os; by invoking <varname>$MAKE_PROGRAM</varname> on
+	  <para>Once configuration has taken place, the software will be built 
+	    by invoking <varname>$MAKE_PROGRAM</varname> on
 	    <varname>$MAKEFILE</varname> with <varname>$ALL_TARGET</varname> as
 	    the target to build.  The default <varname>MAKE_PROGRAM</varname> is
 	    <quote>gmake</quote> if <varname>USE_GMAKE</varname> is set,
 	    <quote>make</quote> otherwise. <varname>MAKEFILE</varname> is set to
 	    <quote>Makefile</quote> by default, and <varname>ALL_TARGET</varname>
-	    defaults to <quote>all</quote>.  Any of these variables can be set to
-	    change the default build process.</para>
+	    defaults to <quote>all</quote>.  Any of these variables
+	    can be set in the package's Makefile to change the default
+	    build process.</para> 
 	</listitem>
       </varlistentry>
 
@@ -253,7 +261,8 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 
 	<listitem>
 	  <para>Once the build stage has completed, the final step is to install
-	    the software in public directories, for users.  As in the
+	    the software in public directories, so users can access
+	    the programs and files.  As in the
 	    build-target, <varname>$MAKE_PROGRAM</varname> is invoked on
 	    <varname>$MAKEFILE</varname> here, but with the
 	    <varname>$INSTALL_TARGET</varname> instead, the latter defaulting to
@@ -267,7 +276,8 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
       If a subsequent stage is requested, all prior stages are made: e.g.
       <command>make build</command> will also perform the equivalent of:</para>
 
-    <programlisting>make fetch
+    <programlisting>
+make fetch
 make checksum
 make extract
 make patch
@@ -288,7 +298,8 @@ make build</programlisting>
 	    <quote>post-</quote> used as a prefix
 	    for the main target's name.  These targets are invoked before and
 	    after the main target is called, allowing extra configuration or
-	    installation steps, for example, which program's configure script
+	    installation steps be performed from a package's Makefile, for
+	    example, which a program's configure script 
 	    or install target omitted.</para>
 	</listitem>
       </varlistentry>
@@ -321,8 +332,7 @@ make build</programlisting>
 	<listitem>
 	  <para>This target does a pkg_delete(1) in the current directory,
 	    effectively de-installing the package. The following variables can
-	    be used either on the command line or in
-	    <filename>/etc/mk.conf</filename> to tune the behaviour:</para>
+	    be used to tune the behaviour:</para>
 
 	  <variablelist>
 	    <varlistentry>
@@ -492,8 +502,8 @@ make build</programlisting>
 
 	<listitem>
 	  <para>This target generates a <filename>README.html</filename> file, which
-	    can be viewed using a browser such as <pkg>www/navigator</pkg> or
-	    <pkg>www/lynx</pkg>. The generated files contain references to any
+	    can be viewed using a browser such as <pkg>www/mozilla</pkg> or
+	    <pkg>www/links</pkg>. The generated files contain references to any
 	    packages which are in the <varname>PACKAGES</varname> directory on
 	    the local host. The generated files can be made to refer to URLs based on
 	    <varname>FTP_PKG_URL_HOST</varname> and
@@ -574,7 +584,7 @@ make build</programlisting>
 
 	<listitem>
 	  <para>This target shows which installed packages match the current package's
-	    <varname>DEPENDS</varname>. Useful if out of date DEPENDS are
+	    <varname>DEPENDS</varname>. Useful if out of date dependencies are
 	    causing build problems.</para>
 	</listitem>
       </varlistentry>
@@ -603,9 +613,11 @@ make build</programlisting>
 	    diff the output of this command against an already existing
 	    <filename>PLIST</filename> file.</para>
 
-	  <para>If the package installs files via tar(1) or other methods that don't
-	    update file access times, be sure to add these files manually to your
-	    <filename>PLIST</filename>, as <quote>find -newer</quote> won't catch
+	  <para>If the package installs files via tar(1) or other
+	    methods that don't update file access times, be sure to
+	    add these files manually to your
+	    <filename>PLIST</filename>, as the <quote>find
+	    -newer</quote> command used by this target won't catch
 	    them!</para>
 	</listitem>
       </varlistentry>
@@ -621,6 +633,9 @@ make build</programlisting>
 	    After creating the binary
 	    package, the sources, the just-installed package and it's required
 	    packages are removed, preserving free disk space.</para>
+
+	  <para><emphasis>Beware that this target may deinstall all
+	    packages installed on a system!</emphasis></para>
 	</listitem>
       </varlistentry>
 
@@ -629,11 +644,12 @@ make build</programlisting>
 
 	<listitem>
 	  <para>Used during bulk-installs to install required packages. If an
-	    appropriate binary package is available, it will be installed via
-	    pkg_add. If not, <command>make bulk-package</command> will be executed,
-	    but the installed binary not be removed. A binary package is
-	    <quote>appropriate</quote> to be installed via &man.pkg.add.1;
-	    if:</para>
+	    upto-date binary package is available, it will be installed via
+	    &man.pkg.add.1;. If not, <command>make bulk-package</command> will be executed,
+	    but the installed binary not be removed. </para>
+
+	  <para> A binary package is considered <quote>upto-date</quote> to be
+	    installed via &man.pkg.add.1; if:</para>
 
 	  <itemizedlist>
 	    <listitem>
@@ -646,6 +662,9 @@ make build</programlisting>
 		modified since it was built.</para>
 	    </listitem>
 	  </itemizedlist>
+
+	  <para><emphasis>Beware that this target may deinstall all
+	    packages installed on a system!</emphasis></para>
 	</listitem>
       </varlistentry>
     </variablelist>
