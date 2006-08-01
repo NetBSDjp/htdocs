@@ -1,24 +1,7 @@
-#       $NetBSD: Makefile,v 1.7 2004/02/28 09:51:18 grant Exp $
+#       $NetBSD: Makefile,v 1.9 2006/07/30 12:40:26 rillig Exp $
 #       <!-- Based on english version: -->
-#       <!-- NetBSD: Makefile,v 1.7 2004/02/28 09:51:18 grant Exp   -->
-#
-# Process .act files into .html files
-#
+#       <!-- NetBSD: Makefile,v 1.9 2006/07/30 12:40:26 rillig Exp   -->
 
-all:    index.html screenshots.html   # index-new.html
+INPUT_FILTER=		iconv -f iso-2022-jp -t euc-jp
 
-index.html: index.act-template mkact.pl Makefile
-
-
-.SUFFIXES:      .act-template .html
-
-.act-template.html:
-	iconv -f iso-2022-jp -t euc-jp < $< | perl mkact.pl >$*.act
-	perl ./act2html.pl $*.act $@
-	rm $*.act
-
-clean:
-	rm -f new2.act
-	rm -f new2.html
-	rm -f index-new.act
-	rm -f index-new.html
+.include "../../../gallery/in-Action/gallery.mk"
