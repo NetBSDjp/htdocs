@@ -5,8 +5,8 @@
 
 <webpage id="Documentation-misc-index">
 <config param="desc" value="NetBSD Documentation: Other FAQs and HOWTOs"/>
-<config param="cvstag" value="$NetBSD: index.xml,v 1.20 2006/07/01 15:50:45 kano Exp $"/>
-<config param="rcsdate" value="$Date: 2006/07/01 15:50:45 $"/>
+<config param="cvstag" value="$NetBSD: index.xml,v 1.21 2006/07/29 20:40:08 hubertf Exp $"/>
+<config param="rcsdate" value="$Date: 2006/07/29 20:40:08 $"/>
 <head>
 <!-- Copyright (c) 2005
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -410,263 +410,6 @@ role="pkg">graphics/sane-backends</filename>
 and some scanners - the solution is either to recompile a kernel
 without &man.ss.4; and use the &man.uk.4; device, or to upgrade to 1.4.2
 or later.
-</para>
-</sect3>
-</sect2>
-
-<sect2 id="common-problems">
-<title>Common (and less common) problems</title>
-
-<sect3 id="nroff-missing">
-<title><emphasis role="bold">/usr/bin/nroff: not found</emphasis> when running 'man'</title>
-<para>
-You need to install the 'text' set, text.tgz. See your base install notes.
-</para>
-</sect3>
-
-<sect3 id="var-mail-permissions">
-<title>'<emphasis role="bold">Unable to lock mailbox: Permission denied</emphasis>' when reading mail</title>
-<para>
-Check the permissions on the <code>/var/mail</code> directory. They should be
-'<code>drwxrwxrwt</code>':
-<programlisting>
-% <emphasis role="bold">ls -ld /var/mail</emphasis>
-drwxrwxrwt  2 root  wheel  512 Nov  6 08:21 /var/mail</programlisting>
-If they are not, as root run '<code><emphasis role="bold">chmod 1777 /var/mail</emphasis></code>'.
-</para>
-</sect3>
-
-<sect3 id="kernel-not-netbsd">
-<title><emphasis role="bold">netstat: kvm_read kvm_read: Bad address</emphasis> when running '<code>netstat -r</code>'</title>
-<para>
-This is nothing to worry about.  Basically, the file <code>/netbsd</code>
-is not your current kernel.  A number of programs (such as <code>ps</code>,
-<code>who</code>, <code>systat</code> etc.) and libkvm &man.kvm.3;, access
-<code>/netbsd</code> to learn what's going on in the kernel.  So you
-can simply rename your current kernel to <code>/netbsd</code> to make
-this kind of error go away.  Make sure that you are not overwriting
-a working kernel when you do this, though, unless that is exactly
-what you intend to do.
-</para>
-</sect3>
-
-<sect3 id="libkvm-mismatch">
-<title>When I try '<code>netstat -r</code>' I get an endless stream of question marks.  What's wrong?</title>
-<para>
-That's a mis-match between <code>libkvm/netstat</code> and <code>/netbsd</code>.
-Or it's that you're running a kernel that's not named <code>/netbsd</code>.
-Other symptoms of this problem are likely to be that <code>who</code>,
-<code>ps</code>, <code>ifconfig</code>, and <code>systat</code> will not work either.
-If you update your binaries and your kernel at the same time, then you
-should be OK.
-</para>
-</sect3>
-
-<sect3 id="kernel-upgrade">
-<title><code>w</code>, <code>ps</code>, and <code>netstat</code> do not work after upgrading to a new kernel</title>
-<para>
-One of two things.  Either your currently booted kernel isn't named
-<code>/netbsd</code> or else you have a mismatch between your kernel and the
-binaries you are using.  In the first case, simply making a link from your
-currently booted kernel to <code>/netbsd</code> will solve the problem.
-</para>
-<para>
-In the second case, dynamically linked binaries can usually be fixed by
-upgrading libkvm to match your new kernel.  Statically linked binaries need
-to be replaced with more recent versions.  Since they are statically
-linked, if you are going to recompile them yourself, you need to rebuild
-<code>libkvm.a</code> <emphasis role="bold">before</emphasis> you rebuild the program in question.
-</para>
-<para>
-Thanks to John Wittkowski (jpw@netscape.com), here is a list of most of the
-programs (besides <code>/bin/ps</code>) that depend on libkvm (all of these are
-in <code>/usr/bin</code>): 
-<itemizedlist>
-<listitem><code>fstat</code></listitem>
-<listitem><code>gdb</code></listitem>
-<listitem><code>ipcs</code></listitem>
-<listitem><code>netstat</code></listitem>
-<listitem><code>nfsstat</code></listitem>
-<listitem><code>systat</code></listitem>
-<listitem><code>uptime</code></listitem>
-<listitem><code>vmstat</code></listitem>
-<listitem><code>w</code></listitem>
-</itemizedlist>
-</para>
-</sect3>
-
-<sect3 id="proc-size-mismatch">
-<title>After changing kernels, 'ps' reports <emphasis role="bold">"proc size mismatch"</emphasis></title>
-<para>
-Like the previous three questions on this subject, the answer is most
-likely that your libkvm is out of sync with your kernel or binaries.  To
-solve this problem, you can either get a binary distribution which matches
-your kernel, or you can build you own by following the instructions below:
-
-<programlisting>
-If you get the "proc size mismatch" error and you determine
-that you need to update your libs, here's what to do:
-
-1. Get all the source code. If you're not willing to do this
-   and recompile things than you'll have to find someone who
-   will do it for you and you can try installing everything
-   by hand.
-
-2. Make sure that your include files are up to date. Do 
-   this by:
-      cd /usr/src
-      make includes
-   This will take a while. I had some trouble with this
-   because some of the Makefiles didn't have the INSTALL
-   variable defined. Whenever the "make includes" failed,
-   I went to the last directory listed and added the
-   following line to the Makefile:
-      INSTALL=/usr/bin/install
-   I had to do this several times before the make finished
-   without any errors.
-
-   (If you make sure that /usr/bin/make and all the files in
-   /usr/share/mk are up to date first, the above difficulties
-   can probably be avoided)
-
-3. Rebuild the libkvm and install it:
-      cd /usr/src/lib/libkvm
-      make
-      make install
-   Note that in order to get the libkvm to compile on
-   my system I had to add the following link:
-      cd /usr/include/machine
-      ln -s ../m68k/kcore.h kcore.h
-   This may have been a quirk of my system so try 
-   compiling without it first.
-
-4. Then rebuild the binaries that are STATICALLY linked to
-   libkvm. The only statically linked program that I am 
-   aware of is "/bin/ps". To rebuild ps, simply:
-      cd /usr/src/bin/ps
-      make
-      make install
-
-5. You may or may not need to rebuild the binaries that
-   are dynamically linked to libkvm. This is because (I
-   think) if the major version number of the lib changes
-   then the old binaries will expect the old version
-   number and not work with the newer version of the lib.
-   For example, my old libkvm was libkvm.so.4.0. The new
-   one was libkvm.so.5.0. Without recompiling the 
-   dynamically linked binaries, it would still complain
-   about "proc size mismatch" (if the 4.0 lib was still
-   there) or some lib missing error (if the 4.0 lib
-   had been removed from /usr/lib). If the version minor
-   number changes (4.0 to 4.1, for example), I think it
-   will run with a warning and so you may not need to
-   recompile all of these things.
-
-   The dynamically linked binaries that I am aware of
-   will give the  "proc size mismatch" error (if the 4.0
-   lib was still there) or some lib missing error (if the
-   4.0 lib had been removed from /usr/lib). If the version
-   minor number changes (4.0 to 4.1, for example), I think
-   it will run with a warning, and you may not need to
-   recompile all of these things.
-
-   The dynamically linked binaries that I am aware of
-   are:
-      /usr/bin/fstat
-      /usr/bin/gdb
-      /usr/bin/ipcs
-      /usr/bin/netstat
-      /usr/bin/nfsstat
-      /usr/bin/systat
-      /usr/bin/uptime (linked to /usr/bin/w)
-      /usr/bin/vmstat
-      /usr/bin/w
-   Note that /usr/bin/uptime is a link to /usr/bin/w and
-   will be set up properly when you do the "make install"
-   for w.
-
-   To recompile these, do the following:
-      cd /usr/src/usr.bin/&lt;cmd&gt;
-      make 
-      make install
-   For example, to recompile /usr/bin/vmstat:
-      cd /usr/src/usr.bin/vmstat
-      make
-      make install</programlisting>
-
-Much thanks to John Wittkowski (jpw@netscape.com) for providing such a
-detailed answer for this one.
-
-</para>
-<para>
-A little background: the reason that these system utilities need to
-grovel through kernel memory to get information, including going
-through all the trouble mentioned above, is that this method also
-works on kernel crash dumps, which can be quite a useful feature
-when debugging kernels.
-</para>
-</sect3>
-
-<sect3 id="hash-map-alias0">
-<title>'<emphasis role="bold">hash map "Alias0":unsafe map file
-    <code>/etc/aliases</code>: No such file or directory</emphasis>' is displayed</title>
-<para>
-You can fix this by typing '<emphasis role="bold"><code>newaliases</code></emphasis>' as root.<html:br/>
-Sendmail reports this when the &man.aliases.5; file is not present. Note that
-sendmail(8) actually uses <code>/etc/aliases.db</code> (which is a fast lookup
-hash(3) map built from <code>/etc/aliases</code>), so the error message can be
-a little misleading.  This should only really be noticed in NetBSD 1.3
-to 1.4, other versions have a different <code>/etc/sendmail.cf</code> which
-instructs sendmail to automatically rebuild <code>/etc/aliases.db</code> as
-needed.  If you are not running at least NetBSD 1.4.1 you should probably
-upgrade to a newer <ulink url="../../Releases/formal.html">formal release</ulink>. 
-</para>
-</sect3>
-
-<sect3 id="portmap-messup">
-<title>How do I prevent <code>portmap</code> messages from showing up in shells, when logged in as root</title>
-<para>
-Use <filename role="pkg">security/sudo</filename> and never log in as root.
-</para>
-<para>
-If you must log in as root, then you can edit your
-<code>/etc/syslog.conf</code> file and remove the necessary facilities to
-prevent the annoying messages.  In most cases, it's sufficient to disable
-<code>auth.debug</code> in the line reading:
-<programlisting>*.notice;auth.debug                                     root</programlisting>
-This will eliminate those annoying 
-<code>portmap&nbsp;[pid]:&nbsp;connect&nbsp;from&nbsp;some.other.host&nbsp;...</code>
-messages.  Be sure to <code>kill&nbsp;-HUP</code> the pid of
-your <code>syslogd</code> process.
-</para>
-<para>
-You may also wish to look at the <ulink url="../x/#xconsole">FAQ entry</ulink> 
-for using an <code>xconsole</code>.
-</para>
-</sect3>
-
-<sect3 id="locales">
-<title>How do I get umlauts and other localised characters displayed?</title>
-<para>
-
-Per default, NetBSD 1.6 has already numerous locales installed.  You can find
-them in <code>/usr/share/locales</code>.  Choose the locale most suitable for your
-location and set the LC_ALL environment variable accordingly.  Note that it is
-<emphasis>not</emphasis> sufficient to set LC_ALL to, say, ``de_DE'', but that you should
-use the <emphasis>full</emphasis> locale, such as ``de_DE.ISO8859-15''.
-</para>
-<para>
-For older versions of NetBSD, here's a tip from the <ulink
-url="http://mail-index.NetBSD.org/netbsd-users/2000/11/09/0019.html">mail
-archives</ulink>:
-<orderedlist>
-<listitem> Grab <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/i386/french-1.4/locale.tgz">locale.tgz</ulink></listitem>
-<listitem> Unpack it in /: <code>tar plzvxCf / locale.tgz</code></listitem>
-<listitem> In your shell, set LC_ALL=iso_8859_1 (make it permanent in .cshrc, 
-     .profile, ...)</listitem>
-<listitem> Restart your shell or re-login</listitem>
-<listitem> See your shell, vi, etc. accept all these umlauts from your keyboard: &ouml;&auml;&uuml;&Auml;&Ouml;&Uuml;...</listitem>
-</orderedlist>
 </para>
 </sect3>
 </sect2>
@@ -1262,8 +1005,276 @@ store anonymous application data."
 </sect3>
 </sect2>
 
+<sect2 id="common-problems">
+<title>Common (and less common) problems</title>
+
+<sect3 id="nroff-missing">
+<title><emphasis role="bold">/usr/bin/nroff: not found</emphasis> when running 'man'</title>
+<para>
+You need to install the 'text' set, text.tgz. See your base install notes.
+</para>
+</sect3>
+
+<sect3 id="var-mail-permissions">
+<title>'<emphasis role="bold">Unable to lock mailbox: Permission denied</emphasis>' when reading mail</title>
+<para>
+Check the permissions on the <code>/var/mail</code> directory. They should be
+'<code>drwxrwxrwt</code>':
+<programlisting>
+% <emphasis role="bold">ls -ld /var/mail</emphasis>
+drwxrwxrwt  2 root  wheel  512 Nov  6 08:21 /var/mail</programlisting>
+If they are not, as root run '<code><emphasis role="bold">chmod 1777 /var/mail</emphasis></code>'.
+</para>
+</sect3>
+
+<sect3 id="kernel-not-netbsd">
+<title><emphasis role="bold">netstat: kvm_read kvm_read: Bad address</emphasis> when running '<code>netstat -r</code>'</title>
+<para>
+This is nothing to worry about.  Basically, the file <code>/netbsd</code>
+is not your current kernel.  A number of programs (such as <code>ps</code>,
+<code>who</code>, <code>systat</code> etc.) and libkvm &man.kvm.3;, access
+<code>/netbsd</code> to learn what's going on in the kernel.  So you
+can simply rename your current kernel to <code>/netbsd</code> to make
+this kind of error go away.  Make sure that you are not overwriting
+a working kernel when you do this, though, unless that is exactly
+what you intend to do.
+</para>
+</sect3>
+
+<sect3 id="libkvm-mismatch">
+<title>When I try '<code>netstat -r</code>' I get an endless stream of question marks.  What's wrong?</title>
+<para>
+That's a mis-match between <code>libkvm/netstat</code> and <code>/netbsd</code>.
+Or it's that you're running a kernel that's not named <code>/netbsd</code>.
+Other symptoms of this problem are likely to be that <code>who</code>,
+<code>ps</code>, <code>ifconfig</code>, and <code>systat</code> will not work either.
+If you update your binaries and your kernel at the same time, then you
+should be OK.
+</para>
+</sect3>
+
+<sect3 id="kernel-upgrade">
+<title><code>w</code>, <code>ps</code>, and <code>netstat</code> do not work after upgrading to a new kernel</title>
+<para>
+One of two things.  Either your currently booted kernel isn't named
+<code>/netbsd</code> or else you have a mismatch between your kernel and the
+binaries you are using.  In the first case, simply making a link from your
+currently booted kernel to <code>/netbsd</code> will solve the problem.
+</para>
+<para>
+In the second case, dynamically linked binaries can usually be fixed by
+upgrading libkvm to match your new kernel.  Statically linked binaries need
+to be replaced with more recent versions.  Since they are statically
+linked, if you are going to recompile them yourself, you need to rebuild
+<code>libkvm.a</code> <emphasis role="bold">before</emphasis> you rebuild the program in question.
+</para>
+<para>
+Thanks to John Wittkowski (jpw@netscape.com), here is a list of most of the
+programs (besides <code>/bin/ps</code>) that depend on libkvm (all of these are
+in <code>/usr/bin</code>): 
+<itemizedlist>
+<listitem><code>fstat</code></listitem>
+<listitem><code>gdb</code></listitem>
+<listitem><code>ipcs</code></listitem>
+<listitem><code>netstat</code></listitem>
+<listitem><code>nfsstat</code></listitem>
+<listitem><code>systat</code></listitem>
+<listitem><code>uptime</code></listitem>
+<listitem><code>vmstat</code></listitem>
+<listitem><code>w</code></listitem>
+</itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="proc-size-mismatch">
+<title>After changing kernels, 'ps' reports <emphasis role="bold">"proc size mismatch"</emphasis></title>
+<para>
+Like the previous three questions on this subject, the answer is most
+likely that your libkvm is out of sync with your kernel or binaries.  To
+solve this problem, you can either get a binary distribution which matches
+your kernel, or you can build you own by following the instructions below:
+
+<programlisting>
+If you get the "proc size mismatch" error and you determine
+that you need to update your libs, here's what to do:
+
+1. Get all the source code. If you're not willing to do this
+   and recompile things than you'll have to find someone who
+   will do it for you and you can try installing everything
+   by hand.
+
+2. Make sure that your include files are up to date. Do 
+   this by:
+      cd /usr/src
+      make includes
+   This will take a while. I had some trouble with this
+   because some of the Makefiles didn't have the INSTALL
+   variable defined. Whenever the "make includes" failed,
+   I went to the last directory listed and added the
+   following line to the Makefile:
+      INSTALL=/usr/bin/install
+   I had to do this several times before the make finished
+   without any errors.
+
+   (If you make sure that /usr/bin/make and all the files in
+   /usr/share/mk are up to date first, the above difficulties
+   can probably be avoided)
+
+3. Rebuild the libkvm and install it:
+      cd /usr/src/lib/libkvm
+      make
+      make install
+   Note that in order to get the libkvm to compile on
+   my system I had to add the following link:
+      cd /usr/include/machine
+      ln -s ../m68k/kcore.h kcore.h
+   This may have been a quirk of my system so try 
+   compiling without it first.
+
+4. Then rebuild the binaries that are STATICALLY linked to
+   libkvm. The only statically linked program that I am 
+   aware of is "/bin/ps". To rebuild ps, simply:
+      cd /usr/src/bin/ps
+      make
+      make install
+
+5. You may or may not need to rebuild the binaries that
+   are dynamically linked to libkvm. This is because (I
+   think) if the major version number of the lib changes
+   then the old binaries will expect the old version
+   number and not work with the newer version of the lib.
+   For example, my old libkvm was libkvm.so.4.0. The new
+   one was libkvm.so.5.0. Without recompiling the 
+   dynamically linked binaries, it would still complain
+   about "proc size mismatch" (if the 4.0 lib was still
+   there) or some lib missing error (if the 4.0 lib
+   had been removed from /usr/lib). If the version minor
+   number changes (4.0 to 4.1, for example), I think it
+   will run with a warning and so you may not need to
+   recompile all of these things.
+
+   The dynamically linked binaries that I am aware of
+   will give the  "proc size mismatch" error (if the 4.0
+   lib was still there) or some lib missing error (if the
+   4.0 lib had been removed from /usr/lib). If the version
+   minor number changes (4.0 to 4.1, for example), I think
+   it will run with a warning, and you may not need to
+   recompile all of these things.
+
+   The dynamically linked binaries that I am aware of
+   are:
+      /usr/bin/fstat
+      /usr/bin/gdb
+      /usr/bin/ipcs
+      /usr/bin/netstat
+      /usr/bin/nfsstat
+      /usr/bin/systat
+      /usr/bin/uptime (linked to /usr/bin/w)
+      /usr/bin/vmstat
+      /usr/bin/w
+   Note that /usr/bin/uptime is a link to /usr/bin/w and
+   will be set up properly when you do the "make install"
+   for w.
+
+   To recompile these, do the following:
+      cd /usr/src/usr.bin/&lt;cmd&gt;
+      make 
+      make install
+   For example, to recompile /usr/bin/vmstat:
+      cd /usr/src/usr.bin/vmstat
+      make
+      make install</programlisting>
+
+Much thanks to John Wittkowski (jpw@netscape.com) for providing such a
+detailed answer for this one.
+
+</para>
+<para>
+A little background: the reason that these system utilities need to
+grovel through kernel memory to get information, including going
+through all the trouble mentioned above, is that this method also
+works on kernel crash dumps, which can be quite a useful feature
+when debugging kernels.
+</para>
+</sect3>
+
+<sect3 id="hash-map-alias0">
+<title>'<emphasis role="bold">hash map "Alias0":unsafe map file
+    <code>/etc/aliases</code>: No such file or directory</emphasis>' is displayed</title>
+<para>
+You can fix this by typing '<emphasis role="bold"><code>newaliases</code></emphasis>' as root.<html:br/>
+Sendmail reports this when the &man.aliases.5; file is not present. Note that
+sendmail(8) actually uses <code>/etc/aliases.db</code> (which is a fast lookup
+hash(3) map built from <code>/etc/aliases</code>), so the error message can be
+a little misleading.  This should only really be noticed in NetBSD 1.3
+to 1.4, other versions have a different <code>/etc/sendmail.cf</code> which
+instructs sendmail to automatically rebuild <code>/etc/aliases.db</code> as
+needed.  If you are not running at least NetBSD 1.4.1 you should probably
+upgrade to a newer <ulink url="../../Releases/formal.html">formal release</ulink>. 
+</para>
+</sect3>
+
+<sect3 id="portmap-messup">
+<title>How do I prevent <code>portmap</code> messages from showing up in shells, when logged in as root</title>
+<para>
+Use <filename role="pkg">security/sudo</filename> and never log in as root.
+</para>
+<para>
+If you must log in as root, then you can edit your
+<code>/etc/syslog.conf</code> file and remove the necessary facilities to
+prevent the annoying messages.  In most cases, it's sufficient to disable
+<code>auth.debug</code> in the line reading:
+<programlisting>*.notice;auth.debug                                     root</programlisting>
+This will eliminate those annoying 
+<code>portmap&nbsp;[pid]:&nbsp;connect&nbsp;from&nbsp;some.other.host&nbsp;...</code>
+messages.  Be sure to <code>kill&nbsp;-HUP</code> the pid of
+your <code>syslogd</code> process.
+</para>
+<para>
+You may also wish to look at the <ulink url="../x/#xconsole">FAQ entry</ulink> 
+for using an <code>xconsole</code>.
+</para>
+</sect3>
+
+<sect3 id="locales">
+<title>How do I get umlauts and other localised characters displayed?</title>
+<para>
+
+Per default, NetBSD 1.6 has already numerous locales installed.  You can find
+them in <code>/usr/share/locales</code>.  Choose the locale most suitable for your
+location and set the LC_ALL environment variable accordingly.  Note that it is
+<emphasis>not</emphasis> sufficient to set LC_ALL to, say, ``de_DE'', but that you should
+use the <emphasis>full</emphasis> locale, such as ``de_DE.ISO8859-15''.
+</para>
+<para>
+For older versions of NetBSD, here's a tip from the <ulink
+url="http://mail-index.NetBSD.org/netbsd-users/2000/11/09/0019.html">mail
+archives</ulink>:
+<orderedlist>
+<listitem> Grab <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/i386/french-1.4/locale.tgz">locale.tgz</ulink></listitem>
+<listitem> Unpack it in /: <code>tar plzvxCf / locale.tgz</code></listitem>
+<listitem> In your shell, set LC_ALL=iso_8859_1 (make it permanent in .cshrc, 
+     .profile, ...)</listitem>
+<listitem> Restart your shell or re-login</listitem>
+<listitem> See your shell, vi, etc. accept all these umlauts from your keyboard: &ouml;&auml;&uuml;&Auml;&Ouml;&Uuml;...</listitem>
+</orderedlist>
+</para>
+</sect3>
+</sect2>
+
 <sect2 id="other-questions">
 <title>Other Questions</title>
+
+<sect3 id="bluetooth">
+  <title>How does Bluetooth support in NetBSD work?</title>
+  <para>
+    The first official NetBSD version that comes with Bluetooth
+    support is NetBSD 4.0. A 
+    <ulink url="http://homepages.rya-online.net/plunky/HOWTO.txt">howto</ulink>
+    for setup and configuration is available.
+    <!-- This should be put into the NetBSD Guide... - hubertf -->
+  </para>
+</sect3>
 
 <sect3 id="editing-files">
 <title>Editing files under NetBSD</title>
