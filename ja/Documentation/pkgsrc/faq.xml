@@ -1,26 +1,29 @@
 <!-- $NetBSD: faq.xml,v 1.1 2004/09/29 13:08:36 hubertf Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: faq.xml,v 1.1 2004/09/29 13:08:36 hubertf Exp   -->
 
 <chapter id="faq"> <?dbhtml filename="faq.html"?>
-<title>Frequently Asked Questions about pkgsrc Features </title>
+<title>pkgsrc の機能に関する、よくある質問 </title>
 
 <para>
-  This section contains hints, tips &amp; tricks on special things in
-  pkgsrc that we didn't find a better place for in the previous
-  chapters, and it will contain items for both pkgsrc users and
-  pkgsrc developers. 
+  この節では、pkgsrc の特別な事柄に関する助言、技巧や要領のうち、
+  前章に適当な掲載場所がなかったものを掲載しています。
+  ここでは、pkgsrc 利用者向けの情報と pkgsrc 開発者向けの情報を、
+  どちらも掲載します。
 </para>
 
 <sect1>
-<title>Other distrib methods than .tar.gz</title>
+<title>.tar.gz 以外の配布方法</title>
 
 <para>
-If your package uses a different distribution method from
-<filename>.tar.gz</filename>, take a
-look at the package for <pkg>editors/sam</pkg>, which uses a gzipped shell archive
-(shar). The quick solution is to set
-<varname>EXTRACT_SUFX</varname> to the name after the
-<varname>DISTNAME</varname> field, and add the following to your
-package's <filename>Makefile</filename>:
+パッケージが
+<filename>.tar.gz</filename>以外の方法で配布されている場合、<pkg>editors/sam</pkg>パッケー
+ジを参考にしてください。これはgzipされたシェルアーカイブ(shar)を使っていま
+す。いちおう簡単に説明すると、
+<varname>DISTNAME</varname>フィールドの後で
+<varname>EXTRACT_SUFX</varname>に名前を
+設定し、
+パッケージの<filename>Makefile</filename>に以下の設定を追加してください。
 </para>
 
 <programlisting>EXTRACT_SUFX=   .msg.gz
@@ -31,33 +34,33 @@ EXTRACT_AFTER_ARGS=     |sh</programlisting>
 
 
 <sect1>
-<title>Packages not creating their own subdirectory</title>
+<title>それ自身のサブディレクトリーを作り出さないパッケージ</title>
 
 <para>
-Your package doesn't create a subdirectory for itself (like GNU software
-does, for instance), but extracts itself in the current directory: see
-<pkg>editors/sam</pkg> again, but the quick answer is:
+パッケージが例えばGNUソフトウェアのようにサブディレクトリーを作るのではなく、
+カレントディレクトリーに展開される場合、もう一度<pkg>editors/sam</pkg>を見てく
+ださい。簡単にいうと以下の設定が必要です。
 </para>
 
 <programlisting>WRKSRC=		${WRKDIR}</programlisting>
 
 <para>
-Please note that the old:
+なお、以前使われていた
 </para>
 
 <programlisting>NO_WRKSUBDIR=   yes</programlisting>
 
 <para>
-has been deprecated and should not be used.
+は廃止されましたので、もう使わないでください。
 </para>
 </sect1>
 
 <sect1>
-<title>Custom configuration process</title>
+<title>カスタムコンフィギュレーションプロセス</title>
 
 <para>
-Your package uses a weird Configure script, eg.
-<pkg>sysutils/top</pkg>. The quick answer is:
+パッケージが、たとえば<pkg>sysutils/top</pkg>のようにかわったConfigureスクリプトを使用している場合は、
+簡単にいえば、以下の設定をおこなってください。
 </para>
 
 <programlisting>HAS_CONFIGURE=          yes
@@ -67,12 +70,13 @@ CONFIGURE_ARGS+=        netbsd13</programlisting>
 
 
 <sect1>
-<title>Packages not building in their DISTNAME directory</title>
+<title>DISTNAME ディレクトリーで作成されないパッケージ</title>
 
 <para>
-If your package builds in a different directory from its base
-<varname>DISTNAME</varname> (see <pkg>lang/tcl</pkg> and
-<pkg>x11/tk</pkg>), try:
+パッケージが、
+<varname>DISTNAME</varname>をベースにしないディレクトリーで構築される場合は、
+以下のようにします (<pkg>lang/tcl</pkg> および
+<pkg>x11/tk</pkg>を参考にしてください)。
 </para>
 
 <programlisting>WRKSRC=         ${WRKDIR}/${DISTNAME}/unix</programlisting>
@@ -80,26 +84,25 @@ If your package builds in a different directory from its base
 
 
 <sect1>
-<title>How to fetch all distfiles at once</title>
+<title>一度にすべてのdistfileを取得する方法</title>
 
 <para>
-You would like to download all the distfiles in a single batch from work or
-university, where you can't run a <command>make fetch</command>. There
-is an archive of distfiles on <ulink
-url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/distfiles/">ftp.NetBSD.org</ulink>,
-but downloading the entire directory may not be appropriate.
+<command>make fetch</command>を実行できない職場や大学において、一回のバッチ処理で、すべて
+のdistfileをダウンロードしたいと思うことがあるかもしれません。<ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/distfiles/">ftp.NetBSD.org</ulink>
+に distfile が置かれていますが、
+このディレクトリーをまるごとダウンロードするのは不適切です。
 </para>
 
 <para>
-The answer here is to do a <command>make fetch-list</command> in
-<filename>/usr/pkgsrc</filename> or one of it's subdirectories, carry the 
-resulting list to your machine at work/school and use it there If you don't
-have a NetBSD-compatible ftp(1) (like lukemftp) at work, don't forget to
-set <varname>FETCH_CMD</varname> to something that fetches a URL:
+現時点では、<command>make fetch-list</command>を<filename>/usr/pkgsrc</filename>またはそのサブディレクトリーで実行し、その結果のリストを職
+場や学校のマシンに持ってきて、使用してくださいとしかいえません。NetBSD と互
+換な ftp(1) (lukemftpなど)が使えない場合は、URLを指定して取得ができるコマンド
+を<varname>FETCH_CMD</varname>に指定することを忘れないでください:
 </para>
 
 <para>
-At home:
+自宅で:
 </para>
 
 <screen><prompt>%</prompt> <userinput>cd /usr/pkgsrc</userinput>
@@ -107,28 +110,26 @@ At home:
 <prompt>%</prompt> <userinput>scp /tmp/fetch.sh work:/tmp</userinput></screen>
 
 <para>
-At work:
+職場で:
 </para>
 
 <screen><prompt>%</prompt> <userinput>sh /tmp/fetch.sh</userinput></screen>
 
 <para>
-then tar up <filename>/tmp/distfiles</filename> and take it home.
+実行後、 <filename>/tmp/distfiles</filename> を tar で固めて自宅に持って帰ります。
 </para>
 
 <para>
-If you have a machine running NetBSD, and you want to get
-<emphasis>all</emphasis> distfiles
-(even ones that aren't for your machine architecture), you can do so by
-using the above-mentioned <command>make fetch-list</command> approach, or
-fetch the distfiles directly by running:
+NetBSD で動いているマシンがあって、<emphasis>すべての</emphasis>distfile (そのマシンのアーキテ
+クチャー向けではないものも含む)を取得したい場合は、上述の<command>make fetch-list</command>
+の方法を使うか、以下のようにしてdistfileを直接取得することができます。
 </para>
 
 <screen><prompt>%</prompt> <userinput>make mirror-distfiles</userinput></screen>
 
 <para>
-If you even decide to ignore <varname>NO_{SRC,BIN}_ON_{FTP,CDROM}</varname>,
-then you can get everything by running:
+<varname>NO_{SRC,BIN}_ON_{FTP,CDROM}</varname>も無視したい場合は、以下のようにしてすべてのもの
+を取得することができます。
 </para>
 
 <screen><prompt>%</prompt> <userinput>make fetch NO_SKIP=yes</userinput></screen>
@@ -136,15 +137,14 @@ then you can get everything by running:
 
 
 <sect1>
-<title>How to fetch files from behind a firewall</title>
+<title>防火壁の内側からファイルを取得する方法</title>
 
 <para>
-If you are sitting behind a firewall which does not allow direct connections
-to Internet hosts (i.e. non-NAT), you may specify the relevant proxy hosts.
-This is done using an environment variable in the form of a URL
-e.g. in Amdahl, the machine <quote>orpheus.amdahl.com</quote> is one of
-the firewalls, and it uses port 80 as the proxy port number. So the proxy
-environment variables are:
+もし、あなたが防火壁の内側にいて、インターネットのホストに直接接続できない
+(つまりNATを使っていない)場合、適切なプロキシーホストを指定することができま
+す。これはURL形式の環境変数で指定します。例えば、Amdahlドメインにおいては、
+<quote>orpheus.amdahl.com</quote> というマシンは防火壁のひとつで、プロキシーポート番号とし
+て、80番のポートを使用します。この場合、proxy環境変数は以下のようになります。
 </para>
 
 <programlisting>ftp_proxy=ftp://orpheus.amdahl.com:80/
@@ -153,25 +153,21 @@ http_proxy=http://orpheus.amdahl.com:80/</programlisting>
 
 
 <sect1>
-<title>How to pull in variables from /etc/mk.conf</title>
+<title>/etc/mk.confから変数を捕まえる方法</title>
 
 <para>
-The problem with package-defined variables that can be overridden via
-<varname>MAKECONF</varname> or <filename>/etc/mk.conf</filename> is
-that &man.make.1; expands a variable as it is 
-used, but evaluates preprocessor like statements (.if, .ifdef and
-.ifndef) as they are read.  So, to use any variable (which may be set
-in <filename>/etc/mk.conf</filename>) in one of the .if* statements, the file
-<filename>/etc/mk.conf</filename>
-must be included before that .if* statement.
+<varname>MAKECONF</varname>や<filename>/etc/mk.conf</filename>
+で上書き可能な、パッケージで定義された変数には問題が
+あります。それは、変数は &man.make.1; がそれを使う時に展開されるが、プリプロセッサー
+風の文(.if、.ifdefそして.ifndef)は読み込み時に評価される事です。したがって、
+.if*文内で変数(<filename>/etc/mk.conf</filename>でセットされる可能性のある)を使う時は、その.if*
+ステートメントの前に<filename>/etc/mk.conf</filename>をインクルードしておかなくていけません。
 </para>
 
 <para>
-Rather than have a number of ad-hoc ways of including
-<filename>/etc/mk.conf</filename>,
-should it exist, or <varname>MAKECONF</varname>, should it exist, include the
-<filename>pkgsrc/mk/bsd.prefs.mk</filename> file in the package Makefile before any
-preprocessor-like .if, .ifdef, or .ifndef statements:
+<filename>/etc/mk.conf</filename>や<varname>MAKECONF</varname>が存在したら、それらをインクルードするというad-hocな
+方法をとらずに、すべてのプリプロセッサー風の.if、.ifdef、または.ifndef文の
+前で、<filename>pkgsrc/mk/bsd.prefs.mk</filename>をインクルードしてください。
 </para>
 
 <programlisting>.include "../../mk/bsd.prefs.mk"
@@ -181,25 +177,25 @@ preprocessor-like .if, .ifdef, or .ifndef statements:
 .endif</programlisting>
 
 <para>
-If you wish to set the <varname>CFLAGS</varname> variable in
-<filename>/etc/mk.conf</filename> please make sure to use:
+<filename>/etc/mk.conf</filename> で <varname>CFLAGS</varname> 変数を設定したい場合は、
+以下のような形で使うようにしてください。
 
 <screen>CFLAGS+=	-your -flags</screen>
 
-Using <varname>CFLAGS=</varname> (i.e. without the <quote>+</quote>) may
-lead to problems with packages that need to add their own flags.  Also,
-you may want to take a look at the <pkg>devel/cpuflags</pkg> package if
-you're interested in optimization for the current CPU.
+<varname>CFLAGS=</varname> のようにする (つまり、'+'を付けない) と、
+独自のフラグを追加する必要があるパッケージで問題を起こすことがあります。
+また、CPUにあわせた最適化に関心がある場合は、
+<pkg>devel/cpuflags</pkg> パッケージを見ておくとよいでしょう。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Is there a mailing list for pkg-related discussion?</title>
+<title>pkgについて話しあうためのメーリングリストはありますか?</title>
 
 <para>
-Yes, <email>tech-pkg@NetBSD.org</email> is the list for discussing package
-related issues. To subscribe do:
+はい。<email>tech-pkg@NetBSD.org</email>がパッケージに関する問題を議論するためのメーリングリストです。
+参加するためには以下のようにして下さい。
 </para>
 
 <programlisting>&cprompt; echo subscribe tech-pkg | mail majordomo@NetBSD.org</programlisting>
@@ -207,78 +203,75 @@ related issues. To subscribe do:
 
 
 <sect1>
-<title>How do I tell <command>make fetch</command> to do passive FTP?</title>
+<title>どうすれば<command>make fetch</command>でpassive FTPを使用することができますか?</title>
 
 <para>
-This depends on which utility is used to retrieve distfiles. From
-<filename>bsd.pkg.mk</filename>, <varname>FETCH_CMD</varname> is assigned
-the first available command from the following list:
+distfileの取得にどのユーティリティーを使っているかによります。<filename>bsd.pkg.mk</filename>は、
+以下のリストのなかで利用可能なコマンドのうち、最初のものを<varname>FETCH_CMD</varname>に割り当
+てます:
 </para>
 
 <programlisting>${LOCALBASE}/bin/ftp
 /usr/bin/ftp</programlisting>
 
 <para>
-On a default NetBSD installation, this will be
-<filename>/usr/bin/ftp</filename>, which automatically
-tries passive connections first, and falls back to active connections if the
-server refuses to do passive. For the other tools, add the following to your
-<filename>/etc/mk.conf</filename> file:
-<varname>PASSIVE_FETCH=1</varname>.
+NetBSD のデフォルトのインストールでは、<filename>/usr/bin/ftp</filename>となり、これは自動的に、
+最初はパッシブ接続を試みます。そして、サーバーがパッシブ接続を拒否した場合
+は、アクティブ接続に切り替わります。これ以外のツールの場合は、
+<filename>/etc/mk.conf</filename>に以下の設定を追加してください。
+<varname>PASSIVE_FETCH=1</varname>
 </para>
 
 <para>
-Having that option present will prevent
-<filename>/usr/bin/ftp</filename> from falling back to
-active transfers.
+これを設定すると、<filename>/usr/bin/ftp</filename>はアクティブ転送への切り替えをおこなわなくな
+ります。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Dependencies on other packages</title>
+<title>他のパッケージへの依存</title>
 
 <para>
-Your package may depend on some other package being present - and there are
-various ways of expressing this dependency. NetBSD supports the
-<varname>BUILD_DEPENDS</varname> and <varname>DEPENDS</varname> definitions,
-as well as dependencies via
-<filename>buildlink3.mk</filename> (see <xref linkend="buildlink"/>).
+パッケージは他のパッケージに依存するかもしれません。そして、この依存性を定
+義するためのいろいろな方法があります。NetBSD は、<filename>buildlink3.mk</filename>を使った依存関
+係 (<xref linkend="buildlink"/>参照)
+のほか、
+<varname>BUILD_DEPENDS</varname>、<varname>DEPENDS</varname>定義をサポートしています。
 </para>
 
 <para>
-The basic difference between the two definitions is as follows: The
-<varname>DEPENDS</varname> definition registers that pre-requisite in
-the binary package so it will be pulled in when the binary package is
-later installed, whilst the <varname>BUILD_DEPENDS</varname>
-definition does not, marking a dependency that is only needed for
-building the package. 
+両定義の基本的な差異は、以下の通りです: <varname>DEPENDS</varname>定義では、
+その依存性がバイナリーパッケージ内に記録されるので、
+後でバイナリーパッケージをインストールする時に依存性が呼び出されます。
+一方、<varname>BUILD_DEPENDS</varname>定義ではバイナリーパッケージにそのような記録はされず、
+パッケージの構築に際して依存性があることが示されているだけです。
 </para>
 
 <para>
-This means that if you only need a package present whilst you are building,
-it should be noted as a <varname>BUILD_DEPENDS</varname>.
+つまり、あるパッケージが必要となるのが構築時だけである場合、そのパッケージ
+は<varname>BUILD_DEPENDS</varname>として書きます。
 </para>
 
 <para>
-The format for a <varname>BUILD_DEPENDS</varname> and a
-<varname>DEPENDS</varname> definition is:
+<varname>BUILD_DEPENDS</varname>および
+<varname>DEPENDS</varname>定義の書式は以下の通りです:
 </para>
 
 <programlisting>&lt;pre-req-package-name&gt;:../../&lt;category&gt;/&lt;pre-req-package&gt;</programlisting>
 
 <para>
-Please note that the <quote>pre-req-package-name</quote> may include any of the wildcard
-version numbers recognised by &man.pkg.info.1;.
+なお、この<quote>pre-req-package-name</quote> のバージョン番号には、&man.pkg.info.1; で説明され
+ている各ワイルドカードを含めることができます。
 </para>
 
 <orderedlist>
 
 <listitem>
 <para>
-If  your package needs another package's binaries or libraries to
-build or run, and if that package has a
-<filename>buildlink3.mk</filename> file available, use it:
+パッケージを構築または実行するために他のパッケージのバイナリーやライブラリーが必要で、
+そのパッケージに <filename>buildlink3.mk</filename> ファイルがある場合は、
+それを使ってください。
 </para>
 
 <programlisting>
@@ -288,9 +281,9 @@ build or run, and if that package has a
 
 <listitem>
 <para>
-If your package needs to use another package to build itself and there
-is no <filename>buildlink3.mk</filename> file available, use
-the <varname>BUILD_DEPENDS</varname> definition:
+パッケージを構築するために他のパッケージが必要で、
+そのパッケージに <filename>buildlink3.mk</filename> ファイルがない場合は、
+<varname>BUILD_DEPENDS</varname>定義を使ってください。
 </para>
 
 <programlisting>BUILD_DEPENDS+=  autoconf-2.13:../../devel/autoconf</programlisting>
@@ -298,101 +291,99 @@ the <varname>BUILD_DEPENDS</varname> definition:
 
 <listitem>
 <para>
-If your package needs a library with which to link and again there is
-no <filename>buildlink3.mk</filename> file available, this is specified
-using the <varname>DEPENDS</varname> definition.  An example of this is
-the <pkg>print/lyx</pkg> package, which uses the xpm library, version
-3.4j to build:
+パッケージがリンクのためのライブラリーを必要とし、
+そのパッケージにやはり <filename>buildlink3.mk</filename> ファイルがない場合は、
+<varname>DEPENDS</varname>定義を使ってください。たとえば、
+<pkg>print/lyx</pkg>パッケージは、作成のためにxpm
+ライブラリーのバージョン3.4jを使用します。
 </para>
 
 <programlisting>DEPENDS+=       xpm-3.4j:../../graphics/xpm</programlisting>
 
 <para>
-You can also use wildcards in package dependences:
+また、パッケージ依存関係にはワイルドカードを使うことができます。
 </para>
 
 <programlisting>DEPENDS+=	xpm-[0-9]*:../../graphics/xpm</programlisting>
 
 <para>
-Note that such wildcard dependencies are retained when creating binary
-packages.  The dependency is checked when installing the binary
-package and any package which matches the pattern will be used. 
-Wildcard dependencies should be used with care.
+ワイルドカード依存関係は、バイナリーパッケージを作る時には保持されること
+に注意してください。依存関係はバイナリーパッケージのインストール時にチェッ
+クされ、パターンにマッチするパッケージが使われます。ワイルドカード依存関係
+は、注意を払って使うよう気を付けてください。
 </para>
 
 <para>
-The <quote>-[0-9]*</quote> should be used instead of <quote>-*</quote>
-to avoid potentially 
-ambiguous matches such as <quote>tk-postgresql</quote> matching a
-<quote>tk-*</quote> <varname>DEPENDS</varname>.
+<quote>tk-postgresql</quote>が<quote>tk-*</quote>という
+<varname>DEPENDS</varname>にマッチするなどの曖昧なマッチの可能性を排除
+するため、<quote>-*</quote>ではなく
+<quote>-[0-9]*</quote>を使うことをおすすめします。
 </para>
 
-<para>Wildcards can also be used to specify that a package will only
-build against a certain minimum version of a pre-requisite: </para>
+<para>ワイルドカードは、
+依存パッケージがあるバージョン以上でないと構築できないことを指定するのにも使えます。</para>
 
 <programlisting>DEPENDS+=       tiff>=3.5.4:../../graphics/tiff</programlisting>
 
 <para>
-This means that the package will build against version 3.5.4 of the tiff library
-or newer.  Such a dependency may be warranted if, for example, the API of the
-library has changed with version 3.5.4 and a package would not compile against
-an earlier version of tiff.
+以上のように書いた場合、このパッケージは tiff ライブラリーのバージョン 3.5.4
+以降とともに構築されることを意味します。このような形式の依存関係は、たとえば、
+tiff ライブラリーの API が 3.5.4 で変更されたため、それより前のバージョンの tiff
+ではパッケージがコンパイルできないような場合に、構築できることを保証することができます。
 </para>
 
 <para>
-Please note that such dependencies should only be updated if a package requires
-a newer pre-requisite, but not to denote recommendations such as security
-updates or ABI changes that do not prevent a package from building correctly.
-Such recommendations can be expressed using <varname>RECOMMENDED</varname>:
+なお、このような形式の依存関係は、新しい依存関係が必要となった場合のみに更新してください。
+セキュリティー上の更新あるいは ABI の変更などであって、構築自体は正常におこなうことができる場合、
+その推奨のために依存関係を更新したりしないでください。
+後者の場合は <varname>RECOMMENDED</varname> を使って推奨を示すことができます。
 </para>
 
 <programlisting>RECOMMENDED+=   tiff>=3.6.1:../../graphics/tiff</programlisting>
 
 <para>
-In addition to the above <varname>DEPENDS</varname> line, this denotes
-that while a package will build against tiff&gt;=3.5.4, at least
-version 3.6.1 is recommended.  <varname>RECOMMENDED</varname> entries
-will be turned into dependencies unless explicitly ignored (in which
-case a warning will be printed).  Packages that are built with
-recommendations ignored may not be uploaded to ftp.NetBSD.org by
-developers and should not be used across different systems that may
-have different versions of binary packages installed.  </para>
+これを上述の <varname>DEPENDS</varname> 行に追加することで、
+パッケージの構築は tiff&gt;=3.5.4 でおこなうことができるが、
+少なくともバージョン 3.6.1 を推奨するということを意味します。
+<varname>RECOMMENDED</varname> の内容は、(警告が表示された際に)
+明示的に無視された場合を除き、依存関係に反映されます。
+推奨を無視して構築されたパッケージは、開発者が ftp.NetBSD.org
+へアップロードしてはいけません。また、そのようなパッケージを別のシステムで使うと、
+別バージョンのバイナリーパッケージが複数インストールされる可能性があるので、
+そのようなこともしないようにしてください。  </para>
 
 <para>
-For security fixes, please update the package vulnerabilities file as well as
-setting <varname>RECOMMENDED</varname>
-(see section 11.21 for more information). Also, if
-applicable, please submit for pullup to the stable branch.
+セキュリティー上の修正があった場合は、<varname>RECOMMENDED</varname>
+を設定するとともに、パッケージ脆弱性ファイルを更新してください
+(詳細は 11.21 節を参照)。また、その修正が安定版枝に反映できる場合は、
+pullup を提出してください。
 </para>
 
 </listitem>
 
 <listitem>
 <para>
-If your package needs some executable to be able to run correctly and
-if there's agail no <filename>buildlink3.mk</filename> file, this
-is specified using the <varname>DEPENDS</varname> variable. The
-<pkg>print/lyx</pkg> package needs
-to be able to execute the latex binary from the teTeX package when it runs,
-and that is specified:
+パッケージを実行するために、いくつかの実行可能ファイルが必要であり、かつ
+<filename>buildlink3.mk</filename> ファイルが存在しない場合は、
+<varname>DEPENDS</varname>変数を使ってください。<pkg>print/lyx</pkg>パッケージを実行する時には、
+teTeXパッケージ由来のlatex のバイナリーが実行可能でなければなりません。これ
+は、以下のように指定します。
 </para>
 
 <programlisting>DEPENDS+=        teTeX-[0-9]*:../../print/teTeX</programlisting>
 
 <para>
-The comment about wildcard dependencies from previous paragraph
-applies here, too.
+上述した、ワイルドカード依存関係に関する注意は、ここにも当てはまります。
 </para>
 </listitem>
 
 </orderedlist>
 
 <para>
-If your package needs files from another package to build, see the
-first part of the <quote>do-configure</quote> target
-<pkg>print/ghostscript5</pkg> package
-(it relies on the jpeg sources being present in source form during the
-build):
+パッケージの構築用に別のパッケージに含まれるファイルが必要な場合は、
+<pkg>print/ghostscript5</pkg>パッケージの<quote>do-configure</quote>ターゲットの最初の部分を
+ご覧ください(このパッケージは、構築の際にjpegのソースがソースの状態で存在す
+ることに依存しています)。
 </para>
 
 <programlisting>if [ ! -e ${_PKGSRCDIR}/graphics/jpeg/${WRKDIR:T}/jpeg-6b ]; then \
@@ -400,127 +391,123 @@ build):
 fi</programlisting>
 
 <para>
-If you build any other packages that way, please make sure the working
-files are deleted too when this package's working files are cleaned up.
-The easiest way to do so is by adding a pre-clean target:
+このように、別のパッケージの構築用にソースを展開する場合は、構築するパッケー
+ジの作業ファイルの削除時に、展開した依存先パッケージの作業ファイルも削除す
+るようにしてください。そうするための一番簡単な方法は、pre-cleanターゲットを
+追加することです。
 </para>
 
 <programlisting>pre-clean:
 	cd ${_PKGSRCDIR}/../../graphics/jpeg &amp;&amp; ${MAKE} clean</programlisting>
 
 <para>
-Please also note the <varname>BUILD_USES_MSGFMT</varname> and
-<varname>BUILD_USES_GETTEXT_M4</varname> definitions,
-which are provided as convenience definitions.  The former works out whether
-msgfmt(1) is part of the base system, and, if it isn't, installs the
-<pkg>devel/gettext</pkg> package.  The latter adds a build dependency on either an
-installed version of an older gettext package, or if it isn't, installs the
-<pkg>devel/gettext-m4</pkg> package.
+また、便利に使うことができる<varname>BUILD_USES_MSGFMT</varname>および
+<varname>BUILD_USES_GETTEXT_M4</varname>定
+義にも注意してください。前者は、基本システムに msgfmt(1) があるかどうか調べて、
+ない場合は<pkg>devel/gettext</pkg>パッケージをインストールします。後者は、構築
+の際に、旧バージョンのgettextパッケージがインストールされていることに依存す
+るようにし、これがインストールされていない場合は<pkg>devel/gettext-m4</pkg>パッ
+ケージをインストールします。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Conflicts with other packages</title>
+<title>他のパッケージとの衝突</title>
 
 <para>
-Your package may conflict with other packages a user might already have
-installed on his system, e.g. if your package installs the same set of
-files like another package in our pkgsrc tree.
+パッケージは、すでにインストール済みの別のパッケージと衝突する可能性があり
+ます。例えば、パッケージが、pkgsrcの中の別のパッケージと同じファイルをイン
+ストールするような場合です。
 </para>
 
 <para>
-In this case you can set <varname>CONFLICTS</varname> to a space separated
-list of packages (including version string) your package conflicts with.
+この場合、衝突するパッケージ(バージョン文字列を含む)のリストをスペースで区
+切って<varname>CONFLICTS</varname>にセットすることができます。
 </para>
 
 <para>
-For example <pkg>x11/Xaw3d</pkg> and
-<pkg>x11/Xaw-Xpm</pkg> install provide the
-same shared library, thus you set in
-<filename>pkgsrc/x11/Xaw3d/Makefile</filename>:
+例えば、<pkg>x11/Xaw3d</pkg>および<pkg>x11/Xaw-Xpm</pkg>は同じ共有ライブラリーをイ
+ンストールします。したがって、<filename>pkgsrc/x11/Xaw3d/Makefile</filename>に以下のような設定を
+おこなってください。
 </para>
 
 <programlisting>CONFLICTS=      Xaw-Xpm-[0-9]*</programlisting>
 
 <para>
-and in <filename>pkgsrc/x11/Xaw-Xpm/Makefile</filename>:
+そして、<filename>pkgsrc/x11/Xaw-Xpm/Makefile</filename>には以下の設定が必要です。
 </para>
 
 <programlisting>CONFLICTS=      Xaw3d-[0-9]*</programlisting>
 
 <para>
-Packages will automatically conflict with other packages with the name prefix
-and a different version string. <quote>Xaw3d-1.5</quote> e.g. will automatically conflict
-with the older version <quote>Xaw3d-1.3</quote>.
+パッケージは、名前のプレフィックスが同じで、異なるバージョン文字列をもつ別
+のパッケージと自動的に衝突します。例えば<quote>Xaw3d-1.5</quote>は、古いバージョンの
+<quote>Xaw3d-1.3</quote>と衝突するでしょう。
 </para>
 </sect1>
 
 
 <sect1>
-<title>How to handle modified distfiles with the 'old' name</title>
+<title>'古い'名前のまま更新されたdistfileの取り扱い</title>
 
 <para>
-Sometimes authors of a software package make some modifications after the
-software was released, and they put up a new distfile without changing the
-package's version number. If a package is already in pkgsrc at that time, 
-the md5 checksum will no longer match. The correct way to work around this
-is to update the package's md5 checksum to match the package on the master
-site (beware, any mirrors may not be up to date yet!), and to remove the 
-old distfile from <hostid>ftp.NetBSD.org</hostid>'s
-<filename>/pub/NetBSD/packages/distfiles</filename> directory.
-Furthermore, a mail to the package's author seems appropriate making sure
-the distfile was really updated on purpose, and that no trojan horse or so
-crept in.
+時々、ソフトウェアパッケージの作者がソフトウェアのリリース後に変更を加え、
+変更後のdistfileを、バージョン番号を変えずに公開することがあります。このと
+き、pkgsrcにそのパッケージがすでに入っていると、md5チェックサムが一致しない
+ことになります。この問題の正しい回避策は、パッケージのmd5チェックサムをマス
+ターサイト(ミラーサイトでは更新されていないことがあります!)のパッケージに合
+わせて変更し、古いdistfileを<hostid>ftp.NetBSD.org</hostid>の<filename>/pub/NetBSD/packages/distfiles</filename>
+ディレクトリーから削除することです。さらに、パッケージの正当な作者にメール
+を出して、distfileの更新が意図されたものであって、トロイの木馬などが仕込ま
+れたのではないことを確認します。
 </para>
 </sect1>
 
 
 <sect1>
-<title>What does "Don't know how to make /usr/share/tmac/tmac.andoc" mean?</title>
+<title>"Don't know how to make /usr/share/tmac/tmac.andoc" ってどういうこと?</title>
 
 <para>
-When compiling the <pkg>pkgtools/pkg_install</pkg> package, you get the error
-from make that it doesn't know how to make
-<filename>/usr/share/tmac/tmac.andoc</filename>? This
-indicates that you don't have installed the <quote>text</quote> set on your machine
-(nroff, ...). It is recommended to do that to format manpages.
+<pkg>pkgtools/pkg_install</pkg>パッケージのコンパイル時に、makeが
+<filename>/usr/share/tmac/tmac.andoc</filename> の作り方がわからないというエラーを出します。これ
+は、そのマシンに<quote>text</quote>セット(nroffなど)がインストールされていないことを意味
+しています。マニュアルページの整形ができるようにするため、<quote>text</quote>セットをインストールしてください。
 </para>
 
 <para>
-In the case of the <pkg>pkgtools/pkg_install</pkg> package, you can get
-away with setting <varname>NOMAN=YES</varname> either in the environment
-or in <filename>/etc/mk.conf</filename>.
+この<pkg>pkgtools/pkg_install</pkg>パッケージの事例は、
+環境変数か<filename>/etc/mk.conf</filename>のどちらかで
+<varname>NOMAN=YES</varname>を設定して回避することもできます。
 </para>
 </sect1>
 
 
 <sect1>
-<title>How to handle incrementing versions when fixing an existing
-package</title>
+<title>既存パッケージ修正時に、バージョンを上げるにはどうするか
+</title>
 
 <para>
-When making fixes to an existing package it can be useful to change
-the version number in <varname>PKGNAME</varname>. To avoid conflicting with
-future versions
-by the original author, a <quote>nb1</quote>, <quote>nb2</quote>, ... suffix
-can be used on package
-versions by setting <varname>PKGREVISION=1</varname> (2, ...). The
-<quote>nb</quote> is treated like a <quote>.</quote> by the pkg tools. e.g.
+既存のパッケージに修正を加えたときに、<varname>PKGNAME</varname>のバージョン番号を変えると便利
+な場合があります。元の作者による将来のバージョンと衝突しないようにするため、
+<varname>PKGREVISION=1</varname> (2, ...)を設定して、パッケージのバージョンに
+<quote>nb1</quote>, <quote>nb2</quote>, ...
+という接尾辞をつけることができます。この<quote>nb</quote>は、pkgツール群からは<quote>.</quote>と
+同様の扱いを受けます。たとえば、
 </para>
 
 <programlisting>DISTNAME=	foo-17.42
 PKGREVISION=	9</programlisting>
 
 <para>
-will result in a <varname>PKGNAME</varname> of <quote>foo-17.42nb9</quote>.
+とすると、<varname>PKGNAME</varname>は<quote>foo-17.42nb9</quote>になります。
 </para>
 
 <para>
-When a new release of the package is released, the
-<varname>PKGREVISION</varname> should be
-removed. e.g. on a new minor release of the above package, things should
-be like:
+このパッケージの新しいリリース版が出た際には、
+<varname>PKGREVISION</varname>は消してください。
+たとえば、上で例示したパッケージの新しいマイナーリリースに際しては、以下の
+ようにします
 </para>
 
 <programlisting>DISTNAME=	foo-17.43</programlisting>
@@ -528,114 +515,113 @@ be like:
 
 
 <sect1>
-<title>Could not find bsd.own.mk - what's wrong?</title>
+<title>Could not find bsd.own.mk - 何がいけないの?</title>
 
 <para>
-You didn't install the compiler set, <filename>comp.tgz</filename>, when
-you installed your NetBSD machine. Please get it and install it, by
-extracting it in <filename>/</filename>:
+NetBSD のインストール時にコンパイラー一式<filename>comp.tgz</filename>をインストールしなかったか
+らです。<filename>comp.tgz</filename>を入手し、
+<filename>/</filename>で展開してインストールしてください:
 </para>
 
 <screen><prompt>#</prompt> <userinput>cd /</userinput>
 <prompt>#</prompt> <userinput>tar --unlink -zxvpf .../comp.tgz</userinput></screen>
 
 <para>
-<filename>comp.tgz</filename> is part of every NetBSD release. Get
-the one that corresponds to your release (determine via
-<command>uname -r</command>).
+<filename>comp.tgz</filename>は NetBSD のどのリリースにも含まれていますので、あなたがインストール
+したリリース
+(<command>uname -r</command>で調べられます) に合ったものを入手してください。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Restricted packages</title>
+<title>制限つきパッケージ</title>
 
 <para>
-Some licenses restrict how software may be re-distributed.  In order to
-satisfy these restrictions, the package system defines five make variables
-that can be set to note these restrictions:
+ライセンスによっては、ソフトウェアの再配布方法に制限があります。このような
+制限を満たすようにするため、パッケージシステムでは以下のような制限を設定で
+きる5個のmake変数を定義しています:
 </para>
 
-<itemizedlist>
 
 <listitem>
 <para><varname>RESTRICTED</varname></para>
 <para>
-   This variable should be set whenever a restriction exists
-   (regardless of its kind).  Set this variable to a string
-   containing the reason for the restriction.
+   なにか制限がある場合は常に、(制限の種類にかかわらず)この変数を設定します。
+   この変数を、その制限の理由を含む文字列に設定してください。
 </para>
 </listitem>
 
 <listitem> 
 <para><varname>NO_BIN_ON_CDROM</varname></para>
 <para>
-   Binaries may not be placed on CD-ROM.  Set this variable to
-   <varname>${RESTRICTED}</varname> whenever a binary package may not
-   be included on a CD-ROM.
+   バイナリーをCD-ROMに収録してはいけません。バイナリーパッケージを
+   CD-ROMに含めることができない場合は常に、この変数を<varname>${RESTRICTED}</varname>に設定
+   してください。
 </para>
 </listitem>
 
 <listitem> 
 <para><varname>NO_BIN_ON_FTP</varname></para>
 <para>
-   Binaries may not be placed on an FTP server.  Set this
-   variable to <varname>${RESTRICTED}</varname> whenever a binary package
-   may not not be made available on the Internet.
+   バイナリーをFTPサーバーに置いてはいけません。バイナリーパッケージをイ
+   ンターネット上で公開することができない場合は常に、この変数を
+   <varname>${RESTRICTED}</varname>に設定してください。
 </para>
 </listitem>
 
 <listitem>
 <para><varname>NO_SRC_ON_CDROM</varname></para>
 <para>
-   Distfiles may not be placed on CD-ROM.  Set this variable to
-   <varname>${RESTRICTED}</varname> if re-distribution of the source code
-   or other distfile(s) is not allowed on CD-ROMs.
+   distfileをCD-ROMに収録してはいけません。ソースコードやその他の
+   distfileのCD-ROMによる再配布が許可されていない場合は、この変数を
+   <varname>${RESTRICTED}</varname>に設定してください。
 </para>
 </listitem>
 
 <listitem> 
 <para><varname>NO_SRC_ON_FTP</varname></para>
 <para>
-   Distfiles may not be placed on FTP.  Set this variable to
-   <varname>${RESTRICTED}</varname> if re-distribution of the source
-   code or other distfile(s) via the Internet is not allowed.
+   distfileをFTPに置いてはいけません。ソースコードやその他のdistfileのイ
+   ンターネット経由での再配布が許可されていない場合は、この変数を
+   <varname>${RESTRICTED}</varname>に設定してください。
 </para>
 </listitem>
 
 </itemizedlist>
 
 <para>
-Please note that the use of <varname>NO_PACKAGE</varname>,
-<varname>IGNORE</varname>, <varname>NO_CDROM</varname>, or other generic
-make variables to denote restrictions is deprecated, because they
-unconditionally prevent users from generating binary packages!
+<varname>NO_PACKAGE</varname>,
+<varname>IGNORE</varname>, <varname>NO_CDROM</varname> など、制限を意味する上記以外の汎用make変数は使
+わないようにしてください。これらは、ユーザーのバイナリーパッケージ作成を、
+無条件にできないようにするからです。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Automated security check</title>
+<title>自動セキュリティーチェック</title>
 
 <para>
-Please be aware that there can often be bugs in third-party software,
-and some of these bugs can leave a machine vulnerable to exploitation
-by attackers.  In an effort to lessen the exposure, the NetBSD
-packages team maintains a database of known-exploits to packages which
-have at one time been included in pkgsrc.  The database can be
-downloaded automatically, and a security audit of all packages
-installed on a system can take place.  To do this, install the
-<pkg>security/audit-packages</pkg> package.  It has two components:
+サードパーティーのソフトウェアにはしばしばバグがあること、そして、バグのな
+かにはマシンをアタッカーの攻撃に対して脆弱な状態にするものもあることに、ど
+うか注意してください。そのような攻撃にさらされることを減らすために、NetBSD
+パッケージチームでは、pkgsrc化されたことのあるパッケージに関する既知の攻撃
+のデータベースを保守しています。このデータベースを自動的にダウンロードして、
+システムにインストールされている全パッケージのセキュリティー監査をおこなう
+ことができます。これをおこなうには<pkg>security/audit-packages</pkg>パッケージ
+をインストールします。このパッケージは、以下の二つの構成要素からなっていま
+す。
 </para>
 
 <orderedlist>
 
 <listitem>
 <para>
-     <quote>download-vulnerability-list</quote>, an easy way to download a list of the
-     security vulnerabilities information. This list is kept up to date by
-     the NetBSD security officer and the NetBSD packages team, and is
-     distributed from the NetBSD ftp server:
+     <quote>download-vulnerability-list</quote>: セキュリティー脆弱性情報のリストのダウン
+     ロードを簡単にできるようにするものです。この脆弱性情報のリストは、
+     NetBSD セキュリティーオフィサーと NetBSD パッケージチームが最新の状態に保っ
+     ており、NetBSD ftpサーバーで配布されています。
 </para>
 
 <para>
@@ -645,23 +631,21 @@ installed on a system can take place.  To do this, install the
 
 <listitem>
 <para>
-     <quote>audit-packages</quote>, an easy way to audit the current machine, checking
-     each vulnerability which is known. If a vulnerable package is
-     installed, it will be shown by output to stdout, including a
-     description of the type of vulnerability, and a URL containing more
-     information.
+     <quote>audit-packages</quote>: マシンの監査を簡単にできるようにするもので、既知の各脆
+     弱性の確認をします。脆弱性のあるパッケージがインストールされていた場合、
+     そのことを標準出力に出力します。この出力には、脆弱性の種類の説明と詳細
+     情報のURLが含まれます。
 </para>
 </listitem>
 
 </orderedlist>
 
 <para>
-Use of the audit-packages package is strongly recommended!
+audit-packagesパッケージを使うよう強くおすすめします。
 </para>
 
 <para>
-The following message is displayed as part of the audit-packages
-installation procedure:
+audit-packagesのインストール中に以下のようなメッセージが表示されます。
 </para>
 
 <screen>
@@ -686,53 +670,51 @@ fi
 </screen>
 
 <para>
-Note to package developers: When a vulnerability is found, this should be
-noted in
-<filename>localsrc/security/advisories/pkg-vulnerabilities</filename>, and after the
-commit of that file, it should be copied to both
+パッケージ開発者への註: 脆弱性が発見された場合、そのことを
+<filename>localsrc/security/advisories/pkg-vulnerabilities</filename>に記載してcommitしてくださ
+い。このファイルを commit した後、
+<filename>localsrc/security/advisories/Makefile</filename>
+を使って、ftp.NetBSD.orgの
 <filename>/pub/NetBSD/packages/distfiles/pkg-vulnerabilities</filename>
-and
-<filename>/pub/NetBSD/packages/distfiles/vulnerabilities</filename> on
-ftp.NetBSD.org using
-<filename>localsrc/security/advisories/Makefile</filename>.
-In addition,
-if a <filename>buildlink3.mk</filename> file exists for an affected
-package, bumping <varname>PKGREVISION</varname>
-and creating a corresponding
+と
+<filename>/pub/NetBSD/packages/distfiles/vulnerabilities</filename> にコピーしてください。
+さらに、脆弱性の影響を受けるパッケージに <filename>buildlink3.mk</filename>
+ファイルが存在する場合は、<varname>PKGREVISION</varname> を上げて、対応する 
 <varname>BUILDLINK_RECOMMENDED.<replaceable>pkg</replaceable></varname>
-entry should be considered. See <xref linkend="buildlink"/> for more
-information about writing 
-<filename>buildlink3.mk</filename> files and
-<varname>BUILDLINK_*</varname> definitions. Also, if the fix should 
-be applied to the stable pkgsrc branch, be sure to submit a pullup
-request!
+エントリーを作ってください。
+<filename>buildlink3.mk</filename> ファイルや
+<varname>BUILDLINK_*</varname> 定義の書き方の詳細については、
+<xref linkend="buildlink"/>を参考にしてください。
+また、修正を安定版 pkgsrc 枝に適用したほうがよい場合は、
+pullup 要求を提出してください。
 </para>
 </sect1>
 
 
 <sect1>
-<title>What's the proper way to create an account from a package?</title>
+<title>パッケージでアカウントを作成する場合の適切な方法は?</title>
 
 <para>
-There are two make variables used to control the creation of package-specific
-groups and users at pre-install time.  The first is
-<varname>PKG_GROUPS</varname>, which is a
-list of group[:groupid] elements, where the groupid is optional.  The second
-is <varname>PKG_USERS</varname>, which is a list of elements of the form:
+パッケージ特有のグループやユーザーをpre-install時に作成するよう制御するため、
+二つのmake変数があります。一つ目は
+<varname>PKG_GROUPS</varname>で、group[:groupid]という要素
+(グループIDはあってもなくてもかまいません)を列挙したものです。二つ目は
+<varname>PKG_USERS</varname>で、以下のような形式の要素を列挙したものです:
 </para>
 
 <programlisting>user:group[:[userid][:[description][:[home][:shell]]]]</programlisting>
 
 <para>
-where only the user and group are required, the rest being optional.  A
-simple example is:
+userとgroupのみが必須であり、それ以外はあってもなくてもかまいません。簡単な
+例は、以下のとおりです:
 </para>
 
 <programlisting>PKG_GROUPS=	foogroup
 PKG_USERS=	foouser:foogroup</programlisting>
 
 <para>
-A more complex example is that creates two groups and two users is:
+もっと複雑な、二つのグループと二つのユーザーを作成する例は、以下のとおりで
+す:
 </para>
 
 <programlisting>PKG_GROUPS=	group1 group2:1005
@@ -740,312 +722,310 @@ PKG_USERS=	first:group1::First\\ User			\
 		second:group2::Second\\ User:/home/second:${SH}</programlisting>
 
 <para>
-By default, a new user will have home directory
-<filename>/nonexistent</filename>, and login shell
-<filename>/sbin/nologin</filename> unless they are specified as part of
-the user element.
+ユーザーのホームディレクトリーやログインシェルを指定しなかった場合の、デフォ
+ルトのホームディレクトリーは
+<filename>/nonexistent</filename>、ログインシェルは
+<filename>/sbin/nologin</filename>です。
 </para>
 
 <para>
-The package <filename>Makefile</filename> must also set
-<varname>USE_PKGINSTALL=YES</varname>. This will cause the users and groups
-to be created at pre-install time, and the admin will be prompted to remove
-them at post-deinstall time.  Automatic creation of the users and groups
-can be toggled on and off by setting the 
-<varname>PKG_CREATE_USERGROUP</varname> variable prior to package
-installation. 
+これらの変数を指定するほか、パッケージの<filename>Makefile</filename>で、
+<varname>USE_PKGINSTALL=YES</varname> を設定する必要があります。こ
+れにより、pre-install時にユーザーとグループが作成されるようになり、
+post-deinstall時にはこのユーザーとグループの削除を管理者に促すようになりま
+す。パッケージのインストールの前に <varname>PKG_CREATE_USERGROUP</varname> 変数をonかoffに
+設定しておくと、ユーザーとグループを自動で作成するかどうかを切替えることが
+できます。
 </para>
 </sect1>
 
 
 <sect1>
-<title>How to handle compiler bugs</title>
+<title>コンパイラーのバグへの対処方法</title>
 
 <para>
-Some source files trigger bugs in the compiler, based on combinations
-of compiler version and architecture and almost always relation to
-optimisation being enabled.  Common symptoms are gcc internal errors
-or never finishing compiling a file.
+ソースファイルのなかには、コンパイラーのバージョンとアーキテクチャーの組合
+せによって、また、ほとんどの場合は、最適化を有効にしたことも関係して、コン
+パイラーのバグを発現させるものがあります。よくある症状は、gccの内部エラーや、
+ファイルのコンパイルが完了しないというものです。
 </para>
 
 <para>
-Typically a workaround involves testing the <varname>MACHINE_ARCH</varname>
-and compiler version, disabling optimisation for that
-file/<varname>MACHINE_ARCH</varname>/compiler
-combination, and documenting it in
-<filename>pkgsrc/doc/HACKS</filename>.
-See that file for a number of examples!
+たいていは、回避策として、<varname>MACHINE_ARCH</varname>
+とコンパイラーのバージョンを確認し、
+問題のあるファイル/<varname>MACHINE_ARCH</varname>/コンパイラーの組合せに対して最適化を無効に
+し、そのことを<filename>pkgsrc/doc/HACKS</filename>に文書化しておくことが必要となります。
+このファイルに多くの例が載っているので、参照してください。
 </para>
 </sect1>
 
 
 <sect1 id="faq.info-files">
-<title>Packages providing info files</title>
+<title>infoファイルが附属するパッケージ</title>
 
 <para>
-Some packages install info files or use the <quote>makeinfo</quote>
-or <quote>install-info</quote> commands. Each of the info files:
+パッケージによっては、infoファイルをインストールしたり、<quote>makeinfo</quote>または
+<quote>install-info</quote>コマンドを使ったりします。各 info ファイルは、
 
 <itemizedlist>
-<listitem><para>is considered to be installed in the directory
-          <filename>${PREFIX}/${INFO_DIR}</filename>,</para></listitem>
-<listitem><para>is registered in the Info directory file
-          <filename>${PREFIX}/${INFO_DIR}/dir</filename>,</para></listitem>
-<listitem><para>and must be listed as a filename in the
-          <varname>INFO_FILES</varname> variable in the package
-          Makefile.</para></listitem>
+<listitem><para><filename>${PREFIX}/${INFO_DIR}</filename>
+          ディレクトリーにインストールされるものとして扱われます。</para></listitem>
+<listitem><para>Info ディレクトリーファイル
+          <filename>${PREFIX}/${INFO_DIR}/dir</filename> に登録されます。</para></listitem>
+<listitem><para>パッケージの Makefile で、
+          <varname>INFO_FILES</varname> 変数に、
+          ファイル名の形で列挙する必要があります。</para></listitem>
 </itemizedlist>
 </para>
 
 <para>
-<varname>INFO_DIR</varname> defaults to <quote>info</quote> and can be
-overridden in the package Makefile. <filename>INSTALL</filename> and
-<filename>DEINSTALL</filename> scripts will be generated to handle
-registration of the info files in the Info directory file. The
-<quote>install-info</quote> command used for the info files registration is
-either provided by the system, or by a special purpose package
-automatically added as dependency if needed.
+<varname>INFO_DIR</varname> のデフォルトは <quote>info</quote> ですが、
+パッケージの Makefile で上書きすることができます。 info ファイルを
+Info ディレクトリーファイルに登録するために、<filename>INSTALL</filename> および
+<filename>DEINSTALL</filename> スクリプトが作られます。
+info ファイルの登録用の <quote>install-info</quote> コマンドは、
+システム附属のものが使われるか、
+または、必要があればそれ用のパッケージが自動的に追加されて使われます。
 </para>
 
 <para>
-A package which needs the <quote>makeinfo</quote> command at build
-time must define the variable <varname>USE_MAKEINFO</varname> in its
-Makefile. If a minimum version of the <quote>makeinfo</quote> command
-is needed it should be noted with the <varname>TEXINFO_REQD</varname>
-variable in the package <filename>Makefile</filename>. By default, a
-minimum version of 3.12 is required. If the system does not provide a
-<command>makeinfo</command> command or if it does not match the required
-minimum, a build dependency on the <pkg>devel/gtexinfo</pkg> package
-will be added automatically.
+構築時に <quote>makeinfo</quote> コマンドが必要なパッケージは、
+Makefile で <varname>USE_MAKEINFO</varname> 変数を定義する必要があります。
+あるバージョン以上の<quote>makeinfo</quote>コマンドが必要な場合は、
+パッケージの <filename>Makefile</filename> で
+<varname>TEXINFO_REQD</varname> 変数を必要な最低バージョンに設定します。
+デフォルトでは、 3.12 が最低限必要なバージョンとなります。
+<command>makeinfo</command> コマンドがシステムにないか、
+最低限必要なバージョンを満たさない場合は、<pkg>devel/gtexinfo</pkg>
+パッケージへの構築時の依存関係が自動的に追加されます。
 </para>
 
 <para>
-The build and installation process of the software provided by the package
-should not use the <command>install-info</command> command as the
-registration of info files is the task of the package
-<filename>INSTALL</filename> script, and it must use the appropriate
-<command>makeinfo</command> command.
+パッケージで提供されるソフトウェアの構築やインストールの過程では、
+<command>install-info</command> コマンドを使ってはいけません。
+info ファイルの登録は <filename>INSTALL</filename> スクリプトの仕事であって、
+適切な <command>makeinfo</command> コマンドを使う必要があるからです。
 </para>
 
 <para>
-To achieve this goal the pkgsrc infrastructure creates overriding scripts
-for the <command>install-info</command> and <command>makeinfo</command>
-commands in a directory listed early in <varname>PATH</varname>.
+pkgsrc の基盤は、以上のことを実現するため、
+<varname>PATH</varname> のはじめのほうにあるディレクトリーに、
+<command>install-info</command> や <command>makeinfo</command>
+を上書きするスクリプトを作成します。
 </para>
 
+<note>
 <para>
-The script overriding <command>install-info</command> has no effect except
-the logging of a message. The script overriding <command>makeinfo</command>
-logs a message and according to the value of <varname>USE_MAKEINFO</varname>
-and <varname>TEXINFO_REQD</varname> either run the appropriate
-<command>makeinfo</command> command or exit on error.
+<command>install-info</command> を上書きするスクリプトは、メッセージを記録すること以外、
+何の効果もありません。<command>makeinfo</command> を上書きするスクリプトは、
+メッセージを記録し、<varname>USE_MAKEINFO</varname> や <varname>TEXINFO_REQD</varname>
+の値に従って、適切な <command>makeinfo</command> コマンドを実行するか、
+または異常終了します。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Packages whose distfiles aren't available for plain downloading</title>
+<title>distfileのダウンロードが単純にできないパッケージ</title>
 
 <para>
-If you need to download from a dynamic URL you can set
+動的なURLからダウンロードする必要がある場合は、
 <varname>DYNAMIC_MASTER_SITES</varname>
-and a <command>make fetch</command> will call
-<filename>files/getsite.sh</filename> with the name of each file
-to download as an argument, expecting it to output the URL of the directory
-from which to download it. <pkg>graphics/ns-cult3d</pkg> is an example of this usage.
+を設定す
+ることができます。すると、<command>make fetch</command>は、ダウンロードすべき各ファイルを引
+数として<filename>files/getsite.sh</filename>を呼び出します。このスクリプトは、ファイルをダウン
+ロードするディレクトリーのURLを出力することが前提となっています。
+<pkg>graphics/ns-cult3d</pkg>が、この使い方の例となっています。
 </para>
 
 <para>
-If the download can't be automated, because the user must submit personal
-information to apply for a password, or must pay for the source, or whatever,
-you can set <varname>_FETCH_MESSAGE</varname> to a macro which displays
-a message explaining the situation. <varname>_FETCH_MESSAGE</varname> must
-be executable shell commands, not just a message. (Generally, it executes
-<varname>${ECHO}</varname>). As of this writing, the following
-packages use this: <pkg>audio/realplayer</pkg>,
+パスワード用に個人情報の登録が必要だったり、ソースに代金を払う必要があった
+り、その他もろもろの理由により、ダウンロードが自動化できない場合は、
+<varname>_FETCH_MESSAGE</varname>に、説明文を表示するマクロを設定することができます。
+<varname>_FETCH_MESSAGE</varname>は、説明文そのものではなく、実行可能なシェルコマンドである必
+要があります。(一般的には、
+<varname>${ECHO}</varname>を実行します)。本稿執筆時点で、この方法を
+使っているパッケージは、 <pkg>audio/realplayer</pkg>,
 <pkg>cad/simian</pkg>, <pkg>devel/ipv6socket</pkg>,
 <pkg>emulators/vmare-module</pkg>,
 <pkg>fonts/acroread-jpnfont</pkg>,
 <pkg>sysutils/storage-manager</pkg>,
-<pkg>www/ap-aolserver</pkg>, <pkg>www/openacs</pkg>. Try to be consistent
-with them.
+<pkg>www/ap-aolserver</pkg>, <pkg>www/openacs</pkg> です。これらと一貫性のある使い方をしてください。
 </para>
 </sect1>
 
 
 <sect1>
-  <title>Using pkgsrc on non-NetBSD (Darwin, FreeBSD, IRIX, Linux, OpenBSD, Solaris)</title>
+  <title>pkgsrc を NetBSD 以外 (Darwin, FreeBSD, IRIX, Linux, OpenBSD, Solaris) で使う</title>
 
   <para>
-In order to use pkgsrc on a non-NetBSD operating system, you must first
-bootstrap the necessary utilities (BSD make, pkg_*, ...). See
+pkgsrc を NetBSD 以外のオペレーティングシステムで使うためには、必要なユーティリティー
+(BSD make, pkg_*, ...) の準備 (ブートストラップ) を最初にする必要があります。
+ブートストラップについては
 <xref linkend="platforms"/>
-for information on boostrapping.  Binary bootstrap-kits are available from that
-URL as well.  If your Operating System is not yet supported, we encourage you to
-port the bootstrap-kit and submit your changes.
+を参照してください。バイナリーブートストラップキットも、
+このリンク先にあります。pkgsrc がお使いのオペレーティングシステムにまだ対応していない場合は、
+ぜひブートストラップキットを移植して提供してください。
   </para>
 </sect1>
 
 
 <sect1 id="faq.conf">
-<title>Configuration files handling and placement</title>
+<title>設定ファイルの処理および配置</title>
 
 <para>
-The global variable <varname>PKG_SYSCONFBASE</varname> (and some others)
-can be set by the system administrator in <filename>/etc/mk.conf</filename>
-to define the place where
-configuration files get installed. Therefore, packages must be adapted to
-support this feature. Keep in mind that you should only install files that
-are strictly necessary in the configuration directory, files that can
-go to <filename>$PREFIX/share</filename> should go there.
+大域変数<varname>PKG_SYSCONFBASE</varname>(とその他の変数)を、
+システム管理者が<filename>/etc/mk.conf</filename>で設
+定すると、設定ファイルのインストール場所を定義することができます。このため、
+各パッケージはこの機能に対応する必要があります。この変数で定義される設定ファ
+イル用ディレクトリーには、本当に必要なファイルだけをインストールするようにし、
+<filename>$PREFIX/share</filename>に置いてもよいファイルはそちらにインストールするよう
+注意してください。
 </para>
 
 <para>
-We will take a look at available variables first
-(<filename>bsd.pkg.mk</filename> contains more
-information). <varname>PKG_SYSCONFDIR</varname> is where the
-configuration files for a package
-may be found (that is, the full path, e.g. <filename>/etc</filename>
-or <filename>/usr/pkg/etc</filename>). This
-value may be customized in various ways:
+まず、利用可能な変数をお見せします(<filename>bsd.pkg.mk</filename>に、さらに詳しい情報があります)。
+<varname>PKG_SYSCONFDIR</varname>が、
+パッケージの設定ファイルが置かれる場所になります(これはフ
+ルパスです。たとえば、<filename>/etc</filename>や<filename>/usr/pkg/etc</filename>になります)。この変数値は、さまざま
+な方法によってカスタマイズすることができます:
 </para>
 
 <orderedlist>
 
 <listitem>
 <para>
-    <varname>PKG_SYSCONFBASE</varname> is the main config directory under
-    which all package configuration files are to be found. Users will
-    typically want to set it to <filename>/etc</filename>, or accept the
-    default location of <filename>$PREFIX/etc</filename>.
+    <varname>PKG_SYSCONFBASE</varname>は主たる設定ディレクトリーで、パッケージ用の設定ファイル
+    すべてがこれ以下に置かれます。ユーザーは普通は<varname>PKG_SYSCONFBASE</varname>を<filename>/etc</filename>に設
+    定するか、デフォルトの場所の
+    <filename>$PREFIX/etc</filename>のままにするでしょう。
 </para>
 </listitem>
 
 <listitem>
 <para>
-    <varname>PKG_SYSCONFSUBDIR</varname> is the subdirectory of
-    <varname>PKG_SYSCONFBASE</varname> under which
-    the configuration files for a particular package may be found. Defaults
-    to <varname>${SYSCONFBASE}</varname>.
+    <varname>PKG_SYSCONFSUBDIR</varname> は
+    <varname>PKG_SYSCONFBASE</varname> のサブディレクトリーで、個々のパッケージ用の設定ファイ
+    ルはこの下に置かれます。デフォルトでは<varname>${SYSCONFBASE}</varname>になります。
 </para>
 </listitem>
 
 <listitem>
 <para>
-    <varname>PKG_SYSCONFVAR</varname> is the special suffix used to
-    distinguish any overriding values for a particular package
-    (see next item). It defaults to <varname>${PKGBASE}</varname>, but
-    for a collection of related packages that should all have the same
-    <varname>PKG_SYSCONFDIR</varname> value, it can be set in each of
-    the package Makefiles to a common value.
+    <varname>PKG_SYSCONFVAR</varname>は、個々のパッケージの設定を上書きする値を識別するための、
+    特別な接尾辞です(次の項目参照)。デフォルトでは<varname>${PKGBASE}</varname>になりますが、
+    <varname>PKG_SYSCONFDIR</varname>を同じに揃えておくとよい一連の関連パッケージに対しては、
+    各パッケージのMakefileで、<varname>PKG_SYSCONFVAR</varname>を同じ値に設定することができま
+    す。
 </para>
 </listitem>
 
 <listitem>
 <para>
-    <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname> overrides the value of
-    <varname>${PKG_SYSCONFDIR}</varname> for packages with the same value
-    for <varname>PKG_SYSCONFVAR</varname>.
+    <varname>PKG_SYSCONFDIR.${PKG_SYSCONFVAR}</varname>は、同じ<varname>PKG_SYSCONFVAR</varname>を持つパッケージ
+    の
+    <varname>${PKG_SYSCONFDIR}</varname>を上書きします。
 </para>
 
 <para>
-    As an example, all the various KDE packages may want to set
-    <varname>PKG_SYSCONFVAR</varname> to <quote>kde</quote> so admins can
-    set <varname>PKG_SYSCONFDIR.kde</varname> in
-    <filename>/etc/mk.conf</filename> to define where to install KDE
-    config files.
+    たとえば、KDE関連の各パッケージでは、
+    <varname>PKG_SYSCONFVAR</varname>を<quote>kde</quote>に設定すると
+    よいでしょう。こうしておくと、管理者が<filename>/etc/mk.conf</filename>で
+    <varname>PKG_SYSCONFDIR.kde</varname>を設定して、KDEの設定ファイルのインストール場所を
+    定義できるようになります。
 </para>
 </listitem>
 
 </orderedlist>
 
 <para>
-Programs' configuration directory should be defined during the configure
-stage. Packages that use GNU autoconf can usually do this by using the
-<quote>--sysconfdir</quote> parameter, but this brings some problems as
-we will see now.
-When you change this pathname in packages, you should not allow them to
-install files in that directory directly. Instead they need to install
-those files under <filename>share/examples/${PKGNAME}</filename> so
-<filename>PLIST</filename> can register them.
+プログラムの設定ディレクトリーは、configureの段階で定義します。GNU autoconf
+を使うパッケージでは、通常は
+<quote>--sysconfdir</quote>のパラメーターを使って定義すること
+ができますが、この方法は問題を起こすことがわかっています。このパス名をパッ
+ケージ側で変更する場合は、ファイルをディレクトリーに直接インストールしない
+ようにします。そうするかわりに、ファイルを<filename>share/examples/${PKGNAME}</filename>以下にイ
+ンストールして、
+<filename>PLIST</filename>にそちらを登録できるようにする必要があります。
 </para>
 
 <para>
-Once you have the required configuration files in place (under the
-<filename>share/examples</filename> directory) the variable
-<varname>CONF_FILES</varname> should be set to copy
-them into <varname>PKG_SYSCONFDIR</varname>. The contents of this variable
-is formed by pairs
-of filenames; the first element of the pair specifies the file inside the
-examples directory (registered by <filename>PLIST</filename>) and the
-second element specifies
-the target file. This is done this way to allow binary packages to place
-files in the right directory using
-<filename>INSTALL</filename>/<filename>DEINSTALL</filename> scripts which are
-created automatically.  The package <filename>Makefile</filename> must also
-set <varname>USE_PKGINSTALL=YES</varname> to use
-these automatically generated scripts.  The automatic copying of config
-files can be toggled by setting the environment variable
-<varname>PKG_CONFIG</varname> prior to package installation.
+必要な設定ファイルを適切な場所(<filename>share/examples</filename>ディレクトリー以下)に一旦置い
+てから、この設定ファイルを<varname>PKG_SYSCONFDIR</varname>にコピーするために、
+<varname>CONF_FILES</varname>変数
+を設定します。この変数の値は、ファイル名を二個組み合わせたものを並べたもの
+です; 組合せの一つ目で、examplesディレクトリー内のファイル(<filename>PLIST</filename>に登録され
+ているもの)を指定し、二つ目で、それをコピーする先のファイルを指定します。こ
+れにより、バイナリーパッケージが、自動生成される
+<filename>INSTALL</filename>/<filename>DEINSTALL</filename>スクリプト
+を使って、ファイルを正しいディレクトリーに配置することが可能になります。ま
+た、この自動生成されるスクリプトを使うために、パッケージの<filename>Makefile</filename>で
+<varname>USE_PKGINSTALL=YES</varname> を設定
+しなければなりません。設定ファイルの自動コピーは、パッケージをインストール
+する前に環境変数
+<varname>PKG_CONFIG</varname>を設定しておくことで、おこなうかどうかを切替える
+ことができます。
 </para>
 
 <para>
-Here is an example, taken from mail/mutt/Makefile:
+mail/mutt/Makefileでの例を示します:
 </para>
 
 <programlisting>EGDIR=		${PREFIX}/share/doc/mutt/samples
 CONF_FILES=	${EGDIR}/Muttrc ${PKG_SYSCONFDIR}/Muttrc</programlisting>
 
 <para>
-As you can see, this package installs configuration files inside
-<varname>EGDIR</varname>, which are registered by
-<filename>PLIST</filename>. After that, the variable
-<varname>CONF_FILES</varname> lists
-the installed file first and then the target file. Users will also get an
-automatic message when files are installed using this method.
+ご覧のとおり、このパッケージは設定ファイルを
+<varname>EGDIR</varname>にインストールし、この場所
+が
+<filename>PLIST</filename>に登録されます。その後、
+<varname>CONF_FILES</varname>変数に、はじめにインストールされた
+ファイルと、そのコピー先ファイルを列挙します。ファイルがこの方法でインストー
+ルされる時には、パッケージの利用者にメッセージを自動的に表示します。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Packages providing login shells</title>
+<title>ログインシェルを提供するパッケージ</title>
 
 <para>
-If the purpose of the package is to provide a login shell, the variable
-<varname>PKG_SHELL</varname> should contain the full pathname of the
-shell executable installed by this package. The package
-<filename>Makefile</filename> must also set
-<varname>USE_PKGINSTALL=YES</varname> to use the automatically generated
-<filename>INSTALL</filename>/<filename>DEINSTALL</filename> scripts.
+パッケージの目的がログインシェルの提供である場合は、
+<varname>PKG_SHELL</varname>変数を、このパッ
+ケージでインストールされるシェルの実行ファイルのフルパス名とします。また、
+自動生成される
+<filename>INSTALL</filename>/<filename>DEINSTALL</filename>スクリプトを使うために、パッケージの
+<filename>Makefile</filename>
+で、<varname>USE_PKGINSTALL=YES</varname>を設定する必要も
+あります。
 </para>
 
 <para>
-An example taken from shells/zsh:
+以下はshells/zshでの例です。
 </para>
 
 <programlisting>USE_PKGINSTALL=	YES
 PKG_SHELL=	${PREFIX}/bin/zsh</programlisting>
 
 <para>
-The shell is registered into <filename>/etc/shells</filename> file automatically in the
-post-install target by the generated <filename>INSTALL</filename> script
-and removed in the deinstall
-target by the <filename>DEINSTALL</filename> script.
+インストールされたシェルは、post-installの段階で、
+生成された<filename>INSTALL</filename>スク
+リプトによって自動的に<filename>/etc/shells</filename>ファイルに登録されます。また、deinstallの
+段階で、<filename>DEINSTALL</filename>スクリプトによって<filename>/etc/shells</filename>から削除されます。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Using 'sudo' with pkgsrc</title>
+<title>pkgsrcで'sudo'を使う</title>
 
 <para>
-When installing packages as non-root user and using the just-in-time
-su(1) feature of pkgsrc, it can become annoying to type in the root
-password for each required package installed. To avoid this, the sudo
-package can be used, which does password caching over a limited time.
-To use it, install sudo (either as binary package or from
-<pkg>security/sudo</pkg>) and then put the following
-into your <filename>/etc/mk.conf</filename>:
+パッケージのインストールをroot以外のユーザーで実行し、root権限が必要なとこ
+ろではpkgsrcの su(1) 機能を使う場合、必要なパッケージをインストールするたびに
+rootのパスワードを打つのは面倒かもしれません。これを避けるために、パスワー
+ドを一定時間保持してくれるsudoパッケージを使うことができます。sudoを使うに
+は、sudoを(バイナリーパッケージ、または<pkg>security/sudo</pkg>のいずれかから)
+インストールしてから、<filename>/etc/mk.conf</filename>に以下の内容を書いておきます。
 </para>
 
 <programlisting>
@@ -1057,212 +1037,209 @@ into your <filename>/etc/mk.conf</filename>:
 
 
 <sect1>
-  <title>Packages that cannot or should not be built</title>
+  <title>構築することができない、あるいはすべきでないパッケージ</title>
 
   <para>
-    There are several reasons why a package might be instructed to not
-    build under certain circumstances. If the package builds and runs
-    on most platforms, the exceptions should be noted with
-    <varname>NOT_FOR_PLATFORM</varname>.  If the package builds and
-    runs on a small handful of platforms, set
-    <varname>ONLY_FOR_PLATFORM</varname> instead. If the package
-    should be skipped (for example, because it provides functionality
-    already provided by the system), set
-    <varname>PKG_SKIP_REASON</varname> to a descriptive message. If
-    the package should fail because some preconditions are not met,
-    set <varname>PKG_FAIL_REASON</varname> to a descriptive message.
+    環境によってはパッケージを構築しないよう指示するような理由がいくつかありま
+    す。パッケージが、ほとんどのプラットフォームで構築および実行できる場合は、
+    <varname>NOT_FOR_PLATFORM</varname>として例外を記述します。逆に、パッケージが一部のプラットフォー
+    ムでしか構築および実行できない場合は、<varname>ONLY_FOR_PLATFORM</varname>を設定します。パッケー
+    ジをとばすべき場合(たとえば、そのパッケージが提供する機能が、すでにシステム
+    で提供されている場合)は、
+    <varname>PKG_SKIP_REASON</varname>にそのことを説明するメッセージを設
+    定します。必要な条件が満たされていないせいでパッケージの構築が失敗するであ
+    ろう場合は、<varname>PKG_FAIL_REASON</varname>にそのことを説明するメッセージを設定します。
     </para> 
 
-  <para> <varname>IGNORE</varname> is deprecated because it didn't
-    provide enough information to determine whether the build should
-    fail. 
+  <para> <varname>IGNORE</varname>は、構築失敗の理由を特定するために十分な情報を提供しないので、使わな
+    いでください。
   </para>  
 </sect1>
 
 
 <sect1>
-  <title>Packages which should not be deleted, once installed</title>
+  <title>一旦インストールしたら削除すべきでないパッケージ</title>
 
-  <para>To ensure that a package may not be deleted, once it has been
-    installed, the <varname>PKG_PRESERVE</varname> definition should
-    be set in the package Makefile. This will be carried into any
-    binary package that is made from this pkgsrc entry. A
-    <quote>preserved</quote> package will 
-    not be deleted using &man.pkg.delete.1; unless the
-    <quote>-f</quote> option is used. </para>
+  <para>あるパッケージを、一旦インストールしたら削除できないようにするためには、
+    そのパッケージの Makefile で <varname>PKG_PRESERVE</varname>
+    定義を設定します。この定義を設定した
+    pkgsrc エントリーから作られたバイナリーパッケージには、その旨が記録されます。
+    <quote>preserved</quote> 付きのパッケージは、
+    &man.pkg.delete.1; を使っても、
+    <quote>-f</quote> オプションを付けない限りは削除されません。</para>
 </sect1>
 
 
 <sect1>
-<title>Packages containing perl scripts</title>
+<title>perlスクリプトを含むパッケージ</title>
 
 <para>
-If your package contains interpreted perl scripts, set
-<varname>REPLACE_PERL</varname> to ensure that the proper interpreter
-path is set. <varname>REPLACE_PERL</varname> should contain a list of
-scripts, relative to <varname>WRKSRC</varname>, that you want adjusted.
+perlスクリプトがパッケージに含まれる場合は、
+インタープリターのパスが適切に設定されるようにするために、
+<varname>REPLACE_PERL</varname>を設定します。
+<varname>REPLACE_PERL</varname>の設定値は、調整の対象となるスクリプトを<varname>WRKSRC</varname>からの相対位置で列挙したものにします。
 </para>
 </sect1>
 
 
 <sect1>
-<title>Packages with hardcoded paths to other interpreters</title>
+<title>その他のインタープリターへのパスがハードコードされているパッケージ</title>
 
 <para>
-Your package may also contain scripts with hardcoded paths to other
-interpreters besides (or as well as) perl.  To correct the full
-pathname to the script interpreter, you need to set the following
-definitions in your <filename>Makefile</filename> (we shall use
-<command>tclsh</command> in this example):
+パッケージには perl 以外のインタープリターへのパスがハードコードされていることもあります。
+スクリプトのインタープリターへのフルパスを適切なものにするため、
+当該パッケージの <filename>Makefile</filename> で、
+以下のような定義をする必要があります
+(ここでは例として <command>tclsh</command> を使います)。
 
 <programlisting>REPLACE_INTERPRETER+=	tcl
 _REPLACE.tcl.old=	.*/bin/tclsh
 _REPLACE.tcl.new=	${PREFIX}/bin/tclsh
-_REPLACE_FILES.tcl=	...list of tcl scripts which need to be fixed,
-			relative to ${WRKSRC}, just as in REPLACE_PERL</programlisting>
+_REPLACE_FILES.tcl=	…パスを修正する必要がある tcl スクリプトを列挙します
+			REPLACE_PERL と同様に、${WRKSRC} からの相対位置とします</programlisting>
 </para>
 </sect1>
 
 
 <sect1>
-<title>Utilities for package management (pkgtools)</title>
+<title>パッケージ管理用ユーティリティー (pkgtools)</title>
 
 <para>
-The directory pkgtools contains a number of useful utilities.  This section
-attempts only to make the reader aware of the utilities and when they might
-be useful, and not to duplicate the documentation that comes with each
-package.
+pkgtools ディレクトリー以下には、便利なユーティリティーがいくつもあります。
+この節の目的は、このユーティリティーの存在と、
+どんな場合に有用かを知っていただくことだけであり、
+各パッケージの附属ドキュメントを引き写すことではありません。
 </para>
 
 <para>
-Utilities used by pkgsrc (automatically installed when needed):
+pkgsrc が使用するユーティリティー (必要に応じて自動的にインストールされます):
 <itemizedlist>
 <listitem>
   <para> <pkg>pkgtools/x11-links</pkg>:
-    symlinks for use by buildlink
+    buildlink が使用するシンボリックリンクです
   </para>
 </listitem>
 </itemizedlist>
 </para>
 
 <para>
-OS tool augmentation (automatically installed when needed):
+OS ツールの拡張 (必要に応じて自動的にインストールされます):
 <itemizedlist>
 <listitem>
   <para> <pkg>pkgtools/digest</pkg>:
-    calculates SHA1 checksums (and other kinds)
-    use on operating systems where pkg_install is not present
+    SHA1 チェックサム (およびその他のチェックサム) を計算します。
+    pkg_install のないオペレーティングシステム用です。
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/libnbcompat</pkg>:
-    compat library for pkg tools
+    pkg ツール用の互換ライブラリーです
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/mtree</pkg>:
-    installed on non-BSD systems due to lack of native mtree
+    BSD 以外のシステムにはネイティブの mtree がないため、これがインストールされます
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/pkg_install</pkg>:
-    up-to-date replacement for /usr/sbin/pkg_install, or for XXX!
+    /usr/sbin/pkg_install を最新版に置き換えます。または XXX!
   </para>
 </listitem>
 </itemizedlist>
 </para>
 
 <para>
-Utilities used by pkgsrc (not automatically installed):
+pkgsrc が使用するユーティリティー (自動ではインストールされません):
 <itemizedlist>
 <listitem>
   <para> <pkg>pkgtools/pkg_tarup</pkg>:
-    create a binary package from an already-installed package.
-    used by 'make replace' to save the old package
+    インストールされているパッケージをもとに、バイナリーパッケージを作成します。
+    'make replace' が古いパッケージを保存するのに使います。
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/xpkgwedge</pkg>:
-    put X11 packages someplace else (enabled by default)
+    X11 パッケージの場所を変えます (標準で有効となります)
   </para>
 </listitem>
 </itemizedlist>
 </para>
 
 <para>
-Utilities for keeping track of installed packages, being up to date, etc:
+インストールしたパッケージの追跡や最新への追従用などのユーティリティー:
 <itemizedlist>
 <listitem>
   <para> <pkg>pkgtools/pkg_chk</pkg>:
-    installs pkg_chk, which reports on packages whose installed
-    versions do not match the latest pkgsrc entries
+    pkg_chk をインストールします。pkg_chk は、インストールされているパッケージのバージョンが
+    pkgsrc の最新バージョンと異なるものを報告します。
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/pkgdep</pkg>:
-    makes dependency graphs of packages, to aid in choosing a
-    strategy for updating
+    パッケージ更新計画の策定を支援するため、
+    パッケージの依存関係のグラフを作成します。
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/pkgdepgraph</pkg>:
-    make graph from above (uses graphviz)
+    pkgdep の結果をもとに (graphviz を使って) 図表を作成します
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/pkglint</pkg>:
-    This provides two distinct abilities:
-    check a pkgsrc entry for correctness (pkglint)
-    check for and remove out-of-date distfiles and binary
-    packages (lintpkgsrc)
+    二つの異なる用途があります:
+    pkgsrc のエントリーが正しいか確認します (pkglint),
+    古い distfile やバイナリーパッケージの確認や削除をします
+    (lintpkgsrc)
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/pkgsurvey</pkg>:
-    report what packages you have installed
+    インストール済みのパッケージを報告します
   </para>
 </listitem>
 </itemizedlist>
 </para>
 
 <para>
-Utilities for people maintaining or creating individual packages:
+個々のパッケージの保守や作成をする人のためのユーティリティー:
 <itemizedlist>
 <listitem>
   <para> <pkg>pkgtools/pkgdiff</pkg>:
-    automate making and maintaining patches for a package (includes
-    pkgdiff, pkgvi, mkpatches, ...)
+    パッケージ用のパッチの作成や保守を自動化します (
+    pkgdiff, pkgvi, mkpatches, ... が含まれます)
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/rpm2pkg</pkg>, <pkg>pkgtools/url2pkg</pkg>:
-    aids in converting to pkgsrc
+    pkgsrc への変換の補助ツールです
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/gensolpkg</pkg>:
-    convert pkgsrc to a Solaris package
+    pkgsrc を Solaris パッケージに変換します
   </para>
 </listitem>
 </itemizedlist>
 </para>
 
 <para>
-Utilities for people maintaining pkgsrc (or more obscure pkg utilities)
+pkgsrc を保守する人のためのユーティリティー (あるいは、もっと地味な pkg ユーティリティー)
 <itemizedlist>
 <listitem>
   <para> <pkg>pkgtools/pkgconflict</pkg>:
-    find packages that conflict but aren't marked as such
+    衝突するが、そのことが書かれていないパッケージを探します
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/pkg_comp</pkg>:
-    build packages in a chrooted area
+    chroot 領域でパッケージを構築します
   </para>
 </listitem>
 <listitem>
   <para> <pkg>pkgtools/libkver</pkg>:
-    spoof kernel version for chrooted cross builds
+    chroot 環境でのクロス構築用に、カーネルのバージョンを誤魔化します
   </para>
 </listitem>
 </itemizedlist>
@@ -1271,155 +1248,153 @@ Utilities for people maintaining pkgsrc (or more obscure pkg utilities)
 </sect1>
 
 <sect1>
-<title>How to use pkgsrc as non-root</title>
+<title>pkgsrc を root 以外で使う方法</title>
 <para>
-If you want to use pkgsrc as non-root user, you can set some variables
-to make pkgsrc work under these conditions. Please see 
+pkgsrc を root 以外のユーザーで使いたい場合は、いくつかの変数を設定すれば、
+そのような環境で pkgsrc が動くようにすることができます。詳細は
 <ulink
-url="http://mail-index.NetBSD.org/tech-pkg/2003/09/27/0023.html">this
-message</ulink> for more details.
+url="http://mail-index.NetBSD.org/tech-pkg/2003/09/27/0023.html">この記事
+</ulink>をご覧ください。
 </para>
 </sect1>
 
 
 <sect1>
-  <title>Packages installing GConf2 data files</title>
+  <title>GConf2 のデータファイルをインストールするパッケージ</title>
 
   <para>
-    If a package installs <filename>.schemas</filename> or
-    <filename>.entries</filename> files, used by GConf2, 
-    you need to take some extra steps to make sure they get registered
-    in the database:
+    パッケージが、 GConf2 が使用する <filename>.schemas</filename> または
+    <filename>.entries</filename> ファイルをインストールする場合は、
+    これらが確実にデータベースに登録されるようにするために、
+    いくつか特別な手順を踏む必要があります。
     </para>
 
   <orderedlist>
   <listitem>
-    <para> Include <filename>../../devel/GConf2/schemas.mk</filename>
-      instead of its <filename>buildlink3.mk</filename> file.  This
-      takes care of rebuilding the GConf2 database at installation and
-      deinstallation time, and tells the package where to install
-      GConf2 data files using some standard configure arguments.  It
-      also disallows any access to the database directly from the
-      package. </para>
+    <para> GConf2 の <filename>buildlink3.mk</filename> ファイルではなく
+      <filename>../../devel/GConf2/schemas.mk</filename> をインクルードします。
+      こうすると、インストールおよびアンインストール時に、 GConf2
+      のデータベースを再構築し、また、GConf2 のデータファイルのインストール場所を
+      標準的な configure 引数を使ってパッケージに伝えてくれます。
+      また、パッケージがデータベースに直接アクセスすることが一切できなくなります。</para>
   </listitem>
   
   <listitem>
-    <para> Ensure that the package installs its
-      <filename>.schemas</filename> files under
-      <filename>${PREFIX}/share/gconf/schemas</filename>.  If they get
-      installed under <filename>${PREFIX}/etc</filename>, you will
-      need to manually patch the package. </para>
+    <para> パッケージが
+      <filename>.schemas</filename> ファイルを必ず
+      <filename>${PREFIX}/share/gconf/schemas</filename> 以下にインストールするようにします。
+      <filename>${PREFIX}/etc</filename> 以下にインストールするようになっている場合は、
+      手作業でパッケージを修正する必要があります。 </para>
   </listitem>
   
   <listitem>
-    <para> Check the PLIST and remove any entries under the etc/gconf
-      directory, as they will be handled automatically.  See
-      <xref linkend="faq.conf"/> for more information. </para>
+    <para> PLIST を確認し、etc/gconf ディレクトリー以下の項目をすべて削除します。
+      これらは自動的に処理されるものだからです。詳細は
+      <xref linkend="faq.conf"/>を参照してください。 </para>
   </listitem>
   
   <listitem>
-    <para> Define the <varname>GCONF2_SCHEMAS</varname> variable in
-      your <filename>Makefile</filename> with a list of all
-      <filename>.schemas</filename> files installed by the package, if
-      any.  Names must not contain any directories in them. </para>
+    <para> <filename>Makefile</filename> で、
+      <varname>GCONF2_SCHEMAS</varname> 変数を定義します。変数値には
+      パッケージがインストールする <filename>.schemas</filename>
+      ファイルをすべて列挙します。このファイル名にディレクトリーを含めてはいけません。 </para>
   </listitem>
   
   <listitem>
-    <para> Define the <varname>GCONF2_ENTRIES</varname> variable in
-      your <filename>Makefile</filename> with a 
-      list of all <filename>.entries</filename> files installed by the
-      package, if any. Names must not contain any directories in
-      them. </para> 
+    <para> <filename>Makefile</filename> で、
+      <varname>GCONF2_ENTRIES</varname> 変数を定義します。変数値には
+      パッケージがインストールする <filename>.entries</filename>
+      ファイルをすべて列挙します。
+      このファイル名にディレクトリーを含めてはいけません。 </para> 
   </listitem>
   </orderedlist>
 </sect1>
 
 
 <sect1>
-  <title>Packages installing scrollkeeper data files</title>
+  <title>scrollkeeper のデータファイルをインストールするパッケージ</title>
 
   <para>
-    If a package installs <filename>.omf</filename> files, used by
-    scrollkeeper, you need to take some extra steps to make sure they
-    get registered in the database:
+    パッケージが、 scrollkeeper が使用する <filename>.omf</filename>
+    ファイルをインストールする場合は、これらが確実にデータベースに登録されるようにするために、
+    いくつか特別な手順を踏む必要があります。
     </para>
 
   <orderedlist>
     <listitem>
-      <para> Include
-        <filename>../../textproc/scrollkeeper/omf.mk</filename>
-        instead of its <filename>buildlink3.mk</filename> file.  This
-        takes care of rebuilding the scrollkeeper database at
-        installation and deinstallation time, and disallows any access
-        to it directly from the package.
+      <para> scrollkeeper の <filename>buildlink3.mk</filename> ファイルではなく
+        <filename>../../textproc/scrollkeeper/omf.mk</filename> をインクルードします。
+        こうすると、インストールおよびアンインストール時に、 scrollkeeper
+        のデータベースを再構築してくれます。
+        また、パッケージがデータベースに直接アクセスすることが一切できなくなります。
         </para>
     </listitem>
     
     <listitem>
-      <para> Check the PLIST and remove any entries under the
-        <filename>libdata/scrollkeeper</filename> directory, as they
-        will be handled automatically. </para>
+      <para> PLIST を確認し、<filename>libdata/scrollkeeper</filename>
+        ディレクトリー以下の項目をすべて削除します。
+        これらは自動的に処理されるものだからです。 </para>
     </listitem>
     
     <listitem>
-      <para> Remove the <filename>share/omf</filename> directory from
-        the PLIST.  It will be handled by scrollkeeper. </para>
+      <para> PLIST から <filename>share/omf</filename> ディレクトリーを削除します。
+        これは scrollkeeper が処理します。 </para>
     </listitem>	
   </orderedlist>
 </sect1>
 
 
 <sect1>
-  <title>Packages installing X11 fonts</title>
+  <title>X11 のフォントをインストールするパッケージ</title>
 
-  <para> If a package installs font files, you will need to rebuild
-    the fonts database in the directory where they get installed at
-    installation and deinstallation time.  This can be automatically
-    done by using <filename>mk/fonts.mk</filename>, which you need to
-    include in your <filename>Makefile</filename>. </para>
+  <para> パッケージがフォントファイルをインストールする場合は、
+    インストール時とアンインストール時に、
+    フォントのインストール先ディレクトリーにあるフォントデータベースを再構築する必要があります。
+    この処理は <filename>mk/fonts.mk</filename> を使って自動的におこなうことができますが、
+    このファイルを <filename>Makefile</filename> でインクルードする必要があります。 </para>
 
-  <para> When the file is included, you can list the directories where
-    fonts are installed in the
+  <para> このファイルをインクルードすると、
+    フォントのインストール先ディレクトリーを
     <varname>FONTS_<replaceable>type</replaceable>_DIRS</varname>
-    variables, where <replaceable>type</replaceable> can be one of
-    <quote>TTF</quote>, <quote>TYPE1</quote> or <quote>X11</quote>.
-    Also make sure that the database file
-    <filename>fonts.dir</filename> is not listed in the PLIST. </para>
+    変数に列挙することができます。変数名中の <replaceable>type</replaceable> は、
+    <quote>TTF</quote>, <quote>TYPE1</quote>, <quote>X11</quote> のいずれかです。
+    また、データベースファイル <filename>fonts.dir</filename>
+    は PLIST に含めてはいけません。 </para>
 
-  <para> Note that you should not create new directories for fonts;
-    instead use the standard ones to avoid that the user needs to 
-    manually configure his X server to find them. </para>
+  <para> なお、フォント用のディレクトリーを新たに作らないようにしてください。
+    X サーバーがフォントを見つけるための設定をユーザーが手動でおこなう必要がないようにするため、
+    新しいディレクトリーではなく標準的なディレクトリーを使うようにします。 </para>
 </sect1>
 
 
 <sect1>
-  <title>Packages installing GTK2 modules</title>
+  <title>GTK2 のモジュールをインストールするパッケージ</title>
 
-  <para>If a package installs gtk2 immodules or loaders, you need to
-    take some extra steps to get them registered in the GTK2 database
-    properly: </para>
+  <para>パッケージが gtk2 の IM モジュールやローダーをインストールする場合は、
+    これらが確実に GTK2 のデータベースに登録されるようにするために、
+    いくつか特別な手順を踏む必要があります。 </para>
 
   <orderedlist>
-  <listitem> <para> Include
-    <filename>../../x11/gtk2/modules.mk</filename> instead of its
-    <filename>buildlink3.mk</filename> file.  This takes care of
-    rebuilding the database at installation and deinstallation time.
+  <listitem> <para> gtk2 の <filename>buildlink3.mk</filename> ファイルではなく
+    <filename>../../x11/gtk2/modules.mk</filename> をインクルードします。
+    こうすると、インストールおよびアンインストール時に、GTK2
+        のデータベースを再構築してくれます。
     </para>
   </listitem>
   
   <listitem> <para>
-    Set <varname>GTK2_IMMODULES=YES</varname> if
-        your package installs GTK2 immodules. </para>
+    GTK2 の IM モジュールをインストールするパッケージでは、
+        <varname>GTK2_IMMODULES=YES</varname> を設定します。 </para>
   </listitem>
   
   <listitem> <para>
-    Set <varname>GTK2_LOADERS=YES</varname> if your package installs
-        GTK2 loaders. </para>
+    GTK2 のローダーをインストールするパッケージでは、
+        <varname>GTK2_LOADERS=YES</varname> を設定します。 </para>
   </listitem>
   
   <listitem> <para>
-    Patch the package to not touch any of the gtk2 databases directly.
-    These are:
+    パッケージが gtk2 のデータベースディレクトリーを直接いじらないよう修正します。
+    データベースは以下のとおりです。
 
     <itemizedlist>
       <listitem><para><filename>libdata/gtk-2.0/gdk-pixbuf.loaders</filename></para></listitem>
@@ -1429,55 +1404,54 @@ message</ulink> for more details.
   </listitem>
   
   <listitem> <para>
-    Check the PLIST and remove any entries under the
-    <filename>libdata/gtk-2.0</filename> directory, as they will be
-    handled automatically. </para>
+    Check the PLIST を確認し、<filename>libdata/gtk-2.0</filename>
+    ディレクトリー以下の項目をすべて削除します。
+    これらは自動的に処理されるものだからです。 </para>
   </listitem>
   </orderedlist>
 </sect1>
 
 
 <sect1>
-  <title>Packages installing SGML or XML data</title>
+  <title>SGML または XML のデータをインストールするパッケージ</title>
 
-  <para> If a package installs SGML or XML data files that need to be
-    registered in system-wide catalogs (like DTDs, sub-catalogs,
-    etc.), you need to take some extra steps:
+  <para> パッケージが、システム全体で使われるカタログへ登録する必要のある
+    SGML または XML のデータファイル (DTD, sub-catalog など) をインストールする場合は、
+    いくつか特別な手順を踏む必要があります。 </para>
     </para>
 
   <orderedlist>
     <listitem>
-      <para> Include
-        <filename>../../textproc/xmlcatmgr/catalogs.mk</filename> in
-        your <filename>Makefile</filename>, which takes care of
-        registering those files in system-wide catalogs at
-        installation and deinstallation time. </para>
+      <para> パッケージの <filename>Makefile</filename> で
+        <filename>../../textproc/xmlcatmgr/catalogs.mk</filename> をインクルードします。
+        こうすると、インストールおよびアンインストール時に、
+        データファイルをシステム全体で使われるカタログに登録してくれます。 </para>
     </listitem>
 
     <listitem>
-      <para> Set <varname>SGML_CATALOGS</varname> to the full path of
-        any SGML catalogs installed by the package. </para>
+      <para> <varname>SGML_CATALOGS</varname> を、このパッケージがインストールする
+        SGML カタログをすべてをフルパス表記にしたものに設定します。 </para>
     </listitem>
 
     <listitem>
-      <para> Set <varname>XML_CATALOGS</varname> to the full path of
-        any XML catalogs installed by the package. </para>
+      <para> <varname>XML_CATALOGS</varname> を、このパッケージがインストールする
+        XML カタログをすべてをフルパス表記にしたものに設定します。 </para>
     </listitem>
 
     <listitem>
-      <para> Set <varname>SGML_ENTRIES</varname> to individual entries
-        to be added to the SGML catalog.  These come in groups of
-        three strings; see xmlcatmgr(1) for more information
-        (specifically, arguments recognized by the 'add' action).
-        Note that you will normally not use this variable. </para>
+      <para> <varname>SGML_ENTRIES</varname> を、SGML カタログに追加する
+        個々のエントリーに設定します。各エントリーは
+        3 個の文字列からなります。書き方の詳細は xmlcatmgr(1) 
+        (特に、'add' アクション用の引数) を参照してください。
+        なお、通常はこの変数を使うことはありません。 </para>
     </listitem>
 
     <listitem>
-      <para> Set <varname>XML_ENTRIES</varname> to individual entries
-        to be added to the XML catalog.  These come in groups of three
-        strings; see xmlcatmgr(1) for more information (specifically,
-        arguments recognized by the 'add' action).  Note that you will
-        normally not use this variable.
+      <para> <varname>XML_ENTRIES</varname> を、XML カタログに追加する
+        個々のエントリーに設定します。各エントリーは
+        3 個の文字列からなります。書き方の詳細は xmlcatmgr(1) 
+        (特に、'add' アクション用の引数) を参照してください。
+        なお、通常はこの変数を使うことはありません。
         </para>
     </listitem>
   </orderedlist>
@@ -1485,28 +1459,28 @@ message</ulink> for more details.
 
 
 <sect1>
-  <title>Packages using intltool</title>
+  <title>intltool を使うパッケージ</title>
 
-  <para>   If a package uses intltool during its build, include the 
-    <filename>../../textproc/intltool/buildlink3.mk</filename> file,
-    which forces it to use the intltool package provided by pkgsrc,
-    instead of the one bundled with the distribution file.
+  <para>   パッケージが構築時に intltool を使う場合は、
+    <filename>../../textproc/intltool/buildlink3.mk</filename> ファイルをインクルードします。
+    こうすると、パッケージの配布ファイルに附属する intltool ではなく、
+    pkgsrc の intltool を強制的に使うようになります。
     </para>
 
-  <para> This tracks intltool's build-time dependencies and uses the
-    latest available version; this way, the package benefits of any
-    bug fixes that may have appeared since it was released.
+  <para> この仕組みは、intltool 構築時の依存関係を追跡して、
+    利用可能な最新版を使います。この方法を使うことで、
+    リリース後にできたバグ修正も適用することができます。
     </para>
 </sect1>
 
 
 <sect1>
-  <title>How can I install/use XFree86 from pkgsrc?</title>
+  <title>pkgsrc の XFree86 をインストールあるいは使用する方法は?</title>
 
-  <para> If you want to use XFree86 from pkgsrc instead of your
-    system's own X11 (<filename>/usr/X11R6</filename>,
-    <filename>/usr/openwin</filename>, ...), you will have to 
-    add the following lines into <filename>mk.conf</filename>:
+  <para> システム附属の X11 (<filename>/usr/X11R6</filename>,
+    <filename>/usr/openwin</filename>, ...) ではなく pkgsrc の
+    XFree86 を使いたい場合は、<filename>mk.conf</filename>
+    に以下の行を追加する必要があります。
     </para>
 
   <programlisting>
@@ -1516,12 +1490,12 @@ message</ulink> for more details.
 
 
 <sect1>
-  <title>How can I install/use X.org from pkgsrc?</title>
+  <title>pkgsrc の X.org をインストールあるいは使用する方法は?</title>
 
-  <para> If you want to use X.org from pkgsrc instead of your system's
-    own X11 (<filename>/usr/X11R6</filename>,
-    <filename>/usr/openwin</filename>, ...) you will have to add the
-    following lines into <filename>mk.conf</filename>: </para>
+  <para> システム附属の X11 (<filename>/usr/X11R6</filename>,
+    <filename>/usr/openwin</filename>, ...) ではなく pkgsrc の
+    X.org を使いたい場合は、<filename>mk.conf</filename>
+    に以下の行を追加する必要があります。 </para>
 
   <programlisting>
     X11_TYPE=xorg
@@ -1530,117 +1504,119 @@ message</ulink> for more details.
 
 
 <sect1>
-  <title>Where's the pkgviews documentation?</title>
+  <title>pkgviews のドキュメンテーションはどこにあるか?</title>
 
-  <para> Pkgviews is tightly integrated with buildlink. You can find a 
-    pkgviews User's Guide in
-    <filename>pkgsrc/mk/buildlink3/PKGVIEWS_UG</filename>. 
+  <para> pkgviews は buildlink に密接に統合されています。
+    pkgviews の利用者向けの手引きは
+    <filename>pkgsrc/mk/buildlink3/PKGVIEWS_UG</filename> にあります。
     </para>
 </sect1>
 
 
 <sect1 id="faq.common-dirs">
-  <title>How do I handle common shared directories?</title>
+  <title>共有ディレクトリーの処理方法は?</title>
 
-  <para> A <quote>shared directory</quote> is a directory where
-    multiple (and unrelated) packages install files.  These
-    directories are problematic because you have to add special tricks
-    in the PLIST to conditionally remove them, or have some
-    centralized package handle them. </para>
+  <para> <quote>共有ディレクトリー</quote>とは、複数の (かつ関連のない)
+    パッケージがファイルをインストールするディレクトリーのことです。
+    共有ディレクトリーは、条件に応じた削除のために PLIST に特殊な細工をするか、
+    集権的な処理用パッケージを用意する必要があるので、
+    問題を起こすことがあります。 </para>
 
-  <para> Within pkgsrc, you'll find both approaches.  If a directory
-    is shared by a few unrelated packages, it's often not worth to add
-    an extra package to remove it.  Therefore, one simply does:
-    </para>
+  <para> pkgsrc では、このどちらの方法も使うことができます。
+    あるディレクトリーを数個の無関連なパッケージが共有していても、
+    多くの場合、そのディレクトリーを削除するためにさらにパッケージを追加する必要はありません。
+    このディレクトリーを使っている全パッケージの PLIST で、
+    通常の "@dirrm" 行のかわりに、</para>
 
   <programlisting>
     @unexec ${RMDIR} %D/path/to/shared/directory 2>/dev/null || ${TRUE}
   </programlisting>
 
-  <para> in the PLISTs of all affected packages, instead of the
-    regular "@dirrm" line. </para>
+  <para> と書くだけでうまくいきます。 </para>
 
-  <para> However, if the directory is shared across many packages, two
-    different solutions are available: </para>
+  <para> しかし、ディレクトリーを数多くのパッケージが共有している場合、
+    以下の二種類の解決策を使うことができます。 </para>
 
   <orderedlist>
     <listitem>
-      <para> If the packages have a common dependency, the directory
-        can be removed in that.  For example, see
-        <pkg>textproc/scrollkeeper</pkg>, which removes the shared
-        directory <filename>share/omf</filename>. </para>
+      <para> 各パッケージが共通の依存パッケージを持つ場合、
+        その依存先のパッケージでディレクトリーを削除できます。たとえば、
+        <pkg>textproc/scrollkeeper</pkg> を参照してください。このパッケージは
+        共有ディレクトリー <filename>share/omf</filename> を削除しています。 </para>
     </listitem>
 
     <listitem>
-      <para> If the packages using the directory are not related at
-        all (they have no    common dependencies), a *-dirs package is
-        used. </para>
+      <para> パッケージが関連を持たずに共有ディレクトリーを使っている場合
+         (つまり、共通の依存パッケージがない場合)、
+        *-dirs パッケージで共有ディレクトリーを削除します。 </para>
     </listitem>
   </orderedlist>
 
-  <para> From now on, we'll discuss the second solution.  To get an
-    idea of the *-dirs packages available, issue: </para>
+  <para> 以下、二つ目の解決策について述べます。
+    既存の *-dirs パッケージを把握するため、以下を実行してください。 </para>
     
   <programlisting>
     &cprompt; cd .../pkgsrc
     &cprompt; ls -d */*-dirs
   </programlisting>
 
-  <para> Their use from other packages is very simple.  The
-    <varname>USE_DIRS</varname> variable takes a list of package names
-    (without the <quote>-dirs</quote> part) together with the required
-    version number (always pick the latest one when writting new
-    packages). </para>
+  <para> 他のパッケージがこれらを使う方法は非常に簡単です。
+    <varname>USE_DIRS</varname> 変数に、このパッケージ名 (<quote>-dirs</quote> は除く)
+    と必要なバージョン番号 (常に、パッケージを新たに書いたときの最新バージョンを選びます)
+    をつけたものを並べます。 </para>
 
-  <para> For example, if a package installs files under
-    <filename>share/applications</filename>, it should have the
-    following line in it: 
+  <para> たとえば、あるパッケージが
+    <filename>share/applications</filename> 以下にファイルをインストールする場合、
+    以下の行を含めておきます。
     </para>
 
   <programlisting>
     USE_DIRS+= xdg-1.1
   </programlisting>
 
-  <para> After regenerating the PLIST using <command>make
-    print-PLIST</command>, you should get the right (commented out)
-    lines. </para> 
+  <para> <command>make
+    print-PLIST</command> を使って PLIST を作り直すと、
+    行が適切に (コメントアウトされて)
+    得られるはずです。 </para> 
     
-  <para> Note that, even if your package is using
-    <filename>$X11BASE</filename>, it must not depend on the
-    *-x11-dirs packages.  Just specify the name without that part and
-    pkgsrc (in particular, <filename>mk/dirs.mk</filename>) will take
-    care of it. </para> 
+  <para> なお、パッケージがたとえ <filename>$X11BASE</filename>
+    を使う場合であっても、*-x11-dirs パッケージに依存させてはいけません。
+    この部分を除いた名前を指定するだけでよく、そうすれば
+    pkgsrc (特に <filename>mk/dirs.mk</filename>)
+    が処理してくれます。 </para> 
 </sect1>
 
 
 <sect1>
-  <title>How can I tweak 'make print-PLIST' output?</title>
+  <title>'make print-PLIST' の出力を細工する方法は?</title>
 
-  <para> If you have used any of the *-dirs packages, as explained in
-    <xref linkend="faq.common-dirs"/>, you may have noticed that
-    <command>make print-PLIST</command> outputs a set of
-    <varname>@comment</varname>s instead of real
-    <varname>@dirrm</varname> lines.  You can also do this for
-    specific directories and files, so that the results of that
-    command are very close to reality. This helps <emphasis>a
-    lot</emphasis> during the update of packages. </para>
+  <para> *-dirs パッケージを<xref linkend="faq.common-dirs"/>で説明したように
+    使った場合、<command>make print-PLIST</command> で、
+    実際の <varname>@dirrm</varname> 行のかわりに
+    <varname>@comment</varname> が出力されることにお気づきかもしれません。
+    ここでディレクトリーやファイルを指定して、
+    実際に近い結果を出力させることもできます。
+    これはパッケージの更新の際に<emphasis>非常に
+    </emphasis>役立ちます。 </para>
 
-  <para> The <varname>PRINT_PLIST_AWK</varname> variable takes a set
-    of AWK patterns and actions that are used to filter the output of
-    print-PLIST.  You can <emphasis>append</emphasis> any chunk of AWK
-    scripting you like to it, but be careful with quoting. </para>
+  <para> <varname>PRINT_PLIST_AWK</varname> 変数を、
+    print-PLIST の出力をフィルターする
+    AWK のパターンと動作の一式に設定します。
+    AWK スクリプト塊を好きなように
+    <emphasis>追加</emphasis>することができますが、
+    適切にクォートするよう注意してください。 </para>
 
-  <para> For example, to get all files inside the
-    <filename>libdata/foo</filename> directory removed from the
-    resulting PLIST:</para> 
+  <para> たとえば、PLIST の結果から <filename>libdata/foo</filename>
+    ディレクトリー内のファイルをすべて消すには、
+    以下のようにします。</para> 
 
   <programlisting>
     PRINT_PLIST_AWK+= /^libdata\/foo/ { next; }
   </programlisting>
 
-  <para> And to get all the <varname>@dirrm</varname> lines referring
-    to a specific (shared) directory converted to
-    <varname>@comment</varname>s: </para> 
+  <para> また、特定の (共有) ディレクトリーを参照している
+    <varname>@dirrm</varname> 行を <varname>@comment</varname>
+    に変換するには、以下のようにします。 </para> 
 
   <programlisting>
     PRINT_PLIST_AWK+= /^@dirrm share\/specific/ { print "@comment " $$0; next; }
@@ -1649,67 +1625,65 @@ message</ulink> for more details.
 
 
 <sect1>
-  <title>Packages that install score files</title>
+  <title>得点ファイルをインストールするパッケージ</title>
 
-  <para> Certain packages, most of them in the games category, install
-    a score file that allows all users on the system to record their
-    highscores.  In order for this to work, the binaries need to be
-    installed setgid and the score files owned by the appropriate
-    group and/or owner (traditionally the "games" user/group).  The
-    following variables, documented in more detail in
-    <filename>mk/bsd.pkg.defaults.mk</filename>, control this
-    behaviour: <varname>SETGIDGAME</varname>,
+  <para> パッケージによっては (ほとんどは games カテゴリーのもの)、
+    システム上の各ユーザーが最高得点を記録できるように、
+    得点ファイルをインストールします。これを実現するために、
+    バイナリーは setgid してインストールし、得点ファイルは
+    グループとオーナーのいずれかまたは両方を当該グループやオーナー
+    (伝統的には "games" ユーザーおよびグループ) の所有とする必要があります。
+    <varname>SETGIDGAME</varname>,
     <varname>GAMEDATAMODE</varname>, <varname>GAMEGRP</varname>,
-    <varname>GAMEMODE</varname>, <varname>GAMEOWN</varname>. </para>
+    <varname>GAMEMODE</varname>, <varname>GAMEOWN</varname>
+    の各変数でこの挙動を制御します。詳細は
+    <filename>mk/bsd.pkg.defaults.mk</filename> に書かれています。 </para>
 
-  <para> Note that per default, setgid installation of games is
-    disabled;  setting <varname>SETGIDGAME=YES</varname> will set all
-    the other variables accordingly. </para>
+  <para> なお、games に setgid されたインストールは、標準では有効になっていません。
+    <varname>SETGIDGAME=YES</varname> を設定すると、
+    これに応じて他の各変数が設定されます。 </para>
 
-  <para> A package should therefor never hard code file ownership or
-    access permissions but rely on <varname>INSTALL_GAME</varname> and
-    <varname>INSTALL_GAME_DATA</varname> to set these
-    correctly. </para>
+  <para> このため、パッケージではファイルの所有やアクセス許可属性を決してハードコードせずに、
+    <varname>INSTALL_GAME</varname> および
+    <varname>INSTALL_GAME_DATA</varname>
+    の設定に応じて適切に設定されるようにします。 </para>
 </sect1>
 
 
 <sect1>
-  <title>Packages installing extensions to the MIME database</title>
+  <title>MIME データベースの拡張をインストールするパッケージ</title>
 
-  <para> If a package provides extensions to the MIME database by
-    installing <filename>.xml</filename> files inside
-    <filename>${PREFIX}/share/mime/packages</filename>, you 
-    need to take some extra steps to ensure that the database is kept
-    consistent with respect to these new files:
+  <para> パッケージが、<filename>.xml</filename> ファイルを
+    <filename>${PREFIX}/share/mime/packages</filename>
+    以下にインストールすることで MIME データベースを拡張する場合は、
+    データベースがこの新規ファイルについて確実に整合性を持つようにするために、
+    いくつか特別な手順を踏む必要があります。
     </para>
 
   <orderedlist>
     <listitem>
-      <para> Include
-        <filename>../../databases/shared-mime-info/mimedb.mk</filename>
-        (avoid using the <filename>buildlink3.mk</filename> file from
-        this same directory, which is reserved for inclusion from
-        other <filename>buildlink3.mk</filename> files).  It takes
-        care of rebuilding the MIME database at installation and
-        deinstallation time, and disallows any access to it directly
-        from the package. </para>
+      <para> <filename>../../databases/shared-mime-info/mimedb.mk</filename>
+        をインクルードします (同じディレクトリーにある <filename>buildlink3.mk</filename>
+        ファイルは、他の <filename>buildlink3.mk</filename>
+        ファイルでインクルードするために予約されているので使いません)
+        こうすると、インストールおよびアンインストール時に、MIME
+        データベースを再構築してくれます。
+        また、パッケージがデータベースに直接アクセスすることが一切できなくなります。</para>
     </listitem>
 
     <listitem>
-      <para> Check the PLIST and remove any entries under the
-        <filename>share/mime</filename> directory,
-        <emphasis>except</emphasis> for files saved under 
-        <filename>share/mime/packages</filename>.  The former are
-        handled automatically by 
-        the update-mime-database program, but the later are
-        package-dependent and must be removed by the package that
-        installed them in the first place. </para>
+      <para> PLIST を確認し、<filename>share/mime</filename>
+        ディレクトリー以下の項目のうち、
+        <filename>share/mime/packages</filename> 以下に置かれるファイル
+        <emphasis>以外の</emphasis>ものをすべて削除します。
+        このディレクトリーについては update-mime-database プログラムが自動的に処理しますが、
+        除外したファイルはパッケージ依存のファイルなので、
+        ファイルをインストールしたパッケージが自分で削除する必要があります。 </para>
     </listitem>
 
     <listitem>
-      <para> Remove any <filename>share/mime/*</filename> directories
-        from the PLIST.  They will be handled by the shared-mime-info
-        package. </para>
+      <para> PLIST から <filename>share/mime/*</filename> ディレクトリーをすべて削除します。
+        これらは shared-mime-info プログラムが処理します。 </para>
     </listitem>	
   </orderedlist>
 </sect1>
