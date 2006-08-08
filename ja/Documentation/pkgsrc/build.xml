@@ -1,4 +1,4 @@
-<!-- $NetBSD: build.xml,v 1.3 2004/09/29 13:08:36 hubertf Exp $ -->
+<!-- $NetBSD: build.xml,v 1.4 2004/09/29 23:04:30 hubertf Exp $ -->
 
 <chapter id="build">
   <title>The build process</title>
@@ -176,15 +176,41 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	<term>extract</term>
 
 	<listitem>
-	  <para>When the distfiles are present on the local system, they need to be
-	    extracted, as they are usually in the form of some compressed archive
-	    format, most commonly <filename>.tar.gz</filename>. If only some of
-	    the distfiles need to be uncompressed, the files to be uncompressed
-	    should be put into <varname>EXTRACT_ONLY</varname>. If the distfiles
-	    are not in <filename>.tar.gz</filename> format, they can be
-	    extracted by setting <varname>EXTRACT_CMD</varname>,
-	    <varname>EXTRACT_BEFORE_ARGS</varname> and/or
-	    <varname>EXTRACT_AFTER_ARGS</varname>.</para>
+	  <para>When the distfiles are present on the local system,
+	    they need to be extracted, as they are usually in the form
+	    of some compressed archive format, most commonly
+	    <filename>.tar.gz</filename>.
+
+	  <para> If only some of the
+	    distfiles need to be uncompressed, the files to be
+	    uncompressed should be put into
+	    <varname>EXTRACT_ONLY</varname>.
+
+	  <para> If the distfiles are not in
+	    <filename>.tar.gz</filename> format, they can be extracted
+	    by setting either <varname>EXTRACT_SUFX</varname>, or
+	    <varname>EXTRACT_CMD</varname>,
+	    <varname>EXTRACT_BEFORE_ARGS</varname> and
+	    <varname>EXTRACT_AFTER_ARGS</varname>. In the former case,
+	    pkgsrc knows how to extract a number of suffixes
+	    (<filename>.tar.gz</filename>, <filename>.tgz</filename>,
+	    <filename>.tar.gz2</filename>, <filename>.tbz</filename>,
+	    <filename>.tar.Z</filename>, <filename>.tar</filename>,
+	    <filename>.shar.gz</filename>,
+	    <filename>.shar.bz2</filename>,
+	    <filename>.shar.Z</filename>, <filename>.shar</filename>,
+	    <filename>.Z</filename>, <filename>.bz2</filename> and
+	    <filename>.gz</filename>; see the definition of the
+	    various <varname>DECOMPRESS_CMD</varname> variables
+	    <filename>bsd.pkg.mk</filename> for a complete
+	    list). Here's an example on how to use the other variables
+	    for a program that comes with a compressed shell archive
+	    whose name ends in <filename>.msg.gz</filename>:</para>
+
+	  <programlisting>     EXTRACT_SUFX=   .msg.gz
+     EXTRACT_CMD=            zcat
+     EXTRACT_BEFORE_ARGS=
+     EXTRACT_AFTER_ARGS=     |sh</programlisting>
 	</listitem>
       </varlistentry>
 
@@ -222,14 +248,21 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	    and its invocation results in generation of header files,
 	    Makefiles, etc.</para>
 
-	  <para>If the program's distfile contains its own configure script, this can
-	    be invoked by setting <varname>HAS_CONFIGURE</varname>. If the
-	    configure script is a GNU autoconf script,
-	    <varname>GNU_CONFIGURE</varname> should be specified instead. In either
-	    case, any arguments to the configure script can be specified in the
-	    <varname>CONFIGURE_ARGS</varname> variable, and the configure script's
-	    name can be set in <varname>CONFIGURE_SCRIPT</varname> if it differs
-	    from the default <quote>configure</quote>.</para>
+	  <para>If the program's distfile contains its own configure
+	    script, this can be invoked by setting
+	    <varname>HAS_CONFIGURE</varname>. If the configure script
+	    is a GNU autoconf script, <varname>GNU_CONFIGURE</varname>
+	    should be specified instead. In either case, any arguments
+	    to the configure script can be specified in the
+	    <varname>CONFIGURE_ARGS</varname> variable, and the
+	    configure script's name can be set in
+	    <varname>CONFIGURE_SCRIPT</varname> if it differs from the
+	    default <quote>configure</quote>. Here's an example from
+	    the <pkg>sysutils/top</pkg> package:</para>
+
+	  <programlisting>HAS_CONFIGURE=          yes
+CONFIGURE_SCRIPT=       Configure
+CONFIGURE_ARGS+=        netbsd13</programlisting>
 
 	  <para>If the program uses an Imakefile for configuration, the appropriate
 	    steps can be invoked by setting <varname>USE_IMAKE</varname> to
@@ -604,14 +637,16 @@ make build</programlisting>
 	<term>print-PLIST</term>
 
 	<listitem>
-	  <para>After a <quote>make install</quote> from a new or upgraded pkg, this
-	    prints out an attempt to generate a new <filename>PLIST</filename> from
-	    a <command>find -newer work/.extract_done</command>.
-	    An attempt is made to care for shared libs etc., but it is
-	    <emphasis>strongly</emphasis> recommended to review the result before
-	    putting it into <filename>PLIST</filename>. On upgrades, it's useful to
-	    diff the output of this command against an already existing
-	    <filename>PLIST</filename> file.</para>
+	  <para>After a <quote>make install</quote> from a new or
+	    upgraded pkg, this prints out an attempt to generate a new
+	    <filename>PLIST</filename> from a <command>find -newer
+	    work/.extract_done</command>.  An attempt is made to care
+	    for shared libs etc., but it is
+	    <emphasis>strongly</emphasis> recommended to review the
+	    result before putting it into
+	    <filename>PLIST</filename>. On upgrades, it's useful to
+	    diff the output of this command against an already
+	    existing <filename>PLIST</filename> file.</para>
 
 	  <para>If the package installs files via tar(1) or other
 	    methods that don't update file access times, be sure to
@@ -619,6 +654,9 @@ make build</programlisting>
 	    <filename>PLIST</filename>, as the <quote>find
 	    -newer</quote> command used by this target won't catch
 	    them!</para>
+
+	  <para> See <xref linkend="print-PLIST"/> for more
+	    information on this target.
 	</listitem>
       </varlistentry>
 
