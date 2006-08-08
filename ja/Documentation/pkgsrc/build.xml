@@ -1,6 +1,6 @@
-<!-- $NetBSD: build.xml,v 1.3 2004/09/29 13:08:36 hubertf Exp $ -->
+<!-- $NetBSD: build.xml,v 1.4 2004/09/29 23:04:30 hubertf Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.3 2004/09/29 13:08:36 hubertf Exp   -->
+<!-- NetBSD: build.xml,v 1.4 2004/09/29 23:04:30 hubertf Exp   -->
 
 <chapter id="build">
   <title>構築の手順</title>
@@ -165,13 +165,41 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	<term>extract</term>
 
 	<listitem>
-	  <para>distfileがローカルシステム上に存在している場合、通常、それらは圧縮アーカ
-	    イブフォーマットで保存されているので、展開する必要があります。もっとも一
-	    般なフォーマットは<filename>.tar.gz</filename>です。もし、すべてのdistfileを伸張する必要がな
-	    いのであれば、伸張するファイルを<varname>EXTRACT_ONLY</varname>に設定してください。もし
-	    distfileが<filename>.tar.gz</filename>フォーマットでなければ、<varname>EXTRACT_CMD</varname>、
-	    <varname>EXTRACT_BEFORE_ARGS</varname>、そして<varname>EXTRACT_AFTER_ARGS</varname>を設定することにより、それ
-	    らを展開することができます。</para>
+	  <para>distfileがローカルシステム上に存在している場合、
+	    通常、それらは圧縮アーカイブフォーマットで保存されているので、
+	    展開する必要があります。もっとも一般なフォーマットは
+	    <filename>.tar.gz</filename> です。
+
+	  <para> もし、すべてのdistfileを伸張する必要がないのであれば、
+	    伸張するファイルを
+	    <varname>EXTRACT_ONLY</varname> に設定してください。
+
+	  <para> もし distfile が
+	    <filename>.tar.gz</filename> フォーマットでなければ、
+	    <varname>EXTRACT_SUFX</varname> を設定するか、
+	    <varname>EXTRACT_CMD</varname>,
+	    <varname>EXTRACT_BEFORE_ARGS</varname>,
+	    <varname>EXTRACT_AFTER_ARGS</varname> を設定するかのいずれかにより、
+	    それらを展開することができます。
+	    最初の変数に関して、pkgsrc は多くのサフィックスの展開方法を知っています
+	    (<filename>.tar.gz</filename>, <filename>.tgz</filename>,
+	    <filename>.tar.gz2</filename>, <filename>.tbz</filename>,
+	    <filename>.tar.Z</filename>, <filename>.tar</filename>,
+	    <filename>.shar.gz</filename>,
+	    <filename>.shar.bz2</filename>,
+	    <filename>.shar.Z</filename>, <filename>.shar</filename>,
+	    <filename>.Z</filename>, <filename>.bz2</filename> and
+	    <filename>.gz</filename>; 完全な一覧は、
+	    <filename>bsd.pkg.mk</filename> で定義されている
+	    各種 <varname>DECOMPRESS_CMD</varname> 変数を参照)。
+	    プログラムが圧縮されたシェルアーカイブの形で配布され、
+	    そのファイル名の末尾が <filename>.msg.gz</filename> である場合、
+	    残りの変数の使い方は以下のようになります。</para>
+
+	  <programlisting>     EXTRACT_SUFX=   .msg.gz
+     EXTRACT_CMD=            zcat
+     EXTRACT_BEFORE_ARGS=
+     EXTRACT_AFTER_ARGS=     |sh</programlisting>
 	</listitem>
       </varlistentry>
 
@@ -209,7 +237,12 @@ CONFIGURE_ARGS+=	--with-guile-prefix=${LOCALBASE}	\
 	    クリプトがGNUのautoconfスクリプトである場合は、かわりに、<varname>GNU_CONFIGURE</varname>を
 	    指定してください。どちらの場合も、configureスクリプトの引数は、変数
 	    <varname>CONFIGURE_ARGS</varname>で指定されます。もし設定スクリプトの名前がデフォルトの
-	    <quote>configure</quote>でない場合は、その名前を<varname>CONFIGURE_SCRIPT</varname>に設定してください。</para>
+	    <quote>configure</quote>でない場合は、その名前を<varname>CONFIGURE_SCRIPT</varname>に設定してください。
+	    <pkg>sysutils/top</pkg> パッケージから抜粋した例を以下に掲げます。</para>
+
+	  <programlisting>HAS_CONFIGURE=          yes
+CONFIGURE_SCRIPT=       Configure
+CONFIGURE_ARGS+=        netbsd13</programlisting>
 
 	  <para>もし、プログラムがコンフィギュレーションのためにImakefileを使用するので
 	    あれば、<varname>USE_IMAKE</varname>を<quote>YES</quote>に設定することにより、適切な手順が実行されます。
@@ -559,7 +592,8 @@ make build</programlisting>
 
 	<listitem>
 	  <para>パッケージを新規に、または更新のために<quote>make install</quote>した後、
-	    <command>find -newer work/.extract_done</command>をもとに新しい<filename>PLIST</filename>を生成して表示します。PLIST生成は、
+	    <command>find -newer
+	    work/.extract_done</command>をもとに新しい<filename>PLIST</filename>を生成して表示します。PLIST生成は、
 	    共有ライブラリーなどに配慮して行われますが、生成した結果を<filename>PLIST</filename>に置く前
 	    に再確認するよう<emphasis>強く</emphasis>おすすめします。パッケージ更新時には、このコマンド
 	    の出力と、更新前の<filename>PLIST</filename>ファイルとを比較すると便利でしょう。</para>
@@ -568,6 +602,9 @@ make build</programlisting>
 	    てファイルをインストールする場合は、それらのファイルはこのターゲットで使われる <quote>find
 	    -newer</quote> コマンドで検
 	    出されないので、手で<filename>PLIST</filename>に書き足すよう注意してください!</para>
+
+	  <para> このターゲットに関するさらなる情報は、
+	    <xref linkend="print-PLIST"/>を参照してください。
 	</listitem>
       </varlistentry>
 
