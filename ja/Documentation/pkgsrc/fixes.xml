@@ -1,4 +1,4 @@
-<!-- $NetBSD: fixes.xml,v 1.6 2004/09/29 23:40:31 hubertf Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.7 2004/09/30 00:16:57 hubertf Exp $ -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>Notes on fixes for packages</title>
@@ -873,6 +873,63 @@ pre-configure:
     </sect2>
 
 
+    <sect2>
+      <title>Handling licenses</title>
+
+      <para>A package may underly a license which the user has or has
+        not agreed to accept. Usually, packages that underly
+        well-known Open Source licenses (e.g. the GNU Public License,
+        GPL) won't have any special license 
+        tags added in pkgsrc which require special action by the user
+        of such packages, but there are quite a number of other
+        licenses out there that pkgsrc users may not be able to
+        follow, for whatever reasons. For these cases, pkgsrc contains
+        a mechanism to note that a package underlies a certain
+        license, and the user has to accept the license before the
+        package can be installed. </para>
+
+      <para>
+        Placing a certain package under a certain license works by
+        setting the <varname>LICENSE</varname> variable to a string
+        identifying the license, e.g. in <pkg>graphics/graphviz</pkg>:
+        </para>
+
+	<programlisting>LICENSE=        graphviz-license</programlisting>
+
+	When trying to build, the user will get a notice that the
+        package underlies a license which he hasn't accepted (yet):
+	
+	<programlisting>
+&cprompt; <userinput>make</userinput>
+===> graphviz-1.12 has an unacceptable license: graphviz-license.
+===>     To build this package, add this line to your /etc/mk.conf:
+===>     ACCEPTABLE_LICENSES+=graphviz-license
+===>     To view the license, enter "/usr/bin/make show-license".
+*** Error code 1</programlisting>
+
+        <para> The license can be viewed with <command>make
+          show-license</command>, and if it is considered appropriate,
+          the line printed above can be added to
+          <filename>/etc/mk.conf</filename> to indicate acceptance of
+          the particular license:</para>
+
+	<programlisting>ACCEPTABLE_LICENSES+=graphviz-license</programlisting>
+
+	<para>When adding a package with a new license, the license
+          text should be added to <filename>pkgsrc/licenses</filename>
+          for displaying. A list of known licenses can be seen in this
+          directory as well as by looking at the list of (commented
+          out) <varname>ACCEPTABLE_LICENSES</varname> variable
+          settings in
+          <filename>pkgsrc/mk/bsd.pkg.defaults.mk</filename>.</para>
+
+	<para> Is there is a <emphasis>really</emphasis> pressing need
+          to accept all licenses at once, like when trying to download
+          or mirror all distfiles or doing a bulk build to test if all
+          packages in pkgsrc build, this can be done by setting
+          <varname>_ACCEPTABLE=yes</varname>. 
+	  </para>
+      </sect2>
     
 
     <sect2>

@@ -1,4 +1,4 @@
-<!-- $NetBSD: platforms.xml,v 1.5 2004/09/29 23:04:30 hubertf Exp $ -->
+<!-- $NetBSD: platforms.xml,v 1.6 2004/10/12 14:15:15 tv Exp $ -->
 
 <chapter id="platforms">
   <title>Using pkgsrc on systems other than &os;</title>
@@ -21,7 +21,7 @@
       </listitem>
 
       <listitem>
-	<para>Interix (Windows)</para>
+	<para>Interix (Windows 2000, XP, 2003)</para>
       </listitem>
 
       <listitem>
@@ -186,6 +186,98 @@
 	    when you use the bootstrap script.</para>
 	</listitem>
       </orderedlist>
+    </sect2>
+
+    <sect2>
+      <title>Interix</title>
+
+      <para>Interix is a POSIX compatible subsystem for the Windows NT kernel,
+	providing a Unix-like environment with a tighter kernel integration than
+	available with Cygwin.  It is part of the Windows Services for Unix
+	package, available for free for any licensed copy of Windows 2000, XP,
+	or 2003.  SFU can be downloaded from <ulink
+	url="http://www.microsoft.com/windows/sfu/">http://www.microsoft.com/windows/sfu/</ulink>.</para>
+
+      <para>Services for Unix 3.5, current as of this writing, has been tested.  3.0
+	or 3.1 may work, but are not officially supported.  (The main difference
+	in 3.0/3.1 is lack of pthreads.)</para>
+
+      <sect3 id="platform.interix-sfu-install">
+	<title>When Installing Interix/SFU</title>
+
+	<para>At an absolute minimum, the following packages must be installed from
+	  the Windows Services for Unix 3.5 distribution in order to use pkgsrc:</para>
+
+	<itemizedlist>
+	  <listitem><para>Utilities -&gt; Base Utilities</para></listitem>
+	  <listitem><para>Interix GNU Components -&gt; (all)</para></listitem>
+	  <listitem><para>Remote Connectivity</para></listitem>
+	  <listitem><para>Interix SDK</para></listitem>
+	</itemizedlist>
+
+	<para>When using pkgsrc on Interix, DO NOT install the Utilities subcomponent
+	  "UNIX Perl".  That is Perl 5.6 without shared module support, installed to
+	  /usr/local, and will only cause confusion. Instead, install Perl 5.8 from
+	  pkgsrc (or from a binary package).</para>
+
+	<para>The Remote Connectivity subcomponent "Windows Remote Shell Service" does
+	  not need to be installed, but Remote Connectivity itself should be
+	  installed in order to have a working inetd.</para>
+
+	<para>Finally, during installation you may be asked whether to enable setuid
+	  behavior for Interix programs, and whether to make pathnames default to
+	  case-sensitive.  Setuid should be enabled, and case-sensitivity MUST be
+	  enabled.  (Without case-sensitivity, a large number of packages including
+	  perl will not build.)</para>
+
+      </sect3>
+
+      <sect3 id="platform.interix-sfu-postinstall">
+	<title>What to do if Interix/SFU is already installed</title>
+
+	<para>If SFU is already installed and you wish to alter these settings to work
+	  with pkgsrc, note the following things.</para>
+
+	<itemizedlist>
+	  <listitem>
+	    <para>To uninstall UNIX Perl, use Add/Remove Programs, select Microsoft
+	      Windows Services for UNIX, then click Change.  In the installer, choose
+	      Add or Remove, then uncheck Utilities-&gt;UNIX Perl.</para>
+	  </listitem>
+	  <listitem>
+	    <para>To enable case-sensitivity for the filesystem, run REGEDIT.EXE, and
+	      change the following registry key:</para>
+	    <para>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel</para>
+	    <para>Set the DWORD value "obcaseinsensitive" to 0; then reboot.</para>
+	  </listitem>
+	  <listitem>
+	    <para>To enable setuid binaries (optional), run REGEDIT.EXE, and change the
+	      following registry key:</para>
+	    <para>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Services for UNIX</para>
+	    <para>Set the DWORD value "EnableSetuidBinaries" to 1; then reboot.</para>
+	  </listitem>
+	</itemizedlist>
+
+      </sect3>      
+      <sect3 id="platform.interix-notes">
+	<title>Important notes for using pkgsrc</title>
+
+	<para>The package imanager (either the pkgsrc "su" user, or the user
+	  running "pkg_add") must be a member of the local Administrators
+	  group.  Such a user must also be used to run the bootstrap.  This is
+	  slightly relaxed from the normal pkgsrc requirement of "root".</para>
+
+	<para>The package manager should use a umask of 002.  "make install" will
+	  automatically complain if this is not the case.  This ensures that
+	  directories written in /var/db/pkg are Administrators-group writeable.</para>
+
+	<para>The popular Interix binary packages from http://www.interopsystems.com/
+	  use an older version of pkgsrc's pkg_* tools.  Ideally, these should
+	  NOT be used in conjunction with pkgsrc.  If you choose to use them at
+	  the same time as the pkgsrc packages, ensure that you use the proper
+	  pkg_* tools for each type of binary package.</para>
+
+      </sect3>
     </sect2>
 
     <sect2>
