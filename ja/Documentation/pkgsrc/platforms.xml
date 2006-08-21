@@ -1,6 +1,6 @@
-<!-- $NetBSD: platforms.xml,v 1.5 2004/09/29 23:04:30 hubertf Exp $ -->
+<!-- $NetBSD: platforms.xml,v 1.6 2004/10/12 14:15:15 tv Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: platforms.xml,v 1.5 2004/09/29 23:04:30 hubertf Exp   -->
+<!-- NetBSD: platforms.xml,v 1.6 2004/10/12 14:15:15 tv Exp   -->
 
 <chapter id="platforms">
   <title>&os; 以外のシステムで pkgsrc を使う</title>
@@ -23,7 +23,7 @@
       </listitem>
 
       <listitem>
-	<para>Interix (Windows)</para>
+	<para>Interix (Windows 2000, XP, 2003)</para>
       </listitem>
 
       <listitem>
@@ -188,6 +188,98 @@
 	    <filename>/etc/mk.conf.example</filename> ファイルに置かれます。</para>
 	</listitem>
       </orderedlist>
+    </sect2>
+
+    <sect2>
+      <title>Interix</title>
+
+      <para>Interix は Windows NT カーネルの POSIX 準拠のサブシステムで、
+	Cygwin よりも密接にカーネルと統合された Unix 風の環境を提供します。
+	Interix は Windows Services for Unix パッケージの一部であり、
+	ライセンスされた Windows 2000, XP, 2003 のコピー用として、
+	無料で使うことができます。SFU は、<ulink
+	url="http://www.microsoft.com/windows/sfu/">http://www.microsoft.com/windows/sfu/</ulink> からダウンロードできます。</para>
+
+      <para>確認は、執筆時点の最新版である Services for Unix 3.5 に対しておこなわれています。 3.0
+	や 3.1 でも動作するかもしれませんが、公式には対応していません。  (3.0/3.1 の主な違いは、
+	pthreads がないことです。)</para>
+
+      <sect3 id="platform.interix-sfu-install">
+	<title>Interix/SFU のインストールに際して</title>
+
+	<para>pkgsrc を使うためには、Windows Services for Unix 3.5 の配布物のうち、
+	  最低限、以下のパッケージをインストールする必要があります。</para>
+
+	<itemizedlist>
+	  <listitem><para>Utilities -&gt; Base Utilities</para></listitem>
+	  <listitem><para>Interix GNU Components -&gt; (all)</para></listitem>
+	  <listitem><para>Remote Connectivity</para></listitem>
+	  <listitem><para>Interix SDK</para></listitem>
+	</itemizedlist>
+
+	<para>Interix 上で pkgsrc を使う場合、Utilities 以下の "UNIX Perl"
+	  はインストールしないでください。これは共有モジュールに対応していない Perl 5.6 で、
+	  /usr/local にインストールされますが、混乱を起こすだけです。これのかわりに、
+	  pkgsrc (またはバイナリーパッケージ) の Perl 5.8 をインストールします。</para>
+
+	<para>Remote Connectivity 以下の "Windows Remote Shell Service"
+	  のインストールは必須ではありませんが、inetd を動作させるために Remote Connectivity
+	  そのものはインストールすることをおすすめします。</para>
+
+	<para>最後に、インストール中に、Interix のプログラムに対して setuid を有効にするかどうか、
+	  また、パス名の大文字と小文字を標準で区別するかどうかを尋ねられるかもしれません。
+	  setuid は有効にするようにし、また大文字と小文字はかならず区別するようにします。
+	  (大文字と小文字を区別しないと、
+	  perl をはじめ多くのプログラムが構築できなくなります。)</para>
+
+      </sect3>
+
+      <sect3 id="platform.interix-sfu-postinstall">
+	<title>Interix/SFU がインストール済みの場合はどうすればよいか</title>
+
+	<para>SFU がすでにインストールされており、その設定を変更して
+	  pkgsrc が動作するようにしたい場合は、以下のことに気をつけてください。</para>
+
+	<itemizedlist>
+	  <listitem>
+	    <para>UNIX Perl をアンインストールするため、Add/Remove Programs を使い、Microsoft
+	      Windows Services for UNIX を選んで Change をクリックします。インストーラーで
+	      Add or Remove を選んでから Utilities-&gt;UNIX Perl のチェックを外します。</para>
+	  </listitem>
+	  <listitem>
+	    <para>ファイルシステムの大文字と小文字の区別を有効にするため、REGEDIT.EXE を実行して
+	      以下のレジストリーキーを変更します。</para>
+	    <para>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel</para>
+	    <para>DWORD 値 "obcaseinsensitive" を 0 に設定した後、リブートします。</para>
+	  </listitem>
+	  <listitem>
+	    <para>setuid バイナリーを有効にするため (これは必須ではありません)、REGEDIT.EXE を実行して
+	      以下のレジストリーキーを変更します。</para>
+	    <para>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Services for UNIX</para>
+	    <para>DWORD 値 "EnableSetuidBinaries" を 1 に設定した後、リブートします。</para>
+	  </listitem>
+	</itemizedlist>
+
+      </sect3>      
+      <sect3 id="platform.interix-notes">
+	<title>pkgsrc を使ううえで重要な覚書</title>
+
+	<para>パッケージの管理者 (pkgsrc の "su" ユーザーと
+	  "pkg_add" を実行するユーザーのいずれかまたは両方) は、ローカルの Administrators
+	  グループに所属している必要があります。bootstrap を実行するユーザーも同様です。これは、通常の
+	  pkgsrc が "root" を要求するのにくらべ、若干緩い条件です。</para>
+
+	<para>パッケージの管理者は umask を 002 に設定するようにします。そうしておかないと、
+	  自動的に "make install" が文句をいうようになります。こう設定することで、
+	  /var/db/pkg 以下に書かれるディレクトリーに Administrators グループが確実に書き込み可能とできます。</para>
+
+	<para>http://www.interopsystems.com/ にある人気のある Interix バイナリーパッケージは、
+	  古いバージョンの pkgsrc の pkg_* ツールを使います。
+	  理想的には、これらは pkgsrc と混用しないほうがよいものです。
+	  これらを pkgsrc のパッケージと同時に使う場合は、かならず、
+	  それぞれのバイナリーパッケージに応じて適切な pkg_* ツールを使うようにしてください。</para>
+
+      </sect3>
     </sect2>
 
     <sect2>

@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.6 2004/09/29 23:40:31 hubertf Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.7 2004/09/30 00:16:57 hubertf Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.6 2004/09/29 23:40:31 hubertf Exp   -->
+<!-- NetBSD: fixes.xml,v 1.7 2004/09/30 00:16:57 hubertf Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージの修正に関する注意</title>
@@ -809,6 +809,63 @@ pre-configure:
     </sect2>
 
 
+    <sect2>
+      <title>ライセンスの処理</title>
+
+      <para>パッケージに適用されるライセンスのなかには、
+        利用者によって同意できたり同意できなかったりするものがあるかもしれません。
+        通常、よく知られたオープンソースライセンス (たとえば GNU Public License,
+        GPL) が適用されているパッケージでは、
+        特に同意するための行為を利用者におこなわせるための特別な印は
+        pkgsrc にはついていません。ですが、それら以外のライセンスのなかには、
+        利用者が何らかの理由で同意しない可能性があるようなものが相当数あります。
+        このような場合のために、
+        pkgsrc には、パッケージが特殊なライセンスの下にあることを記すための仕組みがあり、
+        これを使うと、利用者がライセンスに同意しない限りインストールできないようになります。 </para>
+
+      <para>
+        パッケージが特殊なライセンスの下にあることを指定するには、
+        <varname>LICENSE</varname> をライセンスを特定する文字列に設定します。
+        たとえば、<pkg>graphics/graphviz</pkg> では以下のようになります。
+        </para>
+
+	<programlisting>LICENSE=        graphviz-license</programlisting>
+
+        構築しようとすると、利用者はそのパッケージのライセンスに
+        (まだ) 同意していないことを知らされます。
+	
+	<programlisting>
+&cprompt; <userinput>make</userinput>
+===> graphviz-1.12 has an unacceptable license: graphviz-license.
+===>     To build this package, add this line to your /etc/mk.conf:
+===>     ACCEPTABLE_LICENSES+=graphviz-license
+===>     To view the license, enter "/usr/bin/make show-license".
+*** Error code 1</programlisting>
+
+        <para> ライセンス自体は <command>make
+          show-license</command> すると見ることができます。
+          そのライセンスが妥当なものであると判断した場合は、
+          ライセンスに同意していることを表すために、
+          上の表示中で指示されている行を <filename>/etc/mk.conf</filename>
+          に追加することができます。</para>
+
+	<programlisting>ACCEPTABLE_LICENSES+=graphviz-license</programlisting>
+
+	<para>新しいライセンスが適用されているパッケージを追加する場合、
+          表示用のライセンスのテキストを <filename>pkgsrc/licenses</filename>
+          に追加します。既知のライセンスの一覧は、
+          <filename>pkgsrc/mk/bsd.pkg.defaults.mk</filename>
+          で (コメントアウトされている)
+          <varname>ACCEPTABLE_LICENSES</varname> 変数の設定の一覧で見られるほか、
+          このディレクトリーで見ることができます。</para>
+
+	<para> すべての distfile をダウンロードあるいはミラーしたり、
+          pkgsrc のすべてのパッケージの構築テストのためにバルクビルドを実行するときなど、
+          すべてのライセンスにまとめて同意する必要が<emphasis>本当に</emphasis>ある場合は、
+          <varname>_ACCEPTABLE=yes</varname>
+          を設定すれば、まとめて同意することができます。
+	  </para>
+      </sect2>
     
 
     <sect2>
