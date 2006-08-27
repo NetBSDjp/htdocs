@@ -1,67 +1,72 @@
 <!-- $NetBSD: plist.xml,v 1.1 2004/10/21 14:27:40 grant Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: plist.xml,v 1.1 2004/10/21 14:27:40 grant Exp   -->
 
 <chapter id="plist">
-  <title>PLIST issues</title>
+  <title>PLIST 問題</title>
 
-  <para> The <filename>PLIST</filename> file contains a package's
-    <quote>packing list</quote>, i.e. a list of files that belong to
-    the package (relative to the <filename>${PREFIX}</filename>
-    directory it's been installed in) plus some additional statements
-    - see the &man.pkg.create.1; manpage for a full list.
-    This chapter addresses some issues that need attention when
-    dealing with the <filename>PLIST</filename> file (or files, see
-    below!).</para>
+  <para> <filename>PLIST</filename> ファイルは、パッケージの
+    <quote>packing list</quote> (梱包明細) です。すなわち、
+    パッケージを構成するファイルの一覧 (インストール先である
+    <filename>${PREFIX}</filename> ディレクトリーからの相対位置)
+    と、それに加えて、いくつかの追加情報
+    (完全な一覧は &man.pkg.create.1; マニュアルページを参照) が載っています。
+    この章では、<filename>PLIST</filename>ファイル
+    (複数の場合もあります、以下を参照してください)を扱う場合に注意が必要な、
+    いくつかの特別な問題について述べます。</para>
 
 
   <sect1>
     <title>RCS ID</title>
 
     <para>
-      Be sure to add a RCS ID line as the first thing in any
-      <filename>PLIST</filename> file you write:
+      あなたが書いたすべての<filename>PLIST</filename>ファイルの先頭行にRCS IDが追加されていること
+      を確認してください。
     </para>
 
     <programlisting>@comment &#36;NetBSD&#36;</programlisting>
   </sect1>
     
   <sect1>
-    <title>Semi-automatic <filename>PLIST</filename> generation</title>
+    <title><filename>PLIST</filename> の半自動生成</title>
 	    
-    <para>You can use the <command>make print-PLIST</command> command
-      to output a PLIST that matches any new files since the package
-      was extracted.  See <xref linkend="build.helpful-targets"/> for
-      more information on this target.</para>
+    <para><command>make print-PLIST</command>コマンドを使って、パッケージの展開後に新しくできた全ファ
+      イルにマッチするPLISTを出力することができます。このターゲットに関するさ
+      らなる情報は、
+      <xref linkend="build.helpful-targets"/>をご覧ください。</para>
   </sect1>
 
 
   <sect1 id="print-PLIST">
-    <title>Tweaking output of <command>make print-PLIST</command></title>
+    <title><command>make print-PLIST</command> の出力を細工する</title>
   
-    <para> If you have used any of the *-dirs packages, as explained in
-      <xref linkend="faq.common-dirs"/>, you may have noticed that
-      <command>make print-PLIST</command> outputs a set of
-      <varname>@comment</varname>s instead of real
-      <varname>@dirrm</varname> lines.  You can also do this for
-      specific directories and files, so that the results of that
-      command are very close to reality. This helps <emphasis>a
-      lot</emphasis> during the update of packages. </para>
+    <para> *-dirs パッケージを<xref linkend="faq.common-dirs"/>で説明したように
+      使った場合、<command>make print-PLIST</command> で、
+      実際の <varname>@dirrm</varname> 行のかわりに
+      <varname>@comment</varname> が出力されることにお気づきかもしれません。
+      ここでディレクトリーやファイルを指定して、
+      実際に近い結果を出力させることもできます。
+      これはパッケージの更新の際に<emphasis>非常に
+      </emphasis>役立ちます。 </para>
   
-    <para> The <varname>PRINT_PLIST_AWK</varname> variable takes a set
-      of AWK patterns and actions that are used to filter the output of
-      print-PLIST.  You can <emphasis>append</emphasis> any chunk of AWK
-      scripting you like to it, but be careful with quoting. </para>
+    <para> <varname>PRINT_PLIST_AWK</varname> 変数を、
+      print-PLIST の出力をフィルターする
+      AWK のパターンと動作の一式に設定します。
+      AWK スクリプト塊を好きなように
+      <emphasis>追加</emphasis>することができますが、
+      適切にクォートするよう注意してください。 </para>
   
-    <para> For example, to get all files inside the
-      <filename>libdata/foo</filename> directory removed from the
-      resulting PLIST:</para> 
+    <para> たとえば、PLIST の結果から <filename>libdata/foo</filename>
+      ディレクトリー内のファイルをすべて消すには、
+      以下のようにします。</para> 
   
     <programlisting>
       PRINT_PLIST_AWK+= /^libdata\/foo/ { next; }
     </programlisting>
   
-    <para> And to get all the <varname>@dirrm</varname> lines referring
-      to a specific (shared) directory converted to
-      <varname>@comment</varname>s: </para> 
+    <para> また、特定の (共有) ディレクトリーを参照している
+      <varname>@dirrm</varname> 行を <varname>@comment</varname>
+      に変換するには、以下のようにします。 </para> 
   
     <programlisting>
       PRINT_PLIST_AWK+= /^@dirrm share\/specific/ { print "@comment " $$0; next; }
@@ -70,38 +75,34 @@
     
   
   <sect1 id="plist.misc">
-    <title>Variable substitution in PLIST</title>
+    <title>PLIST における各種の置換</title>
 
     <para>
-      A number of variables are substituted automatically in PLISTs
-      when a package is installed on a system. This includes the
-      following variables: </para>
+      パッケージがシステムにインストールされる際に、
+      PLIST 内のいくつもの変数が自動的に置換されます。
+      置換される変数には、以下のようなものがあります。</para>
 
     <variablelist>
       <varlistentry>
     	  <term><varname>${MACHINE_ARCH}</varname>, <varname>${MACHINE_GNU_ARCH}</varname></term>
 
         <listitem>
-          <para>Some packages like emacs and perl embed information
-            about which architecture they were built on into the
-            pathnames where they install their file. To handle this
-            case, PLIST will be preprocessed before actually used, and
-            the symbol
-            <quote><varname>${MACHINE_ARCH}</varname></quote> will be
-            replaced by what <command>uname -p</command> gives. The
-            same is done if the string
-            <varname>${MACHINE_GNU_ARCH}</varname> is embedded in
-            PLIST somewhere - use this on packages that have GNU
-            autoconf created configure scripts.</para>
+          <para>emacs、およびperlのようないくつかのパッケージは、それらが構築されたアー
+            キテクチャーに関する情報を、インストールするファイルのパス名に埋め込みま
+            す。このようなケースに対応するため、実際に使われる前に、PLISTに前処理が
+            おこなわれます。そして、シンボル
+            <quote><varname>${MACHINE_ARCH}</varname></quote>は、<command>uname -p</command>の出
+            力でおきかえられます。
+            <varname>${MACHINE_GNU_ARCH}</varname>がPLISTのどこかにうめこまれてい
+            る場合も同様の事がおこなわれます。これは、GNU autoconfで作成された
+            configureスクリプトを持つパッケージで使われます。</para>
 
           <note>
-            <title>Legacy note</title>
+            <title>昔の話</title>
   
-            <para>There used to be a symbol
-              <quote><varname>$ARCH</varname></quote> that 
-              was replaced by the output of <command>uname
-              -m</command>, but that's no longer supported and has
-              been removed.</para>
+            <para><quote><varname>$ARCH</varname></quote>シンボルは<command>uname
+              -m</command>の出力によって置きかえられていま
+              した。しかし、もはやサポートされていませんし、削除されています。</para>
           </note>
         </listitem>
       </varlistentry>
@@ -110,18 +111,17 @@
         <term><varname>${OPSYS}</varname>, <varname>${LOWER_OPSYS}</varname>, <varname>${OS_VERSION}</varname></term>
   
         <listitem>
-          <para>Some packages want to embed the OS name and version
-            into some paths.  To do this, use these variables in the
-            <filename>PLIST</filename>:
+          <para>いくつかのパッケージでは、OS名とバージョンをいくつかのパス名に埋め込みま
+            す。このような場合、<filename>PLIST</filename>で以下の各変数を使用してください。
           </para>
 
           <itemizedlist>
             <listitem>
-              <para><varname>${OPSYS}</varname> - output of <quote><command>uname -s</command></quote></para>
+              <para><varname>${OPSYS}</varname> - <quote><command>uname -s</command></quote>の出力</para>
             </listitem>
 
             <listitem>
-              <para><varname>${LOWER_OPSYS}</varname> - lowercase common name (eg. <quote>solaris</quote>)</para>
+              <para><varname>${LOWER_OPSYS}</varname> - 共通名の小文字表記(例: <quote>solaris</quote>)</para>
             </listitem>
 
             <listitem>
@@ -135,65 +135,57 @@
         <term><varname>${PKGLOCALEDIR}</varname></term>
 
         <listitem>
-          <para>Packages that install locale files should list them in
-            the PLIST as
-            <quote>${PKGLOCALEDIR}/locale/de/LC_MESSAGES/...</quote>
-            instead of <quote>share/locale/de/LC_MESSAGES/...</quote>.
-            This properly handles the fact that different operating
-            systems expect locale files to be either in
-            <filename>share</filename> or <filename>lib</filename> by
-            default.</para>
+          <para>ロケールファイルをインストールするパッケージでは、ロケールファイルを
+            <quote>share/locale/de/LC_MESSAGES/...</quote>ではなく
+            <quote>${PKGLOCALEDIR}/locale/de/LC_MESSAGES/...</quote>という形でPLISTに列挙します。
+            ロケールファイルのデフォルトの場所はオペレーティングシステムによって<filename>share</filename>か<filename>lib</filename>か異なります
+            が、このような形で書くことで適切に処理することができます。</para>
         </listitem>
       </varlistentry>
     </variablelist>
 
-    <para> For a complete list of values which are replaced by
-      default, please look in <filename>bsd.pkg.mk</filename> (and
-      search for <emphasis>PLIST_SUBST</emphasis>). </para>
+    <para> デフォルトで置換される値の全一覧は、
+      <filename>bsd.pkg.mk</filename> を参照してください (あわせて、
+      <emphasis>PLIST_SUBST</emphasis> を調べてください)。 </para>
     
-    <para> If you want to change other variables not listed above, you
-      can add variables and their expansions to this variable in the
-      following way, similar to <varname>MESSAGE_SUBST</varname> (see <xref
-      linkend="components.optional"/>): </para>
+    <para> 上述以外の変数を置換したい場合は、
+      <varname>MESSAGE_SUBST</varname> (<xref
+      linkend="components.optional"/>参照) と同様に、
+      以下のようにして、変数とその展開方法を定義することができます。 </para>
 
     <programlisting>PLIST_SUBST+=    SOMEVAR="somevalue"</programlisting>
 
-    <para>This replaces all occurrences of <quote>${SOMEVAR}</quote>
-      in the PLIST with <quote>somevalue</quote>.  </para>
+    <para>こうすると、PLIST 内のすべての <quote>${SOMEVAR}</quote>
+      が <quote>somevalue</quote> で置き換えられます。  </para>
   </sect1>
 
   <sect1>
-    <title>Manpage-compression</title>
+    <title>マニュアルページの圧縮</title>
     
-    <para>Manpages should be installed in compressed form if
-      <varname>MANZ</varname> is set (in <filename>bsd.own.mk</filename>),
-      and uncompressed otherwise. To handle this in the
-      <filename>PLIST</filename> file, the suffix <quote>.gz</quote> is
-      appended/removed automatically for manpages according to
-      <varname>MANZ</varname> and <varname>MANCOMPRESSED</varname> being set
-      or not, see above for details. This modification of the
-      <filename>PLIST</filename> file is done on a copy of it, not
-      <filename>PLIST</filename> itself.</para>
+    <para>もし、(<filename>bsd.own.mk</filename>に)<varname>MANZ</varname>が設定されていれば、マニュアルページは圧縮形式で
+      インストールされます。そうでなければ展開された形式でインストールされます。
+      <filename>PLIST</filename>ファイルでこれをサポートするために、<varname>MANZ</varname>と <varname>MANCOMPRESSED</varname>の設定の有
+      無に従い、<quote>.gz</quote>サフィックスがマニュアルページに自動的に追加、削除され
+      ます。この<filename>PLIST</filename>ファイルに対する変更は、<filename>PLIST</filename>自身にたいしてでなく、それが
+      コピーされる時におこなわれます。</para>
   </sect1>
 
   
   <sect1>
-    <title>Changing PLIST source with <varname>PLIST_SRC</varname></title>
+    <title><varname>PLIST_SRC</varname> を使って PLIST のソースを変更する</title>
 
-    <para>To use one or more files as source for the <filename>PLIST</filename> used
-      in generating the binary package, set the variable
-      <varname>PLIST_SRC</varname> to the names of that file(s).
-      The files are later concatenated using cat(1), and order of things is
-      important.</para>
+    <para>ひとつ以上のファイルを、バイナリーパッケージを構築するために<filename>PLIST</filename>のソース
+      として使用する時は、それらのファイル名を変数<varname>PLIST_SRC</varname>に設定してください。こ
+      れらのファイルは、後でcat(1)によって連結されます。連結の順番は重要です。</para>
   </sect1>
 
 
   <sect1>
-    <title>Platform specific and differing PLISTs</title>
+    <title>プラットフォーム別に異なるPLIST</title>
     
-    <para>Some packages decide to install a different set of files based on
-      the operating system being used. These differences can be
-      automatically handled by using the following files:</para>
+    <para>パッケージのなかには、インストールするファイルの組合せを、対象のオペレー
+      ティングシステムによって変えるものがあります。このような差異は、以下のファ
+      イルを使って自動的に処理することができます。</para>
 
     <itemizedlist>
       <listitem>
@@ -209,85 +201,84 @@
       </listitem>
     </itemizedlist>
 
-    <para>If <filename>PLIST.${OPSYS}</filename> exists, these files are used
-      instead of <filename>PLIST</filename>. This allows packages which
-      behave in this way to be handled gracefully.  Manually overriding
-      <varname>PLIST_SRC</varname> for other more exotic uses is also
-      possible.</para>
+    <para><filename>PLIST.${OPSYS}</filename>が存在する場合、<filename>PLIST</filename>のかわりにこのファイルが使われます。
+      こうすることで、インストールするファイルの組合せを変えるようなパッケージ
+      をうまく処理することができます。さらに変わった使途のために、<varname>PLIST_SRC</varname>を
+      手動で上書きすることも可能です。</para>
   </sect1>
 
 
   <sect1 id="faq.common-dirs">
-    <title>Sharing directories between packages</title>
+    <title>複数のパッケージでディレクトリーを共有する</title>
   
-    <para> A <quote>shared directory</quote> is a directory where
-      multiple (and unrelated) packages install files.  These
-      directories are problematic because you have to add special tricks
-      in the PLIST to conditionally remove them, or have some
-      centralized package handle them. </para>
+    <para> <quote>共有ディレクトリー</quote>とは、複数の (かつ関連のない)
+      パッケージがファイルをインストールするディレクトリーのことです。
+      共有ディレクトリーは、条件に応じた削除のために PLIST に特殊な細工をするか、
+      集権的な処理用パッケージを用意する必要があるので、
+      問題を起こすことがあります。 </para>
   
-    <para> Within pkgsrc, you'll find both approaches.  If a directory
-      is shared by a few unrelated packages, it's often not worth to add
-      an extra package to remove it.  Therefore, one simply does:
-      </para>
+    <para> pkgsrc では、このどちらの方法も使うことができます。
+      あるディレクトリーを数個の無関連なパッケージが共有していても、
+      多くの場合、そのディレクトリーを削除するためにさらにパッケージを追加する必要はありません。
+      このディレクトリーを使っている全パッケージの PLIST で、
+      通常の "@dirrm" 行のかわりに、</para>
   
     <programlisting>
       @unexec ${RMDIR} %D/path/to/shared/directory 2>/dev/null || ${TRUE}
     </programlisting>
   
-    <para> in the PLISTs of all affected packages, instead of the
-      regular "@dirrm" line. </para>
+    <para> と書くだけでうまくいきます。 </para>
   
-    <para> However, if the directory is shared across many packages, two
-      different solutions are available: </para>
+    <para> しかし、ディレクトリーを数多くのパッケージが共有している場合、
+      以下の二種類の解決策を使うことができます。 </para>
   
     <orderedlist>
       <listitem>
-        <para> If the packages have a common dependency, the directory
-          can be removed in that.  For example, see
-          <pkg>textproc/scrollkeeper</pkg>, which removes the shared
-          directory <filename>share/omf</filename>. </para>
+        <para> 各パッケージが共通の依存パッケージを持つ場合、
+          その依存先のパッケージでディレクトリーを削除できます。たとえば、
+          <pkg>textproc/scrollkeeper</pkg> を参照してください。このパッケージは
+          共有ディレクトリー <filename>share/omf</filename> を削除しています。 </para>
       </listitem>
   
       <listitem>
-        <para> If the packages using the directory are not related at
-          all (they have no    common dependencies), a *-dirs package is
-          used. </para>
+        <para> パッケージが関連を持たずに共有ディレクトリーを使っている場合
+           (つまり、共通の依存パッケージがない場合)、
+          *-dirs パッケージで共有ディレクトリーを削除します。 </para>
       </listitem>
     </orderedlist>
   
-    <para> From now on, we'll discuss the second solution.  To get an
-      idea of the *-dirs packages available, issue: </para>
+    <para> 以下、二つ目の解決策について述べます。
+      既存の *-dirs パッケージを把握するため、以下を実行してください。 </para>
       
     <programlisting>
       &cprompt; cd .../pkgsrc
       &cprompt; ls -d */*-dirs
     </programlisting>
   
-    <para> Their use from other packages is very simple.  The
-      <varname>USE_DIRS</varname> variable takes a list of package names
-      (without the <quote>-dirs</quote> part) together with the required
-      version number (always pick the latest one when writting new
-      packages). </para>
+    <para> 他のパッケージがこれらを使う方法は非常に簡単です。
+      <varname>USE_DIRS</varname> 変数に、このパッケージ名 (<quote>-dirs</quote> は除く)
+      と必要なバージョン番号 (常に、パッケージを新たに書いたときの最新バージョンを選びます)
+      をつけたものを並べます。 </para>
   
-    <para> For example, if a package installs files under
-      <filename>share/applications</filename>, it should have the
-      following line in it: 
+    <para> たとえば、あるパッケージが
+      <filename>share/applications</filename> 以下にファイルをインストールする場合、
+      以下の行を含めておきます。
       </para>
   
     <programlisting>
       USE_DIRS+= xdg-1.1
     </programlisting>
   
-    <para> After regenerating the PLIST using <command>make
-      print-PLIST</command>, you should get the right (commented out)
-      lines. </para> 
+    <para> <command>make
+      print-PLIST</command> を使って PLIST を作り直すと、
+      行が適切に (コメントアウトされて)
+      得られるはずです。 </para> 
       
-    <para> Note that, even if your package is using
-      <filename>$X11BASE</filename>, it must not depend on the
-      *-x11-dirs packages.  Just specify the name without that part and
-      pkgsrc (in particular, <filename>mk/dirs.mk</filename>) will take
-      care of it. </para> 
+    <para> なお、パッケージがたとえ <filename>$X11BASE</filename>
+      を使う場合であっても、*-x11-dirs パッケージに依存させてはいけません。
+      この部分を除いた名前を指定するだけでよく、そうすれば
+      pkgsrc (特に <filename>mk/dirs.mk</filename>)
+      が処理してくれます。 </para> 
   </sect1>
   
 </chapter>
