@@ -1,6 +1,6 @@
-# $NetBSD: table,v 1.590 2006/08/05 14:14:32 bjh21 Exp $
+# $NetBSD: table,v 1.608 2006/09/05 07:57:37 scw Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: table,v 1.590 2006/08/05 14:14:32 bjh21 Exp   -->
+# <!-- NetBSD: table,v 1.608 2006/09/05 07:57:37 scw Exp   -->
 
 # declare ports (rows) ("port <port> [<port_subdir>]")
 # If <port_subdir> is not specified, it defaults to the name of port.
@@ -33,6 +33,7 @@ port hpcsh
 port i386
 port ibmnws
 port iyonix
+port landisk
 port luna68k
 port mac68k
 port macppc
@@ -79,7 +80,7 @@ class mipsel	algor arc cobalt evbmips hpcmips playstation2 pmax
 class ns32k	pc532
 class powerpc	amigappc bebox evbppc ibmnws macppc mvmeppc ofppc pmppc prep sandpoint
 class sh3eb	evbsh3 mmeye
-class sh3el	dreamcast hpcsh
+class sh3el	dreamcast hpcsh landisk
 class sh5el	evbsh5
 class sparc	sparc
 class sparc64	sparc64
@@ -207,7 +208,9 @@ featureend rf-boot
 feature timectrs 0
 	当該ポートが timecounters に対応しているか否か。
 featureend timectrs
-
+feature generic-todr
+	当該ポートが汎用の todr_attach および関連関数を使っているか否か。
+featureend generic-todr
 
 # declare values ("value <name> <text>")
 value yes <font color="green">Y</font>
@@ -253,11 +256,15 @@ value none <font color="red">none</font>
 value 4.x <font color="green">4.x</font>
 
 # for timectrs
-value tcx86 <font color="green">clockinterrupt,<br>i8254,<br>TSC,<br>geodecntr</font>
-value tca64 <font color="green">clockinterrupt,<br>i8254,<br>TSC</font>
+value tcx86 <font color="green">clockinterrupt,<br>i8254,<br>TSC,<br>geodecntr,<br>ACPI-{Fast,Safe},<br>piixpm0</font>
+value tca64 <font color="green">clockinterrupt,<br>i8254,<br>TSC,<br>ACPI-{Fast,Safe},<br>piixpm0</font>
 value timer-counter <font color="green">clockinterrupt,<br>timer-counter</font>
 value tick-counter <font color="green">clockinterrupt,<br>tick-counter</font>
 value iomd-timer <font color="green">clockinterrupt,<br>iomd_timer0</font>
+value prep-timer <font color="green">clockinterrupt,<br>prep_mftb</font>
+value ibmnws-timer <font color="green">clockinterrupt,<br>ibmnws_mftb</font>
+value mips-timer <font color="green">clockinterrupt,<br>mips3_cp0_counter</font>
+value clock-timer <font color="green">clockinterrupt</font>
 
 # "<value> <feature> <port|class|*>" sets the corresponding row/col
 # to that value. Port may be "*" to set it for all ports, or the name of
@@ -292,8 +299,8 @@ gcc	gcc336	ns32k powerpc sh3eb sh3el sh5el sparc sparc64 sun2 vax
 
 #
 gcc4	no	*
-gcc4	builds	m68k sh3eb sh3el
-gcc4	yes	alpha amd64 arm armeb i386 powerpc sparc64 sparc 
+gcc4	builds	m68k sh3eb sh3el sh5el
+gcc4	yes	alpha amd64 arm armeb i386 powerpc sparc64 sparc sun2
 
 # binutils choice: spec by arch, NO POSITIVE WILDCARDS.
 binutils	other	*
@@ -452,4 +459,14 @@ timectrs tcx86 i386
 timectrs tca64 amd64
 timectrs timer-counter sparc
 timectrs tick-counter sparc64
-timectrs tick-counter prep
+timectrs prep-timer prep
+timectrs mips-timer algor evbmips
+timectrs ibmnws-timer ibmnws
+timectrs clock-timer sun2 sun3
+
+# Generic TODR
+generic-todr no	*
+generic-todr yes acorn26 acorn32 algor amd64 arc cobalt evbmips evbsh5
+generic-todr yes ews4800mips
+generic-todr yes hp300 i386 news68k newsmips prep sgimips sparc sparc64
+generic-todr sun2 sun3

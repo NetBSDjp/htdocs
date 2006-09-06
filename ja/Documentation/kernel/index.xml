@@ -5,10 +5,10 @@
 
 <webpage id="ja-Documentation-kernel-index">
   <config param="desc" value="NetBSD ドキュメンテーション: カーネル"/>
-  <config param="cvstag" value="$NetBSD: index.xml,v 1.11 2006/09/03 22:48:04 hubertf Exp $"/>
+  <config param="cvstag" value="$NetBSD: index.xml,v 1.13 2006/09/04 23:18:24 kano Exp $"/>
 <!-- Based on english version: -->
-<!-- NetBSD: index.xml,v 1.11 2006/09/03 22:48:04 hubertf Exp   -->
-  <config param="rcsdate" value="$Date: 2006/09/03 22:48:04 $"/>
+<!-- NetBSD: index.xml,v 1.13 2006/09/04 23:18:24 kano Exp   -->
+  <config param="rcsdate" value="$Date: 2006/09/04 23:18:24 $"/>
   
   <head>
     <!-- Copyright (c) 1994-2005
@@ -650,8 +650,8 @@ sd*             at scsibus? target ? lun ?
             もし、このメッセージが <code>/dev</code>にあるデバイスノード
             (例えば SCSI ディスク)へアクセスしようとしたときに出力されたならば、
             それはアクセスしようとしたそのデバイスユニットを見つけられなかった
-            事を意味します。例えば、存在しない SCSI ディスクにアクセスしようと
-            した場合です。
+            事を意味します。例えば、存在しない、またはドライバーがカーネルにコンパイルされていない
+            SCSI ディスクにアクセスしようとした場合です。
           </para>
 
           <para>
@@ -663,19 +663,33 @@ sd*             at scsibus? target ? lun ?
             確認には <code>/var/run/dmesg.boot</code> (ブート時の autoconfiguration の
             出力のコピーが保存されています) を用いることができます。
           </para>
-        </listitem>
-        <listitem>
-          <para>
+
+	  <para>
 	    以上のほかに、このメッセージが出力されることがあるのは、
-	    あるカーネルサブシステム (たとえば一部の防火壁)
-	    がカーネルにコンパイルされておらず LKM としてもロードされていない場合で、
- 	    データがそのサブシステムを指示された場合です。
-	    たとえば、防火壁のルールを読み込むために
-	    &man.pfctl.8; または &man.ipf.8; が使われた場合が相当します。
+	    疑似デバイスとして実装されているあるカーネルサブシステムが
+	    カーネルにコンパイルされておらず LKM としてもロードされていない場合で、
+	    コンフィギュレーションプログラムがその疑似デバイスを
+	    <code>/dev</code> 以下のデバイスノードを使って設定しようとしたときです。
+	    たとえば、防火壁がカーネルにコンパイルされておらず
+	    LKM としてもロードされていない場合で、&man.pfctl.8; または &man.ipf.8;
+	    ユーティリティーが防火壁のルールを読み込もうとしたときが相当します。
+	    これらのユーティリティーが、
+	    使おうとされたデバイスはどれかなどの有用なメッセージを表示しなかった場合、
 	    コマンド内部で何がおこなわれているかを調べて、
 	    このエラーメッセージの原因を突き止めるには、
 	    &man.ktrace.1; を使うと便利です。
-          </para>
+	  </para>
+
+	  <para>
+	    このほかの多くの場合、このメッセージが出力されることがあるのは、
+	    存在しないデバイスやドライバーのないデバイスにアクセスしたとき、
+	    たとえば、存在しないネットワークインターフェース名が &man.ifconfig.8;
+	    に渡されたときなどです (この場合、適切なドライバーが存在するとわかっていればですが、
+	    そのインターフェースを <code>ifconfig vlan0
+	    create</code> のようなコマンドで明示的に作成する必要があるかもしれません
+	    &mdash; このことは、&man.sl.4;, &man.vlan.4;,
+	    &man.stf.4; など、たいていのネットワーク疑似デバイスにあてはまります)。
+	  </para>
         </listitem>
       </itemizedlist>
     </sect3>
