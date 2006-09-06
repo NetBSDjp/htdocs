@@ -1,6 +1,6 @@
-<!-- $NetBSD: faq.xml,v 1.2 2004/11/20 13:25:22 hubertf Exp $ -->
+<!-- $NetBSD: faq.xml,v 1.4 2005/01/11 16:05:20 wiz Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: faq.xml,v 1.2 2004/11/20 13:25:22 hubertf Exp   -->
+<!-- NetBSD: faq.xml,v 1.4 2005/01/11 16:05:20 wiz Exp   -->
 
 <chapter id="faq"> <?dbhtml filename="faq.html"?>
   <title>よくある質問</title>
@@ -200,6 +200,31 @@
       </ulink>をご覧ください。  </para> 
 </sect1>
 
+<sect1>
+    <title>distfile 取得時に、転送を再開する方法は?</title>
+
+    <para>標準では、pkgsrc の転送再開機能は有効になっていませんが、
+	<filename>/etc/mk.conf</filename> にオプション
+	<varname>PKG_RESUME_TRANSFERS=YES</varname> を追加すれば、
+	この機能を有効にすることができます。こうすると、fetch している最中に、
+	不完全な distfile があった場合、pkgsrc はそのファイルの残りの部分を取得しようとします。</para>
+    <para>また、<varname>FETCH_CMD</varname> 変数を変更すれば、
+	標準である ftp(1) 以外のプログラムを使うこともできます。
+	この変数を標準以外の値にした場合は、<varname>FETCH_RESUME_ARGS</varname> と
+	<varname>FETCH_OUTPUT_ARGS</varname> の設定を忘れずにしてください。</para>
+    <para>たとえば、ダウンロードの再開に <filename>wget</filename>
+	を使いたい場合は、以下のような設定が必要です。</para>
+
+    <programlisting>
+	FETCH_CMD=wget
+	.if defined(FETCH_CMD) &amp;&amp; ${FETCH_CMD} == "wget"
+	FETCH_BEFORE_ARGS=--passive-ftp
+	FETCH_RESUME_ARGS=-c
+	FETCH_OUTPUT_ARGS=-O
+	.endif
+    </programlisting>
+
+</sect1>
 
 <sect1>
     <title>pkgsrc の XFree86 をインストールあるいは使用する方法は?</title>
@@ -488,7 +513,7 @@ CONF_FILES=   ${EGDIR}/Muttrc ${PKG_SYSCONFDIR}/Muttrc</programlisting>
 
     <screen>
 ===========================================================================
-$NetBSD: faq.xml,v 1.2 2004/11/20 13:25:22 hubertf Exp $
+$NetBSD: faq.xml,v 1.4 2005/01/11 16:05:20 wiz Exp $
 
 You may wish to have the vulnerabilities file downloaded daily so that
 it remains current.  This may be done by adding an appropriate entry
