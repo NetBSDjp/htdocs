@@ -5,8 +5,8 @@
 
 <webpage id="Documentation-kernel-index">
   <config param="desc" value="NetBSD Documentation: Kernel"/>
-  <config param="cvstag" value="$NetBSD: index.xml,v 1.11 2006/09/03 22:48:04 hubertf Exp $"/>
-  <config param="rcsdate" value="$Date: 2006/09/03 22:48:04 $"/>
+  <config param="cvstag" value="$NetBSD: index.xml,v 1.13 2006/09/04 23:18:24 kano Exp $"/>
+  <config param="rcsdate" value="$Date: 2006/09/04 23:18:24 $"/>
   
   <head>
     <!-- Copyright (c) 1994-2005
@@ -662,7 +662,7 @@ sd*             at scsibus? target ? lun ?
             node in <code>/dev</code> (e.g. a SCSI disk), this means
             that the driver can't find the specific device unit you
             tried to access, e.g. accessing a SCSI disk that isn't
-            there.
+            there, or the driver is not compiled in the kernel.
           </para>
 
           <para>
@@ -676,18 +676,33 @@ sd*             at scsibus? target ? lun ?
             <code>/var/run/dmesg.boot</code> (a saved copy of the
             boot time autoconfiguration output).
           </para>
-        </listitem>
-        <listitem>
-          <para>
-	    Another case where this can happen is when a certain kernel
-	    subsystem, e.g. some firewall, is not compiled into the
-	    kernel or loaded as an LKM, and when data is directed at
-	    that subsystem, e.g. when &man.pfctl.8; or &man.ipf.8;
-	    are used to load firewall rules.  Using &man.ktrace.1;
-	    can help you find what's going on inside a command, and
-	    to determine you what's being accessed that may cause
-	    the error message.
-          </para>
+
+	  <para>
+	    Another case where this can happen is when a certain
+	    kernel subsystem which is implemented as a pseudo-device
+	    is not compiled into the kernel or loaded as an LKM and a
+	    configuration program wants to configure it using a device
+	    node in <code>/dev</code>. For example when a firewall is
+	    not compiled into the kernel or loaded as an LKM and the
+	    &man.pfctl.8; or &man.ipf.8; utility attempts to load
+	    firewall rules. If such utility does not print a helpful
+	    message indicating what device it tried to use,
+	    &man.ktrace.1; can help you find what's going on inside a
+	    command, and to determine you what's being accessed that
+	    may cause the error message.
+	  </para>
+
+	  <para>
+	    And it can happen in many other cases when a nonexistent
+	    device or device without a driver is accessed, like when a
+	    nonexistent network interface name is passed to
+	    &man.ifconfig.8; (in this case, if you are sure that you
+	    have the right driver, maybe the interface must be
+	    explicitly created by a command like <code>ifconfig vlan0
+	    create</code> &mdash; this is true for most of the network
+	    pseudo-devices like &man.sl.4;, &man.vlan.4; or
+	    &man.stf.4;).
+	  </para>
         </listitem>
       </itemizedlist>
     </sect3>
