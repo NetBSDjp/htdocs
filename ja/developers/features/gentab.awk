@@ -1,8 +1,8 @@
 #! /usr/bin/awk -f
 #
-#	$NetBSD: gentab.awk,v 1.25 2004/03/02 15:21:56 wiz Exp $
+#	$NetBSD: gentab.awk,v 1.26 2006/09/09 18:11:41 heinz Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: gentab.awk,v 1.25 2004/03/02 15:21:56 wiz Exp   -->
+#	<!-- NetBSD: gentab.awk,v 1.26 2006/09/09 18:11:41 heinz Exp   -->
 #
 # Copyright (c) 1998 Tyler C. Sarna
 # All rights reserved.
@@ -193,6 +193,25 @@ END {
 	printf("<th>&nbsp;</th></tr>\n")
 	printf("</thead>\n");
 
+	printf("<tfoot>\n");
+	printf("<tr><th>&nbsp;</th>\n")
+
+	for (i = 0; i < nfeature; i++) {
+		featname = feature[i]
+		if (feature_same_all[featname] &&
+		    !feature_always_in_table[featname])
+			continue
+		dfeatname = featname
+		gsub("-", "<br>", dfeatname)
+
+		printf("<th>")
+		printf("<a href=\"#%s\">%s</a>", feature[i], dfeatname)
+		printf("</th>\n")
+	}
+
+	printf("<th>&nbsp;</th></tr>\n");
+	printf("</tfoot>\n");
+
 	printf("<tbody>\n");
 	for (i = 0; i < nport; i++) {
 		printf("<tr><th><a href=\"../../Ports/%s/\">%s</a></th>\n", port_subdir[i], port[i])
@@ -214,27 +233,8 @@ END {
 	}
 	printf("</tbody>\n");
 
-	printf("<tfoot>\n");
-	printf("<tr><th>&nbsp;</th>\n")
-
-	for (i = 0; i < nfeature; i++) {
-		featname = feature[i]
-		if (feature_same_all[featname] &&
-		    !feature_always_in_table[featname])
-			continue
-		dfeatname = featname
-		gsub("-", "<br>", dfeatname)
-
-		printf("<th>")
-		printf("<a href=\"#%s\">%s</a>", feature[i], dfeatname)
-		printf("</th>\n")
-	}
-
-	printf("<th>&nbsp;</th></tr>\n");
-	printf("</tfoot>\n");
-
 	printf("</table>\n")
-	printf("\n<h3>各機能の説明</h3>\n")
+	printf("\n<h2>各機能の説明</h2>\n")
 	
 	printf("<dl>\n")
 	for (i = 0; i < nfeature; i++) {
@@ -253,7 +253,7 @@ END {
 	printf("</dl>\n")
 
 
-	printf("\n<hr>\n<h3>全ポートが対応している機能</h3>\n")
+	printf("\n<hr>\n<h2>全ポートが対応している機能</h2>\n")
 
 	printf("<dl>\n")
 
