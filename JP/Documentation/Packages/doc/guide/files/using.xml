@@ -1,6 +1,6 @@
-<!-- $NetBSD: using.xml,v 1.8 2005/05/07 15:35:11 wiz Exp $ -->
+<!-- $NetBSD: using.xml,v 1.9 2005/05/15 20:38:40 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: using.xml,v 1.8 2005/05/07 15:35:11 wiz Exp   -->
+<!-- NetBSD: using.xml,v 1.9 2005/05/15 20:38:40 rillig Exp   -->
 
 <chapter id="using"> <?dbhtml filename="using.html"?>
   <title>pkgsrc を使う</title>
@@ -15,8 +15,12 @@
       <title>バイナリーパッケージの配布場所</title>
       
       <para> コンパイル済みのパッケージは、ftp.NetBSD.orgおよびそのミラー上の、匿名FTPア
-        クセスのためのディレクトリー<filename>/pub/NetBSD/packages</filename>に置かれています。
-        <command>uname -p</command>で表示されるのと同じサブディレクトリーを選択してください。このディレクト
+        クセスのためのディレクトリー
+        <filename>/pub/NetBSD/packages/&lt;OSVERSION&gt;/&lt;ARCH&gt;/</filename>
+	に置かれています。<varname>OSVERSION</varname> は &os;
+	のバージョン (<command>uname -r</command>)、 <varname>ARCH</varname>
+	はアーキテクチャー (<command>uname -p</command>) です。
+	このディレクト
         リーの中には、カテゴリー毎のサブディレクトリーと、<filename>All</filename>サブディレクトリー
         が存在しています。<filename>All</filename>サブディレクトリーの中には、
         <filename>.tgz</filename>ファイル形式で実際
@@ -44,13 +48,9 @@
         事もできます。
         </para>
 
-      <screen><prompt>#</prompt> <userinput>pkg_add ftp://ftp.NetBSD.org/pub/NetBSD/packages/&lt;OSvers&gt;/&lt;arch&gt;/All/package.tgz</userinput></screen>
+      <screen><prompt>#</prompt> <userinput>pkg_add ftp://ftp.NetBSD.org/pub/NetBSD/packages/&lt;OSVERSION&gt;/&lt;ARCH&gt;/All/package.tgz</userinput></screen>
 
-      <para>ここで &lt;OSvers&gt; や
-        &lt;arch&gt; がよくわからない場合は、unameユーティリティーを
-        <command>uname -rp</command>のように使って調べられます。 </para>
-
-      <para>また、パッケージを実行するためにあらかじめ必要な他のパッケージがインストー
+      <para>パッケージを実行するためにあらかじめ必要な他のパッケージがインストー
         ルされるかもしれない事にも注意してください。一緒にインストールされる他のパッ
         ケージも同じ場所に存在していると仮定されます。 </para>
 
@@ -70,11 +70,12 @@
         (特に、パッケージを新たにインストールした後には) 実行して、
         脆弱性の影響がある構成となっているかどうかを確認するようにしてください。
         <varname>PKG_PATH</varname> はたとえば以下のようになります:
-      <filename>ftp://ftp.NetBSD.org/pub/NetBSD/packages/&lt;OSvers&gt;/&lt;arch&gt;/All;ftp://ftp.NetBSD.org/pub/NetBSD/packages/&lt;OSvers&gt;/&lt;arch&gt;/vulnerable</filename>
+      <filename>ftp://ftp.NetBSD.org/pub/NetBSD/packages/&lt;OSVERSION&gt;/&lt;ARCH&gt;/All;ftp://ftp.NetBSD.org/pub/NetBSD/packages/&lt;OSVERSION&gt;/&lt;ARCH&gt;/vulnerable</filename>
         なお、セミコロン (';') はシェルにとって特別な意味を持つ文字ですので、
         クォートする必要があるでしょう。</para>
 
-      <para>パッケージをインストールした後に、<varname>PATH</varname>に <filename>/usr/pkg/bin</filename> が含まれている事を確
+      <para>パッケージをインストールした後に、<varname>PATH</varname>に
+        <filename>/usr/pkg/bin</filename> と <filename>/usr/pkg/sbin</filename> が含まれている事を確
         認してください。これで、インストールされたプログラムを実際に使い始めること
         ができます。 </para>
     </sect2>
@@ -93,7 +94,8 @@
     <title>ソースからパッケージを構築する</title>
     
     <para> ここでは、パッケージがすでに pkgsrc に含まれていると仮定
-      しています。もし、そうでなれば、<xref linkend="developers-guide"/>をご覧ください。 </para>
+      しています。もし、そうでなれば、<xref linkend="developers-guide"/>で、
+      パッケージを新たに作る方法をご覧ください。 </para>
 
     <sect2>
       <title>必要なもの</title>
@@ -102,16 +104,16 @@
         <quote>comp</quote>および<quote>text</quote>
         配布物一式をインストールしておく必要があります。X11関連のパッケージを
         構築する場合は、さらに<quote>xbase</quote>および<quote>xcomp</quote> 配布物一式も必要です。</para>
+      <!-- FIXME: what about installing x11/XFree86-*? -->
     </sect2>
     
 
     <sect2>
       <title>配布ファイルの取得</title>
 
-      <para>パッケージシステムを構築するためには、
-        配布ファイル(未変更のソース)がシステム上に存在していなけれ
-        ばなりません。配布ファイルが存在しない場合、pkgsrc は &man.ftp.1;
-        を使って自動的に配布ファイルを取得します。</para>
+      <para>パッケージを構築するうえで最初にすることは、配布ファイル (未変更のソース)
+      のダウンロードです。配布ファイルがまだダウンロードされていない場合、
+      pkgsrc は自動的に配布ファイルを取得します。</para>
 
       <para>主要な配布サイトをあなたのところに近いサイトで上書きす
         ることができます。
@@ -241,6 +243,7 @@
             <para> パッケージ構築時に使われる一連のコンパイラーを指定する値を並べたものです。
               以下の値を使うことができます。 </para>
             
+<!-- TODO: update this list after jlam's changes in May 2005 -->
             <itemizedlist>
               <listitem><para><varname>distcc</varname>:
                 分散 C/C++ コンパイラー (連鎖可能)</para>
@@ -279,6 +282,10 @@
 	
         <varlistentry>
           <term><varname>GCC_REQD</varname>:</term>
+<!--
+   TODO: what are the effects of setting GCC_REQD if PKGSRC_COMPILER
+   is not gcc?
+-->
           <listitem>
             <para> パッケージの構築用として、最低限必要な
               GCC のバージョンを指定します。システム附属の GCC
