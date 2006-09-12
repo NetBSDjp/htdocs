@@ -1,6 +1,6 @@
-<!-- $NetBSD: platforms.xml,v 1.5 2005/03/21 21:40:28 tv Exp $ -->
+<!-- $NetBSD: platforms.xml,v 1.7 2005/04/10 22:45:25 jschauma Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: platforms.xml,v 1.5 2005/03/21 21:40:28 tv Exp   -->
+<!-- NetBSD: platforms.xml,v 1.7 2005/04/10 22:45:25 jschauma Exp   -->
 
 <chapter id="platforms">
   <title>&os; 以外のシステムで pkgsrc を使う</title>
@@ -130,7 +130,7 @@
 	  <emphasis>prefix</emphasis> 以外の場所にしたい場合は、
 	  明らかに別のシンボリックリンクが必要になります。たとえば、</para>
 
-	<screen>&rprompt; <userinput>./bootstrap --pkgdbdir=/usr/pkg/pkgdb --pkgsrcdir=/Volumes/ufs/pkgsrc</userinput></screen>
+	<screen>&rprompt; <userinput>./bootstrap --pkgdbdir /usr/pkg/pkgdb --pkgsrcdir /Volumes/ufs/pkgsrc</userinput></screen>
 
 	<para>Mac OS X のインストール時にパーティションを作り、
 	  UFS でフォーマットした場合は、ブート時に自動的に
@@ -332,16 +332,72 @@
 	ローカルの設定に依存するオプションを設定したい場合があるかもしれません。
 	詳細は、<filename>pkgsrc/mk/defaults/mk.conf</filename> をご覧ください。
 	そしてもちろん、お使いのコンパイラーのマニュアルページもご覧ください。</para>
+
+      <para>SGI の MIPSPro コンパイラーを使っている場合は、
+         <filename>/etc/mk.conf</filename> で
+        <programlisting>PKGSRC_COMPILER=mipspro</programlisting> を設定してください。これを設定しないと、
+        pkgsrc は gcc を使っていることを仮定するので、コンパイラーに不適切なフラグを渡すことがあります。
+        なお、標準状態では、bootstrap は適切な <filename>mk.conf.example</filename>
+        を作成するはずです。</para>
+
+      <para>gcc と MIPSPro コンパイラーチェインの両方をインストールしているが、
+        必ず MIPRPro を使うようにしたい場合は、<varname>PATH</varname>
+        に gcc の場所 (ありがちなのは
+        <filename>/usr/freeware/bin</filename>) を<emphasis>含めない</emphasis>でください。さらに (重要)、
+        '--preserve-path' フラグを bootstrap に渡してください。</para>
     </sect2>
 
-<!--
-<sect2>
-<title>Linux</title>
-<para>
-... XXX
-</para>
-</sect2>
--->
+    <sect2>
+      <title>Linux</title>
+
+      <para>
+        Linux のなかには、libtermcap と libcurses (libncurses) のいずれかを必要とするものがあります
+        (たとえば Debian GNU/Linux など)。そのようなディストリビューションでは
+        libncurses-dev パッケージ (または相当品) をインストールすれば問題なくなるはずです。</para>
+
+      <para>
+        pkgsrc は gcc (GNU Compiler Collection) と icc (Intel C++
+        Compiler) のどちらにも対応しています。gcc が標準で使われます。icc は i386 上の icc 8.0 と 8.1 で確認がおこなわれています。
+      </para>
+
+      <para>icc を使って bootstrap をおこなうには、以下のようにします
+        (icc は標準のディレクトリーにインストールされているものとします)。
+        <programlisting>env CC=/opt/intel_cc_80/bin/icc LDFLAGS=-static-libcxa \
+		ac_cv___attribute__=yes ./bootstrap</programlisting></para>
+
+      <note>
+        <para>icc 8.1 では、引数の -static-libcxa を `-i-static' にする必要があります。</para>
+      </note>
+
+      <para>icc は __attribute__ に対応していますが、GNU configure のテストではネストした関数を使っており、
+        icc はネストした関数に対応していません。__attribute__ を #undef してしまうと、
+        Linux の多くのヘッダーファイルが __attribute__ なしでは正しくコンパイルできず、
+        壊れてしまうという副作用があります。このため、テストは、コンパイラーが
+        __attribute__ に対応しているとしたもので上書きする必要があります。</para>
+
+     <para>bootstrap した後に、<filename>/etc/mk.conf</filename> で
+        <varname>PKGSRC_COMPILER</varname> を設定します。
+	<programlisting>PKGSRC_COMPILER=icc</programlisting></para>
+
+     <para>icc がインストールされるディレクトリーは標準では
+        <filename>/opt/intel_cc_80</filename> であり、pkgsrc
+        でもこのディレクトリーを標準としています。これ以外のディレクトリーに
+        icc をインストールしている場合は、<filename>/etc/mk.conf</filename> で
+        <varname>ICCBASE</varname> を設定してください。
+        <programlisting>ICCBASE=/opt/icc</programlisting></para>
+
+     <para>pkgsrc は、icc が提供する実行時ライブラリーを静的リンクするので、
+        作られたバイナリーはその共有ライブラリーがインストールされていないシステムでも
+        動かすことができます。</para>
+
+     <para>ただし、libtool は、C++ の共有ライブラリーをリンクして記録する時に実行された
+        (ライブラリーごとに -Bstatic や -Bdynamic オプションの指定がまちまちな)
+        ld(1) コマンドをもとにライブラリーの一覧を展開します
+        このことから、libtool でリンクされた C++ の共有ライブラリーは、libtool が修正されない限り、
+        icc のライブラリーに対して実行時依存性を持った状態になります。
+      </para>
+
+    </sect2>
 
     <sect2>
       <title>OpenBSD</title>
