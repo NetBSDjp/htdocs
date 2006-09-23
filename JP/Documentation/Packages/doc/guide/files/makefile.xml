@@ -1,113 +1,113 @@
 <!-- $NetBSD: makefile.xml,v 1.21 2006/06/29 13:37:46 rillig Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: makefile.xml,v 1.21 2006/06/29 13:37:46 rillig Exp   -->
 
 <chapter id="makefile"> <?dbhtml filename="makefile.html"?>
-  <title>Programming in <filename>Makefile</filename>s</title>
+  <title><filename>Makefile</filename> におけるプログラミング</title>
 
-  <para>Pkgsrc consists of many <filename>Makefile</filename> fragments,
-  each of which forms a well-defined part of the pkgsrc system. Using
-  the &man.make.1; system as a programming language for a big system
-  like pkgsrc requires some discipline to keep the code correct and
-  understandable.</para>
+  <para>pkgsrc は、多くの <filename>Makefile</filename> の断片からなっており、
+  この各断片が、pkgsrc システムの各部分を明確に形成しています。
+  pkgsrc のような大規模なシステムのプログラミング言語として &man.make.1;
+  システムを使う場合、コードを適切かつわかりやすい状態に保つために、
+  いくらかの規律が必要です。</para>
 
-  <para>The basic ingredients for <filename>Makefile</filename>
-  programming are variables (which are actually macros) and shell
-  commands. Among these shell commands may even be more complex ones
-  like &man.awk.1; programs. To make sure that every shell command runs
-  as intended it is necessary to quote all variables correctly when they
-  are used.</para>
+  <para><filename>Makefile</filename> プログラミングの基本的な構成要素は、
+  変数 (実はマクロ) とシェルコマンドです。
+  シェルコマンドは、&man.awk.1; プログラムのような複雑なものになることもあります。
+  各シェルコマンドを意図どおりに動かすため、変数を使うときは、
+  すべての変数を適切にクォートすることが必要です。</para>
 
-  <para>This chapter describes some patterns, that appear quite often in
-  <filename>Makefile</filename>s, including the pitfalls that come along
-  with them.</para>
+  <para>本章では、<filename>Makefile</filename>
+  で頻出するいくつかのパターンと、
+  それらに伴う落とし穴を説明します。</para>
 
   <sect1 id="makefile.variables">
-    <title><filename>Makefile</filename> variables</title>
+    <title><filename>Makefile</filename> 変数</title>
 
-    <para><filename>Makefile</filename> variables contain strings that
-    can be processed using the five operators ``='', ``+='', ``?='',
-    ``:='', and ``!='', which are described in the &man.make.1; man
-    page.</para>
+    <para><filename>Makefile</filename> 変数は文字列を値として持ち、
+    文字列は 5 種類の演算子  ``='', ``+='', ``?='',
+    ``:='', ``!='' を使って操作することができます。演算子については
+    &man.make.1; マニュアルページに説明があります。</para>
 
-    <para>When a variable's value is parsed from a
-    <filename>Makefile</filename>, the hash character ``#'' and the
-    backslash character ``\'' are handled specially. If a backslash is
-    followed by a newline, any whitespace immediately in front of the
-    backslash, the backslash, the newline, and any whitespace
-    immediately behind the newline are replaced with a single space. A
-    backslash character and an immediately following hash character are
-    replaced with a single hash character. Otherwise, the backslash is
-    passed as is. In a variable assignment, any hash character that is
-    not preceded by a backslash starts a comment that continues upto the
-    end of the logical line.</para>
+    <para><filename>Makefile</filename> の変数が解釈される際、
+    ハッシュ文字 ``#'' とバックスラッシュ文字  ``\'' は特別扱いされます。
+    バックスラッシュに改行が続く場合、当該バックスラッシュの直前にあるあらゆる空白・
+    当該バックスラッシュ・改行・改行の直後にあるあらゆる空白は、
+    ひとつのスペースに置き換えられます。
+    バックスラッシュ文字とその直後に続くハッシュ文字は、
+    ひとつのハッシュ文字に置き換えられます。
+    以上の場合以外は、バックスラッシュはそのまま渡されます。
+    変数への代入の際は、ハッシュ文字 (その前にバックスラッシュがないもの)
+    はコメントの開始となり、そこから論理行の最後までがコメントとなります。</para>
 
-    <para><emphasis>Note:</emphasis> Because of this parsing algorithm
-    the only way to create a variable consisting of a single backslash
-    is using the ``!='' operator, for example: <!-- FIXME
+    <para><emphasis>註:</emphasis> このようなアルゴリズムで解釈されるせいで、
+    バックスラッシュ一文字を値として持つ変数を作るには、
+    ``!='' 演算子を使う方法しかありません。たとえば以下のようにします: <!-- FIXME
     --><varname>BACKSLASH!=echo "\\"</varname>.</para>
 
-    <para>So far for defining variables. The other thing you can do with
-    variables is evaluating them. A variable is evaluated when it is
-    part of the right side of the ``:='' or the ``!='' operator, or
-    directly before executing a shell command which the variable is part
-    of. In all other cases, &man.make.1; performs lazy evaluation, that
-    is, variables are not evaluated until there's no other way. The
-    ``modifiers'' mentioned in the man page also evaluate the
-    variable.</para>
+    <para>以上は、変数の定義に関する説明です。このほか、変数に関してできることは、
+    変数を評価することです。変数が評価されるのは、変数が ``:='' または ``!=''
+    演算子の右辺にある場合と、変数がシェルコマンドの一部となっている場合
+    (コマンドが実行される直前に評価される) です。これら以外の場合、
+    &man.make.1; は遅延評価をおこないます。つまり、
+    変数は他の処理がすべてすんだ後に評価されます。
+    このほか、マニュアルページに記載されている「修飾子」も、
+    変数を評価します。</para>
 
-    <para>Some of the modifiers split the string into words and then
-    operate on the words, others operate on the string as a whole. When
-    a string is split into words, it is split as you would expect
-    it from &man.sh.1;.</para>
+    <para>修飾子のなかには、文字列を語に分割してから、分割した語に対して操作をするものがあります。
+    それ以外の修飾子は、文字列全体に対して操作をします。
+    文字列が語に分割される場合、その分割は、
+    &man.sh.1; の解釈と同様の方式でおこなわれます。</para>
 
-    <para>No rule without exception&mdash;the <command>.for</command>
-    loop does not follow the shell quoting rules but splits at sequences
-    of whitespace.</para>
+    <para>例外のない規則はありません&mdash; <command>.for</command>
+    ループはシェルのクォートの規約には従わず、
+    空白の並びで分離します。</para>
 
-    <para>There are several types of variables that should be handled
-    differently. Strings and two types of lists.</para>
+    <para>変数には、取り扱い方が異なる複数の種類の変数があります。
+    文字列 (strings) と、二種類のリストです。</para>
 
     <itemizedlist>
 
-      <listitem><para><emphasis>Strings</emphasis> can contain arbitrary
-      characters. Nevertheless, you should restrict yourself to only
-      using printable characters. Examples are
-      <varname>PREFIX</varname> and
-      <varname>COMMENT</varname>.</para></listitem>
+      <listitem><para>文字列 (<emphasis>strings</emphasis>) には、
+      任意の文字を含めることができます。とはいえ、
+      使うのは印字可能文字だけにしておくのがよいでしょう。
+      例としては <varname>PREFIX</varname> や
+      <varname>COMMENT</varname> があります。</para></listitem>
 
-      <listitem><para><emphasis>Internal lists</emphasis> are lists that
-      are never exported to any shell command. Their elements are
-      separated by whitespace. Therefore, the elements themselves cannot
-      have embedded whitespace. Any other characters are allowed.
-      Internal lists can be used in <command>.for</command> loops.
-      Examples are <varname>DEPENDS</varname> and
-      <varname>BUILD_DEPENDS</varname>.</para></listitem>
+      <listitem><para>内部リスト (<emphasis>internal lists</emphasis>) は、
+      シェルコマンドに決して渡されることのないリストです。
+      内部リストの要素は空白で区切られます。このため、
+      要素自体に空白を含めることはできません。空白以外の文字はすべて使うことができます。
+      内部リストは <command>.for</command> ループ内で使うことができます。
+      例としては <varname>DEPENDS</varname> や
+      <varname>BUILD_DEPENDS</varname> があります。</para></listitem>
 
-      <listitem><para><emphasis>External lists</emphasis> are lists that
-      may be exported to a shell command. Their elements can contain any
-      characters, including whitespace. That's why they cannot be used
-      in <command>.for</command> loops. Examples are
-      <varname>DISTFILES</varname> and
-      <varname>MASTER_SITES</varname>.</para></listitem>
+      <listitem><para>外部リスト (<emphasis>external lists</emphasis>) は、
+      シェルコマンドに渡すことのできるリストです。外部リストの要素には、
+      空白を含む任意の文字を含めることができます。このことが理由で、
+      外部リストは <command>.for</command> ループ内では使うことができません。
+      例としては <varname>DISTFILES</varname> や
+      <varname>MASTER_SITES</varname> があります。</para></listitem>
 
     </itemizedlist>
 
     <sect2 id="makefile.variables.names">
-      <title>Naming conventions</title>
+      <title>命名規約</title>
 
       <itemizedlist>
 
-	<listitem><para>All variable names starting with an underscore
-	are reserved for use by the pkgsrc infrastructure. They shall
-	not be used by package
-	<filename>Makefile</filename>s.</para></listitem>
+	<listitem><para>下線で始まる変数名はすべて、
+	pkgsrc の基盤が使うために予約されています。
+	そのような変数名はパッケージの
+	<filename>Makefile</filename> では使ってはいけません。</para></listitem>
 
-	<listitem><para>In <command>.for</command> loops you should use
-	lowercase variable names for the iteration
-	variables.</para></listitem>
+	<listitem><para><command>.for</command> ループでは、
+	反復変数の変数名は小文字にします。
+	</para></listitem>
 
-	<listitem><para>All list variables should have a ``plural''
-	name, e.g. <varname>PKG_OPTIONS</varname> or
-	<varname>DISTFILES</varname>.</para></listitem>
+	<listitem><para>リスト変数はすべて、<varname>PKG_OPTIONS</varname> や
+	<varname>DISTFILES</varname> のように、
+	「複数形」の名前にします。</para></listitem>
 
       </itemizedlist>
     </sect2>
@@ -115,14 +115,14 @@
   </sect1>
 
   <sect1 id="makefile.code">
-    <title>Code snippets</title>
+    <title>コードの断片</title>
 
-    <para>This section presents you with some code snippets you should
-    use in your own code. If you don't find anything appropriate here,
-    you should test your code and add it here.</para>
+    <para>本節では、読者がコードを書く際に使うことになるコードの断片を
+    いくつか説明します。適当なコードがここに載っていない場合は、
+    あなたのコードをテストして、ここに追加してください。</para>
 
     <sect2 id="adding-to-list">
-      <title>Adding things to a list</title>
+      <title>リストに要素を追加する</title>
 
 <programlisting>
     STRING=                 foo * bar `date`
@@ -137,16 +137,16 @@
     EXT_LIST+=              ${ANOTHER_EXT_LIST}     # 4
 </programlisting>
 
-      <para>When you add a string to an external list (example 3), it
-      must be quoted. In all other cases, you must not add a quoting
-      level. You must not merge internal and external lists, unless you
-      are sure that all entries are correctly interpreted in both
-      lists.</para>
+      <para>文字列を外部リストに追加する場合 (例 3) は、
+      その文字列をクォートする必要があります。それ以外の場合は、
+      クォートを追加してはいけません。内部リストと外部リストは、
+      その各要素がどちらのリストでも適切に処理されることが確実な場合をのぞき、
+      統合してはいけません。</para>
 
     </sect2>
 
     <sect2 id="converting-internal-to-external">
-      <title>Converting an internal list into an external list</title>
+      <title>内部リストを外部リストに変換する</title>
 
 <programlisting>
     EXT_LIST=       # empty
@@ -155,20 +155,20 @@
     .endfor
 </programlisting>
 
-      <para>This code converts the internal list
-      <varname>INT_LIST</varname> into the external list
-      <varname>EXT_LIST</varname>. As the elements of an internal list
-      are unquoted they must be quoted here. The reason for appending
-      <varname>""</varname> is explained below.</para>
+      <para>このコードは、内部リスト
+      <varname>INT_LIST</varname> を外部リスト
+      <varname>EXT_LIST</varname> に変換します。内部リストの要素はクォートされていないので、
+      変換に際してはクォートする必要があります。
+      <varname>""</varname> を追加する理由は後述します。</para>
 
     </sect2>
 
     <sect2 id="passing-variable-to-shell">
-      <title>Passing variables to a shell command</title>
+      <title>シェルコマンドに値を渡す</title>
 
-	<para>Sometimes you may want to print an arbitrary string. There
-	are many ways to get it wrong and only few that can handle every
-	nastiness.</para>
+	<para>時には、任意の文字列を出力したいことがあるかもしれません。
+	不具合を起こす方法はたくさんありますが、
+	どんな複雑なものも扱えるような方法は少ししかありません。</para>
 
 <programlisting>
     STRING=         foo bar <    > * `date` $$HOME ' "
@@ -184,66 +184,62 @@
             env ${EXT_LIST} /bin/sh -c 'echo "$$string"; echo "$$x"'
 </programlisting>
 
-      <para>Example 1 leads to a syntax error in the shell, as the
-      characters are just copied.</para>
+      <para>例 1 は、シェルで構文エラーを起こします。
+      各文字がそのままコピーされるだけだからです。</para>
 
-      <para>Example 2 leads to a syntax error too, and if you leave out
-      the last " character from <varname>${STRING}</varname>,
-      &man.date.1; will be executed. The <varname>$HOME</varname> shell
-      variable would be evaluated, too.</para>
+      <para>例 2 も構文エラーを起こします。また、<varname>${STRING}</varname> の末尾の "
+      文字を除いた場合は、&man.date.1; が実行されてしまいます。
+      また、<varname>$HOME</varname> シェル変数も評価されるでしょう。</para>
 
-      <para>Example 3 outputs each space character preceded by a
-      backslash (or not), depending on the implementation of the
-      &man.echo.1; command.</para>
+      <para>例 3 は、&man.echo.1; コマンドの実装によって、
+      各空白文字の前にバックスラッシュが出力されたり、
+      されなかったりします。</para>
 
-      <para>Example 4 handles correctly every string that does not start
-      with a dash. In that case, the result depends on the
-      implementation of the &man.echo.1; command. As long as you can
-      guarantee that your input does not start with a dash, this form is
-      appropriate.</para>
+      <para>例 4 は、最初の文字がダッシュでない文字列はすべて適切に処理します。
+      文字列の最初の文字がダッシュの場合、結果がどうなるかは
+      &man.echo.1; コマンドの実装に依存します。
+      入力される文字列の最初の文字がダッシュにならないことを保証できる限りは、この形式は適切です。</para>
 
-      <para>Example 5 handles even the case of a leading dash
-      correctly.</para>
+      <para>例 5 は、たとえ文字列がダッシュで始まっていたとしても、
+      適切に処理します。</para>
 
-      <para>Example 6 also works with every string and is the
-      light-weight solution, since it does not involve a pipe, which has
-      its own problems.</para>
+      <para>例 6 も、あらゆる文字列を適切に処理できますし、
+      それ自体に問題のあるパイプを使わないので、
+      より軽い方法です。</para>
 
-      <para>The <varname>EXT_LIST</varname> does not need to be quoted
-      because the quoting has already been done when adding elements to
-      the list.</para>
+      <para><varname>EXT_LIST</varname> はクォートする必要はありません。
+      なぜなら、リストに要素を追加した時に、
+      すでにクォートされているからです。</para>
 
-      <para>As internal lists shall not be passed to the shell, there is
-      no example for it.</para>
+      <para>内部リストはシェルに渡されないものなので、
+      例示はありません。</para>
 
     </sect2>
 
     <sect2 id="quoting-guideline">
-      <title>Quoting guideline</title>
+      <title>クォートの指針</title>
 
-      <para>There are many possible sources of wrongly quoted variables.
-      This section lists some of the commonly known ones.</para>
+      <para>変数が不適切にクォートされたソースは、多くありえます。
+      本節では、よく知られている例をいくつか掲げます。</para>
 
       <itemizedlist>
 
-	<listitem><para>Whenever you use the value of a list, think
-	about what happens to leading or trailing whitespace. If the
-	list is a well-formed shell expression, you can apply the
-	<varname>:M*</varname> modifier to strip leading and trailing
-	whitespace from each word. The <varname>:M</varname> operator
-	first splits its argument according to the rules of the shell,
-	and then creates a new list consisting of all words that match
-	the shell glob expression <varname>*</varname>, that is: all.
-	One class of situations where this is needed is when adding a
-	variable like <varname>CPPFLAGS</varname> to
-	<varname>CONFIGURE_ARGS</varname>. If the configure script
-	invokes other configure scripts, it strips the leading and
-	trailing whitespace from the variable and then passes it to the
-	other configure scripts. But these configure scripts expect the
-	(child) <varname>CPPFLAGS</varname> variable to be the same as
-	the parent <varname>CPPFLAGS</varname>. That's why we better
-	pass the <varname>CPPFLAGS</varname> value properly trimmed. And
-	here is how we do it:</para>
+	<listitem><para>リストの値を使うときは常に、
+	値の冒頭や末尾にある空白がどうなるかを考えてください。
+	リストが整形式のシェルの式である場合、それぞれの語から冒頭や末尾の空白を取り除くために、
+	<varname>:M*</varname> 修飾子を使うことができます。
+	<varname>:M</varname> 演算子は、最初にその引数をシェルの規約に従って分割してから、
+	シェルのグロブ式 <varname>*</varname> にマッチする語 (つまり全部)
+	すべてからなるリストを新たに作ります。
+	これが必要となる状況は、<varname>CPPFLAGS</varname> のような変数を
+	<varname>CONFIGURE_ARGS</varname> に追加する場合です。
+	configure スクリプトが別の configure スクリプトから呼び出される場合、
+	呼び出された側のスクリプトは変数から冒頭と末尾の空白を取り除き、
+	それを別の configure スクリプトに渡します。しかし、この両 configure
+	スクリプトは、(子の) <varname>CPPFLAGS</varname> 変数が
+	親の <varname>CPPFLAGS</varname> と同じものであると見込んでいます。
+	これが、<varname>CPPFLAGS</varname> の値を適切に切り取ったものを
+	渡したほうがよい理由です。そして、以下に掲げるのは、その方法です。</para>
 
 <programlisting>
     CPPFLAGS=               # empty
@@ -253,26 +249,26 @@
     CONFIGURE_ARGS+=        CPPFLAGS=${CPPFLAGS:M*:Q}
 
     all:
-            echo x${CPPFLAGS:Q}x            # leading and trailing whitespace
-            echo x${CONFIGURE_ARGS}x        # properly trimmed
+            echo x${CPPFLAGS:Q}x            # 前後に空白がつく
+            echo x${CONFIGURE_ARGS}x        # 適切に切り取られる
 </programlisting></listitem>
 
-	<listitem><para>The example above contains one bug: The
-	<varname>${PREFIX}</varname> is a properly quoted shell
-	expression, but there is the C compiler after it, which also
-	expects a properly quoted string (this time in C syntax). The
-	version above is therefore only correct if
-	<varname>${PREFIX}</varname> does not have embedded backslashes
-	or double quotes. If you want to allow these, you have to add
-	another layer of quoting to each variable that is used as a C
-	string literal. You cannot use the <varname>:Q</varname>
-	operator for it, as this operator only works for the
-	shell.</para></listitem>
+	<listitem><para>上の例にはバグがひとつあります: 
+	<varname>${PREFIX}</varname> は適切にクォートされたシェルの式ですが、
+	シェルの後には C コンパイラーがあり、こちらでも適切に
+	(今度は C の文法で) クォートされている必要があります。
+	このため、上で例示したものは、<varname>${PREFIX}</varname>
+	の値にバックスラッシュや二重引用符が含まれていない場合に限って、
+	正しいものになります。これらの文字を含めたい場合、
+	C の文字列リテラルとして扱われる値をすべてクォートするために、
+	もう一つの層を追加する必要があります。
+	<varname>:Q</varname> 演算子はシェル用のクォートしかできないので、
+	C コンパイラー用のクォートには使えません。</para></listitem>
 
-	<listitem><para>Whenever a variable can be empty, the
-	<varname>:Q</varname> operator can have surprising results. Here
-	are two completely different cases which can be solved with the
-	same trick.</para>
+	<listitem><para>値が空になりうる場合は、
+	<varname>:Q</varname> 演算子が妙な結果を出すことがあります。
+	以下に 2 種類のまったく異なる事例を掲げますが、
+	どちらも同じ細工をすることで解決できます。</para>
 
 <programlisting>
     EMPTY=                  # empty
@@ -288,40 +284,41 @@
     .endfor
 </programlisting>
 
-	<para>The first example will only print two of the three lines
-	we might have expected. This is because
-	<varname>${EMPTY:Q}</varname> expands to the empty string, which
-	the shell cannot see. The workaround is to write
-	<varname>${EMPTY:Q}""</varname>. This pattern can be often found
-	as <varname>${TEST} -z ${VAR:Q}</varname> or as <varname>${TEST}
-	-f ${FNAME:Q}</varname> (both of these are wrong).</para>
+	<para>一つ目の例では、3 行が表示されると思うかもしれませんが、
+	そのうちの 2 行しか表示されません。これは、
+	<varname>${EMPTY:Q}</varname> が空の文字列に展開され、
+	シェルからは見えなくなるからです。回避策は、
+	<varname>${EMPTY:Q}""</varname> と書くことです。このパターンは、
+	<varname>${TEST} -z ${VAR:Q}</varname> や <varname>${TEST}
+	-f ${FNAME:Q}</varname> のように、しばしば見られます
+	(いずれも、間違いです)。</para>
 
-	<para>The second example will only print three lines instead of
-	four. The first line looks like <varname>a:\ echo foo</varname>.
-	This is because the backslash of the value
-	<varname>a:\</varname> is interpreted as a line-continuation by
-	&man.make.1;, which makes the second line the arguments of the
-	&man.echo.1; command from the first line. To avoid this, write
-	<varname>${i:Q}""</varname>.</para></listitem>
+	<para>二つ目の例では、表示されるのは 4 行ではなく 3 行です。
+	最初に表示される行は <varname>a:\ echo foo</varname> のようになります。
+	これは、値 <varname>a:\</varname> のバックスラッシュを
+	&man.make.1; が継続行として処理し、2 行目が 1 行目の
+	&man.echo.1; コマンドの引数になってしまうためです。
+	これを防ぐには、<varname>${i:Q}""</varname>
+	と書きます。</para></listitem>
 
       </itemizedlist>
     </sect2>
 
     <sect2 id="bsd-make-bug-workaround">
-      <title>Workaround for a bug in BSD Make</title>
+      <title>BSD Make のバグの回避方法</title>
 
-      <para>The pkgsrc bmake program does not handle the following
-      assignment correctly. In case <varname>_othervar_</varname>
-      contains a ``-'' character, one of the closing braces is included
-      in <varname>${VAR}</varname> after this code executes.</para>
+      <para>pkgsrc の bmake プログラムは、以下のような代入を適切に処理することができません。
+      <varname>_othervar_</varname> が ``-'' 文字を含んでいる場合、
+      以下のコードを実行すると、閉じ中括弧のひとつが
+      <varname>${VAR}</varname> に含まれてしまいます。</para>
 
 <programlisting>
     VAR:=   ${VAR:N${_othervar_:C/-//}}
 </programlisting>
 
-      <para>For a more complex code snippet and a workaround, see the
-      package <filename role="pkg">regress/make-quoting</filename>, testcase
-      <varname>bug1</varname>.</para>
+      <para>もっと複雑なコードの断片と回避策については、
+      <filename role="pkg">regress/make-quoting</filename> パッケージのテストケース
+      <varname>bug1</varname> をご覧ください。</para>
 
     </sect2>
 
