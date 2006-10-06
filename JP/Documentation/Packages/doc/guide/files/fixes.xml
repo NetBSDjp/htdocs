@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.25 2005/07/16 19:21:50 wiz Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.26 2005/07/27 14:40:46 gdt Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.25 2005/07/16 19:21:50 wiz Exp   -->
+<!-- NetBSD: fixes.xml,v 1.26 2005/07/27 14:40:46 gdt Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージの修正に関する注意</title>
@@ -777,34 +777,46 @@ pre-configure:
 
       <para>パッケージに適用されるライセンスのなかには、
         利用者によって同意できたり同意できなかったりするものがあるかもしれません。
-        通常、よく知られたオープンソースライセンス (たとえば GNU Public License,
-        GPL) が適用されているパッケージでは、
-        特に同意するための行為を利用者におこなわせるための特別な印は
-        pkgsrc にはついていません。ですが、それら以外のライセンスのなかには、
-        利用者が何らかの理由で同意しない可能性があるようなものが相当数あります。
-        このような場合のために、
-        pkgsrc には、パッケージが特殊なライセンスの下にあることを記すための仕組みがあり、
-        これを使うと、利用者がライセンスに同意しない限りインストールできないようになります。</para>
+        このような場合にそなえ、pkgsrc には、
+        パッケージに特殊なライセンスが適用されている場合に注意をうながしたり、
+        利用者がそのライセンスに同意しない限りパッケージを構築できなくする仕組みがあります。
+        (現在のところ、バイナリーパッケージのインストールは、
+        この仕組みの対象外です。) Open
+        Source Initiative による「オープンソース」、または Free Software
+        Foundation による「自由」を満たすライセンスをもつパッケージには、
+        ライセンスの目印はつきません。
+        これらの定義をどちらも満たさないライセンスをもつパッケージには、
+        そのライセンスを参照する目印がつけられます。
+        こうすることで、そのライセンスに同意したことを
+        pkgsrc に指示しない限り構築ができないようになり、また、
+        そのライセンスを表示することができるようになります。</para>
+
+      <para>ライセンスの目印の仕組みは、パッケージの構築、インストール、
+	および使用にまつわる著作権関連の問題を処理するためのものであって、
+	再配布にまつわる問題 (<varname>RESTRICTED</varname> および
+	<varname>NO_SRC_ON_FTP</varname> などを参照) のためのものではありません。
+	ただし、目印が必要なライセンスの定義は上述のとおりなので、
+	再配布に制限のあるパッケージには目印がついていることになります。</para>
 
       <para>
-        パッケージが特殊なライセンスの下にあることを指定するには、
-        <varname>LICENSE</varname> をライセンスを特定する文字列に設定します。
-        たとえば、<pkg>graphics/graphviz</pkg> では以下のようになります。
-</para>
+        パッケージに特殊なライセンスが適用されていることを示すには、
+        そのライセンスを 
+        <filename>pkgsrc/licenses</filename> に置いたうえで、
+        <varname>LICENSE</varname> 変数をライセンスを特定する文字列に設定します。
+        たとえば、<pkg>graphics/xv</pkg> では以下のようになります。</para>
 
-      <programlisting>LICENSE=        graphviz-license</programlisting>
+      <programlisting>LICENSE=        xv-license</programlisting>
 
       <para>
-        構築しようとすると、利用者はそのパッケージのライセンスに
-        (まだ) 同意していないことを知らされます。
-</para>
+        構築しようとすると、利用者はそのパッケージに適用されているライセンスに
+        同意していないことを知らされます。</para>
 	
       <programlisting>
 &cprompt; <userinput>make</userinput>
-===> graphviz-1.12 has an unacceptable license: graphviz-license.
-===>     To build this package, add this line to your /etc/mk.conf:
-===>     ACCEPTABLE_LICENSES+=graphviz-license
+===> xv-3.10anb9 has an unacceptable license: xv-license.
 ===>     To view the license, enter "/usr/bin/make show-license".
+===>     To indicate acceptance, add this line to your /etc/mk.conf:
+===>     ACCEPTABLE_LICENSES+=xv-license
 *** Error code 1</programlisting>
 
         <para>ライセンス自体は <command>make
@@ -814,7 +826,7 @@ pre-configure:
           上の表示中で指示されている行を <filename>/etc/mk.conf</filename>
           に追加することができます。</para>
 
-        <programlisting>ACCEPTABLE_LICENSES+=graphviz-license</programlisting>
+        <programlisting>ACCEPTABLE_LICENSES+=xv-license</programlisting>
 
 	<para>新しいライセンスが適用されているパッケージを追加する場合、
           表示用のライセンスのテキストを <filename>pkgsrc/licenses</filename>
@@ -824,14 +836,16 @@ pre-configure:
           <varname>ACCEPTABLE_LICENSES</varname> 変数の設定の一覧で見られるほか、
           このディレクトリーで見ることができます。</para>
 
-	<para>すべての distfile をダウンロードあるいはミラーしたり、
-          pkgsrc のすべてのパッケージの構築テストのためにバルクビルドを実行するときなど、
-          すべてのライセンスにまとめて同意する必要が<emphasis>本当に</emphasis>ある場合は、
-          <varname>_ACCEPTABLE=yes</varname>
-          を設定すれば、まとめて同意することができます。
-	</para>
-      </sect2>
-    
+	<para><varname>LICENSE=shareware</varname> や、
+	  <varname>LICENSE=no-commercial-use</varname> のような言いまわしは、
+	  ライセンスの文面を特定できないので、
+	  使わないことになりました。
+	  また、このような言いまわしを使った場合の別の問題として、
+	  利用者が特定のパッケージ用のライセンスだけに同意して、
+	  それ以外のパッケージ用のライセンスには同意しない、
+	  といった指定ができなくなるというものもあります。
+	  これは特に、料金を支払っているライセンスへの同意を示したい場合には不適当です。</para>
+    </sect2> 
 
     <sect2 id="installing-score-files">
       <title>得点ファイルをインストールする</title>
