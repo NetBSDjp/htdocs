@@ -1,6 +1,6 @@
-<!-- $NetBSD: components.xml,v 1.14 2005/10/07 15:45:24 rillig Exp $ -->
+<!-- $NetBSD: components.xml,v 1.16 2005/10/07 18:30:17 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: components.xml,v 1.14 2005/10/07 15:45:24 rillig Exp   -->
+<!-- NetBSD: components.xml,v 1.16 2005/10/07 18:30:17 rillig Exp   -->
 
 <chapter id="components"> <?dbhtml filename="components.html"?>
   <title>パッケージコンポーネント - ファイル、ディレクトリー、およびコンテンツ</title>
@@ -30,7 +30,7 @@
       基礎となる名前です。</para></listitem>
 
       <listitem><para><varname>PKGNAME</varname> は、
-      pkgsrc が使うパッケージ名です。これは、パッケージ名が DISTNAME
+      pkgsrc が使うパッケージ名です。これは、パッケージ名が <varname>DISTNAME</varname>
       と異なる場合のみ書く必要があります。
       通常、これはディレクトリー名とバージョン番号を合わせたものになります。
       この値は正規表現 <varname>^[A-Za-z0-9][A-Za-z0-9-_.+]*$</varname>
@@ -166,13 +166,43 @@ SITES_foo-file.tar.gz=http://www.somewhere.com/somehow/ \
 
     <para>このほか、構築に影響のある変数としては、以下のものがあります。
       <itemizedlist>
-	<listitem><para><varname>WRKSRC</varname>:
-	    <filename>${WRKDIR}</filename> のサブディレクトリーで、
-	    配布ファイルが実際に展開される場所です。標準では
-	    <filename>${WRKDIR}/${DISTNAME}</filename> になります。
-	    <varname>WRKSRC</varname> は、
-	    パッケージが通常の慣習に従わない場合に設定するものであって、
-	    サブディレクトリーとしてパッケージの名前を含めるようにします。</para>
+
+	<listitem>
+
+	  <para><varname>WRKSRC</varname>: 当該パッケージに関連する配布ファイルが置かれるディレクトリーです。
+	  標準では <filename>${WRKDIR}/${DISTNAME}</filename> になり、
+	  ほとんどのパッケージはこの標準状態のままで動作します。</para>
+
+	  <para>パッケージが専用のサブディレクトリー
+	  (たとえば、ほとんどのGNUソフトウェアはこれを作ります) を作らずに、
+	  カレントディレクトリーに展開される場合、 <varname>WRKSRC=
+	  ${WRKDIR}</varname> を設定します。</para>
+
+	  <para>パッケージが <varname>DISTNAME</varname> と同名のサブディレクトリーは作らずに、
+	  別の名前のサブディレクトリーを作る場合は、
+	  <varname>WRKSRC</varname> を設定して、
+	  <filename>${WRKDIR}</filename> 内の適切な名前を指すようにします。
+	  たとえば <varname>WRKSRC=
+	  ${WRKDIR}/${DISTNAME}/unix</varname> のようにします。
+	  さらに別の例としては <filename
+	  role="pkg">lang/tcl</filename> と <filename
+	  role="pkg">x11/tk</filename> を見てください。</para>
+
+	  <para> pkgsrc が作成する作業用ディレクトリーの名前には、
+	  <varname>WRKDIR_BASENAME</varname> 変数が使われます。
+	  この値は、標準では <filename>work</filename> です。同じ
+	  pkgsrc ツリーを複数の異なる種類のバイナリーパッケージの構築用に使いたい場合は、
+	  必要に応じて、この変数の値を変えることができます。
+	  <varname>WRKDIR_BASENAME</varname> の設定をありがちな方法でおこなうために、
+	  二つの変数をそれぞれ使うことができます。
+	  <filename>/etc/mk.conf</filename> で
+	  <varname>OBJHOSTNAME</varname> が定義されると、
+	  ホスト名の最初の部分がディレクトリー名に付け加えられます。
+	  <varname>OBJMACHINE</varname> が定義されると、
+	  <filename>work.i386</filename>
+	  や <filename>work.sparc</filename>
+	  のように、プラットフォーム名が付け加えられます。</para>
+
 	</listitem>
       </itemizedlist>
     </para>
@@ -201,35 +231,32 @@ SITES_foo-file.tar.gz=http://www.somewhere.com/somehow/ \
   <sect1 id="components.distinfo">
     <title><filename>distinfo</filename></title>
 
-    <para>最も重要で必須な、パッケージのコンパイルに必要なすべてのdistfileのメッセー
-      ジダイジェストあるいはチェックサムです。作者が配布した元のファイルに対して、
-      このメッセージダイジェストが一致することを確認しています。これをもとに、イ
-      ンターネットから取得したdistfileが転送中にファイルが壊れたり、悪意によりセ
-      キュリティーホールを入れられたファイルに変更されていたりしていないことを確
-      認します。これは<command>make makesum</command>により生成します。ダイジェストアル
-      ゴリズムには md5 が使われていましたが、これはsha1に比べて弱いため、現在は
-      sha1がデフォルトのアルゴリズムになっています。また、distfileの容量も生成さ
-      れ、新しいdistinfoファイルに格納されます。<filename role="pkg">pkgtools/digest</filename>ユーティリ
-      ティーは、distinfoファイル用のダイジェストをすべて計算してくれますし、さま
-      ざまなアルゴリズムにも対応しています。現在、以下のアルゴリズムに対応してい
-      ます:
-      <emphasis>md5</emphasis>, <emphasis>rmd160</emphasis>,
-      <emphasis>sha1</emphasis>, <emphasis>sha256</emphasis>,
-      <emphasis>sha384</emphasis>, <emphasis>sha512</emphasis></para>
+    <para><filename>distinfo</filename> ファイルには、パッケージが必要とする各
+    distfile のメッセージダイジェストあるいはチェックサムが格納されます。
+    作者が配布した元のファイルに対して、
+    このメッセージダイジェストが一致することを確認しています。これをもとに、イ
+    ンターネットから取得したdistfileが転送中にファイルが壊れたり、悪意によりセ
+    キュリティーホールを入れられたファイルに変更されていたりしていないことを確
+    認します。
+    最近、ダイジェストアルゴリズムの弱さについての噂があるため、
+    すべての distfile は、ファイルサイズに加えて、
+    SHA1 と RMD160 の両方のメッセージダイジェストを使って守られています。</para>
 
-    <para>パッケージによっては、アーキテクチャー毎にdistfileの組が異なるものがありま
-      す(たとえば <filename 
-        role="pkg">www/navigator</filename>)。この情報は単一のdistinfoファイルに
-      書かれるので、このようなパッケージの更新時には、distfileの情報が失われない
-      ように注意を払ってください。</para>
+    <para><filename>patches</filename>
+    ディレクトリーに入っているすべてのパッチ (<xref
+    linkend="components.patches"/>参照) のチェックサムも、
+    この <filename>distinfo</filename>ファイルに格納されます。</para>
+    
+    <para><filename>distinfo</filename> ファイルを作り直すには、
+    <command>make makedistinfo</command> または <command>make mdi</command>
+    コマンドを使います。</para>
 
-    <para><filename>patches/</filename>ディレクトリー
-      (<xref linkend="components.patches"/>参照)に入っている、公式なすべてのパッチ
-      のメッセージダイジェスト/チェックサムも、この<filename>distinfo</filename>ファイルに格納されます。
-      これは、パッチ中の&os; RCS Idを除いたすべての行のメッセージダイジェスト/
-      チェックサムです。このファイルは<command>make makepatchsum</command> (急を要する場合は
-      <command>make mps</command> でも可) コマンドにより生成するこ
-      とができます。</para>
+    <para>パッケージのなかには、プラットフォームによってdistfileの組が異なるものがありま
+    す(たとえば <filename
+    role="pkg">www/navigator</filename>)。この情報は単一の<filename>distinfo</filename>ファイルに
+    書かれるので、このようなパッケージの更新時には、distfileの情報が失われない
+    ように注意を払ってください。</para>
+
   </sect1>
 
   <sect1 id="components.patches">
@@ -388,31 +415,6 @@ SITES_foo-file.tar.gz=http://www.somewhere.com/somehow/ \
       標準では <filename>${.CURDIR}/work</filename>
       (<varname>OBJMACHINE</varname> が設定されている場合は
       <filename>${.CURDIR}/work.${MACHINE_ARCH}</filename>) です。</para>
-
-    <para> パッケージが例えばGNUソフトウェアのようにサブディレクトリーを作るのではなく、
-      カレントディレクトリーに展開される場合、適宜 <varname>WRKSRC</varname>
-      を設定します。例はもう一度<filename role="pkg">editors/sam</filename>を見てください。
-      簡単にいうと以下の設定が必要です。</para>
-
-    <programlisting>WRKSRC=             ${WRKDIR}</programlisting>
-
-    <para>パッケージが <varname>DISTNAME</varname> と同名のサブディレクトリーは作らずに、
-      別の名前のサブディレクトリーを作る場合は、
-      <varname>WRKSRC</varname> を設定して
-      <filename>${WRKDIR}</filename> 内の適切な名前を指すようにします。
-      例としては <filename 
-        role="pkg">lang/tcl</filename> と
-      <filename role="pkg">x11/tk</filename> を見てください。また、さらに別の例を以下に示します。 </para>
-      
-    <programlisting>WRKSRC=         ${WRKDIR}/${DISTNAME}/unix</programlisting>
-
-    <para> pkgsrc が作成する作業用ディレクトリーの名前は、標準では
-      <filename>work</filename> です。同じ
-      pkgsrc ツリーを複数の異なるプラットフォームで共用する場合は、
-      /etc/mk.conf で <varname>OBJMACHINE</varname> を設定して、
-      作業用ディレクトリー名にプラットフォームを付け足すことができます。
-      こうすると、たとえば <filename>work.i386</filename> や
-      <filename>work.sparc</filename> のようになります。 </para>
   </sect1>
 
   <sect1 id="files-dir">
