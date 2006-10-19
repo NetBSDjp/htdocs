@@ -1,9 +1,22 @@
-<!-- $NetBSD: build.xml,v 1.11 2005/10/23 11:25:58 rillig Exp $ -->
+<!-- $NetBSD: build.xml,v 1.12 2005/11/03 16:43:59 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.11 2005/10/23 11:25:58 rillig Exp   -->
+<!-- NetBSD: build.xml,v 1.12 2005/11/03 16:43:59 rillig Exp   -->
 
 <chapter id="build">
-  <title>構築の手順</title>
+<title>構築の手順</title>
+
+<sect1 id="build.intro">
+<title>序</title>
+
+<para>本章では、パッケージがどのように構築されるかについて、詳しく説明します。
+パッケージの構築は、複数の<emphasis>相 (phase)</emphasis> (たとえば、<varname>fetch</varname>,
+<varname>build</varname>, <varname>install</varname>) にわかれており、
+そのすべてを以下の各節で説明します。それぞれの段階は、<varname>pre-</varname>,
+<varname>do-</varname>, <varname>post-</varname>
+のいずれかが stage 名の前についた、いわゆる<emphasis>期 (stage)</emphasis>
+にわかれます。(たとえば、
+<varname>pre-configure</varname>, <varname>post-build</varname> などです。)
+実際に何かがおこなわれるのは、ほとんどが <varname>do-*</varname> 期においてです。</para>
 
   <para>プログラムを構築するための基本的な手順は常に同じです。最初に、プログラムの
     ソースファイル(<emphasis>distfile</emphasis>)をローカルシステムへ持ってきて展開します。&os;
@@ -12,6 +25,8 @@
     等を、システムにインストールします。これはまさに&os;パッケージシステム
     によって実行される手順です。この手順は、中心となるMakefile、
     <filename>pkgsrc/mk/bsd.pkg.mk</filename>の中で一連のターゲットとして実装されています</para>
+
+</sect1>
 
   <sect1 id="build.prefix">
     <title>プログラムの場所</title>
@@ -127,16 +142,21 @@
     </itemizedlist>
   </sect1>
 
-  <sect1 id="main-targets">
-    <title>主なターゲット</title>
+<sect1 id="build.running">
+<title>相の実行</title>
 
-    <para><filename>bsd.pkg.mk</filename>で定義された、構築手順で使用される主なターゲットについて述べます。</para>
+<para><command>make phase</command> (<emphasis>phase</emphasis> は相の名前) と打てば、
+その相を実行することができます。
+こうすると、その相のために必要な相をすべて自動的に実行します。
+相を指定しない場合は <varname>build</varname> 相になります。つまり、
+あるパッケージのディレクトリーで、引数なしで <command>make</command>
+を実行すると、パッケージが構築されますが、インストールはされません。</para>
 
-    <variablelist>
-      <varlistentry>
-	<term>fetch</term>
+</sect1>
 
-	<listitem>
+<sect1 id="build.fetch">
+<title><emphasis>fetch</emphasis> 相</title>
+
 	  <para>これは、変数<varname>DISTFILES</varname>と<varname>PATCHFILES</varname> (パッケージのMakefileで定義された)で指
 	    定されたファイルが、ローカルシステムの<filename>/usr/pkgsrc/distfiles</filename>に存在するか
 	    どうかをチェックします。もし、存在しなければ、そのファイルを以下のような
@@ -152,25 +172,23 @@
 	    みます。そして、最後に<varname>MASTER_SITE_BACKUP</varname>の値を試みます。最初のもの以
 	    外の順序は、<varname>MASTER_SORT_AWK</varname>か<varname>MASTER_SORT_REGEX</varname>を設定して、ユーザー
 	    が入れ換えることができます。</para>
-	</listitem>
-      </varlistentry>
 
-      <varlistentry>
-	<term>checksum</term>
+</sect1>
 
-	<listitem>
+<sect1 id="build.checksum">
+<title><emphasis>checksum</emphasis> 相</title>
+
 	  <para>distfileを取得した後に、チェックサムを生成し、distinfoファイルに保存され
 	    たチェックサムと比較します。もし、チェックサムが一致しなければ、構築は中
 	    断されます。これはパッケージ作成時と同じdistfileが、構築に使用されている
 	    こと、つまり、悪意や一次配布サイトでの意図的な差し替えやネットワークの損
 	    失によってdistfileが変更されていないことを保証するためです。</para>
-	</listitem>
-      </varlistentry>
 
-      <varlistentry>
-	<term>extract</term>
+</sect1>
 
-	<listitem>
+<sect1 id="build.extract">
+<title><emphasis>extract</emphasis> 相</title>
+
 	  <para>distfileがローカルシステム上に存在している場合、
 	    通常、それらは圧縮アーカイブフォーマットで保存されているので、
 	    展開する必要があります。もっとも一般なフォーマットは
@@ -208,13 +226,12 @@
     EXTRACT_BEFORE_ARGS=
     EXTRACT_AFTER_ARGS=     |sh
 </programlisting>
-	</listitem>
-      </varlistentry>
 
-      <varlistentry>
-	<term>patch</term>
+</sect1>
 
-	<listitem>
+<sect1 id="build.patch">
+<title><emphasis>patch</emphasis> 相</title>
+
 	  <para>展開の後で、<varname>PATCHFILES</varname>で指定されたパッチとパッケージのpatchesサブディレ
 	    クトリーに存在するパッチ、さらに、$LOCALPATCHES/$PKGPATH (たとえば 
 	    <filename>/usr/local/patches/graphics/png</filename>)に存在するパッチのすべてが適用されます。
@@ -227,13 +244,26 @@
 	    特別な引数が渡されます。パッチを修正(再作成)して、きれいに適用できるよう
 	    にしてください。そうする理由は、曖昧さがあるパッチが一見うまく適用できても、実は誤った場
 	    所に適用されていて、深刻な問題を起こす可能性があるからです。</para>
-	</listitem>
-      </varlistentry>
 
-      <varlistentry>
-	<term>configure</term>
+</sect1>
 
-	<listitem>
+<sect1 id="build.tools">
+<title><emphasis>tools</emphasis> 相</title>
+
+<para>[TODO]</para>
+
+</sect1>
+
+<sect1 id="build.wrapper">
+<title><emphasis>wrapper</emphasis> 相</title>
+
+<para>[TODO]</para>
+
+</sect1>
+
+<sect1 id="build.configure">
+<title><emphasis>configure</emphasis> 相</title>
+
 	  <para>ほとんどのソフトウェアは、&os;で利用できるヘッダーファイル、システムコー
 	    ル、およびライブラリールーチンについての情報を必要とします。これはコンフィ
 	    ギュレーションとして知られているプロセスであり、通常、自動化されています。
@@ -258,13 +288,11 @@
 	    あれば、<varname>USE_IMAKE</varname>を<quote>YES</quote>に設定することにより、適切な手順が実行されます。
 	    (もし、<varname>$X11PREFIX</varname>にインストールされるパッケージが欲しいだけで、xmkmfを実
 	    行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください!)</para>
-	</listitem>
-      </varlistentry>
 
-      <varlistentry>
-	<term>build</term>
+</sect1>
 
-	<listitem>
+<sect1 id="build.build">
+<title><emphasis>build</emphasis> 相</title>
 	  <para>コンフィギュレーションが終ったら、<varname>$MAKEFILE</varname>の中で、構築のターゲットとし
 	    て<varname>$BUILD_TARGET</varname>を指定し<varname>$MAKE_PROGRAM</varname>を起動することにより、ソフト
 	    ウェアを構築することができます。もし、<varname>USE_TOOLS</varname> に <quote>gmake</quote> が含まれていれば、デフォ
@@ -272,35 +300,34 @@
 	    <varname>MAKEFILE</varname>にはデフォルトで<quote>Makefile</quote>が設定されます。そして、<varname>BUILD_TARGET</varname>のデフォ
 	    ルトは<quote>all</quote>です。デフォルトの構築手順を変更するために、パッケージの Makefile でこれらの変数を設定
 	    することができます。</para>
-	</listitem>
-      </varlistentry>
 
-      <varlistentry>
-	<term>install</term>
 
-	<listitem>
+</sect1>
+
+<sect1 id="build.test">
+<title><emphasis>test</emphasis> 相</title>
+
+<para>[TODO]</para>
+
+</sect1>
+
+<sect1 id="build.install">
+<title><emphasis>install</emphasis> 相</title>
+
 	  <para>構築の段階が完了すると、ユーザーが構築されたプログラムやファイルを使えるようにするため、ソフトウェアをパブリックなディレ
 	    クトリーにインストールする必要があります。buildターゲットと同様に、
 	    <varname>$MAKE_PROGRAM</varname>が<varname>$MAKEFILE</varname>中で起動されます。ただし、<varname>$INSTALL_TARGET</varname>が指定
 	    されます。この変数のデフォルトは<quote>install</quote>です。(もし<varname>USE_IMAKE</varname>が設定さ
 	    れていれば、<quote>install.man</quote>も追加されます)。</para>
-	</listitem>
-      </varlistentry>
-    </variablelist>
 
-    <para>もし、ターゲットが指定されなければ、デフォルトは<quote>build</quote>です。手順の途中の
-      ターゲットが指定された場合、それ以前のすべての手順が実行されます。例えば
-      <command>make build</command>は、以下と同等のことを実行します。</para>
+</sect1>
 
-<programlisting>
-    make fetch
-    make checksum
-    make extract
-    make patch
-    make configure
-    make build
-</programlisting>
-  </sect1>
+<sect1 id="build.package">
+<title><emphasis>package</emphasis> 相</title>
+
+<para>[TODO]</para>
+
+</sect1>
 
   <sect1 id="build.helpful-targets">
     <title>他の役に立つターゲット</title>

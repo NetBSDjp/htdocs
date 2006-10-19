@@ -1,9 +1,9 @@
-<!-- $NetBSD: fixes.xml,v 1.32 2005/10/23 11:25:58 rillig Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.35 2005/11/03 17:31:57 tv Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.32 2005/10/23 11:25:58 rillig Exp   -->
+<!-- NetBSD: fixes.xml,v 1.35 2005/11/03 17:31:57 tv Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
-  <title>パッケージの修正に関する注意</title>
+  <title>パッケージを動くようにする</title>
 
   <sect1 id="general-operation">
     <title>一般的な操作</title>
@@ -751,39 +751,79 @@
   </sect1>
   
   
-  <sect1 id="building-considerations">
-    <title>構築の考察</title>
+  <sect1 id="fixes-build">
+    <title>パッケージを構築する</title>
 
     <sect2 id="cpp-defines">
       <title>CPP定義</title>
-    
-      <para>
-        アプリケーションをNetBSDに移植するためには、コンパイラーがコンパイルしてい
-        るシステムを判断する必要があります。したがって、Cのプリプロセッサーがシステ
-        ムを判断できるように、CPPの定義を使います。
-</para>
 
-      <para>
-        4.4 BSDから派生したシステム上で作業しているかどうかをテストするためには、
-        BSD定義を使用します。これは
-        <filename>&lt;sys/param.h&gt;</filename>で定義されています。
-</para>
+      <para>時には、対象プラットフォームによって、
+      コンパイルするコードを変える必要があります。 C プリプロセッサーには、
+      一連の定義済みマクロがあり、<varname>#ifdef FOO</varname>
+      または <varname>#if defined(FOO)</varname>
+      を使ってそれらを問い合わせることができます。これらのマクロは通常は、
+      ターゲットの CPU およびオペレーティングシステムについての情報を持つものです。
+      どのようなマクロが定義されているかによって、
+      特定のプラットフォームに固有の機能を使ったコードを書くことができます。
+      プラットフォーム間の差異を処理するための最良の方法は、GNU autotools (automake,
+      autoconf, etc.) を使って、個別の機能 (ヘッダーファイル、関数やライブラリーの有無)
+      を検査することです。</para>
+
+      <para>そうすることができない場合は、
+      実行しているプラットフォーム用のコードを構成するために、
+      以下の定義済みマクロを使うことができます。
+      ほとんどすべてのオペレーティングシステム、ハードウェアアーキテクチャー、
+      およびコンパイラーには、独自のマクロがあります。
+      たとえば、<varname>__GNUC__</varname>,
+      <varname>__i386__</varname>, <varname>__NetBSD__</varname>
+      の各マクロがすべて定義されている場合は、Intel CPU 上の NetBSD を使っていることと、
+      コンパイラーが GCC であることがわかります。</para>
+
+      <sect3 id="fixes-build-cpp-opsys">
+        <title>オペレーティングシステムに関する CPP 定義</title>
+
+        <para>4.4 BSD から派生したシステムとそれ以外のシステムを
+        見分けるには、以下のコードを使うようにしてください。</para>
+
+<programlisting><![CDATA[
+    #include <sys/param.h>
+    #if (defined(BSD) && BSD >= 199306)
+      /* your BSD-specific code goes here */
+    #else
+      /* non-BSD-specific code */
+    #endif
+]]></programlisting>
+
+        <para>これでは十分正確でない場合は、
+        以下の定義を使うこともできます。</para>
 
 <programlisting>
-    <![CDATA[#include <sys/param.h>]]>
+    FreeBSD     __FreeBSD__
+    DragonFly	__DragonFly__
+    Interix	__INTERIX
+    Linux       linux, __linux, __linux__
+    NetBSD      __NetBSD__
+    OpenBSD     __OpenBSD__
+    Solaris     sun, __sun (GCC および SunPro), __sun__ (GCC のみ)
 </programlisting>
 
-      <para>また、パッケージの C や C++ のコードのうち BSDに固有の部分を、
-        以下の条件でかこむこともできます。</para>
+      </sect3><sect3 id="fixes-build-cpp-cpu">
+        <title>CPU に関する CPP 定義</title>
 
 <programlisting>
-    <![CDATA[#if (defined(BSD) && BSD >= 199306)
-    ...
-    #endif]]>
+    i386        i386, __i386, __i386__
+    MIPS        __mips
+    SPARC       sparc, __sparc
 </programlisting>
 
-      <para>どうか注意して<quote>__NetBSD__</quote>定義を使って下さい。4.4-liteから派生した他のBSDにな
-        い&os;固有の特徴にのみ適用してください。</para>
+      </sect3><sect3 id="fixes-build-cpp-compiler">
+        <title>コンパイラーに関する CPP 定義</title>
+
+<programlisting>
+    GCC         __GNUC__ (メジャーバージョン), __GNUC_MINOR__
+</programlisting>
+
+      </sect3>
     </sect2>
 
     <sect2 id="cpp-list">

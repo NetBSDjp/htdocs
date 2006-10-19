@@ -1,6 +1,6 @@
-<!-- $NetBSD: platforms.xml,v 1.15 2005/10/23 11:25:58 rillig Exp $ -->
+<!-- $NetBSD: platforms.xml,v 1.22 2005/11/08 22:19:34 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: platforms.xml,v 1.15 2005/10/23 11:25:58 rillig Exp   -->
+<!-- NetBSD: platforms.xml,v 1.22 2005/11/08 22:19:34 rillig Exp   -->
 
 <chapter id="platforms">
   <title>&os; 以外のシステムで pkgsrc を使う</title>
@@ -243,11 +243,21 @@
 	  のインストールは必須ではありませんが、inetd を動作させるために Remote Connectivity
 	  そのものはインストールすることをおすすめします。</para>
 
-	<para>最後に、インストール中に、Interix のプログラムに対して setuid を有効にするかどうか、
+	<para>インストール中に、Interix のプログラムに対して setuid を有効にするかどうか、
 	  また、パス名の大文字と小文字を標準で区別するかどうかを尋ねられるかもしれません。
 	  setuid は有効にするようにし、また大文字と小文字はかならず区別するようにします。
 	  (大文字と小文字を区別しないと、
 	  perl をはじめ多くのプログラムが構築できなくなります。)</para>
+
+	<para>註:  最近の Windows サービスパックでは、
+	  バイナリーを実行する方法を (データ実行防止機能を使ったものに) 変更します。
+	  pkgsrc その他の gcc でコンパイルされたバイナリーを信頼して使うためには、
+	  POSIX.EXE, PSXDLL.DLL, PSXRUN.EXE, PSXSS.EXE (899522 またはこれより新しいもの)
+	  を含んだホットフィックスをインストールする必要があります。
+	  ホットフィックスは Microsoft からサポート窓口を通じて提供されていますが、
+	  ある NetBSD 開発者が、ほとんどの Interix ホットフィックスを個人的に使えるように <ulink
+	    url="http://www.duh.org/interix/hotfixes.php">http://www.duh.org/interix/hotfixes.php</ulink>
+	  に用意しています。</para>
 
       </sect3>
 
@@ -305,6 +315,88 @@
 <programlisting>
     interix:kP=\E[S:kN=\E[T:kH=\E[U:dc@:DC@:tc=pcansi:
 </programlisting>
+
+      </sect3>
+      <sect3 id="platform.interix-limits">
+	<title>Interix プラットフォームの制約</title>
+
+	<para>Interix は、完全な Unix 風のプラットフォームの
+	  とっつきやすく柔軟な代替品としては十分なものですが、Interix
+	  を最大限に活用したい場合は、若干の制約があることを知っておくとよいでしょう。</para>
+
+	<itemizedlist>
+
+	  <listitem><para><emphasis role="strong">X11:</emphasis></para>
+	    <para>Interix には標準的な X11R6 クライアントライブラリー一式が附属しており、
+	    X11 にもとづくアプリケーションを実行することができますが、
+	    X サーバーは附属<emphasis>しません</emphasis>。X サーバーの選択肢としては、
+	    <ulink url="http://www.starnet.com/products/xwin32/">StarNet X-Win32</ulink>,
+	    <ulink url="http://connectivity.hummingbird.com/products/nc/exceed/">Hummingbird Exceed</ulink>
+	    (Interix 用に調整された
+	    <ulink url="http://www.interopsystems.com/InteropXserver.htm">Interop X Server</ulink>
+	    というものを、Interop Systems が提供しています) や、
+	    <ulink url="http://x.cygwin.com/">Cygwin</ulink>
+	    に含まれるフリーの X11 サーバーがあります。</para>
+
+	    <para>また、StarNet Communications が、
+	    同社の X-Win32 製品のフリー版 (localhost からの接続のみ受け入れるもの) である
+	    <ulink url="http://www.starnet.com/xwin32LX/get_xwin32LX.htm">X-Win32 LX</ulink>
+	    を提供してくれています。
+	    Interix の pkgsrc 対応の担当者はこれをおすすめします。</para></listitem>
+
+	  <listitem><para><emphasis role="strong">X11 アクセラレーション:</emphasis></para>
+	    <para>Interix は、Win32 アプリケーションとは完全に別の
+	    NT サブシステム内で動いているため、現在のところ、アクセラレーションのための
+	    X11 プロトコルの各種拡張 (MIT-SHM や DGA など) には対応していません。
+	    ローカルの X サーバーを使った対話的なアプリケーションのほとんどは、
+	    そこそこ速く動きますが、フルモーションビデオなど画像に特化したアプリケーションを動かすには、
+	    思ったよりも速い CPU が必要になるかもしれません。</para></listitem>
+
+	  <listitem><para><emphasis role="strong">オーディオ:</emphasis></para>
+	    <para>Interix は、オーディオ出力にネイティブで対応していません。
+	    オーディオに対応するため、pkgsrc では Interix 上で <command>esound</command>
+	    クライアントサーバー型オーディオシステムを使っています。
+	    他のほとんどのプラットフォームとは異なり、
+	    <filename role="pkg">audio/esound</filename> パッケージには、
+	    <command>esd</command> サーバーが含まれません。
+	    Interix ホストを経由してオーディオを出力するには、
+	    <filename role="pkg">emulators/cygwin_esound</filename>
+	    パッケージもあわせてインストールする必要があります。</para></listitem>
+
+	  <listitem><para><emphasis role="strong">CD/DVD, USB, SCSI:</emphasis></para>
+	    <para>現在のところ、Interix はデバイスへの直接のアクセスに対応していませんので、
+	    CD/DVD ドライブ、USB デバイス、SCSI デバイスを、
+	    ファイルシステム経由以外の方法で使うことはできません。このため、
+	    Interix を使って、直接 CD/DVD を焼くことなどはできません。</para></listitem>
+
+	  <listitem><para><emphasis role="strong">テープドライブ:</emphasis></para>
+	    <para>CD-ROM や SCSI デバイスと同様の制約があるため、
+	    Interix ではテープドライブに直接アクセスすることもできません。ただし、
+	    Cygwin を介して使うことで (Cygwin の esound
+	    サーバーを介してオーディオを使えるように)
+	    テープドライブにアクセスできるようにするための作業がおこなわれています。</para></listitem>
+
+	</itemizedlist>
+      </sect3>
+      <sect3 id="platform.interix-knownissues">
+	<title>Interix 上での pkgsrc に関する、既知の問題</title>
+
+	<para>一般的に、Windows システム上に "root" ユーザーを用意することは必須ではありません。
+	  ユーザーがローカルの Administrators グループに属してさえいれば、それで十分です。
+	  ただし、現在のところ、パッケージのなかには
+	  "root" という名前のユーザーが特権ユーザであることを前提にしているものがあります。
+	  そのようなパッケージのために、"root" という名前のユーザーを作ってもかまいませんが、
+	  ローカルの Administrators グループ (または、お使いの言語でこれに対応するもの)
+	  に属させるようにしてください。</para>
+
+	<para>"pkg_add" は、$PKG_DBDIR 内のディレクトリーを、モード 0775 ではなく
+	  0755 で作成します。この問題を回避するため、当面は、ローカルの
+	  Administrator (または、お使いの言語でこれに対応するもの)
+	  としてパッケージをインストールするか、
+	  各パッケージのインストール後に以下のコマンドを実行してください。</para>
+
+	<screen>
+&rprompt; <userinput>chmod -R g+w $PKG_DBDIR</userinput></screen>
 
       </sect3>
     </sect2>
