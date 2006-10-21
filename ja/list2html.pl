@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.97 2006/05/31 11:52:09 kano Exp $
+# $NetBSD: list2html.pl,v 1.98 2006/10/21 16:30:48 kano Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
@@ -68,7 +68,7 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.97 $';
+$version = '$Revision: 1.98 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:qhV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -659,12 +659,12 @@ sub sub_external_links
 
     # Expand <PKGSRC>category/name entries
     #
-    while ($text =~ m#<PKGSRC>(([-\w.]+/|)([^\s<>]+\w))#)
+    while ($text =~ m#<PKGSRC>(([-\w.]+/|)([-\w_.+]+[\w+]))#)
 	{
         my($n) = $3;
 	if (defined($pkgname{$n}))
 	    { $n = $pkgname{$n}; }
-        $text =~ s#<PKGSRC>(([-\w.]+/|)([^\s<>]+\w))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
+        $text =~ s#<PKGSRC>(([-\w.]+/|)([-\w_.+]+[\w+]))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
 	}
 
     # Expand <RFC>RFCxxxx entries
