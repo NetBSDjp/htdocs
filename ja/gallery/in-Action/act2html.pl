@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: act2html.pl,v 1.7 2003/09/27 21:07:19 dent Exp $
+# $NetBSD: act2html.pl,v 1.8 2006/10/21 16:30:48 kano Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: act2html.pl,v 1.7 2003/09/27 21:07:19 dent Exp   -->
+# <!-- NetBSD: act2html.pl,v 1.8 2006/10/21 16:30:48 kano Exp   -->
 # Process index.act file into index.html for the in-Action
 # gallery.  Customized version of DKBrownlee's list2html.pl.
 #
@@ -31,7 +31,7 @@ my($version,%opt,%pkgname);
 
 $months_previous=9;	# previous months to display for DATE entries
 
-$version='$Revision: 1.7 $';
+$version='$Revision: 1.8 $';
 $version =~ /([\d.]+)/ && ($version=$1);
 
 if (!&getopts('a:c:m:hV',\%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -241,12 +241,12 @@ sub sub_external_links
 
     # Expand <PKGSRC>category/name entries
     #
-    while ( $text =~ m#<PKGSRC>(([-\w.]+/|)([^\s<>]+\w))#)
+    while ( $text =~ m#<PKGSRC>(([-\w.]+/|)([-\w_.+]+[\w+]))#)
 	{
         my($n) = $3;
 	if (defined($pkgname{$n}))
 	    { $n = $pkgname{$n}; }
-        $text =~ s#<PKGSRC>(([-\w.]+/|)([^\s<>]+\w))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
+        $text =~ s#<PKGSRC>(([-\w.]+/|)([-\w_.+]+[\w+]))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
 	}
 
     # Expand <PORTPAGE>portname entries
