@@ -1,6 +1,6 @@
-<!-- $NetBSD: build.xml,v 1.14 2005/11/03 18:15:47 rillig Exp $ -->
+<!-- $NetBSD: build.xml,v 1.16 2005/11/03 19:29:54 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.14 2005/11/03 18:15:47 rillig Exp   -->
+<!-- NetBSD: build.xml,v 1.16 2005/11/03 19:29:54 rillig Exp   -->
 
 <chapter id="build">
 <title>構築の手順</title>
@@ -306,43 +306,71 @@ pkgsrc の各種基盤が使う一時ディレクトリーが含まれます。</para></listitem><
 <sect1 id="build.configure">
 <title><emphasis>configure</emphasis> 相</title>
 
-	  <para>ほとんどのソフトウェアは、&os;で利用できるヘッダーファイル、システムコー
-	    ル、およびライブラリールーチンについての情報を必要とします。これはコンフィ
-	    ギュレーションとして知られているプロセスであり、通常、自動化されています。
-	    大抵の場合、スクリプトがソースと一緒に提供され、それを実行することにより
-	    ヘッダーファイルやMakefile等が生成されます。</para>
+<para>ほとんどのソフトウェアは、実行対象のプラットフォームで利用できるヘッダーファイル、
+システムコール、およびライブラリールーチンについての情報を必要とします。
+この情報の判断はコンフィギュレーションとして知られているプロセスであり、
+通常、自動化されています。
+大抵の場合、スクリプトが配布物と一緒に提供され、
+それを実行することによりヘッダーファイルやMakefile等が生成されます。</para>
 
-	  <para>もし、プログラムのdistfileが専用のconfigureスクリプトを含んでいる場合、
-	    <varname>HAS_CONFIGURE</varname>を設定することにより、実行することができます。もし、そのス
-	    クリプトがGNUのautoconfスクリプトである場合は、かわりに、<varname>GNU_CONFIGURE</varname>を
-	    指定してください。どちらの場合も、configureスクリプトの引数は、変数
-	    <varname>CONFIGURE_ARGS</varname>で指定されます。もし設定スクリプトの名前がデフォルトの
-	    <quote>configure</quote>でない場合は、その名前を<varname>CONFIGURE_SCRIPT</varname>に設定してください。
-	    <filename role="pkg">sysutils/top</filename> パッケージから抜粋した例を以下に掲げます。</para>
+<para>パッケージが configure スクリプトを含んでいる場合、<varname>HAS_CONFIGURE</varname>
+を <quote>yes</quote> に設定することにより、実行することができます。
+もし、その configure スクリプトが GNU の autoconf スクリプトである場合は、
+かわりに、<varname>GNU_CONFIGURE</varname> を <quote>yes</quote> に指定してください。
+大雑把にいうと、<emphasis>configure</emphasis> 相では以下のようなことをしています。</para>
 
 <programlisting>
-    HAS_CONFIGURE=          yes
-    CONFIGURE_SCRIPT=       Configure
-    CONFIGURE_ARGS+=        netbsd13
+    .for d in ${CONFIGURE_DIRS}
+            cd ${WRKSRC} && cd ${d} && env ${CONFIGURE_ENV} \
+                ${CONFIGURE_SCRIPT} ${CONFIGURE_ARGS}
+    .endfor
 </programlisting>
 
-	  <para>もし、プログラムがコンフィギュレーションのためにImakefileを使用するので
-	    あれば、<varname>USE_IMAKE</varname>を<quote>YES</quote>に設定することにより、適切な手順が実行されます。
-	    (もし、<varname>$X11PREFIX</varname>にインストールされるパッケージが欲しいだけで、xmkmfを実
-	    行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください!)</para>
+<para><varname>CONFIGURE_DIRS</varname> (標準では <quote>.</quote>) は、
+<varname>WRKSRC</varname> からの相対位置でのパス名を並べたリストです。
+この各ディレクトリー内で、環境変数 <varname>CONFIGURE_ENV</varname> および
+引数 <varname>CONFIGURE_ARGS</varname> を使って
+configure スクリプトが実行されます。
+<varname>CONFIGURE_ENV</varname>, <varname>CONFIGURE_SCRIPT</varname>
+(標準では <quote>./configure</quote>),
+<varname>CONFIGURE_ARGS</varname>
+の各変数は、いずれもパッケージ側で変更することができます。</para>
+
+<para>もし、プログラムがコンフィギュレーションのために <filename>Imakefile</filename> を使用するので
+あれば、<varname>USE_IMAKE</varname> を <quote>yes</quote> に設定することにより、適切な手順が実行されます。
+(もし、<varname>${X11PREFIX}</varname> にインストールされるパッケージが欲しいだけで、xmkmfを実
+行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください。)</para>
 
 </sect1>
 
 <sect1 id="build.build">
 <title><emphasis>build</emphasis> 相</title>
 
-	  <para>コンフィギュレーションが終ったら、<varname>$MAKEFILE</varname>の中で、構築のターゲットとし
-	    て<varname>$BUILD_TARGET</varname>を指定し<varname>$MAKE_PROGRAM</varname>を起動することにより、ソフト
-	    ウェアを構築することができます。もし、<varname>USE_TOOLS</varname> に <quote>gmake</quote> が含まれていれば、デフォ
-	    ルトの<varname>MAKE_PROGRAM</varname>は<quote>gmake</quote>です。そうでなければ、<quote>make</quote>が使用されます。
-	    <varname>MAKEFILE</varname>にはデフォルトで<quote>Makefile</quote>が設定されます。そして、<varname>BUILD_TARGET</varname>のデフォ
-	    ルトは<quote>all</quote>です。デフォルトの構築手順を変更するために、パッケージの Makefile でこれらの変数を設定
-	    することができます。</para>
+<para>パッケージの構築は、大雑把にいえば、
+以下のコードを実行するのと同じことです。</para>
+
+<programlisting>
+    .for d in ${BUILD_DIRS}
+            cd ${WRKSRC} && cd ${d} && env ${MAKE_ENV} \
+                ${MAKE_PROGRAM} ${BUILD_MAKE_FLAGS} \
+                    -f ${MAKEFILE} ${BUILD_TARGET}
+    .endfor
+</programlisting>
+
+<para><varname>BUILD_DIRS</varname> (標準では <quote>.</quote>) は、
+<varname>WRKSRC</varname> からの相対位置でのパス名を並べたリストです。
+この各ディレクトリー内で、環境変数 <varname>MAKE_ENV</varname> および
+引数 <varname>BUILD_MAKE_FLAGS</varname> を使って
+<varname>MAKE_PROGRAM</varname> が実行されます。
+<varname>MAKE_ENV</varname>, <varname>BUILD_MAKE_FLAGS</varname>,
+<varname>MAKEFILE</varname>, <varname>BUILD_TARGET</varname>
+の各変数は、いずれもパッケージ側で変更することができます。</para>
+
+<para><varname>MAKE_PROGRAM</varname> の標準の値は、
+<varname>USE_TOOLS</varname> に <quote>gmake</quote> が含まれている場合は
+<quote>gmake</quote>、含まれていない場合は <quote>make</quote> です。
+<varname>MAKEFILE</varname> の標準の値は <quote>Makefile</quote> であり、
+<varname>BUILD_TARGET</varname> の標準の値は <quote>all</quote> です。</para> 
 
 </sect1>
 

@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.37 2005/11/08 16:39:47 reed Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.38 2005/11/13 03:27:20 minskim Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.37 2005/11/08 16:39:47 reed Exp   -->
+<!-- NetBSD: fixes.xml,v 1.38 2005/11/13 03:27:20 minskim Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージを動くようにする</title>
@@ -1423,6 +1423,38 @@
         <filename>/etc/rc.d</filename> 以下にコピーされます。
         また、パッケージのアンインストール時には、
         自動的にスクリプトが削除されます。</para>
+    </sect2>
+    
+    <sect2 id="tex-packages">
+      <title>TeX モジュールをインストールするパッケージ</title>
+    
+      <para>パッケージが、TeX パッケージを texmf ツリーにインストールする場合は、
+        texmf ツリーの <filename>ls-R</filename>
+        データベースを更新する必要があります。</para>
+      <note><para>teTeX-texmf のような主たる TeX パッケージ以外のパッケージは、
+	  <varname>PKG_TEXMFPREFIX</varname>
+	  ではなく <varname>PKG_LOCALTEXMFPREFIX</varname>
+	  内にファイルをインストールするようにします。</para></note>
+      
+      <orderedlist>
+	<listitem><para><filename>../../mk/tex.buildlink3.mk</filename>
+            のかわりに <filename>../../print/teTeX/module.mk</filename>
+            をインクルードします。こうすると、インストール時とアンインストール時に
+            <filename>ls-R</filename> を再構築してくれます。</para>
+	</listitem>
+	
+	<listitem><para>パッケージが
+            <varname>PKG_LOCALTEXMFPREFIX</varname> の texmf ツリー以外の
+            texmf ツリーにファイルをインストールする場合は、
+            <varname>TEXMFDIRS</varname> データベースの更新が必要となる
+            texmf ツリーをすべて並べたリストに設定します。</para>
+	</listitem>
+      
+	<listitem><para><filename>PLIST</filename> には
+          <filename>ls-R</filename> データベースは一切含めないようにします。
+          このデータベースは teTeX-bin パッケージによってのみ削除されるものだからです。</para>
+	</listitem>
+      </orderedlist>
     </sect2>
     
   </sect1>
