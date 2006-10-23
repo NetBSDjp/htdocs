@@ -1,4 +1,4 @@
-<!-- $NetBSD: build.xml,v 1.14 2005/11/03 18:15:47 rillig Exp $ -->
+<!-- $NetBSD: build.xml,v 1.16 2005/11/03 19:29:54 rillig Exp $ -->
 
 <chapter id="build">
 <title>The build process</title>
@@ -322,52 +322,72 @@ the package will be built, but not installed.</para>
 <sect1 id="build.configure">
 <title>The <emphasis>configure</emphasis> phase</title>
 
-	  <para>Most pieces of software need information on the header files,
-	    system calls, and library routines which are available in &os;.
-	    This is the process known as configuration, and is usually
-	    automated.  In most cases, a script is supplied with the source,
-	    and its invocation results in generation of header files,
-	    Makefiles, etc.</para>
+<para>Most pieces of software need information on the header files,
+system calls, and library routines which are available on the platform
+they run on. The process of determining this information is known as
+configuration, and is usually automated. In most cases, a script is
+supplied with the distfiles, and its invocation results in generation of
+header files, Makefiles, etc.</para>
 
-	  <para>If the program's distfile contains its own configure
-	    script, this can be invoked by setting
-	    <varname>HAS_CONFIGURE</varname>. If the configure script
-	    is a GNU autoconf script, <varname>GNU_CONFIGURE</varname>
-	    should be specified instead. In either case, any arguments
-	    to the configure script can be specified in the
-	    <varname>CONFIGURE_ARGS</varname> variable, and the
-	    configure script's name can be set in
-	    <varname>CONFIGURE_SCRIPT</varname> if it differs from the
-	    default <quote>configure</quote>. Here's an example from
-	    the <filename role="pkg">sysutils/top</filename> package:</para>
+<para>If the package contains a configure script, this can be invoked by
+setting <varname>HAS_CONFIGURE</varname> to <quote>yes</quote>. If the
+configure script is a GNU autoconf script, you should set
+<varname>GNU_CONFIGURE</varname> to <quote>yes</quote> instead. What
+happens in the <emphasis>configure</emphasis> phase is roughly:</para>
 
 <programlisting>
-    HAS_CONFIGURE=          yes
-    CONFIGURE_SCRIPT=       Configure
-    CONFIGURE_ARGS+=        netbsd13
+    .for d in ${CONFIGURE_DIRS}
+            cd ${WRKSRC} && cd ${d} && env ${CONFIGURE_ENV} \
+                ${CONFIGURE_SCRIPT} ${CONFIGURE_ARGS}
+    .endfor
 </programlisting>
 
-	  <para>If the program uses an Imakefile for configuration, the appropriate
-	    steps can be invoked by setting <varname>USE_IMAKE</varname> to
-	    <quote>YES</quote>. (If you only want the package installed in
-	    <varname>$X11PREFIX</varname> but xmkmf not being run, set
-	    <varname>USE_X11BASE</varname> instead!)</para>
+<para><varname>CONFIGURE_DIRS</varname> (default: <quote>.</quote>) is a
+list of pathnames relative to <varname>WRKSRC</varname>. In each of
+these directories, the configure script is run with the environment
+<varname>CONFIGURE_ENV</varname> and arguments
+<varname>CONFIGURE_ARGS</varname>. The variables
+<varname>CONFIGURE_ENV</varname>, <varname>CONFIGURE_SCRIPT</varname>
+(default: <quote>./configure</quote>) and
+<varname>CONFIGURE_ARGS</varname> may all be changed by the
+package.</para>
+
+<para>If the program uses an <filename>Imakefile</filename> for
+configuration, the appropriate steps can be invoked by setting
+<varname>USE_IMAKE</varname> to <quote>yes</quote>. (If you only want
+the package installed in <varname>${X11PREFIX}</varname> but xmkmf not
+being run, set <varname>USE_X11BASE</varname> instead.)</para>
 
 </sect1>
 
 <sect1 id="build.build">
 <title>The <emphasis>build</emphasis> phase</title>
 
-	  <para>Once configuration has taken place, the software will be built 
-	    by invoking <varname>$MAKE_PROGRAM</varname> on
-	    <varname>$MAKEFILE</varname> with <varname>$BUILD_TARGET</varname> as
-	    the target to build.  The default <varname>MAKE_PROGRAM</varname> is
-	    <quote>gmake</quote> if <varname>USE_TOOLS</varname> contains <quote>gmake</quote>,
-	    <quote>make</quote> otherwise. <varname>MAKEFILE</varname> is set to
-	    <quote>Makefile</quote> by default, and <varname>BUILD_TARGET</varname>
-	    defaults to <quote>all</quote>.  Any of these variables
-	    can be set in the package's Makefile to change the default
-	    build process.</para> 
+<para>For building a package, a rough equivalent of the following code
+is executed.</para>
+
+<programlisting>
+    .for d in ${BUILD_DIRS}
+            cd ${WRKSRC} && cd ${d} && env ${MAKE_ENV} \
+                ${MAKE_PROGRAM} ${BUILD_MAKE_FLAGS} \
+                    -f ${MAKEFILE} ${BUILD_TARGET}
+    .endfor
+</programlisting>
+
+<para><varname>BUILD_DIRS</varname> (default: <quote>.</quote>) is a
+list of pathnames relative to <varname>WRKSRC</varname>. In each of
+these directories, <varname>MAKE_PROGRAM</varname> is run with the
+environment <varname>MAKE_ENV</varname> and arguments
+<varname>BUILD_MAKE_FLAGS</varname>. The variables
+<varname>MAKE_ENV</varname>, <varname>BUILD_MAKE_FLAGS</varname>,
+<varname>MAKEFILE</varname> and <varname>BUILD_TARGET</varname> may all
+be changed by the package.</para>
+
+<para>The default value of <varname>MAKE_PROGRAM</varname> is
+<quote>gmake</quote> if <varname>USE_TOOLS</varname> contains
+<quote>gmake</quote>, <quote>make</quote> otherwise. The default value
+of <varname>MAKEFILE</varname> is <quote>Makefile</quote>, and
+<varname>BUILD_TARGET</varname> defaults to <quote>all</quote>.</para> 
 
 </sect1>
 
