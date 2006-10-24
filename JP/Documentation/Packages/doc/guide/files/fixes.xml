@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.38 2005/11/13 03:27:20 minskim Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.42 2005/11/24 10:53:44 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.38 2005/11/13 03:27:20 minskim Exp   -->
+<!-- NetBSD: fixes.xml,v 1.42 2005/11/24 10:53:44 rillig Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージを動くようにする</title>
@@ -765,18 +765,19 @@
       ターゲットの CPU およびオペレーティングシステムについての情報を持つものです。
       どのようなマクロが定義されているかによって、
       特定のプラットフォームに固有の機能を使ったコードを書くことができます。
-      プラットフォーム間の差異を処理するための最良の方法は、GNU autotools (automake,
+      一般的には、GNU autotools (automake,
       autoconf, etc.) を使って、個別の機能 (ヘッダーファイル、関数やライブラリーの有無)
-      を検査することです。</para>
+      を検査するのがいいのですが、時には、この方法を使うのが不可能だったり、
+      使いたくなかったりすることがあります。</para>
 
-      <para>そうすることができない場合は、
+      <para>そのような場合は、
       実行しているプラットフォーム用のコードを構成するために、
       以下の定義済みマクロを使うことができます。
       ほとんどすべてのオペレーティングシステム、ハードウェアアーキテクチャー、
       およびコンパイラーには、独自のマクロがあります。
       たとえば、<varname>__GNUC__</varname>,
       <varname>__i386__</varname>, <varname>__NetBSD__</varname>
-      の各マクロがすべて定義されている場合は、Intel CPU 上の NetBSD を使っていることと、
+      の各マクロがすべて定義されている場合は、i386 互換 CPU 上の NetBSD を使っていることと、
       コンパイラーが GCC であることがわかります。</para>
 
       <sect3 id="fixes-build-cpp-opsys">
@@ -788,9 +789,9 @@
 <programlisting><![CDATA[
     #include <sys/param.h>
     #if (defined(BSD) && BSD >= 199306)
-      /* your BSD-specific code goes here */
+      /* BSD-specific code goes here */
     #else
-      /* non-BSD-specific code */
+      /* non-BSD-specific code goes here */
     #endif
 ]]></programlisting>
 
@@ -804,7 +805,7 @@
     Linux       linux, __linux, __linux__
     NetBSD      __NetBSD__
     OpenBSD     __OpenBSD__
-    Solaris     sun, __sun (GCC および SunPro), __sun__ (GCC のみ)
+    Solaris     sun, __sun
 </programlisting>
 
       </sect3><sect3 id="fixes-build-cpp-cpu">
@@ -821,23 +822,64 @@
 
 <programlisting>
     GCC         __GNUC__ (メジャーバージョン), __GNUC_MINOR__
+    SunPro	__SUNPRO_C (バージョン 5.7 なら 0x570)
 </programlisting>
 
       </sect3>
     </sect2>
 
+    <sect2 id="cpp-list-examples">
+      <title>いくつかのプラットフォームの CPP 定義の例</title>
+
+      <para>CPP のハードウェアおよびオペレーティングシステムの識別用マクロの一覧は、
+      使っているコンパイラーによって異なることがあります。
+      以下に、正しい組合せを選ぶうえで参考になりそうな例をいくつか示します。
+      たとえば、Solaris 上でコードを条件付きコンパイルしたい場合、
+      <varname>__sun__</varname> は
+      SunPro コンパイラーでは定義されていないので使ってはいけません。
+      かわりに <varname>__sun</varname> を使います。</para>
+
+      <variablelist>
+	<varlistentry><term>GCC 3.3.3 + SuSE Linux 9.1 + i386</term>
+        <listitem><para>__ELF__, __gnu_linux__, __i386, __i386__,
+        __linux, __linux__, __unix, __unix__, i386, linux,
+        unix.</para></listitem></varlistentry>
+
+	<varlistentry><term>GCC 2.95 + NetBSD 1.6.2 + i386</term>
+        <listitem><para>__ELF__, __NetBSD__, __i386, __i386__,
+        i386.</para></listitem></varlistentry>
+
+	<varlistentry><term>GCC 3.3.3 + NetBSD 2.0 + i386</term>
+        <listitem><para>__ELF__, __NetBSD__, __i386, __i386__,
+        i386.</para></listitem></varlistentry>
+
+	<varlistentry><term>GCC 4 + Solaris 8 + SPARC</term>
+        <listitem><para>__ELF__, __sparc, __sparc__, __sun, __sun__,
+        __SVR4, __svr4__, __unix, __unix__, sparc, sun,
+        unix.</para></listitem></varlistentry>
+
+	<varlistentry><term>SunPro 5.7 + Solaris 8 + SPARC</term>
+        <listitem><para>__SVR4, __sparc, __sun, __unix, sparc, sun,
+        unix.</para></listitem></varlistentry>
+
+      </variablelist>
+    </sect2>
+
     <sect2 id="cpp-list">
       <title>CPP 定義の一覧を調べる</title>
 
-      <para>
-	お使いのシステムが GNU C Compiler を使っている場合は、
-	以下のコマンドを使うと、たとえばプラットフォームを特定するために、
-	標準で定義されているシンボルの一覧を表示することができます。
-      </para>
+      <para>お使いのシステムが GNU C Compiler を使っている場合は、
+      以下のコマンドを使うと、たとえばプラットフォームを特定するために、
+      標準で定義されているシンボルの一覧を表示することができます。</para>
 
 <programlisting>
     <![CDATA[gcc -E -dM - < /dev/null ]]>
 </programlisting>
+
+      <para>gcc を使っていないシステムでは、システムコール追跡用ユーティリティー
+      (ktrace, truss, strace) を使って、コンパイラー本体に渡されている引数を調べることで、
+      このような一覧を入手することができます。</para>
+
     </sect2>
   </sect1>
   
