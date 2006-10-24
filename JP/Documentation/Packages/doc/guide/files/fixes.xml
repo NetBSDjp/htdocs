@@ -1,4 +1,4 @@
-<!-- $NetBSD: fixes.xml,v 1.38 2005/11/13 03:27:20 minskim Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.42 2005/11/24 10:53:44 rillig Exp $ -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>Making your package work</title>
@@ -816,18 +816,19 @@
       or <varname>#if defined(FOO)</varname>. Among these macros are
       usually ones that describe the target CPU and operating system.
       Depending of which of the macros are defined, you can write code
-      that uses features unique to a specific platform. The best way to
-      handle these differences is to use the GNU autotools (automake,
-      autoconf, etc.) to check for specific features (like the existence
-      of a header file, a function or a library).</para>
+      that uses features unique to a specific platform. Generally you
+      should rather use the GNU autotools (automake, autoconf, etc.) to
+      check for specific features (like the existence of a header file,
+      a function or a library), but sometimes this is not possible or
+      desired.</para>
 
-      <para>If that is not possible you can use the predefined macros
+      <para>In that case you can use the predefined macros
       below to configure your code to the platform it runs on. Almost
       every operating system, hardware architecture and compiler has its
       own macro. For example, if the macros <varname>__GNUC__</varname>,
       <varname>__i386__</varname> and <varname>__NetBSD__</varname> are
-      all defined, you know that you are using NetBSD on an Intel CPU,
-      and your compiler is GCC.</para>
+      all defined, you know that you are using NetBSD on an i386
+      compatible CPU, and your compiler is GCC.</para>
 
       <sect3 id="fixes-build-cpp-opsys">
         <title>CPP defines for operating systems</title>
@@ -838,9 +839,9 @@
 <programlisting><![CDATA[
     #include <sys/param.h>
     #if (defined(BSD) && BSD >= 199306)
-      /* your BSD-specific code goes here */
+      /* BSD-specific code goes here */
     #else
-      /* non-BSD-specific code */
+      /* non-BSD-specific code goes here */
     #endif
 ]]></programlisting>
 
@@ -854,7 +855,7 @@
     Linux       linux, __linux, __linux__
     NetBSD      __NetBSD__
     OpenBSD     __OpenBSD__
-    Solaris     sun, __sun (GCC and SunPro), __sun__ (only GCC)
+    Solaris     sun, __sun
 </programlisting>
 
       </sect3><sect3 id="fixes-build-cpp-cpu">
@@ -871,23 +872,64 @@
 
 <programlisting>
     GCC         __GNUC__ (major version), __GNUC_MINOR__
+    SunPro	__SUNPRO_C (0x570 for version 5.7)
 </programlisting>
 
       </sect3>
     </sect2>
 
+    <sect2 id="cpp-list-examples">
+      <title>Examples of CPP defines for some platforms</title>
+
+      <para>The list of the CPP identification macros for hardware and
+      operating system may depend on the compiler that is used. The
+      following list contains some examples that may help you to choose
+      the right ones. For example, if you want to conditionally compile
+      code on Solaris, don't use <varname>__sun__</varname>, as the
+      SunPro compiler does not define it. Use <varname>__sun</varname>
+      instead.</para>
+
+      <variablelist>
+	<varlistentry><term>GCC 3.3.3 + SuSE Linux 9.1 + i386</term>
+        <listitem><para>__ELF__, __gnu_linux__, __i386, __i386__,
+        __linux, __linux__, __unix, __unix__, i386, linux,
+        unix.</para></listitem></varlistentry>
+
+	<varlistentry><term>GCC 2.95 + NetBSD 1.6.2 + i386</term>
+        <listitem><para>__ELF__, __NetBSD__, __i386, __i386__,
+        i386.</para></listitem></varlistentry>
+
+	<varlistentry><term>GCC 3.3.3 + NetBSD 2.0 + i386</term>
+        <listitem><para>__ELF__, __NetBSD__, __i386, __i386__,
+        i386.</para></listitem></varlistentry>
+
+	<varlistentry><term>GCC 4 + Solaris 8 + SPARC</term>
+        <listitem><para>__ELF__, __sparc, __sparc__, __sun, __sun__,
+        __SVR4, __svr4__, __unix, __unix__, sparc, sun,
+        unix.</para></listitem></varlistentry>
+
+	<varlistentry><term>SunPro 5.7 + Solaris 8 + SPARC</term>
+        <listitem><para>__SVR4, __sparc, __sun, __unix, sparc, sun,
+        unix.</para></listitem></varlistentry>
+
+      </variablelist>
+    </sect2>
+
     <sect2 id="cpp-list">
       <title>Getting a list of CPP defines</title>
 
-      <para>
-	When your system uses the GNU C Compiler, you can get a list
-	of symbols that are defined by default, e.g. to identify 
-	the platform, with the following command:
-      </para>
+      <para>If your system uses the GNU C Compiler, you can get a list
+      of symbols that are defined by default, e.g. to identify  the
+      platform, with the following command:</para>
 
 <programlisting>
     <![CDATA[gcc -E -dM - < /dev/null ]]>
 </programlisting>
+
+      <para>On other systems you may get the list by using the system's
+      syscall trace utility (ktrace, truss, strace) to have a look which
+      arguments are passed to the actual compiler.</para>
+
     </sect2>
   </sect1>
   
