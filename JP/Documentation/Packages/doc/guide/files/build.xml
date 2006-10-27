@@ -1,6 +1,6 @@
-<!-- $NetBSD: build.xml,v 1.20 2006/01/12 21:46:33 wiz Exp $ -->
+<!-- $NetBSD: build.xml,v 1.22 2006/01/27 04:06:25 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.20 2006/01/12 21:46:33 wiz Exp   -->
+<!-- NetBSD: build.xml,v 1.22 2006/01/27 04:06:25 rillig Exp   -->
 
 <chapter id="build">
 <title>構築の手順</title>
@@ -290,7 +290,9 @@ pkgsrc の各種基盤が使う一時ディレクトリーも含まれます。</para></listitem><
 <sect1 id="build.tools">
 <title><emphasis>tools</emphasis> 相</title>
 
-<para>[TODO]</para>
+<para>この相については
+<xref linkend="tools"/> で説明しています。
+</para>
 
 </sect1>
 
@@ -383,10 +385,28 @@ configure スクリプトが実行されます。
 <title><emphasis>install</emphasis> 相</title>
 
 	<para>構築の段階が完了すると、ユーザーが構築されたプログラムやファイルを使えるようにするため、ソフトウェアをパブリックなディレ
-	クトリーにインストールする必要があります。buildターゲットと同様に、
-	<varname>MAKE_PROGRAM</varname>が<varname>MAKEFILE</varname>中で起動されます。ただし、<varname>INSTALL_TARGET</varname>が指定
-	されます。この変数のデフォルトは<quote>install</quote>です。(もし<varname>USE_IMAKE</varname>が設定さ
-	れていれば、<quote>install.man</quote>も追加されます)。</para>
+	クトリーにインストールする必要があります。</para>
+
+	<para><emphasis>install</emphasis> 相は、大雑把にいえば、
+	以下のコードを実行するのと同じことです。これに加えて、
+	このコードの前後では、整合性の検査やパッケージの登録などをするため、
+	多くの操作がおこなわれます。</para>
+
+<programlisting>
+    .for d in ${INSTALL_DIRS}
+            cd ${WRKSRC} && cd ${d} && env ${MAKE_ENV} \
+                ${MAKE_PROGRAM} ${INSTALL_MAKE_FLAGS} \
+                    -f ${MAKEFILE} ${BUILD_TARGET}
+    .endfor
+</programlisting>
+
+	<para>各変数の意味は、<emphasis>build</emphasis>
+	相のものと同様です。
+	<varname>INSTALL_DIRS</varname> は標準では
+	<varname>BUILD_DIRS</varname> です。<varname>INSTALL_TARGET</varname>
+	は標準では <quote>install</quote> ですが、
+	<varname>USE_IMAKE</varname> が定義されている場合は <quote>install.man</quote>
+	が追加されます。</para>
 
 	<para><emphasis>install</emphasis> 相では、以下の変数が有用です。
 	これらはいずれも &man.install.1; コマンドの変種であり、
@@ -395,10 +415,6 @@ configure スクリプトが実行されます。
 	用途別に特化した変種には、以下のものがあります。</para>
 
 	<variablelist>
-<!-- template:
-	<varlistentry><term><varname></varname></term>
-		<listitem><para></para></listitem></varlistentry>
--->
 	<varlistentry><term><varname>INSTALL_PROGRAM_DIR</varname></term>
 		<listitem><para>バイナリーを含むディレクトリー</para></listitem></varlistentry>
 	<varlistentry><term><varname>INSTALL_SCRIPT_DIR</varname></term>
@@ -424,6 +440,24 @@ configure スクリプトが実行されます。
 	<varlistentry><term><varname>INSTALL_MAN</varname></term>
 		<listitem><para>マニュアルページ</para></listitem></varlistentry>
 	</variablelist>
+
+	<para>これらのほか、以下の変数があります。</para>
+
+	<variablelist>
+	<varlistentry><term><varname>INSTALLATION_DIRS</varname></term>
+		<listitem><para>pkgsrc が <emphasis>install</emphasis>
+		相の最初に作成するディレクトリーを
+		<varname>PREFIX</varname> からの相対位置表記で並べたリストです。
+		この変数が設定されている場合、
+		<varname>NO_MTREE</varname>=<quote>yes</quote>
+		が仮定されます。
+		つまり、そのパッケージは、ファイルをインストールする前に、
+		必要なディレクトリーをすべて自力で作成すると主張していることになります。
+		従って、この変数は、パッケージ作者の制御下にある
+		<filename>Makefile</filename> においてのみ設定するものです。</para></listitem></varlistentry>
+	</variablelist>
+
+
 </sect1>
 
 <sect1 id="build.package">
