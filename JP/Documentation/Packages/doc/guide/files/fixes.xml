@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.44 2005/12/29 14:59:03 jlam Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.45 2006/02/12 14:44:59 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.44 2005/12/29 14:59:03 jlam Exp   -->
+<!-- NetBSD: fixes.xml,v 1.45 2006/02/12 14:44:59 rillig Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージを動くようにする</title>
@@ -10,18 +10,18 @@
 
     <sect2 id="pulling-vars-from-etc-mk.conf">
       <title>/etc/mk.confから変数を捕まえる方法</title>
-    
+
       <para><varname>MAKECONF</varname>や<filename>/etc/mk.conf</filename>
         で上書き可能な、パッケージで定義された変数には問題が
         あります。それは、変数は &man.make.1; がそれを使う時に展開されるが、プリプロセッサー
         風の文(.if、.ifdefそして.ifndef)は読み込み時に評価される事です。したがって、
         .if*文内で変数(<filename>/etc/mk.conf</filename>でセットされる可能性のある)を使う時は、その.if*
         ステートメントの前に<filename>/etc/mk.conf</filename>をインクルードしておかなくていけません。</para>
-    
+
       <para><filename>/etc/mk.conf</filename>や<varname>MAKECONF</varname>が存在したら、それらをインクルードするというad-hocな
         方法をとらずに、すべてのプリプロセッサー風の.if、.ifdef、または.ifndef文の
         前で、<filename>pkgsrc/mk/bsd.prefs.mk</filename>をインクルードしてください。</para>
-    
+
 <programlisting>
     .include "../../mk/bsd.prefs.mk"
 
@@ -29,14 +29,14 @@
     # ...
     .endif
 </programlisting>
-    
+
       <para><filename>/etc/mk.conf</filename> で <varname>CFLAGS</varname> 変数を設定したい場合は、
         以下のような形で使うようにしてください。
-    
+
 <programlisting>
     CFLAGS+=  -your -flags
 </programlisting>
-    
+
         <varname>CFLAGS=</varname> のようにする (つまり、<quote>+</quote>を付けない) と、
         独自のフラグを追加する必要があるパッケージで問題を起こすことがあります。
         また、CPUにあわせた最適化に関心がある場合は、
@@ -55,62 +55,62 @@
 
     <sect2 id="restricted-packages">
       <title>制限つきパッケージ</title>
-    
+
       <para>ライセンスによっては、ソフトウェアの再配布方法に制限があります。このような
         制限を満たすようにするため、パッケージシステムでは以下のような制限を設定で
         きる5個のmake変数を定義しています:</para>
-    
+
       <itemizedlist>
         <listitem>
           <para><varname>RESTRICTED</varname></para>
-          
+
           <para>なにか制限がある場合は常に、(制限の種類にかかわらず)この変数を設定します。
             この変数を、その制限の理由を含む文字列に設定してください。</para>
         </listitem>
-    
-        <listitem> 
+
+        <listitem>
           <para><varname>NO_BIN_ON_CDROM</varname></para>
-          
+
           <para>バイナリーをCD-ROMに収録してはいけません。バイナリーパッケージを
             CD-ROMに含めることができない場合は常に、この変数を<varname>${RESTRICTED}</varname>に設定
             してください。</para>
         </listitem>
-    
+
         <listitem>
           <para><varname>NO_BIN_ON_FTP</varname></para>
-          
+
           <para>バイナリーをFTPサーバーに置いてはいけません。バイナリーパッケージをイ
             ンターネット上で公開することができない場合は常に、この変数を
             <varname>${RESTRICTED}</varname>に設定してください。</para>
         </listitem>
-    
+
         <listitem>
           <para><varname>NO_SRC_ON_CDROM</varname></para>
-          
+
           <para>distfileをCD-ROMに収録してはいけません。ソースコードやその他の
             distfileのCD-ROMによる再配布が許可されていない場合は、この変数を
             <varname>${RESTRICTED}</varname>に設定してください。</para>
         </listitem>
-    
+
         <listitem>
           <para><varname>NO_SRC_ON_FTP</varname></para>
-          
+
           <para>distfileをFTPに置いてはいけません。ソースコードやその他のdistfileのイ
             ンターネット経由での再配布が許可されていない場合は、この変数を
             <varname>${RESTRICTED}</varname>に設定してください。</para>
         </listitem>
       </itemizedlist>
-    
+
       <para><varname>NO_PACKAGE</varname>,
         <varname>IGNORE</varname>, <varname>NO_CDROM</varname> など、制限を意味する上記以外の汎用make変数は使
         わないようにしてください。これらは、ユーザーのバイナリーパッケージ作成を、
         無条件にできないようにするからです。</para>
     </sect2>
 
-    
+
     <sect2 id="dependencies">
       <title>依存性の処理</title>
-    
+
       <para>パッケージは他のパッケージに依存するかもしれません。そして、この依存性を定
         義するためのいろいろな方法があります。pkgsrc は、<filename>buildlink3.mk</filename>を使った依存関
         係 (依存性の処理用としては、こちらが望ましい方法です。
@@ -126,20 +126,20 @@
         一方、<varname>BUILD_DEPENDS</varname>定義ではバイナリーパッケージにそのような記録はされず、
         パッケージの構築に際して依存性があることが示されているだけです。
 </para>
-    
+
       <para>つまり、あるパッケージが必要となるのが構築時だけである場合、そのパッケージ
         は<varname>BUILD_DEPENDS</varname>として書きます。</para>
-    
+
       <para><varname>BUILD_DEPENDS</varname>および
         <varname>DEPENDS</varname>定義の書式は以下の通りです:</para>
-    
+
 <programlisting>
     &lt;pre-req-package-name&gt;:../../&lt;category&gt;/&lt;pre-req-package&gt;
 </programlisting>
-    
+
       <para>なお、この<quote>pre-req-package-name</quote> のバージョン番号には、&man.pkg.info.1; で説明され
         ている各ワイルドカードを含めることができます。</para>
-    
+
       <orderedlist>
         <listitem>
           <para>パッケージを構築または実行するために他のパッケージのバイナリーやライブラリーが必要で、
@@ -150,61 +150,61 @@
     .include "../../graphics/jpeg/buildlink3.mk"
 </programlisting>
         </listitem>
-    
+
         <listitem>
           <para>パッケージを構築するために他のパッケージが必要で、
             そのパッケージに <filename>buildlink3.mk</filename> ファイルがない場合は、
             <varname>BUILD_DEPENDS</varname>定義を使ってください。</para>
-    
+
 <programlisting>
     BUILD_DEPENDS+= autoconf-2.13:../../devel/autoconf
 </programlisting>
         </listitem>
-    
+
         <listitem>
           <para>パッケージがリンクのためのライブラリーを必要とし、
             そのパッケージにやはり <filename>buildlink3.mk</filename> ファイルがない場合は、
             <varname>DEPENDS</varname>定義を使ってください。たとえば、
             <filename role="pkg">print/lyx</filename>パッケージは、作成のためにxpm
 	    ライブラリーのバージョン3.4jを使用します。</para>
-    
+
 <programlisting>
     DEPENDS+=       xpm-3.4j:../../graphics/xpm
 </programlisting>
-    
+
           <para>また、パッケージ依存関係にはワイルドカードを使うことができます。</para>
-    
+
 <programlisting>
     DEPENDS+=       xpm-[0-9]*:../../graphics/xpm
 </programlisting>
-    
+
           <para>ワイルドカード依存関係は、バイナリーパッケージを作る時には保持されること
             に注意してください。依存関係はバイナリーパッケージのインストール時にチェッ
             クされ、パターンにマッチするパッケージが使われます。ワイルドカード依存関係
             は、注意を払って使うよう気を付けてください。</para>
-    
+
           <para><quote>tk-postgresql</quote>が<quote>tk-*</quote>という
             <varname>DEPENDS</varname>にマッチするなどの曖昧なマッチの可能性を排除
             するため、<quote>-*</quote>ではなく
             <quote>-[0-9]*</quote>を使うことをおすすめします。</para>
-    
+
           <para>ワイルドカードは、
             依存パッケージがあるバージョン以上でないと構築できないことを指定するのにも使えます。</para>
-              
+
 <programlisting>
     DEPENDS+=       tiff>=3.5.4:../../graphics/tiff
 </programlisting>
-    
+
           <para>以上のように書いた場合、このパッケージは tiff ライブラリーのバージョン 3.5.4
             以降とともに構築されることを意味します。このような形式の依存関係は、たとえば、
             tiff ライブラリーの API が 3.5.4 で変更されたため、それより前のバージョンの tiff
             ではパッケージがコンパイルできないような場合に、構築できることを保証することができます。</para>
-    
+
           <para>なお、このような形式の依存関係は、新しい依存関係が必要となった場合のみに更新してください。
             セキュリティー上の更新あるいは ABI の変更などであって、構築自体は正常におこなうことができる場合、
             その推奨のために依存関係を更新したりしないでください。
             後者の場合は <varname>RECOMMENDED</varname> を使って推奨を示すことができます。</para>
-    
+
 <programlisting>
     RECOMMENDED+=   tiff>=3.6.1:../../graphics/tiff
 </programlisting>
@@ -225,7 +225,7 @@
             この方法を使う場合は、OS に由来するものも含めて、
             起こりうる ABI の変更に十分注意する必要があります。
 </para>
-	    
+
 	  <para>推奨を無視して構築されたパッケージは、開発者が ftp.NetBSD.org
             へアップロードしてはいけません。また、そのようなパッケージを別のシステムで使うと、
             別バージョンのバイナリーパッケージが複数インストールされる可能性があるので、
@@ -236,43 +236,43 @@
             さらなる情報は、<xref
             linkend="security-handling"/>を参照してください。</para>
 	</listitem>
-    
+
         <listitem>
           <para>パッケージを実行するために、いくつかの実行可能ファイルが必要であり、かつ
             <filename>buildlink3.mk</filename> ファイルが存在しない場合は、
             <varname>DEPENDS</varname>変数を使ってください。<filename role="pkg">print/lyx</filename>パッケージを実行する時には、
 	    teTeXパッケージ由来のlatex のバイナリーが実行可能でなければなりません。これ
 	    は、以下のように指定します。</para>
-    
+
 <programlisting>
     DEPENDS+=        teTeX-[0-9]*:../../print/teTeX
 </programlisting>
-    
+
           <para>上述した、ワイルドカード依存関係に関する注意は、ここにも当てはまります。</para>
         </listitem>
       </orderedlist>
-    
+
       <para>パッケージの構築用に別のパッケージに含まれるファイルが必要な場合は、
         <filename role="pkg">print/ghostscript5</filename>パッケージの<quote>do-configure</quote>ターゲットの最初の部分を
 	ご覧ください(このパッケージは、構築の際にjpegのソースがソースの状態で存在す
 	ることに依存しています)。</para>
-    
+
 <programlisting>
     if [ ! -e ${_PKGSRCDIR}/graphics/jpeg/${WRKDIR:T}/jpeg-6b ]; then    \
         cd ${_PKGSRCDIR}/../../graphics/jpeg &amp;&amp; ${MAKE} extract; \
     fi
 </programlisting>
-    
+
       <para>このように、別のパッケージの構築用にソースを展開する場合は、構築するパッケー
         ジの作業ファイルの削除時に、展開した依存先パッケージの作業ファイルも削除す
         るようにしてください。そうするための一番簡単な方法は、pre-cleanターゲットを
         追加することです。</para>
-    
+
 <programlisting>
     pre-clean:
             cd ${_PKGSRCDIR}/../../graphics/jpeg &amp;&amp; ${MAKE} clean
 </programlisting>
-    
+
       <para>また、便利に使うことができる<varname>BUILD_USES_MSGFMT</varname>および
         <varname>BUILD_USES_GETTEXT_M4</varname>定
         義にも注意してください。前者は、基本システムに &man.msgfmt.1; があるかどうか調べて、
@@ -285,40 +285,40 @@
 
     <sect2 id="conflicts">
       <title>他のパッケージとの衝突の処理</title>
-    
+
       <para>パッケージは、すでにインストール済みの別のパッケージと衝突する可能性があり
         ます。例えば、パッケージが、pkgsrcの中の別のパッケージと同じファイルをイン
         ストールするような場合です。</para>
-    
+
       <para>この場合、衝突するパッケージ(バージョン文字列を含む)のリストをスペースで区
         切って<varname>CONFLICTS</varname>にセットすることができます。</para>
-    
+
       <para>例えば、<filename role="pkg">x11/Xaw3d</filename>
         および<filename role="pkg">x11/Xaw-Xpm</filename>は同じ共有ライブラリーをイ
         ンストールします。したがって、<filename>pkgsrc/x11/Xaw3d/Makefile</filename>に以下のような設定を
         おこなってください。</para>
-    
+
 <programlisting>
     CONFLICTS=      Xaw-Xpm-[0-9]*
 </programlisting>
-    
+
       <para>そして、<filename>pkgsrc/x11/Xaw-Xpm/Makefile</filename>には以下の設定が必要です。
 </para>
-    
+
 <programlisting>
     CONFLICTS=      Xaw3d-[0-9]*
 </programlisting>
-    
+
       <para>パッケージは、名前のプレフィックスが同じで、異なるバージョン文字列をもつ別
         のパッケージと自動的に衝突します。例えば<quote>Xaw3d-1.5</quote>は、古いバージョンの
         <quote>Xaw3d-1.3</quote>と衝突するでしょう。
-</para> 
+</para>
     </sect2>
 
 
     <sect2 id="not-building-packages">
       <title>構築することができない、あるいはすべきでないパッケージ</title>
-    
+
       <para>環境によってはパッケージを構築しないよう指示するような理由がいくつかありま
         す。パッケージが、ほとんどのプラットフォームで構築および実行できる場合は、
         <varname>NOT_FOR_PLATFORM</varname>として例外を記述します。逆に、パッケージが一部のプラットフォー
@@ -332,13 +332,13 @@
         で提供されている場合)は、
         <varname>PKG_SKIP_REASON</varname>にそのことを説明するメッセージを設
         定します。必要な条件が満たされていないせいでパッケージの構築が失敗するであ
-        ろう場合は、<varname>PKG_FAIL_REASON</varname>にそのことを説明するメッセージを設定します。</para> 
+        ろう場合は、<varname>PKG_FAIL_REASON</varname>にそのことを説明するメッセージを設定します。</para>
     </sect2>
-    
-    
+
+
     <sect2 id="undeletable-packages">
       <title>一旦インストールしたら削除すべきでないパッケージ</title>
-    
+
       <para>あるパッケージを、一旦インストールしたら削除できないようにするためには、
         そのパッケージの Makefile で <varname>PKG_PRESERVE</varname>
         定義を設定します。この定義を設定した
@@ -347,11 +347,11 @@
         &man.pkg.delete.1; を使っても、
         <quote>-f</quote> オプションを付けない限りは削除されません。</para>
     </sect2>
-    
-    
+
+
     <sect2 id="security-handling">
       <title>セキュリティー問題を持つパッケージへの対処</title>
-      
+
       <para>脆弱性が発見された場合、そのことを
         <filename>localsrc/security/advisories/pkg-vulnerabilities</filename>に記載してcommitしてくださ
         い。このファイルを commit した後、同じディレクトリーで <command>make upload</command>
@@ -361,7 +361,7 @@
 	<varname>PKGREVISION</varname> を上げます (もちろん、問題の修正を、
 	新しくリリースされたソフトウェアを使っておこなった場合は、
 	これは必要ありません)。さらに、脆弱性の影響を受けるパッケージに
-	<filename>buildlink3.mk</filename> ファイルが存在する場合は、対応する 
+	<filename>buildlink3.mk</filename> ファイルが存在する場合は、対応する
         <varname>BUILDLINK_RECOMMENDED.<replaceable>pkg</replaceable></varname>
 	エントリーを追加または更新してください。</para>
 
@@ -375,49 +375,49 @@
 
     <sect2 id="compiler-bugs">
       <title>コンパイラーのバグへの対処方法</title>
-    
+
       <para>ソースファイルのなかには、コンパイラーのバージョンとアーキテクチャーの組合
         せによって、また、ほとんどの場合は、最適化を有効にしたことも関係して、コン
         パイラーのバグを発現させるものがあります。よくある症状は、gccの内部エラーや、
         ファイルのコンパイルが完了しないというものです。
-</para> 
-    
+</para>
+
       <para>たいていは、回避策として、<varname>MACHINE_ARCH</varname>
         とコンパイラーのバージョンを確認し、
         問題のあるファイル/<varname>MACHINE_ARCH</varname>/コンパイラーの組合せに対して最適化を無効に
         し、そのことを<filename>pkgsrc/doc/HACKS</filename>に文書化しておくことが必要となります。
         このファイルに多くの例が載っているので、参照してください。</para>
     </sect2>
-            
+
 
     <sect2 id="bumping-pkgrevision">
       <title>既存パッケージ修正時に、バージョンを上げるにはどうするか</title>
-    
+
       <para>既存のパッケージに修正を加えたときに、<varname>PKGNAME</varname>のバージョン番号を変えると便利
         な場合があります。元の作者による将来のバージョンと衝突しないようにするため、
         <varname>PKGREVISION=1</varname> (2, ...)を設定して、パッケージのバージョンに
         <quote>nb1</quote>, <quote>nb2</quote>, ...
         という接尾辞をつけることができます。この<quote>nb</quote>は、pkgツール群からは<quote>.</quote>と
         同様の扱いを受けます。たとえば、</para>
-    
+
 <programlisting>
     DISTNAME=       foo-17.42
     PKGREVISION=    9
 </programlisting>
-    
+
       <para>とすると、<varname>PKGNAME</varname>は<quote>foo-17.42nb9</quote>になります。</para>
-    
+
       <para>このパッケージの新しいリリース版が出た際には、
         <varname>PKGREVISION</varname>は消してください。
         たとえば、上で例示したパッケージの新しいマイナーリリースに際しては、以下の
         ようにします。</para>
-    
+
 <programlisting>
     DISTNAME=       foo-17.43
 </programlisting>
     </sect2>
-    
-    
+
+
     <sect2 id="portability-of-packages">
       <title>パッケージの移植性</title>
 
@@ -441,14 +441,14 @@
 
     </sect2>
   </sect1>
-  
-  
+
+
   <sect1 id="downloading-issues">
     <title>ダウンロードで起こりうる問題</title>
 
     <sect2 id="no-plain-download">
       <title>distfileのダウンロードが単純にできないパッケージ</title>
-    
+
       <para>動的なURLからダウンロードする必要がある場合は、
         <varname>DYNAMIC_MASTER_SITES</varname>
         を設定す
@@ -458,7 +458,7 @@
         <filename role="pkg">graphics/ns-cult3d</filename>が、
 	この使い方の例となっています。
 </para>
-    
+
       <para>パスワード用に個人情報の登録が必要だったり、ソースに代金を払う必要があった
         り、その他もろもろの理由により、ダウンロードが自動化できない場合は、
         <varname>_FETCH_MESSAGE</varname>に、説明文を表示するマクロを設定することができます。
@@ -476,11 +476,11 @@
 	<filename role="pkg">www/openacs</filename> です。
         これらと一貫性のある使い方をしてください。</para>
     </sect2>
-    
+
 
     <sect2 id="modified-distfiles-same-name">
       <title>'古い'名前のまま更新されたdistfileの取り扱い</title>
-    
+
       <para>時々、ソフトウェアパッケージの作者がソフトウェアのリリース後に変更を加え、
         変更後のdistfileを、バージョン番号を変えずに公開することがあります。このと
         き、pkgsrcにそのパッケージがすでに入っていると、チェックサムが一致しない
@@ -571,7 +571,7 @@
         すなわち、このライブラリーが実装しているのは、
         `CURRENT - AGE' から `CURRENT' までの番号の範囲にある、
         すべてのインターフェース番号です。
-       
+
     二つのファイブラリーの CURRENT と AGE 番号がいずれも同じ場合、
     ダイナミックリンカーは REVISION 番号が大きいほうのライブラリーを選びます。
 </programlisting>
@@ -646,7 +646,7 @@
       </orderedlist>
     </sect2>
 
-    
+
     <sect2 id="using-libtool">
       <title>すでにlibtoolをサポートしているGNUパッケージでlibtoolを使う</title>
 
@@ -703,7 +703,7 @@
       </itemizedlist>
     </sect2>
 
-    
+
     <sect2 id="autoconf-automake">
       <title>GNU Autoconf/Automake</title>
 
@@ -724,7 +724,7 @@
     ...
 </programlisting>
 
-        <para>また、automakeとautoconfを必要とするパッケージでは以下のようになります:</para> 
+        <para>また、automakeとautoconfを必要とするパッケージでは以下のようになります:</para>
 
 <programlisting>
     AUTOMAKE_REQD=  1.7.1           # if default version is not good enough
@@ -740,7 +740,7 @@
 </programlisting>
 
         <para>GNU Automake を使うパッケージは、ほぼ確実に
-          GNU Make を必要とします。</para> 
+          GNU Make を必要とします。</para>
 
         <para>生成されたファイルに対して、configureプロセスがさらに変更を加える時がありま
           すが、この時には構築プロセスが一連のautomakeの手順を再実行しようとします。
@@ -749,8 +749,8 @@
           <varname>AUTOMAKE_OVERRIDE=NO</varname>を設定することができます。</para>
     </sect2>
   </sect1>
-  
-  
+
+
   <sect1 id="fixes-build">
     <title>パッケージを構築する</title>
 
@@ -882,8 +882,8 @@
 
     </sect2>
   </sect1>
-  
-  
+
+
   <sect1 id="package-specific-actions">
     <title>パッケージ特有の機能</title>
 
@@ -955,7 +955,7 @@
 
       <para>
         パッケージに特殊なライセンスが適用されていることを示すには、
-        そのライセンスを 
+        そのライセンスを
         <filename>pkgsrc/licenses</filename> に置いたうえで、
         <varname>LICENSE</varname> 変数をライセンスを特定する文字列に設定します。
         たとえば、
@@ -968,7 +968,7 @@
       <para>
         構築しようとすると、利用者はそのパッケージに適用されているライセンスに
         同意していないことを知らされます。</para>
-	
+
 <programlisting>
     &cprompt; <userinput>make</userinput>
     ===> xv-3.10anb9 has an unacceptable license: xv-license.
@@ -1006,11 +1006,11 @@
 	  それ以外のパッケージ用のライセンスには同意しない、
 	  といった指定ができなくなるというものもあります。
 	  これは特に、料金を支払っているライセンスへの同意を示したい場合には不適当です。</para>
-    </sect2> 
+    </sect2>
 
     <sect2 id="installing-score-files">
       <title>得点ファイルをインストールする</title>
-    
+
       <para>パッケージによっては (ほとんどは games カテゴリーのもの)、
         システム上の各ユーザーが最高得点を記録できるように、
         得点ファイルをインストールします。これを実現するために、
@@ -1022,21 +1022,21 @@
         <varname>GAMEMODE</varname>, <varname>GAMEOWN</varname>
         の各変数でこの挙動を制御します。詳細は
         <filename>mk/defaults/mk.conf</filename> に書かれています。</para>
-    
+
       <para>なお、games に setgid されたインストールは、標準では有効になっていません。
         <varname>SETGIDGAME=YES</varname> を設定すると、
         これに応じて他の各変数が設定されます。</para>
-    
+
       <para>このため、パッケージではファイルの所有やアクセス許可属性を決してハードコードせずに、
         <varname>INSTALL_GAME</varname> および
         <varname>INSTALL_GAME_DATA</varname>
         の設定に応じて適切に設定されるようにします。</para>
     </sect2>
-    
-    
+
+
     <sect2 id="perl-scripts">
       <title>perlスクリプトを含むパッケージ</title>
-    
+
       <para>
         perlスクリプトがパッケージに含まれる場合は、
         インタープリターのパスが適切に設定されるようにするために、
@@ -1044,18 +1044,18 @@
         <varname>REPLACE_PERL</varname>の設定値は、調整の対象となるスクリプトを<varname>WRKSRC</varname>からの相対位置で列挙したものにし
         ます。</para>
     </sect2>
-    
-    
+
+
     <sect2 id="hardcoded-paths">
       <title>その他のインタープリターへのパスがハードコードされているパッケージ</title>
-    
+
       <para>
         パッケージには perl 以外のインタープリターへのパスがハードコードされていることもあります。
         スクリプトのインタープリターへのフルパスを適切なものにするため、
         当該パッケージの <filename>Makefile</filename> で、
         以下のような定義をする必要があります
         (ここでは例として <command>tclsh</command> を使います)。</para>
-    
+
 <programlisting>
     REPLACE_INTERPRETER+=   tcl
     _REPLACE.tcl.old=       .*/bin/tclsh
@@ -1065,27 +1065,27 @@
 </programlisting>
     </sect2>
 
-    
+
     <sect2 id="perl-modules">
       <title>perl モジュールをインストールするパッケージ</title>
-  
+
       <para>perl5モジュールを提供するパッケージでは、MakefileにMakefileの断片
         <filename>../../lang/perl5/module.mk</filename>をインクルードしてください。このファイルには、perl5モ
         ジュール用の標準的なperlの構成をする<command>do-configure</command>ターゲットのほか、その構成
         を調整するためのさまざまなフックが含まれています。詳細は、このファイル中の
         コメントをご覧ください。</para>
-  
+
       <para>perl5 のモジュールがインストールされる場所は、構築プロセスで使われるperl の
         バージョンに応じて変わります。これを扱うために、pkgsrc は、
         インストールされた<filename>.packlist</filename>ファイル(ほとんどの perl5 モジュールが生成します)
         に列挙された各ファイルに対応する行を、<filename>PLIST</filename> に追加します。これは、packlist
         ファイルへのパスをスペースで区切ったリストを<varname>PERL5_PACKLIST</varname>として定義するこ
         とで行なわれるようになります。たとえば以下のように定義します。</para>
-  
+
 <programlisting>
     PERL5_PACKLIST= ${PERL5_SITEARCH}/auto/Pg/.packlist
 </programlisting>
-  
+
       <para><varname>PERL5_SITELIB</varname>, <varname>PERL5_SITEARCH</varname>,
         <varname>PERL5_ARCHLIB</varname>の各変数は、perl5モジュールがイ
         ンストールされうる三つの場所を表すもので、packlistを持たないperl5パッケージ
@@ -1095,28 +1095,28 @@
 
     <sect2 id="faq.info-files">
       <title>infoファイルをインストールするパッケージ</title>
-    
+
       <para>パッケージによっては、infoファイルをインストールしたり、<quote>makeinfo</quote>または
         <quote>install-info</quote>コマンドを使ったりします。各 info ファイルは、</para>
-    
+
       <itemizedlist>
         <listitem>
           <para><filename>${PREFIX}/${INFO_DIR}</filename>
             ディレクトリーにインストールされるものとして扱われます。</para>
         </listitem>
-        
+
         <listitem>
           <para>Info ディレクトリーファイル
             <filename>${PREFIX}/${INFO_DIR}/dir</filename> に登録されます。</para>
         </listitem>
-        
+
         <listitem>
           <para>パッケージの Makefile で、
             <varname>INFO_FILES</varname> 変数に、
             ファイル名の形で列挙する必要があります。</para>
         </listitem>
       </itemizedlist>
-    
+
       <para><varname>INFO_DIR</varname> のデフォルトは <quote>info</quote> ですが、
         パッケージの Makefile で上書きすることができます。 info ファイルを
         Info ディレクトリーファイルに登録するために、<filename>INSTALL</filename> および
@@ -1124,7 +1124,7 @@
         info ファイルの登録用の <quote>install-info</quote> コマンドは、
         システム附属のものが使われるか、
         または、必要があればそれ用のパッケージが自動的に追加されて使われます。</para>
-    
+
       <para>構築時に <quote>makeinfo</quote> コマンドが必要なパッケージは、
         Makefile で <varname>USE_MAKEINFO</varname> 変数を定義する必要があります。
         あるバージョン以上の<quote>makeinfo</quote>コマンドが必要な場合は、
@@ -1136,17 +1136,17 @@
         <filename role="pkg">devel/gtexinfo</filename>
 	パッケージへの構築時の依存関係が自動的に追加されます。
 </para>
-    
+
       <para>パッケージで提供されるソフトウェアの構築やインストールの過程では、
         <command>install-info</command> コマンドを使ってはいけません。
         info ファイルの登録は <filename>INSTALL</filename> スクリプトの仕事であって、
         適切な <command>makeinfo</command> コマンドを使う必要があるからです。</para>
-    
+
       <para>pkgsrc の基盤は、以上のことを実現するため、
         <varname>PATH</varname> のはじめのほうにあるディレクトリーに、
         <command>install-info</command> や <command>makeinfo</command>
         を上書きするスクリプトを作成します。</para>
-    
+
       <para><command>install-info</command> を上書きするスクリプトは、メッセージを記録すること以外、
         何の効果もありません。<command>makeinfo</command> を上書きするスクリプトは、
         メッセージを記録し、<varname>USE_MAKEINFO</varname> や <varname>TEXINFO_REQD</varname>
@@ -1203,14 +1203,14 @@
 
     <sect2 id="gconf2-data-files">
       <title>GConf2 のデータファイルをインストールするパッケージ</title>
-    
+
       <para>
         パッケージが、 GConf2 が使用する <filename>.schemas</filename> または
         <filename>.entries</filename> ファイルをインストールする場合は、
         これらが確実にデータベースに登録されるようにするために、
         いくつか特別な手順を踏む必要があります。
 </para>
-    
+
       <orderedlist>
       <listitem>
         <para>GConf2 の <filename>buildlink3.mk</filename> ファイルではなく
@@ -1220,7 +1220,7 @@
           標準的な configure 引数を使ってパッケージに伝えてくれます。
           また、パッケージがデータベースに直接アクセスすることが一切できなくなります。</para>
       </listitem>
-      
+
       <listitem>
         <para>パッケージが
           <filename>.schemas</filename> ファイルを必ず
@@ -1228,40 +1228,40 @@
           <filename>${PREFIX}/etc</filename> 以下にインストールするようになっている場合は、
           手作業でパッケージを修正する必要があります。</para>
       </listitem>
-      
+
       <listitem>
         <para>PLIST を確認し、etc/gconf ディレクトリー以下の項目をすべて削除します。
           これらは自動的に処理されるものだからです。詳細は
           <xref linkend="faq.conf"/>を参照してください。</para>
       </listitem>
-      
+
       <listitem>
         <para><filename>Makefile</filename> で、
           <varname>GCONF2_SCHEMAS</varname> 変数を定義します。変数値には
           パッケージがインストールする <filename>.schemas</filename>
           ファイルをすべて列挙します。このファイル名にディレクトリーを含めてはいけません。</para>
       </listitem>
-      
+
       <listitem>
         <para><filename>Makefile</filename> で、
           <varname>GCONF2_ENTRIES</varname> 変数を定義します。変数値には
           パッケージがインストールする <filename>.entries</filename>
           ファイルをすべて列挙します。
-          このファイル名にディレクトリーを含めてはいけません。</para> 
+          このファイル名にディレクトリーを含めてはいけません。</para>
       </listitem>
       </orderedlist>
     </sect2>
-    
-    
+
+
     <sect2 id="scrollkeeper-data-files">
       <title>scrollkeeper のデータファイルをインストールするパッケージ</title>
-    
+
       <para>
         パッケージが、 scrollkeeper が使用する <filename>.omf</filename>
         ファイルをインストールする場合は、これらが確実にデータベースに登録されるようにするために、
         いくつか特別な手順を踏む必要があります。
 </para>
-    
+
       <orderedlist>
         <listitem>
           <para>scrollkeeper の <filename>buildlink3.mk</filename> ファイルではなく
@@ -1271,49 +1271,49 @@
             また、パッケージがデータベースに直接アクセスすることが一切できなくなります。
 </para>
         </listitem>
-        
+
         <listitem>
           <para>PLIST を確認し、<filename>libdata/scrollkeeper</filename>
             ディレクトリー以下の項目をすべて削除します。
             これらは自動的に処理されるものだからです。</para>
         </listitem>
-        
+
         <listitem>
           <para>PLIST から <filename>share/omf</filename> ディレクトリーを削除します。
             これは scrollkeeper が処理します。</para>
-        </listitem>       
+        </listitem>
       </orderedlist>
     </sect2>
-    
-    
+
+
     <sect2 id="x11-fonts">
       <title>X11 のフォントをインストールするパッケージ</title>
-    
+
       <para>パッケージがフォントファイルをインストールする場合は、
         インストール時とアンインストール時に、
         フォントのインストール先ディレクトリーにあるフォントデータベースを再構築する必要があります。
         この処理は pkginstall の枠組を使って自動的におこなうことができます。</para>
-    
+
       <para>フォントのインストール先ディレクトリーを
         <varname>FONTS_DIRS.<replaceable>type</replaceable></varname>
         変数に列挙することができます。変数名中の <replaceable>type</replaceable> は、
         <quote>ttf</quote>, <quote>type1</quote>, <quote>x11</quote> のいずれかです。
         また、データベースファイル <filename>fonts.dir</filename>
         は PLIST に含めてはいけません。</para>
-    
+
       <para>なお、フォント用のディレクトリーを新たに作らないようにしてください。
         X サーバーがフォントを見つけるための設定をユーザーが手動でおこなう必要がないようにするため、
         新しいディレクトリーではなく標準的なディレクトリーを使うようにします。</para>
     </sect2>
-    
-    
+
+
     <sect2 id="gtk2-modules">
       <title>GTK2 のモジュールをインストールするパッケージ</title>
-    
+
       <para>パッケージが GTK2 の IM モジュールやローダーをインストールする場合は、
         これらが確実に GTK2 のデータベースに登録されるようにするために、
         いくつか特別な手順を踏む必要があります。</para>
-    
+
       <orderedlist>
       <listitem> <para>gtk2 の <filename>buildlink3.mk</filename> ファイルではなく
         <filename>../../x11/gtk2/modules.mk</filename> をインクルードします。
@@ -1321,28 +1321,28 @@
             のデータベースを再構築してくれます。
 </para>
       </listitem>
-      
+
       <listitem> <para>
         GTK2 の IM モジュールをインストールするパッケージでは、
             <varname>GTK2_IMMODULES=YES</varname> を設定します。</para>
       </listitem>
-      
+
       <listitem> <para>
         GTK2 のローダーをインストールするパッケージでは、
             <varname>GTK2_LOADERS=YES</varname> を設定します。</para>
       </listitem>
-      
+
       <listitem> <para>
         パッケージが GTK2 のデータベースディレクトリーを直接いじらないよう修正します。
         データベースは以下のとおりです。
-    
+
         <itemizedlist>
           <listitem><para><filename>libdata/gtk-2.0/gdk-pixbuf.loaders</filename></para></listitem>
           <listitem><para><filename>libdata/gtk-2.0/gtk.immodules</filename></para></listitem>
         </itemizedlist>
 </para>
       </listitem>
-      
+
       <listitem> <para>
         PLIST を確認し、<filename>libdata/gtk-2.0</filename>
         ディレクトリー以下の項目をすべて削除します。
@@ -1350,16 +1350,16 @@
       </listitem>
       </orderedlist>
     </sect2>
-    
-    
+
+
     <sect2 id="sgml-xml-data">
       <title>SGML または XML のデータをインストールするパッケージ</title>
-    
+
       <para>パッケージが、システム全体で使われるカタログへ登録する必要のある
         SGML または XML のデータファイル (DTD, sub-catalog など) をインストールする場合は、
         いくつか特別な手順を踏む必要があります。
 </para>
-    
+
       <orderedlist>
         <listitem>
           <para>パッケージの <filename>Makefile</filename> で
@@ -1367,47 +1367,47 @@
             こうすると、インストールおよびアンインストール時に、
             データファイルをシステム全体で使われるカタログに登録してくれます。</para>
         </listitem>
-    
+
         <listitem>
           <para><varname>SGML_CATALOGS</varname> を、このパッケージがインストールする
             SGML カタログをすべてをフルパス表記にしたものに設定します。</para>
         </listitem>
-    
+
         <listitem>
           <para><varname>XML_CATALOGS</varname> を、このパッケージがインストールする
             XML カタログをすべてをフルパス表記にしたものに設定します。</para>
         </listitem>
-    
+
         <listitem>
           <para><varname>SGML_ENTRIES</varname> を、SGML カタログに追加する
             個々のエントリーに設定します。各エントリーは
-            3 個の文字列からなります。書き方の詳細は xmlcatmgr(1) 
+            3 個の文字列からなります。書き方の詳細は xmlcatmgr(1)
             (特に、'add' アクション用の引数) を参照してください。
             なお、通常はこの変数を使うことはありません。</para>
         </listitem>
-    
+
         <listitem>
           <para><varname>XML_ENTRIES</varname> を、XML カタログに追加する
             個々のエントリーに設定します。各エントリーは
-            3 個の文字列からなります。書き方の詳細は xmlcatmgr(1) 
+            3 個の文字列からなります。書き方の詳細は xmlcatmgr(1)
             (特に、'add' アクション用の引数) を参照してください。
             なお、通常はこの変数を使うことはありません。
 </para>
         </listitem>
       </orderedlist>
     </sect2>
-    
-    
+
+
     <sect2 id="mime-database">
       <title>MIME データベースの拡張をインストールするパッケージ</title>
-    
+
       <para>パッケージが、<filename>.xml</filename> ファイルを
         <filename>${PREFIX}/share/mime/packages</filename>
         以下にインストールすることで MIME データベースを拡張する場合は、
         データベースがこの新規ファイルについて確実に整合性を持つようにするために、
         いくつか特別な手順を踏む必要があります。
 </para>
-    
+
       <orderedlist>
         <listitem>
           <para><filename>../../databases/shared-mime-info/mimedb.mk</filename>
@@ -1418,7 +1418,7 @@
             データベースを再構築してくれます。
             また、パッケージがデータベースに直接アクセスすることが一切できなくなります。</para>
         </listitem>
-    
+
         <listitem>
           <para>PLIST を確認し、<filename>share/mime</filename>
             ディレクトリー以下の項目のうち、
@@ -1428,24 +1428,24 @@
             除外したファイルはパッケージ依存のファイルなので、
             ファイルをインストールしたパッケージが自分で削除する必要があります。</para>
         </listitem>
-    
+
         <listitem>
           <para>PLIST から <filename>share/mime/*</filename> ディレクトリーをすべて削除します。
             これらは shared-mime-info プログラムが処理します。</para>
-        </listitem>       
+        </listitem>
       </orderedlist>
     </sect2>
 
-    
+
     <sect2 id="intltool">
       <title>intltool を使うパッケージ</title>
-    
+
       <para>パッケージが構築時に intltool を使う場合は、
         <filename>../../textproc/intltool/buildlink3.mk</filename> ファイルをインクルードします。
         こうすると、パッケージの配布ファイルに附属する intltool ではなく、
         pkgsrc の intltool を強制的に使うようになります。
 </para>
-    
+
       <para>この仕組みは、intltool 構築時の依存関係を追跡して、
         利用可能な最新版を使います。この方法を使うことで、
         リリース後にできたバグ修正も適用することができます。
@@ -1464,10 +1464,10 @@
         また、パッケージのアンインストール時には、
         自動的にスクリプトが削除されます。</para>
     </sect2>
-    
+
     <sect2 id="tex-packages">
       <title>TeX モジュールをインストールするパッケージ</title>
-    
+
       <para>パッケージが、TeX パッケージを texmf ツリーにインストールする場合は、
         texmf ツリーの <filename>ls-R</filename>
         データベースを更新する必要があります。</para>
@@ -1475,14 +1475,14 @@
 	  <varname>PKG_TEXMFPREFIX</varname>
 	  ではなく <varname>PKG_LOCALTEXMFPREFIX</varname>
 	  内にファイルをインストールするようにします。</para></note>
-      
+
       <orderedlist>
 	<listitem><para><filename>../../mk/tex.buildlink3.mk</filename>
             のかわりに <filename>../../print/teTeX/module.mk</filename>
             をインクルードします。こうすると、インストール時とアンインストール時に
             <filename>ls-R</filename> を再構築してくれます。</para>
 	</listitem>
-	
+
 	<listitem><para>パッケージが
             <varname>PKG_LOCALTEXMFPREFIX</varname> の texmf ツリー以外の
             texmf ツリーにファイルをインストールする場合は、
@@ -1496,20 +1496,20 @@
 	    <command>updmap</command> が自動的に実行され、
 	    TeX 出力ドライバー用のフォントマップファイルの有効化や無効化をしてくれます。</para>
 	</listitem>
-      
+
 	<listitem><para><filename>PLIST</filename> には
           <filename>ls-R</filename> データベースは一切含めないようにします。
           このデータベースは teTeX-bin パッケージによってのみ削除されるものだからです。</para>
 	</listitem>
       </orderedlist>
     </sect2>
-    
+
   </sect1>
 
-    
+
   <sect1 id="feedback-to-author">
     <title>作者へのフィードバック</title>
-    
+
     <para>もしパッケージの不具合を発見し動作するように修正した場合、NetBSD上で動作さ
       せるために特別な手順が必要だった場合、あるいはさまざまなソフトウェアの拡張
       をおこなった場合、これらの修正をプログラムのオリジナルの作者へ報告してくだ
