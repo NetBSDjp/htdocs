@@ -1,6 +1,6 @@
-<!-- $NetBSD: build.xml,v 1.23 2006/02/12 14:44:59 rillig Exp $ -->
+<!-- $NetBSD: build.xml,v 1.24 2006/02/17 20:38:17 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.23 2006/02/12 14:44:59 rillig Exp   -->
+<!-- NetBSD: build.xml,v 1.24 2006/02/17 20:38:17 rillig Exp   -->
 
 <chapter id="build">
 <title>構築の手順</title>
@@ -114,9 +114,9 @@
 
 <programlisting>
     EVAL_PREFIX+=           GTKDIR=gtk+
-    CONFIGURE_ARGS+=        --with-guile-prefix=${LOCALBASE}        \
-                            --with-gtk-prefix="${GTKDIR}"           \
-                            --enable-multibyte
+    CONFIGURE_ARGS+=        --with-guile-prefix=${LOCALBASE:Q}
+    CONFIGURE_ARGS+=        --with-gtk-prefix=${GTKDIR:Q}
+    CONFIGURE_ARGS+=        --enable-multibyte
 </programlisting>
 
 	<para><varname>EVAL_PREFIX</varname>を使って評価するパッケージに対して、以下のような定義を使って
@@ -229,43 +229,47 @@ pkgsrc の各種基盤が使う一時ディレクトリーも含まれます。</para></listitem><
 <sect1 id="build.extract">
 <title><emphasis>extract</emphasis> 相</title>
 
-	  <para>distfileがローカルシステム上に存在している場合、
-	    通常、それらは圧縮アーカイブフォーマットで保存されているので、
-	    展開する必要があります。もっとも一般なフォーマットは
-	    <filename>.tar.gz</filename> です。 </para>
+	<para>distfileがローカルシステム上に存在している場合、
+	通常、それらは圧縮アーカイブフォーマットで保存されているので、
+	展開する必要があります。</para>
 
-	  <para> もし、すべてのdistfileを伸張する必要がないのであれば、
-	    伸張するファイルを
-	    <varname>EXTRACT_ONLY</varname> に設定してください。</para>
+	<para>標準では、<varname>DISTFILES</varname> はすべて展開されます。
+	一部だけを展開する必要がある場合は、
+	<varname>EXTRACT_ONLY</varname> 変数を、
+	展開する必要のあるファイルを並べたリストに設定することができます。</para>
 
-	  <para> もし distfile が
-	    <filename>.tar.gz</filename> フォーマットでなければ、
-	    <varname>EXTRACT_SUFX</varname> を設定するか、
-	    <varname>EXTRACT_CMD</varname>,
-	    <varname>EXTRACT_BEFORE_ARGS</varname>,
-	    <varname>EXTRACT_AFTER_ARGS</varname> を設定するかのいずれかにより、
-	    それらを展開することができます。
-	    最初の変数に関して、pkgsrc は多くのサフィックスの展開方法を知っています
-	    (<filename>.tar.gz</filename>, <filename>.tgz</filename>,
-	    <filename>.tar.gz2</filename>, <filename>.tbz</filename>,
-	    <filename>.tar.Z</filename>, <filename>.tar</filename>,
-	    <filename>.shar.gz</filename>,
-	    <filename>.shar.bz2</filename>,
-	    <filename>.shar.Z</filename>, <filename>.shar</filename>,
-	    <filename>.Z</filename>, <filename>.bz2</filename>,
-	    <filename>.gz</filename>; 完全な一覧は、
-	    <filename>bsd.pkg.extract.mk</filename> で定義されている
-	    各種 <varname>DECOMPRESS_CMD</varname> 変数を参照)。
-	    プログラムが圧縮されたシェルアーカイブの形で配布され、
-	    そのファイル名の末尾が <filename>.msg.gz</filename> である場合、
-	    残りの変数の使い方は以下のようになります。</para>
+	<para>通常、ファイルの展開は <filename>mk/scripts/extract</filename>
+	という小さなプログラムを使っておこなわれます。このプログラムは、
+	各種アーカイブ形式の展開方法を知っているので、
+	何も変更する必要はないでしょう。それでも変更が必要な場合は、
+	以下の変数を使うとよいでしょう。</para>
 
-<programlisting>
-    EXTRACT_SUFX=           .msg.gz
-    EXTRACT_CMD=            zcat
-    EXTRACT_BEFORE_ARGS=
-    EXTRACT_AFTER_ARGS=     |sh
-</programlisting>
+	<variablelist>
+
+	<varlistentry><term><varname>EXTRACT_OPTS_{BIN,LHA,PAX,RAR,TAR,ZIP,ZOO}</varname></term>
+	<listitem><para>この各変数を使って、展開用のコマンドのオプションを、
+	標準のもの (<filename>mk/scripts/extract</filename>
+	で定義されています) から上書きします。</para></listitem></varlistentry>
+
+	<varlistentry><term><varname>EXTRACT_USING</varname></term>
+	<listitem><para>この変数は、tar アーカイブ展開用のコマンドを設定するもので、
+	<literal>pax</literal>, <literal>tar</literal> または、
+	コマンドの絶対パス名に設定することができます。</para></listitem></varlistentry>
+
+	</variablelist>
+
+	<para>必要なことが <filename>extract</filename>
+	プログラムではできない場合は、ファイル展開用のコマンドを保持する
+	<varname>EXTRACT_CMD</varname> 変数を上書きすることもできます。
+	この変数で指定された展開用コマンドは、
+	<filename>${WRKSRC}</filename> ディレクトリー内で実行されます。
+	このコマンドの実行中は、シェル変数 <varname>extract_file</varname>
+	に、展開中のアーカイブファイルの絶対パス名が保持されます。</para>
+
+	<para>これでもなお不十分な場合は、パッケージの Makefile で、
+	<varname>do-extract</varname>
+	ターゲットを上書きすることができます。</para>
+
 
 </sect1>
 
