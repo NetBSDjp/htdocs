@@ -1,6 +1,6 @@
-<!-- $NetBSD: platforms.xml,v 1.27 2006/02/14 17:10:15 rillig Exp $ -->
+<!-- $NetBSD: platforms.xml,v 1.28 2006/02/18 19:59:12 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: platforms.xml,v 1.27 2006/02/14 17:10:15 rillig Exp   -->
+<!-- NetBSD: platforms.xml,v 1.28 2006/02/18 19:59:12 rillig Exp   -->
 
 <chapter id="platforms">
   <title>&os; 以外のシステムで pkgsrc を使う</title>
@@ -560,6 +560,11 @@
       <para>なお、 Solaris 上では GNU binutils
 	はサポートされて<emphasis>いません</emphasis>。</para>
 
+	<para>どのコンパイラーを使うにせよ、コンパイラーツールと
+	  $prefix を、必ず <varname>PATH</varname> に含めてください。
+	  これは、<filename>/usr/ccs/{bin,lib}</filename>
+	  や、たとえば <filename>/usr/pkg/{bin,sbin}</filename> などです。</para>
+
       <sect3 id="solaris-gcc-note">
 	<title>gcc を使う場合</title>
 
@@ -602,16 +607,69 @@
     CPP=    /usr/ccs/lib/cpp
 </programlisting>
 
-	<para>64 ビットバイナリーを構築したい場合は、以下のようにします。</para>
+</sect3>
+<sect3 id="solaris-sunpro-64">
+<title>SunPro を使って 64 ビットバイナリーを構築する</title>
+
+	<para>64 ビットバイナリーの構築は、少し巧妙なやり方になります。
+	最初に、pkgsrc のブートストラップを 64 ビットモードでおこなう必要があります。
+	ここでの問題は、ブートストラップキットに含まれているプログラムのひとつ
+	(<filename>bmake</filename>) の構築中に、<varname>CFLAGS</varname>
+	変数が、たとえ環境変数に設定しても、無視されることです。
+	このバグを回避するには、以下のような簡単なシェルスクリプトを、
+	<filename>cc64</filename> という名前で <varname>PATH</varname>
+	中のどこかに置きます。</para>
 
 <programlisting>
-    CFLAGS= -xtarget=ultra -xarch=v9
+    #! /bin/sh
+    exec /opt/SUNWspro/bin/cc -xtarget=ultra -xarch=v9 ${1+"$@"}
 </programlisting>
 
-	<para>どのコンパイラーを使うにせよ、コンパイラーのツールと
-	  $prefix が <varname>PATH</varname> にあることを確認してください。
-	  これは <filename>/usr/ccs/{bin,lib}</filename> と、
-	  たとえば <filename>/usr/pkg/{bin,sbin}</filename> などです。</para>
+	<para>次に、<varname>CC</varname> の定義を
+	<command>bootstrap</command> コマンドの環境変数に渡します。</para>
+
+<programlisting>
+    &uprompt; <userinput>cd bootstrap</userinput>
+    &uprompt; <userinput>CC=cc64 ./bootstrap</userinput>
+</programlisting>
+
+	<para>ブートストラップをした後は、パッケージのバグを見つけたいのか、
+	システムを手っ取り早く使えるようにしたいだけなのかによって、
+	二通りの選択肢があります。システムを使えるようにしたいだけの場合は、
+	以下の各行を <filename>mk.conf</filename>
+	ファイルに付け足します。</para>
+
+<programlisting>
+    CC=                     cc64
+    CXX=                    CC64
+    PKGSRC_COMPILER=        sunpro
+</programlisting>
+
+	<para>この方法を使うと、あらゆるコンパイラーの呼び出しが、
+	上で定義されたラッパーを介しておこなわれるようになり、
+	必要な ABI オプションが自動的に追加されます。(シェルスクリプト
+	<filename>CC64</filename> も忘れずに作っておいてください。)</para>
+
+	<para>ユーザーが指定した
+	<varname>CFLAGS</varname> や <varname>CXXFLAGS</varname>
+	を無視するパッケージを見つけるには、以下の各行を <filename>mk.conf</filename>
+	ファイルに付け足します。</para>
+
+<programlisting>
+    CC=                     cc
+    CXX=                    CC
+    PKGSRC_COMPILER=        sunpro
+    CFLAGS=                 -xtarget=ultra -xarch=v9
+    CXXFLAGS=               -xtarget=ultra -xarch=v9
+    LDFLAGS=                -xtarget=ultra -xarch=v9
+</programlisting>
+
+	<para>設定ファイルで指定されたフラグを使わないパッケージは、
+	32 ビットバイナリーを構築しようとして、リンクに失敗します。
+	このようなものを見つけることは、
+	エラーが表に出ずに黙って先に進むような他のプラットフォームでのバグを予防するために、
+	有用です。</para>
+
       </sect3>
 
       <sect3 id="plat.sunos.problems"><title>ありがちな問題</title>
