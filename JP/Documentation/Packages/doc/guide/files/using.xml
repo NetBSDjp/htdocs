@@ -1,40 +1,86 @@
-<!-- $NetBSD: using.xml,v 1.16 2006/02/12 14:44:59 rillig Exp $ -->
+<!-- $NetBSD: using.xml,v 1.18 2006/03/01 17:16:21 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: using.xml,v 1.16 2006/02/12 14:44:59 rillig Exp   -->
+<!-- NetBSD: using.xml,v 1.18 2006/03/01 17:16:21 rillig Exp   -->
 
 <chapter id="using"> <?dbhtml filename="using.html"?>
-  <title>pkgsrc を使う</title>
+<title>pkgsrc を使う</title>
 
-  <sect1 id="getting-started">
-    <title>バイナリーパッケージを使って作業する</title>
+	<para>基本的に、pkgsrc には二通りの使い方があります。
+	一つ目の使い方は、パッケージ用のツールだけをインストールして、
+	他の人が用意したバイナリーパッケージを使うものです。
+	これは、pkgsrc のうち <quote>pkg</quote> に相当します。
+	二つ目の使い方は、pkgsrc の <quote>src</quote> もインストールするものです。
+	こうすると、自分でパッケージを構築することができますし、
+	他の人が用意したバイナリーパッケージを使うこともできます。</para>
 
-    <para> このセクションは、あなたの機種用にすでに準備されたコンパイル済みのバイナリー
-      パッケージを見つけ、取得してインストールする方法について説明します。 </para>
+<sect1 id="using-pkg">
+<title>バイナリーパッケージを使う</title>
 
-    <sect2 id="where-to-get-binary-packages">
-      <title>バイナリーパッケージの配布場所</title>
+	<para>バイナリーパッケージを使うためには、管理用のツールがいくつか必要になります。
+	NetBSD では、管理用のツールはあらかじめインストールされています。
+	NetBSD 以外の各オペレーティングシステムでは、
+	まず、管理用のツールをインストールする必要があります。
+	以下のプラットフォーム用には、
+	パッケージ用のツールをあらかじめ構築したものが用意されており、ダウンロードして
+	<filename>/</filename> ディレクトリーに展開するだけで使うことができます。</para>
 
-      <para> コンパイル済みのパッケージは、ftp.NetBSD.orgおよびそのミラー上の、匿名FTPア
-        クセスのためのディレクトリー
-        <filename>/pub/NetBSD/packages/&lt;OSVERSION&gt;/&lt;ARCH&gt;/</filename>
-	に置かれています。<varname>OSVERSION</varname> は &os;
-	のバージョン (<command>uname -r</command>)、 <varname>ARCH</varname>
-	はアーキテクチャー (<command>uname -p</command>) です。
-	このディレクト
-        リーの中には、カテゴリー毎のサブディレクトリーと、<filename>All</filename>サブディレクトリー
-        が存在しています。<filename>All</filename>サブディレクトリーの中には、
-        <filename>.tgz</filename>ファイル形式で実際
-        のバイナリーがあります。カテゴリー毎のサブディレクトリーは、これらのファイ
-        ルへのシンボリックリンクを使用しています (<filename>/usr/pkgsrc/packages</filename>と同じディレ
-        クトリー配置です)。 </para>
+	<informaltable id="binary-bootstrap-kits">
+	<tgroup cols="2">
+	<thead><row><entry>プラットフォーム</entry><entry>URL</entry></row></thead>
+	<tbody>
+	<row><entry>Solaris 5.10</entry><entry><filename>http://public.enst.fr/pkgsrc/packages/bootstrap-pkgsrc/</filename></entry></row>
+	</tbody>
+	</tgroup>
+	</informaltable>
 
-      <para> CD-ROMディストリビューションでも、このディレクトリー配置は同じで、単
-        にディレクトリーのルートが異なるだけです。たぶん<filename>/cdrom</filename>かどこかの下でしょう。
-        正確なディレクトリーは、CD-ROMのドキュメンテーションを参照してください。 </para>
-    </sect2>
+	<para>この構築済みパッケージ用ツールは、基点ディレクトリーとして
+	<filename>/usr/pkg</filename> を使い、
+	インストールされているパッケージのデータベースとして
+	<filename>/var/db/pkg</filename> を使います。
+	何らかの理由 (root 権限がないなど) でこの各ディレクトリーが使えない場合は、
+	パッケージ用ツールを自分で構築する必要があります。これについては<xref
+	linkend="bootstrapping-pkgsrc" />に説明があります。</para>
 
-    <sect2 id="how-to-use-binary-packages">
-      <title>バイナリーパッケージの使い方</title>
+<sect2 id="finding-binary-packages">
+<title>バイナリーパッケージの配布場所</title>
+
+	<para>バイナリーパッケージをインストールするためには、
+	まず、バイナリーパッケージがどこで入手できるか知っている必要があります。
+	バイナリーパッケージは CD-ROM, DVD や、FTP 
+	または HTTP 経由で入手することができます。</para>
+
+	<para>NetBSD 用のバイナリーパッケージは、
+	<filename>ftp.NetBSD.org</filename> およびミラーサイトの、
+	<filename>/pub/NetBSD/packages/<replaceable>OSVERSION</replaceable>/<replaceable>ARCH</replaceable>/</filename> ディレクトリーにあります。
+	<replaceable>OSVERSION</replaceable> には
+	<command>uname -r</command> の出力を、
+	<replaceable>ARCH</replaceable> には <command>uname
+	-p</command> の出力を当てはめます。</para>
+
+	<para>NetBSD 以外の一部のプラットフォーム用のバイナリーパッケージは、
+	以下の場所にあります。</para>
+
+	<informaltable id="binary-packages">
+	<tgroup cols="2">
+	<thead><row><entry>プラットフォーム</entry><entry>URL</entry></row></thead>
+	<tbody>
+	<row><entry>Solaris 5.10</entry><entry><filename>http://public.enst.fr/pkgsrc/packages/</filename></entry></row>
+	</tbody>
+	</tgroup>
+	</informaltable>
+
+	<para>この各ディレクトリーには、サブディレクトリー
+	<filename>All</filename> があり、すべてのバイナリーパッケージを含んでいます。
+	さらに、カテゴリー別のサブディレクトリーがあり、
+	<filename>../All</filename>
+	にあるバイナリーパッケージの実体へのシンボリックリンクを含んでいます。
+	このディレクトリー配置は、アクセス方法が HTTP, FTP, NFS, CD-ROM
+	あるいはローカルファイルシステムのいずれであるかにかかわらず、
+	すべてのパッケージの置場に共通のものです。</para>
+
+</sect2>
+<sect2 id="installing-binary-packages">
+<title>バイナリーパッケージをインストールする</title>
 
       <para> もし、コンパイル済みのパッケージのファイルがCD-ROM上にある、あるいはハードディ
         スク上にダウンロードされているのであれば、以下のコマンドでインストールする
