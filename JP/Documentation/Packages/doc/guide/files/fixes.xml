@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.47 2006/03/12 11:34:09 rillig Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.48 2006/03/20 01:48:57 jlam Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.47 2006/03/12 11:34:09 rillig Exp   -->
+<!-- NetBSD: fixes.xml,v 1.48 2006/03/20 01:48:57 jlam Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージを動くようにする</title>
@@ -1083,36 +1083,44 @@
       <title>infoファイルをインストールするパッケージ</title>
 
       <para>パッケージによっては、infoファイルをインストールしたり、<quote>makeinfo</quote>または
-        <quote>install-info</quote>コマンドを使ったりします。各 info ファイルは、</para>
-
-      <itemizedlist>
-        <listitem>
-          <para><filename>${PREFIX}/${INFO_DIR}</filename>
-            ディレクトリーにインストールされるものとして扱われます。</para>
-        </listitem>
-
-        <listitem>
-          <para>Info ディレクトリーファイル
-            <filename>${PREFIX}/${INFO_DIR}/dir</filename> に登録されます。</para>
-        </listitem>
-
-        <listitem>
-          <para>パッケージの Makefile で、
-            <varname>INFO_FILES</varname> 変数に、
-            ファイル名の形で列挙する必要があります。</para>
-        </listitem>
-      </itemizedlist>
-
-      <para><varname>INFO_DIR</varname> のデフォルトは <quote>info</quote> ですが、
-        パッケージの Makefile で上書きすることができます。 info ファイルを
+        <quote>install-info</quote>コマンドを使ったりします。
+	このようなパッケージでは、パッケージの Makefile で
+	<varname>INFO_FILES</varname> を定義するようにします。
+        これを定義しておくと、info ファイルを
         Info ディレクトリーファイルに登録するために、<filename>INSTALL</filename> および
-        <filename>DEINSTALL</filename> スクリプトが作られます。
+        <filename>DEINSTALL</filename> スクリプトが作られるようになります。
         info ファイルの登録用の <quote>install-info</quote> コマンドは、
         システム附属のものが使われるか、
         または、必要があればそれ用のパッケージが自動的に追加されて使われます。</para>
 
+      <para><varname>PKGINFODIR</varname> は
+	<filename>${PREFIX}</filename> 以下のディレクトリーで、
+	info ファイルが置かれる主な場所です。
+	<varname>PKGINFODIR</varname> は標準では
+	<quote>info</quote> となっており、利用者が上書きすることができます。
+
+      <para>There are two mutually exclusive ways to specify the info
+	files for the package:</para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>list each of info files in the package
+	    <filename>PLIST</filename>; however any split info files
+	    need not be listed, or</para>
+	</listitem>
+
+	<listitem>
+	  <para>list the filename of each info file in the
+	    <varname>INFO_FILES</varname> variable; however any split
+	    info file filenames need not be listed. In this case
+	    each of the info files should be installed into the
+	    directory <filename>${PREFIX}/${PKGINFODIR}</filename>.
+	</listitem>
+	
+      </itemizedlist>
+
       <para>構築時に <quote>makeinfo</quote> コマンドが必要なパッケージは、
-        Makefile で <varname>USE_MAKEINFO</varname> 変数を定義する必要があります。
+        Makefile で <varname>USE_TOOLS</varname> 変数に <quote>makeinfo</quote> を追加する必要があります。
         あるバージョン以上の<quote>makeinfo</quote>コマンドが必要な場合は、
         パッケージの <filename>Makefile</filename> で
         <varname>TEXINFO_REQD</varname> 変数を必要な最低バージョンに設定します。
@@ -1120,8 +1128,7 @@
         <command>makeinfo</command> コマンドがシステムにないか、
         最低限必要なバージョンを満たさない場合は、
         <filename role="pkg">devel/gtexinfo</filename>
-	パッケージへの構築時の依存関係が自動的に追加されます。
-</para>
+	パッケージへの構築時の依存関係が自動的に追加されます。</para>
 
       <para>パッケージで提供されるソフトウェアの構築やインストールの過程では、
         <command>install-info</command> コマンドを使ってはいけません。
@@ -1135,9 +1142,9 @@
 
       <para><command>install-info</command> を上書きするスクリプトは、メッセージを記録すること以外、
         何の効果もありません。<command>makeinfo</command> を上書きするスクリプトは、
-        メッセージを記録し、<varname>USE_MAKEINFO</varname> や <varname>TEXINFO_REQD</varname>
+        メッセージを記録し、<varname>TEXINFO_REQD</varname>
         の値に従って、適切な <command>makeinfo</command> コマンドを実行するか、
-        または異常終了します。</para>
+	または異常終了します。</para>
     </sect2>
 
     <sect2 id="manpages">
