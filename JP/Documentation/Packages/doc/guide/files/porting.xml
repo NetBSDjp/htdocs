@@ -1,79 +1,81 @@
 <!-- $NetBSD: porting.xml,v 1.2 2006/05/10 20:56:00 rillig Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: porting.xml,v 1.2 2006/05/10 20:56:00 rillig Exp   -->
 
 <chapter id="porting"> <?dbhtml filename="porting.html"?>
-<title>Porting pkgsrc</title>
+<title>pkgsrc を移植する</title>
 
-	<para>The pkgsrc system has already been ported to many
-	operating systems, hardware architectures and compilers. This
-	chapter explains the necessary steps to make pkgsrc even more
-	portable.</para>
+	<para>pkgsrc システムはすでに、多くのオペレーティングシステム、
+	ハードウェアアーキテクチャー、およびコンパイラーに移植されています。
+	本章では、pkgsrc
+	の移植性をさらに高めるために必要な手順を説明します。</para>
 
 <sect1 id="porting.opsys">
-<title>Porting pkgsrc to a new operating system</title>
+<title>pkgsrc を未対応のオペレーティングシステムに新たに移植する</title>
 
-	<para>To port pkgsrc to a new operating system (called
-	<literal>MyOS</literal> in this example), you need to touch the
-	following files:</para>
+	<para>pkgsrc を未対応のオペレーティングシステム (以下、
+	<literal>MyOS</literal> とします) に移植するには、
+	以下のファイルを作成あるいは修正する必要があります。</para>
 
 	<variablelist>
 
 	<varlistentry><term><filename>bootstrap/mods/mk/<replaceable>MyOS</replaceable>.sys.mk</filename></term>
-	<listitem><para>This file contains some basic definitions, for
-	example the name of the C
-	compiler.</para></listitem></varlistentry>
+	<listitem><para>このファイルには、いくつかの基本的な定義、
+	たとえば C
+	コンパイラーの名前が含まれています。</para></listitem></varlistentry>
 
 	<varlistentry><term><filename>mk/bsd.prefs.mk</filename></term>
-	<listitem><para>Insert code that defines the variables
-	<varname>OPSYS</varname>, <varname>OS_VERSION</varname>,
+	<listitem><para><varname>OPSYS</varname>, <varname>OS_VERSION</varname>,
 	<varname>LOWER_OS_VERSION</varname>,
 	<varname>LOWER_VENDOR</varname>,
 	<varname>MACHINE_ARCH</varname>, <varname>OBJECT_FMT</varname>,
-	<varname>APPEND_ELF</varname>, and the other variables that
-	appear in this file.</para></listitem></varlistentry>
+	<varname>APPEND_ELF</varname> の各変数、
+	その他このファイルに書かれている各変数を定義するコードを追加します。</para></listitem></varlistentry>
 
 	<varlistentry><term><filename>mk/platform/MyOS.mk</filename></term>
-	<listitem><para>This file contains the platform-specific
-	definitions that are used by pkgsrc. Start by copying one of the
-	other files and edit it to your
-	needs.</para></listitem></varlistentry>
+	<listitem><para>このファイルには、
+	pkgsrc が使用するプラットフォーム固有の定義が含まれています。
+	まず他のプラットフォーム用のファイルのいずれかをコピーしてから、
+	必要に応じて編集します。</para></listitem></varlistentry>
 
 	<varlistentry><term><filename>mk/platform/MyOS.pkg.dist</filename></term>
-	<listitem><para>This file contains a list of directories,
-	together with their permission bits and ownership. These
-	directories will be created automatically with every package
-	that does not explicitly set <varname>NO_MTREE</varname>. There
-	have been some discussions about whether this file is needed at
-	all, but with no result.</para></listitem></varlistentry>
+	<listitem><para>このファイルには、ディレクトリーを並べたリストが、
+	パーミッションビットと所有権とともに含まれています。
+	ここに含まれるディレクトリーは、明示的に <varname>NO_MTREE</varname>
+	を設定していない各パッケージのインストールに際して、
+	自動的に作成されます。このファイルの必要性については何度か議論されていますが、
+	結論は出ていません。</para></listitem></varlistentry>
 
 	<varlistentry><term><filename>mk/platform/MyOS.x11.dist</filename></term>
-	<listitem><para>Just copy one of the pre-existing x11.dist files
-	to your
-	<filename><replaceable>MyOS</replaceable>.x11.dist</filename>.</para></listitem></varlistentry>
+	<listitem><para>既存の x11.dist ファイルのいずれかを、
+	<filename><replaceable>MyOS</replaceable>.x11.dist</filename>
+	にコピーするだけです。</para></listitem></varlistentry>
 
 	<varlistentry><term><filename>mk/tools/bootstrap.mk</filename></term>
-	<listitem><para>On some operating systems, the tools that are
-	provided with the base system are not good enough for pkgsrc.
-	For example, there are many versions of &man.sed.1; that have a
-	narrow limit on the line length they can process. Therefore
-	pkgsrc brings its own tools, which can be enabled
-	here.</para></listitem></varlistentry>
+	<listitem><para>プラットフォームによっては、ベースシステム附属のツールが
+	pkgsrc で使うには不十分なことがあります。
+	たとえば &man.sed.1; には、
+	処理可能な行長が短く制限されているバージョンがたくさんあります。
+	したがって、pkgsrc では別途ツールを用意しており、
+	このファイルで有効化することができます。</para></listitem></varlistentry>
 
 	<varlistentry><term><filename>mk/tools/<replaceable>MyOS</replaceable>.mk</filename></term>
-	<listitem><para>This file defines the paths to all the tools
-	that are needed by one or the other package in pkgsrc, as well
-	as by pkgsrc itself. Find out where these tools are on your
-	platform and add them.</para></listitem></varlistentry>
+	<listitem><para>このファイルでは、
+	pkgsrc 自身が必要とするツールおよび、別のツールや
+	pkgsrc のパッケージが必要とするツールすべてのパスを定義しています。
+	これらのツールが移植対象のプラットフォームではどこにあるかを調べて、
+	書き足します。</para></listitem></varlistentry>
 
 	</variablelist>
 
-	<para>Now, you should be able to build some basic packages, like
-	<filename role="pkg">lang/perl5</filename>, <filename
-	role="pkg">shells/bash</filename>.</para>
+	<para>これで、<filename role="pkg">lang/perl5</filename> や <filename
+	role="pkg">shells/bash</filename> のような、
+	いくつかの基本的なパッケージが構築できるようになったはずです。</para>
 
 </sect1>
 
 <sect1 id="porting.compiler">
-<title>Adding support for a new compiler</title>
+<title>未対応のコンパイラーに新たに対応させる</title>
 
 	<para>TODO</para>
 
