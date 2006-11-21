@@ -1,80 +1,166 @@
-<!-- $NetBSD: getting.xml,v 1.9 2006/02/12 14:44:59 rillig Exp $ -->
+<!-- $NetBSD: getting.xml,v 1.11 2006/05/31 11:44:07 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: getting.xml,v 1.9 2006/02/12 14:44:59 rillig Exp   -->
+<!-- NetBSD: getting.xml,v 1.11 2006/05/31 11:44:07 rillig Exp   -->
 
 <chapter id="getting">
-  <title>どこからpkgsrcを得て、どうやって最新に保つか</title>
+<title>どこからpkgsrcを得て、どうやって最新に保つか</title>
 
-  <para>pkgsrcには三つの入手方法があります。tarファイル、SUP経由、そしてCVS経由です。
-    ここではこの三つとも説明します。</para>
+	<para>もっとも一般的な pkgsrc のインストール場所は、
+	<quote>パッケージのソース</quote> は <filename>/usr/pkgsrc</filename>
+	であり、バイナリーパッケージのインストール先は
+	<filename>/usr/pkg</filename> です。ソースおよびバイナリーパッケージは、
+	ファイルシステム中のどこでも好きな場所にインストールしてかまいませんが、
+	シェルその他のプログラムにとって特別な意味を持つスペースなどの文字は、
+	パスに含めてはいけません。パス名には、
+	アルファベット、数字、下線とダッシュだけを使うのが安全な方法です。</para>
 
-  <sect1 id="as-tar-file">
-    <title>tar ファイル</title>
+<sect1 id="getting-first">
+<title>pkgsrc を初めて入手する</title>
 
-    <para>pkgsrc を入手するためには、pkgsrc.tar.gzファイルを
-      <ulink
-      url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/pkgsrc.tar.gz">ftp.NetBSD.org</ulink>
-      から取得し、<filename>/usr/pkgsrc</filename>に展開する必要があります。</para>
+	<para>pkgsrc のファイルをダウンロードする前に、
+	<emphasis>current</emphasis> 枝と <emphasis>stable</emphasis>
+	(安定版) 枝のどちらを使うのかを決めます。
+	後者は、current 枝から四半期ごとに分岐するもので、
+	セキュリティー上の更新に限って修正されます。
+	stable 枝の名前は、年と四半期を組み合わせたもので、たとえば
+	<literal>2006Q1</literal> となります。</para>
 
-  </sect1>
+	<para>次に、pkgsrc を<emphasis>どの方法で</emphasis>
+	ダウンロードするかを決めます。方法としては、tarファイル、SUP経由、
+	CVS経由があります。ここではこの三つとも説明します。</para>
 
-  <sect1 id="via-sup">
-    <title>SUP 経由</title>
+<sect2 id="getting-via-tar">
+<title>tar ファイル</title>
 
-    <para>tar ファイルのかわりに、ソフトウェア更新プロトコル(Software Update Protocol) SUPを使い
-      pkgsrcを入手することもできます。まず、supfileの中に</para>
+	<para>pkgsrc のあらゆるファイルの一次配布元は
+	<ulink url="ftp://ftp.NetBSD.org/pub/pkgsrc/"/> です。
+	目的別に多数のサブディレクトリーがありますが、
+	それについては <xref linkend="ftp-layout"/> で詳しく説明しています。</para>
+
+	<para>current 枝の tar ファイルは、
+	<filename>current</filename> ディレクトリー内にあり、ファイル名は <ulink
+	url="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc.tar.gz"><filename>pkgsrc.tar.gz</filename></ulink> です。
+	このファイルは、毎日、自動生成されます。</para>
+
+	<para>安定版の 2006Q1 枝の tar ファイルは、
+	<filename>2006Q1</filename> ディレクトリー内にあり、ファイル名は同じく <ulink
+	url="ftp://ftp.NetBSD.org/pub/pkgsrc/2006Q1/pkgsrc.tar.gz"><filename>pkgsrc.tar.gz</filename></ulink> です。</para>
+
+	<para>tar ファイルをダウンロードしたら、
+	pkgsrc を置く場所のディレクトリーへ移動します。
+	ふつうは <filename>/usr</filename> です。
+	次に、<command>tar xfz
+	pkgsrc.tar.gz</command> を実行してファイルを展開します。</para>
+
+</sect2>
+<sect2 id="getting-via-sup">
+<title>SUP 経由</title>
+
+	<para>tar ファイルのかわりに、ソフトウェア更新プロトコル(Software Update Protocol) SUPを使い
+	pkgsrcを入手することもできます。まず、supfileの中に
 
 <programlisting>
     release=pkgsrc
 </programlisting>
 
-    <para>という
-      行があることを確認してください。例えば、<filename>/usr/share/examples/supfiles</filename>を見て
-      ください。それから<filename>/usr/pkgsrc</filename>ディレクトリーが存在することを確認してください。
-      後は
-      <command>sup -v <replaceable>/path/to/your/supfile</replaceable></command>
-      を実行するだけです。</para>
-  </sect1>
+	という
+	行があることを確認してください。例えば、<filename>/usr/share/examples/supfiles</filename>を見て
+	ください。それから<filename>/usr/pkgsrc</filename>ディレクトリーが存在することを確認してください。
+	後は
+	<command>sup -v <replaceable>/path/to/your/supfile</replaceable></command>
+	を実行するだけです。</para>
 
-  <sect1 id="via-cvs">
-    <title>CVS 経由</title>
+</sect2>
+<sect2 id="getting-via-cvs">
+<title>CVS 経由</title>
 
-    <para>CVS経由でpkgsrcを入手するためには、<quote>cvs</quote>がインストールされていることが必要です。
-      pkgsrcを初めて(完全に)チェックアウトする際は、以下の手順を踏みます:</para>
+	<para>CVS経由でpkgsrcを入手するためには、&man.cvs.1; がインストールされていることが必要です。
+	pkgsrcを初めて(完全に)チェックアウトする際は、
+	まず環境変数を設定しておく必要があります。C シェルの場合は、
+	以下のようにします。</para>
 
-    <screen>&cprompt; <userinput>setenv CVSROOT anoncvs@anoncvs.NetBSD.org:/cvsroot</userinput>
-&cprompt; <userinput>setenv CVS_RSH ssh</userinput>
-&cprompt; <userinput>cd /usr</userinput>
-&cprompt; <userinput>cvs checkout -P pkgsrc</userinput></screen>
+<screen>
+    &cprompt; <userinput>setenv CVSROOT anoncvs@anoncvs.NetBSD.org:/cvsroot</userinput>
+    &cprompt; <userinput>setenv CVS_RSH ssh</userinput>
+</screen>
 
-    <para>こうすると、<filename>/usr</filename>以下に<filename>pkgsrc</filename>ディレクトリーが作られ、
-      <filename>/usr/pkgsrc</filename>以下に全パッ
-      ケージのソースが入った状態になります。一旦チェックアウトしたpkgsrcを更新す
-      るには、
-      <varname>CVS_RSH</varname>を上のように設定してから、以下のようにします:</para>
+	<para>bourne シェルの場合は、以下のようにします。</para>
 
-    <screen>&cprompt; <userinput>cd /usr/pkgsrc</userinput>
-&cprompt; <userinput>cvs -q update -dP</userinput></screen>
+<screen>
+    &uprompt; <userinput>CVSROOT="anoncvs@anoncvs.NetBSD.org:/cvsroot"</userinput>
+    &uprompt; <userinput>CVS_RSH="ssh"</userinput>
+    &uprompt; <userinput>export CVSROOT CVS_RSH</userinput>
+</screen>
 
-    <para>また、pkgsrcの階層構造を、使用中の状態で複数持つことも常にできます - すべて
-      の作業は、pkgsrcツリーに対する相対位置で実行されます。</para>
-  </sect1>
+	<para>次に、pkgsrc を置く場所のディレクトリーへ移動します。
+	ふつうは <filename>/usr</filename> です。
+	このディレクトリーでチェックアウト用のコマンドを実行します。
+	current の枝をチェックアウトするコマンドは <command>cvs -q checkout -P
+	pkgsrc</command> で、安定版の枝をチェックアウトするコマンドは <command>cvs -q
+	checkout -rpkgsrc-2006Q1 -P pkgsrc</command> です。
+	このコマンドを実行すると、<filename>pkgsrc</filename>
+	というディレクトリーが作られ、その中に pkgsrc
+	のファイルがすべて入っている状態になります。</para>
 
-  <sect1 id="uptodate-cvs">
-    <title>CVS を使って pkgsrc を最新の状態に保つ</title>
+</sect2>
+</sect1>
 
-      <para>お使いの pkgsrc ツリーに <filename>CVS</filename>
-      ディレクトリーがたくさんある場合は、&man.cvs.1; プログラムを使って
-      pkgsrc ツリーを更新することができます。まず、pkgsrc の最上層のディレクトリーに
-      <command>cd</command> します。次に、<command>cvs -q update
-      -dP</command> を実行します。これで更新が完了します。</para>
+<sect1 id="uptodate">
+<title>pkgsrc を最新の状態に保つ</title>
 
-      <para>うまくいかない場合で、ファイル
-      <filename>CVS/Root</filename> に <quote>:pserver:</quote>
-      と書かれている場合は、NetBSD の CVS サーバーを使えるようにするために <command>cvs
-      login</command> を一回実行する必要があります。すると、
-      <command>cvs</command> ユーティリティーがパスワードを尋ねてくるので、
-      <quote>anoncvs</quote> とだけ入力します。この後、
-      上述の手順での更新をもう一度試してみてください。</para>
-  </sect1>
+	<para>pkgsrc を最新の状態に保つ方法としては、CVS をおすすめします
+	(最初に tar ファイルを使ってインストールした場合でも、更新には
+	CVS を使えます)。 CVS を使えば、tar ファイルをあらためてダウンロードした場合にくらべ、
+	帯域やハードディスクの負荷を減らすことができます。</para>
+
+<sect2 id="uptodate-tar">
+<title>tar ファイルを使用</title>
+
+	<warning><para>tar ファイルを使って更新する場合は、まず、
+	これまで使っていた pkgsrc ディレクトリーを完全に削除する必要があります。
+	さもないと、それまでの間に pkgsrc から削除されたファイルがローカルディスクに残ったままになり、
+	不整合が生じてしまいます。
+	これまで使っていたファイルを消す場合、pkgsrc のファイルに独自に施した変更が、
+	更新後にすべて失われてしまいます。
+	このため、CVS を使った更新を強くおすすめします。</para></warning>
+	
+	<para>tar ファイルを使って pkgsrc を更新するためには、
+	初回の入手時と同様に、tar ファイルをダウンロードします。
+	次に、pkgsrc ディレクトリーに独自の変更を何も加えていないことを確認します。
+	pkgsrc ディレクトリーを削除してから、新しい tar ファイルを展開します。これで完了です。</para>
+
+</sect2>
+<sect2 id="uptodate-cvs">
+<title>CVS 経由</title>
+
+	<para>CVS を使って pkgsrc を更新するためには、環境変数
+	<varname>CVS_RSH</varname> を初回の入手時と同じものに設定しておいてください。次に、
+	pkgsrc ディレクトリーへ移動して <command>cvs -q update
+	-dP</command> を実行します。</para>
+
+<sect3 id="uptodate-cvs-switch">
+<title>pkgsrc の別の枝に移る</title>
+
+	<para>pkgsrc の更新時、CVS プログラムはそれまで使っていた枝をそのまま追いつづけます。
+	しかし、何らかの理由で stable 枝から current 枝に移りたい場合は、
+	<quote>update</quote> キーワードの後に <quote>-A</quote>
+	オプションを追加して current に移ることができます。
+	current 枝から stable 枝に戻るには、
+	<quote>-rpkgsrc-2006Q1</quote> オプションを追加します。</para>
+
+</sect3>
+<sect3 id="uptodate-cvs-changes">
+<title>私がおこなった変更は、更新時にどうなるか?</title>
+
+	<para>pkgsrc の更新時、CVS プログラムは
+	CVS リポジトリーに登録されたファイルだけに手を加えます。
+	このため、あなたが独自に作成したパッケージは、変更されずに残ります。
+	あなたが CVS の管理下にあるファイルを独自に修正している場合、
+	CVS による更新時には、あなた独自の変更と他の人による
+	(CVS リポジトリーに反映されている) 変更を統合しようとします。
+	詳細は、CVS のマニュアルの <quote>update</quote> の章をご覧ください。</para>
+
+</sect3>
+</sect2>
+</sect1>
 </chapter>
