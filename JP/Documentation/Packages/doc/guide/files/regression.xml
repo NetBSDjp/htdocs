@@ -1,107 +1,107 @@
 <!-- $NetBSD: regression.xml,v 1.1 2006/05/10 20:56:00 rillig Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: regression.xml,v 1.1 2006/05/10 20:56:00 rillig Exp   -->
 
 <chapter id="regression"> <?dbhtml filename="regression.html"?>
-<title>Regression tests</title>
+<title>退行テスト</title>
 
-	<para>The pkgsrc infrastructure consists of a large codebase,
-	and there are many corners where every little bit of a file is
-	well thought out, making pkgsrc likely to fail as soon as
-	anything is changed near those parts. To prevent most changes
-	from breaking anything, a suite of regression tests should go
-	along with every important part of the pkgsrc infrastructure.
-	This chapter describes how regression tests work in pkgsrc and
-	how you can add new tests.</para>
+	<para>pkgsrc の基盤は多くのコードベースの集合体であり、
+	熟考のすえ作られた各小片の周辺を少し変更しただけで
+	pkgsrc が使い物にならなくなるであろう曲り角がたくさんあります。
+	ほとんどの変更によって pkgsrc が壊されることを防ぐため、
+	pkgsrc の基盤の重要な部分に変更を加える場合は、
+	常に一連の退行テストを実行するようにします。
+	本章では、pkgsrc において退行テストがどのように機能するか、および、
+	新しいテストをどのように追加すればよいかを、説明します。</para>
 
 <sect1 id="regression.descr">
-<title>The regression tests framework</title>
+<title>退行テストの枠組</title>
 
 <para></para>
 
 </sect1>
 
 <sect1 id="regression.run">
-<title>Running the regression tests</title>
+<title>退行テストを実行する</title>
 
-	<para>You first need to install the <filename
-	role="pkg">pkgtools/pkg_regress</filename> package, which
-	provides the <command>pkg_regress</command> command. Then you
-	can simply run that command, which will run all tests in the
-	<filename>regress</filename> category.</para>
+	<para>まず、<filename
+	role="pkg">pkgtools/pkg_regress</filename> パッケージをインストールする必要があります。
+	このパッケージには <command>pkg_regress</command> コマンドが附属しており、
+	あとは、このコマンドを実行するだけで、
+	<filename>regress</filename> カテゴリーにあるテストをすべて実行してくれます。</para>
 
 </sect1>
 
 <sect1 id="regression.new">
-<title>Adding a new regression test</title>
+<title>新しい退行テストを追加する</title>
 
-	<para>Every directory in the <filename>regress</filename>
-	category that contains a file called <filename>spec</filename>
-	is considered a regression test. This file is a shell program
-	that is included by the <command>pkg_regress</command> command.
-	The following functions can be overridden to suit your
-	needs.</para>
+	<para><filename>regress</filename> カテゴリー内のディレクトリーのうち、
+	<filename>spec</filename> というファイルを含むものは、
+	それぞれがひとつの退行テストに対応しています。
+	<filename>spec</filename> ファイルはシェルプログラムで、
+	<command>pkg_regress</command> コマンドからインクルードされます。
+	以下の関数は、必要に応じて上書きすることができます。</para>
 
 <sect2 id="regression.fun.override">
-<title>Overridable functions</title>
+<title>上書き可能な関数</title>
 
-	<para>These functions do not take any parameters. They are all
-	called in <quote>set -e</quote> mode, so you should be careful
-	to check the exitcodes of any commands you run in the
-	test.</para>
+	<para>各関数は引数をとりません。関数はいずれも、
+	<quote>set -e</quote> された状態の下で呼ばれるので、
+	テストにおいて実行される各コマンドの終了コードを、
+	注意して確認してください。</para>
 
 	<variablelist>
 
 	<varlistentry><term><varname>do_setup()</varname></term>
-	<listitem><para>This function prepares the environment for the
-	test. By default it does nothing.</para></listitem>
+	<listitem><para>この関数は、テスト用に環境変数を準備します。
+	標準では、何もしません。</para></listitem>
 	</varlistentry>
 
 	<varlistentry><term><varname>do_test()</varname></term>
-	<listitem><para>This function runs the actual test. By default,
-	it calls <varname>TEST_MAKE</varname> with the arguments
-	<varname>MAKEARGS_TEST</varname> and writes its output including
-	error messages into the file
-	<varname>TEST_OUTFILE</varname>.</para></listitem>
+	<listitem><para>この関数は、テストを実際に実行します。
+	標準では、この関数は <varname>TEST_MAKE</varname> を
+	引数 <varname>MAKEARGS_TEST</varname> で呼んで、
+	エラーメッセージをはじめとする出力をファイル
+	<varname>TEST_OUTFILE</varname> に書き込みます。</para></listitem>
 	</varlistentry>
 
 	<varlistentry><term><varname>check_result()</varname></term>
-	<listitem><para>This function is run after the test and is
-	typically used to compare the actual output from the one that is
-	expected. It can make use of the various helper functions from
-	the next section.</para></listitem>
+	<listitem><para>この関数は、テスト実行後に実行するもので、
+	ふつうは、実際の出力を予想したものと比較するために使います。
+	これにより、次節のようなさまざまな補助関数が使えるようになります。</para></listitem>
 	</varlistentry>
 	
 	<varlistentry><term><varname>do_cleanup()</varname></term>
-	<listitem><para>This function cleans everything up after the
-	test has been run. By default it does nothing.</para></listitem>
+	<listitem><para>この関数は、テストの実行が終わった後に、
+	すべての掃除をします。標準では、何もしません。</para></listitem>
 	</varlistentry>
 
 	</variablelist>
 </sect2>
 
 <sect2 id="regression.fun.helper">
-<title>Helper functions</title>
+<title>補助関数</title>
 
 <variablelist>
 
 	<varlistentry><term><varname>exit_status(expected)</varname></term>
-	<listitem><para>This function compares the exitcode of the
-	<command>do_test()</command> function with its first parameter.
-	If they differ, the test will fail.</para></listitem>
+	<listitem><para>この関数は、<command>do_test()</command> 関数の終了コードを、
+	第一引数と比較します。
+	異なる場合は、テストは失敗します。</para></listitem>
 	</varlistentry>
 
 	<varlistentry><term><varname>output_require(regex...)</varname></term>
-	<listitem><para>This function checks for each of its parameters
-	if the output from <command>do_test()</command> matches the
-	extended regular expression. If it does not, the test will
-	fail.</para></listitem>
+	<listitem><para>この関数は、各引数について、
+	<command>do_test()</command>
+	の出力が拡張正規表現に一致することを検査します。
+	一致しない場合、テストは失敗します。</para></listitem>
 	</varlistentry>
 
 	<varlistentry><term><varname>output_prohibit(regex...)</varname></term>
-	<listitem><para>This function checks for each of its parameters
-	if the output from <command>do_test()</command> does
-	<emphasis>not</emphasis> match the extended regular expression.
-	If any of the regular expressions matches, the test will
-	fail.</para></listitem>
+	<listitem><para>この関数は、各引数について、
+	<command>do_test()</command>
+	の出力が拡張正規表現に一致<emphasis>しない</emphasis>ことを検査します。
+	いずれかの正規表現に一致する場合、テストは失敗します。</para></listitem>
 	</varlistentry>
 
 	</variablelist>

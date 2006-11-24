@@ -1,47 +1,49 @@
 <!-- $NetBSD: creating.xml,v 1.5 2006/10/21 20:39:24 rillig Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: creating.xml,v 1.5 2006/10/21 20:39:24 rillig Exp   -->
 
 <chapter id="creating">
-<title>Creating a new pkgsrc package from scratch</title>
+<title>新しいパッケージを一から作る</title>
 
-<para>When you find a package that is not yet in pkgsrc, you
-most likely have a URL from where you can download the source
-code. Starting with this URL, creating a package involves only a
-few steps.</para>
+<para>あなたが pkgsrc にまだ入っていないパッケージを見つけた場合、
+たいていはソースコードをどの URL からダウンロードできるかわかっているでしょう。
+この URL をもとにして、
+いくつかの段階を踏むだけでパッケージを作成することができます。</para>
 
 <procedure>
 
-<step><para>First, install the packages <filename
-role="pkg">pkgtools/url2pkg</filename> and <filename
-role="pkg">pkgtools/pkglint</filename>.</para></step>
+<step><para>最初に、<filename
+role="pkg">pkgtools/url2pkg</filename> および <filename
+role="pkg">pkgtools/pkglint</filename> の両パッケージをインストールします。</para></step>
 	
-<step><para>Then, choose one of the top-level directories as the
-category in which you want to place your package. You can also create a
-directory of your own (maybe called <filename>local</filename>). In that
-category directory, create another directory for your package and change
-into it.</para></step>
+<step><para>次に、そのパッケージの属するカテゴリーとして、
+最上層のディレクトリーをひとつ選びます。既存のもののかわりに、
+専用のディレクトリー (<filename>local</filename> など) を作ってもかまいません。
+このカテゴリーのディレクトリーの下に、パッケージ用にもうひとつディレクトリーを作り、
+その中に移動します。</para></step>
 
-<step><para>Run the program <command>url2pkg</command>, which will ask
-you for a URL. Enter the URL of the distribution file (in most cases a
-<filename>.tar.gz</filename> file) and watch how the basic ingredients
-of your package are created automatically. The distribution file is
-extracted automatically to fill in some details in the
-<filename>Makefile</filename> that would otherwise have to be done
-manually.</para></step>
+<step><para>プログラム <command>url2pkg</command> を実行します。
+実行すると URL をたずねてきます。配布ファイル (たいていは
+<filename>.tar.gz</filename> ファイルです)の URL を入力して、
+パッケージの基本的な要素が自動的に作られてゆくようすを観察します。
+配布ファイルは自動的に展開され、
+<filename>Makefile</filename> の詳しい内容の一部を自動的に書いてくれますが、
+残りは手動でやる必要があるでしょう。</para></step>
 
-<step><para>Examine the extracted files to determine the dependencies of
-your package. Ideally, this is mentioned in some
-<filename>README</filename> file, but things may differ. For each of
-these dependencies, look where it exists in pkgsrc, and if there is a
-file called <filename>buildlink3.mk</filename> in that directory, add a
-line to your package <filename>Makefile</filename> which includes that
-file just before the last line. If the
-<filename>buildlink3.mk</filename> file does not exist, add a
-<varname>DEPENDS</varname> line to the Makefile, which specifies the
-version of the dependency and where it can be found in pkgsrc. This line
-should be placed in the third paragraph. If the dependency is only
-needed for building the package, but not when using it, use
-<varname>BUILD_DEPENDS</varname> instead of <varname>DEPENDS</varname>.
-Your package may then look like this:</para>
+<step><para>パッケージの依存性を判断するため、展開されたファイルを調べます。
+<filename>README</filename> のようなファイルに依存性について書かれているのが理想的ですが、
+実際はそうなっていないこともあります。
+それぞれの依存先について、それが pkgsrc のどこにあるかを調べて、
+依存先のディレクトリーに <filename>buildlink3.mk</filename>
+というファイルがある場合はそれを <filename>Makefile</filename>
+の最後の行の直前でインクルードします。
+依存先に <filename>buildlink3.mk</filename> がない場合は、
+依存するバージョンと pkgsrc における場所を指定する
+<varname>DEPENDS</varname> 行を Makefile に追加します。
+この行は 3 番目の段落に書くようにします。
+依存性がパッケージを構築するためだけに必要で、使用するためには必要ない場合は、
+<varname>DEPENDS</varname> ではなく <varname>BUILD_DEPENDS</varname> を使います。
+これにより、作成中のパッケージは以下のようになるでしょう。</para>
 
 <programlisting>
     [...]
@@ -59,108 +61,109 @@ Your package may then look like this:</para>
 
 </step>
 
-<step><para>Run <command>pkglint</command> to see what things still need
-to be done to make your package a <quote>good</quote> one. If you don't
-know what pkglint's warnings want to tell you, try <command>pkglint
---explain</command> or <command>pkglint
--e</command>, which outputs additional
-explanations.</para></step>
+<step><para>パッケージを<quote>使い物</quote>にするにはあと何をする必要があるかを確認するため、
+<command>pkglint</command> を実行します。
+pkglint のメッセージの意味がわからない場合は、
+追加説明を出力してくれる <command>pkglint
+--explain</command> または <command>pkglint
+-e</command> を試してみてください。</para></step>
 
-<step><para>In many cases the package is not yet ready to build. You can
-find instructions for the most common cases in the next section, <xref
-linkend="creating.common"/>. After you have followed the instructions
-over there, you can hopefully continue here.</para></step>
+<step><para>多くの場合、パッケージはまだ構築できるようにはなっていません。
+もっともありがちな場合については、次の節<xref
+linkend="creating.common"/>で説明しています。この説明に従えば、
+おそらく先に進めるでしょう。</para></step>
 
-<step><para>Run <command>bmake clean</command> to clean the working
-directory from the extracted files. Besides these files, a lot of cache
-files and other system information has been saved in the working
-directory, which may become wrong after you edited the
-<filename>Makefile</filename>.</para></step>
+<step><para><command>bmake clean</command> を実行して、
+作業ディレクトリーから展開されたファイルを掃除します。
+作業ディレクトリーには、展開されたファイルのほかにも、
+キャッシュファイルその他のシステム情報が置かれており、
+これらが残っていると <filename>Makefile</filename>
+編集後に悪影響のあることがあります。</para></step>
 
-<step><para>Now, run <command>bmake</command> to build the package. For
-the various things that can go wrong in this phase, consult <xref
-linkend="fixes"/>.</para></step>
+<step><para>ここで、<command>bmake</command> を実行してパッケージを構築します。
+この段階では、さまざまな要因により構築がうまくいかないことがありますので、<xref
+linkend="fixes"/>を調べてください。</para></step>
 
-<step><para>When the package builds fine, the next step is to install
-the package. Run <command>bmake install</command> and hope that
-everything works.</para></step>
+<step><para>パッケージがうまく構築できた場合、次にすることは、
+パッケージのインストールです。<command>bmake install</command>
+を実行して、うまくいくようお祈りします。</para></step>
 
-<step><para>Up to now, the file <filename>PLIST</filename>, which
-contains a list of the files that are installed by the package, is
-nearly empty. Run <command>bmake print-PLIST
-&gt;PLIST</command> to generate a probably correct list. Check
-the file using your preferred text editor to see if the list of
-files looks plausible.</para></step>
+<step><para>ここに至るまで、パッケージがインストールしたファイルの一覧を内容にもつ
+<filename>PLIST</filename> ファイルの内容は、
+ほとんど空でした。<command>bmake print-PLIST
+&gt;PLIST</command> を実行して、おそらく正しいであろう一覧を作成します。
+作成したファイルを、お好きなテキストエディターを使って、
+ファイルの一覧がそれらしいものになっているか確認します。</para></step>
 
-<step><para>Run <command>pkglint</command> again to see if the generated
-<filename>PLIST</filename> contains garbage or not.</para></step>
+<step><para>再度 <command>pkglint</command> を実行して、
+作成した <filename>PLIST</filename> に余計なものが含まれていないか調べます。</para></step>
 
-<step><para>When you ran <command>bmake install</command>, the package
-has been registered in the database of installed files, but with an
-empty list of files. To fix this, run <command>bmake deinstall</command>
-and <command>bmake install</command> again. Now the package is
-registered with the list of files from
-<filename>PLIST</filename>.</para></step>
+<step><para>さきほど <command>bmake install</command> を実行した時に、
+インストールされたファイルのデータベースにこのパッケージが登録されましたが、
+ファイルの一覧は空のものが登録されています。これを修正するため、
+<command>bmake deinstall</command> を実行してから <command>bmake install</command>
+を再度実行します。これで、このパッケージは <filename>PLIST</filename>
+のファイルの一覧とともに登録されます。</para></step>
 
-<step><para>Run <command>bmake package</command> to create a binary
-package from the set of installed files.</para></step>
+<step><para><command>bmake package</command> を実行して、
+インストールされたファイル一式からバイナリーパッケージを作成します。</para></step>
 
 </procedure>
 
 <sect1 id="creating.common">
-<title>Common types of packages</title>
+<title>ありがちな種類のパッケージ</title>
 
 <sect2 id="creating.perl-module">
-<title>Perl modules</title>
+<title>Perl モジュール</title>
 
-<para>Simple Perl modules are handled automatically by
-<command>url2pkg</command>, including dependencies.</para>
+<para>簡単な Perl モジュールは、<command>url2pkg</command>
+を使って、依存性も含めて自動的に処理することができます。</para>
 
 </sect2>
 
 <sect2 id="creating.kde-app">
-<title>KDE applications</title>
+<title>KDE アプリケーション</title>
 
-<para>KDE applications should always include
-<filename>meta-pkgs/kde3/kde3.mk</filename>, which contains numerous
-settings that are typical of KDE packages.</para>
+<para>KDE アプリケーションは、かならず
+<filename>meta-pkgs/kde3/kde3.mk</filename> をインクルードしてください。
+これには、KDE パッケージでよくある設定が多数含まれています。</para>
 
 </sect2>
 
 </sect1>
 
 <sect1 id="creating.examples">
-<title>Examples</title>
+<title>例</title>
 
 <sect2 id="creating.nvu">
-<title>How the www/nvu package came into pkgsrc</title>
+<title>www/nvu パッケージはいかに pkgsrc に追加されたか</title>
 
 <sect3 id="creating.nvu.init">
-<title>The initial package</title>
+<title>作り始めのパッケージ</title>
 
-<para>Looking at the file <filename>pkgsrc/doc/TODO</filename>, I saw
-that the <quote>nvu</quote> package has not yet been imported into
-pkgsrc. As the description says it has to do with the web, the obvious
-choice for the category is <quote>www</quote>.</para>
+<para>私は <filename>pkgsrc/doc/TODO</filename> ファイルを見て、
+<quote>nvu</quote> パッケージが pkgsrc にまだ入っていないことに気づきました。
+web 用に使うものと説明されているので、カテゴリーの選択は明らかに
+<quote>www</quote> です。</para>
 
 <programlisting>
     &uprompt; mkdir www/nvu
     &uprompt; cd www/nvu
 </programlisting>
 
-<para>The web site says that the sources are available as a tar file, so
-I fed that URL to the <command>url2pkg</command> program:</para>
+<para>web サイトによれば、ソースは tar ファイルの形で用意されているので、
+その URL を <command>url2pkg</command> プログラムに与えます。</para>
 
 <programlisting>
     &uprompt; url2pkg http://cvs.nvu.com/download/nvu-1.0-sources.tar.bz2
 </programlisting>
 
-<para>My editor popped up, and I added a <varname>PKGNAME</varname> line
-below the <varname>DISTNAME</varname> line, as the package name should
-not have the word <quote>sources</quote> in it. I also filled in the
-<varname>MAINTAINER</varname>, <varname>HOMEPAGE</varname> and
-<varname>COMMENT</varname> fields. Then the package
-<filename>Makefile</filename> looked like that:</para>
+<para>エディターが立ち上がりますので、<varname>DISTNAME</varname> の行の前に
+<varname>PKGNAME</varname> の行を追加します。パッケージ名に
+<quote>sources</quote> という単語は含めないものだからです。さらに、
+<varname>MAINTAINER</varname>, <varname>HOMEPAGE</varname>,
+<varname>COMMENT</varname> の各行を記載します。これにより、
+パッケージの <filename>Makefile</filename> は以下のようになります。</para>
 
 <programlisting>
     # &#36;NetBSD&#36;
@@ -180,8 +183,8 @@ not have the word <quote>sources</quote> in it. I also filled in the
     .include "../../mk/bsd.pkg.mk"
 </programlisting>
 
-<para>Then, I quit the editor and watched pkgsrc downloading a large
-source archive:</para>
+<para>ここで、エディターを終了し、
+pkgsrc が大きなソースアーカイブをダウンロードするのを観察します。</para>
 
 <programlisting>
     url2pkg> Running "make makesum" ...
@@ -208,14 +211,14 @@ source archive:</para>
 </sect3>
 
 <sect3 id="creating.nvu.problems">
-<title>Fixing all kinds of problems to make the package work</title>
+<title>パッケージを機能するようにするための多くの問題を修正する</title>
 
-<para>Now that the package has been extracted, let's see what's inside
-it. The package has a <filename>README.txt</filename>, but that only
-says something about mozilla, so it's probably useless for seeing what
-dependencies this package has. But since there is a GNU configure script
-in the package, let's hope that it will complain about everything it
-needs.</para>
+<para>これで、パッケージが展開されたので、その内容を見ていきましょう。
+このパッケージには <filename>README.txt</filename> がありますが、
+mozilla に関することしか書かれていませんので、おそらく、
+パッケージの依存性を調べるための役には立たないでしょう。
+しかし、パッケージに GNU configure スクリプトがあるので、
+必要なものについて逐一文句を言ってくれることを期待しましょう。</para>
 
 <programlisting>
     &uprompt; bmake
@@ -232,12 +235,11 @@ needs.</para>
     [...]
 </programlisting>
 
-<para>That worked quite well. So I opened the package Makefile in my
-editor, and since it already has a <varname>USE_TOOLS</varname> line, I
-just appended <quote>perl</quote> to it. Since the dependencies of the
-package have changed now, and since a perl wrapper is automatically
-installed in the <quote>tools</quote> phase, I need to build the package
-from scratch.</para>
+<para>うまく文句を言ってくれました。そこで、パッケージの Makefile
+をエディターで開き、<varname>USE_TOOLS</varname> 行がすでにあったので、
+そこに <quote>perl</quote> を追加します。これによりパッケージの依存性が変更されたこと、
+また、perl のラッパーが <quote>tools</quote> 相で自動的にインストールされることから、
+パッケージの構築を最初からやり直すことが必要になりました。</para>
 
 <programlisting>
     &uprompt; bmake clean
@@ -249,8 +251,8 @@ from scratch.</para>
     [...]
 </programlisting>
 
-<para>So I added <quote>gmake</quote> to the
-<varname>USE_TOOLS</varname> line and tried again (from scratch).</para>
+<para>そこで、<quote>gmake</quote> を
+<varname>USE_TOOLS</varname> 行に追加して、もう一度 (最初から) やり直します。</para>
 
 <programlisting>
     [...]
@@ -259,8 +261,8 @@ from scratch.</para>
     [...]
 </programlisting>
 
-<para>Now to the other dependencies. The first question is: Where is the
-GTK package hidden in pkgsrc?</para>
+<para>今度は別の依存性です。最初の問題は、
+「GTK のパッケージは pkgsrc のどこに隠されているか?」です。</para>
 
 <programlisting>
     &uprompt; echo ../../*/gtk*
@@ -273,18 +275,20 @@ GTK package hidden in pkgsrc?</para>
     ../../x11/gtk2/buildlink3.mk
 </programlisting>
 
-<para>The first try was definitely too broad. The second one had exactly
-one result, which is very good. But there is one pitfall with GNOME
-packages. Before GNOME 2 had been released, there were already many
-GNOME 1 packages in pkgsrc. To be able to continue to use these
-packages, the GNOME 2 packages were imported as separate packages, and
-their names usually have a <quote>2</quote> appended. So I checked
-whether this was the case here, and indeed it was.</para>
+<para>最初の結果は、明らかに多すぎです。二つ目は、ただひとつの結果が出ており、
+非常にみごとです。しかし、ここには GNOME パッケージに関する罠があります。
+GNOME 2 がリリースされる前から、pkgsrc にはすでに多数の 
+GNOME 1 パッケージがありました。そのような GNOME 1
+パッケージをそのまま使い続けることができるようにするために、
+GNOME 2 パッケージはそれらとは別のパッケージとして導入されており、
+通常はパッケージ名に <quote>2</quote> が付け加えられています。
+このため、gtk がこれに該当するかを確認したところ、
+実際に該当していました。</para>
 
-<para>Since the GTK2 package has a <filename>buildlink3.mk</filename>
-file, adding the dependency is very easy. I just inserted an
-<literal>.include</literal> line before the last line of the package
-<filename>Makefile</filename>, so that it now looks like this:</para>
+<para>GTK2 パッケージには <filename>buildlink3.mk</filename>
+があるので、依存性の追加は非常に簡単です。パッケージの
+<filename>Makefile</filename> の最後の行の直前に
+<literal>.include</literal> 行を追加します。これにより以下のようになりました。</para>
 
 <programlisting>
     [...]
@@ -292,8 +296,8 @@ file, adding the dependency is very easy. I just inserted an
     .include "../../mk/bsd.pkg.mk
 </programlisting>
 
-<para>After another <command>bmake clean && bmake</command>, the answer
-was:</para>
+<para>改めて <command>bmake clean && bmake</command> を実行すると、
+以下のようになりました。</para>
 
 <programlisting>
     [...]
@@ -308,14 +312,14 @@ was:</para>
     [...]
 </programlisting>
 
-<para>In this particular case, the assumption that <quote>every package
-prefers GNOME 2</quote> had been wrong. The first of the lines above
-told me that this package really wanted to have the GNOME 1 version of
-GTK. If the package had looked for GTK2, it would have looked for
-<command>pkg-config</command> instead of <command>gtk-config</command>.
-So I changed the <literal>x11/gtk2</literal> to
-<literal>x11/gtk</literal> in the package <filename>Makefile</filename>,
-and tried again.</para>
+<para>この事例では、<quote>どのパッケージも GNOME 2 を好む</quote>との仮定は誤りでした。
+上のエラーメッセージの最初のほうの行から、
+このパッケージは実際には GNOME 1 バージョンの GTK を必要としていることがわかります。
+もしこのパッケージが GTK2 を探していたなら、<command>gtk-config</command>
+ではなく <command>pkg-config</command> を探していたでしょう。
+そこで、パッケージの <filename>Makefile</filename> 中の <literal>x11/gtk2</literal>
+を <literal>x11/gtk</literal> に書き換えてから、
+またやり直します。</para>
 
 <programlisting>
     [...]
@@ -327,9 +331,9 @@ and tried again.</para>
     [...]
 </programlisting>
 
-<para>The package still does not find all of its dependencies. Now the
-question is: Which package provides the
-<filename>libIDL/IDL.h</filename> header file?</para>
+<para>パッケージの依存先が、まだ全部は見つかっていません。
+ここでの問題は「ヘッダーファイル <filename>libIDL/IDL.h</filename>
+はどのパッケージが提供しているのか?」です。</para>
 
 <programlisting>
     &uprompt; echo ../../*/*idl*
@@ -338,35 +342,34 @@ question is: Which package provides the
     ../../net/libIDL
 </programlisting>
 
-<para>Let's take the one from the second try. So I included the
-<filename>../../net/libIDL/buildlink3.mk</filename> file and tried
-again. But the error didn't change. After digging through some of the
-code, I concluded that the build process of the package was broken and
-couldn't have ever worked, but since the Mozilla source tree is quite
-large, I didn't want to fix it. So I added the following to the package
-<filename>Makefile</filename> and tried again:</para>
+<para>二つ目で見つかったものを試してみましょう。そこで、
+<filename>../../net/libIDL/buildlink3.mk</filename> ファイルをインクルードしてから、
+またやり直します。しかし、エラーはさきほどと変わりません。コードをいくらか調べたすえ、
+パッケージの構築の過程が壊れているせいで機能しないという結論に達しました。
+しかし、Mozilla のソースツリーは非常に巨大なので、修正する気にはなりません。
+そこで、パッケージの <filename>Makefile</filename> に以下の内容を追加して、
+またやり直します。</para>
 
 <programlisting>
     CPPFLAGS+=              -I${BUILDLINK_PREFIX.libIDL}/include/libIDL-2.0
     BUILDLINK_TRANSFORM+=   -l:IDL:IDL-2
 </programlisting>
 
-<para>The latter line is needed because the package expects the library
-<filename>libIDL.so</filename>, but only
-<filename>libIDL-2.so</filename> is available. So I told the compiler
-wrapper to rewrite that on the fly.</para>
+<para>パッケージ側では <filename>libIDL.so</filename>
+というライブラリーを期待していますが、実際には
+<filename>libIDL-2.so</filename> だけが利用可能なので、下の行が必要です。
+これにより、コンパイラーのラッパーにその場で書き換えをするよう伝えます。</para>
 
-<para>The next problem was related to a recent change of the FreeType
-interface. I looked up in <filename role="pkg">www/seamonkey</filename>
-which patch files were relevant for this issue and copied them to the
-<filename>patches</filename> directory. Then I retried, fixed the
-patches so that they applied cleanly and retried again. This time,
-everything worked.</para>
+<para>次の問題は、FreeType インターフェースの最近の変更に関するものです。
+<filename role="pkg">www/seamonkey</filename> のパッチファイルがこの問題に対処しているので、
+これを <filename>patches</filename> ディレクトリーにコピーします。
+そして、はじめからやり直し、パッチをきれいに適用できるよう修正して、
+またやり直します。これで、すべてうまくいきました。</para>
 
 </sect3>
 
 <sect3 id="creating.nvu.inst">
-<title>Installing the package</title>
+<title>パッケージをインストールする</title>
 
 <programlisting>
     &uprompt; bmake CHECK_FILES=no install
