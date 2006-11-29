@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.55 2006/06/14 21:20:16 darcy Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.56 2006/06/21 08:42:21 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.55 2006/06/14 21:20:16 darcy Exp   -->
+<!-- NetBSD: fixes.xml,v 1.56 2006/06/21 08:42:21 rillig Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージを動くようにする</title>
@@ -9,39 +9,31 @@
     <title>一般的な操作</title>
 
     <sect2 id="pulling-vars-from-etc-mk.conf">
-      <title>/etc/mk.confから変数を捕まえる方法</title>
+      <title><filename>mk.conf</filename> から利用者が設定可能な変数を捕まえる方法</title>
 
-      <para><varname>MAKECONF</varname>や<filename>/etc/mk.conf</filename>
-        で上書き可能な、パッケージで定義された変数には問題が
-        あります。それは、変数は &man.make.1; がそれを使う時に展開されるが、プリプロセッサー
-        風の文(.if、.ifdefそして.ifndef)は読み込み時に評価される事です。したがって、
-        .if*文内で変数(<filename>/etc/mk.conf</filename>でセットされる可能性のある)を使う時は、その.if*
-        ステートメントの前に<filename>/etc/mk.conf</filename>をインクルードしておかなくていけません。</para>
+	<para>pkgsrc の利用者は、<varname>MAKECONF</varname>
+	によって参照されるファイル (標準では <filename>/etc/mk.conf</filename>)
+	でいくつかの変数を上書きして、pkgsrc の設定をすることができます。
+	このような変数を &man.make.1; のプリプロセッサーディレクティブ
+	(たとえば <literal>.if</literal> や
+	<literal>.for</literal>) の内部で使いたい場合は、
+	利用者の設定が読み込まれる場所より前で
+	<filename>../../mk/bsd.prefs.mk</filename> をインクルードする必要があります。</para>
 
-      <para><filename>/etc/mk.conf</filename>や<varname>MAKECONF</varname>が存在したら、それらをインクルードするというad-hocな
-        方法をとらずに、すべてのプリプロセッサー風の.if、.ifdef、または.ifndef文の
-        前で、<filename>pkgsrc/mk/bsd.prefs.mk</filename>をインクルードしてください。</para>
+	<para>しかし、変数によっては、
+	まだ定義されていない変数への参照を含んでいることがあるために、
+	<filename>../../mk/bsd.prefs.mk</filename>
+	をインクルードした後では完全に定義することができないものがあります。
+	シェルコマンドの場合は、変数の実態はマクロであり、
+	使われるときにしか展開されないので、このことは問題にはなりません。
+	ただし、前述したプリプロセッサーディレクティブの内部や、
+	依存性を記した行 (<literal>target: dependencies</literal> のような形式の行)
+	においては、読み込み時に変数が展開されます。</para>
 
-<programlisting>
-    .include "../../mk/bsd.prefs.mk"
+	<note><para>各変数が読み込み時に使用可能か、
+	実行時にのみ使用可能かを網羅した一覧は、現在のところありませんが、
+	準備をしているところです。</para></note>
 
-    .if defined(USE_MENUS)
-    # ...
-    .endif
-</programlisting>
-
-      <para><filename>/etc/mk.conf</filename> で <varname>CFLAGS</varname> 変数を設定したい場合は、
-        以下のような形で使うようにしてください。
-
-<programlisting>
-    CFLAGS+=  -your -flags
-</programlisting>
-
-        <varname>CFLAGS=</varname> のようにする (つまり、<quote>+</quote>を付けない) と、
-        独自のフラグを追加する必要があるパッケージで問題を起こすことがあります。
-        また、CPUにあわせた最適化に関心がある場合は、
-        <filename role="pkg">devel/cpuflags</filename>
-	パッケージを見ておくとよいでしょう。</para>
     </sect2>
 
     <sect2 id="where-to-install-documentation">
@@ -852,9 +844,9 @@ PLIST の変更
         状況は何通りもありえます:</para>
 
       <itemizedlist>
-        <listitem>
-          <para>distfileの取得に関する補助</para>
-        </listitem>
+	<listitem>
+	  <para>distfile の展開時に、パッケージによってはパスワードを要求することがあります。</para>
+	</listitem>
 
         <listitem>
           <para>パッケージの構築前の設定の補助</para>
