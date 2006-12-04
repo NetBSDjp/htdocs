@@ -1,12 +1,22 @@
-<!-- $NetBSD: fixes.xml,v 1.56 2006/06/21 08:42:21 rillig Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.57 2006/06/29 11:29:46 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.56 2006/06/21 08:42:21 rillig Exp   -->
+<!-- NetBSD: fixes.xml,v 1.57 2006/06/29 11:29:46 rillig Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージを動くようにする</title>
 
   <sect1 id="general-operation">
     <title>一般的な操作</title>
+
+<sect2 id="portability-of-packages">
+<title>パッケージの移植性</title>
+
+	<para>pkgsrc の目玉の一つは、多くのプラットフォームで動作することです。
+	そのため、pkgsrc のパッケージの移植性をできるかぎり高めることが重要になります。
+	本章では、pkgsrc の作業に際して、
+	注意が必要となる具体的な事項を説明します。</para>
+
+</sect2>
 
     <sect2 id="pulling-vars-from-etc-mk.conf">
       <title><filename>mk.conf</filename> から利用者が設定可能な変数を捕まえる方法</title>
@@ -36,13 +46,125 @@
 
     </sect2>
 
-    <sect2 id="where-to-install-documentation">
-      <title>ドキュメンテーションのインストール場所</title>
+    <sect2 id="user-interaction">
+      <title>ユーザーとの対話</title>
 
-      <para>ドキュメンテーションは
-      <filename>${PREFIX}/share/doc/${PKGBASE}</filename> または
-      <filename>${PREFIX}/share/doc/${PKGNAME}</filename> (後者は、
-      パッケージのバージョン番号を含んでいます) 以下にインストールします。</para>
+      <para>時々、パッケージがユーザーとの対話を必要とする場合がありますが、そのような
+        状況は何通りもありえます:</para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>distfile の展開時に、パッケージによってはパスワードを要求することがあります。</para>
+	</listitem>
+
+        <listitem>
+          <para>パッケージの構築前の設定の補助</para>
+        </listitem>
+
+        <listitem>
+          <para>構築過程の最中の補助</para>
+        </listitem>
+
+        <listitem>
+          <para>パッケージのインストール中の補助</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>どの段階で対話が必要になるかをpkgsrcの機構に知らせるため、<varname>INTERACTIVE_STAGE</varname>
+        定義が用意されており、パッケージの<filename>Makefile</filename>で定義します。たとえば以下のよう
+        にします。</para>
+
+<programlisting>
+    INTERACTIVE_STAGE=      build
+</programlisting>
+
+      <para>複数の段階を指定することもできます:</para>
+
+<programlisting>
+    INTERACTIVE_STAGE=      configure install
+</programlisting>
+    </sect2>
+
+
+    <sect2 id="handling-licenses">
+      <title>ライセンスの処理</title>
+
+      <para>パッケージに適用されるライセンスのなかには、
+        利用者によって同意できたり同意できなかったりするものがあるかもしれません。
+        このような場合にそなえ、pkgsrc には、
+        パッケージに特殊なライセンスが適用されている場合に注意をうながしたり、
+        利用者がそのライセンスに同意しない限りパッケージを構築できなくする仕組みがあります。
+        (現在のところ、バイナリーパッケージのインストールは、
+        この仕組みの対象外です。) Open
+        Source Initiative による「オープンソース」、または Free Software
+        Foundation による「自由」を満たすライセンスをもつパッケージには、
+        ライセンスの目印はつきません。
+        これらの定義をどちらも満たさないライセンスをもつパッケージには、
+        そのライセンスを参照する目印がつけられます。
+        こうすることで、そのライセンスに同意したことを
+        pkgsrc に指示しない限り構築ができないようになり、また、
+        そのライセンスを表示することができるようになります。</para>
+
+      <para>ライセンスの目印の仕組みは、パッケージの構築、インストール、
+	および使用にまつわる著作権関連の問題を処理するためのものであって、
+	再配布にまつわる問題 (<varname>RESTRICTED</varname> および
+	<varname>NO_SRC_ON_FTP</varname> などを参照) のためのものではありません。
+	ただし、目印が必要なライセンスの定義は上述のとおりなので、
+	再配布に制限のあるパッケージには目印がついていることになります。</para>
+
+      <para>
+        パッケージに特殊なライセンスが適用されていることを示すには、
+        そのライセンスを
+        <filename>pkgsrc/licenses</filename> に置いたうえで、
+        <varname>LICENSE</varname> 変数をライセンスを特定する文字列に設定します。
+        たとえば、
+	<filename role="pkg">graphics/xv</filename> では以下のようになります。</para>
+
+<programlisting>
+    LICENSE=        xv-license
+</programlisting>
+
+      <para>
+        構築しようとすると、利用者はそのパッケージに適用されているライセンスに
+        同意していないことを知らされます。</para>
+
+<programlisting>
+    &cprompt; <userinput>make</userinput>
+    ===> xv-3.10anb9 has an unacceptable license: xv-license.
+    ===>     To view the license, enter "/usr/bin/make show-license".
+    ===>     To indicate acceptance, add this line to your /etc/mk.conf:
+    ===>     ACCEPTABLE_LICENSES+=xv-license
+    *** Error code 1
+</programlisting>
+
+        <para>ライセンス自体は <command>make
+          show-license</command> すると見ることができます。
+          そのライセンスが妥当なものであると判断した場合は、
+          ライセンスに同意していることを表すために、
+          上の表示中で指示されている行を <filename>/etc/mk.conf</filename>
+          に追加することができます。</para>
+
+<programlisting>
+    ACCEPTABLE_LICENSES+=xv-license
+</programlisting>
+
+	<para>新しいライセンスが適用されているパッケージを追加する場合、
+          表示用のライセンスのテキストを <filename>pkgsrc/licenses</filename>
+          に追加します。既知のライセンスの一覧は、
+          <filename>pkgsrc/mk/defaults/mk.conf</filename>
+          で (コメントアウトされている)
+          <varname>ACCEPTABLE_LICENSES</varname> 変数の設定の一覧で見られるほか、
+          このディレクトリーで見ることができます。</para>
+
+	<para><varname>LICENSE=shareware</varname> や、
+	  <varname>LICENSE=no-commercial-use</varname> のような言いまわしは、
+	  ライセンスの文面を特定できないので、
+	  使わないことになりました。
+	  また、このような言いまわしを使った場合の別の問題として、
+	  利用者が特定のパッケージ用のライセンスだけに同意して、
+	  それ以外のパッケージ用のライセンスには同意しない、
+	  といった指定ができなくなるというものもあります。
+	  これは特に、料金を支払っているライセンスへの同意を示したい場合には不適当です。</para>
     </sect2>
 
     <sect2 id="restricted-packages">
@@ -349,23 +471,6 @@
     </sect2>
 
 
-    <sect2 id="compiler-bugs">
-      <title>コンパイラーのバグへの対処方法</title>
-
-      <para>ソースファイルのなかには、コンパイラーのバージョンとアーキテクチャーの組合
-        せによって、また、ほとんどの場合は、最適化を有効にしたことも関係して、コン
-        パイラーのバグを発現させるものがあります。よくある症状は、gccの内部エラーや、
-        ファイルのコンパイルが完了しないというものです。
-</para>
-
-      <para>たいていは、回避策として、<varname>MACHINE_ARCH</varname>
-        とコンパイラーのバージョンを確認し、
-        問題のあるファイル/<varname>MACHINE_ARCH</varname>/コンパイラーの組合せに対して最適化を無効に
-        し、そのことを<filename>pkgsrc/doc/HACKS</filename>に文書化しておくことが必要となります。
-        このファイルに多くの例が載っているので、参照してください。</para>
-    </sect2>
-
-
     <sect2 id="bumping-pkgrevision">
       <title>既存パッケージ修正時に、バージョンを上げるにはどうするか</title>
 
@@ -418,30 +523,6 @@ PLIST の変更
 
     <para>依存するパッケージの ABI が変更された場合にも、
     PKGREVISION を上げる必要があります。</para>
-    </sect2>
-
-
-    <sect2 id="portability-of-packages">
-      <title>パッケージの移植性</title>
-
-      <para>pkgsrc の目玉の一つは、多くのプラットフォームで動作することです。
-        そのため、pkgsrc のパッケージの移植性をできるかぎり高めることが重要になります。
-        pkgsrc の作業に際して、
-        具体的には以下のような事項に注意してください。</para>
-
-      <sect3 id="install-scripts">
-        <title>${INSTALL}, ${INSTALL_DATA_DIR}, ...</title>
-
-        <para>一部のプラットフォームに附属する BSD 互換の <command>install</command> は、
-          一度に複数の操作をおこなうことができません。
-          このため、 <quote>${INSTALL}</quote> などを使うときは、以下のようにします。</para>
-
-<programlisting>
-    ${INSTALL_DATA_DIR} ${PREFIX}/dir1
-    ${INSTALL_DATA_DIR} ${PREFIX}/dir2
-</programlisting>
-      </sect3>
-
     </sect2>
   </sect1>
 
@@ -832,135 +913,74 @@ PLIST の変更
 
 </sect3>
 </sect2>
-</sect1>
+<sect2 id="compiler-bugs">
+<title>コンパイラーのバグへの対処方法</title>
 
-  <sect1 id="package-specific-actions">
-    <title>パッケージ特有の機能</title>
+	<para>ソースファイルのなかには、コンパイラーのバージョンとアーキテクチャーの組合
+        せによって、また、ほとんどの場合は、最適化を有効にしたことも関係して、コン
+        パイラーのバグを発現させるものがあります。よくある症状は、gccの内部エラーや、
+        ファイルのコンパイルが完了しないというものです。</para>
 
-    <sect2 id="user-interaction">
-      <title>ユーザーとの対話</title>
+	<para>たいていは、回避策として、<varname>MACHINE_ARCH</varname>
+        とコンパイラーのバージョンを確認し、
+        問題のあるファイル・<varname>MACHINE_ARCH</varname>・コンパイラーの組合せに対して最適化を無効に
+	し、そのことを<filename>pkgsrc/doc/HACKS</filename>に文書化しておくことが必要となります。
+	このファイルに多くの例が載っているので、参照してください。</para>
 
-      <para>時々、パッケージがユーザーとの対話を必要とする場合がありますが、そのような
-        状況は何通りもありえます:</para>
+</sect2>
 
-      <itemizedlist>
-	<listitem>
-	  <para>distfile の展開時に、パッケージによってはパスワードを要求することがあります。</para>
-	</listitem>
+<sect2 id="undefined-reference">
+<title>undefined reference to <quote>...</quote></title>
 
-        <listitem>
-          <para>パッケージの構築前の設定の補助</para>
-        </listitem>
+	<para>このコンパイラーエラーは、
+	パッケージが必要な共有ライブラリーにリンクしていない場合にしばしば出ます。
+	以下の関数は、このエラーメッセージを何度も出すことがわかっているものです。</para>
 
-        <listitem>
-          <para>構築過程の最中の補助</para>
-        </listitem>
+	<informaltable id="undefined-reference-functions">
+	<tgroup cols="3">
+	<thead><row><entry>関数</entry><entry>ライブラリー</entry><entry>影響のあるプラットフォーム</entry></row></thead>
+	<tbody>
+	<row><entry>gethost*</entry><entry>-lnsl</entry><entry>Solaris</entry></row>
+	<row><entry>accept, bind, connect</entry><entry>-lsocket</entry><entry>Solaris</entry></row>
+	<row><entry>inet_aton</entry><entry>-lresolv</entry><entry>Solaris</entry></row>
+	<row><entry>dlopen, dlsym</entry><entry>-ldl</entry><entry>Linux</entry></row>
+	</tbody>
+	</tgroup>
+	</informaltable>
 
-        <listitem>
-          <para>パッケージのインストール中の補助</para>
-        </listitem>
-      </itemizedlist>
-
-      <para>どの段階で対話が必要になるかをpkgsrcの機構に知らせるため、<varname>INTERACTIVE_STAGE</varname>
-        定義が用意されており、パッケージの<filename>Makefile</filename>で定義します。たとえば以下のよう
-        にします。</para>
-
-<programlisting>
-    INTERACTIVE_STAGE=      build
-</programlisting>
-
-      <para>複数の段階を指定することもできます:</para>
-
-<programlisting>
-    INTERACTIVE_STAGE=      configure install
-</programlisting>
-    </sect2>
-
-
-    <sect2 id="handling-licenses">
-      <title>ライセンスの処理</title>
-
-      <para>パッケージに適用されるライセンスのなかには、
-        利用者によって同意できたり同意できなかったりするものがあるかもしれません。
-        このような場合にそなえ、pkgsrc には、
-        パッケージに特殊なライセンスが適用されている場合に注意をうながしたり、
-        利用者がそのライセンスに同意しない限りパッケージを構築できなくする仕組みがあります。
-        (現在のところ、バイナリーパッケージのインストールは、
-        この仕組みの対象外です。) Open
-        Source Initiative による「オープンソース」、または Free Software
-        Foundation による「自由」を満たすライセンスをもつパッケージには、
-        ライセンスの目印はつきません。
-        これらの定義をどちらも満たさないライセンスをもつパッケージには、
-        そのライセンスを参照する目印がつけられます。
-        こうすることで、そのライセンスに同意したことを
-        pkgsrc に指示しない限り構築ができないようになり、また、
-        そのライセンスを表示することができるようになります。</para>
-
-      <para>ライセンスの目印の仕組みは、パッケージの構築、インストール、
-	および使用にまつわる著作権関連の問題を処理するためのものであって、
-	再配布にまつわる問題 (<varname>RESTRICTED</varname> および
-	<varname>NO_SRC_ON_FTP</varname> などを参照) のためのものではありません。
-	ただし、目印が必要なライセンスの定義は上述のとおりなので、
-	再配布に制限のあるパッケージには目印がついていることになります。</para>
-
-      <para>
-        パッケージに特殊なライセンスが適用されていることを示すには、
-        そのライセンスを
-        <filename>pkgsrc/licenses</filename> に置いたうえで、
-        <varname>LICENSE</varname> 変数をライセンスを特定する文字列に設定します。
-        たとえば、
-	<filename role="pkg">graphics/xv</filename> では以下のようになります。</para>
-
-<programlisting>
-    LICENSE=        xv-license
-</programlisting>
-
-      <para>
-        構築しようとすると、利用者はそのパッケージに適用されているライセンスに
-        同意していないことを知らされます。</para>
-
-<programlisting>
-    &cprompt; <userinput>make</userinput>
-    ===> xv-3.10anb9 has an unacceptable license: xv-license.
-    ===>     To view the license, enter "/usr/bin/make show-license".
-    ===>     To indicate acceptance, add this line to your /etc/mk.conf:
-    ===>     ACCEPTABLE_LICENSES+=xv-license
-    *** Error code 1
-</programlisting>
-
-        <para>ライセンス自体は <command>make
-          show-license</command> すると見ることができます。
-          そのライセンスが妥当なものであると判断した場合は、
-          ライセンスに同意していることを表すために、
-          上の表示中で指示されている行を <filename>/etc/mk.conf</filename>
-          に追加することができます。</para>
-
-<programlisting>
-    ACCEPTABLE_LICENSES+=xv-license
-</programlisting>
-
-	<para>新しいライセンスが適用されているパッケージを追加する場合、
-          表示用のライセンスのテキストを <filename>pkgsrc/licenses</filename>
-          に追加します。既知のライセンスの一覧は、
-          <filename>pkgsrc/mk/defaults/mk.conf</filename>
-          で (コメントアウトされている)
-          <varname>ACCEPTABLE_LICENSES</varname> 変数の設定の一覧で見られるほか、
-          このディレクトリーで見ることができます。</para>
-
-	<para><varname>LICENSE=shareware</varname> や、
-	  <varname>LICENSE=no-commercial-use</varname> のような言いまわしは、
-	  ライセンスの文面を特定できないので、
-	  使わないことになりました。
-	  また、このような言いまわしを使った場合の別の問題として、
-	  利用者が特定のパッケージ用のライセンスだけに同意して、
-	  それ以外のパッケージ用のライセンスには同意しない、
-	  といった指定ができなくなるというものもあります。
-	  これは特に、料金を支払っているライセンスへの同意を示したい場合には不適当です。</para>
-    </sect2>
+</sect2>
 </sect1>
 
 <sect1 id="fixes.install">
 <title><emphasis>install</emphasis> 相での問題を修正する</title>
+
+<sect2 id="install-scripts">
+<title>必要なディレクトリーを作成する</title>
+
+	<para>一部のプラットフォームに附属する BSD 互換の <command>install</command> は、
+	一度に複数のディレクトリーを作成することができません。
+	このため、 <literal>${INSTALL_*_DIR}</literal> を使うときは、以下のようにします。</para>
+
+<programlisting>
+    ${INSTALL_DATA_DIR} ${PREFIX}/dir1
+    ${INSTALL_DATA_DIR} ${PREFIX}/dir2
+</programlisting>
+
+	<para>こうするかわりに、単に <quote><literal>dir1
+	dir2</literal></quote> を
+	<varname>INSTALLATION_DIRS</varname> 変数に追加するという方法もあります。
+	こうすると、適切な処理が自動的におこなわれます。</para>
+
+</sect2>
+<sect2 id="where-to-install-documentation">
+<title>ドキュメンテーションのインストール場所</title>
+
+	<para>ドキュメンテーションは
+	<filename>${PREFIX}/share/doc/${PKGBASE}</filename> または
+	<filename>${PREFIX}/share/doc/${PKGNAME}</filename> (後者は、
+	パッケージのバージョン番号を含んでいます) 以下にインストールします。</para>
+
+</sect2>
 
     <sect2 id="installing-score-files">
       <title>得点ファイルをインストールする</title>
