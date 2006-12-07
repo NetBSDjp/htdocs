@@ -1,6 +1,6 @@
-<!-- $NetBSD: build.xml,v 1.29 2006/06/27 11:07:12 rillig Exp $ -->
+<!-- $NetBSD: build.xml,v 1.30 2006/07/24 10:32:36 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.29 2006/06/27 11:07:12 rillig Exp   -->
+<!-- NetBSD: build.xml,v 1.30 2006/07/24 10:32:36 rillig Exp   -->
 
 <chapter id="build">
 <title>構築の手順</title>
@@ -201,22 +201,127 @@ pkgsrc の各種基盤が使う一時ディレクトリーも含まれます。</para></listitem><
 <sect1 id="build.fetch">
 <title><emphasis>fetch</emphasis> 相</title>
 
-	  <para>これは、変数<varname>DISTFILES</varname>と<varname>PATCHFILES</varname> (パッケージのMakefileで定義された)で指
-	    定されたファイルが、ローカルシステムの<filename>/usr/pkgsrc/distfiles</filename>に存在するか
-	    どうかをチェックします。もし、存在しなければ、そのファイルを以下のような
-	    コマンドを使って取得しようとします。</para>
+	<para>パッケージの構築の最初の段階は、配布ファイル (distfiles)
+	を、そのファイルを配布しているサイトから取得することです。
+	これは <emphasis>fetch</emphasis> 相がおこなう仕事です。</para>
+
+<sect2 id="build.fetch.what">
+<title>何を、どこから取得するか</title>
+
+	<para>単純な場合では、<varname>MASTER_SITES</varname> で
+	distfile (distfile のファイル名は <varname>DISTNAME</varname> が使われます)
+	を取得する URL をすべて定義します。
+	これより複雑な場合については、以下で説明します。</para>
+
+	<para>変数 <varname>DISTFILES</varname> は、取得する必要のある
+	distfile を並べたリストを指定します。この値は、標準では
+	<literal>${DISTNAME}${EXTRACT_SUFX}</literal> になり、
+	ほとんどのパッケージではあえて定義する必要がありません。
+	<varname>EXTRACT_SUFX</varname> は、標準では <literal>.tar.gz</literal>
+	になりますが、自由に変更することができます。なお、標準で定義される
+	distfile に加えて別の distfile が必要な場合は、
+	それを <literal>+=</literal> 演算子を使って追加することはできません。
+	たとえば以下のように書く必要があります。</para>
+
+<programlisting>
+    DISTFILES=      ${DISTNAME}${EXTRACT_SUFX} additional-files.tar.gz
+</programlisting>
+
+	<para>各 distfile は、通常は <varname>MASTER_SITES</varname>
+	に並べられたサイトから取得されます。パッケージに複数の
+	<varname>DISTFILES</varname> または複数の
+	<varname>PATCHFILES</varname> があり、それらが異なるサイトで配布されている場合は、
+	<filename><replaceable>distfile</replaceable></filename>
+	ファイル (サフィックスを含む) の配布場所の URL を並べたリストを
+	<varname>SITES.<replaceable>distfile</replaceable></varname>
+	に設定することができます。</para>
+
+<programlisting>
+    DISTFILES=      ${DISTNAME}${EXTRACT_SUFX}
+    DISTFILES+=     foo-file.tar.gz
+    SITES.foo-file.tar.gz= \
+            http://www.somewhere.com/somehow/ \
+            http://www.somewhereelse.com/mirror/somehow/
+</programlisting>
+
+	<para>distfile を実際に取得する際、それらは、
+	<varname>MASTER_SITES</varname> または <varname>SITES.*</varname>
+	に各 distfile のファイル名をそのまま (間にスラッシュを入れずに)
+	つなげた形の URL から取得されます。このため、サイトを定義する変数の値は、
+	スラッシュその他の分離記号で終わる必要があります。このため、たとえば
+	<varname>MASTER_SITES</varname> を、distfile 名を引数としてとる
+	CGI スクリプトの URL にすることができます。そうした場合、
+	以下のような形で定義することになります。</para>
+
+<programlisting>
+    MASTER_SITES=   http://www.example.com/download.cgi?file=
+</programlisting>
+
+	<para>パッケージで使うため、<varname>MASTER_SITES</varname>
+	用にあらかじめ定義された値がいくつか用意されています。
+	各変数の意味は、名前から明らかでしょう。</para>
+
+<!-- sort mk/fetch/sites.mk | sed -n 's/\(^MA[A-Z_]*\).*/    ${\1}/p' -->
+<programlisting>
+    ${MASTER_SITE_APACHE}
+    ${MASTER_SITE_BACKUP}
+    ${MASTER_SITE_CYGWIN}
+    ${MASTER_SITE_DEBIAN}
+    ${MASTER_SITE_FREEBSD}
+    ${MASTER_SITE_FREEBSD_LOCAL}
+    ${MASTER_SITE_GNOME}
+    ${MASTER_SITE_GNU}
+    ${MASTER_SITE_GNUSTEP}
+    ${MASTER_SITE_IFARCHIVE}
+    ${MASTER_SITE_KDE}
+    ${MASTER_SITE_MOZILLA}
+    ${MASTER_SITE_MYSQL}
+    ${MASTER_SITE_OPENOFFICE}
+    ${MASTER_SITE_PERL_CPAN}
+    ${MASTER_SITE_PGSQL}
+    ${MASTER_SITE_R_CRAN}
+    ${MASTER_SITE_SOURCEFORGE}
+    ${MASTER_SITE_SOURCEFORGE_JP}
+    ${MASTER_SITE_SUNSITE}
+    ${MASTER_SITE_SUSE}
+    ${MASTER_SITE_TEX_CTAN}
+    ${MASTER_SITE_XCONTRIB}
+    ${MASTER_SITE_XEMACS}
+</programlisting>
+
+	<para>もしこれらの予め定義されたサイトの1つを選んだ場合、そのサイトのサブディレク
+	トリーを指定することが必要となるかもしれません。これらのマクロは複数の実際
+	のサイトに展開されるかもしれませんので、サブディレクトリーを指定する場合は、
+	以下の表記を<emphasis>使わなければなりません</emphasis>:</para>
+
+<programlisting>
+    MASTER_SITES=   ${MASTER_SITE_GNU:=subdirectory/name/}
+    MASTER_SITES=   ${MASTER_SITE_SOURCEFORGE:=project_name/}
+</programlisting>
+
+	<para>サブディレクトリー名の後のスラッシュ/に注意してください。</para>
+
+</sect2>
+<sect2 id="build.fetch.how">
+<title>ファイルの取得はどのようにおこなわれるか?</title>
+
+	<para><emphasis>fetch</emphasis> 相では、distfile
+	がすべてローカルディレクトリー (<varname>DISTDIR</varname>),
+	pkgsrc 利用者が設定可能) に存在する状態にします。
+	distfile は以下の形式のコマンドを使って取得されます。
 
 <programlisting>
     ${FETCH_CMD} ${FETCH_BEFORE_ARGS} ${site}${file} ${FETCH_AFTER_ARGS}
 </programlisting>
 
-	  <para>この${site}には、複数の候補が決まった順序で使われます: 最初に
-	    <varname>MASTER_SITE_OVERRIDE</varname>を試み、次に、<varname>SITES.file</varname>が定義されていればそれ
-	    を、定義されていなければ、<varname>MASTER_SITES</varname>か<varname>PATCH_SITES</varname>のどちらかを試
-	    みます。そして、最後に<varname>MASTER_SITE_BACKUP</varname>の値を試みます。最初のもの以
-	    外の順序は、<varname>MASTER_SORT_AWK</varname>か<varname>MASTER_SORT_REGEX</varname>を設定して、ユーザー
-	    が入れ換えることができます。</para>
+	この <literal>${site}</literal> には、複数の候補が決まった順序で使われます: 最初に
+	<varname>MASTER_SITE_OVERRIDE</varname>を試み、次に、<varname>SITES.file</varname>が定義されていればそれ
+	を、定義されていなければ、<varname>MASTER_SITES</varname>か<varname>PATCH_SITES</varname>のどちらかを試
+	みます。そして、最後に<varname>MASTER_SITE_BACKUP</varname>の値を試みます。最初のもの以
+	外の順序は、<varname>MASTER_SORT_AWK</varname>か<varname>MASTER_SORT_REGEX</varname>を設定して、ユーザー
+	が入れ換えることができます。</para>
 
+</sect2>
 </sect1>
 
 <sect1 id="build.checksum">

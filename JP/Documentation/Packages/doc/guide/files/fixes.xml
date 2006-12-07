@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.61 2006/07/01 12:51:30 rillig Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.63 2006/07/02 10:01:11 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.61 2006/07/01 12:51:30 rillig Exp   -->
+<!-- NetBSD: fixes.xml,v 1.63 2006/07/02 10:01:11 rillig Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
   <title>パッケージを動くようにする</title>
@@ -47,7 +47,7 @@
     </sect2>
 
     <sect2 id="user-interaction">
-      <title>パッケージ構築時のユーザーとの対話</title>
+      <title>ユーザーとの対話</title>
 
       <para>時々、パッケージがユーザーとの対話を必要とする場合がありますが、そのような
         状況は何通りもありえます:</para>
@@ -531,9 +531,75 @@ PLIST の変更
     <para>依存するパッケージの ABI が変更された場合にも、
     PKGREVISION を上げる必要があります。</para>
     </sect2>
-  </sect1>
 
+<sect2 id="fixes.subst">
+<title>パッケージのファイル中の各種テキストを置換する (SUBST の枠組)</title>
 
+	<para>複数のファイルに含まれる同じテキストを置換したい場合や、
+	テキストの置換方法を変化させたい場合には、パッチだけでは実現できません。
+	そこで SUBST の枠組の出番です。この枠組では、
+	ファイル内のテキストを置換するために簡単に使えるインターフェースを用意しています。
+	たとえば以下のように使います。</para>
+
+<programlisting>
+    SUBST_CLASSES+=                 fix-paths
+    SUBST_STAGE.fix-paths=          pre-configure
+    SUBST_MESSAGE.fix-paths=        Fixing absolute paths.
+    SUBST_FILES.fix-paths=          src/*.c
+    SUBST_FILES.fix-paths+=         scripts/*.sh
+    SUBST_SED.fix-paths=            -e 's,"/usr/local,"${PREFIX},g'
+    SUBST_SED.fix-paths+=           -e 's,"/var/log,"${VARBASE}/log,g'
+</programlisting>
+
+	<para><varname>SUBST_CLASSES</varname> は、ここで定義する
+	SUBST の塊を区別するための識別子を並べたリストです。
+	SUBST の枠組は pkgsrc で多用されているので、この変数には常に
+	<literal>+=</literal> 演算子を使うことが重要です。
+	そうしないと、一部の置換がおこなわれなくなることがあります。</para>
+
+	<para>各 SUBST の塊の残りの変数は、
+	最初の行の識別子 (この例では <literal>fix-paths</literal>)
+	を使ってパラメーター化されています。
+	これらは、関数呼び出しの引数とみなすことができます。</para>
+
+	<para><varname>SUBST_STAGE.*</varname> は、
+	この置換をどの期におこなうかを指定します。
+	実際に使われるものは限られていますが、相の名前と
+	<literal>pre-</literal>, <literal>do-</literal>,
+	<literal>post-</literal> のあらゆる組合せを使うことができます。
+	もっともよく使われるのは <literal>post-patch</literal> と
+	<literal>pre-configure</literal> です。このふたつのうち、
+	<literal>pre-configure</literal> を使うと、
+	<command>bmake patch</command> を実行することで、
+	パッチを適用したほかは一切変更されていない状態にすることができるため、
+	こちらのほうが好まれます。このことは、
+	新しいパッチを作成するためにパッケージのデバッグをする際に、
+	特に便利です。これと同様に、<literal>pre-install</literal>
+	よりも <literal>post-build</literal> のほうが好まれます。
+	これは、一般的に install 相は極力簡素なものにするほうがよいからです。
+	<literal>post-build</literal> を使った場合、
+	後にインストールされるものと同じファイルが作業ディレクトリーにできあがるので、
+	正しく置換がおこなわれたかを確認することができます。</para>
+
+	<para><varname>SUBST_MESSAGE.*</varname> は、
+	置換がおこなわれる直前に表示するテキストで、省略可能です。</para>
+
+	<para><varname>SUBST_FILES.*</varname> は、置換の対象となるファイルを、
+	シェルのグロブパターンで指定したものを並べたリストです。
+	このパターンは、<varname>WRKSRC</varname>
+	ディレクトリーからの相対位置として解釈されます。</para>
+
+	<para><varname>SUBST_SED.*</varname> は置換の内容を
+	&man.sed.1; への引数の形で指定したものを並べたリストです。
+	各 sed コマンドの前には <literal>-e</literal> をつけて、
+	SUBST の塊全体が一様に見えるようにします。</para>
+
+	<para>以上のほかにも変数がいくつかありますが、
+	それらはほとんど使われないものなので、
+	<filename>mk/subst.mk</filename> ファイル内でのみ文書化されています。</para>
+
+</sect2>
+</sect1>
 <sect1 id="fixes.fetch">
 <title><emphasis>fetch</emphasis> 相での問題を修正する</title>
 
