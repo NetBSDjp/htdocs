@@ -1,6 +1,6 @@
-<!-- $NetBSD: using.xml,v 1.21 2006/07/29 14:14:23 rillig Exp $ -->
+<!-- $NetBSD: using.xml,v 1.22 2006/07/29 15:57:04 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: using.xml,v 1.21 2006/07/29 14:14:23 rillig Exp   -->
+<!-- NetBSD: using.xml,v 1.22 2006/07/29 15:57:04 rillig Exp   -->
 
 <chapter id="using"> <?dbhtml filename="using.html"?>
 <title>pkgsrc を使う</title>
@@ -161,6 +161,65 @@
 
 </sect2>
 
+<sect2 id="vulnerabilities">
+<title>インストール済パッケージの脆弱性チェック</title>
+
+<para>
+NetBSD セキュリティーオフィサーとパッケージグループでは、
+pkgsrc に含まれる (あるいは含まれていた) パッケージの既知の脆弱性のリストを
+保守しています。このリストは、 NetBSD FTP サイトの
+<ulink url="ftp://ftp.NetBSD.org/pub/pkgsrc/distfiles/vulnerabilities"/>
+から入手できます
+</para>
+
+<para>
+<filename role="pkg">security/audit-packages</filename> を使うと、
+このリストを自動的にダウンロードし、
+システムにインストールされているパッケージすべてについて
+セキュリティー検証をすることができます。
+</para>
+
+<para>
+<filename role="pkg">security/audit-packages</filename>
+は、ふたつの部分からできています。
+ひとつは <quote>download-vulnerability-list</quote> で、 NetBSD FTP サイトから
+脆弱性のリストをダウンロードするものです。もうひとつは
+<quote>audit-packages</quote> で、インストールされているパッケージに脆弱性が
+ないかどうか検証するものです。脆弱性のあるパッケージがあった場合、
+次のように出力してくれます:
+</para>
+
+<screen>Package samba-2.0.9 has a local-root-shell vulnerability, see
+http://www.samba.org/samba/whatsnew/macroexploit.html</screen>
+
+<para>
+<filename 
+role="pkg">security/audit-packages</filename>
+では、
+<ulink url="ftp://ftp.NetBSD.org/pub/pkgsrc/distfiles/vulnerabilities">vulnerabilities</ulink>
+ファイルを毎日ダウンロードして、さらに、パッケージの検証を
+daily security script で行なうように設定することができます。
+これについての詳細は、 <filename role="pkg">security/audit-packages</filename> の <ulink
+url="http://cvsweb.NetBSD.org/bsdweb.cgi/pkgsrc/security/audit-packages/MESSAGE?rev=HEAD&amp;content-type=text/x-cvsweb-markup">MESSAGE</ulink>
+ファイルに書かれています。
+</para>
+</sect2>
+
+<sect2 id="pkg_versions">
+<title>インストール済パッケージのより新しいバージョンが pkgsrc にあるかどうか調べる</title>
+<para>
+インストール済パッケージが最新かどうかを確認するには、
+<filename role="pkg">pkgtools/pkglint</filename> をインストールして、
+<command>lintpkgsrc</command> に <quote>-i</quote> を付けて実行します。たとえば以下のようになります。
+</para>
+<screen><prompt>%</prompt> <userinput>lintpkgsrc -i</userinput>
+...
+Version mismatch: 'tcsh' 6.09.00 vs 6.10.00</screen>
+<para>このようになった場合、パッケージを更新し、そのパッケージに依存しているパッケージをすべて再構築するために、
+<command>make update</command> を使うことができます。
+</para>
+</sect2>
+
 <sect2 id="using.pkg_admin">
 <title>その他の管理用機能</title>
 
@@ -188,7 +247,23 @@
   <sect1 id="building-packages-from-source">
     <title>ソースからパッケージを構築する</title>
 
-    <para> ここでは、パッケージがすでに pkgsrc に含まれていると仮定
+<para>
+pkgsrc を入手すると、 <filename>pkgsrc</filename> ディレクトリーには、
+カテゴリー別に整理されたパッケージ一式が含まれます。
+オンラインでパッケージの索引を見られますし、また、 <filename>pkgsrc</filename>
+ディレクトリーで <command>make readme</command> してローカルで <filename>README.html</filename>
+を作って、 <filename role="pkg">www/lynx</filename> や
+<filename role="pkg">www/mozilla</filename> などの好みの
+web ブラウザーで見られるようにすることもできます。</para>
+
+<para>パッケージのインストール先の<emphasis>プレフィックス</emphasis>は、
+デフォルトでは <filename>/usr/pkg</filename> です。これを変えたい場合は、
+<filename>mk.conf</filename> で <varname>LOCALBASE</varname>
+を設定してください。一つのシステム内で複数の
+<varname>LOCALBASE</varname> を定義して使い分けるようなことはしないでください
+(chroot 環境内は除く)。 </para>
+
+    <para>以下、本章では、パッケージがすでに pkgsrc に含まれていると仮定
       しています。もし、そうでなれば、<xref linkend="developers-guide"/>で、
       パッケージを新たに作る方法をご覧ください。 </para>
 
@@ -212,6 +287,16 @@
       のダウンロードです。配布ファイルがまだダウンロードされていない場合、
       pkgsrc は自動的に配布ファイルを取得します。</para>
 
+<para>
+<filename>distfiles</filename> ディレクトリー
+に必要なファイルが
+すでに存在していれば、インターネットに接続する必要はありません。
+CD-ROMなどにdistfilesがある場合には、CD-ROMを <filename>/cdrom</filename> にmountし、
+<screen>DISTDIR=/cdrom/pkgsrc/distfiles</screen>
+を <filename>mk.conf</filename>
+に加えて、使うことができます。
+</para>
+
       <para>主要な配布サイトをあなたのところに近いサイトで上書きす
         ることができます。
         <filename>pkgsrc/mk/defaults/mk.conf</filename>の例の、特に<varname>MASTER_SORT</varname>,
@@ -224,18 +309,29 @@
         <filename>/etc/mk.conf</filename>
         ファイルにその定義を書き加えておくこともできます。</para>
 
-      <para>もし、インターネットへ常時接続しておらず、ダウンロードするファイルを知りた
-        い場合は、<command>make fetch-list</command>を実行すれば、必要なファイルがわかります。それ
-        らの配布ファイルを
-        <filename>/usr/pkgsrc/distfiles</filename>に置いてください。</para>
+<para>
+パッケージが他のパッケージ(例えば <filename role="pkg">meta-pkgs/kde3</filename> など)
+に依存している場合、
+ダウンロードとコンパイルを交互に繰り返すことがあります。
+最初に必要なすべてのソースを確実にダウンロードするには、
+次のコマンドを使用します:
+<screen><prompt>%</prompt> <userinput>make fetch-list | sh</userinput></screen>
+このコマンドは必要なファイルを取ってきて<filename>distfiles</filename> ディレクトリー
+に保存するためのシェルコマンドを出力、実行します。必要なファイルを手動で
+ダウンロードするという方法もあります。
+</para>
+
     </sect2>
 
     <sect2 id="how-to-build-and-install">
       <title>構築とインストール方法</title>
 
-      <para>配布ファイルは取得ずみと仮定します (前節参照)。
-        root になって、パッケージのディレクトリーに移動し、
-        <command>make</command> を実行します。</para>
+<para>
+ソフトウェアがダウンロードされると、パッチが適用された上で、
+コンパイルされます。それにかかる時間はあなたのコンピューターによりますし、
+そのソフトウェアが依存している他のパッケージの数とそれらのコンパイルに
+かかる時間にもよります。
+</para>
 
       <note><para>bootstrap または pkgsrc を NetBSD 以外のシステムで使う場合は、
         この手引きで例示されている <quote>make</quote> ではなく
@@ -246,14 +342,38 @@
       <screen>&cprompt; <userinput>cd misc/figlet</userinput>
 &cprompt; <userinput>make</userinput></screen>
 
-      <para>とします。
-        また、パッケージの各構成要素をシステムの適切な場所にインストールするには、</para>
+      <para>とします。</para>
 
-      <screen>&rprompt; <userinput>make install</userinput></screen>
+	<para>次は新たにコンパイルされたプログラムを、
+	実際にあなたのシステムにインストールします。
+	インストールしようとしているパッケージのディレクトリーにいる間に
 
-      <para>とします。パッケージをシステムにインストールするには root 権限が必要なことがあります。
+<screen>
+    <prompt>%</prompt> <userinput>make install</userinput>
+</screen>
+
+	と入力してください。</para>
+
+	<para>パッケージをシステムにインストールするには root 権限が必要なことがあります。
         ただし、pkgsrc には<emphasis>必要な時のみ  su する</emphasis>機能があり、
-        実際のインストール時にのみ root になることができます</para>
+        実際のインストール時にのみ root になることができます。</para>
+
+<para>そのソフトウェアは今まさにインストールされ、
+使用できるようにセットアップされたことになります。
+もうこれ以上コンパイル後の作業ファイルは必要とされないので、
+
+<screen>
+    <prompt>%</prompt> <userinput>make clean</userinput>
+</screen>
+
+	と入力し作業ディレクトリー内のファイルを削除してしまってもかまいません。
+	もし、プログラムをコンパイルするときに、
+	依存関係により他のパッケージがコンパイル/インストールされたならば、
+	それらも次のコマンドにより、きちんと削除することができます。</para>
+
+<screen>
+    <prompt>%</prompt> <userinput>make clean-depends</userinput>
+</screen>
 
       <para>figlet ユーティリティーを例にあげると、<xref linkend="logs"/>のように構築することに
         より、システムにインストールすることができます。</para>
@@ -398,5 +518,6 @@
         </varlistentry>
       </variablelist>
     </sect2>
-  </sect1>
+
+</sect1>
 </chapter>
