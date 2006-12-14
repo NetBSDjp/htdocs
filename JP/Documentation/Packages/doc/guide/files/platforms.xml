@@ -1,6 +1,6 @@
-<!-- $NetBSD: platforms.xml,v 1.32 2006/07/29 15:57:04 rillig Exp $ -->
+<!-- $NetBSD: platforms.xml,v 1.37 2006/08/30 04:47:16 schmonz Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: platforms.xml,v 1.32 2006/07/29 15:57:04 rillig Exp   -->
+<!-- NetBSD: platforms.xml,v 1.37 2006/08/30 04:47:16 schmonz Exp   -->
 
 <chapter id="platforms">
   <title>&os; 以外のシステムで pkgsrc を使う</title>
@@ -251,7 +251,7 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
     <sect2 id="darwin">
       <title>Darwin (Mac OS X)</title>
 
-      <para>対応は、 Darwin 5.x および 6.x に対しておこなわれています。
+      <para>対応は、 Darwin 5.x 以上に対しておこなわれています。
 	Mac OS X で pkgsrc を使う方法としては、<link linkend="platform.osx-image">ディスクイメージ
 	</link>を使う方法と<link linkend="platform.osx-ufs">UFS
 	  パーティション</link>を使う方法の二種類があります。</para>
@@ -270,8 +270,8 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
 	(ディスクイメージは手動でマウントすることが必要です)。</para>
 
       <note>
-	<para>HFS+ ファイルシステムを pkgsrc 用に使うことはできません。pkgsrc は現在のところ、
-	  大文字と小文字を区別するファイルシステムを必要とするのですが、HFS+ は大文字と小文字を区別しないからです。</para>
+	<para>通常の HFS+ ファイルシステムを pkgsrc 用に使うことはできません。pkgsrc は現在のところ、
+	  大文字と小文字を区別するファイルシステムを必要とするのですが、HFS+ は大文字と小文字を区別しないからです。しかし、Darwin 7.0 以降にある、大文字と小文字を区別する HFS+ ファイルシステムは使うことができます。</para>
       </note>
 
       <sect3 id="platform.osx-image">
@@ -280,11 +280,16 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
 	<para>ディスクイメージを作ります。</para>
 
 	<screen>&rprompt; <userinput>cd pkgsrc/bootstrap</userinput>
-&rprompt; <userinput>./ufsdiskimage create ~/Documents/NetBSD 512</userinput> # megabytes - season to taste
-&rprompt; <userinput>./ufsdiskimage mount ~/Documents/NetBSD</userinput>
+&rprompt; <userinput>./darwindiskimage create ~/Documents/NetBSD 512</userinput> # megabytes - season to taste
+&rprompt; <userinput>./darwindiskimage mount ~/Documents/NetBSD</userinput>
 &rprompt; <userinput>sudo chown `id -u`:`id -g` /Volumes/NetBSD</userinput></screen>
 
-	<para>これで、できあがりです。</para>
+	<note>
+	  <para>darwindiskimage はファイルシステムを nosuid でマウントするため、setgid に依存するパッケージでは問題があります。また、ファイルシステムを非同期でマウントするため、mount(8) マニュアルページに書かれているような危険があります。</para>
+	</note>
+
+	<para>suid を許し、かつ同期でマウントするには、以下のようにします。</para>
+	<screen>&rprompt; <userinput>sudo mount -u -o suid,sync /Volumes/NetBSD</userinput></screen>
       </sect3>
 
       <sect3 id="platform.osx-ufs">
