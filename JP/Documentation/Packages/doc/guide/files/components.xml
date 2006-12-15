@@ -1,6 +1,6 @@
-<!-- $NetBSD: components.xml,v 1.26 2006/07/24 10:32:36 rillig Exp $ -->
+<!-- $NetBSD: components.xml,v 1.28 2006/09/03 00:20:49 wiz Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: components.xml,v 1.26 2006/07/24 10:32:36 rillig Exp   -->
+<!-- NetBSD: components.xml,v 1.28 2006/09/03 00:20:49 wiz Exp   -->
 
 <chapter id="components"> <?dbhtml filename="components.html"?>
   <title>パッケージコンポーネント - ファイル、ディレクトリー、およびコンテンツ</title>
@@ -242,12 +242,6 @@
       イルのチェックサムを生成するようにしてください。<xref linkend="components.distinfo"/>を参照してくだ
       さい。</para>
 
-    <para>(たとえば、マニュアルページの場所を pkgsrc の流儀に合わせるようなものではなく)
-      distfile の問題を修正するパッチを追加した場合は、
-      そのパッチをバグ報告としてメンテナーに送ってください。こうすることで、
-      pkgsrc を使っていないパッケージ利用者が幸せになれますし、
-      通常は、将来のバージョンでパッチを削除することができるようになります。</para>
-
     <para>作者その他のメンテナーが配布しているパッチファイルは、
       <varname>$PATCHFILES</varname>
       に列挙することができます。 </para>
@@ -262,6 +256,144 @@
       るようにしたい場合は、そのパッチを<filename>$LOCALPATCHES/graphics/png/mypatch</filename>に置き
       ます。このディレクトリーにあるファイルはすべてパッチファイルとして扱われ、
       <emphasis>pkgsrcのパッチが適用された後に、このパッチが適用されます</emphasis>。</para>
+
+    <sect2 id="components.patches.guidelines">
+      <title>パッチ作成の指針</title>
+
+      <para>コードの移植性に関する問題を修正する場合は、
+      プリプロセッサーの細工を使ってオペレーティングシステムやプラットフォームを判別するようなことはしてはいけません。
+      そのような方法では、各 OS 固有性の詳細が適切に抽象化できないため、
+      他のオペレーティングシステムに対する移植性を損なってしまいます。</para>
+      
+      <para>一般的な決めごとは、
+      アプリケーションを構築しているオペレーティングシステムそのものを検査するのではなく、
+      必要としている特有の<emphasis>機能</emphasis>を検査する、というものです。
+      たとえば、kqueue は NetBSD において利用可能であると仮定して
+      <varname>__NetBSD__</varname> マクロを kqueue 対応の条件として使う、
+      ということはせずに、kqueue 自体を検出するようにするのです。
+      そしてこれは、一般的には
+      <command>configure</command> スクリプトにパッチを適用することになります。
+      ある OS が他の OS (たとえば kqueue を実装した Linux)
+      のインターフェースを採用してはいけない理由はまったくありませんが、
+      前述のようにオペレーティングシステムそのものを検査してしまうと、
+      そのような状況に対応することができません。</para>
+      
+      <para>もちろん、機能を検査することは、
+      一般的に、開発者側の負担が多くなります。しかし、
+      機能を検査するようにすれば、その結果はきれいな変更となり、
+      他の多くのプラットフォームで動作させられる可能性があります。
+      また、本家のソースに統合される可能性が高くなることはいうまでもありません。
+      <emphasis>正しくない限り動かない</emphasis>の哲学を忘れないでください。</para>
+
+      <para>典型的な例としては、以下のようなものがあります。</para>
+
+      <table id="patch-examples">
+	<title>パッチ適用例</title>
+
+	<tgroup cols="3">
+	  <thead>
+	    <row>
+	      <entry>場所</entry>
+	      <entry>誤</entry>
+	      <entry>正</entry>
+	    </row>
+	  </thead>
+
+	  <tbody>
+	    <row>
+	      <entry>configure スクリプト</entry>
+	      <entry>
+		<programlisting>case ${target_os} in
+      netbsd*) have_kvm=yes ;;
+      *)       have_kvm=no  ;;
+  esac</programlisting>
+	      </entry>
+
+	      <entry>
+		<programlisting>AC_CHECK_LIB(kvm, kvm_open, have_kvm=yes, have_kvm=no)</programlisting>
+	      </entry>
+	    </row>
+
+	    <row>
+	      <entry>C ソースファイル</entry>
+	      <entry>
+		<programlisting>#if defined(__NetBSD__)
+  #  include &lt;sys/event.h&gt;
+  #endif</programlisting>
+	      </entry>
+	      <entry>
+		<programlisting>#if defined(HAVE_SYS_EVENT_H)
+  #  include &lt;sys/event.h&gt;
+  #endif</programlisting>
+	      </entry>
+	    </row>
+
+	    <row>
+	      <entry>C ソースファイル</entry>
+	      <entry><programlisting>int
+  monitor_file(...)
+  {
+  #if defined(__NetBSD__)
+      int fd = kqueue();
+      ...
+  #else
+      ...
+  #endif
+  }</programlisting>
+	      </entry>
+	      <entry>
+		<programlisting>int
+  monitor_file(...)
+  {
+  #if defined(HAVE_KQUEUE)
+      int fd = kqueue();
+      ...
+  #else
+      ...
+  #endif
+  }</programlisting>
+	      </entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </table>
+
+      <para>さらなる情報は、<emphasis>Making
+      packager-friendly software</emphasis> の記事 (<ulink
+      url="http://www.onlamp.com/pub/a/onlamp/2005/03/31/packaging.html">第
+      1 部</ulink>、<ulink
+      url="http://www.oreillynet.com/pub/a/onlamp/2005/04/28/packaging2.html">第
+      2 部</ulink>) をお読みください。この記事では、ソフトウェアをパッケージ化しやすくする方法について、
+      複数の点での詳細をまとめています。ここで述べられている提案は、いずれも、
+      私たちが pkgsrc の作業をした経験から集められたものですので、
+      パッチの作成に際しても役に立つかもしれません。</para>
+
+    </sect2>
+
+    <sect2 id="components.patches.feedback">
+      <title>作者へのフィードバック</title>
+
+      <para>常に、常に、<emphasis role="strong">常に</emphasis>、
+      パッケージに施したあらゆる<emphasis>移植性に関する修正</emphasis>や改良点を、
+      本家の開発者に還元するようにしてください。
+      彼らに移植性についての注意を喚起して、将来のバージョンが無修正で
+      NetBSD で構築できるようにするためには、そうするしかないのです。
+      また、将来のバージョンの配布ファイルの利用者は、
+      フィードバックされた修正をパッケージのコードから直接利用することができるようになります。</para>
+
+      <para>フィードバックをする方法は、一般的には、
+      前の節で説明したようにパッチをきれいに書き直し (pkgsrc で追加されたパッチは、
+      時にはクイックハックであることがあるからです)、
+      フィードバック先のプロジェクト用の適切な追跡システムに対してバグ報告をし、
+      変更が受け入れられるよう本家の作者とともに作業する、というものです。
+      フィードバックをすることで、pkgsrc のパッケージを単純なものとし、
+      さほど労力を割かずに将来の変更ができるようにするということが、
+      <emphasis>特に重要</emphasis>です。</para>
+
+      <para>フリーソフトウェアの理念をサポートして下さい。</para>
+
+    </sect2>
+
   </sect1>
 
   <sect1 id="other-mandatory-files">
