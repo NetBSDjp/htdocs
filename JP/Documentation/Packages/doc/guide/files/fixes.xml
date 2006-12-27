@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.72 2006/09/10 19:36:31 wiz Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.73 2006/09/13 23:38:21 wiz Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.72 2006/09/10 19:36:31 wiz Exp   -->
+<!-- NetBSD: fixes.xml,v 1.73 2006/09/13 23:38:21 wiz Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
 <title>パッケージを動くようにする</title>
@@ -15,7 +15,6 @@
     そのため、pkgsrc のパッケージの移植性をできるかぎり高めることが重要になります。
     本章では、pkgsrc の作業に際して、
     注意が必要となる具体的な事項を説明します。</para>
-
   </sect2>
 
   <sect2 id="pulling-vars-from-etc-mk.conf">
@@ -43,14 +42,13 @@
     <note><para>各変数が読み込み時に使用可能か、
     実行時にのみ使用可能かを網羅した一覧は、現在のところありませんが、
     準備をしているところです。</para></note>
-
   </sect2>
 
   <sect2 id="user-interaction">
     <title>ユーザーとの対話</title>
 
-    <para>時々、パッケージがユーザーとの対話を必要とする場合がありますが、そのような
-    状況は何通りもありえます:</para>
+    <para>時々、パッケージがユーザーとの対話を必要とする場合がありますが、
+    そのような状況は何通りもありえます:</para>
 
     <itemizedlist>
 
@@ -61,7 +59,8 @@
       </listitem>
 
       <listitem>
-	<para>distfile の展開時に、パッケージによってはパスワードを要求することがあります。</para>
+	<para>distfile の展開時に、
+	パッケージによってはパスワードを要求することがあります。</para>
       </listitem>
 
       <listitem>
@@ -77,9 +76,10 @@
       </listitem>
     </itemizedlist>
 
-    <para>どの段階で対話が必要になるかをpkgsrcの機構に知らせるため、<varname>INTERACTIVE_STAGE</varname>
-    定義が用意されており、パッケージの<filename>Makefile</filename>で定義します。たとえば以下のよう
-    にします。</para>
+    <para>どの段階で対話が必要になるかをpkgsrcの機構に知らせるため、
+    <varname>INTERACTIVE_STAGE</varname> 定義が用意されており、
+    パッケージの<filename>Makefile</filename>で定義します。
+    たとえば以下のようにします。</para>
 
     <programlisting>
       INTERACTIVE_STAGE=      build
@@ -91,6 +91,8 @@
       INTERACTIVE_STAGE=      configure install
     </programlisting>
 
+    <para>利用者は、<varname>BATCH</varname> 変数を設定して、
+    この定義がおこなわれているパッケージをとばすことができます。</para>
   </sect2>
 
   <sect2 id="handling-licenses">
@@ -235,8 +237,8 @@
     <para>パッケージは他のパッケージに依存するかもしれません。そして、この依存性を定
     義するためのいろいろな方法があります。pkgsrc は、<filename>buildlink3.mk</filename>を使った依存関
     係 (依存性の処理用としては、こちらが望ましい方法です。
-    この方法では以下の各変数を使っています。さらなる情報は<xref
-    linkend="buildlink"/>を参照してください)
+    この方法では以下の各変数を使っています。
+    さらなる情報は<xref linkend="buildlink"/>を参照してください)
     のほか、
     <varname>BUILD_DEPENDS</varname> および <varname>DEPENDS</varname> 定義、
     <varname>USE_TOOLS</varname> 定義をサポートしています。</para>
@@ -379,12 +381,13 @@
     (このパッケージは、
     構築の際に jpeg のソースがソースの状態で存在することに依存しています。)</para>
 
-    <para>また、便利に使うことができる<varname>BUILD_USES_MSGFMT</varname>および
+    <para>また、便利に使うことができる
     <varname>BUILD_USES_GETTEXT_M4</varname>定
-    義にも注意してください。前者は、基本システムに &man.msgfmt.1; があるかどうか調べて、
-    ない場合は<filename role="pkg">devel/gettext</filename>パッケージをインストールします。後者は、構築
+    義にも注意してください。
+    これは、構築
     の際に、旧バージョンのgettextパッケージがインストールされていることに依存す
-    るようにし、これがインストールされていない場合は<filename role="pkg">devel/gettext-m4</filename>パッ
+    るようにし、これがインストールされていない場合は<filename
+    role="pkg">devel/gettext-m4</filename>パッ
     ケージをインストールします。</para>
   </sect2>
 
@@ -431,6 +434,15 @@
     <varname>NOT_FOR_PLATFORM</varname> の値はいずれも、OS triples
     (OS-version-platform) であり、
     グロブ形式のワイルドカードを使うことができます。</para>
+    <para>パッケージのなかには、あるオペレーティングシステムの特定のバージョンに強く依存するものがあります。
+    たとえば、LKM や <filename
+    role="pkg">sysutils/lsof</filename> などです。
+    このようなバイナリーパッケージは、同じ OS の別バージョンと後方互換ではないので、
+    FTP サーバーでは対象バージョン専用のディレクトリーにアップロードするようにします。
+    <varname>OSVERSION_SPECIFIC</varname> を <quote>yes</quote> に設定して、
+    パッケージに印をつけてください。この変数は、現在のところ、
+    パッケージシステム内部のどこでも使われませんが、
+    将来は使われることになるかもしれません。</para>
     <para>パッケー
     ジをとばすべき場合(たとえば、そのパッケージが提供する機能が、すでにシステム
     で提供されている場合)は、
