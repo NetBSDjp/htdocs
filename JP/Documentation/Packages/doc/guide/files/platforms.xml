@@ -1,6 +1,6 @@
-<!-- $NetBSD: platforms.xml,v 1.41 2006/09/13 23:33:18 wiz Exp $ -->
+<!-- $NetBSD: platforms.xml,v 1.42 2006/09/17 23:55:28 ben Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: platforms.xml,v 1.41 2006/09/13 23:33:18 wiz Exp   -->
+<!-- NetBSD: platforms.xml,v 1.42 2006/09/17 23:55:28 ben Exp   -->
 
 <chapter id="platforms">
   <title>&os; 以外のシステムで pkgsrc を使う</title>
@@ -254,7 +254,7 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
 
       <para>対応は、 Darwin 5.x 以上に対しておこなわれています。
 	Mac OS X で pkgsrc を使う方法としては、<link linkend="platform.osx-image">ディスクイメージ
-	</link>を使う方法と<link linkend="platform.osx-ufs">UFS
+	</link>を使う方法と<link linkend="platform.osx-part">UFS または HFSX
 	  パーティション</link>を使う方法の二種類があります。</para>
 
       <para>始める前に、Apple Developer Connection から Mac OS X Developer
@@ -264,15 +264,15 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
       url="http://www.apple.com/macosx/x11/download/">http://www.apple.com/macosx/x11/download/</ulink>
       から X11 for Mac OS X および X11 SDK をインストールしておくことも必要です。</para>
 
-      <para>UFS パーティションがすでにある場合、または、
-      UFS でフォーマット可能な未使用のパーティションがある場合は、
+      <para>UFS または HFSX パーティションがすでにある場合、または、
+      UFS または HFSX でフォーマット可能な未使用のパーティションがある場合は、
       ディスクイメージではなくそれを使うことをおすすめします。
       多少速くなりますし、ブート時に自動的にマウントすることができます
       (ディスクイメージは手動でマウントすることが必要です)。</para>
 
       <note>
 	<para>通常の HFS+ ファイルシステムを pkgsrc 用に使うことはできません。pkgsrc は現在のところ、
-	  大文字と小文字を区別するファイルシステムを必要とするのですが、HFS+ は大文字と小文字を区別しないからです。しかし、Darwin 7.0 以降にある、大文字と小文字を区別する HFS+ ファイルシステムは使うことができます。</para>
+	  大文字と小文字を区別するファイルシステムを必要とするのですが、HFS+ は大文字と小文字を区別しないからです。しかし、Darwin 7.0 以降にある、大文字と小文字を区別する HFS+ (別名 HFSX) ファイルシステムは使うことができます。</para>
       </note>
 
       <sect3 id="platform.osx-image">
@@ -286,19 +286,19 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
 &rprompt; <userinput>sudo chown `id -u`:`id -g` /Volumes/NetBSD</userinput></screen>
 
 	<note>
-	  <para>darwindiskimage はファイルシステムを nosuid でマウントするため、setgid に依存するパッケージでは問題があります。また、ファイルシステムを非同期でマウントするため、mount(8) マニュアルページに書かれているような危険があります。</para>
+	  <para>darwindiskimage はファイルシステムを nosuid でマウントするため、setgid に依存するパッケージでは問題があります。また、UFS の場合は、ファイルシステムを非同期でマウントするため、mount(8) マニュアルページに書かれているような危険があります。HFSX の場合は、ジャーナリングを無効化します。</para>
 	</note>
 
-	<para>suid を許し、かつ同期でマウントするには、以下のようにします。</para>
-	<screen>&rprompt; <userinput>sudo mount -u -o suid,sync /Volumes/NetBSD</userinput></screen>
+	<para>suid を許すには、以下のようにします。</para>
+	<screen>&rprompt; <userinput>sudo mount -u -o suid /Volumes/NetBSD</userinput></screen>
       </sect3>
 
-      <sect3 id="platform.osx-ufs">
-	<title>UFS パーティションを使う</title>
+      <sect3 id="platform.osx-part">
+	<title>UFS または HFSX パーティションを使う</title>
 
 	<para>標準状態では、 <filename>/usr</filename> がルートファイルシステム
 	(通常は HFS+) 上にあるでしょう。<filename>/usr/pkg</filename> を
-	UFS 上にあるディレクトリーへのシンボリックリンクにすれば、
+	UFS または HFSX 上にあるディレクトリーへのシンボリックリンクにすれば、
 	無指定時の <emphasis>prefix</emphasis> である <filename>/usr/pkg</filename>
 	を使うことができます。また、パッケージデータベースディレクトリーを
 	<emphasis>prefix</emphasis> 以外の場所にしたい場合は、
@@ -307,11 +307,11 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
 	<screen>&rprompt; <userinput>./bootstrap --pkgdbdir /usr/pkg/pkgdb</userinput></screen>
 
 	<para>Mac OS X のインストール時にパーティションを作り、
-	UFS でフォーマットした場合は、ブート時に自動的に
+	UFS または HFSX でフォーマットした場合は、ブート時に自動的に
 	<filename>/Volumes/&lt;volume name&gt;</filename>
-	にマウントされるはずです。パーティションを UFS で
+	にマウントされるはずです。パーティションを UFS または HFSX で
 	(再)フォーマットする場合は、パーティションマップが
-	<quote>Apple_HFS</quote> ではなく <quote>Apple_UFS</quote>
+	<quote>Apple_HFS</quote> ではなく <quote>Apple_UFS</quote> または <quote>Apple_HFSX</quote>
 	を適切に反映していることを確認する必要があります。</para>
 
 	<para>問題は、ディスクツールではブートに使ったディスクを変更できないことです。
@@ -322,8 +322,8 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
 
 	<para>OS X Installation (User) CD からブートする必要があります。
 	インストールプログラムが起動したら、メニューから Disk
-	Utility を選択します。これで、 UFS にしたいパーティションを選んで
-	Apple UFS でフォーマットすることができます。
+	Utility を選択します。これで、 UFS または HFSX にしたいパーティションを選んで
+	Apple UFS または HFSX でフォーマットすることができます。
 	Disk Utility を終了し、インストーラーを終了するとコンピューターが再起動します。
 	これで、新しい UFS パーティションが Finder で見られます</para>
 
