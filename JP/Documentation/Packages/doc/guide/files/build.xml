@@ -1,6 +1,6 @@
-<!-- $NetBSD: build.xml,v 1.34 2006/09/10 19:51:49 wiz Exp $ -->
+<!-- $NetBSD: build.xml,v 1.35 2006/09/13 23:23:00 wiz Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.34 2006/09/10 19:51:49 wiz Exp   -->
+<!-- NetBSD: build.xml,v 1.35 2006/09/13 23:23:00 wiz Exp   -->
 
 <chapter id="build">
   <title>構築の手順</title>
@@ -34,7 +34,7 @@
     について簡単に記述します。</para>
 
     <para>自動変数<varname>PREFIX</varname>は、最終的にプログラムのすべてのファイルがインストールされる
-    場所をしめします。通常、<varname>LOCALBASE</varname> (<filename>/usr/pkg</filename>)、または<quote>cross</quote>カテゴリーの
+    場所をしめします。通常、<varname>LOCALBASE</varname> (<filename>/usr/pkg</filename>)、または<filename>cross</filename>カテゴリーの
     パッケージのための<varname>CROSSBASE</varname>と同じ場所になっています。
     <varname>PREFIX</varname>の値は、プログラムのソース中でこれらのファイルが符号化されるさまざ
     まな場所に使用されるべきです。
@@ -201,436 +201,480 @@
   <sect1 id="build.fetch">
     <title><emphasis>fetch</emphasis> 相</title>
 
-	<para>パッケージの構築の最初の段階は、配布ファイル (distfiles)
-	を、そのファイルを配布しているサイトから取得することです。
-	これは <emphasis>fetch</emphasis> 相がおこなう仕事です。</para>
-
-<sect2 id="build.fetch.what">
-<title>何を、どこから取得するか</title>
-
-	<para>単純な場合では、<varname>MASTER_SITES</varname> で
-	distfile (distfile のファイル名は <varname>DISTNAME</varname> が使われます)
-	を取得する URL をすべて定義します。
-	これより複雑な場合については、以下で説明します。</para>
-
-	<para>変数 <varname>DISTFILES</varname> は、取得する必要のある
-	distfile を並べたリストを指定します。この値は、標準では
-	<literal>${DISTNAME}${EXTRACT_SUFX}</literal> になり、
-	ほとんどのパッケージではあえて定義する必要がありません。
-	<varname>EXTRACT_SUFX</varname> は、標準では <literal>.tar.gz</literal>
-	になりますが、自由に変更することができます。なお、標準で定義される
-	distfile に加えて別の distfile が必要な場合は、
-	それを <literal>+=</literal> 演算子を使って追加することはできません。
-	たとえば以下のように書く必要があります。</para>
-
-<programlisting>
-    DISTFILES=      ${DISTNAME}${EXTRACT_SUFX} additional-files.tar.gz
-</programlisting>
-
-	<para>各 distfile は、通常は <varname>MASTER_SITES</varname>
-	に並べられたサイトから取得されます。パッケージに複数の
-	<varname>DISTFILES</varname> または複数の
-	<varname>PATCHFILES</varname> があり、それらが異なるサイトで配布されている場合は、
-	<filename><replaceable>distfile</replaceable></filename>
-	ファイル (サフィックスを含む) の配布場所の URL を並べたリストを
-	<varname>SITES.<replaceable>distfile</replaceable></varname>
-	に設定することができます。</para>
-
-<programlisting>
-    DISTFILES=      ${DISTNAME}${EXTRACT_SUFX}
-    DISTFILES+=     foo-file.tar.gz
-    SITES.foo-file.tar.gz= \
-            http://www.somewhere.com/somehow/ \
-            http://www.somewhereelse.com/mirror/somehow/
-</programlisting>
-
-	<para>distfile を実際に取得する際、それらは、
-	<varname>MASTER_SITES</varname> または <varname>SITES.*</varname>
-	に各 distfile のファイル名をそのまま (間にスラッシュを入れずに)
-	つなげた形の URL から取得されます。このため、サイトを定義する変数の値は、
-	スラッシュその他の分離記号で終わる必要があります。このため、たとえば
-	<varname>MASTER_SITES</varname> を、distfile 名を引数としてとる
-	CGI スクリプトの URL にすることができます。そうした場合、
-	以下のような形で定義することになります。</para>
-
-<programlisting>
-    MASTER_SITES=   http://www.example.com/download.cgi?file=
-</programlisting>
-
-	<para>パッケージで使うため、<varname>MASTER_SITES</varname>
-	用にあらかじめ定義された値がいくつか用意されています。
-	各変数の意味は、名前から明らかでしょう。</para>
-
-<!-- sort mk/fetch/sites.mk | sed -n 's/\(^MA[A-Z_]*\).*/    ${\1}/p' -->
-<programlisting>
-    ${MASTER_SITE_APACHE}
-    ${MASTER_SITE_BACKUP}
-    ${MASTER_SITE_CYGWIN}
-    ${MASTER_SITE_DEBIAN}
-    ${MASTER_SITE_FREEBSD}
-    ${MASTER_SITE_FREEBSD_LOCAL}
-    ${MASTER_SITE_GNOME}
-    ${MASTER_SITE_GNU}
-    ${MASTER_SITE_GNUSTEP}
-    ${MASTER_SITE_IFARCHIVE}
-    ${MASTER_SITE_KDE}
-    ${MASTER_SITE_MOZILLA}
-    ${MASTER_SITE_MYSQL}
-    ${MASTER_SITE_OPENOFFICE}
-    ${MASTER_SITE_PERL_CPAN}
-    ${MASTER_SITE_PGSQL}
-    ${MASTER_SITE_R_CRAN}
-    ${MASTER_SITE_SOURCEFORGE}
-    ${MASTER_SITE_SOURCEFORGE_JP}
-    ${MASTER_SITE_SUNSITE}
-    ${MASTER_SITE_SUSE}
-    ${MASTER_SITE_TEX_CTAN}
-    ${MASTER_SITE_XCONTRIB}
-    ${MASTER_SITE_XEMACS}
-</programlisting>
-
-	<para>もしこれらの予め定義されたサイトの1つを選んだ場合、そのサイトのサブディレク
-	トリーを指定することが必要となるかもしれません。これらのマクロは複数の実際
-	のサイトに展開されるかもしれませんので、サブディレクトリーを指定する場合は、
-	以下の表記を<emphasis>使わなければなりません</emphasis>:</para>
-
-<programlisting>
-    MASTER_SITES=   ${MASTER_SITE_GNU:=subdirectory/name/}
-    MASTER_SITES=   ${MASTER_SITE_SOURCEFORGE:=project_name/}
-</programlisting>
-
-	<para>サブディレクトリー名の後のスラッシュ/に注意してください。</para>
-
-</sect2>
-<sect2 id="build.fetch.how">
-<title>ファイルの取得はどのようにおこなわれるか?</title>
-
-	<para><emphasis>fetch</emphasis> 相では、distfile
-	がすべてローカルディレクトリー (<varname>DISTDIR</varname>),
-	pkgsrc 利用者が設定可能) に存在する状態にします。
-	distfile は以下の形式のコマンドを使って取得されます。
+    <para>パッケージの構築の最初の段階は、配布ファイル (distfiles)
+    を、そのファイルを配布しているサイトから取得することです。
+    これは <emphasis>fetch</emphasis> 相がおこなう仕事です。</para>
+
+    <sect2 id="build.fetch.what">
+      <title>何を、どこから取得するか</title>
+
+      <para>単純な場合では、<varname>MASTER_SITES</varname> で
+      distfile (distfile のファイル名は <varname>DISTNAME</varname> が使われます)
+      を取得する URL をすべて定義します。
+      これより複雑な場合については、以下で説明します。</para>
+
+      <para>変数 <varname>DISTFILES</varname> は、取得する必要のある
+      distfile を並べたリストを指定します。この値は、標準では
+      <literal>${DISTNAME}${EXTRACT_SUFX}</literal> になり、
+      ほとんどのパッケージではあえて定義する必要がありません。
+      <varname>EXTRACT_SUFX</varname> は、標準では <literal>.tar.gz</literal>
+      になりますが、自由に変更することができます。なお、標準で定義される
+      distfile に加えて別の distfile が必要な場合は、
+      それを <literal>+=</literal> 演算子を使って追加することはできません。
+      たとえば以下のように書く必要があります。</para>
+
+      <programlisting>
+	DISTFILES=      ${DISTNAME}${EXTRACT_SUFX} additional-files.tar.gz
+      </programlisting>
+
+      <para>各 distfile は、通常は <varname>MASTER_SITES</varname>
+      に並べられたサイトから取得されます。パッケージに複数の
+      <varname>DISTFILES</varname> または複数の
+      <varname>PATCHFILES</varname> があり、それらが異なるサイトで配布されている場合は、
+      <filename><replaceable>distfile</replaceable></filename>
+      ファイル (サフィックスを含む) の配布場所の URL を並べたリストを
+      <varname>SITES.<replaceable>distfile</replaceable></varname>
+      に設定することができます。</para>
+
+      <programlisting>
+	DISTFILES=      ${DISTNAME}${EXTRACT_SUFX}
+	DISTFILES+=     foo-file.tar.gz
+	SITES.foo-file.tar.gz= \
+	http://www.somewhere.com/somehow/ \
+	http://www.somewhereelse.com/mirror/somehow/
+      </programlisting>
+      
+      <para>distfile を実際に取得する際、それらは、
+      <varname>MASTER_SITES</varname> または
+      <varname>SITES.*</varname>
+      に各 distfile のファイル名をそのまま (間にスラッシュを入れずに)
+      つなげた形の URL から取得されます。このため、サイトを定義する変数の値は、
+      スラッシュその他の分離記号で終わる必要があります。このため、たとえば
+      <varname>MASTER_SITES</varname> を、distfile 名を引数としてとる
+      CGI スクリプトの URL にすることができます。そうした場合、
+      以下のような形で定義することになります。</para>
+
+      <programlisting>
+	MASTER_SITES=   http://www.example.com/download.cgi?file=
+      </programlisting>
+
+      <para>パッケージで使うため、<varname>MASTER_SITES</varname>
+      用にあらかじめ定義された値がいくつか用意されています。
+      各変数の意味は、名前から明らかでしょう。</para>
+
+      <!-- sort mk/fetch/sites.mk | sed -n 's/\(^MA[A-Z_]*\).*/    ${\1}/p' -->
+
+      <programlisting>
+	${MASTER_SITE_APACHE}
+	${MASTER_SITE_BACKUP}
+	${MASTER_SITE_CYGWIN}
+	${MASTER_SITE_DEBIAN}
+	${MASTER_SITE_FREEBSD}
+	${MASTER_SITE_FREEBSD_LOCAL}
+	${MASTER_SITE_GNOME}
+	${MASTER_SITE_GNU}
+	${MASTER_SITE_GNUSTEP}
+	${MASTER_SITE_IFARCHIVE}
+	${MASTER_SITE_KDE}
+	${MASTER_SITE_MOZILLA}
+	${MASTER_SITE_MYSQL}
+	${MASTER_SITE_OPENOFFICE}
+	${MASTER_SITE_PERL_CPAN}
+	${MASTER_SITE_PGSQL}
+	${MASTER_SITE_R_CRAN}
+	${MASTER_SITE_SOURCEFORGE}
+	${MASTER_SITE_SOURCEFORGE_JP}
+	${MASTER_SITE_SUNSITE}
+	${MASTER_SITE_SUSE}
+	${MASTER_SITE_TEX_CTAN}
+	${MASTER_SITE_XCONTRIB}
+	${MASTER_SITE_XEMACS}
+      </programlisting>
+
+      <para>名前から意味がわかりにくいものについて、説明しておきます。
+      <varname>MASTER_SITE_BACKUP</varname> には、<ulink
+      url="ftp://ftp.NetBSD.org:/pub/NetBSD/packages/distfiles/${DIST_SUBDIR}"
+      /> で保守されている、パッケージのバックアップサイトが含まれます。
+      <varname>MASTER_SITE_LOCAL</varname> には、<ulink
+      url="ftp://ftp.NetBSD.org:/pub/NetBSD/packages/distfiles/LOCAL_PORTS/"
+      /> で保守されている、パッケージのローカルなソース配布物が含まれます。</para>
+
+      <para>もしこれらの予め定義されたサイトの1つを選んだ場合、そのサイトのサブディレク
+      トリーを指定することが必要となるかもしれません。これらのマクロは複数の実際
+      のサイトに展開されるかもしれませんので、サブディレクトリーを指定する場合は、
+      以下の表記を<emphasis>使わなければなりません</emphasis>:</para>
+
+      <programlisting>
+	MASTER_SITES=   ${MASTER_SITE_GNU:=subdirectory/name/}
+	MASTER_SITES=   ${MASTER_SITE_SOURCEFORGE:=project_name/}
+      </programlisting>
+
+      <para>サブディレクトリー名の後のスラッシュ/に注意してください。</para>
+
+    </sect2>
+    <sect2 id="build.fetch.how">
+      <title>ファイルの取得はどのようにおこなわれるか?</title>
+
+      <para><emphasis>fetch</emphasis> 相では、distfile
+      がすべてローカルディレクトリー (<varname>DISTDIR</varname>),
+      pkgsrc 利用者が設定可能) に存在する状態にします。
+      distfile は以下の形式のコマンドを使って取得されます。</para>
+
+      <programlisting>
+	${FETCH_CMD} ${FETCH_BEFORE_ARGS} ${site}${file} ${FETCH_AFTER_ARGS}
+      </programlisting>
+
+      <para>この <literal>${site}</literal> には、複数の候補が決まった順序で使われます: 最初に
+      <varname>MASTER_SITE_OVERRIDE</varname>を試み、次に、<varname>SITES.file</varname>が定義されていればそれ
+      を、定義されていなければ、<varname>MASTER_SITES</varname>か<varname>PATCH_SITES</varname>のどちらかを試
+      みます。そして、最後に<varname>MASTER_SITE_BACKUP</varname>の値を試みます。最初のもの以
+      外の順序は、<varname>MASTER_SORT_AWK</varname>か<varname>MASTER_SORT_REGEX</varname>を設定して、ユーザー
+      が入れ換えることができます。</para>
+    </sect2>
+
+  </sect1>
 
-<programlisting>
-    ${FETCH_CMD} ${FETCH_BEFORE_ARGS} ${site}${file} ${FETCH_AFTER_ARGS}
-</programlisting>
-
-	この <literal>${site}</literal> には、複数の候補が決まった順序で使われます: 最初に
-	<varname>MASTER_SITE_OVERRIDE</varname>を試み、次に、<varname>SITES.file</varname>が定義されていればそれ
-	を、定義されていなければ、<varname>MASTER_SITES</varname>か<varname>PATCH_SITES</varname>のどちらかを試
-	みます。そして、最後に<varname>MASTER_SITE_BACKUP</varname>の値を試みます。最初のもの以
-	外の順序は、<varname>MASTER_SORT_AWK</varname>か<varname>MASTER_SORT_REGEX</varname>を設定して、ユーザー
-	が入れ換えることができます。</para>
-
-</sect2>
-</sect1>
-
-<sect1 id="build.checksum">
-<title><emphasis>checksum</emphasis> 相</title>
-
-	  <para>distfileを取得した後に、チェックサムを生成し、distinfoファイルに保存され
-	    たチェックサムと比較します。もし、チェックサムが一致しなければ、構築は中
-	    断されます。これはパッケージ作成時と同じdistfileが、構築に使用されている
-	    こと、つまり、悪意や一次配布サイトでの意図的な差し替えやネットワークの損
-	    失によってdistfileが変更されていないことを保証するためです。</para>
-
-</sect1>
-
-<sect1 id="build.extract">
-<title><emphasis>extract</emphasis> 相</title>
-
-	<para>distfileがローカルシステム上に存在している場合、
-	通常、それらは圧縮アーカイブフォーマットで保存されているので、
-	展開する必要があります。</para>
-
-	<para>標準では、<varname>DISTFILES</varname> はすべて展開されます。
-	一部だけを展開する必要がある場合は、
-	<varname>EXTRACT_ONLY</varname> 変数を、
-	展開する必要のあるファイルを並べたリストに設定することができます。</para>
-
-	<para>通常、ファイルの展開は <filename>mk/scripts/extract</filename>
-	という小さなプログラムを使っておこなわれます。このプログラムは、
-	各種アーカイブ形式の展開方法を知っているので、
-	何も変更する必要はないでしょう。それでも変更が必要な場合は、
-	以下の変数を使うとよいでしょう。</para>
-
-	<variablelist>
-
-	<varlistentry><term><varname>EXTRACT_OPTS_{BIN,LHA,PAX,RAR,TAR,ZIP,ZOO}</varname></term>
-	<listitem><para>この各変数を使って、展開用のコマンドのオプションを、
-	標準のもの (<filename>mk/scripts/extract</filename>
-	で定義されています) から上書きします。</para></listitem></varlistentry>
-
-	<varlistentry><term><varname>EXTRACT_USING</varname></term>
-	<listitem><para>この変数は、tar アーカイブ展開用のコマンドを設定するもので、
-	<literal>pax</literal>, <literal>tar</literal> または、
-	コマンドの絶対パス名に設定することができます。</para></listitem></varlistentry>
-
-	</variablelist>
-
-	<para>必要なことが <filename>extract</filename>
-	プログラムではできない場合は、ファイル展開用のコマンドを保持する
-	<varname>EXTRACT_CMD</varname> 変数を上書きすることもできます。
-	この変数で指定された展開用コマンドは、
-	<filename>${WRKSRC}</filename> ディレクトリー内で実行されます。
-	このコマンドの実行中は、シェル変数 <varname>extract_file</varname>
-	に、展開中のアーカイブファイルの絶対パス名が保持されます。</para>
-
-	<para>これでもなお不十分な場合は、パッケージの Makefile で、
-	<varname>do-extract</varname>
-	ターゲットを上書きすることができます。</para>
-
-
-</sect1>
-
-<sect1 id="build.patch">
-<title><emphasis>patch</emphasis> 相</title>
-
-	  <para>展開の後で、<varname>PATCHFILES</varname>で指定されたパッチとパッケージのpatchesサブディレ
-	    クトリーに存在するパッチ、さらに、$LOCALPATCHES/$PKGPATH (たとえば
-	    <filename>/usr/local/patches/graphics/png</filename>)に存在するパッチのすべてが適用されます。
-	    <filename>.Z</filename>、あるいは<filename>.gz</filename>で終る名前のパッチファイルは、適用する前に伸張されます。
-	    <filename>.orig</filename>、<filename>.rej</filename>で終るものは無視されます。&man.patch.1;のためのいくつかのオプショ
-	    ンは、<varname>PATCH_DIST_ARGS</varname>で指定する事ができます。
-	    詳細に関しては<xref linkend="components.patches"/>を参照して下さい。</para>
-
-	  <para>デフォルトでは、パッチに曖昧さがあった場合には&man.patch.1;が異常終了するような
-	    特別な引数が渡されます。パッチを修正(再作成)して、きれいに適用できるよう
-	    にしてください。そうする理由は、曖昧さがあるパッチが一見うまく適用できても、実は誤った場
-	    所に適用されていて、深刻な問題を起こす可能性があるからです。</para>
-
-</sect1>
-
-<sect1 id="build.tools">
-<title><emphasis>tools</emphasis> 相</title>
-
-<para>この相については
-<xref linkend="tools"/> で説明しています。
-</para>
-
-</sect1>
-
-<sect1 id="build.wrapper">
-<title><emphasis>wrapper</emphasis> 相</title>
-
-	<para>この相では、コンパイラーとリンカー用のラッパープログラムが作成されます。
-	以下の変数を使って、ラッパーに手を加えることができます。</para>
-
-	<variablelist>
-
-	<varlistentry><term><varname>ECHO_WRAPPER_MSG</varname></term>
-		<listitem><para>経過を表示するためのコマンドです。
-		標準状態では何もしません。
-		経過を見るには、この変数を <literal>${ECHO}</literal>
-		に設定します。</para></listitem></varlistentry>
-
-	<varlistentry><term><varname>WRAPPER_DEBUG</varname></term>
-		<listitem><para>この変数は、
-		ラッパーのログファイルにより詳しい情報が必要かどうかに応じて、
-		<literal>yes</literal> (標準状態の値) または
-		<literal>no</literal> に設定することができます。</para></listitem></varlistentry>
-
-	<varlistentry><term><varname>WRAPPER_UPDATE_CACHE</varname></term>
-		<listitem><para>この変数は、
-		ラッパーの速度を改善するためキャッシュを使わせるかどうかに応じて、
-		<literal>yes</literal> または <literal>no</literal>
-		に設定することができます。標準状態の値は
-		<literal>yes</literal> ですが、キャッシュに対応していないプラットフォームでは
-		強制的に <literal>no</literal>
-		になります。</para></listitem></varlistentry>
-
-	<varlistentry><term><varname>WRAPPER_REORDER_CMDS</varname></term>
-
-		<listitem><para>順序の並び替え用のコマンドを並べたリストです。
-		並び替え用のコマンドは、
-		<literal>reorder:l:<replaceable>lib1</replaceable>:<replaceable>lib2</replaceable></literal>
-		のような形式をしています。これを使うと
-		<literal>-l<replaceable>lib1</replaceable></literal>
-		が常に
-		<literal>-l<replaceable>lib2</replaceable></literal> より先に現れるようになります。
-		</para></listitem></varlistentry>
-
-	<varlistentry><term><varname>WRAPPER_TRANSFORM_CMDS</varname></term>
-		<listitem><para>変換用のコマンドを並べたリストです。 [TODO:
-		investigate further]</para></listitem></varlistentry>
-
-<!-- These should probably be internal variables
-	<varlistentry><term><varname>WRAPPEES</varname></term>
-		<listitem><para></para></listitem></varlistentry>
-	<varlistentry><term><varname>UNWRAP_PATTERNS</varname></term>
-		<listitem><para></para></listitem></varlistentry>
-	<varlistentry><term><varname>UNWRAP_FILES</varname></term>
-		<listitem><para></para></listitem></varlistentry>
--->
-
-	</variablelist>
-</sect1>
-
-<sect1 id="build.configure">
-<title><emphasis>configure</emphasis> 相</title>
-
-<para>ほとんどのソフトウェアは、実行対象のプラットフォームで利用できるヘッダーファイル、
-システムコール、およびライブラリールーチンについての情報を必要とします。
-この情報の判断はコンフィギュレーションとして知られているプロセスであり、
-通常、自動化されています。
-大抵の場合、スクリプトが配布物と一緒に提供され、
-それを実行することによりヘッダーファイルやMakefile等が生成されます。</para>
-
-<para>パッケージが configure スクリプトを含んでいる場合、<varname>HAS_CONFIGURE</varname>
-を <quote>yes</quote> に設定することにより、実行することができます。
-もし、その configure スクリプトが GNU の autoconf スクリプトである場合は、
-かわりに、<varname>GNU_CONFIGURE</varname> を <quote>yes</quote> に指定してください。
-大雑把にいうと、<emphasis>configure</emphasis> 相では以下のようなことをしています。</para>
-
-<programlisting>
-    .for d in ${CONFIGURE_DIRS}
-            cd ${WRKSRC} &amp;&amp; cd ${d} &amp;&amp; env ${CONFIGURE_ENV} \
-                ${CONFIGURE_SCRIPT} ${CONFIGURE_ARGS}
-    .endfor
-</programlisting>
-
-<para><varname>CONFIGURE_DIRS</varname> (標準では <quote>.</quote>) は、
-<varname>WRKSRC</varname> からの相対位置でのパス名を並べたリストです。
-この各ディレクトリー内で、環境変数 <varname>CONFIGURE_ENV</varname> および
-引数 <varname>CONFIGURE_ARGS</varname> を使って
-configure スクリプトが実行されます。
-<varname>CONFIGURE_ENV</varname>, <varname>CONFIGURE_SCRIPT</varname>
-(標準では <quote>./configure</quote>),
-<varname>CONFIGURE_ARGS</varname>
-の各変数は、いずれもパッケージ側で変更することができます。</para>
-
-<para>もし、プログラムがコンフィギュレーションのために <filename>Imakefile</filename> を使用するので
-あれば、<varname>USE_IMAKE</varname> を <quote>yes</quote> に設定することにより、適切な手順が実行されます。
-(もし、<varname>${X11PREFIX}</varname> にインストールされるパッケージが欲しいだけで、xmkmfを実
-行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください。)</para>
-
-</sect1>
-
-<sect1 id="build.build">
-<title><emphasis>build</emphasis> 相</title>
-
-<para>パッケージの構築は、大雑把にいえば、
-以下のコードを実行するのと同じことです。</para>
-
-<programlisting>
-    .for d in ${BUILD_DIRS}
-            cd ${WRKSRC} &amp;&amp; cd ${d} &amp;&amp; env ${MAKE_ENV} \
-                ${MAKE_PROGRAM} ${BUILD_MAKE_FLAGS} \
-                    -f ${MAKE_FILE} ${BUILD_TARGET}
-    .endfor
-</programlisting>
-
-<para><varname>BUILD_DIRS</varname> (標準では <quote>.</quote>) は、
-<varname>WRKSRC</varname> からの相対位置でのパス名を並べたリストです。
-この各ディレクトリー内で、環境変数 <varname>MAKE_ENV</varname> および
-引数 <varname>BUILD_MAKE_FLAGS</varname> を使って
-<varname>MAKE_PROGRAM</varname> が実行されます。
-<varname>MAKE_ENV</varname>, <varname>BUILD_MAKE_FLAGS</varname>,
-<varname>MAKE_FILE</varname>, <varname>BUILD_TARGET</varname>
-の各変数は、いずれもパッケージ側で変更することができます。</para>
-
-<para><varname>MAKE_PROGRAM</varname> の標準の値は、
-<varname>USE_TOOLS</varname> に <quote>gmake</quote> が含まれている場合は
-<quote>gmake</quote>、含まれていない場合は <quote>make</quote> です。
-<varname>MAKE_FILE</varname> の標準の値は <quote>Makefile</quote> であり、
-<varname>BUILD_TARGET</varname> の標準の値は <quote>all</quote> です。</para>
-
-</sect1>
-
-<sect1 id="build.test">
-<title><emphasis>test</emphasis> 相</title>
-
-<para>[TODO]</para>
-
-</sect1>
-
-<sect1 id="build.install">
-<title><emphasis>install</emphasis> 相</title>
-
-	<para>構築の段階が完了すると、ユーザーが構築されたプログラムやファイルを使えるようにするため、ソフトウェアをパブリックなディレ
-	クトリーにインストールする必要があります。</para>
-
-	<para><emphasis>install</emphasis> 相は、大雑把にいえば、
-	以下のコードを実行するのと同じことです。これに加えて、
-	このコードの前後では、整合性の検査やパッケージの登録などをするため、
-	多くの操作がおこなわれます。</para>
-
-<programlisting>
-    .for d in ${INSTALL_DIRS}
-            cd ${WRKSRC} &amp;&amp; cd ${d} &amp;&amp; env ${MAKE_ENV} \
-                ${MAKE_PROGRAM} ${INSTALL_MAKE_FLAGS} \
-                    -f ${MAKE_FILE} ${BUILD_TARGET}
-    .endfor
-</programlisting>
-
-	<para>各変数の意味は、<emphasis>build</emphasis>
-	相のものと同様です。
-	<varname>INSTALL_DIRS</varname> は標準では
-	<varname>BUILD_DIRS</varname> です。<varname>INSTALL_TARGET</varname>
-	は標準では <quote>install</quote> ですが、
-	<varname>USE_IMAKE</varname> が定義されている場合は <quote>install.man</quote>
-	が追加されます。</para>
-
-	<para><emphasis>install</emphasis> 相では、以下の変数が有用です。
-	これらはいずれも &man.install.1; コマンドの変種であり、
-	所有者、所有グループ、パーミッションをあらかじめ決めてあるものです。
-	<varname>INSTALL</varname> は、オプションを何も指定しない install コマンドです。
-	用途別に特化した変種には、以下のものがあります。</para>
-
-	<variablelist>
-	<varlistentry><term><varname>INSTALL_PROGRAM_DIR</varname></term>
-		<listitem><para>バイナリーを含むディレクトリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_SCRIPT_DIR</varname></term>
-		<listitem><para>スクリプトを含むディレクトリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_LIB_DIR</varname></term>
-		<listitem><para>共有静的ライブラリーを含むディレクトリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_DATA_DIR</varname></term>
-		<listitem><para>データファイルを含むディレクトリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_MAN_DIR</varname></term>
-		<listitem><para>マニュアルページを含むディレクトリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_PROGRAM</varname></term>
-		<listitem><para>デバッグ用シンボルを取り除くことのできるバイナリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_SCRIPT</varname></term>
-		<listitem><para>シンボルを取り除くことのできないバイナリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_GAME</varname></term>
-		<listitem><para>ゲームのバイナリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_LIB</varname></term>
-		<listitem><para>共有静的ライブラリー</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_DATA</varname></term>
-		<listitem><para>データファイル</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_GAME_DATA</varname></term>
-		<listitem><para>ゲーム用のデータファイル</para></listitem></varlistentry>
-	<varlistentry><term><varname>INSTALL_MAN</varname></term>
-		<listitem><para>マニュアルページ</para></listitem></varlistentry>
-	</variablelist>
-
-	<para>これらのほか、以下の変数があります。</para>
-
-	<variablelist>
-	<varlistentry><term><varname>INSTALLATION_DIRS</varname></term>
-
-		<listitem><para>pkgsrc が <emphasis>install</emphasis>
-		相の最初に作成するディレクトリーを
-		<varname>PREFIX</varname> からの相対位置表記で並べたリストです。
-		この変数が設定されている場合、
-		<varname>NO_MTREE</varname>=<quote>yes</quote>
-		が仮定されます。
-		つまり、そのパッケージは、ファイルをインストールする前に、
-		必要なディレクトリーをすべて自力で作成すると主張していることになります。
-		従って、この変数は、パッケージ作者の制御下にある
-		<filename>Makefile</filename> においてのみ設定するものです。
-		各ディレクトリーは、その名前に応じて、
-		適切な所有者・所有グループのもとに作成されます。</para></listitem></varlistentry>
-
-	</variablelist>
-
-
+  <sect1 id="build.checksum">
+    <title><emphasis>checksum</emphasis> 相</title>
+
+    <para>distfileを取得した後に、チェックサムを生成し、distinfoファイルに保存され
+    たチェックサムと比較します。もし、チェックサムが一致しなければ、構築は中
+    断されます。これはパッケージ作成時と同じdistfileが、構築に使用されている
+    こと、つまり、悪意や一次配布サイトでの意図的な差し替えやネットワークの損
+    失によってdistfileが変更されていないことを保証するためです。</para>
+
+  </sect1>
+
+  <sect1 id="build.extract">
+    <title><emphasis>extract</emphasis> 相</title>
+
+    <para>distfileがローカルシステム上に存在している場合、
+    通常、それらは圧縮アーカイブフォーマットで保存されているので、
+    展開する必要があります。</para>
+
+    <para>標準では、<varname>DISTFILES</varname> はすべて展開されます。
+    一部だけを展開する必要がある場合は、
+    <varname>EXTRACT_ONLY</varname> 変数を、
+    展開する必要のあるファイルを並べたリストに設定することができます。</para>
+
+    <para>通常、ファイルの展開は <filename>mk/scripts/extract</filename>
+    という小さなプログラムを使っておこなわれます。このプログラムは、
+    各種アーカイブ形式の展開方法を知っているので、
+    何も変更する必要はないでしょう。それでも変更が必要な場合は、
+    以下の変数を使うとよいでしょう。</para>
+
+    <variablelist>
+
+      <varlistentry><term><varname>EXTRACT_OPTS_{BIN,LHA,PAX,RAR,TAR,ZIP,ZOO}</varname></term>
+      <listitem><para>この各変数を使って、展開用のコマンドのオプションを、
+      標準のもの (<filename>mk/scripts/extract</filename>
+      で定義されています) から上書きします。</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>EXTRACT_USING</varname></term>
+      <listitem><para>この変数は、tar アーカイブ展開用のコマンドを設定するもので、
+      <literal>pax</literal>, <literal>tar</literal> または、
+      コマンドの絶対パス名に設定することができます。</para></listitem></varlistentry>
+
+    </variablelist>
+
+    <para>必要なことが <filename>extract</filename>
+    プログラムではできない場合は、ファイル展開用のコマンドを保持する
+    <varname>EXTRACT_CMD</varname> 変数を上書きすることもできます。
+    この変数で指定された展開用コマンドは、
+    <filename>${WRKSRC}</filename> ディレクトリー内で実行されます。
+    このコマンドの実行中は、シェル変数 <varname>extract_file</varname>
+    に、展開中のアーカイブファイルの絶対パス名が保持されます。</para>
+
+    <para>これでもなお不十分な場合は、パッケージの Makefile で、
+    <varname>do-extract</varname>
+    ターゲットを上書きすることができます。</para>
+
+  </sect1>
+
+  <sect1 id="build.patch">
+    <title><emphasis>patch</emphasis> 相</title>
+
+    <para>展開の後で、<varname>PATCHFILES</varname>で指定されたパッチとパッケージのpatchesサブディレ
+    クトリーに存在するパッチ、さらに、$LOCALPATCHES/$PKGPATH (たとえば
+    <filename>/usr/local/patches/graphics/png</filename>)に存在するパッチのすべてが適用されます。
+    <filename>.Z</filename>、あるいは<filename>.gz</filename>で終る名前のパッチファイルは、適用する前に伸張されます。
+    <filename>.orig</filename>、<filename>.rej</filename>で終るものは無視されます。&man.patch.1;のためのいくつかのオプショ
+    ンは、<varname>PATCH_DIST_ARGS</varname>で指定する事ができます。
+    詳細に関しては<xref
+    linkend="components.patches"/>を参照して下さい。</para>
+
+    <para>デフォルトでは、パッチに曖昧さがあった場合には&man.patch.1;が異常終了するような
+    特別な引数が渡されます。パッチを修正(再作成)して、きれいに適用できるよう
+    にしてください。そうする理由は、曖昧さがあるパッチが一見うまく適用できても、実は誤った場
+    所に適用されていて、深刻な問題を起こす可能性があるからです。</para>
+
+  </sect1>
+
+  <sect1 id="build.tools">
+    <title><emphasis>tools</emphasis> 相</title>
+
+    <para>この相については<xref linkend="tools"/> で説明しています。
+    </para>
+
+  </sect1>
+
+  <sect1 id="build.wrapper">
+    <title><emphasis>wrapper</emphasis> 相</title>
+
+    <para>この相では、コンパイラーとリンカー用のラッパープログラムが作成されます。
+    以下の変数を使って、ラッパーに手を加えることができます。</para>
+
+    <variablelist>
+
+      <varlistentry><term><varname>ECHO_WRAPPER_MSG</varname></term>
+      <listitem><para>経過を表示するためのコマンドです。
+      標準状態では何もしません。
+      経過を見るには、この変数を <literal>${ECHO}</literal>
+      に設定します。</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>WRAPPER_DEBUG</varname></term>
+      <listitem><para>この変数は、
+      ラッパーのログファイルにより詳しい情報が必要かどうかに応じて、
+      <literal>yes</literal> (標準状態の値) または
+      <literal>no</literal> に設定することができます。</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>WRAPPER_UPDATE_CACHE</varname></term>
+      <listitem><para>この変数は、
+      ラッパーの速度を改善するためキャッシュを使わせるかどうかに応じて、
+      <literal>yes</literal> または <literal>no</literal>
+      に設定することができます。標準状態の値は
+      <literal>yes</literal> ですが、キャッシュに対応していないプラットフォームでは
+      強制的に <literal>no</literal>
+      になります。</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>WRAPPER_REORDER_CMDS</varname></term>
+
+      <listitem><para>順序の並び替え用のコマンドを並べたリストです。
+      並び替え用のコマンドは、
+      <literal>reorder:l:<replaceable>lib1</replaceable>:<replaceable>lib2</replaceable></literal>
+      のような形式をしています。これを使うと
+      <literal>-l<replaceable>lib1</replaceable></literal>
+      が常に
+      <literal>-l<replaceable>lib2</replaceable></literal> より先に現れるようになります。
+      </para></listitem></varlistentry>
+
+      <varlistentry><term><varname>WRAPPER_TRANSFORM_CMDS</varname></term>
+      <listitem><para>変換用のコマンドを並べたリストです。 [TODO:
+      investigate further]</para></listitem></varlistentry>
+
+      <!-- These should probably be internal variables
+	   <varlistentry><term><varname>WRAPPEES</varname></term>
+	   <listitem><para></para></listitem></varlistentry>
+	   <varlistentry><term><varname>UNWRAP_PATTERNS</varname></term>
+	   <listitem><para></para></listitem></varlistentry>
+	   <varlistentry><term><varname>UNWRAP_FILES</varname></term>
+	   <listitem><para></para></listitem></varlistentry>
+      -->
+
+    </variablelist>
+  </sect1>
+
+  <sect1 id="build.configure">
+    <title><emphasis>configure</emphasis> 相</title>
+
+    <para>ほとんどのソフトウェアは、実行対象のプラットフォームで利用できるヘッダーファイル、
+    システムコール、およびライブラリールーチンについての情報を必要とします。
+    この情報の判断はコンフィギュレーションとして知られているプロセスであり、
+    通常、自動化されています。
+    大抵の場合、スクリプトが配布物と一緒に提供され、
+    それを実行することによりヘッダーファイルやMakefile等が生成されます。</para>
+
+    <para>パッケージが configure スクリプトを含んでいる場合、<varname>HAS_CONFIGURE</varname>
+    を <quote>yes</quote> に設定することにより、実行することができます。
+    もし、その configure スクリプトが GNU の autoconf スクリプトである場合は、
+    かわりに、<varname>GNU_CONFIGURE</varname> を <quote>yes</quote> に指定してください。
+    大雑把にいうと、<emphasis>configure</emphasis> 相では以下のようなことをしています。</para>
+
+    <programlisting>
+      .for d in ${CONFIGURE_DIRS}
+      cd ${WRKSRC} &amp;&amp; cd ${d} &amp;&amp; env ${CONFIGURE_ENV} \
+      ${CONFIGURE_SCRIPT} ${CONFIGURE_ARGS}
+      .endfor
+    </programlisting>
+
+    <para><varname>CONFIGURE_DIRS</varname> (標準では <quote>.</quote>) は、
+    <varname>WRKSRC</varname> からの相対位置でのパス名を並べたリストです。
+    この各ディレクトリー内で、環境変数 <varname>CONFIGURE_ENV</varname> および
+    引数 <varname>CONFIGURE_ARGS</varname> を使って
+    configure スクリプトが実行されます。
+    <varname>CONFIGURE_ENV</varname>, <varname>CONFIGURE_SCRIPT</varname>
+    (標準では <quote>./configure</quote>),
+    <varname>CONFIGURE_ARGS</varname>
+    の各変数は、いずれもパッケージ側で変更することができます。</para>
+
+    <para>もし、プログラムがコンフィギュレーションのために <filename>Imakefile</filename> を使用するので
+    あれば、<varname>USE_IMAKE</varname> を <quote>yes</quote> に設定することにより、適切な手順が実行されます。
+    (もし、<varname>${X11PREFIX}</varname> にインストールされるパッケージが欲しいだけで、xmkmfを実
+    行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください。)</para>
+
+  </sect1>
+
+  <sect1 id="build.build">
+    <title><emphasis>build</emphasis> 相</title>
+
+    <para>パッケージの構築は、大雑把にいえば、
+    以下のコードを実行するのと同じことです。</para>
+
+    <programlisting>
+      .for d in ${BUILD_DIRS}
+      cd ${WRKSRC} &amp;&amp; cd ${d} &amp;&amp; env ${MAKE_ENV} \
+      ${MAKE_PROGRAM} ${BUILD_MAKE_FLAGS} \
+      -f ${MAKE_FILE} ${BUILD_TARGET}
+      .endfor
+    </programlisting>
+
+    <para><varname>BUILD_DIRS</varname> (標準では
+    <quote>.</quote>) は、
+    <varname>WRKSRC</varname> からの相対位置でのパス名を並べたリストです。
+    この各ディレクトリー内で、環境変数
+    <varname>MAKE_ENV</varname> および引数
+    <varname>BUILD_MAKE_FLAGS</varname> を使って
+    <varname>MAKE_PROGRAM</varname> が実行されます。
+    <varname>MAKE_ENV</varname>,
+    <varname>BUILD_MAKE_FLAGS</varname>,
+    <varname>MAKE_FILE</varname>,
+    <varname>BUILD_TARGET</varname>
+    の各変数は、いずれもパッケージ側で変更することができます。</para>
+
+    <para><varname>MAKE_PROGRAM</varname> の標準の値は、
+    <varname>USE_TOOLS</varname> に <quote>gmake</quote> が含まれている場合は
+    <quote>gmake</quote>、含まれていない場合は <quote>make</quote> です。
+    <varname>MAKE_FILE</varname> の標準の値は <quote>Makefile</quote> であり、
+    <varname>BUILD_TARGET</varname> の標準の値は <quote>all</quote> です。</para>
+
+  </sect1>
+
+  <sect1 id="build.test">
+    <title><emphasis>test</emphasis> 相</title>
+
+    <para>[TODO]</para>
+
+  </sect1>
+
+  <sect1 id="build.install">
+    <title><emphasis>install</emphasis> 相</title>
+
+    <para>構築の段階が完了すると、ユーザーが構築されたプログラムやファイルを使えるようにするため、ソフトウェアをパブリックなディレ
+    クトリーにインストールする必要があります。</para>
+
+    <para><emphasis>install</emphasis> 相は、大雑把にいえば、
+    以下のコードを実行するのと同じことです。これに加えて、
+    このコードの前後では、整合性の検査やパッケージの登録などをするため、
+    多くの操作がおこなわれます。</para>
+
+    <programlisting>
+      .for d in ${INSTALL_DIRS}
+      cd ${WRKSRC} &amp;&amp; cd ${d} &amp;&amp; env ${MAKE_ENV} \
+      ${MAKE_PROGRAM} ${INSTALL_MAKE_FLAGS} \
+      -f ${MAKE_FILE} ${BUILD_TARGET}
+      .endfor
+    </programlisting>
+
+    <para>各変数の意味は、<emphasis>build</emphasis>
+    相のものと同様です。
+    <varname>INSTALL_DIRS</varname> は標準では
+    <varname>BUILD_DIRS</varname> です。<varname>INSTALL_TARGET</varname>
+    は標準では <quote>install</quote> ですが、
+    <varname>USE_IMAKE</varname> が定義されており、かつ
+    <varname>NO_INSTALL_MANPAGES</varname> が定義されていない場合は、
+    <quote>install.man</quote>
+    が追加されます。</para>
+
+    <para><emphasis>install</emphasis> 相では、以下の変数が有用です。
+    これらはいずれも &man.install.1; コマンドの変種であり、
+    所有者、所有グループ、パーミッションをあらかじめ決めてあるものです。
+    <varname>INSTALL</varname> は、オプションを何も指定しない install コマンドです。
+    用途別に特化した変種には、以下のものがあります。</para>
+
+    <variablelist>
+      <varlistentry><term><varname>INSTALL_PROGRAM_DIR</varname></term>
+      <listitem><para>バイナリーを含むディレクトリー</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>INSTALL_SCRIPT_DIR</varname></term>
+      <listitem><para>スクリプトを含むディレクトリー</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>INSTALL_LIB_DIR</varname></term>
+      <listitem><para>共有静的ライブラリーを含むディレクトリー</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>INSTALL_DATA_DIR</varname></term>
+      <listitem><para>データファイルを含むディレクトリー</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>INSTALL_MAN_DIR</varname></term>
+      <listitem><para>マニュアルページを含むディレクトリー</para></listitem></varlistentry>
+      
+      <varlistentry><term><varname>INSTALL_PROGRAM</varname></term>
+      <listitem><para>デバッグ用シンボルを取り除くことのできるバイナリー</para></listitem></varlistentry>
+      
+      <varlistentry><term><varname>INSTALL_SCRIPT</varname></term>
+      <listitem><para>シンボルを取り除くことのできないバイナリー</para></listitem></varlistentry>
+      
+      <varlistentry><term><varname>INSTALL_GAME</varname></term>
+      <listitem><para>ゲームのバイナリー</para></listitem></varlistentry>
+      
+      <varlistentry><term><varname>INSTALL_LIB</varname></term>
+      <listitem><para>共有静的ライブラリー</para></listitem></varlistentry>
+      
+      <varlistentry><term><varname>INSTALL_DATA</varname></term>
+      <listitem><para>データファイル</para></listitem></varlistentry>
+      
+      <varlistentry><term><varname>INSTALL_GAME_DATA</varname></term>
+      <listitem><para>ゲーム用のデータファイル</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>INSTALL_MAN</varname></term>
+      <listitem><para>マニュアルページ</para></listitem></varlistentry>
+    </variablelist>
+
+    <para>これらのほか、以下の変数があります。</para>
+
+    <variablelist>
+      <varlistentry><term><varname>INSTALLATION_DIRS</varname></term>
+
+      <listitem><para>pkgsrc が <emphasis>install</emphasis>
+      相の最初に作成するディレクトリーを
+      <varname>PREFIX</varname> からの相対位置表記で並べたリストです。
+      この変数が設定されている場合、
+      <varname>NO_MTREE</varname>=<quote>yes</quote>
+      が仮定されます。
+      つまり、そのパッケージは、ファイルをインストールする前に、
+      必要なディレクトリーをすべて自力で作成すると主張していることになります。
+      従って、この変数は、パッケージ作者の制御下にある
+      <filename>Makefile</filename> においてのみ設定するものです。
+      各ディレクトリーは、その名前に応じて、
+      適切な所有者・所有グループのもとに作成されます。</para></listitem></varlistentry>
+
+    </variablelist>
   </sect1>
 
   <sect1 id="build.package">
     <title><emphasis>package</emphasis> 相</title>
 
-    <para>[TODO]</para>
+    <para>install 期が完了すると、
+    インストールされたファイルからなるバイナリーパッケージを作ることができます。
+    このようなバイナリーパッケージは、たとえば
+    <command>make bin-install</command> するか、
+    <command>pkg_add</command> を使って、それまでのコンパイルの過程を踏まずに、
+    迅速にインストールすることができます。</para>
 
+    <para>標準では、バイナリーパッケージは
+    <filename>${PACKAGES}/All</filename> に作られ、また、
+    <varname>CATEGORIES</varname> 変数に設定されたカテゴリーごとに
+    <filename>${PACKAGES}/<replaceable>category</replaceable></filename>
+    にシンボリックリンクが作られます。<varname>PACKAGES</varname>
+    は標準では <filename>pkgsrc/packages</filename> になります。</para>
+  </sect1>
+
+  <sect1 id="build.clean">
+    <title>掃除をする</title>
+
+    <para>パッケージの作業が終わったら、<command>make clean</command>
+    を実行して作業ディレクトリーを掃除することができます。
+    依存パッケージの作業ディレクトリーもすべて掃除したい場合は、
+    <command>make clean-depends</command> を使います。</para>
   </sect1>
 
   <sect1 id="build.helpful-targets">
@@ -669,6 +713,12 @@ configure スクリプトが実行されます。
 	  <para>もし、<command>make install</command>実行後に、いくつかのファイルがきちんとインストール
 	  されなかった事に気がついた場合、このターゲットを使い、再びインストールす
 	  る事ができます。この場合、<quote>インストール済み</quote>フラグは無視されます。</para>
+
+	  <para>これは、<varname>DEPENDS_TARGET</varname>
+	  の標準の値です。ただし <command>make update</command> および <command>make
+	  package</command> の場合は例外であり、これらについてはそれぞれ
+	  <quote>package</quote> および <quote>update</quote>
+	  が標準の値になります。</para>
 	</listitem>
       </varlistentry>
 
@@ -705,6 +755,22 @@ configure スクリプトが実行されます。
       </varlistentry>
 
       <varlistentry>
+	<term>bin-install</term>
+
+	<listitem>
+	  <para>バイナリーパッケージを、
+	  ローカルディスクまたは列挙された FTP サイト
+	  (<varname>BINPKG_SITES</varname> 変数を参照)
+	  からインストールし、
+	  利用可能なバイナリーパッケージがどこにもない場合には
+	  <command>make package</command> をおこないます。
+	  <command>pkg_add</command> 用の引数、たとえば饒舌な操作などを
+	  <varname>BIN_INSTALL_FLAGS</varname>
+	  に設定することができます。</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
 	<term>update</term>
 
 	<listitem>
@@ -715,18 +781,22 @@ configure スクリプトが実行されます。
 	  <command>make install</command>(または、<varname>UPDATE_TARGET</varname>で設定されたターゲット)を続けて実
 	  行するのと同じです。</para>
 
-	  <para>以前に実行した<command>make update</command>がさまざまな理由で中断された場合、パッケー
-	  ジの更新のために、このターゲットを使用することができます。ただし、この場
+	  <para>以前に実行した<command>make
+	  update</command>がさまざまな理由で中断された場合、パッケー
+	  ジの更新のために、このターゲットを使用することができます。
+	  ただし、この場
 	  合は、<command>make clean</command>を実行していない事、あるいは<varname>WRKDIR</varname>の依存パッケー
 	  ジのリストを削除していない事を確認してください。そうでなければ、インストー
 	  ル済みの依存パッケージを使用し、現在のパッケージを自動更新することができ
 	  ません。</para>
 
-	  <para>中断された<command>make update</command>の再開は、パッケージツリーの他の部分が変更され
+	  <para>中断された<command>make
+	  update</command>の再開は、パッケージツリーの他の部分が変更され
 	  ていない場合に限って動作します。更新対象のパッケージのソースコードが変更
 	  されていた場合は、<command>make update</command>の再開はきっと失敗するでしょう。</para>
 
-	  <para><command>make update</command>の動作を変更するために、以下の変数をコマンドライン、また
+	  <para><command>make
+	  update</command>の動作を変更するために、以下の変数をコマンドライン、また
 	  は<filename>/etc/mk.conf</filename>で使うことができます。</para>
 
 	  <variablelist>
@@ -735,9 +805,13 @@ configure スクリプトが実行されます。
 
 	      <listitem>
 		<para>更新されたパッケージや依存パッケージのために再帰的に使用されるインス
-		トールターゲット。<command>make update</command>用のデフォルトは、<varname>DEPENDS_TARGET</varname>が
+		トールターゲット。
+		<command>make update</command>用のデフォルトは、<varname>DEPENDS_TARGET</varname>が
 		設定されている場合はその値、それ以外の場合は<quote>install</quote>です。
-		例えば、<command>make update UPDATE_TARGET=package</command>のように使用します。</para>
+		これら以外のターゲットのよい例としては <quote>package</quote> や
+		<quote>bin-install</quote> があります。
+		ここで <quote>update</quote> を設定してはいけません
+		(無限ループに陥ってしまいます)。</para>
 	      </listitem>
 	    </varlistentry>
 
@@ -749,7 +823,8 @@ configure スクリプトが実行されます。
 		されたパッケージの作業用ソース等をそのままにしておきたい場合に役に立
 		ちます。最終的にはソースツリーを掃除してください(以下の
 		<quote>clean-update</quote>ターゲットを見てください)。そうしなければ、次回の
-		<command>make</command>や<command>make update</command>の時に古いソースコードが残っていることで
+		<command>make</command>や<command>make
+		update</command>の時に古いソースコードが残っていることで
 		トラブルがおこるかもしれません。</para>
 	      </listitem>
 	    </varlistentry>
@@ -759,7 +834,8 @@ configure スクリプトが実行されます。
 
 	      <listitem>
 		<para>インストール(make <varname>DEPENDS_TARGET</varname>)の前に各パッケージをアンインストー
-		ルします。これは、<command>make update</command>の実行中断後に<quote>clean-update</quote>ターゲット
+		ルします。これは、<command>make
+		update</command>の実行中断後に<quote>clean-update</quote>ターゲット
 		(以下参照)が呼ばれた場合に必要となることがあります。</para>
 	      </listitem>
 	    </varlistentry>
@@ -794,18 +870,20 @@ configure スクリプトが実行されます。
 	  合(例えば<varname>NOCLEAN</varname>を使用した場合)にのみ使用するとよいでしょう。</para>
 
 	  <para>パッケージのツリーが掃除されているかどうかわからない場合は、ツリーの最上
-	  層で<command>make clean</command>を実行するか、更新しようとしているパッケージのディレクト
+	  層で<command>make
+	  clean</command>を実行するか、更新しようとしているパッケージのディレクト
 	  リーで以下のコマンドをこの順に使うか、どちらかをおこなうことができます。
 	  (<command>make update</command>を初めて実行するより<emphasis>前</emphasis>におこなってください。それ以外の場
 	  合、更新しようとしているパッケージをすべて失ってしまいます)</para>
 
 	  <screen>
-<prompt>#</prompt> <userinput>make clean-update</userinput>
-<prompt>#</prompt> <userinput>make clean CLEANDEPENDS=YES</userinput>
-<prompt>#</prompt> <userinput>make update</userinput>
+&rprompt; <userinput>make clean-update</userinput>
+&rprompt; <userinput>make clean CLEANDEPENDS=YES</userinput>
+&rprompt; <userinput>make update</userinput>
 	  </screen>
 
-	  <para><command>make clean-update</command>の動作を変更するために、以下の変数をコマンドライン、
+	  <para><command>make
+	  clean-update</command>の動作を変更するために、以下の変数をコマンドライン、
 	  または<filename>/etc/mk.conf</filename>で使うことができます。</para>
 
 	  <variablelist>
@@ -825,6 +903,29 @@ configure スクリプトが実行されます。
       </varlistentry>
 
       <varlistentry>
+	<term>replace</term>
+
+	<listitem>
+	  <para>当該パッケージのインストールを更新します。
+	  依存するパッケージの置き換えをおこなわないという点で
+	  update と異なります。
+	  このターゲットを動作させるためには、<filename
+	  role="pkg">pkgsrc/pkgtools/pkg_tarup</filename>
+	  をインストールする必要があります。</para>
+
+	  <para><emphasis>このターゲットは注意して使ってください。
+	  </emphasis> このターゲットを使って更新した後に、
+	  依存するパッケージが動作するという保証はありません。
+	  特に、ライブラリーのパッケージで、
+	  共有ライブラリーのメジャーバージョンが変わるようなものを
+	  <command>make replace</command>
+	  した場合は、ほぼ確実に壊れます。
+	  このため、このターゲットは公式にはサポートされておらず、
+	  熟練した利用者だけが使うことを推奨します。</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
 	<term>info</term>
 
 	<listitem>
@@ -835,20 +936,52 @@ configure スクリプトが実行されます。
       </varlistentry>
 
       <varlistentry>
+	<term>index</term>
+
+	<listitem>
+	  <para>これは最上層用のコマンド、つまり <filename>pkgsrc</filename>
+	  ディレクトリーで使うコマンドです。
+	  ローカルの pkgsrc ツリー内の全パッケージのデータベースを作成します。
+	  このデータベースには、依存性、コメント、メンテナー、
+	  その他の有用な情報が含まれます。
+	  個々のパッケージのエントリーは、当該パッケージのディレクトリーで
+	  <command>make describe</command> を実行して作成されます。
+	  作成された索引ファイルは 
+	  <filename>pkgsrc/INDEX</filename> に保存されます。
+	  この索引は、<command>make
+	  print-index</command> を実行すると、饒舌な形式で表示することができます。
+	  <command>make search
+	  key=<replaceable>something</replaceable></command>
+	  を使って、索引を検索することができます。
+	  <command>make show-deps
+	  PKG=<replaceable>somepackage</replaceable></command>
+	  を実行して、特定のパッケージに依存するパッケージをすべて調べることができます。</para>
+
+	  <para>このコマンドの実行には、非常に長い時間がかかります。
+	  速いマシンでも数時間かかるでしょう。</para>
+	</listitem>
+      </varlistentry>
+
+
+      <varlistentry>
 	<term>readme</term>
 
 	<listitem>
-	  <para>このターゲットは、<filename>README.html</filename>ファイルを作成します。このファイルは
-	    <filename role="pkg">www/firefox</filename>や
-	    <filename role="pkg">www/links</filename>のようなブラウザー
-	    で閲覧することができます。作成されたファイルは、ローカルホストの
-	    <varname>PACKAGES</varname>ディレクトリーにあるパッケージへの参照を含んでいます。また、
-	    <varname>FTP_PKG_URL_HOST</varname>と<varname>FTP_PKG_URL_DIR</varname>を元にしたURLを参照させることもできます。
-	    例えば、ローカルマシン上の<filename>/usr/packages</filename>ディレクトリーのバイナリーパッ
-	    ケージを参照する<filename>README.html</filename>ファイルを作成したい場合、
-	    <varname>FTP_PKG_URL_HOST=file://localhost</varname>と<varname>FTP_PKG_URL_DIR=/usr/packages</varname>をセット
-	    してください。<varname>${PACKAGES}</varname>ディレクトリーと、そのサブディレクトリーはすべ
-	    てのバイナリーパッケージで検索されます。</para>
+	  <para>このターゲットは、
+	  <filename>README.html</filename>ファイルを作成します。このファイルは <filename
+	  role="pkg">www/firefox</filename>や <filename
+	  role="pkg">www/links</filename>のようなブラウザー
+	  で閲覧することができます。作成されたファイルは、ローカルホストの
+	  <varname>PACKAGES</varname>ディレクトリーにあるパッケージへの参照を含んでいます。また、
+	  <varname>FTP_PKG_URL_HOST</varname>と<varname>FTP_PKG_URL_DIR</varname>を元にしたURLを参照させることもできます。
+	  例えば、ローカルマシン上の<filename>/usr/packages</filename>ディレクトリーのバイナリーパッ
+	  ケージを参照する<filename>README.html</filename>ファイルを作成したい場合、
+	  <varname>FTP_PKG_URL_HOST=file://localhost</varname>と<varname>FTP_PKG_URL_DIR=/usr/packages</varname>をセット
+	  してください。<varname>${PACKAGES}</varname>ディレクトリーと、そのサブディレクトリーはすべ
+	  てのバイナリーパッケージで検索されます。</para>
+
+	  <para>このターゲットは、最上層またはカテゴリーのディレクトリーで実行することもできます。
+	  そうした場合は、配下のパッケージに対して再帰的に実行されます。</para>
 	</listitem>
       </varlistentry>
 
@@ -856,10 +989,12 @@ configure スクリプトが実行されます。
 	<term>readme-all</term>
 
 	<listitem>
-	  <para>このターゲットを使い、<filename>README-all.html</filename>を作成することができます。このファ
+	  <para>これは最上層用のコマンドであり、<filename>pkgsrc</filename> で実行します。
+	  このターゲットを使い、<filename>README-all.html</filename>を作成することができます。このファ
 	  イルは&os;パッケージコレクションの中の、現在利用可能なすべてのパッケー
 	  ジのリスト、また、それらが属するカテゴリーと簡単な説明を含んでいます。こ
-	  のファイルは<filename>pkgsrc/*/README.html</filename>から作りだされます。したがって、<command>make readme</command>
+	  のファイルは<filename>pkgsrc/*/README.html</filename>から作りだされます。したがって、<command>make
+	  readme</command>
 	  の<emphasis>後</emphasis>に、このターゲットを実行してください。</para>
 	</listitem>
       </varlistentry>
@@ -986,13 +1121,14 @@ configure スクリプトが実行されます。
 
 	  <itemizedlist>
 	    <listitem>
-	      <para>パッケージファイル(<filename>Makefile</filename>, ...)が、いずれも構築時から変更されていな
+	      <para>パッケージファイル
+	      (<filename>Makefile</filename>, ...)が、いずれも構築時から変更されていな
 	      いこと。</para>
 	    </listitem>
 
 	    <listitem>
-	      <para>そのパッケージが依存している(バイナリー)パッケージが、いずれも構築時
-	      から変更されていないこと。</para>
+	      <para>そのパッケージが依存している(バイナリー)
+	      パッケージが、いずれも構築時から変更されていないこと。</para>
 	    </listitem>
 	  </itemizedlist>
 
