@@ -262,7 +262,23 @@
                     読みこみ専用、書きこみ専用、読み書き可能かのいずれかです。
                     デバイスドライバーは全てをサポートする必要はありません。
 </DL></OL><P>
-
+   
+   このデバイスドライバーがサポートする関数を、
+   キャラクター型デバイス用の <TT>struct cdevsw</TT> と
+   <TT>struct bdevsw</TT> のいずれかまたは両方に含める必要があります。
+   この構造体の名前は、モジュール名の後に <TT>_cdevsw</TT> または <TT>_bdevsw</TT>
+   を付けたものです。
+   ここで例示する疑似デバイスは、キャラクター型デバイスとしてのみふるまうので、
+   構造体の名前は <TT>skeleton_cdevsw</TT> とします。
+   なお、この構造体には、すべてのデバイスインターフェース関数のエントリーがありますが、
+   デバイス側で実装するのは、この関数の一部分だけでかまいません。
+   使われないスタブ関数をすべてのデバイスに実装させるのではなく、
+   頭に <TT>no</TT> がついた (たとえば noread, nowrite など)、
+   あらかじめ宣言されたスタブが用意されており、これらは呼ばれた時に <TT>ENODEV</TT>
+   または、何の操作もせずに成功を返す <TT>null</TT> (たとえば nullread,
+   nullwrite など) を返します。
+   cdevsw や bdevsw にある関数でドライバーがサポートしていないものに対しては、
+   あらかじめ宣言されたスタブのものを使うだけです。
 
 <ENTRY>newdevice カーネルに新しいデバイスを知らせる
 
@@ -280,101 +296,78 @@
 これらのファイルを変更する必要があって:
 <P>
 <OL TYPE=i>
-<LI><h4>/usr/src/sys/sys/conf.h</h4>
+<LI><h4>/usr/src/sys/conf/majors or /usr/src/sys/<I>arch</I>/conf/majors.<I>arch</I></h4>
 
-   このファイルには
-   cdevsw (character device switch) と bdevsw (block device switch) テーブルエントリー
-  を設定する 定義マクロが入ってます。
-  あなたが書いているデバイスのタイプがわかっている必要があります。
-
-   我々の例において、 skeleton ドライバーはキャラクター型デバイスなので、
-   エントリーを作る必要があります。
-   また、 skeleton ドライバーは open, close と ioctl のコールだけをサポートしています。
-
-    <I>conf.h</I> ファイルに目を通してみると
-    called <TT>cdev__oci_init</TT> と、まさに私が欲しい(方法で)
-   定義されている一般デバイスが見つかります。
-   これは、 <I>conf.h</I> に定義を追加するのにたくさん打ちこむことを省かせてくれて:
+   この各ファイルには、NetBSD におけるデバイスメジャー番号のリストが含まれます。
+   <I>/usr/src/sys/conf/majors</I> にあるのは、機種独立なデバイス、すなわち
+   NetBSD が対応しているすべてのアーキテクチャーで利用可能なデバイスのメジャー番号です。
+   デバイスが特定のアーキテクチャーにのみ関連するものである場合は、
+   <I>/usr/src/sys/<B>arch</B>/conf/majors.<B>arch</B></I>
+   (<B>arch</B> は、関連するアーキテクチャーに置き換えます)
+   ファイルを使う必要があります。
+   この各ファイルに含まれるエントリーは、以下の形式をとります。
 <PRE>
-   #define cdev_skeleton_init(c,n)     cdev__oci_init(c,n)
+device-major    prefix		type      number	condition
 </PRE>
-   これは、ほかのファイルが cdevsw エントリー を定義できるように、マクロを定義します。
-   もっと複雑なドライバー では、単にほかの定義の1つをコピーして、
-   必要に応じ変更を加えればよいです。
-<P>
-<LI><h4>/usr/src/sys/arch/i386/i386/conf.c</h4>
-	<!-- ほかのアーキテクチャーではどこ? -->
+   この行の正確な文法は、config(5) マニュアルページで説明されていますが、
+   ここで例示するドライバーのためにその内容を説明しておきます。
+<P><DL>
+		<DT>device-major
+		<DD>  このエントリーが、
+		デバイスメジャー番号のエントリーであることを示すキーワードです。
 
-   <I>conf.h</I> に cdevsw 初期化エントリー を作れば、
-   次のステップの設定をします。
+		<DT>prefix
+		<DD>  すべてのドライバーの関数に対して、
+		関数名が自動生成される時に与えられる接頭辞です。
+		ここでの例においては、
+		<TT>skeleton</TT> とします。
 
-   最初にすることはインクルードファイルに 入れ、
-   エントリーのプロトタイプを設定することです。
-   これをするには次のコードを置けば良く:
+		<DT>type
+		<DD>  メジャーデバイスの型で、
+		<TT>char</TT> または <TT>block</TT> のいずれかです。
+		char と block それぞれの type と number の組を繰り返し書くことで、
+		両方の型のデバイスを指定することができます。
 
+		<DT>number
+		<DD> デバイスのメジャー番号です。次の空いている番号を選びます。
+		なお、<TT>/dev</TT> にデバイスノードを作る必要があるので、
+		選んだ番号を控えておきます。
+
+		<DT>condition
+		<DD> このデバイスがカーネルに含まれる条件です。
+		これは、conf ファイル (後述)
+		に含めた疑似デバイスのエントリーと一致させるようにします。
+</DL><P>
+   ここで例示する skeleton 疑似デバイスは、キャラクター型デバイスとし、
+   ドライバーは <TT>i386</TT> アーキテクチャーに依存するものとします。
+   このような仮定をしたので、<TT>/usr/src/sys/arch/i386/conf/majors.i386</TT>
+   ファイルを編集すればよいことになります。すると、
+   メジャー番号 140 が使えることがわかるので、以下のような行を追加します。
 <PRE>
-   #include "skeleton.h"
-   cdev_decl(skeleton)
+device-major	skeleton	char	140	skeleton
 </PRE>
-
-   ちょっと待った!  skeleton.h は作ってないよ!
-  その通りです。そのファイルは作っていません。
-  それは、 config(8) でつくられ、後ほど、どうやる(なる)のか出てくるでしょう。
-   2行目は skeleton ドライバーの関数プロトタイプの設定で - 
-    skeleton は あなたの擬似デバイスの名前に置き換えます。
-   それは 宣言を処理します。
-
-    bdevsw/cdevsw テーブルの中にデバイスを追加することが必要です
-    skeleton は cdev なので、 cdevsw 配列 を見つけ、
-   エントリーを追加する必要があります。
-   その配列の最後にエントリーを追加するべきで
-    - cdevsw テーブルの途中に追加すると、ほかのデバイスドライバーを妨害します。
-   それで cdevsw テーブルの最後にこういうエントリーを追加します:
-
-<PRE>
-        cdev_skeleton_init(NSKELETON,
-                         skeleton),      /* 71: Skeleton pseudo-device */
-</PRE>
-
-   繰り返しますが、 NSKELETON は私達はどこにも定義していません。
-    config(8) を実行すると、中に、 NSKELETON が定義された
-    <I>skeleton.h</I> ファイルができ、
-   シンボルは作られたデバイスの数だけ定義され - その数は config ファイルに由来します。
-
-   注として <TT>cdev_skeleton_init</TT> は
-   <I>conf.h</I> で定義したマクロで、
-   2番目のパラメーター ("skeleton") は擬似ドライバーの名前です。
-
-   このマクロは我々のコードで定義した関数名を作るために
-   擬似デバイス名と関数コール名(open, close, ioctl, etc)を連結します。
-
-   これは、カーネルがあなたのコードを走らせることを知る方法です。
-   パズルの最後のかけらは、そこにあるエントリーのコメントにあるその次の番号です。
-   ほかのエントリーの形式をそのままコピーして、
-   コメント内の番号を増やしデバイスの関数を書きこむことが必要です。
-   この番号は重要です。この番号はデバイスの major number で、
-   後のために、書きとめておく必要があります。
 </OL>
 
-<ENTRY>config config<b></b>(8) に新しいデバイスを知らせる
-
- config(8) に新しい擬似デバイスを知らせるには、
- <TT>/usr/src/sys/conf/files</TT> ファイルを編集します。
-
+<ENTRY>config config<b></b>(1) に新しいデバイスを知らせる
+   config(1) に新しい擬似デバイスを知らせるには、
+   <TT>/usr/src/sys/conf/files</TT> (アーキテクチャー独立なデバイスの場合) または
+   <TT>/usr/src/sys/arch/<I>arch</I>/conf/files.<I>arch</I></TT>
+   (<I>arch</I> は関連するアーキテクチャー) のいずれかのファイルを編集します。
    このファイルは  有効な デバイスの名前 と
    これらのデバイスと関連するファイルを config に教えます。
    最初に擬似デバイスを定義するセクションを捜します。
    この セクションは <TT>defpseudo</TT> で始まる行を持っています。
+   ここでは、ドライバーはアーキテクチャー依存であることを仮定しているので、
+   <TT>/usr/src/sys/arch/i386/conf/files.i386</TT> を編集します。
    正しいセクションを見つけると、こういう行を加えることができ:
 
 <PRE>
 defpseudo skeleton
 </PRE>
 
-    config(8)に skeleton という擬似デバイスがあることを教えます。
-   つぎに、 config(8) に skeleton 擬似デバイスに関連するファイルを教えてあげる必要があります。
-   この場合
- on (訳注 one ???)ファイル
+    config(1)に skeleton という擬似デバイスがあることを教えます。
+   つぎに、 config(1) に skeleton 擬似デバイスに関連するファイルを教えてあげる必要があります。
+   この場合はひとつのファイル
    があるだけですが、より複雑な擬似デバイスでは より多くのファイルがあるかもしれず、
    同じ方法で必要とされるファイルごとに行を単純に追加していきます。
 
@@ -390,7 +383,7 @@ file dev/skeleton.c	   skeleton	needs-flag
    カーネルソースツリールートからの相対位置 (通常、 <TT>/usr/src/sys</TT>) です。
    3番目のフィールドはドライバー名でこのファイルが関連しているもので、
    この場合 skeleton - サンプル擬似デバイスです。
-   4番目 で 最後の フィールド は config(8) に
+   4番目 で 最後の フィールド は config(1) に
    skeleton.h インクルードファイルを書かせるための制御フラグです。
    ここでファイル名が skeleton.c になっていますが、例示したファイルを使った場合、
    ファイル pseudo_dev_skel.c を skeleton.c にリネームするか、このエントリーを
@@ -399,7 +392,7 @@ file dev/skeleton.c	   skeleton	needs-flag
    としたほうがおそらく素直でしょう。
 
 <ENTRY>kernelconfig カーネルコンフィグファイルに新しいデバイスを追加する
-    config(8) にデバイスのことを教えてやったあと、
+    config(1) にデバイスのことを教えてやったあと、
    そのデバイスをカーネルコンフィグファイルに追加することは簡単です。
     skeleton デバイスを追加するには、このような行を加え:
 
@@ -428,10 +421,10 @@ pseudo-device  skeleton
    慣習によって、 デバイスノードは <I>/dev</I> に作られます。
 
    デバイスノード をつくるために mknod(8)を使う必要があり、
-    4.ii 節で書きとめた major 番号で デバイスノード を作ります。
+    4.i 節で書きとめた major 番号で デバイスノード を作ります。
    この場合、 mknod(8) コマンドでこのようにでき:
 <PRE>
-        mknod /dev/skel c 71 0
+        mknod /dev/skel c 140 0
 </PRE>
 
    これで、新しいデバイスをオープンして試すことができます。
@@ -469,9 +462,9 @@ May 17 20:32:57 siren /netbsd: Got number of 42 and string of Hello World
   (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
        <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
-  $NetBSD: index.list,v 1.17 2006/02/23 17:18:02 kano Exp $<br>
+  $NetBSD: index.list,v 1.19 2006/12/29 03:41:31 kano Exp $<br>
   <!-- Based on english version: -->
-  <!-- NetBSD: index.list,v 1.17 2006/02/23 17:18:02 kano Exp   -->
+  <!-- NetBSD: index.list,v 1.19 2006/12/29 03:41:31 kano Exp   -->
   <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2005
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a><br>
   <a href="../../../Misc/disclaimer.html">NetBSD<sup>&#174;</sup> は
