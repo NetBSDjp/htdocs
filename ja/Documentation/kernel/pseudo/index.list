@@ -249,7 +249,24 @@
                 only or read write.  The device driver need not
                 support all modes.
 </DL></OL><P>
-
+   
+   The function names your device driver supports must be inserted
+   into a <TT>struct cdevsw</TT> for a character device and/or a
+   <TT>struct bdevsw</TT> that has the name of your module appended
+   with either <TT>_cdevsw</TT> or <TT>_bdevsw</TT>.  For our sample
+   pseudo-device this structure would be called
+   <TT>skeleton_cdevsw</TT> since we decided that our pseudo-device
+   would be a character device only.  Note that these structures have
+   entries in them for all the device interface functions but your
+   device may only implement a subset of these functions.  Instead of
+   forcing everyone to implement stub functions for the unused ones
+   there are a set of pre-declared stubs prefixed with either
+   <TT>no</TT> (e.g. noread, nowrite and so on) which will return
+   <TT>ENODEV</TT> when called or <TT>null</TT> (e.g. nullread,
+   nullwrite and so on) which will return success, effectively
+   providing a null operation.  For the functions in the cdevsw and/or
+   bdevsw that your driver does not support simply use one of the
+   predeclared stubs.
 
 <ENTRY>newdevice Making the kernel aware of the new device
 
@@ -263,89 +280,82 @@
    have to modify these files:
 <P>
 <OL TYPE=i>
-<LI><h4>/usr/src/sys/sys/conf.h</h4>
+<LI><h4>/usr/src/sys/conf/majors or /usr/src/sys/<I>arch</I>/conf/majors.<I>arch</I></h4>
 
-   This file contains some macro defines to set up the cdevsw
-   (character device switch) and bdevsw (block device switch) table
-   entries.  You should, by now, know what type of device you are
-   writing.  In our example the skeleton driver is a character device
-   so we want to create an entry.  Also, our skeleton driver only
-   supports the open, close and ioctl calls.  Looking through the
-   <I>conf.h</I> file we find there is a generic device defined called
-   <TT>cdev__oci_init</TT> which does exactly what we
-   want.  This saves us a bit of typing by adding this define into
-   <I>conf.h</I>:
-
+   These files contain lists of device major numbers for NetBSD.  The
+   file <I>/usr/src/sys/conf/majors</I> contains the major numbers for
+   devices that are machine independent, that is, available on all
+   architectures that NetBSD supports.  If the device is only relevant
+   to a particular architecture then the file
+   <I>/usr/src/sys/<B>arch</B>/conf/majors.<B>arch</B></I> must be used
+   where <B>arch</B> is replaced with the architecture in question.
+   These files contain entries of the form
 <PRE>
-   #define cdev_skeleton_init(c,n)     cdev__oci_init(c,n)
+device-major    prefix		type      number	condition
 </PRE>
-   This defines a macro we can use to define the cdevsw entry in
-   another file.  For a more complex driver you can just copy one of
-   the other defines and modify as required.
-<P>
-<LI><h4>/usr/src/sys/arch/i386/i386/conf.c</h4>
-	<!-- where is it on other architectures? -->
+   The exact syntax for these lines is described in the config(5)
+   man page but for the purposes of our example the  components of the
+   line are:
+<P><DL>
+		<DT>device-major
+		<DD>  A keyword indicating this is a device major
+		number entry.
 
-   Once we have the cdevsw initialisation entry in <I>conf.h</I> we are set
-   to do the next step.  The first thing to do is to include an
-   include file and set up the prototype for the devsw entry.  We do
-   this by putting this code in:
+		<DT>prefix
+		<DD>  The prefix that will be applied to all the
+		driver functions when their names are automatically
+		generated.  In our example this would be
+		<TT>skeleton</TT>.
 
+		<DT>type
+		<DD>  The type of major device this is, it may be
+		either <TT>char</TT> or <TT>block</TT>.  You may
+		specify both a char and block device by repeating the
+		type/number pair for both.
+
+		<DT>number
+		<DD> The major number for the device, choose the next
+		available number.  Make a note of this number as you
+		will need it to make the device node in <TT>/dev</TT>.
+
+		<DT>condition
+		<DD> The condition on which this device will be
+		included in the kernel.  This should match the
+		pseudo-device entry you put in the conf file
+		(described below).
+</DL><P>
+   For our example skeleton pseudo device we want a character device,
+   and have decided that the driver is machine specific to the
+   <TT>i386</TT> architecture.  After making these decisions we can
+   edit the <TT>/usr/src/sys/arch/i386/conf/majors.i386</TT> file, we find
+   that major number 140 is available so we add the line:
 <PRE>
-   #include "skeleton.h"
-   cdev_decl(skeleton)
+device-major	skeleton	char	140	skeleton
 </PRE>
-
-   Wait a minute!  We haven't created a skeleton.h!  That is correct,
-   we don't create that file.  It will be created by config(8), we
-   shall see later how this is done.  The second line there sets up
-   the function prototypes for the skeleton driver - you should
-   replace skeleton with the name of your pseudo-device.  That takes
-   care of the declarations.  Now we need to add the device into the
-   bdevsw/cdevsw table.  Since skeleton is a cdev we need to find the
-   cdevsw array and add an entry to it.  You should add an entry to
-   the end of the array - trying to add an entry in the middle of the
-   cdevsw table will mess up all the other device drivers.  So, at the
-   end of the cdevsw table we add an entry like this:
-
-<PRE>
-        cdev_skeleton_init(NSKELETON,
-                         skeleton),      /* 71: Skeleton pseudo-device */
-</PRE>
-
-   Again, NSKELETON is not defined by us anywhere.  When
-   config(8) is run it will generate a <I>skeleton.h</I> file
-   with NSKELETON defined in it, the symbol defines the number of
-   these devices to create - the number comes from the config file.
-   Note that <TT>cdev_skeleton_init</TT> is the macro we
-   defined in <I>conf.h</I> and that the second parameter ("skeleton") is the
-   name of our pseudo-driver.  This macro concatenates the name of
-   the pseudo-driver with the function call names (open, close, ioctl,
-   etc) to produce the function names that we have defined in our
-   code.  This is how the kernel knows to run your code.  The last bit
-   of the puzzle is the number in the comment next to the entry.  You
-   must copy the format of the other entries, increment the number and
-   put the function of your device into the comment.  The number is
-   important.  This number is the major number of your device.  You
-   need to make a note of this number for later.
 </OL>
 
-<ENTRY>config Making config<b></b>(8) aware of the new device
-   To make config(8) aware of our new pseudo device we need to
-   edit the file in <TT>/usr/src/sys/conf/files</TT>.
-   This file tells config what valid device names there are and which
-   files are associated with these devices.  Firstly we look for the
-   section that defines the pseudo-devices.  This section has lines
-   that start with <TT>defpseudo</TT>.  Once we have found
-   the correct section we can add a line like this:
+<ENTRY>config Making config<b></b>(1) aware of the new device
+   To make
+   config(1) aware of our new pseudo device we need to edit the file
+   in either <TT>/usr/src/sys/conf/files</TT> (for architecture
+   independent devices) or
+   <TT>/usr/src/sys/arch/<I>arch</I>/conf/files.<I>arch</I></TT> where
+   <I>arch</I> is the relevant architecture.  This file tells config
+   what valid device names there are and which files are associated
+   with these devices.  Firstly we look for the section that defines
+   the pseudo-devices.  This section has lines that start with
+   <TT>defpseudo</TT>.  Since we have decided that our driver is to be
+   an architecture specific one we edit the
+   <TT>/usr/src/sys/arch/i386/conf/files.i386</TT> file and once we
+   have found the correct section we can add a line like this:
 
 <PRE>
 defpseudo skeleton
 </PRE>
 
-   Which tells config(8) we have a pseudo-device called skeleton.
-   Next we need to tell config(8) which files are associated with the
-   skeleton pseudo-device.  In this case we only have on file but a
+   Which tells config(1) we have a pseudo-device called skeleton.
+   Next we need to tell config(1) which files are associated with the
+   skeleton pseudo-device.  In this case we only have one file but a
    more complex pseudo-device may have more files, simply add each
    file required on a line in the same manner.  For our example we
    only need one line that looks like this:
@@ -360,7 +370,7 @@ file dev/skeleton.c	   skeleton	needs-flag
    source tree (normally, <TT>/usr/src/sys</TT>).  The
    third field is the name of the driver that this file is associated
    with, in our case this is skeleton - our sample pseudo-device.  The
-   fourth and last field is a control flag that tells config(8) to
+   fourth and last field is a control flag that tells config(1) to
    write the skeleton.h include file. Note that here the file is called
    skeleton.c, if we were using the example files here, we would have to
    either rename pseudo_dev_skel.c to skeleton.c or change this entry.
@@ -368,7 +378,7 @@ file dev/skeleton.c	   skeleton	needs-flag
    be more suitable to call it skeleton.c.
 
 <ENTRY>kernelconfig Adding the new device to the kernel config file
-   Once config(8) has been told about the device, adding it to
+   Once config(1) has been told about the device, adding it to
    the kernel config file is simple.  To add our skeleton device we
    add the line:
 
@@ -391,10 +401,10 @@ pseudo-device  skeleton
    from it but, by convention, device nodes are created in
    <I>/dev</I>.  To make the device node you will need to use
    mknod(8) to create a device node with the major number you
-   noted in section 4.ii.  In our case the mknod(8) command would look
+   noted in section 4.i.  In our case the mknod(8) command would look
    like this:
 <PRE>
-        mknod /dev/skel c 71 0
+        mknod /dev/skel c 140 0
 </PRE>
    Once this has been done you should be able to open your new device
    and test it out.  The file <A HREF="sample.c">sample.c</A> shows
@@ -429,7 +439,7 @@ May 17 20:32:57 siren /netbsd: Got number of 42 and string of Hello World
 <address>
   <small>
   <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
-  $NetBSD: index.list,v 1.17 2006/02/23 17:18:02 kano Exp $<br>
+  $NetBSD: index.list,v 1.19 2006/12/29 03:41:31 kano Exp $<br>
   <a href="../../../Misc/disclaimer.html">Copyright &copy; 1994-2005
   The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a><br>
   <a href="../../../Misc/disclaimer.html">NetBSD<sup>&#174;</sup> is a
