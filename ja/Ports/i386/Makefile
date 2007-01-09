@@ -1,7 +1,5 @@
-#	$NetBSD: Makefile,v 1.9 2005/11/17 15:30:46 jschauma Exp $
+#	$NetBSD: Makefile,v 1.10 2006/05/29 14:32:28 jschauma Exp $
 
-XMLDOCS+=       index
-
-LISTDOCS+=	faq.list
+XMLDOCS+=       index faq
 
 .include "../../share/mk/web.site.mk"
