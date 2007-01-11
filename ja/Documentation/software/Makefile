@@ -1,11 +1,12 @@
-#	$NetBSD: Makefile,v 1.17 2005/10/14 08:59:56 rillig Exp $
+#	$NetBSD: Makefile,v 1.20 2007/01/10 17:28:25 darcy Exp $
 
-XMLDOCS+=		compiling
+SUBDIR+=	3rdparty
 
-XMLDOCS+=		packages:pkgsrc-home.xsl:packages.xml:packages.html
+XMLDOCS+=	compiling index
+XMLDOCS+=	packages:pkgsrc-home.xsl::
 PARAMS.packages=	--stringparam autolayout-file ${AUTOLAYOUTFILE}
 
-LISTDOCS=	pkg-growth.list pkg-growth-jpg.list
+LISTDOCS+=	pkg-growth.list
+LISTDOCS+=	pkg-growth-jpg.list
 
 .include "../../share/mk/web.site.mk"
-
