@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.74 2006/10/11 14:32:56 yyamano Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.75 2006/11/11 05:38:27 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.74 2006/10/11 14:32:56 yyamano Exp   -->
+<!-- NetBSD: fixes.xml,v 1.75 2006/11/11 05:38:27 rillig Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
 <title>パッケージを動くようにする</title>
@@ -1097,8 +1097,8 @@
 <sect2 id="undefined-reference">
 <title>undefined reference to <quote>...</quote></title>
 
-	<para>このコンパイラーエラーは、
-	パッケージが必要な共有ライブラリーにリンクしていない場合にしばしば出ます。
+	<para>このエラーメッセージは、しばしば、
+	パッケージが必要な共有ライブラリーにリンクしていないことを表します。
 	以下の関数は、このエラーメッセージを何度も出すことがわかっているものです。</para>
 
     <informaltable id="undefined-reference-functions">
@@ -1121,6 +1121,35 @@
     <literal>LIBS.<replaceable>OperatingSystem</replaceable>+=
     -l<replaceable>foo</replaceable></literal> を追加してから <command>bmake clean;
     bmake</command> を実行すれば十分です。</para>
+
+<sect3 id="undefined-reference-sunpro">
+<title>特殊な問題: SunPro コンパイラー</title>
+
+<para>SunPro コンパイラーを使っている場合は、別の問題の可能性があります。
+このコンパイラーは、以下のようなコードを処理することができません。</para>
+
+<programlisting>
+    extern int extern_func(int);
+    
+    static inline int
+    inline_func(int x)
+    {
+        return extern_func(x);
+    }
+    
+    int main(void)
+    {
+        return 0;
+    }
+</programlisting>
+
+<para>ここからは、<function>inline_func</function> 関数がたとえ使われていなくても、
+この関数用のコードが生成され、そのコードから
+<function>extern_func</function> が参照されますが、この参照は通常は解決することができません。
+この問題を解決するため、
+パッケージに関数のインライン化を無効化するよう指示してみることができます。</para>
+
+</sect3>
 
   </sect2>
 
