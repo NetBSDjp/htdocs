@@ -5,10 +5,10 @@
 
 <webpage id="ja-Documentation-kernel-index">
   <config param="desc" value="NetBSD ドキュメンテーション: カーネル"/>
-  <config param="cvstag" value="$NetBSD: index.xml,v 1.16 2006/12/10 20:51:36 hubertf Exp $"/>
+  <config param="cvstag" value="$NetBSD: index.xml,v 1.18 2007/01/13 15:11:14 pavel Exp $"/>
 <!-- Based on english version: -->
-<!-- NetBSD: index.xml,v 1.16 2006/12/10 20:51:36 hubertf Exp   -->
-  <config param="rcsdate" value="$Date: 2006/12/10 20:51:36 $"/>
+<!-- NetBSD: index.xml,v 1.18 2007/01/13 15:11:14 pavel Exp   -->
+  <config param="rcsdate" value="$Date: 2007/01/13 15:11:14 $"/>
   
   <head>
     <!-- Copyright (c) 1994-2005
@@ -105,6 +105,30 @@
       <anchor id="building_a_kernel" />
       <!-- Don't change the above targets - SAs reference them. -->
 
+      以下に示す手順は、インストールされている NetBSD
+      と同じバージョンのカーネルをコンパイルする場合専用のものです。
+      同じメジャーバージョンの、より新しいカーネルに更新する場合も、
+      以下の手順を使ってうまく更新できるはずです。しかし、-current
+      のカーネルに更新する場合や、より新しいメジャーリリースに更新したい場合には、
+      はじめに、新しいツールチェインをコンパイルする必要があります。
+      -current の追跡に関するドキュメンテーション内にある、<code>build.sh</code>
+      スクリプトを使ってツールチェインと新しいカーネルを構築する方法の説明に従ってください。
+      <itemizedlist>
+	<listitem>
+	  <ulink url="../current/">既存システムのアップデート</ulink>
+	  (必要なのは、<code>build.sh tools</code> と <code>build.sh
+	  kernel</code> の段階だけです)
+	</listitem>
+	<listitem>
+	  <ulink url="../../guide/en/chap-build.html">
+	    build.sh を使った NetBSD のクロスコンパイル</ulink>
+	</listitem>
+	<listitem>
+	  <ulink url="../../guide/en/chap-kernel.html#chap-kernel-build.sh">
+	    build.sh を使ったカーネルの構築</ulink>
+	</listitem>
+      </itemizedlist>
+      カーネルを構築する手順は、以下の通りです。
       <orderedlist>
         <listitem>
 	  あなたのベースシステムに付属していたコンパイラーセット(<code>comp.tgz</code>)を
@@ -114,12 +138,6 @@
 	  カーネルソースをダウンロードし展開します (
   	  <ulink url="#downloading_kernel_source">どこからカーネルソースを
 	  ダウンロードできますか</ulink>参照)。
-        </listitem>
-        <listitem>
-	  -current を使っている場合、新しい tool-chain のコンパイルが
-          必要かもしれません:
-	  完全な -current のソースをダウンロードしたら:
-          <code>cd /usr/src &amp;&amp; ./build.sh tools</code>
         </listitem>
         <listitem>
 	  "<code>cd /usr/src/sys/arch/&lt;ARCH&gt;/conf</code>", 
@@ -147,17 +165,9 @@
 	  他のカーネル設定のオプションの情報のために、 <emphasis role="bold">&man.options.4;</emphasis>
 	  も読んでください。
         </listitem>
-        <listitem>
-          NetBSD 1.6 のアップデート以外では、
-          以下のコマンドを使ってカーネルを再構築します。
-          <code>cd /usr/src &amp;&amp; ./build.sh
-  	  kernel=MYCONF</code>.
-          このコマンドは、カーネルの構築前に、必要に応じて toolchain を更新します
-          次の 4 個のステップは省いてください。
         </listitem>
         <listitem>
-          <emphasis>NetBSD 1.6 の</emphasis>アップデートの場合は
-	  <quote><code>config &lt;MYCONF&gt;</code></quote> を実行します。こうすると、
+          <emphasis> <quote><code>config &lt;MYCONF&gt;</code></quote> を実行します。こうすると、
   	  &lt;MYCONF&gt; に対するカーネル構築用ディレクトリーが作成されます。
         </listitem>
         <listitem>
@@ -494,8 +504,15 @@
       
       <orderedlist>
         <listitem>
-	  プロセスの proc addr を調べる: <code>ps -ax -O paddr -M
-          netbsd.x.core</code>  
+	  LWP の lwp 構造体のアドレスを調べる
+	  : <code>ps -ax -O laddr -M
+          netbsd.x.core</code>
+	  <para>
+	  (LWP すなわち軽量プロセスは、一つのプロセス、
+	  またはカーネル内で実行されているプロセスの一つのスレッドに対応します。
+	  非スレッドなプログラムではプロセスに対応するLWPはただ1つで、
+	  スレッドなプログラムでは複数のLWPとなっていることもあります。
+	  </para>
         </listitem>
         <listitem>
 	  このアドレスを使うよう、gdb に "<code>proc 0x&lt;addr&gt;</code>" と指示する
