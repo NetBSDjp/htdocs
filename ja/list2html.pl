@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.98 2006/10/21 16:30:48 kano Exp $
+# $NetBSD: list2html.pl,v 1.99 2007/01/24 15:26:36 kano Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: list2html.pl,v 1.98 2006/10/21 16:30:48 kano Exp   -->
+# <!-- NetBSD: list2html.pl,v 1.99 2007/01/24 15:26:36 kano Exp   -->
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -72,7 +72,7 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.98 $';
+$version = '$Revision: 1.99 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:qhV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -672,7 +672,7 @@ sub sub_external_links
         my($n) = $3;
 	if (defined($pkgname{$n}))
 	    { $n = $pkgname{$n}; }
-        $text =~ s#<PKGSRC>(([-\w.]+/|)([-\w_.+]+[\w+]))#<a href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/$1/README.html">$n</a>#;
+        $text =~ s#<PKGSRC>(([-\w.]+/|)([-\w_.+]+[\w+]))#<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/$1/README.html">$n</a>#;
 	}
 
     # Expand <RFC>RFCxxxx entries
