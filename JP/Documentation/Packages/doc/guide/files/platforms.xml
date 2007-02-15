@@ -1,6 +1,6 @@
-<!-- $NetBSD: platforms.xml,v 1.52 2007/01/22 13:14:41 tron Exp $ -->
+<!-- $NetBSD: platforms.xml,v 1.53 2007/02/08 23:25:10 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: platforms.xml,v 1.52 2007/01/22 13:14:41 tron Exp   -->
+<!-- NetBSD: platforms.xml,v 1.53 2007/02/08 23:25:10 rillig Exp   -->
 
 <chapter id="platforms">
   <title>&os; 以外のシステムで pkgsrc を使う</title>
@@ -799,81 +799,38 @@ url="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/bootstrap-pkgsrc/CKSUM">CKSUM</uli
 	  - Sun WorkShop Compilers common components</para></listitem>
 	</itemizedlist>
 
-	<para><filename>/etc/mk.conf</filename> で <varname>CC</varname> および <varname>CXX</varname>
-	を設定します。<varname>CPP</varname> もここで設定して結構です。
-	たとえば以下のようにします。</para>
+	<para><filename>/etc/mk.conf</filename>
+	で、以下の変数を設定します。</para>
 
-	<programlisting>
-	  CC=     cc
-	  CXX=    CC
-	  CPP=    /usr/ccs/lib/cpp
-	</programlisting>
+<programlisting>
+    CC=     cc
+    CXX=    CC
+    CPP=    cc -E
+    CXXCPP= CC -E
+</programlisting>
+
+	<note><para>C プリプロセッサーを使って
+	C のソースコード以外のものを処理するパッケージのなかには、
+	この <varname>CPP</varname> の設定では問題が起きるものがあるかもしれません。</para></note>
 
       </sect3>
       <sect3 id="solaris-sunpro-64">
 	<title>SunPro を使って 64 ビットバイナリーを構築する</title>
 
-	<para>64 ビットバイナリーの構築は、少し巧妙なやり方になります。
-	最初に、pkgsrc のブートストラップを 64 ビットモードでおこなう必要があります。
-	ここでの問題は、ブートストラップキットに含まれているプログラムのひとつ
-	(<filename>bmake</filename>) の構築中に、<varname>CFLAGS</varname>
-	変数が、たとえ環境変数に設定しても、無視されることです。
-	このバグを回避するには、以下のような簡単なシェルスクリプトを、
-	<filename>cc64</filename> という名前で <varname>PATH</varname>
-	中のどこかに置きます。</para>
+	<para>64 ビットパッケージを構築する場合に必要なことは、
+	<filename>mk.conf</filename>
+	ファイルに以下の行を追加するだけです。</para>
 
-	<programlisting>
-	  #! /bin/sh
-	  exec /opt/SUNWspro/bin/cc -xtarget=ultra -xarch=v9 ${1+"$@"}
-	</programlisting>
+<programlisting>
+    PKGSRC_COMPILER=        sunpro
+    ABI=                    64
+</programlisting>
 
-	<para>次に、<varname>CC</varname> の定義を
-	<command>bootstrap</command> コマンドの環境変数に渡します。</para>
-
-	<programlisting>
-	  &uprompt; <userinput>cd bootstrap</userinput>
-	  &uprompt; <userinput>CC=cc64 ./bootstrap</userinput>
-	</programlisting>
-
-	<para>ブートストラップをした後は、パッケージのバグを見つけたいのか、
-	システムを手っ取り早く使えるようにしたいだけなのかによって、
-	二通りの選択肢があります。システムを使えるようにしたいだけの場合は、
-	以下の各行を <filename>mk.conf</filename>
-	ファイルに付け足します。</para>
-
-	<programlisting>
-	  CC=                     cc64
-	  CXX=                    CC64
-	  PKGSRC_COMPILER=        sunpro
-	</programlisting>
-
-	<para>この方法を使うと、あらゆるコンパイラーの呼び出しが、
-	上で定義されたラッパーを介しておこなわれるようになり、
-	必要な ABI オプションが自動的に追加されます。(シェルスクリプト
-	<filename>CC64</filename> も忘れずに作っておいてください。)</para>
-
-	<para>ユーザーが指定した
-	<varname>CFLAGS</varname> や <varname>CXXFLAGS</varname>
-	を無視するパッケージを見つけるには、以下の各行を <filename>mk.conf</filename>
-	ファイルに付け足します。</para>
-
-	<programlisting>
-	  CC=                     cc
-	  CXX=                    CC
-	  PKGSRC_COMPILER=        sunpro
-	  CFLAGS=                 -xtarget=ultra -xarch=v9
-	  CXXFLAGS=               -xtarget=ultra -xarch=v9
-	  LDFLAGS=                -xtarget=ultra -xarch=v9
-	</programlisting>
-
-	<para>設定ファイルで指定されたフラグを使わないパッケージは、
-	32 ビットバイナリーを構築しようとして、リンクに失敗します。
-	このようなものを見つけることは、
-	エラーが表に出ずに黙って先に進むような他のプラットフォームでのバグを予防するために、
-	有用です。</para>
+	<note><para>この設定は、SPARC アーキテクチャーについてのみ確認がおこなわれています。
+	Intel および AMD マシンでは、
+	必要な作業がまだ残っています。</para></note>
 
       </sect3>
-
       <sect3 id="plat.sunos.problems"><title>ありがちな問題</title>
 
       <para><command>libtool</command> を使っていると、時々、<filename>/bin/ksh</filename>
