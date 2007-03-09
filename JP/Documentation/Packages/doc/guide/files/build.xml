@@ -1,6 +1,6 @@
-<!-- $NetBSD: build.xml,v 1.42 2006/12/15 13:22:14 martti Exp $ -->
+<!-- $NetBSD: build.xml,v 1.44 2007/03/03 13:27:03 kano Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: build.xml,v 1.42 2006/12/15 13:22:14 martti Exp   -->
+<!-- NetBSD: build.xml,v 1.44 2007/03/03 13:27:03 kano Exp   -->
 
 <chapter id="build">
   <title>構築の手順</title>
@@ -18,12 +18,20 @@
     <varname>pre-configure</varname>, <varname>post-build</varname> などです。)
     実際に何かがおこなわれるのは、ほとんどが <varname>do-*</varname> 期においてです。</para>
 
+    <para>標準的なターゲット (<varname>fetch</varname>
+    など) は、決して上書きしないでください。変更する必要がある場合は、
+    対応する <varname>do-*</varname> ターゲットを上書きしてください。</para>
+
     <para>プログラムを構築するための基本的な手順は常に同じです。最初に、プログラムの
     ソースファイル(<emphasis>distfile</emphasis>)をローカルシステムへ持ってきて展開します。
     コンパイルするための pkgsrc 独自のパッチを適用した後に、ソフトウェアを設定
     し、構築(通常、コンパイルすることによって)します。最後に作成されたバイナリー
     等を、システムにインストールします。</para>
 
+    <para>それぞれの段階で何が起きているかを、もっと詳しく把握するために、
+    <varname>PKG_VERBOSE</varname> 変数を設定することができます。
+    または、<emphasis>patch</emphasis> の段階における詳細に関心があるだけなら、
+    <varname>PATCH_DEBUG</varname> 変数を設定することもできます。</para>
   </sect1>
 
   <sect1 id="build.prefix">
@@ -162,6 +170,10 @@
       <listitem><para>絶対パス名で、
       pkgsrc のルートディレクトリーを指します。
       通常は、この変数を使う必要はありません。</para></listitem></varlistentry>
+
+      <varlistentry><term><varname>PKGDIR</varname></term>
+      <listitem><para>当該パッケージを指す
+      絶対パス名です。</para></listitem></varlistentry>
 
       <varlistentry><term><varname>PKGPATH</varname></term>
       <listitem><para><varname>PKGSRCDIR</varname>
@@ -334,6 +346,13 @@
       <varname>MASTER_SORT_AWK</varname>か
       <varname>MASTER_SORT_REGEX</varname>を設定して、ユーザー
       が入れ換えることができます。</para>
+
+      <para>the NetBSD Foundation が運営している distfile
+      のミラーサイトでは、自由に配布可能な distfile
+      をミラーするために <emphasis>mirror-distfiles</emphasis>
+      ターゲットを使っています。<varname>NO_SRC_ON_FTP</varname>
+      を (たいていは <quote>${RESTRICTED}</quote> に)
+      設定しているバッケージの distfile はミラーされません。</para>
     </sect2>
 
   </sect1>
@@ -515,8 +534,12 @@
     <para>もし、プログラムがコンフィギュレーションのために <filename>Imakefile</filename> を使用するので
     あれば、<varname>USE_IMAKE</varname> を <quote>yes</quote> に設定することにより、適切な手順が実行されます。
     (もし、<varname>${X11PREFIX}</varname> にインストールされるパッケージが欲しいだけで、xmkmfを実
-    行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください。)</para>
+    行したくない場合、かわりに<varname>USE_X11BASE</varname>を使用してください。)
+    <varname>SCRIPTS_ENV</varname> に変数を設定すると、
+    その変数を xmkmf の環境変数に追加することができます。</para>
 
+    <para>configure の段階ですることが何もない場合は、
+    <varname>NO_CONFIGURE</varname> を <quote>yes</quote> に設定します。</para>
   </sect1>
 
   <sect1 id="build.build">
@@ -552,6 +575,8 @@
     <varname>MAKE_FILE</varname> の標準の値は <quote>Makefile</quote> であり、
     <varname>BUILD_TARGET</varname> の標準の値は <quote>all</quote> です。</para>
 
+    <para>build の段階ですることが何もない場合は、
+    <varname>NO_BUILD</varname> を <quote>yes</quote> に設定します。</para>
   </sect1>
 
   <sect1 id="build.test">
@@ -653,6 +678,11 @@
       適切な所有者・所有グループのもとに作成されます。</para></listitem></varlistentry>
 
     </variablelist>
+
+    <para>稀な場合として、パッケージが何もインストールしないような場合は、
+    <varname>NO_INSTALL</varname> を <quote>yes</quote> に設定します。
+    これはほとんどの場合、<filename>regress</filename>
+    カテゴリーのパッケージに関するものです。</para>
   </sect1>
 
   <sect1 id="build.package">
@@ -671,6 +701,12 @@
     <filename>${PACKAGES}/<replaceable>category</replaceable></filename>
     にシンボリックリンクが作られます。<varname>PACKAGES</varname>
     は標準では <filename>pkgsrc/packages</filename> になります。</para>
+
+    <para>バイナリーパッケージを作るべきでない場合は、
+    <varname>NO_PACKAGE</varname> を <quote>yes</quote> に設定します。
+    これは、構築したマシン上でしかパッケージが有用でないなど、
+    稀な状況下でのみおこなうものですが、たとえそのような場合でも、
+    バイナリーパッケージが有用ということはありえます。</para>
   </sect1>
 
   <sect1 id="build.clean">
