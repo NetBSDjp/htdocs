@@ -1,6 +1,6 @@
-<!-- $NetBSD: makefile.xml,v 1.21 2006/06/29 13:37:46 rillig Exp $ -->
+<!-- $NetBSD: makefile.xml,v 1.22 2007/03/08 16:00:16 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: makefile.xml,v 1.21 2006/06/29 13:37:46 rillig Exp   -->
+<!-- NetBSD: makefile.xml,v 1.22 2007/03/08 16:00:16 rillig Exp   -->
 
 <chapter id="makefile"> <?dbhtml filename="makefile.html"?>
   <title><filename>Makefile</filename> におけるプログラミング</title>
@@ -20,6 +20,48 @@
   <para>本章では、<filename>Makefile</filename>
   で頻出するいくつかのパターンと、
   それらに伴う落とし穴を説明します。</para>
+
+  <sect1 id="makefile.style">
+  <title>警告</title>
+
+    <itemizedlist><listitem><para>ルールのターゲットとしてファイルを作る場合、
+    常に、データをまず一時ファイルに書き込んでから、
+    最後にファイル名を変えるようにしてください。
+    そうしておかないと、ファイルの生成の途中にエラーが起きた場合、
+    利用者が &man.make.1; を 2 回目に実行したときに、
+    前回のファイルが存在したままとなり、ファイルが正しく再生成されません。
+    たとえば、</para>
+
+<programlisting>
+    wrong:
+            @echo "line 1" > ${.TARGET}
+            @echo "line 2" >> ${.TARGET}
+            @false
+
+    correct:
+            @echo "line 1" > ${.TARGET}.tmp
+            @echo "line 2" >> ${.TARGET}.tmp
+            @false
+            @mv ${.TARGET}.tmp ${.TARGET}
+</programlisting>
+
+    <para><command>make wrong</command> を 2 回実行したときに、
+    1 回目の実行でエラーメッセージが出ますが、
+    ファイル <filename>wrong</filename> は作られた状態になります。
+    一方、<command>make
+    correct</command> を実行すると、エラーメッセージが 2 回出るという、
+    期待どおりの動作となります。</para>
+    
+    <para>エラーの場合には &man.make.1; が <literal>${.TARGET}</literal>
+    を削除することがあるということをご存知かもしれませんが、
+    この削除は、たとえば <literal>^C</literal> を押すなど、
+    割り込みがあった場合にのみおこなわれます。コマンドのどれかが
+    (上の例の &man.false.1; のように) 失敗した場合には、
+    削除は<emphasis>おこなわれません</emphasis>。</para>
+    
+    </listitem>
+    </itemizedlist>
+  </sect1>
 
   <sect1 id="makefile.variables">
     <title><filename>Makefile</filename> 変数</title>
