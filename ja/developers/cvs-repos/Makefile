@@ -4,6 +4,6 @@
 
 # XMLDOCS=	index notes
 
-LISTDOCS=	branch.list
+# LISTDOCS=	branch.list
 
 .include "../../../share/mk/web.site.mk"
