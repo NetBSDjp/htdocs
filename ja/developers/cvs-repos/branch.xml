@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="cvs-branches">
+<config param="desc" value="Working with CVS branches"/>
+<config param="cvstag" value="$NetBSD: branch.xml,v 1.2 2007/04/07 01:25:31 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2007/04/07 01:25:31 $"/>
+
+<head>
+
+<!-- Copyright (c) 1994-2003
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>Working with CVS branches</title>
+</head>
+
+
+<sect1 role="toc">
+<title>Working with CVS branches</title>
+
+<sect2 id="cvs-branches-foobar">
+
+<sect3 id="about">
+  <title>About this file</title>
+
+  <para>
+<emphasis>Chris Demetriou writes:</emphasis>
+So, a bunch of you often do CVS branch stuff.  Below are the commands
+that I generally use to do branch stuff (creation, updating).  Jason
+asked me to send them here.
+</para>
+
+<para>
+Assuming ${b} == the branch name and ${m} == the module name covered
+by the branch.  I assume that whole hierarchies will be worked with,
+rather than individual bits as some people seem to want to do.  I've
+never had much luck with the latter.
+</para>
+</sect3>
+
+<sect3 id="cvs-create-branch">
+  <title>To create a branch</title>
+
+<orderedlist>
+  <listitem>
+    <para>
+    Tag the set of sources you want to branch with a command like:
+    <screen>cvs rtag -r HEAD ${b}-base ${m}</screen>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    Branch them with the command:
+    <screen>cvs rtag -b -r ${b}-base ${b} ${m}</screen>
+    </para>
+  </listitem>
+</orderedlist>
+</sect3>
+
+<sect3 id="cvs-update-branch">
+  <title>Update the branch to reflect changes in the trunk</title>
+
+<orderedlist>
+  <listitem>
+    <para>
+    Update your working source tree to be on the branch:
+    </para>
+    
+    <screen>cvs update -P -r ${b}</screen>
+    
+    <para>
+    (in your working source tree)
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    Make a tag which represents the new base you're moving to:
+    </para>
+    <screen>cvs rtag -F -r HEAD ${b}-nbase ${m}</screen>
+    <para>
+    This allows you to punt, and redo your merge again later if
+    you decide you don't have time to do it right then, or whatever.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+    Merge changes between the old and new base of your branch:
+    </para>
+    <screen>cvs update -j ${b}-base -j ${b}-nbase</screen>
+    <para>
+    (in your working source tree)
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+    Merge conflicts, etc.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+    Check in your changes (to the branch).
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+    Repoint the base tag at the new base revisions:
+    </para>
+    <screen>cvs rtag -F -r ${b}-nbase ${b}-base ${m}</screen>
+  </listitem>
+
+  <listitem>
+    <para>
+    Delete the new base tags (now redundant):
+    </para>
+    <screen>cvs rtag -d ${b}-nbase ${m}</screen>
+  </listitem>
+</orderedlist>
+</sect3>
+</sect2>
+</sect1>
+</webpage>
+
