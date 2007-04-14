@@ -1,11 +1,11 @@
-#	$NetBSD: Makefile,v 1.17 2005/12/04 19:16:46 heinz Exp $
+#	$NetBSD: Makefile,v 1.19 2007/04/03 18:40:51 daniel Exp $
 
 SUBDIR+=	profiling
 SUBDIR+=	pseudo
 
-LISTDOCS=	kgdb.list
-LISTDOCS+=	scsidma.list
+LISTDOCS=	scsidma.list
 
-XMLDOCS+=	index non-exec ddwg programming lazyfpu uvm
+XMLDOCS+=	index kgdb non-exec ddwg porting_netbsd_arm_soc programming
+XMLDOCS+=	lazyfpu uvm
 
 .include "../../share/mk/web.site.mk"
