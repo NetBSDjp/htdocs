@@ -1,0 +1,370 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Ports-macppc-oldfaq">
+<config param="desc" value="NetBSD/macppc Old Frequently Asked Questions"/>
+<config param="cvstag" value="$NetBSD: oldfaq.xml,v 1.4 2007/04/21 02:06:47 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2007/04/21 02:06:47 $"/>
+<head>
+
+<!-- Copyright (c) 1998-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>&os;/macppc Old Frequently Asked Questions</title>
+</head>
+
+<sect1 role="toc">
+<title>&os;/macppc Old Frequently Asked Questions</title>
+
+<sect2 id="intro">
+<title>Introduction</title>
+
+<sect3 id="about">
+<title>About this FAQ</title>
+<para>
+This frequently asked questions (and answers) document covers problems
+with &os;/macppc prior to the 1.6 release.</para>
+
+<para>If you have encounter a problem listed here as being fixed, 
+have additional information, questions, or answers, send mail to 
+<email>port-macppc@NetBSD.org</email></para>
+
+</sect3>
+</sect2>
+
+<sect2 id="general">
+<title>General Information</title>
+
+<sect3 id="usb-keyboard-problems">
+<title>USB keyboard problems</title>
+<para>
+There are two different types of USB keyboard problems.  One set of
+problems appeared after &os; 1.4.3 was released, and applies only to
+some iMac (Bondi Blue) and some PowerMacintosh G3 (Blue and White) machines.  
+This problem seems to have been fixed in &os; 1.6.</para>
+<para>
+The other problem occurred on all models with USB keyboards, but was fixed
+prior to the release of &os; 1.5.</para>
+
+<sect4 id="imac">
+<title>iMac (Bondi Blue) and PowerMacintosh G3 (Blue and
+White) problems:</title>
+<para>
+See Bob Nestor's 
+<ulink url="http://mail-index.NetBSD.org/port-macppc/2001/06/11/0009.html">post</ulink>
+to the mailing list describing the problem and a
+workaround for the PowerMacintosh G3 (Blue and White).  This
+workaround doesn't work for the iMac (Bondi Blue), but Rob Gridley reports that 
+unplugging the mouse allows his system to boot and use the keyboard.  Also, 
+see the problem report, 
+<ulink url="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=12894">port-macppc/12894</ulink>
+</para>
+<para>
+Briefly, what he recommends is:
+</para>
+<orderedlist>
+  <listitem><para>Unplug the USB keyboard and plug in an ADB keyboard and mouse</para></listitem>
+  <listitem><para>Boot &os; with the ADB keyboard</para></listitem>
+  <listitem><para>Enter root, swap and filesystem responses on the ADB keyboard</para></listitem>
+  <listitem><para>When the system gets to the shell prompt (or login if you went 
+    multi-user), unplug the ADB and plug in the USB keyboard</para></listitem>
+</orderedlist>
+<para>
+The USB will be usable at this point and you can use the
+system.  You'll notice that the ADB is dead even before you unplugged it.  
+Also you <emphasis role="bold">MUST</emphasis> boot without the USB installed or this won't work.
+</para>
+<para>
+Alternatively, &os; 1.4.3 works fine on these two models and does not
+have this USB keyboard problem.</para>
+</sect4>
+
+<sect4 id="repeating_kepress">
+<title>Repeating keypress problems prior to &os; 1.5:</title>
+<para>
+There is a problem in some kernels that causes the first keypress
+from a USB keyboard to be repeated over and over again. A symptom
+of this would be the install system continually asking <code>(I)nstall,
+(S)hell or (H)alt ?</code> To avoid this problem, press the
+shift key before anything else.</para>
+<para>
+On some newer machines, &os; will hang after configuring the devices but
+before entering single-user mode.  The recommended solution is to unplug
+all USB devices (especially hubs) and plug the mouse into the keyboard and
+the keyboard directly into the back of the mac.</para>
+</sect4>
+</sect3>
+
+<sect3 id="cannot-allocate-vm-panic">
+<title><code>panic: startup: cannot allocate VM for buffers</code></title>
+<para>
+This problem should have been fixed in &os; 1.5.</para>
+
+<para>
+On some machines with large quantities of RAM the kernel will run out of
+kernel VM when it tries to allocate the buffer cache.
+You can avoid this by either of:</para>
+<orderedlist>
+<listitem><para>Removing some RAM</para></listitem>
+<listitem><para>Adding <code>options BUFPAGES=800</code> to the <ulink
+    url="../../Documentation/kernel/#how_to_build_a_kernel">kernel
+    configuration</ulink></para></listitem>
+</orderedlist>
+</sect3>
+
+<sect3 id="wdc-lost-interrupt">
+<title><code>wdc0:0:1: lost interrupt</code></title>
+<para>
+This problem is present in &os; 1.5.2 on newer machines that support 
+ATA4 drives.  Unfortunately, there is presently no easy workaround.  Post 
+to <email>port-macppc@NetBSD.org</email> for assistance.</para>
+
+<para>This has been reported on the iBook (Dual USB) and the iMac (Summer 
+2000) which has been updated to BootROM 4.1.9.</para>
+
+<para>The problem is not present in &os; 1.5.3 and later.</para>
+</sect3>
+
+<sect3 id="pciide-lost-interrupt">
+<title><code>pciide0:0:0: lost interrupt</code></title>
+<para>
+This problem is fixed in &os; 1.5.1 and later.</para>
+
+<para>
+The &os; initialization code for the CMD 646 IDE controller doesn't
+correctly undo some of the settings that Open Firmware sets.  What happens
+is that Open Firmware sets the IDE controller up in 0646U2 mode and
+changes some of the interrupt settings.  The MI pciide driver doesn't know
+how to deal with this situation and you get a lot of <quote>lost
+interrupt</quote> messages.</para>
+
+<para> What this means is that if you use Open Firmware to load the
+bootloader (i.e. <command>ofwboot.xcf</command>) or the kernel from
+your hard drive, &os; cannot use that drive.</para>
+
+<para> A workaround is to place the kernel on another bootable bus and
+then use that to mount the drive with your &os; filesystem on the
+drive connected to the CMD 646 IDE bus.  The key phrase here is
+<quote>another bootable bus</quote>.  On the G3 and G4 machines which
+have this problem, they have more than one IDE bus (in addition to
+add-on SCSI busses).  The hard drive is typically on the bus which we
+have troubles with, but the CD-ROM and Zip drive are typically on a
+different IDE bus which works just fine.</para>
+
+<para>
+What you may want to do is move your hard drive to the bus the CD-ROM is
+attached to (paying attention to the master/slave jumpers), and all your
+problems will go away, although your drive is using a slower IDE bus
+protocol.</para>
+</sect3>
+
+<sect3 id="mesh-fifo">
+<title><code>Panic: mesh: FIFO != 0</code></title>
+<para>
+This bug is not present in &os; 1.5 and later.
+</para>
+<para>
+This is usually caused by bad SCSI cabling or devices.  Check your
+internal and external termination.  Check the length and quality of your
+cables.  Disconnect all devices that are not critical.
+</para>
+<para>
+More often than not, this is caused by having a Zip drive on your MESH
+SCSI bus, as these devices do not behave like good SCSI citizens.
+</para>
+<para>
+One person
+suggested that the MESH driver is more reliable if you don't reboot
+from Mac OS into &os;. (That is, if you're running Mac OS, shut down
+rather than rebooting, and then power it back on and boot to &os;.)
+</para>
+<para>
+M L Riechers posted a very thorough 
+<ulink url="http://mail-index.NetBSD.org/port-macppc/2000/08/02/0029.html">
+message</ulink> on this topic.
+</para>
+<para>
+Good luck.
+</para>
+</sect3>
+
+<sect3 id="bm0-device-timeouts">
+<title>I'm getting device timeouts on bm0</title>
+<para>
+This problem has been fixed in &os; 1.5 and later.
+</para>
+<para>
+Inserting a 10Mb Hub (forcing bm0 to 10Mb/s instead of 100Mb/s) seems
+to prevent this problem.
+</para>
+</sect3>
+
+<sect3 id="old-ofw-load-base">
+<title>What's the deal with the "load-base" setting?</title>
+<para>
+The Open Firmware environment variable <varname>load-base</varname> is the address
+at which Open Firmware loads the bootloader from your <code>boot-device</code>.
+The behavior is different for the various versions of Open Firmware and
+<code>boot-device</code>s.  The symptom of an incorrectly set <varname>load-base</varname>
+is <code><ulink url="faq.html#ofw-claim-failed">CLAIM
+failed</ulink></code>.
+</para>
+
+<sect4 id="ofw3">
+<title>Open Firmware 3</title>
+<para>
+<emphasis role="bold">Do not change the <varname>load-base</varname></emphasis>.
+Open Firmware 3 machines have re-writable firmware, and users have found
+that changing the <varname>load-base</varname> has overwritten their flash BootROM,
+rendering their machines dead (requiring an expensive trip back to
+Apple).  <emphasis role="bold">Do not change the <varname>load-base</varname> on an Open Firmware 3
+machine.</emphasis>  Apple has fixed Open Firmware 3 such that you needn't change
+<varname>load-base</varname> to boot.</para>
+</sect4>
+
+<sect4 id="older_ofw">
+<title>Open Firmware 1.0.5, 1.1.22, 2.0.x, and 2.4</title>
+<para>The default value of <varname>load-base</varname> on these
+systems is 4000, which isn't very good for our purposes.  <ulink
+url="SystemDisk-tutorial/">System Disk</ulink> sets
+<varname>load-base</varname> to 600000, which suits us just fine for
+&os; 1.5.3 and later.  mkLinux uses a different value, which may
+prevent you from booting &os;/macppc.  If you're using &os; 1.5.3
+or later, reading further may simply confuse you -- stop here and just
+use 600000.</para>
+
+<para>The <varname>load-base</varname> is handled differently by 
+<code>ofwboot.xcf</code> and <code>ofwboot</code>.  <code>ofwboot.xcf</code> is the
+XCOFF bootloader used on MS-DOS floppies, ISO CD-Rs, and with netbooting.  
+<code>ofwboot</code> is the "partition zero" bootloader on the install floppies, 
+install CD-R images, and hard drives prepared with <application>sysinst</application> or
+<application>installboot</application>.</para>
+
+<para><code>ofwboot</code> has been set to use 600000.  Therefore,
+you should use a <varname>load-base</varname> of 600000.</para>
+
+<para>The &os; 1.5.3 and later versions of <code>ofwboot.xcf</code> have been
+set to use 640000. Due to a perculiarity of Apple's Open FIrmware,
+<varname>load-base</varname> must be an address different from the address
+<code>ofwboot.xcf</code> is set to use. Therefore, you should use a
+<varname>load-base</varname> of 600000. This value is also the correct one for
+booting Mac OS X.</para>
+
+<para>The <code>ofwboot.xcf</code> from &os; versions prior to 1.5.3 had been
+set to use 600000.  Therefore, if you're trying to boot using this bootloader,
+you should use a <varname>load-base</varname> of 640000
+or get a newer version of <code>ofwboot.xcf</code></para>
+
+<para>Once you are entirely positive that your machine has Open Firmware
+1.0.5, 1.1.22, 2.0.x, or 2.4 (see <ulink url="faq.html#ofw-version">Which version of
+Open Firmware does my machine have?</ulink>), run the following commands to
+set your <varname>load-base</varname> properly</para>
+
+<screen>0 &gt; setenv load-base 600000
+0 &gt; reset-all</screen>
+
+<para>
+You should double-check that this value has been set using the
+<code>printenv</code> command.</para>
+</sect4>
+</sect3>
+
+<sect3 id="pb418">
+<title>PowerBook (FireWire), PowerBook G4 (Titanium), and BootROM 4.1.8</title>
+<para>
+The two models listed above will fail to boot &os; 1.5.x and earlier if 
+they have have <ulink url="faq.html#ofw-version">BootROM</ulink>
+version 4.1.8 or later.</para>
+<para>
+This problem is fixed in &os; 1.6 and later.</para>
+</sect3>
+
+<sect3 id="power-off">
+<title>Woah, my machine just powered off!</title>
+<para>
+Well, that's probably because you're using a recent laptop (iBook,
+PowerBook (FireWire), and some later models) and &os; 1.5 or later.</para>
+<para>
+The page up key sequence (<code>FN-uparrow</code>) will panic a &os; 1.5.1 or
+1.5 kernel.  This is fixed in &os; 1.5.2 and later.</para>
+<para>
+The <quote>brightness</quote> keys (F1 and F2) will power off your machine and zap your 
+clock.  You will need to build a new kernel without the <code>abtn</code> option.
+Remove the following line from your 
+<ulink url="../../Documentation/kernel/#how_to_build_a_kernel">
+kernel configuration</ulink>:</para>
+
+<programlisting>#abtn*  at adb?</programlisting>
+</sect3>
+
+<sect3 id="old-nodisk">
+<title>Where's my disk? (a.k.a. sysinst says <code>I can not find any hard disk for use by &os;</code>)</title>
+<para>
+Well, that's a good question!</para>
+
+<para>The root cause is that &os; didn't find your hard drive (or, more 
+insidiously, didn't find your drive controller).  There a variety of reasons
+why this happens.</para>
+
+<para>If you have a recent machine which support ATA4, and/or you've 
+installed a recent FirmWare update (late 2001), and you're trying to use 
+&os; 1.5.2, you may run into the 
+<ulink url="#wdc-lost-interrupt"><code>wdc0:0:1: lost interrupt</code></ulink> problem.</para>
+
+<para>The &os; 1.5.1 install kernel image does
+not support the IDE controller in the PowerMacintosh G3 (Blue and White).  The
+real kernel does support it.</para>
+</sect3>
+</sect2>
+
+<sect2 id="other_info">
+<title>Other sources of information</title>
+
+<sect3 id="other_info_general">
+<title>General Information</title>
+
+<itemizedlist>
+    <listitem>
+      <para><ulink url="faq.html">&os;/macppc Frequently Asked
+        Questions</ulink></para></listitem>
+    <listitem>
+      <para><ulink url="SystemDisk-tutorial/">&os;/macppc System Disk
+        Tutorial</ulink></para></listitem>
+    <listitem>
+      <para><ulink url="models.html">&os;/macppc Model Support Page</ulink></para></listitem>
+    <listitem>
+      <para><ulink url="nvedit.html">&os;/macppc nvedit HOW-TO</ulink>, for
+        info on how to edit the contents of the NVRAMRC</para></listitem>
+    <listitem>
+      <para><ulink url="partitioning.html">&os;/macppc Partitioning HOW-TO</ulink></para></listitem>
+    <listitem>
+      <para><ulink url="x11.html">&os;/macppc X11 FAQ</ulink></para></listitem>
+    <listitem>
+      <para><ulink url="../../Documentation/elf.html">&os; ELF FAQ</ulink></para></listitem>
+    <listitem>
+      <para><ulink url="../../Documentation/wscons/">wscons
+	FAQ</ulink>, for &os;'s platform-independent workstation
+	console driver</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="other_info_additional">
+<title>Additional information</title>
+<itemizedlist>
+<listitem>
+<para><ulink url="../../MailingLists/#port-macppc"> port-macppc mail list</ulink>
+    - if you have any additional questions please subscribe.</para></listitem>
+<listitem><para><ulink
+url="../../Documentation/network/netboot/">Diskless &os; HOW-TO</ulink>.</para></listitem>
+<listitem><para><ulink url="../../Documentation/Hardware/Misc/serial.html">&os; Serial 
+Port Primer</ulink></para></listitem>
+<listitem><para><ulink url="../../Documentation/">General &os; Documentation</ulink>
+    - for questions not specific to &os;/macppc.</para></listitem>
+</itemizedlist>
+</sect3>
+</sect2>
+</sect1>
+<parentsec url="./" text="NetBSD/macppc ports page"/>
+</webpage>

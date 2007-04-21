@@ -1,0 +1,251 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Ports-macppc-x11">
+<config param="desc" value="NetBSD/macppc X11 FAQ"/>
+<config param="cvstag" value="$NetBSD: x11.xml,v 1.3 2007/04/21 01:30:25 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2007/04/21 01:30:25 $"/>
+<head>
+
+<!-- Copyright (c) 1998-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>&os;/macppc X11 FAQ</title>
+</head>
+
+<sect1 role="toc">
+<title>&os;/macppc X11 FAQ</title>
+
+<sect2 id="general">
+<title>General Questions</title>
+
+<sect3 id="which-x">
+<title>Which X Window System package should I use?</title>
+<para>
+Xmacppc or XFree86?  There are two complete X Window System servers 
+distributed in the &os;/macppc xserver.tgz set.
+</para>
+<para>
+The <ulink url="#xmacppc-support">Xmacppc</ulink> package uses the raw
+device that is set up by Open Firmware.  It is very limited in capability,
+but runs on almost all supported macppc models.  It cannot change the
+resolution of your screen or use more than 8 bpp color depth.  It does not
+have any acceleration of any sort.
+</para>
+<para>
+The <ulink url="#xfree-support">XFree86</ulink> package uses
+its own knowledge about the video card's chipset, but there are no
+drivers for the older macppc models which used Apple-developed video
+chipsets (as opposed to newer systems which use video cards from ATI or
+NVIDIA).  Thus, XFree86 supports a small subset of all supported macppc
+models, but it is a much more capable X server -- it handles resolution
+switching and more than 8 bpp color depth, in addition to some
+acceleration.
+</para>
+<para>
+To select a different X server, redirect the link 
+<filename>/usr/X11R6/bin/X</filename> to point at your preferred server:</para>
+<screen>&rprompt; cd /usr/X11R6/bin
+&rprompt; ls -l X*
+lrwxr-xr-x  1 root  wheel       22 Nov 12 13:50 X@ -&gt; /usr/X11R6/bin/XFree86
+-rws--x--x  1 root  wheel  1918906 Nov 12 13:48 XFree86*
+-rws--x--x  1 root  wheel  1506734 Nov 12 13:48 Xmacppc*
+-r-xr-xr-x  1 root  wheel    27494 Jun  9  2001 Xmark*
+-r-xr-xr-x  1 root  wheel  3518011 Nov 12 13:48 Xnest*
+-r-xr-xr-x  1 root  wheel  1914704 Nov 12 13:48 Xprt*
+-r-xr-xr-x  1 root  wheel  3832078 Nov 12 13:48 Xvfb*
+&rprompt; rm X
+&rprompt; ln -s Xmacppc X</screen>
+
+</sect3>
+
+<sect3 id="delete">
+<title>How come the delete key produces a tilde (<code>~</code>) instead of deleting?</title>
+<para>
+Actually, it produces the proper VT100 delete key, not the delete escape
+sequence (which is what just about every other VT100 emulator does).</para>
+<para>
+You will need to run the following command each time you start the X
+server:</para>
+<screen>&rprompt; xmodmap -e "keycode 59 = BackSpace"</screen>
+<para>
+Of course, you can place this command into your <filename>xdm/Xsetup_0</filename> file
+or in each user's <filename>.xinitrc</filename>.</para>
+
+<para>
+To get only xterm to recognize this, insert the following line into one of
+the default setting locations:</para>
+<programlisting>XTerm*VT100*deleteIsDEL: true</programlisting>
+
+<para>
+While the most universal location would be
+<filename>/usr/X11R6/lib/X11/app-defaults/XTerm</filename>, this might cause problems
+if you or one of your users runs an xterm on a remote X server without
+the correct VT100 delete key.  Less intrusively, you could put it into
+the <filename>.Xdefaults</filename> file in the home directory of each user that will
+be using X from the console.
+</para>
+</sect3>
+
+<sect3 id="root-console">
+<title><code>Cannot open kbd/mouse : no such file or directory</code></title>
+<para>
+This happens when a non-root user tries to run <command>startx</command> or
+<command>xinit</command>.  The default behavior of &os;/macppc is for the console
+devices to belong only to root.  We suggest you run something like xdm,
+which will change the permissions when a user successfully logs in.
+</para>
+<para>
+Alternatively, you can use &man.ttyaction.5; which changes the permissions when 
+the user logs in.  For example, create <filename>/etc/ttyaction</filename> with the 
+following contents:</para>
+<programlisting>console * /usr/sbin/chown ${USER} /dev/wskbd0 /dev/wsmouse0
+ttyE0   * /usr/sbin/chown ${USER} /dev/wskbd0 /dev/wsmouse0</programlisting>
+</sect3>
+
+<sect3 id="mouse-buttons">
+<title>How can I emulate a 3-button mouse with a 1-button mouse in X?</title>
+<para>
+At the moment, you can only set up keys on your keyboard to be mouse 
+keys.  We suggest trying to find a cheap 3 button mouse, as most ADB
+and USB mice are supported.</para>
+<para>
+You will be using <command>xmodmap(1)</command>
+to remap keys on your keyboard to mouse buttons.
+Create an <filename>.xmodmaprc</filename> file in each users' home directory, and have
+their <filename>.xinitrc</filename> run `<code>xmodmap .xmodmaprc</code>'. The contents of
+the <filename>.xmodmaprc</filename> will specify which key enables/disables the keyboard
+pointer buttons, and which keys correspond to which mouse buttons.  For
+example, on an Apple Extended Keyboard II, I use:</para>
+<programlisting>keycode  79 = Pointer_EnableKeys
+keycode 113 = Pointer_Button1
+keycode 115 = Pointer_Button2
+keycode 121 = Pointer_Button3</programlisting>
+
+<para>where keycode 79 is the <quote>Num Lock</quote> key (which enables/disables
+mouse keys), and 113, 115, and 121 correspond to F13, F14, and F15.
+</para>
+<para>
+On my PowerBook (FireWire), I use F8 (108) to enable and F10 (117), F11
+(111), and F12 (119) for the mouse keys.</para>
+<para>
+To figure out what keys correspond to which keycodes, use the 
+<command>xev(1)</command>
+command.  You may also want to put your keymap for the <ulink
+url="#delete">delete key</ulink> into your
+<filename>.xmodmaprc</filename> as well.</para>
+</sect3>
+</sect2>
+
+
+<sect2 id="xfree_questions">
+<title>XFree86 Questions</title>
+
+<sect3 id="xfree-support">
+<title>Which models can run XFree86?</title>
+<para>
+Only models that have supported video cards with appropriate Open Firmware
+initialization.  In general, this means only recent models (i.e. Open
+Firmware 3) or a supported video card (such as an ATI Rage 128).</para>
+<para>
+You will need to create an <filename>XF86Config</filename>
+file.</para>
+</sect3>
+
+<sect3 id="xfconfig">
+<title>How do I create an <filename>XF86Config</filename> file?</title>
+<para>
+Try using <command>xf86config</command>.  Otherwise, post to 
+<ulink url="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</ulink> asking
+for a sample.</para>
+</sect3>
+
+<sect3 id="insecure">
+<title><code>Fatal server error: ppcPciInit: /dev/kmem</code></title>
+<para>
+Unfortunately, at present, the XFree86 X server requires direct access to
+<filename>/dev/kmem</filename> which is typically something you only want root
+programs to have access to.  By doing the following, you are opening up a
+security hole (albeit a small one).</para>
+<para>
+You will need to <ulink
+url="../../Documentation/kernel/index.html#how_to_build_a_kernel">
+compile a new kernel</ulink> with <code>options INSECURE</code>, as
+this is not enabled in the default <code>GENERIC</code> kernel shipped with
+distributions of &os;.</para>
+</sect3>
+
+<sect3 id="xkb">
+<title>My keymap is all screwed up.</title>
+<para>
+You may need to create (as root) the following directory for XFree86 to store
+keyboard mapping information:</para>
+<screen>&rprompt; mkdir -p /var/db/xkb;chmod 755 /var/db/xkb</screen>
+</sect3>
+</sect2>
+
+<sect2 id="xmacppc_questions">
+<title>Xmacppc Questions</title>
+
+<sect3 id="xmacppc-support">
+<title>Which models can run Xmacppc?</title>
+<para>
+Every model that can boot with console support and models with supported
+video cards (that have proper Open Firmware initialization code).  Models
+which require you to use a serial console can not run any X servers.</para>
+<para>
+While it supports almost every &os;/macppc model, the downside is that
+the color depth is limited to 8 bpp, there is no way to change screen
+resolution, and there is no graphics acceleration.</para>
+</sect3>
+
+<sect3 id="changing-resolution">
+<title>How do I change the resolution or the number of colors?</title>
+<para>
+You can't do this from within &os;.  These settings need to be changed
+in Open Firmware.  Also, &os;/macppc does not yet support color depths
+of more than 8 bpp.</para>
+<para>
+Older machines (7300 - 8600) cannot change resolutions from within
+Open Firmware.  They are fixed to 640x480 at 67 Hz (after applying the <ulink
+url="SystemDisk-tutorial/of105patch.html">patch</ulink>).  Without this
+patch, the frequency is undetermined (usually 60 Hz or 120 Hz, but could  
+be just about anything).</para>
+
+<!-- On newer machines Open Firmware &gt;= 2.0, you can type (at the Open 
+Firmware prompt):
+(pre)0 &gt; (b)dev screen(/b)
+0 &gt; (b)show-modes(/b)
+0 &gt; (b)mode#(/b)
+1 &gt; (b).(/b)(/pre)
+(p)
+This will list the resolutions available on your system.  If you set your
+system to one of these resolutions from within Mac OS, then Open FIrmware
+should keep that setting. -->
+
+<para>
+On newer machines, you need to set the resolution you want from within
+Mac OS.  Open Firmware should then keep that setting.</para>
+<para>
+Chris Tribo reports that his XClaimVR 64 card ignores the Mac OS monitor
+setting and always comes up at the same resolution.</para>
+</sect3>
+</sect2>
+
+<sect2 id="otherinfo">
+<title>Other sources of information</title>
+
+<sect3 id="nbsd_xdocs">
+<title>&os; Documentation: <ulink url="../../Documentation/x/">X
+Window System</ulink></title>
+</sect3>
+<sect3 id="xfree_home">
+<title><ulink url="http://www.xfree86.org">The Xfree86 Project Home Page</ulink></title>
+</sect3>
+</sect2>
+</sect1>
+<parentsec url="./" text="&os;/macppc ports page"/>
+</webpage>
+

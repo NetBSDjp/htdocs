@@ -1,9 +1,9 @@
-#	$NetBSD: Makefile,v 1.12 2005/12/23 20:12:43 jmmv Exp $
-
-LISTDOCS+=	oldfaq.list x11.list
+#	$NetBSD: Makefile,v 1.14 2007/04/06 17:30:25 martin Exp $
 
 XMLDOCS+=	faq
 XMLDOCS+=	index
 XMLDOCS+=	models
+XMLDOCS+=	oldfaq
+XMLDOCS+=	x11
 
 .include "../../share/mk/web.site.mk"
