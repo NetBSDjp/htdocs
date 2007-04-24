@@ -1,9 +1,13 @@
-#	$NetBSD: Makefile,v 1.5 2006/03/27 15:28:29 kano Exp $
+#	$NetBSD: Makefile,v 1.6 2007/04/24 14:02:25 kano Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.8 2005/10/14 08:59:57 rillig Exp   -->
+#	<!-- NetBSD: Makefile,v 1.15 2007/04/08 00:59:58 hubertf Exp   -->
 
-LISTDOCS+=	howto-develop.list howto-use.list compat-pmax.list
-# LISTDOCS+=	pocketv6.list faq.list mgl2.list
-LISTDOCS+=	pocketv6.list faq.list
+XMLDOCS+=	index
+XMLDOCS+=	compat-pmax
+XMLDOCS+=	howto-develop
+XMLDOCS+=	howto-use
+XMLDOCS+=	faq
+XMLDOCS+=	mgl2
+XMLDOCS+=	pocketv6
 
 .include "../../../share/mk/web.site.mk"
