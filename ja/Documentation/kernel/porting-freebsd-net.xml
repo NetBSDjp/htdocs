@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+<webpage id="Documentation-kernel-porting-freebsd-net">
+<config param="desc" value="Notes on porting FreeBSD network drivers to NetBSD"/>
+<config param="cvstag" value="$NetBSD: porting-freebsd-net.xml,v 1.3 2007/04/20 15:46:58 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2007/04/20 15:46:58 $"/>
+<head>
+<!-- Copyright (c) 1994-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<title>Notes on porting FreeBSD network drivers to NetBSD</title>
+</head>
+
+<sect1 role="toc">
+
+<sect2 id="all">
+
+<sect3 id="intro">
+  <title>Introduction</title>
+    <para>
+      Matthias Drochner has collected these notes of differences
+      encountered while porting FreeBSD network drivers to NetBSD,
+      in the hope that it will be helpful.
+    </para>
+</sect3>
+
+<sect3 id="includes-and-defs">
+  <title>Simple include file and definition stuff</title>
+  <itemizedlist>
+    <listitem>
+      <para>
+	#include file names/locations are quite different
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	packetfilter: "BPF" on FreeBSD, "BPFILTER" on NetBSD. 
+	[Looks gratuitous; seems to differ a lot between OSes (DEC: "packetfilter")]
+      </para>
+      </listitem>
+      <listitem>
+	<para>
+	  NetBSD needs to include "opt_inet.h" and "opt_ns.h"
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Global variable "bootverbose" doesn't exist on NetBSD
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  NetBSD has central PCI ID database and PCI register definitions
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  if_media: FreeBSD: IFM_1000_SX, NetBSD: IFM_1000_FX
+	  [There is nothing like 1000_FX - NetBSD is wrong]
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Different stuff in &lt;sys/queue.h&gt;
+	  (There is nothing like SLIST in NetBSD; 
+	  Name differences are gratuitous, but an SLIST-like thing could be
+	  useful for NetBSD (less overhead than SIMPLEQ)).
+	</para>
+      </listitem>
+  </itemizedlist>
+</sect3>
+
+<sect3 id="framework">
+  <title>Framework, not network specific</title>
+  <itemizedlist>
+    <listitem>
+      <para>
+	Different autoconfiguration framework
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Printouts with device name: name:unit on FreeBSD, xname on NetBSD 
+	(Similar in "struct ifnet")
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Interrupt handler void on FreeBSD, int on NetBSD
+	[Detection of stray interrupts???]
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	bus.h: access to virtual address for mapped range
+	(it is usually best to just avoid linear mappings,
+	since not all hardware supports it, but when absolutely
+	necessary, BUS_SPACE_MAP_LINEAR should provide this)
+	[Missing in NetBSD's bus_space framework. Potential source
+	of inportability, use bus_space_xxx if feasible.]
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	bus_dma issues (FreeBSD has still old functions)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect3>
+
+<sect3 id="njetwork">
+  <title>Network stuff</title>
+  <itemizedlist>
+    <listitem>
+      <para>
+	External mbuf storage handling: 
+	FreeBSD has no argument to xxxfree() and the
+	driver implements reference counting. 
+	NetBSD has an opaque argument to xxxfree() and does
+	automatic reference counting.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	FreeBSD has common ether_ioctl()
+	[Good - eliminates common code]
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	"struct ether_addr" member for address bytes: 
+	FreeBSD uses "octet", 
+	NetBSD has "ether_addr_octet".
+	[Gratuitous]
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	"ethercom" vs. "arpcom" in softc
+	[Technically, NetBSD is right]
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Access to ethernet address: 
+	on FreeBSD in "arpcom", accessed there, 
+	on NetBSD passed to ether_ifattach(), accessed through ifp
+	(LLADDR() - watch out for alignment problems!)
+	[NetBSD can't deal with address changes at runtime]
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Multicast address list: 
+	on FreeBSD a plain list at ifp-&gt;if_multiaddrs, 
+	on NetBSD a special framework, part of "struct ethercom"
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Differing members in "struct ifnet", and different
+	initialization (if_attach, ether_ifattach): 
+	xname vs name:unit, 
+	on FreeBSD xxxinit() is for use by ether_ioctl(), 
+	Ethernet address
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Arguments to bpf functions: 
+	ipf on FreeBSD, 
+	ifp-&gt;if_bpf on NetBSD
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Passing of received packets to upper layer:
+	on FreeBSD: ether header separate, to ether_input(); 
+	on NetBSD: whole packet, indirectly through ifp-&gt;ifp_input
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	NetBSD has an MII framework; drivers provide register access only
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect3>
+</sect2>
+</sect1>
+
+<parentsec url="./" text="NetBSD Documentation: Kernel"/>
+</webpage>
+
