@@ -1,115 +1,120 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="ISO-2022-JP"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
-<webpage id="Documentation-kernel-elf-notes">
-<config param="desc" value="Vendor-specific ELF Notes"/>
+<webpage id="ja-Documentation-kernel-elf-notes">
+<config param="desc" value="ベンダー特有の ELF 記号"/>
 <config param="cvstag" value="$NetBSD: elf-notes.xml,v 1.2 2007/04/09 16:24:15 kano Exp $"/>
+<!-- Based on english version: -->
+<!-- NetBSD: elf-notes.xml,v 1.2 2007/04/09 16:24:15 kano Exp   -->
 <config param="rcsdate" value="$Date: 2007/04/09 16:24:15 $"/>
 <head>
 
 <!-- Copyright (c) 1994-2007
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-<title>NetBSD Documentation: Vendor-specific ELF Note Elements</title>
+<title>NetBSD ドキュメンテーション: ベンダー特有の ELF 記号要素(Note Elements)</title>
 </head>
 
 <sect1 role="toc">
   <sect2 id="introduction">
     <sect3 id="introduction-sub">
-    <title>Introduction</title>
+    <title>序</title>
       <para>
-	Various operating system vendors are shipping ELF binaries and those
-	binaries expect different system call interfaces.  In order to help
-	operating systems correctly determine whether or not they can run an
-	ELF program, and how to run it (e.g. what OS emulation to use), some
-	operating system vendors have begun marking their ELF binaries with
-	vendor-specific note elements, and placing those notes in the
-	binaries' <constant>PT_NOTE</constant> sections.
+	さまざまなオペレーティングシステムベンダーが
+	異なるシステムコールインターフェースを要求する ELF バイナリー
+	を出荷しています。
+	オペレーティングシステムが ELF プログラムが実行できるかどうか、
+	どうやって実行するか(例えば どの OS エミュレーションを使うのか)を
+	正しく決定する手助けのために、
+	いくつかのオペレーティングシステムのベンダーは
+	ELF バイナリーの <constant>PT_NOTE</constant> セクションにベンダー特有の記号要素 (note elements) 
+	を付け始めました。
       </para>
       <para>
-	This page is meant to be a repository of knowledge about vendor-specific
-	note elements used in binaries <constant>PT_NOTE</constant> sections for operating system
-	identification.
+	このページは、バイナリーの <constant>PT_NOTE</constant> セクションで
+	オペレーティングシステムの識別のために使われているベンダー特有の記号要素
+	についての知識の宝庫にしようと思います。
       </para>
 
       <para>
-	If your operating system uses vendor-specific note elements to
-	mark its binaries and is not listed here, please send mail to
+	もし、あなたのオペレーティングシステムが
+	ベンダー特有記号要素
+	をバイナリーのマークに使っていて、ここの一覧に載っていないなら、
 	<ulink url="mailto:cgd@NetBSD.org">Chris Demetriou</ulink>
-	with information about those notes.
+	まで、その記号の情報をメールしてください。(訳注:たぶん英文で)
       </para>
     </sect3>
     <sect3 id="note-format">
-      <title>Format of an ELF Note Element</title>
+      <title>ELF Note Element のフォーマット</title>
 
       <para>
-	All ELF Note elements have the same basic structure:
+	全ての ELF Note Element は同じ基本構造を持っていて:
 	<variablelist class="elf-note">
 	  <varlistentry>
 	    <term><varname>Name Size</varname></term>
-	    <listitem>4 bytes (integer)</listitem>
+	    <listitem>4 bytes (整数)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Desc Size</varname></term>
-	    <listitem>4 bytes (integer)</listitem>
+	    <listitem>4 bytes (整数)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Type</varname></term>
-	    <listitem>4 bytes (usually interpreted as an integer)</listitem>
+	    <listitem>4 bytes (たいてい整数として解釈されます)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Name</varname></term>
-	    <listitem>variable size, padded to a 4 byte boundary</listitem>
+	    <listitem>可変長, 4 byte 境界で詰め物をされた</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Desc</varname></term>
-	    <listitem>variable size, padded to a 4 byte boundary</listitem>
+	    <listitem>可変長, 4 byte 境界で詰め物をされた</listitem>
 	  </varlistentry>
 	</variablelist>
       </para>
       
       <para>
-	The "Name Size" and "Desc Size" fields are integers (in the byte order
-	specified by the binary's ELF header) which specify the size of the
-	"Name" and "Desc" fields (excluding padding).
+	"Name" , "Desc" 各フィールドの(詰め物を除いた)サイズの決定をする 
+	"Name Size" , "Desc Size" 各フィールドは
+	整数型 (バイトオーダーはバイナリーの ELF ヘッダーに指定されています)です。
       </para>
     
       <para>
-	The "Name" field specifies the vendor who defined the format of the Note.
-	Typically, vendors use names which are related to their project and/or
-	company names.  For instance, the GNU Project uses "GNU" as its name.
-	No two vendors should use the same ELF Note Name, lest there be confusion
-	when trying to interpret the meanings of notes.
+	Name field は ベンダー が記号のフォーマットに基づいて指定します。
+	一般的に、 ベンダーはプロジェクトや会社名に関連した名前を使います。
+	例えば、 GNU project はその名前に "GNU" を使います。
+	ELF Note Name は、note の意味を解釈しようという時混乱するといけないので、
+	どの 2つの ベンダーも同じ物を使わないようにするべきです。
       </para>
       
       <para>
-	The "Type" field is vendor specific, but it is usually treated as an
-	integer which identifies the type of the note.
+	"Type" フィールドはベンダー特有ですが、記号の特定において、
+	たいてい整数型として扱われます。
       </para>
       
       <para>
-	The "Desc" field is vendor specific, and usually contains data which
-	depends on the note type.
+	"Desc" フィールドはベンダー特有で、
+	たいてい記号の型に依存するデータが含まれています。
       </para>
     </sect3>
     
     <sect3 id="note-names">
-      <title>Known ELF Note Names</title>
+      <title>知られている ELF 記号名</title>
 
       <para>
-	The following are the strings known to be used as ELF Note Names, along
-	with the organizations that use them.  Names with lengths that are
-	not a multiples of 4 are padded in the note, but only the given length
-	should be checked.
+	下記は ELF 記号名として使われている事が知られている文字列と
+	それを使っている組織です。
+	記号名の語長が 4 の倍数で無いものは 詰め物で埋められますが、
+	与えられた長さだけを調べるようにするべきです。
       </para>
       
       <segmentedlist>
-	<segtitle>Note Name String</segtitle>
-	<segtitle>Byte encoding of string</segtitle>
-	<segtitle>Length</segtitle>
-	<segtitle>Organization</segtitle>
+	<segtitle>Note Name 文字列</segtitle>
+	<segtitle>文字列のバイト毎のエンコーディング</segtitle>
+	<segtitle>語長</segtitle>
+	<segtitle>組織</segtitle>
 	<?dbhtml list-presentation="table"?>
 	<seglistitem>
 	  <seg><code>"NetBSD\0"</code></seg>
@@ -126,28 +131,26 @@
       </segmentedlist>
     </sect3>
   <sect3 id="note-contents">
-    <title>Vendor-specific ELF Notes</title>
+    <title>ベンダー特有 ELF 記号</title>
       
     <para>
-      This section contains information about the formats of ELF notes which
-      vendors use in their <constant>PT_NOTE</constant> sections, and is split up by vendor.
+      この節にはベンダーが <constant>PT_NOTE</constant> セクションで使っていて、 
+      ベンダー別に異なっている ELF 記号のフォーマットに関する情報が含まれています。
     </para>
 
     <sect4 id="note-contents-netbsd" xreflabel="The NetBSD Project">
       <title>The NetBSD Project</title>
       
       <para>
-	There are two vendor-specific ELF Notes for NetBSD, an OS Version note and
-	an Emulation Name note.
-	The former is used to indicate what OS Version
-	native binaries were built with, and can be used to identify native
-	binaries.
-	The latter is used to mark binaries (both native an non-native) with
-	a name that indicates which set of binary emulation code is to be used
-	when they are run.
+	NetBSD には2つの ベンダー特有の ELF 記号があって、
+	OS バージョン記号とエミュレーション Name 記号です。
+	前者は、どの OS バージョンの native バイナリーかを示すのに使われ、
+	native バイナリーを識別するのにも使えます。
+	後者は、実行時にどのエミュレーションコードセットを使えば良いかを示す名前と共に、
+	バイナリーを (native と 非-native の)マークするのに使われます。
       </para>
       <para>
-	The format of the NetBSD OS Version note is:
+	NetBSD OS バージョン 記号 のフォーマットは:
 	
 	<variablelist class="elf-note">
 	  <varlistentry>
@@ -160,21 +163,21 @@
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Type</varname></term>
-	    <listitem>4-byte integer containing the value <code>0x01</code></listitem>
+	    <listitem>4-byte 整数 <code>0x01</code> という値が入っている</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Name</varname></term>
-	    <listitem><code>"NetBSD\0"</code> (padded to 8 bytes)</listitem>
+	    <listitem><code>"NetBSD\0"</code> (8 byte に合わせて詰め物がされています)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Desc</varname></term>
-	    <listitem>4-byte integer containing the NetBSD OS version constant</listitem>
+	    <listitem>4-byte 整数 NetBSD OS バージョン定数が入っている</listitem>
 	  </varlistentry>
 	</variablelist>
       </para>
 
       <para>
-	The format of the NetBSD Emulation Name note is:
+	NetBSD エミュレーション Name 記号 のフォーマットは:
 	<variablelist class="elf-note">
 	  <varlistentry>
 	    <term><varname>Name Size</varname></term>
@@ -186,17 +189,17 @@
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Type</varname></term>
-	    <listitem>4-byte integer containing the value <code>0x02</code></listitem>
+	    <listitem>4-byte 整数 <code>0x02</code> という値が入っている</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Name</varname></term>
-	    <listitem><code>"NetBSD\0"</code> (padded to 8 bytes)</listitem>
+	    <listitem><code>"NetBSD\0"</code> (8 byte に合わせて詰め物がされています)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Desc</varname></term>
-	    <listitem><code>NUL</code>-terminated string naming the
-	    emulation to be used to run the binary
-	    (padded to the next 4-byte boundary)</listitem>
+	    <listitem>バイナリーを実行するのに使うエミュレーションを表す、
+	    ナル (<code>NUL</code>) 文字で終わる文字列
+	    (次の4バイト境界まで詰め物された)</listitem>
 	  </varlistentry>
 	</variablelist>
       </para>
@@ -206,9 +209,10 @@
       <title>The GNU Project</title>
 
       <para>
-	Starting with glibc 2.1, the GNU project will be using a single ELF Note
-	to indicate which GNU operating system and which version of that system
-	a binary was built for.  The format of that note is:
+	glibc 2.1 以降では、 GNU project は 
+	GNU オペレーティングシステム とどのバージョンのシステムで構築されたバイナリーか
+	を示すのに、単一の ELF Note を使い、
+	そのフォーマットは:
 	<variablelist>
 	  <varlistentry>
 	    <term><varname>Name Size</varname></term>
@@ -220,7 +224,7 @@
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Type</varname></term>
-	    <listitem>4-byte integer containing the value <code>0x01</code></listitem>
+	    <listitem>4-byte 整数 <code>0x01</code> という値が入っている</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Name</varname></term>
@@ -229,53 +233,55 @@
 	  <varlistentry>
 	    <term><varname>Desc</varname></term>
 	    <listitem>
-	      Four 4-byte integers containing, in order:
+	      4 個の 4-byte 整数。順序は以下のとおり:
 	      <orderedlist>
 		<listitem>OS (0 = Linux, 1 = Hurd, 2 = Solaris)</listitem>
 		<listitem>Major</listitem>
 		<listitem>Minor</listitem>
 		<listitem>Teeny</listitem>
 	      </orderedlist>
-	      The major, minor and teeny versions are that of the earliest OS version that supports this ABI.
+	      major, minor, teeny は、この ABI をサポートする OS バージョンで最も古いもののバージョン。
 	    </listitem>
 	  </varlistentry>
 	</variablelist>
       </para>
 
       <para>
-	For more documentation on the GNU C Library's use of ELF notes,
-	consult the sources:
+	GNU C ライブラリーでの ELF notes の使い方について、さらなるドキュメンテーションは、
 	<ulink url="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/abi-tags?cvsroot=glibc">abi-tags</ulink>
-	and
-	<ulink url="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/csu/abi-note.S?cvsroot=glibc">csu/abi-note.S</ulink>.
+	および
+	<ulink url="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/csu/abi-note.S?cvsroot=glibc">csu/abi-note.S</ulink>
+	のソースを調べてください。
       </para>
     </sect4>
   </sect3>
   
     <sect3 id="note-creation">
-      <title>Creating ELF <constant>PT_NOTE</constant> Sections</title>
+      <title>ELF <constant>PT_NOTE</constant> セクションの作成</title>
 
       <para>
-	If you're using the GNU binutils 2.8 or greater to create your binaries,
-	you can generate <constant>PT_NOTE</constant> sections in your final object files.
-	To create a <constant>PT_NOTE</constant> section, create a section in one of your object
-	files (for systems which generate <constant>PT_NOTE</constant> entries by default, this
-	is typically the runtime startup code) with a name starting
-	with ".note" and having the "allocate" property set.
-	Put properly formed ELF Notes entries in that section.
-	When final linking is done, all sections which have names starting
-	with ".note" and which are marked "allocate" will be put into <constant>PT_NOTE</constant>
-	sections in the final object file.
+	バイナリーを作るために、 GNU binutils 2.8 かそれ以降を使っていれば、
+	最終版のオブジェクトファイルに <constant>PT_NOTE</constant> セクションを生成することができます。
+	<constant>PT_NOTE</constant> セクションを作るには、
+	オブジェクトファイルの一つ
+	(デフォルトで <constant>PT_NOTE</constant> エントリーを生成するシステムでは、
+	これは一般的にランタイムのスタートアップコードです) に
+	名前が ".note" で始まり "allocate" 属性セットを持つセクションをつくります。
+	このセクションに、 ELF Note エントリーを適切な形で書きます。
+	最終的なリンクが終わったとき、 ".note" で始まる名前をもち、かつ
+	"allocate" とマークされた全セクションは、
+	最終オブジェクトファイルにおいて、
+	<constant>PT_NOTE</constant> セクション内に配置されるでしょう。
       </para>
       <para>
-	An example of GNU assembler input which will create a <constant>PT_NOTE</constant> section
-	during final link is:
+	GNU アセンブラーの例では、
+	最終リンク時に <constant>PT_NOTE</constant> セクションを作る入力物は:
       </para>
 <programlisting language="assembler">
     .section ".note.ident", "a"
     .p2align 2
-    .long 1f - 0f           # name size (not including padding)
-    .long 3f - 2f           # desc size (not including padding)
+    .long 1f - 0f           # name サイズ (詰め物含まず)
+    .long 3f - 2f           # desc サイズ (詰め物含まず)
     .long 0x01234567        # type
 0:  .asciz "NaMe"	    # name
 1:  .p2align 2
@@ -285,27 +291,27 @@
 </programlisting>
 
 <para>
-  That example will create a section called ".note.ident", marked
-  "allocate" (so that it will be turned into a
-  <constant>PT_NOTE</constant> section during final link), which
-  contains a single note.  That note has a <varname>type</varname> of
-  <code>0x012345678</code>, has the <varname>name</varname>
-  <code>"NaMe\0"</code>, and has a <varname>desc</varname> value
-  consisting of two 4-byte integers, <code>0x76543210</code> and
-  <code>0x89abcdef</code>.
+  この例では ".note.ident" と呼ばれ、 "allocate" とマークされた、
+  (最終リンク時に <constant>PT_NOTE</constant> セクションと変わる)
+  1つの note を含むセクションを作るでしょう。
+  この note は <varname>type</varname> が
+  <code>0x012345678</code> (訳注9桁???)、 <varname>name</varname> が
+  <code>"NaMe\0"</code> で、
+  <varname>desc</varname> 値は、2つの 4-byte 整数、<code>0x76543210</code> と
+  <code>0x89abcdef</code> です。
 </para>
     </sect3>
     
     <sect3 id="netbsd-note">
-      <title>Creating a NetBSD ELF <constant>PT_NOTE</constant> Section</title>
+      <title>NetBSD ELF <constant>PT_NOTE</constant> セクションの作成</title>
       
       <para>
-	The NetBSD kernel will return ENOEXEC if an ELF binary does not contain
-	a recognized <constant>PT_NOTE</constant> section. Normally, <filename>crtbegin.c</filename>
-	contains this section
-	for native NetBSD applications. The example below creates such a section
-	on NetBSD/alpha. (Other ports may use slightly different assembler syntax,
-	but, except for endian variations, they all use the same bits.)
+	NetBSD カーネルは、 ELF バイナリー中に <constant>PT_NOTE</constant> セクションが見つからない場合に
+	ENOEXEC を返します。通常、ネイティブ NetBSD アプリケーション用の
+	PT_NOTE セクションは <filename>crtbegin.c</filename>
+	に含まれています。以下に示す例は、  NetBSD/alpha でこのセクションを作成するものです。
+	(他のポートではアセンブラーの文法が若干異なることがありますが、
+	エンディアンの違いを除けば、個々の断片はすべて同じです)
       </para>
 <programlisting language="assembler">
         .section ".note.netbsd.ident", "a"
