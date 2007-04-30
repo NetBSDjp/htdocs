@@ -1,0 +1,324 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Documentation-kernel-elf-notes">
+<config param="desc" value="Vendor-specific ELF Notes"/>
+<config param="cvstag" value="$NetBSD: elf-notes.xml,v 1.2 2007/04/09 16:24:15 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2007/04/09 16:24:15 $"/>
+<head>
+
+<!-- Copyright (c) 1994-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD Documentation: Vendor-specific ELF Note Elements</title>
+</head>
+
+<sect1 role="toc">
+  <sect2 id="introduction">
+    <sect3 id="introduction-sub">
+    <title>Introduction</title>
+      <para>
+	Various operating system vendors are shipping ELF binaries and those
+	binaries expect different system call interfaces.  In order to help
+	operating systems correctly determine whether or not they can run an
+	ELF program, and how to run it (e.g. what OS emulation to use), some
+	operating system vendors have begun marking their ELF binaries with
+	vendor-specific note elements, and placing those notes in the
+	binaries' <constant>PT_NOTE</constant> sections.
+      </para>
+      <para>
+	This page is meant to be a repository of knowledge about vendor-specific
+	note elements used in binaries <constant>PT_NOTE</constant> sections for operating system
+	identification.
+      </para>
+
+      <para>
+	If your operating system uses vendor-specific note elements to
+	mark its binaries and is not listed here, please send mail to
+	<ulink url="mailto:cgd@NetBSD.org">Chris Demetriou</ulink>
+	with information about those notes.
+      </para>
+    </sect3>
+    <sect3 id="note-format">
+      <title>Format of an ELF Note Element</title>
+
+      <para>
+	All ELF Note elements have the same basic structure:
+	<variablelist class="elf-note">
+	  <varlistentry>
+	    <term><varname>Name Size</varname></term>
+	    <listitem>4 bytes (integer)</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Desc Size</varname></term>
+	    <listitem>4 bytes (integer)</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Type</varname></term>
+	    <listitem>4 bytes (usually interpreted as an integer)</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Name</varname></term>
+	    <listitem>variable size, padded to a 4 byte boundary</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Desc</varname></term>
+	    <listitem>variable size, padded to a 4 byte boundary</listitem>
+	  </varlistentry>
+	</variablelist>
+      </para>
+      
+      <para>
+	The "Name Size" and "Desc Size" fields are integers (in the byte order
+	specified by the binary's ELF header) which specify the size of the
+	"Name" and "Desc" fields (excluding padding).
+      </para>
+    
+      <para>
+	The "Name" field specifies the vendor who defined the format of the Note.
+	Typically, vendors use names which are related to their project and/or
+	company names.  For instance, the GNU Project uses "GNU" as its name.
+	No two vendors should use the same ELF Note Name, lest there be confusion
+	when trying to interpret the meanings of notes.
+      </para>
+      
+      <para>
+	The "Type" field is vendor specific, but it is usually treated as an
+	integer which identifies the type of the note.
+      </para>
+      
+      <para>
+	The "Desc" field is vendor specific, and usually contains data which
+	depends on the note type.
+      </para>
+    </sect3>
+    
+    <sect3 id="note-names">
+      <title>Known ELF Note Names</title>
+
+      <para>
+	The following are the strings known to be used as ELF Note Names, along
+	with the organizations that use them.  Names with lengths that are
+	not a multiples of 4 are padded in the note, but only the given length
+	should be checked.
+      </para>
+      
+      <segmentedlist>
+	<segtitle>Note Name String</segtitle>
+	<segtitle>Byte encoding of string</segtitle>
+	<segtitle>Length</segtitle>
+	<segtitle>Organization</segtitle>
+	<?dbhtml list-presentation="table"?>
+	<seglistitem>
+	  <seg><code>"NetBSD\0"</code></seg>
+	  <seg><code>0x4e 0x65 0x74 0x42 0x53 0x44 0x00</code></seg>
+	  <seg>7</seg>
+	  <seg><xref linkend="note-contents-netbsd" /></seg>
+	</seglistitem>
+	<seglistitem>
+	  <seg><code>"GNU\0"</code></seg>
+	  <seg><code>0x47 0x4e 0x55 0x00</code></seg>
+	  <seg>4</seg>
+	  <seg><xref linkend="note-contents-gnu" /></seg>
+	</seglistitem>
+      </segmentedlist>
+    </sect3>
+  <sect3 id="note-contents">
+    <title>Vendor-specific ELF Notes</title>
+      
+    <para>
+      This section contains information about the formats of ELF notes which
+      vendors use in their <constant>PT_NOTE</constant> sections, and is split up by vendor.
+    </para>
+
+    <sect4 id="note-contents-netbsd" xreflabel="The NetBSD Project">
+      <title>The NetBSD Project</title>
+      
+      <para>
+	There are two vendor-specific ELF Notes for NetBSD, an OS Version note and
+	an Emulation Name note.
+	The former is used to indicate what OS Version
+	native binaries were built with, and can be used to identify native
+	binaries.
+	The latter is used to mark binaries (both native an non-native) with
+	a name that indicates which set of binary emulation code is to be used
+	when they are run.
+      </para>
+      <para>
+	The format of the NetBSD OS Version note is:
+	
+	<variablelist class="elf-note">
+	  <varlistentry>
+	    <term><varname>Name Size</varname></term>
+	    <listitem>7</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Desc Size</varname></term>
+	    <listitem>4</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Type</varname></term>
+	    <listitem>4-byte integer containing the value <code>0x01</code></listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Name</varname></term>
+	    <listitem><code>"NetBSD\0"</code> (padded to 8 bytes)</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Desc</varname></term>
+	    <listitem>4-byte integer containing the NetBSD OS version constant</listitem>
+	  </varlistentry>
+	</variablelist>
+      </para>
+
+      <para>
+	The format of the NetBSD Emulation Name note is:
+	<variablelist class="elf-note">
+	  <varlistentry>
+	    <term><varname>Name Size</varname></term>
+	    <listitem>7</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Desc Size</varname></term>
+	    <listitem>variable</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Type</varname></term>
+	    <listitem>4-byte integer containing the value <code>0x02</code></listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Name</varname></term>
+	    <listitem><code>"NetBSD\0"</code> (padded to 8 bytes)</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Desc</varname></term>
+	    <listitem><code>NUL</code>-terminated string naming the
+	    emulation to be used to run the binary
+	    (padded to the next 4-byte boundary)</listitem>
+	  </varlistentry>
+	</variablelist>
+      </para>
+    </sect4>
+
+    <sect4 id="note-contents-gnu" xreflabel="The GNU Project">
+      <title>The GNU Project</title>
+
+      <para>
+	Starting with glibc 2.1, the GNU project will be using a single ELF Note
+	to indicate which GNU operating system and which version of that system
+	a binary was built for.  The format of that note is:
+	<variablelist>
+	  <varlistentry>
+	    <term><varname>Name Size</varname></term>
+	    <listitem>4</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Desc Size</varname></term>
+	    <listitem>16</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Type</varname></term>
+	    <listitem>4-byte integer containing the value <code>0x01</code></listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Name</varname></term>
+	    <listitem><code>"GNU\0"</code></listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><varname>Desc</varname></term>
+	    <listitem>
+	      Four 4-byte integers containing, in order:
+	      <orderedlist>
+		<listitem>OS (0 = Linux, 1 = Hurd, 2 = Solaris)</listitem>
+		<listitem>Major</listitem>
+		<listitem>Minor</listitem>
+		<listitem>Teeny</listitem>
+	      </orderedlist>
+	      The major, minor and teeny versions are that of the earliest OS version that supports this ABI.
+	    </listitem>
+	  </varlistentry>
+	</variablelist>
+      </para>
+
+      <para>
+	For more documentation on the GNU C Library's use of ELF notes,
+	consult the sources:
+	<ulink url="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/abi-tags?cvsroot=glibc">abi-tags</ulink>
+	and
+	<ulink url="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/csu/abi-note.S?cvsroot=glibc">csu/abi-note.S</ulink>.
+      </para>
+    </sect4>
+  </sect3>
+  
+    <sect3 id="note-creation">
+      <title>Creating ELF <constant>PT_NOTE</constant> Sections</title>
+
+      <para>
+	If you're using the GNU binutils 2.8 or greater to create your binaries,
+	you can generate <constant>PT_NOTE</constant> sections in your final object files.
+	To create a <constant>PT_NOTE</constant> section, create a section in one of your object
+	files (for systems which generate <constant>PT_NOTE</constant> entries by default, this
+	is typically the runtime startup code) with a name starting
+	with ".note" and having the "allocate" property set.
+	Put properly formed ELF Notes entries in that section.
+	When final linking is done, all sections which have names starting
+	with ".note" and which are marked "allocate" will be put into <constant>PT_NOTE</constant>
+	sections in the final object file.
+      </para>
+      <para>
+	An example of GNU assembler input which will create a <constant>PT_NOTE</constant> section
+	during final link is:
+      </para>
+<programlisting language="assembler">
+    .section ".note.ident", "a"
+    .p2align 2
+    .long 1f - 0f           # name size (not including padding)
+    .long 3f - 2f           # desc size (not including padding)
+    .long 0x01234567        # type
+0:  .asciz "NaMe"	    # name
+1:  .p2align 2
+2:  .long 0x76543210        # desc
+    .long 0x89abcdef
+3:  .p2align 2
+</programlisting>
+
+<para>
+  That example will create a section called ".note.ident", marked
+  "allocate" (so that it will be turned into a
+  <constant>PT_NOTE</constant> section during final link), which
+  contains a single note.  That note has a <varname>type</varname> of
+  <code>0x012345678</code>, has the <varname>name</varname>
+  <code>"NaMe\0"</code>, and has a <varname>desc</varname> value
+  consisting of two 4-byte integers, <code>0x76543210</code> and
+  <code>0x89abcdef</code>.
+</para>
+    </sect3>
+    
+    <sect3 id="netbsd-note">
+      <title>Creating a NetBSD ELF <constant>PT_NOTE</constant> Section</title>
+      
+      <para>
+	The NetBSD kernel will return ENOEXEC if an ELF binary does not contain
+	a recognized <constant>PT_NOTE</constant> section. Normally, <filename>crtbegin.c</filename>
+	contains this section
+	for native NetBSD applications. The example below creates such a section
+	on NetBSD/alpha. (Other ports may use slightly different assembler syntax,
+	but, except for endian variations, they all use the same bits.)
+      </para>
+<programlisting language="assembler">
+        .section ".note.netbsd.ident", "a"
+        .long   2f-1f
+        .long   4f-3f
+        .long   1
+1:      .asciz "NetBSD"
+2:      .p2align 2
+3:      .long   199905
+4:      .p2align 2
+</programlisting>
+    </sect3>
+  </sect2>
+</sect1>
+</webpage>
+
