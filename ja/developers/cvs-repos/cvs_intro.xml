@@ -1,0 +1,353 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="developers-cvs-repos-cvs_intro">
+<config param="desc" value="NetBSD CVS HOWTO"/>
+<config param="cvstag" value="$NetBSD: cvs_intro.xml,v 1.3 2007/05/03 13:34:56 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2007/05/03 13:34:56 $"/>
+<head>
+
+<!-- Copyright (c) 1994-2003
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD CVS HOWTO</title>
+</head>
+
+<sect1 role="toc">
+
+  <sect2>
+    <title>Introduction and Purpose</title>
+    <sect3 id="intro">
+      <title>What is CVS?</title>
+      
+      <para>
+	<acronym>CVS</acronym> stands for <firstterm>Concurrent Versions System</firstterm>.
+	CVS is a <firstterm>Source Control</firstterm> or <firstterm>Revision Control</firstterm> tool 
+	designed to keep track of source changes made by groups of
+	developers working on the same files, allowing them to
+	stay in sync with each other as each individual chooses.
+	In particular, CVS is the tool used by 
+	<ulink url="http://www.NetBSD.org/">The NetBSD Project</ulink> to manage its
+	source tree.
+      </para>
+      <para>
+	It is important to note that thanks to the <emphasis>concurrent</emphasis> part of CVS,
+	several people can work on things at the same time. There is no
+	locking of files as with RCS.
+      </para>
+    </sect3>
+  </sect2>
+  <sect2 id="getting-started">
+    <title>Getting Started</title>
+
+    <para>
+      This section shows the basic steps for installing CVS on your system.
+    </para>
+
+    <sect3 id="install-cvs">
+      <title>Install CVS</title>
+      <para>
+	You need to install CVS on your local machine.  It is your machine
+	that you will do all your work on, not the CVS server.  If you don't
+	already have CVS installed on your machine, then install
+	<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/devel/cvs/README.html">CVS</ulink>
+	from the
+	<ulink url="../../Documentation/software/packages.html">
+	  package collection
+	  </ulink>.
+      </para>
+    </sect3>
+    <sect3 id="configure-environment">
+      <title>Configure your environment for CVS</title>
+      <para>
+	On your local machine that you plan to use CVS on, add the following
+	to your <filename>.cshrc</filename> file if you use 
+	<command>csh</command> or <command>tcsh</command> as your shell.
+      </para>
+
+<programlisting language="C shell">
+setenv CVSEDITOR vi
+setenv CVSROOT yourusername@cvs.NetBSD.org:/cvsroot
+setenv CVS_RSH ssh
+</programlisting>
+
+      <para>
+	Add the following to your <filename>.profile</filename> file if you use
+	<command>sh</command> or <command>bash</command>.
+      </para>
+
+<programlisting language="Bourne shell">
+CVSEDITOR=vi
+CVSROOT=yourusername@cvs.NetBSD.org:/cvsroot
+CVS_RSH=ssh
+export CVSEDITOR
+export CVSROOT
+export CVS_RSH
+</programlisting>
+    </sect3>
+    
+    <sect3 id="sourcedir">
+      <title>Make a directory for CVS work</title>
+      <para>
+	I keep all my CVS related work in <filename class="directory">/usr/cvs</filename> on my machine,
+	but this is just personal preference.  In the rest of this document I
+	will assume that you have created a <filename class="directory">/usr/cvs</filename> directory
+	on your machine.  Once again, this is your local machine, not the CVS
+	server.
+      </para>
+    </sect3>
+  </sect2>
+  <sect2 id="using">
+    <title>Using CVS</title>
+    <para>
+      This section shows the basic steps involved with using CVS.
+    </para>
+
+    <sect3 id="example">
+      <title>An Example</title>
+      <para>
+	This section shows how to start with an empty <filename class="directory">/usr/cvs</filename>
+	directory, add the <filename class="directory">htdocs/People/</filename> module, make a change and then 
+	commit the change.  The basic steps involved are:
+      </para>
+
+<screen language="shell">
+cd /usr/cvs
+cvs checkout htdocs/People
+cd htdocs/People
+vi developers.xml
+make
+cvs ci developers.xml developers.html
+</screen>
+
+      <para>
+	A more detailed explanation of these steps follows.
+      </para>
+
+<screen language="shell">
+cvs checkout htdocs/People
+</screen>
+
+      <para>
+	This line told CVS to check out the directory
+	<filename class="directory">htdocs/People</filename>
+	to our local machine.  This means that the most recent version of the
+	files in <filename class="directory">htdocs/People</filename> are copied
+	from the CVS server to our local machine.  In addition,
+	<filename class="directory">CVS</filename> directories were
+	created in <filename class="directory">/usr/cvs</filename>,
+	<filename class="directory">/usr/cvs/htdocs</filename>, and 
+	<filename class="directory">/usr/cvs/htdocs/People</filename>.
+	It is important to keep in mind that unlike a checkout in RCS,
+	a CVS checkout doesn't lock the file. Ie, other developers can still
+	access the checked out file.
+      </para>
+      <para>
+	Once we have checked out a directory to our local machine, we don't need 
+	to do a <command>cvs co</command>, or equivalently
+	<command>cvs checkout</command>, again for this directory.  If we want
+	to update a previously checked out directory to the most recent version,
+	we would simply do, for example, <userinput>cvs update htdocs/People</userinput>.
+      </para>
+      <para>
+	The next step after checking out the directory (or updating if we had
+	already checked out the desired module before) was to edit a file.
+	After all our edits were complete, we did:
+      </para>
+
+<screen language="shell">
+  make
+</screen>
+
+      <para>
+	This regenerated the <filename>developers.html</filename> file from the
+	<filename>developers.xml</filename>.  We then did:
+      </para>
+<screen language="shell">
+cvs ci developers.xml developers.html
+</screen>
+      <para>
+	This command uploaded our changes to the CVS server and updated the
+	RCS header in the files to reflect the new version.  When you checkin
+	(commit) a change, you will be prompted to enter a short description
+	of your changes.
+      </para>
+      <para>
+	It should be noted that within the source tree adding new entries and
+	regenerating files is normally done as two commits.
+      </para>
+    </sect3>
+    
+    <sect3 id="modules">
+      <title>CVS Modules</title>
+      <para>
+	In CVS a module can refer to a single file, a directory with several
+	files, or even an entire directory tree.  
+	A list of <ulink url="http://www.NetBSD.org/developers/cvs-repos/modules.html">NetBSD top
+	level CVS modules</ulink> details the top level CVS modules in the NetBSD tree. A couple of
+	other top level modules of particular interest are:
+
+	<variablelist>
+	  <varlistentry>
+	    <term><emphasis role="bold">htdocs</emphasis></term>
+	    <listitem>The NetBSD WWW pages.</listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term><emphasis role="bold">othersrc</emphasis></term>
+	    <listitem>Related code that is not part of NetBSD itself.</listitem>
+	  </varlistentry>
+	</variablelist>
+      </para>
+      <para>
+	For each of the top level modules, you can check out (and later
+	update) the entire top level, or you can check out (and update) lower
+	level modules.  For example, to check out the entire
+	<filename class="directory">htdocs</filename> module, we would do:
+      </para>
+<screen language="shell">
+cd /usr/cvs
+cvs checkout htdocs
+</screen>
+      <para>
+	We could also only get the <filename class="directory">htdocs/People</filename>
+	subdirectory with
+<screen language="shell">
+cd /usr/cvs
+cvs checkout htdocs/People
+</screen>
+      </para>
+      <para>
+	In these examples, don't forget that you only need to check out a
+	module once.  For example, if you have already checked out the
+	<filename class="directory">htdocs</filename> module but want to
+	bring it all up to date, you would do:
+<screen language="shell">
+cd /usr/cvs
+cvs update htdocs
+</screen>
+      </para>
+    </sect3>
+    
+    <sect3 id="importing">
+      <title>Importing a new package</title>
+      <para>
+	This section has a few supplements to the 
+	<ulink url="http://www.NetBSD.org/developers/pkgsrc/#import">Importing a
+	New Package</ulink> instructions.
+      </para>
+      <para>
+	Here is an example of adding a newly created  package.
+	This example assumes that your CVS stuff is kept in
+	<filename class="directory">/usr/cvs</filename> and
+	<filename class="directory">pkgsrc</filename> is a subdirectory from
+	there.  The new package, <filename class="directory">foo/bar</filename>
+	in this case, is in the directory <filename>/usr/cvs/pkgsrc/foo/bar.work</filename>.
+	The steps to import this package into the source tree are:
+      </para>
+<screen language="shell">
+<![CDATA[
+cd /usr/cvs/pkgsrc/foo/bar.work
+	
+# do the usual testing, pkglint, etc. 
+# don't forget to do 'make makepatchsum' to generate the
+# files/patch-sum file.
+
+grep TNF /usr/pkgsrc/pkgsrc.txt
+
+# this command tells me the correct syntax for "cvs import". 
+# (/usr/pkgsrc is a symlink to /usr/cvs/pkgsrc).
+
+cvs import pkgsrc/foo/bar TNF pkgsrc-base 
+
+# note it's "bar", not "bar.work"
+
+cd ../../..
+cvs checkout pkgsrc/foo/bar 
+
+# this checks out the newly imported package to 
+# see if everything went ok
+
+cd pkgsrc/foo
+cvs update Makefile
+vi Makefile 
+
+# add bar to the pkgsrc/foo/Makefile
+
+cvs ci -m 'add & enable bar' Makefile
+
+# check in the changes to pkgsrc/foo/Makefile
+
+cd /usr/cvs/pkgsrc/doc
+cvs update CHANGES 
+
+# this makes sure you have the most up to date CHANGES
+
+vi CHANGES 
+
+# make a note of your changes to the foo/bar package
+
+cvs ci -m 'foo-17.42' CHANGES
+
+# check in CHANGES
+]]>
+</screen>
+
+    </sect3>
+  </sect2>
+
+  <sect2 id="other-ops">
+    <title>Other Useful CVS Operations</title>
+
+    <sect3 id="output">
+      <title>CVS output</title>
+      <para>
+	When you perform various CVS tasks, you will see a list of each file
+	which is involved.  The filename will be preceeded with a single
+	letter code.  A quick summary of the letters is here:
+      </para>
+
+      <itemizedlist>
+	<listitem><emphasis role="bold">U</emphasis>pdated</listitem>
+	<listitem><emphasis role="bold">P</emphasis>atched</listitem>
+	<listitem><emphasis role="bold">C</emphasis>onflict</listitem>
+	<listitem><emphasis role="bold">M</emphasis>odified (locally)</listitem>
+	<listitem><emphasis role="bold">A</emphasis>dded</listitem>
+	<listitem><emphasis role="bold">R</emphasis>emoved</listitem>
+	<listitem><emphasis role="bold">?</emphasis> (not under CVS control)</listitem>
+      </itemizedlist>
+
+    </sect3>
+  </sect2>
+
+  <sect2 id="references">
+    <title>Other Sources of Information</title>
+
+    <sect3 id="ref-netbsd">
+      <title>NetBSD specific</title>
+
+      <itemizedlist>
+	<listitem>pkgsrc <ulink url="http://www.NetBSD.org/Documentation/software/packages.html">home
+	page</ulink>.</listitem>
+	<listitem>Useful <ulink url="http://www.NetBSD.org/developers/">NetBSD developers information</ulink>.</listitem>
+	<listitem>Complete 
+	<ulink url="http://www.NetBSD.org/Documentation/pkgsrc/">pkgsrc documentation</ulink>.</listitem>
+      </itemizedlist>
+
+    </sect3>
+    <sect3 id="ref-cvs">
+      <title>CVS specific</title>
+
+      <itemizedlist>
+	<listitem>The <ulink url="http://ximbiot.com/cvs/manual/">CVS Manual</ulink></listitem>
+	<listitem>The <ulink url="http://www.NetBSD.org/developers/cvs-repos/cvs-faq.txt">CVS FAQ</ulink></listitem>
+	<listitem><ulink url="http://www.cyclic.com/">Cyclic Software</ulink>, the company
+	that maintains CVS</listitem>
+	<listitem><ulink url="http://cvsbook.red-bean.com/">Open Source Development with CVS, 3rd edition</ulink>,
+	a book that's made available on the web.</listitem>
+      </itemizedlist>
+    </sect3>
+  </sect2>
+</sect1>
+</webpage>
