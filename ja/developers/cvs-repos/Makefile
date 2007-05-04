@@ -1,9 +1,12 @@
-# $NetBSD: Makefile,v 1.9 2005/12/24 12:23:25 daniel Exp $
+# $NetBSD: Makefile,v 1.12 2007/04/07 19:38:17 hubertf Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: Makefile,v 1.9 2005/12/24 12:23:25 daniel Exp   -->
+# <!-- NetBSD: Makefile,v 1.12 2007/04/07 19:38:17 hubertf Exp   -->
 
-# XMLDOCS=	index notes
-
-# LISTDOCS=	branch.list
+XMLDOCS=	# start
+XMLDOCS+=	branch
+XMLDOCS+=	index
+XMLDOCS+=	modules
+XMLDOCS+=	notes
+XMLDOCS+=	cvs_intro
 
 .include "../../../share/mk/web.site.mk"
