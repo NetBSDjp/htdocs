@@ -6,8 +6,8 @@
 <webpage id="Documentation-x-index">
   <config param="desc" value="NetBSD Documentation: The X Window System"/>
   <config param="cvstag" 
-    value="$NetBSD: index.xml,v 1.3 2006/03/27 15:46:55 kano Exp $"/>
-  <config param="rcsdate" value="$Date: 2006/03/27 15:46:55 $"/>
+    value="$NetBSD: index.xml,v 1.5 2007/05/17 15:33:46 kano Exp $"/>
+  <config param="rcsdate" value="$Date: 2007/05/17 15:33:46 $"/>
 
   <head>
     <!-- Copyright (c) 1994-2005
@@ -21,6 +21,7 @@
 
     <sect2 id="running-x">
       <title>Running X</title>
+
 
       <sect3 id="wsmouse">
 	<title>How to get the mouse working with XFree?</title>
@@ -251,108 +252,220 @@ vendor release number:    335</screen>
 	  version is 3.3.5.</para>
       </sect3>
 
-      <sect3 id="anti_aliased">
-	<title>How to setup anti-aliased fonts on NetBSD with XFree86 4</title>
 
-	<para><emphasis role="bold">NOTE</emphasis>: The paths below
-	  should be adjusted appropriately if using xpkgwedge</para>
+<sect3 id="anti_aliased">
+<title>How to setup anti-aliased fonts on NetBSD for X11</title>
 
-	<orderedlist>
-	  <listitem>Install the following packages from <ulink url="../software/packages.html">pkgsrc</ulink>:
-	    <itemizedlist>
-		<listitem><filename 
-		  role="pkg">fonts/ms-ttf</filename></listitem>
-		<listitem><filename 
-		  role="pkg">fonts/mkfontscale</filename></listitem>
-                <listitem><filename 
-		  role="pkg">fonts/fontconfig</filename></listitem>
-	    </itemizedlist>
-	  </listitem>
-	  <listitem>Setup the font hints:
-	    <itemizedlist>
-	      <listitem><code>mkfontscale /usr/X11R6/lib/X11/fonts/TrueType</code></listitem>
-	      <listitem><code>mkfontdir /usr/X11R6/lib/X11/fonts/TrueType</code></listitem>
-	    </itemizedlist>
-	    There should now be a '<filename>fonts.dir</filename>' and
-	    '<filename>fonts.scale</filename>' in the TrueType font
-	    directory.
-	  </listitem>
+<note><para>
+The paths below should be adjusted appropriately if using 
+<filename role="pkg">pkgtools/xpkgwedge</filename>.
+</para></note>
 
-	  <listitem>Configure the X server:
-	    <itemizedlist>
-	      <listitem>In the "Module" section, make sure that the
-		following exists:
-		<screen>
-		Load "type1"
-		Load "freetype"</screen></listitem>
-	      <listitem>In the "Files" section, verify the order of
-		the font paths. Verify that the TrueType and Type1
-		font paths are before the rest:
-		<screen>
-		FontPath   "/usr/X11R6/lib/X11/fonts/local/"
-		FontPath   "/usr/X11R6/lib/X11/fonts/TrueType/"
-		FontPath   "/usr/X11R6/lib/X11/fonts/Type1/"
-		FontPath   "/usr/X11R6/lib/X11/fonts/misc/"
-		FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"
-		FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"
-		FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/"
-		FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/"</screen>
-	      </listitem>
-	    </itemizedlist>
-	  </listitem>
-	  <listitem>Configure Xft -- an example 
-	    <filename>/usr/X11R6/lib/X11/XftConfig</filename> follows:
-	    <screen>##### Example XftConfig
-dir "/usr/X11R6/lib/X11/fonts/TrueType"
-dir "/usr/X11R6/lib/X11/fonts/Type1"
-# Uncomment the following line if using an LCD display
-#match edit rgba = rgb;
-match any family == "fixed"             edit family =+ "mono";
-includeif       "~/.xftconfig"
-match any family == "Times"             edit family += "Times New Roman";
-match any family == "Helvetica"         edit family += "Verdana";
-match any family == "Courier"           edit family += "Courier New";
-match any family == "serif"             edit family += "Times New Roman";
-match any family == "sans"              edit family += "Verdana";
-match
-        any family == "mono"
-        all slant == roman
-        all weight &lt; bold
-edit
-        family += "monotype.com";
-match any family == "mono"              edit family += "Courier New";
-match any family == "Charter"           edit family += "Bitstream Charter";
-match any family == "Bitstream Charter" edit family =+ "Charter";
-match any family == "Lucidux Serif"     edit family += "LuciduxSerif";
-match any family == "LuciduxSerif"      edit family =+ "Lucidux Serif";
-match any family == "Lucidux Sans"      edit family += "LuciduxSans";
-match any family == "LuciduxSans"       edit family =+ "Lucidux Sans";
-match any family == "Lucidux Mono"      edit family += "LuciduxMono";
-match any family == "LuciduxMono"       edit family =+ "Lucidux Mono";
-match any family == "Comic Sans"        edit family += "Comic Sans MS";
-match any family == "Comic Sans MS"     edit family =+ "Comic Sans";
-match any family == "Trebuchet"         edit family += "Trebuchet MS";
-match any family == "Trebuchet MS"      edit family =+ "Trebuchet";
-match any family == "Monotype"          edit family =+ "Monotype.com";
-match any family == "Andale Mono"       edit family += "Monotype.com";
-match any family == "Monotype.com"      edit family =+ "Andale Mono";
-##### End of XftConfig
-	    </screen></listitem>
-	  <listitem>Rebuild the font cache for applications that use
-	    fontconfig:
-	    <screen>fc-cache -v</screen>
-	    This will take a very long time (~20 minutes on a PII 366),
-	    so be patient.
-	  </listitem>
-	  <listitem>That's it! Restart the X server, and test the
-	    configuration:
-	    <screen>xterm -ls -fg gray -bg black -ls -fa "Courier New Bold" -fs 10</screen>
-	  </listitem>
-	</orderedlist>
+<orderedlist>
 
-	<para>This Anti-Aliased-Fonts-Mini-Howto was written by Jared
-	D. McNeill.</para>
-      </sect3>
+<listitem>
+<para>
+Install the
+<filename role="pkg">fonts/ms-ttf</filename> package from pkgsrc.
+If you use the pkgsrc version of X, install also the
+<filename role="pkg">fonts/mkfontscale</filename> and
+<filename role="pkg">fonts/fontconfig</filename> packages.
+</para>
+</listitem>
+
+<listitem>
+
+<para>
+If using the XFree86 shipped with &os;, you may consider
+using <filename role="pkg">fonts/fontconfig</filename> from pkgsrc
+as it offers more tweaking options.  Set the variable <varname>
+ PREFER.fontconfig</varname> to pkgsrc in the <filename>/etc/mk.conf
+</filename> file to ensure that the pkgsrc version is used in
+ favour of the shipped (or native) version:
+  <screen>
+  PREFER.fontconfig=pkgsrc
+  </screen>
+</para>
+
+<para>
+  You may also want to instruct fontconfig to never use
+  <emphasis>bitmap fonts</emphasis> again:
+  <screen>
+  # cd /usr/pkg/etc/fontconfig/conf.d
+  # ln -s ../../../share/examples/fontconfig/conf.avail/70-no-bitmaps.conf .
+  </screen>
+</para>
+
+<para>
+You may wish to replace the native fontconfig libraries entirely,
+which is useful should you have any previously-compiled binaries
+that used it.
+  <screen>
+  # cd /usr/X11R6/lib
+  # mv libfontconfig.so.1.0 libfontconfig.so.1.0.old
+  # rm libfontconfig.so.1
+  # ln -s ../../pkg/lib/libfontconfig.so.1 .
+  # cd /usr/X11R6/bin
+  # mv fc-cache fc-cache.old
+  # mv fc-list fc-list.old
+  </screen>
+</para>
+
+</listitem>
+
+<listitem>
+<para>
+To configure fontconfig, add the following line to your
+local.conf.  This file is generally found in
+<filename>/etc/fonts/local.conf</filename>.
+If you installed the fonts/fontconfig package, you will
+<emphasis role="bold">also</emphasis> need to add the line to
+<filename>/usr/pkg/etc/fonts/local.conf</filename>
+(or replace one with a symbolic link to another):
+  <screen>
+  &#060;dir&#062;/usr/pkg/lib/X11/fonts/TTF&#060;/dir&#062;
+  </screen>
+</para>
+
+<para>
+The <filename>local.conf</filename> file may look like this:
+  <screen>
+  &#060;?xml version="1.0"?&#062;
+  &#060;!DOCTYPE fontconfig SYSTEM "fonts.dtd"&#062;
+  &#060;fontconfig&#062;
+  &#060;dir&#062;/usr/pkg/lib/X11/fonts/TTF&#060;/dir&#062;
+  &#060;/fontconfig&#062;
+  </screen>
+</para>
+
+<para>
+You can also add other directories containing fonts to the
+<filename>local.conf</filename> file. The following lines are
+for using teTeX-3.0 and ghostscript fonts:
+  <screen>
+  &#060;dir&#062;/usr/pkg/share/texmf-dist/fonts/&#060;/dir&#062;
+  &#060;dir&#062;/usr/pkg/share/ghostscript/fonts&#060;/dir&#062;
+  </screen>  
+ </para>
+
+</listitem>
+
+<listitem>
+<para>
+  Rebuild the font cache for applications that use fontconfig
+  <screen>
+  # fc-cache -v
+  </screen>
+Depending on your hardware this may take a long time.
+</para>
+</listitem>
+
+<listitem>
+<para>
+Run the following commands:
+  <screen>
+  # mkfontscale /usr/pkg/lib/X11/fonts/TTF
+  # mkfontdir /usr/pkg/lib/X11/fonts/TTF
+  </screen>
+There should now be the files <filename>fonts.dir</filename> and
+ <filename>fonts.scale</filename> in the TTF font directory.
+</para>
+</listitem>
+
+<listitem>
+<para>Configure the X server:
+  <itemizedlist>
+  <listitem>
+  <para> In the <quote>Module</quote> section, make sure that the following exists:
+  <screen>
+  Load "type1"
+  Load "freetype"
+  </screen>
+  </para>
+  </listitem>
+
+  <listitem>
+  <para>
+  In the <quote>Files</quote> section, verify the order of
+  the font paths. Verify that the TTF and Type1
+  font paths are before the rest:
+    <screen>
+    FontPath   "/usr/X11R6/lib/X11/fonts/local/"
+    FontPath   "/usr/pkg/lib/X11/fonts/TTF"
+    FontPath   "/usr/X11R6/lib/X11/fonts/Type1/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/misc/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"
+    FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"
+    FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/"</screen>
+  </para>
+
+  <para>
+  To apply the changes to the current X session, instead of
+  restarting X, run the following command
+    <screen>
+    # xset fp rehash
+    </screen>
+    This will examine newly added font paths for changes.
+  </para>
+
+  <para>
+  Instead of adding <quote>FontPath</quote> directives to the X configuration file,
+  you can run the following commands from
+  <filename>~/.xinitrc</filename>
+  (or <filename>~/.xsession</filename>) file:
+    <screen>
+    xset +fp /usr/X11R6/lib/X11/fonts/Type1
+    xset +fp /usr/pkg/lib/X11/fonts/TTF
+    xset +fp /usr/X11R6/lib/X11/fonts/local
+    </screen>
+  </para>
+
+  </listitem>
+  </itemizedlist>
+</para>
+</listitem>
+
+<listitem>
+<para>That's it! Run the following commands to test the configuration.
+  <screen>
+  $ xterm -ls -fg gray -bg black -ls -fa 'Courier New:bold' -fs 10
+  </screen>
+</para>
+
+<para>
+Run the command <userinput>fc-list</userinput> it should list
+the fonts available, and shouldn't dump core!
+</para>
+
+<para>
+While the xterm command from above only tests the fontconfig part, the following
+command will test the XLFD-style access:
+  <screen>
+  $ xterm -fn '-monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-1'
+</screen>
+</para>
+
+<para>
+Another test is that the following should show multiple fonts:
+  <screen>
+  $ xlsfonts | grep -i 'courier new'
+  </screen>
+</para>
+
+</listitem>
+
+<listitem>
+<para>
+  You can find other TTF font packages under pkgsrc/fonts.
+  For example <filename role="pkg">fonts/vera-ttf</filename>
+</para>
+</listitem>
+
+</orderedlist>
+
+</sect3>
+
 
       <sect3 id="fc-cache">
 	<title>Xft using applications eat CPU cycles, but don't appear
@@ -360,7 +473,7 @@ match any family == "Monotype.com"      edit family =+ "Andale Mono";
 
 	<para>It is possible that the application in question is
 	  computing the font information that should have been
-	  prepared by fc-cache -- re-run '<code>fc-cache -v</code>' to
+	  prepared by fc-cache - re-run '<code>fc-cache -v</code>' to
 	  make sure the information in the cache is up-to-date.</para>
       </sect3>
 
