@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="developers-releng-build-release">
+<config param="desc" value=""/>
+<config param="cvstag" value="$NetBSD: build-release.xml,v 1.3 2007/05/19 16:18:38 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2007/05/19 16:18:38 $"/>
+<head>
+<!-- Copyright (c) 1994-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD Developer Documentation: Building and Packaging a Release
+or Snapshot</title>
+</head>
+
+<para>
+  These instructions are for building releases and snapshots of NetBSD
+  version 1.5 or later. They cover the steps to go from a source tree to
+  a set of .tgz files comprising a release. You can also make a
+  snapshot this way, though of course it should be clearly labeled as
+  such.</para>
+
+<note> When uploading a snapshot, please do not
+    forget to update
+    the <ulink url="../features/">feature
+    table</ulink>.</note>
+
+<para>
+  The NetBSD release format is described in the
+  <code>&man.release.7;</code> manual page. 
+  The file <code>/usr/share/mk/bsd.README</code> is
+  also useful documentation.</para>
+
+<para>
+  The .tgz files are built in two steps. In the first, you build
+  the base distribution. The second step is to build the X Window System
+  distribution files. Some architectures require extra steps to build
+  installation materials (such as boot loaders or boot floppy images).
+  All of the following steps assume that you change to `src' to get to
+  the  root of your NetBSD source tree.</para>
+
+<para>
+  In earlier versions, there was a (US) domestic section of NetBSD
+  containing
+  code based on DES which could not be legally exported from the United
+  States or Canada. For more details please see our page on 
+  <ulink url="../../Misc/crypto-export.html">Exportability of NetBSD
+  crypto code</ulink>.</para>
+
+<para>
+The steps to build and package a release are as follows.</para>
+
+<sect1 id="" role="toc">
+
+
+<sect2 id="">
+
+
+
+
+<sect3>
+<title> I. Building the Base System </title>
+
+<orderedlist>
+  <listitem> Set the variables you will need for your build. The 
+  following can be set in the environment (lowest priority) or in 
+  <code>/etc/mk.conf</code> or on the make command
+  line (highest priority). 
+  Here is an example <code>/etc/mk.conf</code> file:
+  <screen>
+  # The location of your source tree.
+  BSDSRCDIR=/home/cjs/netbsd/src
+  # The location of the object files produced by the build.
+  BSDOBJDIR=/home/cjs/netbsd/obj
+  # These two aren't really necessary; they just make life
+  # easier if/when you rebuild later. See /usr/share/mk/bsd.README
+  # for exact definitions. See also the top-level Makefile in src.
+  BUILD=1
+  UPDATE=1
+  # Where to install the binaries
+  DESTDIR=/usr/home/cjs/netbsd/destdir
+  # Where to put the actual release files
+  RELEASEDIR=/usr/home/cjs/netbsd/release
+  </screen>
+
+  <note>Some scripts in the src directory require
+  <code>DESTDIR</code> set in the environment (e.g. checkflist,
+  see below). Also setting 
+  <code>DESTDIR</code> in
+  <code>/etc/mk.conf</code> may affect building of
+  packages in pkgsrc.
+  You may find it easier and safer to set <code>DESTDIR</code> and
+  <code>RELEASEDIR</code> in the environment or on
+  the make command line.</note>
+  </listitem>
+
+  <listitem> Change to your source directory, and build the release.
+  <screen>
+  cd src
+  make obj
+  make release
+  </screen>
+  Or you may wish to set some variables on the make command line. For
+  example:
+  <screen>
+make DESTDIR=/home/destdir RELEASEDIR=/home/releasedir release
+  </screen></listitem>
+
+</orderedlist>
+</sect3>
+
+
+<sect3>
+<title> II. Building X </title>
+
+<para> The information for building and packaging the X sets is similar
+  to the main sets above. 
+  Change directory into your X source directory and type:
+  <screen>
+    make release
+  </screen>
+  or if you are specifying variables on the make command line:
+  <screen>
+  make DESTDIR=/home/destdir RELEASEDIR=/home/release
+</screen></para>
+
+<note>
+  Note that I and II assume that the set-lists are up-to-date.
+  You may want to check them. Instead of doing `make release'
+  in each case:
+  <screen>
+  cd src
+  make obj
+  # Build the object code and install it.
+  make build
+  # Install the final bits of the distribution.
+  cd src/etc &amp;&amp; make distribution
+  # Make the xsrc object code and install it.
+  cd xsrc &amp;&amp; make build
+</screen></note>
+
+  <para> To check the set-lists for accuracy, update them appropriately,
+  and then make the tar files for the sets, do the following: 
+  <screen>
+  cd src/distrib/sets
+  sh ./checkflist -both
+  </screen>
+  Now edit the files src/distrib/sets/lists/*/* as necessary.
+  <screen>
+  cd src/etc
+  make INSTALL_DONE=1 release
+  cd xsrc
+  make INSTALL_DONE=1 release
+</screen></para>
+
+</sect3>
+
+<sect3>
+<title> III. Building Installation Materials </title>
+
+  <para>
+  On most architectures, the basic installation materials are 
+  handled by the `make release' in step I above. However, sometimes
+  there are 
+  architecture-dependent things that need to be done  
+  under src/distrib/<code>arch</code>; some of these are not yet
+  documented here. The results then need to be put in
+<code>$RELEASEDIR</code> 
+  by hand (following the conventions listed in the
+  <code>&man.release.7;</code> manual page).</para>
+
+<para>
+  To produce an ISO9660 image of a release for making CD-ROMs, do
+  steps I and II and ensure that you have <code>mkisofs</code> (from
+  the <code><ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/sysutils/cdrtools/
+README.html">
+  cdrtools</ulink></code> package) installed on your machine and in your
+path.
+  Then:
+  <screen>
+  cd src/etc
+  make iso-image
+  </screen>
+will make an ISO9660 image and save it in
+<code>$RELEASEDIR/installation/cdrom</code>.</para>
+
+
+
+  <para>
+  This page can still use a lot of work. Comments and updates
+  for this page may be sent to <ulink url="mailto:cjs@NetBSD.org">
+  cjs@NetBSD.org</ulink>.</para>
+
+</sect3>
+
+
+</sect2>
+</sect1>
+</webpage>

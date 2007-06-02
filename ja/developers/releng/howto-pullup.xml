@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="developers-releng-howto-pullup">
+<config param="desc" value=""/>
+<config param="cvstag" value="$NetBSD: howto-pullup.xml,v 1.4 2007/06/02 02:14:16 kano Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/02 02:14:16 $"/>
+<head>
+<!-- Copyright (c) 1994-2007
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>How to actually perform a CVS pull-up</title>
+</head>
+
+
+
+<sect1 id="">
+
+
+
+<para>For a given release cycle, typically in the beginning, developers
+may
+be expected to do pull-ups themselves after approval from the release
+engineering team.</para>
+
+<para>Let us say you are pulling up the changes between
+<code>foo.c</code>
+1.19 and 1.21.</para>
+
+<note>
+ The idea of "pulling up to 1.21" is meaningless -- you
+are always applying diffs between two versions. One of them might be the
+base tag, but in any case, since you are pulling up diffs, you always
+need to know the two versions between which the changes
+occurred.</note>
+
+<para>First, and foremost, make sure you are starting with a clean
+  <code>foo.c</code>
+  <screen>
+  cvs update -rnetbsd-1-4 foo.c
+  </screen>
+  </para>
+
+<para>(See note at the end about the effect of this command.)</para>
+
+
+<para>Then, you need to patch up foo.c to add the changes you
+want to pull
+up. There are two ways of doing this. You can create a patch file and
+apply it, or you can use cvs update's <code>-j</code> flag to avoid
+needing that.</para>
+
+<para>The incantation:
+  <screen>
+   cvs diff -kk -c -r1.19 -r1.21 foo.c &gt;/tmp/patch
+  </screen>
+  will produce a patch file which you can then apply by doing
+  <screen>
+  patch &lt;/tmp/patch
+  </screen>
+  or by feeding it directly to patch via a pipe.  The command
+  <screen>
+  cvs update -kk -j1.19 -j1.21 foo.c
+  </screen>
+  is essentially equivalent to the two steps listed above, and will
+  similarly patch your file.</para>
+
+<para>Now manually examine the file to make sure What You Wanted Done Is
+  Done.  If you are trying to make <code>foo.c</code> identical to the
+  head (presumably 1.21 is the head and 1.19 was the branch point or
+  some such), you can do a
+  <screen>
+  cvs diff -kk -r1.21 foo.c
+  </screen>
+  and this should produce no diff (-kk prevents the expansion of RCS
+  IDs).  If <code>foo.c</code> isn't supposed to be identical to the
+  head, you are going to have to make sure things are okay manually or
+  use creative sets of cvs diffs to assure that what you wanted done was
+  done.</para>
+
+
+<para>In any case, once done, do a:
+  <screen>
+  cvs commit foo.c
+  </screen>
+  The format of the commit message on a release branch has over time
+  been formalized to ease tracking and maintenance.  The format of the
+  first line of the commit message should be one of the following:
+  <itemizedlist>
+  <listitem><code>Pull up revision 1.45 (requested by
+  <emphasis>user</emphasis>):</code></listitem>
+  <listitem><code>Pull up revision 1.45 (via patch, requested by
+  <emphasis>user</emphasis>):</code></listitem>
+  <listitem><code>Pull up revisions 1.1-1.5 (new, requested by
+  <emphasis>user</emphasis>):</code></listitem>
+  <listitem><code>Apply patch (requested by
+  <emphasis>user</emphasis>):</code></listitem>
+  </itemizedlist>
+ or obvious minor variations over these themes.  The rest of the commit
+message shall contain a free-format text explaining why the pull-up
+was done.  This message should preferably be an "externally sensible"
+message explaining <emphasis role="bold">what</emphasis> was fixed, not the exact details of how
+it was done.  The text of this message should be indented by two
+spaces, and for patch releases this text should also go in as an entry
+in the appropriate CHANGES file.</para>
+
+<para>If the pull-up fixes a formally reported problem, this
+  should be noted as <emphasis role="bold">Fixes PR#nnnn</emphasis> at
+  the end of the commit message text.</para>
+
+<para>The fact that we want exact revision numbers recorded in the
+  commit message means, BTW, that you must <emphasis>not</emphasis> do a
+  bunch of pull-ups
+  in the same directory and then commit them with a message like "sync
+ with trunk," because that won't say what versions you pulled
+  up.</para>
+
+
+<note>
+  The command
+  <screen>
+  cvs update -rnetbsd-1-4 foo.c
+  </screen>
+ will glue <code>foo.c</code> to "netbsd-1-4" (see what happens to
+ <code>CVS/Entries</code>), and subsequent CVS commands will thus apply
+  to this release until you unstick this "glue" with
+  <screen>
+  cvs update -A foo.c
+  </screen></note>
+
+
+</sect1>
+
+</webpage>
