@@ -1,17 +1,19 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="ISO-2022-JP"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
-<webpage id="developers-releng-howto-pullup">
+<webpage id="ja-developers-releng-howto-pullup">
 <config param="desc" value=""/>
 <config param="cvstag" value="$NetBSD: howto-pullup.xml,v 1.4 2007/06/02 02:14:16 kano Exp $"/>
+<!-- Based on english version: -->
+<!-- NetBSD: howto-pullup.xml,v 1.4 2007/06/02 02:14:16 kano Exp   -->
 <config param="rcsdate" value="$Date: 2007/06/02 02:14:16 $"/>
 <head>
 <!-- Copyright (c) 1994-2007
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-<title>How to actually perform a CVS pull-up</title>
+<title>CVS pullup を実際に行う方法</title>
 </head>
 
 
@@ -20,74 +22,71 @@
 
 
 
-<para>For a given release cycle, typically in the beginning, developers
-may
-be expected to do pull-ups themselves after approval from the release
-engineering team.</para>
+<para>リリースサイクルの期間中、普通はその初期段階に、開発者は
+リリースエンジニアの承認を受け、
+その後に自分で pullup を行うようになっています。</para>
 
-<para>Let us say you are pulling up the changes between
-<code>foo.c</code>
-1.19 and 1.21.</para>
+<para><code>foo.c</code>
+1.19から1.21
+への変更を pullup する場合を例にしてみましょう。</para>
 
 <note>
- The idea of "pulling up to 1.21" is meaningless -- you
-are always applying diffs between two versions. One of them might be the
-base tag, but in any case, since you are pulling up diffs, you always
-need to know the two versions between which the changes
-occurred.</note>
+ "1.21へ pullup する" という考え方は意味がありません --
+常に二つのバージョン間のdiffをあてることになります。
+どちらか一方が基本になるタグであるかもしれませんが、とにかくdiffを pullup するので、
+変更が起こった二つのバージョンをいつも知っている必要があります。</note>
 
-<para>First, and foremost, make sure you are starting with a clean
-  <code>foo.c</code>
+<para>まず初めに、完全な
+  <code>foo.c</code>から始めることを確認します。
   <screen>
   cvs update -rnetbsd-1-4 foo.c
   </screen>
   </para>
 
-<para>(See note at the end about the effect of this command.)</para>
+<para>(このコマンドの効果については、最後にある注意を参照してください。)</para>
 
 
-<para>Then, you need to patch up foo.c to add the changes you
-want to pull
-up. There are two ways of doing this. You can create a patch file and
-apply it, or you can use cvs update's <code>-j</code> flag to avoid
-needing that.</para>
+<para>そして、 pullup したい変更を加えるため、foo.cにパッチを当てる必要があります。
+これには二つ方法があります。
+パッチファイルを作成してあてるか、それを避けるためにcvsコマンドのupdateにある
+<code>-j</code> フラグを使う事ができます。</para>
 
-<para>The incantation:
+<para>まじない:
   <screen>
    cvs diff -kk -c -r1.19 -r1.21 foo.c &gt;/tmp/patch
   </screen>
-  will produce a patch file which you can then apply by doing
+  で、以下のコマンドであてることができるパッチファイルを作成できます。
   <screen>
   patch &lt;/tmp/patch
   </screen>
-  or by feeding it directly to patch via a pipe.  The command
+  こうするかわりに、パイプを介してパッチを直接あてることもできます。コマンド
   <screen>
   cvs update -kk -j1.19 -j1.21 foo.c
   </screen>
-  is essentially equivalent to the two steps listed above, and will
-  similarly patch your file.</para>
+  は、基本的に上にかいてある二つの段階と同等で、
+  同じようにファイルにパッチをあてます。</para>
 
-<para>Now manually examine the file to make sure What You Wanted Done Is
-  Done.  If you are trying to make <code>foo.c</code> identical to the
-  head (presumably 1.21 is the head and 1.19 was the branch point or
-  some such), you can do a
+<para>さあ、あなたが望んだ結果になっているか確認するため、
+  ファイルを手動で調べてみましょう。
+  <code>foo.c</code>が穂先と一致しているか調べたいならば
+  (多分1.21が穂先で、1.19が枝の分岐点か似たようなものでしょう) 、
+  こうします
   <screen>
   cvs diff -kk -r1.21 foo.c
   </screen>
-  and this should produce no diff (-kk prevents the expansion of RCS
-  IDs).  If <code>foo.c</code> isn't supposed to be identical to the
-  head, you are going to have to make sure things are okay manually or
-  use creative sets of cvs diffs to assure that what you wanted done was
-  done.</para>
+  すると、差分はまったくないはずです (-kk は RCS ID の展開を抑止します)。
+  もし<code>foo.c</code>が穂先と一致していないと思われるならば、
+  手動で大丈夫であることを調べるか、望んだ通りになることを確かめるため
+  cvsの創造的なセットを使用するかしなければいけません。</para>
 
 
-<para>In any case, once done, do a:
+<para>とにかく、一度diffがあてられたら、こうします:
   <screen>
   cvs commit foo.c
   </screen>
-  The format of the commit message on a release branch has over time
-  been formalized to ease tracking and maintenance.  The format of the
-  first line of the commit message should be one of the following:
+  リリース枝のコミットメッセージの形式は、これまでの歴史のなかで、
+  追跡や保守を容易にするために標準化されてきました。
+  コミットメッセージの一行目は、以下の形式のいずれか、または明らかで軽微な亜種でなければなりません。
   <itemizedlist>
   <listitem><code>Pull up revision 1.45 (requested by
   <emphasis>user</emphasis>):</code></listitem>
@@ -98,34 +97,33 @@ needing that.</para>
   <listitem><code>Apply patch (requested by
   <emphasis>user</emphasis>):</code></listitem>
   </itemizedlist>
- or obvious minor variations over these themes.  The rest of the commit
-message shall contain a free-format text explaining why the pull-up
-was done.  This message should preferably be an "externally sensible"
-message explaining <emphasis role="bold">what</emphasis> was fixed, not the exact details of how
-it was done.  The text of this message should be indented by two
-spaces, and for patch releases this text should also go in as an entry
-in the appropriate CHANGES file.</para>
+ コミットメッセージの二行目以降には、 pullup をした理由の説明を、
+自由な形式で記してかまいません。このメッセージでは、なるべく、
+修正方法の詳細を厳密に書くのではなく、<emphasis role="bold">何を</emphasis>修正したのかを
+"対外的にわかるように" 説明するようにしてください。
+この説明は、スペース 2 個で字下げするようにし、
+また、パッチリリースに対しては、適切な
+CHANGES ファイルにこの説明の項目を加えてください。</para>
 
-<para>If the pull-up fixes a formally reported problem, this
-  should be noted as <emphasis role="bold">Fixes PR#nnnn</emphasis> at
-  the end of the commit message text.</para>
+<para>この pullup によって、公式に報告されている問題が修正された場合は、
+  コミットメッセージの説明の最後に <emphasis role="bold">Fixes PR#nnnn</emphasis>
+  のように記してください。</para>
 
-<para>The fact that we want exact revision numbers recorded in the
-  commit message means, BTW, that you must <emphasis>not</emphasis> do a
-  bunch of pull-ups
-  in the same directory and then commit them with a message like "sync
- with trunk," because that won't say what versions you pulled
-  up.</para>
+<para>さて、コミットメッセージにリビジョン番号を正確に記録するよう求めましたが、
+  これは、同じディレクトリーに対する pullup をまとめてコミットして、"sync
+ with trunk," ですませたりしては<emphasis>いけない</emphasis>ということです。これでは
+  どのバージョンを pullup したかがわからないからです。</para>
 
 
 <note>
-  The command
+  コマンド
   <screen>
   cvs update -rnetbsd-1-4 foo.c
   </screen>
- will glue <code>foo.c</code> to "netbsd-1-4" (see what happens to
- <code>CVS/Entries</code>), and subsequent CVS commands will thus apply
-  to this release until you unstick this "glue" with
+ は<code>foo.c</code>を"netbsd-1-4" へ貼り付け
+ (<code>CVS/Entries</code>に何が起こっているか見てください) 、
+  その後のCVSコマンドはこの"接着剤" を以下のコマンドで取らないかぎり、
+  このリリースに適応されることになります。
   <screen>
   cvs update -A foo.c
   </screen></note>
