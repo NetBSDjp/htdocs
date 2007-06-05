@@ -1,6 +1,6 @@
-<!-- $NetBSD: makefile.xml,v 1.22 2007/03/08 16:00:16 rillig Exp $ -->
+<!-- $NetBSD: makefile.xml,v 1.23 2007/06/01 11:07:25 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: makefile.xml,v 1.22 2007/03/08 16:00:16 rillig Exp   -->
+<!-- NetBSD: makefile.xml,v 1.23 2007/06/01 11:07:25 rillig Exp   -->
 
 <chapter id="makefile"> <?dbhtml filename="makefile.html"?>
   <title><filename>Makefile</filename> におけるプログラミング</title>
@@ -33,16 +33,16 @@
     たとえば、</para>
 
 <programlisting>
-    wrong:
-            @echo "line 1" > ${.TARGET}
-            @echo "line 2" >> ${.TARGET}
-            @false
+wrong:
+        @echo "line 1" > ${.TARGET}
+        @echo "line 2" >> ${.TARGET}
+        @false
 
-    correct:
-            @echo "line 1" > ${.TARGET}.tmp
-            @echo "line 2" >> ${.TARGET}.tmp
-            @false
-            @mv ${.TARGET}.tmp ${.TARGET}
+correct:
+        @echo "line 1" > ${.TARGET}.tmp
+        @echo "line 2" >> ${.TARGET}.tmp
+        @false
+        @mv ${.TARGET}.tmp ${.TARGET}
 </programlisting>
 
     <para><command>make wrong</command> を 2 回実行したときに、
@@ -167,16 +167,16 @@
       <title>リストに要素を追加する</title>
 
 <programlisting>
-    STRING=                 foo * bar `date`
-    INT_LIST=               # empty
-    ANOTHER_INT_LIST=       apache-[0-9]*:../../www/apache
-    EXT_LIST=               # empty
-    ANOTHER_EXT_LIST=       a=b c=d
+STRING=                 foo * bar `date`
+INT_LIST=               # empty
+ANOTHER_INT_LIST=       apache-[0-9]*:../../www/apache
+EXT_LIST=               # empty
+ANOTHER_EXT_LIST=       a=b c=d
 
-    INT_LIST+=              ${STRING}               # 1
-    INT_LIST+=              ${ANOTHER_INT_LIST}     # 2
-    EXT_LIST+=              ${STRING:Q}             # 3
-    EXT_LIST+=              ${ANOTHER_EXT_LIST}     # 4
+INT_LIST+=              ${STRING}               # 1
+INT_LIST+=              ${ANOTHER_INT_LIST}     # 2
+EXT_LIST+=              ${STRING:Q}             # 3
+EXT_LIST+=              ${ANOTHER_EXT_LIST}     # 4
 </programlisting>
 
       <para>文字列を外部リストに追加する場合 (例 3) は、
@@ -191,10 +191,10 @@
       <title>内部リストを外部リストに変換する</title>
 
 <programlisting>
-    EXT_LIST=       # empty
-    .for i in ${INT_LIST}
-    EXT_LIST+=      ${i:Q}""
-    .endfor
+EXT_LIST=       # empty
+.for i in ${INT_LIST}
+EXT_LIST+=      ${i:Q}""
+.endfor
 </programlisting>
 
       <para>このコードは、内部リスト
@@ -213,17 +213,17 @@
 	どんな複雑なものも扱えるような方法は少ししかありません。</para>
 
 <programlisting>
-    STRING=         foo bar <    > * `date` $$HOME ' "
-    EXT_LIST=       string=${STRING:Q} x=second\ item
+STRING=         foo bar <    > * `date` $$HOME ' "
+EXT_LIST=       string=${STRING:Q} x=second\ item
 
-    all:
-            echo ${STRING}                  # 1
-            echo "${STRING}"                # 2
-            echo "${STRING:Q}"              # 3
-            echo ${STRING:Q}                # 4
-            echo x${STRING:Q} | sed 1s,.,,  # 5
-            printf "%s\\n" ${STRING:Q}""    # 6
-            env ${EXT_LIST} /bin/sh -c 'echo "$$string"; echo "$$x"'
+all:
+        echo ${STRING}                  # 1
+        echo "${STRING}"                # 2
+        echo "${STRING:Q}"              # 3
+        echo ${STRING:Q}                # 4
+        echo x${STRING:Q} | sed 1s,.,,  # 5
+        printf "%s\\n" ${STRING:Q}""    # 6
+        env ${EXT_LIST} /bin/sh -c 'echo "$$string"; echo "$$x"'
 </programlisting>
 
       <para>例 1 は、シェルで構文エラーを起こします。
@@ -284,15 +284,15 @@
 	渡したほうがよい理由です。そして、以下に掲げるのは、その方法です。</para>
 
 <programlisting>
-    CPPFLAGS=               # empty
-    CPPFLAGS+=              -Wundef -DPREFIX=\"${PREFIX:Q}\"
-    CPPFLAGS+=              ${MY_CPPFLAGS}
+CPPFLAGS=               # empty
+CPPFLAGS+=              -Wundef -DPREFIX=\"${PREFIX:Q}\"
+CPPFLAGS+=              ${MY_CPPFLAGS}
 
-    CONFIGURE_ARGS+=        CPPFLAGS=${CPPFLAGS:M*:Q}
+CONFIGURE_ARGS+=        CPPFLAGS=${CPPFLAGS:M*:Q}
 
-    all:
-            echo x${CPPFLAGS:Q}x            # 前後に空白がつく
-            echo x${CONFIGURE_ARGS}x        # 適切に切り取られる
+all:
+        echo x${CPPFLAGS:Q}x            # 前後に空白がつく
+        echo x${CONFIGURE_ARGS}x        # 適切に切り取られる
 </programlisting></listitem>
 
 	<listitem><para>上の例にはバグがひとつあります:
@@ -313,17 +313,17 @@
 	どちらも同じ細工をすることで解決できます。</para>
 
 <programlisting>
-    EMPTY=                  # empty
-    empty_test:
-            for i in a ${EMPTY:Q} c; do \
-                    echo "$$i"; \
-            done
+EMPTY=                  # empty
+empty_test:
+        for i in a ${EMPTY:Q} c; do \
+            echo "$$i"; \
+        done
 
-    for_test:
-    .for i in a:\ a:\test.txt
-            echo ${i:Q}
-            echo "foo"
-    .endfor
+for_test:
+.for i in a:\ a:\test.txt
+        echo ${i:Q}
+        echo "foo"
+.endfor
 </programlisting>
 
 	<para>一つ目の例では、3 行が表示されると思うかもしれませんが、
@@ -355,7 +355,7 @@
       <varname>${VAR}</varname> に含まれてしまいます。</para>
 
 <programlisting>
-    VAR:=   ${VAR:N${_othervar_:C/-//}}
+VAR:=   ${VAR:N${_othervar_:C/-//}}
 </programlisting>
 
       <para>もっと複雑なコードの断片と回避策については、

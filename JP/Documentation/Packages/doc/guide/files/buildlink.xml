@@ -1,6 +1,6 @@
-<!-- $NetBSD: buildlink.xml,v 1.23 2007/01/17 03:11:18 rillig Exp $ -->
+<!-- $NetBSD: buildlink.xml,v 1.24 2007/06/01 11:07:24 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: buildlink.xml,v 1.23 2007/01/17 03:11:18 rillig Exp   -->
+<!-- NetBSD: buildlink.xml,v 1.24 2007/06/01 11:07:24 rillig Exp   -->
 
 <chapter id="buildlink">
   <title>buildlink 方法論</title>
@@ -73,24 +73,24 @@
 
     <para>あるパッケージのライブラリーやヘッダーに対する依存性が必要な場合は、</para>
 
-    <programlisting>
-      DEPENDS+=   foo>=1.1.0:../../category/foo
-    </programlisting>
+<programlisting>
+DEPENDS+=       foo>=1.1.0:../../category/foo
+</programlisting>
 
     <para>を、以下のものに置き換えます。</para>
 
-    <programlisting>
-      .include "../../category/foo/buildlink3.mk"
-    </programlisting>
+<programlisting>
+.include "../../category/foo/buildlink3.mk"
+</programlisting>
 
     <para>通常は、buildlink3.mk ファイルで必要な依存性を定義します。
     buildlink3.mk ファイルを使う際に、より新しいバージョンへの依存性が必要な場合は、
     そのことを Makefile で定義することができます。たとえば以下のようにします。</para>
 
-    <programlisting>
-      BUILDLINK_API_DEPENDS.foo+=   foo>=1.1.0
-      .include "../../category/foo/buildlink3.mk"
-    </programlisting>
+<programlisting>
+BUILDLINK_API_DEPENDS.foo+=   foo>=1.1.0
+.include "../../category/foo/buildlink3.mk"
+</programlisting>
 
     <para><filename>pkgsrc/mk</filename> 以下には、
     特別なパッケージを扱うための
@@ -190,29 +190,29 @@
       <filename>pkgsrc/graphics/tiff</filename> における
       <filename>buildlink3.mk</filename> の実例です。</para>
 
-      <programlisting>
-	# &#36;NetBSD: buildlink3.mk,v 1.7 2004/03/18 09:12:12 jlam Exp &#36;
+<programlisting>
+# &#36;NetBSD: buildlink3.mk,v 1.7 2004/03/18 09:12:12 jlam Exp &#36;
 
-	BUILDLINK_DEPTH:=       ${BUILDLINK_DEPTH}+
-	TIFF_BUILDLINK3_MK:=    ${TIFF_BUILDLINK3_MK}+
+BUILDLINK_DEPTH:=       ${BUILDLINK_DEPTH}+
+TIFF_BUILDLINK3_MK:=    ${TIFF_BUILDLINK3_MK}+
 
-	.if !empty(BUILDLINK_DEPTH:M+)
-	BUILDLINK_DEPENDS+=     tiff
-	.endif
+.if ${BUILDLINK_DEPTH} == "+"
+BUILDLINK_DEPENDS+=     tiff
+.endif
 
-	BUILDLINK_PACKAGES:=    ${BUILDLINK_PACKAGES:Ntiff}
-	BUILDLINK_PACKAGES+=    tiff
+BUILDLINK_PACKAGES:=    ${BUILDLINK_PACKAGES:Ntiff}
+BUILDLINK_PACKAGES+=    tiff
 
-	.if !empty(TIFF_BUILDLINK3_MK:M+)
-	BUILDLINK_API_DEPENDS.tiff+=        tiff>=3.6.1
-	BUILDLINK_PKGSRCDIR.tiff?=      ../../graphics/tiff
-	.endif  # TIFF_BUILDLINK3_MK
+.if ${TIFF_BUILDLINK3_MK} == "+"
+BUILDLINK_API_DEPENDS.tiff+=        tiff>=3.6.1
+BUILDLINK_PKGSRCDIR.tiff?=      ../../graphics/tiff
+.endif  # TIFF_BUILDLINK3_MK
 
-	.include "../../devel/zlib/buildlink3.mk"
-	.include "../../graphics/jpeg/buildlink3.mk"
+.include "../../devel/zlib/buildlink3.mk"
+.include "../../graphics/jpeg/buildlink3.mk"
 
-	BUILDLINK_DEPTH:=       ${BUILDLINK_DEPTH:S/+$//}
-      </programlisting>
+BUILDLINK_DEPTH:=       ${BUILDLINK_DEPTH:S/+$//}
+</programlisting>
 
       <para>ヘッダーとフッターで、
       <varname>BUILDLINK_DEPTH</varname> の値を操作しています。
@@ -444,46 +444,43 @@
       <para>以下に掲げるのは、builtin.mk
       ファイルの推奨テンプレートです。</para>
 
-      <programlisting>
-	.if !defined(IS_BUILTIN.foo)
-	#
-	# IS_BUILTIN.foo is set to "yes" or "no" depending on whether "foo"
-	# genuinely exists in the system or not.
-	#
-	IS_BUILTIN.foo?=        no
+<programlisting>
+.if !defined(IS_BUILTIN.foo)
+#
+# IS_BUILTIN.foo is set to "yes" or "no" depending on whether "foo"
+# genuinely exists in the system or not.
+#
+IS_BUILTIN.foo?=        no
 
-	# BUILTIN_PKG.foo should be set here if "foo" is built-in and its package
-	# version can be determined.
-	#
-	.  if !empty(IS_BUILTIN.foo:M[yY][eE][sS])
-	BUILTIN_PKG.foo?=       foo-1.0
-	.  endif
-	.endif  # IS_BUILTIN.foo
+# BUILTIN_PKG.foo should be set here if "foo" is built-in and its package
+# version can be determined.
+#
+.  if !empty(IS_BUILTIN.foo:M[yY][eE][sS])
+BUILTIN_PKG.foo?=       foo-1.0
+.  endif
+.endif  # IS_BUILTIN.foo
 
-	.if !defined(USE_BUILTIN.foo)
-	USE_BUILTIN.foo?=       ${IS_BUILTIN.foo}
-	.  if defined(BUILTIN_PKG.foo)
-	.    for _depend_ in ${BUILDLINK_API_DEPENDS.foo}
-	.      if !empty(USE_BUILTIN.foo:M[yY][eE][sS])
-	USE_BUILTIN.foo!=                                                       \
-	if ${PKG_ADMIN} pmatch '${_depend_}' ${BUILTIN_PKG.foo}; then     \
-	${ECHO} "yes";                                            \
-	else                                                              \
-	${ECHO} "no";                                             \
-	fi
-	.      endif
-	.    endfor
-	.  endif
-	.endif  # USE_BUILTIN.foo
+.if !defined(USE_BUILTIN.foo)
+USE_BUILTIN.foo?=       ${IS_BUILTIN.foo}
+.  if defined(BUILTIN_PKG.foo)
+.    for _depend_ in ${BUILDLINK_API_DEPENDS.foo}
+.      if !empty(USE_BUILTIN.foo:M[yY][eE][sS])
+USE_BUILTIN.foo!=                                                       \
+        ${PKG_ADMIN} pmatch '${_depend_}' ${BUILTIN_PKG.foo}            \
+        &amp;&amp; ${ECHO} "yes" || ${ECHO} "no"
+.      endif
+.    endfor
+.  endif
+.endif  # USE_BUILTIN.foo
 
-	CHECK_BUILTIN.foo?=     no
-	.if !empty(CHECK_BUILTIN.foo:M[nN][oO])
-	#
-	# Here we place code that depends on whether USE_BUILTIN.foo is set to
-	# "yes" or "no".
-	#
-	.endif  # CHECK_BUILTIN.foo
-      </programlisting>
+CHECK_BUILTIN.foo?=     no
+.if !empty(CHECK_BUILTIN.foo:M[nN][oO])
+#
+# Here we place code that depends on whether USE_BUILTIN.foo is set to
+# "yes" or "no".
+#
+.endif  # CHECK_BUILTIN.foo
+</programlisting>
 
       <para>最初の節では、<replaceable>pkg</replaceable>
       がベースシステムに実際に存在するかどうかに応じて、
@@ -562,10 +559,10 @@
 	すべて pkgsrc 版のソフトウェアを使うこととする場合、
       以下のように設定することができます。</para>
 
-      <programlisting>
-	PREFER_PKGSRC=  yes
-	PREFER_NATIVE=  getopt skey tcp_wrappers
-      </programlisting>
+<programlisting>
+PREFER_PKGSRC=  yes
+PREFER_NATIVE=  getopt skey tcp_wrappers
+</programlisting>
 
       <para>あるパッケージを <varname>PREFER_NATIVE</varname>
       のリストに加えるには、そのパッケージに
