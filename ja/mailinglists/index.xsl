@@ -1,9 +1,11 @@
-<?xml version="1.0" encoding="ISO-8859-1"?> <!-- -*- html -*- -->
+<?xml version="1.0" encoding="ISO-2022-JP"?> <!-- -*- html -*- -->
 <!DOCTYPE xsl:stylesheet
   PUBLIC "-//NetBSD/DTD NetBSD XSLT 1.0 DTD//EN"
 	 "http://www.NetBSD.org/XML/htdocs/share/xml/xslt10-netbsd.dtd">
 
 <!-- $NetBSD: index.xsl,v 1.1 2007/06/09 12:43:39 dsieger Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: index.xsl,v 1.1 2007/06/09 12:43:39 dsieger Exp   -->
 
 <!-- Copyright (c) 2005-2006
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -11,7 +13,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 version="1.0">
 
-<xsl:import href="../share/xsl/netbsd-webpage-en.xsl"/>
+<xsl:import href="../../share/xsl/netbsd-webpage-ja.xsl"/>
 
 <xsl:template match="sect1[@id='list-of-mailing-lists']/title |
 		sect1[@id='descriptions-of-mailing-lists']/title">
@@ -112,7 +114,7 @@
       <xsl:variable
 	name="groupname"
 	xmlns:newsgroups="http://www.NetBSD.org/MailingLists/list2group.xsl"
-	select="document('list2group.xsl')/*/newsgroups:group[@list=$listname]/text()" />
+	select="document('../../MailingLists/list2group.xsl')/*/newsgroups:group[@list=$listname]/text()" />
 
       <tr valign="top">
 	<!-- subscribe link -->
@@ -121,7 +123,7 @@
           <xsl:if test="$listtype!='obsolete-lists'">
           <a>
             <xsl:attribute name="href"><xsl:text>http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=</xsl:text><xsl:value-of select="$listname" /></xsl:attribute>
-            <img src="../images/misc/envelope.gif" border="0" alt="[subscribe]"/>
+            <img src="../../images/misc/envelope.gif" border="0" alt="[subscribe]"/>
           </a>
           </xsl:if>
         </td>
@@ -130,7 +132,7 @@
         <td>
           <a>
             <xsl:attribute name="href">http://mail-index.NetBSD.org/<xsl:value-of select="$listname" />/</xsl:attribute>
-            <img src="../images/misc/tape.gif" border="0" alt="[view archive]"/>
+            <img src="../../images/misc/tape.gif" border="0" alt="[view archive]"/>
           </a>
         </td>
 
@@ -140,7 +142,7 @@
           <xsl:if test="boolean($groupname)">
 	    <a>
               <xsl:attribute name="href">http://dir.gmane.org/<xsl:value-of select="$groupname" />/</xsl:attribute>
-	      <img src="../images/misc/news.gif" border="0" alt="[newsgroup]"/>
+	      <img src="../../images/misc/news.gif" border="0" alt="[newsgroup]"/>
 	    </a>
           </xsl:if>
         </td>
