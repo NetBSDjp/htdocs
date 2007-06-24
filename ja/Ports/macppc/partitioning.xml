@@ -1,0 +1,1379 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="Ports-macppc-partitioning">
+<config param="desc" value="&os;/macppc partitioning howto"/>
+<config param="cvstag" value="$NetBSD: partitioning.xml,v 1.1 2007/05/25 22:20:29 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/05/25 22:20:29 $"/>
+<head>
+
+<!-- Copyright (c) 1998-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD/macppc Partitioning HOW-TO</title>
+</head>
+
+<sect1 id="preface">
+  <title>Preface</title>
+
+  <para>
+    This document is broken into four main parts:
+  </para>
+
+  <orderedlist>
+    <listitem><ulink url="#intro">Introduction (Understanding Partitions)</ulink></listitem>
+    <listitem>Partitioning a disk
+    <itemizedlist>
+      <listitem><ulink url="#drive-setup">Partitioning using Drive Setup</ulink> (Mac OS 9)</listitem>
+      <listitem><ulink url="#disk-utility">Partitioning using Disk Utility</ulink> (Mac OS X)</listitem>
+      <listitem><ulink url="#pdisk">Partitioning using <code>pdisk</code> and 
+      <code>newfs</code></ulink> (Mac OS 9, Mac OS X, Darwin, NetBSD,  Linux)</listitem>
+    </itemizedlist>
+    </listitem>
+    <listitem><ulink url="#msdos">Creating a shared MS-DOS filesystem</ulink></listitem>
+    <listitem><ulink url="#nomenclature">Partition nomenclature</ulink></listitem>
+  </orderedlist>
+
+  <para>
+    <emphasis>Note: the Linux <code>pdisk</code> command does not properly set the
+    flags for NetBSD/macppc.  If you have already partitioned your disk using
+    the Linux <code>pdisk</code>, you'll need to use the NetBSD <code><ulink
+    url="#pdisk">pdisk</ulink></code> to delete and re-create the NetBSD root and
+    swap partitions.</emphasis>
+  </para>
+</sect1>
+
+<sect1 id="intro">
+  <title>Introduction (Understanding Partitions)</title>
+
+  <para>
+    This document describes in depth how to partition a disk for use with 
+    NetBSD/macppc and Mac OS.  Whether you can boot your machine from a 
+    particular disk into a particular operating system depends on your 
+    machine's version of <ulink url="faq.html#ofw-version">Open Firmware</ulink>.  
+    The overall goal is to create an Apple Partition Map that Open Firmware 
+    can understand (and thus boot from) and that the NetBSD kernel can 
+    understand and use to find its root partition.
+  </para>
+
+  <para>
+    There are four tools to partition a disk: Apple's Drive Setup (Mac OS
+    9), Apple's Disk Utility (Mac OS X), NetBSD's 
+    <ulink url="http://man.NetBSD.org/man/pdisk+8.macppc+NetBSD-current">
+      <code>&man.pdisk.8;</code></ulink> (all OSes), and NetBSD's 
+      <ulink url="http://man.NetBSD.org/man/disklabel+8.macppc+NetBSD-current">
+	<code>&man.disklabel.8;</code></ulink> (NetBSD/macppc only).  The first two tools 
+	(Drive Setup and Disk Utility) are distributed by Apple with Mac OS and 
+	are located on bootable Mac OS installation CDs.  You can use them to 
+	partition a disk, create the filesystems, and to install Mac OS 
+	bootloaders (called disk drivers in Mac OS terminology).
+  </para>
+
+  <para>
+    The <code>pdisk</code> program is a command-line program which can be 
+    compiled and run on most unix-like systems (particularly the ones that 
+    run on PowerPC-based Macintosh and clone machines).  This program can 
+    only partition a disk -- it can't install bootloaders or create 
+    filesystems.
+  </para>
+
+  <para>
+    NetBSD's <code>disklabel</code> creates a NetBSD-style 
+    <ulink url="http://man.NetBSD.org/man/disklabel+5.macppc+NetBSD-current">
+      <code>&man.disklabel.5;</code></ulink>.  Unlike the other three tools, it can only
+      create a fake Apple Partition Map (thus you can't use it to create a disk
+      that's bootable by Mac OS).  That's OK, since some versions of Open
+      Firmware require you to use <code>disklabel</code> to install the bootloader. 
+      Additionally, <code>disklabel</code> is the partition tool that is used in the
+      NetBSD installer.
+  </para>
+
+  <para>
+    In the tables below, "yes" means the disk is bootable, "mount only" 
+    means that the OS can mount partitions on the disk, but cannot boot from 
+    it, and "no" means the OS can't mount partitions or boot from the disk.
+  </para>
+
+  <para>
+    <emphasis role="bold">Open Firmware 1.0.5 or 2.0.x:</emphasis>
+  </para>
+
+  <informaltable>
+  <tgroup cols="2">
+    <tbody>
+  <row><entry><emphasis role="bold">OS</emphasis></entry>
+<entry><emphasis role="bold">Drive Setup</emphasis></entry>
+<entry><emphasis role="bold">Disk Utility</emphasis></entry>
+<entry><code><emphasis role="bold">pdisk</emphasis></code></entry>
+<entry><code><emphasis role="bold">disklabel</emphasis></code></entry></row>
+
+<row><entry><emphasis role="bold">NetBSD</emphasis></entry>
+<entry>mount only</entry>
+<entry>mount only</entry>
+<entry>mount only</entry>
+<entry>yes</entry></row>
+
+<row><entry><emphasis role="bold">Mac OS 9</emphasis></entry>
+<entry>yes</entry>
+<entry>yes</entry>
+<entry>no</entry>
+<entry>no</entry></row>
+
+<row><entry><emphasis role="bold">Mac OS X and Darwin</emphasis></entry>
+<entry>yes</entry>
+<entry>yes</entry>
+<entry>yes</entry>
+<entry>no</entry></row>
+
+<row><entry><emphasis role="bold">Linux</emphasis></entry>
+<entry>yes</entry>
+<entry>yes?</entry>
+<entry>yes</entry>
+<entry>no</entry></row>
+    </tbody>
+  </tgroup>
+</informaltable>
+<para><emphasis role="bold">Open Firmware 2.4 or 3:</emphasis></para>
+<informaltable>
+  <tgroup cols="2">
+    <tbody>
+<row><entry><emphasis role="bold">OS</emphasis></entry>
+<entry><emphasis role="bold">Drive Setup</emphasis></entry>
+<entry><emphasis role="bold">Disk Utility</emphasis></entry>
+<entry><code><emphasis role="bold">pdisk</emphasis></code></entry>
+<entry><code><emphasis role="bold">disklabel</emphasis></code></entry></row>
+
+<row><entry><emphasis role="bold">NetBSD</emphasis></entry>
+<entry>yes</entry>
+<entry>yes</entry>
+<entry>yes</entry>
+<entry>no</entry></row>
+
+<row><entry><emphasis role="bold">Mac OS 9</emphasis></entry>
+<entry>yes</entry>
+<entry>yes</entry>
+<entry>no</entry>
+<entry>no</entry></row>
+
+<row><entry><emphasis role="bold">Mac OS X and Darwin</emphasis></entry>
+<entry>yes</entry>
+<entry>yes</entry>
+<entry>yes</entry>
+<entry>no</entry></row>
+
+<row><entry><emphasis role="bold">Linux</emphasis></entry>
+<entry>yes</entry>
+<entry>yes?</entry>
+<entry>yes</entry>
+<entry>no</entry></row>
+    </tbody>
+  </tgroup>
+</informaltable>
+
+<para>
+  The Apple Partition Map stores partition information as a numbered list
+  (usually in order of location on disk).  Partition "zero" is where the
+  primary bootloader is stored for Open Firmware 1.0.5 or 2.0.x models.  The
+  partition map is partition number 1.  A disk with Mac OS 9 will usually have
+  partitions 2 thru 8 reserved for its drivers.  The user defined 
+  partitions (HFS, HFS+, UFS, NetBSD, etc.) will start at partition 9 
+  (Mac OS 9 disk), or 2 (no Mac OS 9).  
+</para>
+
+<para>
+  Keep in mind that Open Firmware uses Apple Partition Map numbers when 
+  determining the command to boot your machine into NetBSD/macppc.  You can 
+  use <ulink url="#pdisk"><code>pdisk</code></ulink> to print out the Apple Partition 
+  Map, regardless of how it was created.
+</para>
+
+<para>
+  To make matters a little more confusing, NetBSD/macppc uses its own 
+  partition naming scheme, the letters 'a' thru 'h'.  The root partition 
+  (regardless of its Apple Partition Map location) is partition 'a'.  The 
+  swap partition is partition 'b'.  Partition 'c' represents the whole 
+  disk.  The '/usr' partition (if it exists) is partition 'g'.  The rest of 
+  the partitions fill in the remainder of the letters.
+</para>
+
+<para>
+  See the section on <ulink url="#nomenclature">Partition nomenclature</ulink> 
+  beelow for a more thorough discussion. 
+</para>
+
+<para>
+  There are a whole slew of filesystem types you may encounter.  Briefly,
+  HFS is Apple's old filesystem which has been in use since the '80s.  HFS+
+  (also known as "extended") is an enhanced version of HFS which allows
+  larger file (and filesystem) size, storage of unix-style owner and
+  permissions.  HFS+ is the recommended filesystem type for Mac OS &gt;  8.1,
+  including Mac OS X.  UFS is Apple's NeXT-derived version of good old BSD
+  FFS.  MS-DOS (also known as FAT) is the filesystem standardized on the
+  MS-DOS/Windows platform.  BSD FFS is the standard filesystem used by most
+  BSD unix-like OSes since the '80s (including NetBSD).  ext2fs is the most
+  common linux filesystem. 
+</para>
+
+<para>
+  You may want to consider whether to include a partition that will be
+  shared among your OSes.  The most compatible format is MS-DOS FAT, but it
+  lacks features (such as permissions and good repair tools). 
+  Unfortunately, NetBSD doesn't yet support the Macintosh HFS and HFS+ file
+  systems natively.  NetBSD-current has full support for Apple's UFS.  Here's 
+  the quick breakdown: 
+</para>
+
+<informaltable>
+  <tgroup cols="5">
+    <tbody>
+<row><entry>format</entry>
+ <entry>Mac OS 8.1-9.x</entry>
+ <entry>Mac OS X and Darwin</entry>
+ <entry>NetBSD</entry>
+ <entry>Linux</entry></row>
+<row><entry>Apple HFS</entry>
+ <entry>yes</entry>
+ <entry>yes</entry>
+ <entry>
+<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">hfstools</ulink>
+ </entry>
+ <entry>yes(1)</entry></row>
+<row><entry>Apple HFS+</entry>
+ <entry>yes</entry>
+ <entry>yes</entry>
+ <entry>no</entry>
+ <entry>read-only(2)</entry></row>
+<row><entry>Apple UFS</entry>
+ <entry>no</entry>
+ <entry>yes</entry>
+ <entry>-current</entry>
+ <entry>read-only</entry></row>
+<row><entry>MS-DOS FAT</entry>
+ <entry>File Exchange</entry>
+ <entry>yes</entry>
+ <entry>yes</entry>
+ <entry>yes</entry></row>
+<row><entry>BSD FFS</entry>
+ <entry>no</entry>
+ <entry>no</entry>
+ <entry>yes</entry>
+ <entry>read-only</entry></row>
+<row><entry>Linux ext2fs</entry>
+ <entry>no</entry>
+ <entry>yes(3)</entry>
+ <entry>yes</entry>
+ <entry>yes</entry></row>
+    </tbody>
+  </tgroup>
+</informaltable>
+
+<para>1 - Either use the stable
+<ulink url="http://www.mars.org/home/rob/proj/hfs/">hfsutils</ulink> or the 
+experimental in-kernel support.
+</para>
+<para>2 - Either use the experimental 
+<ulink url="http://ftp.penguinppc.org/projects/hfsplus/">hfsplus</ulink> utils
+or the experimental
+<ulink url="http://sourceforge.net/projects/linux-hfsplus">linux-hfsplus</ulink>
+kernel module.</para>
+<para>3 - Use the highly experimental 
+<ulink url="http://sourceforge.net/projects/ext2fsx/">Ext2 Filesystem</ulink> kernel
+extension.</para>
+
+<para>
+  If you want to create a partition you can share with Mac OS 9, you
+  should create an HFS partition which you will later convert to MS-DOS
+  format.  See <ulink url="#msdos">Creating a shared MS-DOS filesystem</ulink>
+  after you've partitioned your disk. 
+</para>
+
+<para>
+  If you don't care about Classic Mac OS, then UFS is probably the best 
+  bet.  Just make the UFS partition from within Mac OS X or Darwin, and make 
+  sure you are using a -current NetBSD kernel.  UFS will be supported in 
+  the next major release of NetBSD (i.e. not the 1.6.x branch).
+</para>
+
+<para>
+  Partitioning will erase the contents of your drive, so back up
+  everything from the disk you will be partitioning.  Follow the
+  instructions for the partitioning tool you wish to use. 
+</para>
+
+<itemizedlist>
+<listitem><ulink url="#drive-setup">Partitioning using Drive Setup</ulink> (Mac OS 9)</listitem>
+<listitem><ulink url="#disk-utility">Partitioning using Disk Utility</ulink> (Mac OS X)</listitem>
+<listitem><ulink url="#pdisk">Partitioning using <code>pdisk</code> and 
+ <code>newfs</code></ulink> (Mac OS 9, Mac OS X, Darwin, NetBSD,  Linux)</listitem>
+<listitem>A <code>&man.disklabel.8;</code> is created by the <code>sysinst</code> installer 
+ when you follow the directions in the <ulink 
+ url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-&release.latest;/macppc/INSTALL.html">
+ NetBSD &release.latest; install notes</ulink>.</listitem>
+</itemizedlist>
+</sect1>
+
+<sect1 id="drive-setup">
+  <title>Partitioning using Drive Setup (Mac OS 9)</title>
+
+  <orderedlist>
+    <listitem>
+      <para>
+	You will need to use Drive Setup version 1.8.1 or later.  This is the 
+	version that comes with Mac OS 9.0.  If you are unsure, you need to select 
+	Drive Setup and pick <code>Get Info</code> from the <code>File</code> menu.
+      </para>
+
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/drive-setup.gif"
+		     format="GIF" width="354" height="401" />
+	</imageobject>
+	<textobject><phrase>drive setup</phrase></textobject>
+      </inlinemediaobject>
+
+      <para>
+	If you have an older version of Mac OS,  you can download either the 
+	<ulink url="http://docs.info.apple.com/article.html?artnum=60791">Mac OS 
+	9.0.4</ulink> (12.2 MB), 
+	<ulink url="http://docs.info.apple.com/article.html?artnum=75103">Mac OS 9.1</ulink>
+	(71 MB), 
+	<ulink url="http://docs.info.apple.com/article.html?artnum=120030">Mac OS
+	9.2.1</ulink> (82 MB), or
+	<ulink url="http://docs.info.apple.com/article.html?artnum=75186">Mac OS 
+	9.2.2</ulink> (21.3 MB) updates, all of which include a 
+	version of Drive Setup that works for us.  Note, these are big Mac OS 
+	updates, so you will have to download a multi-megabyte disk image just to 
+	get the 500 KB Drive Setup application.  Apple has not provided a recent 
+	version of Drive Setup as a standalone update.
+      </para>
+
+      <para>
+	Also, the 
+	<ulink url="http://www.opensource.apple.com/projects/darwin/1.4/release.html">Darwin 
+	installer</ulink> has a version of Drive Setup that works.  
+	Darwin is also enormous (120.7 MB), since it contains a complete operating 
+	system.
+      </para>
+
+      <para>
+	You'll need to open the disk image and copy Drive Setup to a hard drive, 
+	RAM disk, Zip disk, or floppy disk (it can't run from the disk image).
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	When you first run Drive Setup, it'll give you a screen like this, 
+	where you can select the drive that you want to re-partition.
+      </para>
+
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/drive-selection.gif"
+		     format="GIF" width="328" height="257" />
+	</imageobject>
+	<textobject><phrase>select a drive</phrase></textobject>
+      </inlinemediaobject>
+
+      <para>
+	Select the drive to re-partition and click the <code>Initialize...</code> 
+	button.  This will open another dialog box.  Click the <code>Custom 
+	Setup...</code> button.
+      </para>
+
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/initialize.gif"
+		     format="GIF" width="330" height="244" />
+	</imageobject>
+	<textobject><phrase>initialize</phrase></textobject>
+      </inlinemediaobject>
+    </listitem>
+    <listitem>
+      <para>
+	Select the number of partitions you'll be using.  You will probably 
+	need at least 5 partitions, see the INSTALL notes for suggestions.
+      </para>
+
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/custom-setup.gif"
+		     format="GIF" width="480" height="355" />
+	</imageobject>
+	<textobject><phrase>custom setup</phrase></textobject>
+      </inlinemediaobject>
+
+      <para>
+	Pick the <code>Partitioning Scheme</code> first since you lose all of your 
+	<code>Volumes</code> info each time you chose a different number of 
+	partitions.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	For each of the <code>Volumes</code> set the <code>Type:</code> under the 
+	<code>Volume Info</code> and <code>Size:</code> as suggested in the INSTALL notes.
+      </para>
+      
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/custom-type.gif"
+		     format="GIF" width="480" height="428" />
+	</imageobject>
+	<textobject><phrase>custom type</phrase></textobject>
+      </inlinemediaobject>
+
+      <para>
+	You can use the <code>TAB</code> key to rotate through the <code>Volumes</code>.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	When you're done, you should have something like the following (you 
+	get to name the Mac OS partitions later from the Finder):
+      </para>
+      
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/suggested-layout.gif"
+		     format="GIF" width="480" height="355" />
+	</imageobject>
+	<textobject><phrase>suggested layout</phrase></textobject>
+      </inlinemediaobject>
+
+    </listitem>
+    <listitem>
+      <para>
+	Click the <code>OK</code> button.  It will request confirmation of the 
+	changes.
+      </para>
+      <para>
+	<emphasis>This is the point of no return!  If you accept the changes, it will 
+	erase all contents of your drive</emphasis>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	After it's done partitioning and creating the HFS(+) partitions, it 
+	will return to the original screen.
+      </para>
+
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/drivesetup-done.gif"
+		     format="GIF" width="328" height="257" />
+	</imageobject>
+	<textobject><phrase>after partitioning</phrase></textobject>
+      </inlinemediaobject>
+
+      <para>
+	Note: the <code>A/UX</code> partitions are not accessible to Mac OS.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	You can quit Drive Setup, you're done with it.  Now, from the 
+	Finder, you can rename your HFS(+) partitions.  If you are using an Open 
+	Firmware 1.0.5 or 2.0.x model, you're done -- continue with the INSTALL 
+	notes.
+      </para>
+
+      <para>
+	If your model has Open Firmware 2.4 or 3, and you're going to 
+	make this disk bootable for NetBSD, you still need to do one more step.  
+      </para>
+
+      <para>
+	You will need to copy <code>ofwboot.xcf</code> (the bootloader) and 
+	<code>netbsd.GENERIC_MD.gz</code> or <code>netbsd.ram.gz</code> (the installer) to 
+	one of the HFS(+) partitions on your drive.  Make sure that you have 
+	downloaded these files in <code>binary</code> mode.
+      </para>
+    </listitem>
+  </orderedlist>
+</sect1>
+
+<sect1 id="disk-utility">
+  <title>Partitioning using Disk Utility (Mac OS X)</title>
+
+  <para>
+    The Mac OS X Disk Utility program cannot directly create NetBSD 
+    partitions, but where there's a will, there's a way.  The advantage of 
+    Disk Utility is that it is available from the Mac OS X install CDs.  
+    Disk Utility can only create "Mac OS Extended" (HFS+), "Mac OS Standard" 
+    (HFS), "UNIX File System" (UFS), and "Free Space" partitions.
+  </para>
+
+  <para>
+    NetBSD/macppc -current kernels can use UFS partitions, even as the root 
+    partition.  At present, if there are no normal NetBSD A/UX-style partitions 
+    available, NetBSD/macppc does not fall back to assuming that an UFS 
+    partition is the root.  You may need to figure out what partition NetBSD 
+    thinks the UFS is at (e.g. "e") and create a kernel with the UFS 
+    partition specified as the <ulink url="faq.html#dash-a">root device</ulink>.
+  </para>
+
+  <para>
+    If this doesn't suit your needs, then you can use Disk Utility to 
+    create your Mac OS HFS+ partitions and leave free space for NetBSD.  
+    You'll need to use <ulink url="#pdisk"><code>pdisk</code></ulink> to create the 
+    NetBSD partitions.
+  </para>
+
+  <orderedlist>
+    <listitem>
+      <para>
+	Launch Disk Utility.  From the install CDs, it's under the 
+	"Install" menu.  From Mac OS X, open /Applications/Utilities/Disk Utility.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	You may need to authenticate.  If it says "Click the lock to make 
+	changes." in the lower left corner of the window, click the lock and type 
+	in your password (you <emphasis>are</emphasis> using an administrative account, aren't 
+	you).
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Select the disk to partition in the left panel.  Click on the 
+	"Partition" tab.  Pick your "Volume Scheme" (i.e. the number of 
+	partitions you want).
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Set the names, formats, and sizes of your partitions.  Hint:  to 
+	make partitions smaller than it recommends, type a number into the size box 
+	and hit enter to get it to accept your partition size.  "Mac OS Extended" 
+	HFS+ partitions have a minimum size of 4 MB.  For example, on 
+	my two-partition disk (a small HFS partition for <code>ofwboot.xcf</code> and 
+	a large UFS partition for NetBSD), Disk Utility looks like this:
+      </para>
+
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/diskutil-hfs.gif"
+		     format="GIF" width="705" height="519" />
+	</imageobject>
+	<textobject><phrase>small HFS partition</phrase></textobject>
+      </inlinemediaobject>
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/diskutil-ufs.gif"
+		     format="GIF" width="705" height="519" />
+	</imageobject>
+	<textobject><phrase>large NetBSD UFS partition</phrase></textobject>
+      </inlinemediaobject>
+      
+    </listitem>
+    <listitem>
+      <para>
+	Choose whether to install Mac OS 9 disk drivers.  This is your only 
+	opportunity if you think you'll ever want to access any partitions on 
+	this disk from Mac OS 9 or earlier.  Even HFS partitions are inaccessible 
+	from Mac OS 9 if you don't click this button.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Click OK and follow through.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	You can quit Disk Utility, you're done with it.  Now, from the 
+	Finder, you can rename your HFS(+) and UFS partitions.  If you are using an 
+	Open Firmware 1.0.5 or 2.0.x model, you're done -- continue with the INSTALL 
+	notes.
+      </para>
+
+      <para>
+	If your model has Open Firmware 2.4 or 3, and you're going to 
+	make this disk bootable for NetBSD, you still need to do one more step.
+      </para>
+
+      <para>
+	You will need to copy <code>ofwboot.xcf</code> (the bootloader) to one of the
+	HFS(+) partitions on your drive.  Copy <code>netbsd.GENERIC_MD.gz</code> (the
+	installer) to your UFS partition (though it can also sit on an HFS(+)
+	partition).  Make sure that you have downloaded these files in
+	<code>binary</code> mode.
+      </para>
+
+      <para>
+	Remember, you'll need a -current kernel to use UFS as a root 
+	partition, and it may not be recognized by NetBSD as partition "a".
+      </para>
+    </listitem>
+  </orderedlist>
+</sect1>
+
+<sect1 id="pdisk">
+  <title>
+    Partitioning using <code>pdisk</code> and <code>newfs</code> 
+    (Mac OS 9, Mac OS X, Darwin, NetBSD, Linux)
+  </title>
+
+  <para>
+    The command-line <code>pdisk</code> utility is used to view and modify the 
+    Apple Partition Map on a disk.  NetBSD, Mac OS X, and Darwin can all mount 
+    disks partitioned with <code>pdisk</code>.  Mac OS 9 and earlier need special 
+    drivers to be installed to mount a disk (see <ulink url="#drive-setup">Drive 
+    Setup</ulink> and <ulink url="#disk-utility">Disk Utility</ulink>).  <code>pdisk</code> 
+    can create partition maps which will be bootable on  Open Firmware 2.4 or 
+    3 machines running NetBSD, Mac OS X, and Darwin.  
+  </para>
+
+  <para>
+    You may still find <code>pdisk</code> useful to modify a partition map 
+    created by another utility or simply to list the partition map of a disk.
+    If you are merely interested in listing the partition map of a disk, 
+    follow steps 1 through 4.
+  </para>
+
+  <para>
+    Before starting, some caveats about partitioning:
+  </para>
+
+  <itemizedlist>
+    <listitem>
+      <para>
+	If you create the partition map from <code>pdisk</code> (not just modify
+	a partition map created using a Mac OS utility), you won't be able to
+	access the partitions on this disk from Mac OS 9 and earlier.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	You can't create NetBSD A/UX-style partitions using the native 
+	Mac OS X, Darwin, or Linux <code>pdisk</code> program.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	The Mac OS 9 <code>pdisk</code> is a little out of date, and may act 
+	slightly different than the stuff below, but it still does the job.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Mac OS X and Darwin won't let you write the <code>pdisk</code> partition 
+	map onto a drive that is currently in use.  This means you can't 
+	repartition your boot drive.  Boot from another disk (or create a 
+	bootable CD using a tool like <ulink url="http://charlessoft.com/">BootCD</ulink>).
+      </para>
+    </listitem>
+  </itemizedlist>
+
+  <para>
+    The partition numbers listed by <code>pdisk</code> 
+    are the same that Open Firmware uses.  If you're trying to boot an Open 
+    Firmware 2.4 or 3 machine with this disk, remember which 
+    <code>Apple_HFS</code> partition number has <code>ofwboot.xcf</code> and which 
+    <code>Apple_UNIX_SVR2</code> or <code>Apple_UFS</code> partition is your NetBSD 
+    root partition.
+  </para>
+
+  <orderedlist>
+    <listitem><para>Get <code>pdisk</code>.</para>
+    <itemizedlist>
+      <listitem>
+	<para>NetBSD -current, <code>/sbin/pdisk</code></para>
+      </listitem>
+      <listitem>
+	<para>
+	  NetBSD 1.6.x, <ulink 
+	  url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.macppc-1-6">
+	  ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.macppc-1-6
+	</ulink>
+	</para>
+	<screen># <emphasis role="bold">chmod 755 netbsd-pdisk.macppc-1-6</emphasis></screen>
+      </listitem>
+      <listitem>
+	<para>
+	  Mac OS X 10.2.5 (known to also work on Mac OS X 10.1.5), <ulink
+	  url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.macos-10-2">
+	  ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.macos-10-2</ulink>
+	</para>
+	<screen># <emphasis role="bold">chmod 755 netbsd-pdisk.macos-10-2</emphasis></screen>
+      </listitem>
+      <listitem>
+	<para>
+	  Mac OS 9, <ulink
+	  url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/macos-utils/pdisk.sea.hqx">
+	  ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/macos-utils/pdisk.sea.hqx</ulink>
+	</para>
+	<para>
+	  Uncompress the archive, and run <code>pdisk ppc</code>
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Everything else (Mac OS X, Darwin, Linux), <ulink
+	  url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.src.20030424.tgz">
+	  ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.src.20030424.tgz</ulink>
+	</para>
+	<screen># <emphasis role="bold">tar xzf netbsd-pdisk.src.20030424.tgz</emphasis>
+# <emphasis role="bold">make</emphasis></screen>
+      </listitem>
+    </itemizedlist>
+    </listitem>
+    <listitem>
+      <para>
+	Determine the device name for the disk you're going to repartition 
+	or view.  If you are repartitioning, unmount any of those disk's 
+	partitions that might be mounted.
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>NetBSD:</para>
+ <screen># <emphasis role="bold">dmesg | grep \[sw\]d\[0-9\]</emphasis>
+# <emphasis role="bold">umount /mountpoint</emphasis></screen>
+	</listitem>
+	<listitem>
+	  <para>
+	    Mac OS 9:
+	  </para>
+	  <para>
+	    Drag the disk to the trash.
+	    Open <code>pdisk ppc</code> and type <code><emphasis
+	    role="bold">L</emphasis></code> to list the disks, their
+	    fake names, and their partitions
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Mac OS X and Darwin:
+	  </para>
+ <screen># <emphasis role="bold">/usr/sbin/diskutil list</emphasis>
+# <emphasis role="bold">/usr/sbin/disktool -u disk2</emphasis></screen>
+	</listitem>
+	<listitem>
+	  <para>
+	    Linux:
+	  </para>
+<screen># <emphasis role="bold">dmesg | grep \[hs\]d\[a-g\]</emphasis>
+# <emphasis role="bold">umount /mountpoint</emphasis></screen>
+	</listitem>
+      </itemizedlist>
+    </listitem>
+    <listitem>
+      <para>
+	Run <code>pdisk /dev/<emphasis>disk-device</emphasis></code>, where 
+	<emphasis>disk-device</emphasis> is something like:
+      </para>
+      <itemizedlist>
+	<listitem>NetBSD <code>/dev/sd2c</code> (use the "<code>c</code>" partition)</listitem>
+	<listitem>Mac OS X and Darwin <code>/dev/disk2</code> (use no partition designation)</listitem>
+	<listitem>Linux <code>/dev/hdc</code> (use no partition designation)</listitem>
+      </itemizedlist>
+
+<programlisting>  # <emphasis role="bold">./pdisk /dev/disk2</emphasis>
+  Edit /dev/disk2 -
+  Command (? for help): <emphasis role="bold">?</emphasis>
+  Notes:
+    Base and length fields are blocks, which vary in size between media.
+    The base field can be &lt;nth&gt;p; i.e. use the base of the nth partition.
+    The length field can be a length followed by k, m, g or t to indicate
+    kilo, mega, giga, or tera bytes; also the length can be &lt;nth&gt;p; i.e. use
+    the length of the nth partition.
+    The name of a partition is descriptive text.
+  
+  Commands are:
+    C    (create with type also specified)
+    c    create new partition (standard unix root)
+    d    delete a partition
+    h    help
+    i    initialize partition map
+    n    (re)name a partition
+    P    (print ordered by base address)
+    p    print the partition table
+    q    quit editing
+    r    reorder partition entry in map
+    s    change size of partition map
+    t    change a partition's type
+    w    write the partition table</programlisting>
+    </listitem>
+    <listitem>
+      <para>
+	Double-check you're on the right disk.  If it's already got an
+	Apple Partition Map, everything should be OK.  
+      </para>
+
+<programlisting>  Command (? for help): <emphasis role="bold">P</emphasis>
+
+  Partition map (with 512 byte blocks) on '/dev/disk0'
+   #:                type name             length   base    ( size )
+   1: Apple_partition_map Apple                63 @ 1      
+   2:      Apple_Driver43*Macintosh            56 @ 64     
+   3:      Apple_Driver43*Macintosh            56 @ 120    
+   4:    Apple_Driver_ATA*Macintosh            56 @ 176    
+   5:    Apple_Driver_ATA*Macintosh            56 @ 232    
+   6:      Apple_FWDriver Macintosh           512 @ 288    
+   7:  Apple_Driver_IOKit Macintosh           512 @ 800    
+   8:       Apple_Patches Patch Partition     512 @ 1312   
+   9:          Apple_Free                     192 @ 1824   
+  10:           Apple_UFS shared          1700000 @ 2016    (830.1M)
+  11:           Apple_HFS macos            408788 @ 1702016 (199.6M)
+  12:          Apple_Free                       8 @ 2110804
+
+  Device block size=512, Number of Blocks=2110812 (1.0G)
+  DeviceType=0x0, DeviceId=0x0
+  Drivers-
+  1:  23 @ 64, type=0x1
+  2:  36 @ 120, type=0xffff
+  3:  21 @ 176, type=0x701
+  4:  34 @ 232, type=0xf8ff</programlisting>
+
+      <para>
+	If the disk does not have an APM, it'll give you some errors and you'll
+	need to initialize the APM before creating new partitions. 
+      </para>
+
+<screen>  Command (? for help): <emphasis role="bold">P</emphasis>
+  No partition map exists
+  Command (? for help): <emphasis role="bold">i</emphasis>
+  read failed
+  Command (? for help): <emphasis role="bold">P</emphasis>
+
+  Partition map (with 512 byte blocks) on '/dev/rdisk2'
+   #:                type name    length   base    ( size )
+   1: Apple_partition_map Apple       63 @ 1      
+   2:          Apple_Free Extra  2110749 @ 64      (1.0G)
+
+  Device block size=512, Number of Blocks=2110812 (1.0G)
+  DeviceType=0x0, DeviceId=0x0</screen>
+    </listitem>
+    <listitem>
+      <para>
+	Delete unused partitions and create your partitions.  There's no 
+	need to delete the <code>Apple_Free</code> partitions, those automatically 
+	take up any unassigned space.
+      </para>
+
+      <para>
+	Use the <code>P</code> command to list the partitions to make sure you 
+	delete the right one(s).
+      </para>
+<screen>  Command (? for help): <emphasis role="bold">d</emphasis>
+  Partition number: <emphasis role="bold">9</emphasis></screen>
+
+      <para>
+	Useful partition types you might want to create are:
+      </para>
+      
+      <informaltable>
+	<tgroup cols="2">
+	  <tbody>
+	    <row><entry><code>Apple_HFS</code></entry>
+	    <entry>HFS and HFS+ partitions (also <ulink url="#msdos">shared 
+	    MS-DOS</ulink>)</entry></row>
+	    <row><entry><code>Apple_UFS</code></entry>
+	    <entry>UFS partitions</entry></row>
+	    <row><entry><code>Apple_UNIX_SVR2</code></entry>
+	    <entry>A/UX-style partition for NetBSD and Linux</entry></row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+
+<screen>  Command (? for help): <emphasis role="bold">C</emphasis>
+  First block: <emphasis role="bold">2p</emphasis>
+  Length in blocks: <emphasis role="bold">100m</emphasis>
+  Name of partition: <emphasis role="bold">Zathras</emphasis>
+  Type of partition: <emphasis role="bold">Apple_HFS</emphasis>
+  Command (? for help): <emphasis role="bold">C</emphasis>
+  First block: <emphasis role="bold">3p</emphasis>
+  Length in blocks: <emphasis role="bold">800m</emphasis>
+  Name of partition: <emphasis role="bold">netbsd</emphasis>
+  Type of partition: <emphasis role="bold">Apple_UNIX_SVR2</emphasis>
+  Available partition slices for Apple_UNIX_SVR2:
+    a   root partition
+    b   swap partition
+    c   do not set any bzb bits
+    g   user partition
+  Other lettered values will create user partitions
+  Select a slice for default bzb values: <emphasis role="bold">a</emphasis>
+  Command (? for help): <emphasis role="bold">C</emphasis>
+  First block: <emphasis role="bold">4p</emphasis>
+  Length in blocks: <emphasis role="bold">4p</emphasis>
+  Name of partition: <emphasis role="bold">swap</emphasis>
+  Type of partition: <emphasis role="bold">Apple_UNIX_SVR2</emphasis>
+  Available partition slices for Apple_UNIX_SVR2:
+    a   root partition
+    b   swap partition
+    c   do not set any bzb bits
+    g   user partition
+  Other lettered values will create user partitions
+  Select a slice for default bzb values: <emphasis role="bold">b</emphasis>
+  Command (? for help): <emphasis role="bold">P</emphasis>
+
+  Partition map (with 512 byte blocks) on '/dev/rdisk0'
+   #:                type name     length   base    ( size )
+   1: Apple_partition_map Apple        63 @ 1      
+   2:           Apple_HFS Zathras  204800 @ 64      (100.0M)
+   3:     Apple_UNIX_SVR2 netbsd  1638400 @ 204864  (900.0M) S0 RUFS k0  /
+   4:     Apple_UNIX_SVR2 swap     267548 @ 1843264 (130.6M) S1  SFS k0  (swap)
+
+  Device block size=512, Number of Blocks=2110812 (1.0G)
+  DeviceType=0x0, DeviceId=0x0</screen>
+    </listitem>
+    <listitem>
+      <para>
+	Write out the new partition map and quit.
+      </para>
+
+<screen>  Command (? for help): <emphasis role="bold">w</emphasis>
+  Writing the map destroys what was there before. Is that okay? [n/y]: <emphasis role="bold">y</emphasis>
+  Command (? for help): <emphasis role="bold">q</emphasis></screen>
+    </listitem>
+    <listitem>
+      <para>
+	Create new filesystems.
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    NetBSD can only create its own filesystem (FFS) for the root and user 
+	    partitions.  It can't directly create UFS, HFS, HFS+, or non-floppy sized 
+	    MS-DOS filesystems.  You can use <ulink
+	    url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
+	    hfstools</ulink> to create an HFS filesystem.
+	  </para>
+
+	  <screen># <emphasis role="bold">newfs /dev/sd2a</emphasis>
+# <emphasis role="bold">hformat /dev/sd2e</emphasis></screen>
+	</listitem>
+	
+	<listitem>
+	  <para>
+	    Mac OS 9 will ask to create HFS and HFS+ filesystems when you 
+	    reboot.  After the reboot, it will recognize the new partition map, 
+	    notice those partitions don't have filesystems and ask to create them.  
+	    See <ulink url="#msdos">Creating a shared MS-DOS filesystem</ulink> on how to 
+	    format a shared MS-DOS partition.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Mac OS X and Darwin can create UFS, HFS+, and HFS filesystems.  It
+	    can't create NetBSD FFS, or non-floppy sized MS-DOS filesystems using
+	    command-line utilities. You won't need an HFS (non-extended) partition
+	    unless you intend to use it with Mac OS 8.0 or earlier.
+	  </para>
+	  <screen># <emphasis role="bold">newfs_hfs /dev/disk2s2</emphasis></screen>
+	  <para>
+	    (for HFS+)
+	  </para>
+	  <screen># <emphasis role="bold">newfs /dev/disk2s5</emphasis></screen>
+	  <para>
+	    (for UFS)
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Linux can only create its own filesystem (ext2fs) for the root, swap 
+	    and user partitions and MS-DOS filesystems.  It can't directly create UFS, 
+	    HFS, or HFS+.  You can use <ulink
+	    url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
+	    hfstools</ulink> to create an HFS filesystem.
+	  </para>
+<screen># <emphasis role="bold">mkfs -t ext2 /dev/hdc2</emphasis>
+# <emphasis role="bold">mkdosfs /dev/hdc3</emphasis>
+# <emphasis role="bold">hformat /dev/hdc5</emphasis></screen>
+	</listitem>
+      </itemizedlist>
+    </listitem>
+    <listitem>
+      <para>
+	Mount your new filesystems.
+      </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    NetBSD (use the same commands for FFS and UFS):
+	  </para>
+<screen># <emphasis role="bold">mount /dev/sd2a /mnt</emphasis>
+# <emphasis role="bold">hmount /dev/sd2e</emphasis></screen>
+          <para>
+	    (virtual mount)
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Mac OS X and Darwin:
+	  </para>
+<screen>  # <emphasis role="bold">/sbin/autodiskmount -v</emphasis>
+  ** /dev/rdisk2s2
+  FILESYSTEM CLEAN; SKIPPING CHECKS
+  ** /dev/rdisk2s5
+  QUICKCHECK ONLY; FILESYSTEM CLEAN
+  Mounted ufs /dev/disk0s5 on /Volumes/untitled
+  DiskDev    Type   FileSys  Fixed Write Volume Name      Mounted On      
+  disk2s2    ???    hfs      yes   yes   untitled         /Volumes/untitled
+  disk2s5    ???    ufs      yes   yes   untitled         /Volumes/untitled 1
+  disk0s10   ???    hfs      yes   yes   OSX              /</screen>
+	</listitem>
+	<listitem>
+	  <para>
+	    Linux:
+	  </para>
+	  <screen># <emphasis role="bold">mount -t ufs -o ufstype=44bsd,ro /dev/hdc1 /mnt/netbsd</emphasis></screen>
+	  <para>(BSD FFS)</para>
+<screen># <emphasis role="bold">mount -t ufs -o ufstype=openstep,ro /dev/hdc2 /mnt/macosx</emphasis></screen>
+<para>
+ (OSX UFS)
+</para>
+<screen># <emphasis role="bold">hmount /dev/hdc3</emphasis></screen><para>(virtual hfsutils mount)</para>
+<screen># <emphasis role="bold">mount -t hfs /dev/hdc3 /mnt/macos</emphasis></screen>
+<para>(experimental in-kernel HFS)</para>
+<screen># <emphasis role="bold">hpmount /dev/hdc4</emphasis></screen>
+<para>(virtual hfsplus utils mount)</para>
+<screen># <emphasis role="bold">mount -t hfsplus -o ro /dev/hdc4 /mnt/macosx</emphasis></screen>
+<para>(experimental in-kernel HFS+)</para>
+<screen># <emphasis role="bold">mount -t ext2 /dev/hdc5 /mnt/linux</emphasis></screen>
+<para>(linux ext2fs)</para>
+	</listitem>
+      </itemizedlist>
+    </listitem>
+    <listitem>
+      <para>
+	If you are using an Open Firmware 1.0.5 or 2.0.x model, you may
+	want to copy <code>netbsd.GENERIC_MD.gz</code> (the installer) to your FFS or
+	UFS partition.  Make sure that you have downloaded this file in
+	<code>binary</code> mode.  You'll still need to load <code>ofwboot.xcf</code> 
+	from another source to boot your machine, though.
+      </para>
+
+      <para>
+	If your model has Open Firmware 2.4 or 3, and you're going to make this
+	disk bootable for NetBSD, you will need to copy <code>ofwboot.xcf</code> (the
+	bootloader) to one of the HFS(+) partitions on your drive.  From NetBSD,
+	use the <code>hcopy</code> command.  Copy <code>netbsd.GENERIC_MD.gz</code> (the
+	installer) to your FFS or UFS partition (though it can also sit on an
+	HFS(+) partition).  Make sure that you have downloaded these files in
+	<code>binary</code> mode.
+      </para>
+
+      <para>
+	Remember, you'll need a -current kernel to use UFS as a root 
+	partition, and it may not be recognized by NetBSD as partition "a".
+      </para>
+    </listitem>
+  </orderedlist>
+</sect1>
+<sect1 id="msdos">
+  <title>Creating a shared MS-DOS filesystem</title>
+
+  <para>
+    You can create an MS-DOS format partition that works in all OSes such
+    that classic Mac OS will automatically mount it, and the unix-like OSes
+    (NetBSD, Linux, Darwin, and Mac OS X) can mount it using the
+    <code>mount_msdos</code> command.  The steps below outline the most
+    straightforward technique. 
+  </para>
+
+  <orderedlist>
+    <listitem>
+      <para>
+	Partition your hard drive with an HFS partition (type 
+	<code>Apple_HFS</code>) reserved for MS-DOS.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Next, boot Mac OS 8.1-9.x, grab a copy of 
+	<ulink url="http://hyperarchive.lcs.mit.edu/cgi-bin/NewSearch?key=disk+charmer&amp;search=&amp;sp=sp">
+	  Disk Charmer</ulink> or
+	  <ulink url="http://www.versiontracker.com/moreinfo.fcgi?id=1253">DiskCharmer</ulink>,
+	  and set it up to create an
+	  MS-DOS file system.  Your settings should look something like this:
+      </para>
+
+      <inlinemediaobject>
+	<imageobject>
+	  <imagedata fileref="../../images/ports/macppc/diskcharmer.gif"
+		     format="GIF" width="405" height="251" />
+	</imageobject>
+	<textobject><phrase>screenshot of DiskCharmer</phrase></textobject>
+      </inlinemediaobject>
+    
+    </listitem>
+    <listitem>
+      <para>
+	Drag the partition onto DiskCharmer's window and it will prompt you
+	before erasing it and creating an MS-DOS file system in place of the HFS 
+	file system you created in the first step.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	Now, when you boot Classic Mac OS, this partition will automatically 
+	mount using PC Exchange or File Exchange (depending on what it's called in your 
+	version of Mac OS).  
+      </para>
+
+      <para>When you boot into Mac OS X, Linux, or NetBSD, run the following command:</para>
+
+      <screen>mkdir -p /msdos.filesystem;/sbin/mount_msdos -m 777 /dev/disk0s11 /msdos.filesystem</screen>
+
+      <para>
+	where <code>/msdos.filesystem</code> is the mount point you'd like, and 
+	<code>/dev/disk0s11</code> is the device name for your partition.  Alternatively,
+	for NetBSD and Linux, you can add an entry to your <code>/etc/fstab</code>
+	to always mount this filesystem.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	To get Mac OS X and Darwin to automatically mount your MS-DOS file system,
+	you need to create a System Startup bundle.  The 
+	<ulink url="http://www.darwinfo.org/howto/SystemStarter_HOWTO.shtml">SystemStarter
+	HOWTO</ulink> is a good reference if you want to learn more about creating your
+	own startup bundles.  There's probably a way to do this using 
+	<code>autodiskmount</code>, but this technique works fine.  The only downside is
+	that the MS-DOS filesystem is unavailable to the Classic environment.
+	Here's an example of what to do:
+      </para>
+
+      <orderedlist>
+	<listitem>
+	  <screen># <emphasis role="bold">mkdir -p /Library/StartupItems/MountMSDOS</emphasis></screen>
+	</listitem>
+	<listitem>
+	  <para>
+	    Create 
+	    <code>/Library/StartupItems/MountMSDOS/StartupParameters.plist</code> with
+	    the following contents:
+	  </para>
+<programlisting>{
+  Description     = "Mount MSDOS partitions";
+  Provides        = ("Manual MSDOS partitions");
+  Requires        = ("Disks");
+  OrderPreference = "None";
+  Messages =
+  {
+    start = "Mounting MSDOS partitions";
+    stop  = "Unmounting MSDOS partitions";
+  };
+}</programlisting>
+	</listitem>
+	<listitem>
+	  <para>
+	    Create
+	    <code>/Library/StartupItems/MountMSDOS/MountMSDOS</code> with
+	    the following contents:
+	  </para>
+	  <programlisting>#!/bin/sh
+
+. /etc/rc.common
+
+##
+# Manually mount HFS partition with MS-DOS filesystem
+##
+
+ConsoleMessage "Mount MS-DOS partitions"
+
+##
+# Mount your filesystems manually.
+##
+mount_msdos /dev/disk0s11 /Volumes/Thingies</programlisting>
+	</listitem>
+	<listitem>
+  <screen># <emphasis role="bold">chown -R root /Library/StartupItems/MountMSDOS</emphasis>
+# <emphasis role="bold">chmod a+rx /Library/StartupItems/MountMSDOS/MountMSDOS</emphasis></screen>
+	</listitem>
+      </orderedlist>
+    </listitem>
+  </orderedlist>
+</sect1>
+
+<sect1 id="nomenclature">
+  <title>Partition nomenclature</title>
+
+  <para>
+    There are three partition identification schemes you'll run across
+    when using NetBSD/macppc.  Each identification scheme sorts the 
+    partitions differently, even though the partition's location on the disk 
+    doesn't change.  Some schemes hide certain partitions.
+  </para>
+
+  <orderedlist>
+    <listitem>
+      <para>
+	<emphasis role="bold">Actual order on the disk (0 thru max
+	partition number):</emphasis>
+      </para>
+      <para>
+	This is the scheme used by Open Firmware and the <code>/dev/diskXsY</code>
+	device files in Mac OS X and Darwin. The order of partitions is directly
+	related to the order you selected in Drive Setup, pdisk, or the NetBSD
+	partitioning tools. You can print out this list from any OS using <ulink
+	url="partitioning.html#pdisk">pdisk</ulink>.
+      </para>
+
+      <informaltable>
+	<tgroup cols="2">
+	  <tbody>
+	    <row><entry>0</entry>
+	    <entry>A special "partition" reserved for a primary bootloader.</entry></row>
+	    <row><entry>1</entry>
+	    <entry>The Apple Partition Map.</entry></row>
+	    <row><entry>2 thru ~8</entry>
+	    <entry>Reserved for Mac OS 9 drivers if the drive is formatted with a 
+	    Mac OS tool.  Otherwise, user created partitions.</entry></row>
+	    <row><entry>~9 thru ~15</entry>
+	    <entry>User created partitions, placed in order of their physical location on
+	    disk.</entry></row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </listitem>
+    <listitem>
+      <para>
+	<emphasis role="bold">Mac OS-visible partitions (by partition
+	name in Finder):</emphasis>
+      </para>
+      <para>
+	While you may have created a bunch of partitions in Drive Setup, only
+	those partitions visible to Mac OS will show up in the Finder.
+      </para>
+
+      <para>
+	The only partitions visible to Mac OS 9 and earlier are those formatted in
+	HFS, HFS+, or MS-DOS formats.  The only partitions visible to Mac OS X and later
+	are those formatted in HFS, HFS+, UFS, and MS-DOS (<emphasis>not</emphasis> NetBSD's 
+	4.2BSD FFS).
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+	<emphasis role="bold">NetBSD-visible partitions (letters a thru h, as seen by 
+	<code>disklabel</code>):</emphasis>
+      </para>
+      <para>
+	NetBSD reorders the partitions such that things work out better for 
+	itself.  The <code>fstype</code> reported by <code>&man.disklabel.8;</code> is set
+	by the Apple Partition Map flags, and does not depend on the actual
+	type of filesystem on that partition (be it NetBSD FFS, Apple HFS, or MS-DOS).
+	In particular, MS-DOS formatted partitions show up as <code>HFS</code> 
+	partitions, if created using the method in <ulink url="#msdos">
+	Creating a shared MS-DOS filesystem</ulink>.
+      </para>
+
+      <informaltable>
+	<tgroup cols="2">
+	  <tbody>
+	    <row><entry>a</entry>
+	    <entry>Your "A/UX Root" partition, regardless of its order on the disk</entry></row>
+	    <row><entry>b</entry>
+	    <entry>Your "A/UX Swap" partition, regardless of its order on the disk</entry></row>
+	    <row><entry>c</entry>
+	    <entry>This is the entire disk (first sector to last sector)</entry></row>
+	    <row><entry>d-f</entry>
+	    <entry>First few non-A/UX partitions (usually the user HFS(+) partitions)</entry></row>
+	    <row><entry>g</entry>
+	    <entry>Your "A/UX User" partition (if present), regardless of its order on the disk</entry></row>
+	    <row><entry>h</entry>
+	    <entry>Additional non-A/UX partitions (usually user HFS(+) partitions)</entry></row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </listitem>
+  </orderedlist>
+
+  <para>
+    So, for example the following is what Drive Setup created on my PowerBook 
+    (FireWire):
+  </para>
+
+  <informaltable>
+    <tgroup cols="6">
+      <tbody>
+	<row><entry><emphasis role="bold">Mac OS</emphasis></entry><entry><emphasis role="bold">OF/OSX</emphasis></entry><entry><emphasis role="bold">NetBSD</emphasis></entry> 
+	<entry><emphasis role="bold">Comment</emphasis></entry><entry><emphasis role="bold">Apple Partition Map type</emphasis></entry>
+	<entry><emphasis role="bold">disklabel fstype</emphasis></entry></row>
+
+	<row><entry></entry>        <entry>0</entry>  <entry></entry>    
+	<entry>bootloader</entry>               <entry></entry>
+	<entry></entry></row>
+
+	<row><entry></entry>        <entry>1</entry>  <entry></entry>    
+	<entry>Partition map</entry>             <entry>Apple_partition_map Apple</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry></entry>        <entry>2</entry>  <entry></entry>    
+	<entry>Mac OS driver</entry>             <entry>Apple_Driver43*Macintosh</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry></entry>        <entry>3</entry>  <entry></entry>    
+	<entry>Mac OS driver</entry>             <entry>Apple_Driver43*Macintosh</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry></entry>        <entry>4</entry>  <entry></entry>    
+	<entry>Mac OS driver</entry>             <entry>Apple_Driver_ATA*Macintosh</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry></entry>        <entry>5</entry>  <entry></entry>    
+	<entry>Mac OS driver</entry>             <entry>Apple_Driver_ATA*Macintosh</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry></entry>        <entry>6</entry>  <entry></entry>    
+	<entry>Mac OS driver</entry>             <entry>Apple_FWDriver Macintosh</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry></entry>        <entry>7</entry>  <entry></entry>    
+	<entry>Mac OS driver</entry>             <entry>Apple_Driver_IOKit Macintosh</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry></entry>        <entry>8</entry>  <entry></entry>    
+	<entry>Mac OS driver</entry>             <entry>Apple_Patches Patch Partition</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry>Untitled</entry>   <entry>9</entry>  <entry>d</entry>    
+	<entry>Mac OS 9 boot partition</entry>   <entry>Apple_HFS untitled</entry>
+	<entry>HFS</entry></row>
+
+	<row><entry>Untitled 2</entry> <entry>10</entry> <entry>e</entry>    
+	<entry>Mac OS X boot partition</entry>   <entry>Apple_HFS untitled 2</entry>
+	<entry>HFS</entry></row>
+
+	<row><entry>Untitled 3</entry> <entry>11</entry> <entry>f</entry>    
+	<entry>MS-DOS <ulink url="#msdos">shared partition</ulink></entry>  
+	<entry>Apple_HFS untitled 3</entry>
+	<entry>HFS</entry></row>
+
+	<row><entry></entry>        <entry>12</entry> <entry>a</entry>      
+	<entry>NetBSD boot partition</entry>    <entry>Apple_UNIX_SVR2 A/UX Root</entry>
+	<entry>4.2BSD</entry></row>
+
+	<row><entry></entry>        <entry>13</entry> <entry>b</entry>      
+	<entry>NetBSD swap</entry>              <entry>Apple_UNIX_SVR2 Swap</entry>
+	<entry>swap</entry></row>
+
+	<row><entry></entry>        <entry>14</entry> <entry>g</entry>      
+	<entry>unused disk space</entry>        <entry>Apple_Free Extra</entry>
+	<entry>unknown</entry></row>
+
+	<row><entry></entry>        <entry></entry> <entry>c</entry>      
+	<entry>NetBSD whole disk</entry>         <entry></entry>
+	<entry>unused</entry></row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+
+  <para>
+    After installation, one of the HFS partitions, "Untitled" (which is
+    partition 9 to Open Firmware, and partition d to NetBSD) has 
+    <code>ofwboot.xcf</code>, and one of the A/UX partitions (which is partition 12
+    to Open Firmware, and partition a to NetBSD) has my NetBSD kernel, so I use 
+    the following command to boot:
+  </para>
+
+  <screen>boot hd:9,ofwboot.xcf hd:12</screen>
+</sect1>
+<parentsec url="./" text="&os;/macppc Port Page"/>
+</webpage>
