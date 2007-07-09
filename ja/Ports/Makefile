@@ -1,10 +1,11 @@
-# $NetBSD: Makefile,v 1.24 2006/03/23 14:23:11 mishka Exp $
+# $NetBSD: Makefile,v 1.29 2007/04/08 10:14:30 jnemeth Exp $
 
 SUBDIR+=	acorn26
 SUBDIR+=	acorn32
 SUBDIR+=	algor
 SUBDIR+=	alpha
 SUBDIR+=	amd64
+SUBDIR+=	amiga
 SUBDIR+=	amigappc
 SUBDIR+=	arc
 SUBDIR+=	arm
@@ -19,6 +20,7 @@ SUBDIR+=	dreamcast
 SUBDIR+=	evbarm
 SUBDIR+=	evbmips
 SUBDIR+=	evbsh3
+SUBDIR+=	evbppc
 SUBDIR+=	ews4800mips
 SUBDIR+=	hp300
 SUBDIR+=	hp700
@@ -29,6 +31,7 @@ SUBDIR+=	i386
 SUBDIR+=	ia64
 SUBDIR+=	ibmnws
 SUBDIR+=	iyonix
+SUBDIR+=	landisk
 SUBDIR+=	luna68k
 SUBDIR+=	mac68k
 SUBDIR+=	macppc
@@ -47,7 +50,6 @@ SUBDIR+=	prep
 SUBDIR+=	s390
 SUBDIR+=	sgimips
 SUBDIR+=	sh3
-SUBDIR+=	sh5
 SUBDIR+=	shark
 SUBDIR+=	sparc
 SUBDIR+=	sparc64
@@ -56,6 +58,7 @@ SUBDIR+=	sun3
 SUBDIR+=	vax
 SUBDIR+=	x68k
 SUBDIR+=	xen
+SUBDIR+=	zaurus
 
 XMLDOCS+=	index emulators
 

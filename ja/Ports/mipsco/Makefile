@@ -1,6 +1,9 @@
-#	$NetBSD: Makefile,v 1.8 2007/04/06 23:49:47 hubertf Exp $
+#	$NetBSD: Makefile,v 1.11 2007/05/26 11:12:52 dsieger Exp $
 
+XMLDOCS+=	index
 XMLDOCS+=	faq
+XMLDOCS+=	history
+XMLDOCS+=	install
 XMLDOCS+=	models
 
 .include "../../share/mk/web.site.mk"
