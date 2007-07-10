@@ -1,11 +1,12 @@
-#	$NetBSD: Makefile,v 1.19 2007/04/03 18:40:51 daniel Exp $
+#	$NetBSD: Makefile,v 1.24 2007/04/07 22:38:52 hubertf Exp $
 
 SUBDIR+=	profiling
 SUBDIR+=	pseudo
 
-LISTDOCS=	scsidma.list
-
 XMLDOCS+=	index kgdb non-exec ddwg porting_netbsd_arm_soc programming
-XMLDOCS+=	lazyfpu uvm
+XMLDOCS+=	lazyfpu uvm scsidma vfork
+XMLDOCS+=	converting-ethernet-drivers
+XMLDOCS+=	porting-freebsd-net
+XMLDOCS+=	elf-notes
 
 .include "../../share/mk/web.site.mk"

@@ -1,16 +1,26 @@
-#	$NetBSD: Makefile,v 1.28 2005/10/14 08:59:55 rillig Exp $
+#	$NetBSD: Makefile,v 1.31 2007/04/11 08:26:29 jnemeth Exp $
 
 SUBDIR+=	Hardware
+SUBDIR+=	bsd
+SUBDIR+=	cross
 SUBDIR+=	current
+SUBDIR+=	internals
 SUBDIR+=	kernel
 SUBDIR+=	misc
 SUBDIR+=	network
-#SUBDIR+=	pkgsrc
+SUBDIR+=	pkgsrc
 SUBDIR+=	power-mgmt
+SUBDIR+=	research
 SUBDIR+=	software
-SUBDIR+=	wscons
 SUBDIR+=	x
 
-XMLDOCS+=	books compat bootcd index updating elf vmware mirror
+XMLDOCS+=	books
+XMLDOCS+=	bootcd
+XMLDOCS+=	compat
+XMLDOCS+=	elf
+XMLDOCS+=	index
+XMLDOCS+=	mirror
+XMLDOCS+=	updating
+XMLDOCS+=	vmware
 
 .include "../share/mk/web.site.mk"

@@ -1,5 +1,10 @@
-# $NetBSD: Makefile,v 1.4 2005/10/14 08:59:55 rillig Exp $
+# $NetBSD: Makefile,v 1.6 2006/07/30 14:05:48 rillig Exp $
 
-SUBDIR+=	Machines Misc
+SUBDIR+=	Busses
+SUBDIR+=	Chips
+SUBDIR+=	Machines
+SUBDIR+=	Misc
+
+XMLDOCS+=	index
 
 .include "../../share/mk/web.site.mk"
