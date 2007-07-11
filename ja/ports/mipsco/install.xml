@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-mipsco-install">
+<config param="desc" value="&os;/mipsco installation notes"/>
+<config param="cvstag" value="$NetBSD: install.xml,v 1.1 2007/06/09 13:32:43 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 13:32:43 $"/>
+<head>
+
+<!-- Copyright (c) 1994-2007
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD/mipsco: Installation Notes</title>
+</head>
+
+
+<sect1 id="preface">
+  <para>
+    <emphasis>This document is still in the early stages of construction, and will
+    eventually be replaced once a INSTALL manpage has been written</emphasis>
+  </para>
+</sect1>
+
+<sect1 id="supported_hardware">
+  <title>Supported Hardware</title>
+
+  <para>
+    The following devices are currently supported on the Mips Magnum 3000 workstation
+  </para>
+
+  <itemizedlist>
+    <listitem>Onboard NCR 53c94 SCSI Controller</listitem>
+    <listitem>Onboard AM7990 Lance Ethernet controller</listitem>
+    <listitem>Onboard Z8530 Serial Ports 0 and 1</listitem>
+  </itemizedlist>
+
+  <para>
+    The following devices are not currently supported:
+  </para>
+
+  <itemizedlist>
+    <listitem>ISA Expansion Bus</listitem>
+    <listitem>Intel 82072 Floppy Disk controller</listitem>
+    <listitem>Framebuffer (both mono and colour)</listitem>
+    <listitem>PS/2 Keyboard Controller</listitem>
+  </itemizedlist>
+</sect1>
+
+<sect1 id="getting_started">
+  <title>Getting Started</title>
+
+  <para>
+    Currently you can only bootstrap the NetBSD kernel from a RISC/os
+    disk partition or across the network using bootp.
+  </para>
+
+  <para>
+    The NetBSD partition has to be created on another big-endian machine
+    such as NetBSD/sparc or NetBSD/newsmips
+  </para>
+
+  <para>
+    Work is underway to simplify the installation procedure with a miniroot
+    filesystem and a pre-built snapshot that will allow you to partition your
+    disks and install NetBSD directly.
+  </para>
+
+  <para>
+    Firstly obtain a copy of the most recent kernel from <ulink
+    url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/mipsco/snapshot/">ftp.NetBSD.org/pub/NetBSD/arch/mipsco/snapshot/</ulink>
+  </para>
+</sect1>
+
+<sect1 id="boot_from_riscos">
+  <title>Booting From a RISC/os disk partition</title>
+
+  <para>
+    If you have a running version of RISC/os installed on your machine it
+    is by far the easiest method to boot the kernel.
+  </para>
+
+  <para>
+    You can simply copy across the netbsd kernel file into / of the RISC/os
+    operating system, shutdown and boot the new kernel using:
+  </para>
+
+  <screen><code>boot dksd(,,0)/netbsd</code></screen>
+
+  <para>
+    This procedure will initially load the stand alone shell (SASH) from
+    dksd(,,8)sash then load the NetBSD kernel.
+  </para>
+</sect1>
+<sect1 id="netboot">
+  <title>Network boot using bootp and tftp</title>
+
+  <para>
+    The Mips PROM firmware has a number of restrictions with its bootp
+    protocol:
+  </para>
+
+  <itemizedlist>
+    <listitem>
+      The machines IP address is not determined using bootp - it must be setup
+      in 'netaddr' in the prom environment
+    </listitem>
+    <listitem>
+      The broadcast address used is strict a Class A B or C netmask based on
+      the netaddr setting
+    </listitem>
+    <listitem>
+      The broadcast address used is the all-zero's variant of the broadcast
+      address. Some OS's don't accept this address by default and you must specify
+      it in the ifconfig args.
+    </listitem>
+  </itemizedlist>
+
+  <para>
+    With above restrictions in mind please refer to the <ulink
+    url="../../Documentation/network/netboot/">Diskless
+    NetBSD HOW-TO</ulink>&nbsp; for details on setting up a bootp and
+    tftp daemon.
+  </para>
+
+  <para>
+    The easiest way of determining the Ethernet MAC address is to snoop
+    the network using <command>tcpdump -e</command>.
+  </para>
+
+  <para>
+    Once you have a server setup with bootpd and tftpd running you can boot
+    the kernel from the firmware using the following commands in
+    <emphasis role="bold">bold</emphasis>
+  </para>
+
+<screen>
+Rx3230 MIPS Monitor: Version 5.43 OPT Mon May 13 17:31:12
+PDT 1991 root
+Memory size: 33554432 (0x2000000) bytes, 32 MB
+Icache size: 32768 (0x8000) bytes
+Dcache size: 32768 (0x8000) bytes
+&gt;&gt; <emphasis role="bold">setenv bootfile bootp()netbsd</emphasis>
+&gt;&gt; <emphasis role="bold">setenv netaddr&nbsp; 192.168.58.46</emphasis>
+&gt;&gt; <emphasis role="bold">boot</emphasis>
+Obtaining netbsd from server netbsd-alpha.lab.niwa.cri.nz
+1026032+501367+124032 entry: 0x80021000
+Copyright (c) 1996, 1997, 1998, 1999, 2000
+&nbsp;&nbsp;&nbsp; The NetBSD Foundation, Inc.&nbsp; All rights
+reserved.
+Copyright (c) 1982, 1986, 1989, 1991, 1993
+&nbsp;&nbsp;&nbsp; The Regents of the University of California.&nbsp;
+All rights reserved.</screen>
+</sect1>
+
+<sect1 id="fs_setup">
+  <title>Setting up a NetBSD Filesystem</title>
+
+  <para>
+    One you have successfully booted the NetBSD/mipsco kernel you will need to
+    setup a filesystem with the rest of the distribution.
+  </para>
+
+  <orderedlist>
+    <listitem>
+      On a Big Endian NetBSD machine, label a disk and create a suitable
+      filesystem. The reason why you currently need a big endian machine is the
+      disklabel values are stored in host byte order. This needs to be the same byte
+      order as the MIPS R3000 native format. This procedure is known to work
+      from NetBSD/sparc which places a disklabel at offset 0x80 on the first
+      disk sector.
+    </listitem>
+    <listitem>
+      Download and untar the NetBSD distribution files onto the root of
+      the new filesystem. You can download a binary snapshot from the NetBSD/mipsco 
+      <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/mipsco/snapshot/">snapshot area
+      of the ftp server</ulink>.
+    </listitem>
+    <listitem>
+      Change into <filename>&lt;rootdir&gt;/dev</filename> and run <command>./MAKEDEV
+      all</command> to create the default device nodes.
+    </listitem>
+    <listitem>
+      Change into <filename>&lt;rootdir&gt;/etc</filename> and
+      configure <filename>rc.conf</filename> and other startup
+      files by hand.
+    </listitem>
+    <listitem>
+      Unmount the disk and connect the drive to the Mips machine
+    </listitem>
+    <listitem>
+      Boot the kernel using bootp or off the RISC/os disk partition. When
+      prompted for the root device answer with the device name for the root filesystem
+      disk you just created.
+    </listitem>
+  </orderedlist>
+</sect1>
+<parentsec url="./" text="&os;/mipsco Port Page"/>
+</webpage>

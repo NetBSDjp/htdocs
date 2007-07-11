@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-mipsco-faq">
+<config param="desc" value="NetBSD/mipsco Frequently Asked Questions"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.1 2007/06/09 13:32:42 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 13:32:42 $"/>
+<head>
+
+<!-- Copyright (c) 1994-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>&os;/mipsco: Frequently Asked Questions</title>
+</head>
+
+
+<sect1 role="toc">
+<title>&os;/mipsco Frequently Asked Questions</title>
+
+<sect2>
+<title>General Questions</title>
+
+<sect3 id="dead-nvram">
+<title>NVRAM Setup procedure</title>
+<para>
+If you are having problems with bootp and see your ethernet address
+is 00:00:00:00:00:00 then the most likely cause is your NVRAM
+has reached the end of it's battery life.</para>
+<para>
+The only way to solve the problem is to replace the MK48T02 NVRAM chip
+which is located near <code>U-C8H1</code> on the main board.  You will have
+to remove the Power Supply and look for a chip of non-standard height.
+</para>
+<para>
+Unfortunately the MIPS designer engineers decided to make the first 1k
+of the NVRAM read only.  The only way you can reprogram your Ethernet
+MAC address is to use another machine.  The important values are at the
+start of memory and should be setup as follows:
+</para>
+
+<table id="nvram_values">
+<tgroup cols="2">
+
+<thead>
+<row><entry>Address</entry><entry>Contents</entry></row>
+</thead>
+
+<tbody>
+<row><entry>0x0</entry><entry>MSB of MAC&nbsp;address</entry></row>
+<row><entry>0x1</entry><entry>..</entry></row>
+<row><entry>0x2</entry><entry>..</entry></row>
+<row><entry>0x3</entry><entry>..</entry></row>
+<row><entry>0x4</entry><entry>..</entry></row>
+<row><entry>0x5</entry><entry>LSB of MAC address</entry></row>
+<row><entry>0x6</entry><entry>Machine type (0x0a = Mips Magnum 3000)</entry></row>
+<row><entry>0x7</entry><entry>???</entry></row>
+<row><entry>0x8</entry><entry>???</entry></row>
+<row><entry>0x9</entry><entry>ASCII Serial Number - 1st digit</entry></row>
+<row><entry>0xa</entry><entry>ASCII Serial Number</entry></row>
+<row><entry>0xb</entry><entry>ASCII Serial Number</entry></row>
+<row><entry>0xc</entry><entry>ASCII Serial Number - last
+digit</entry></row>
+</tbody>
+
+</tgroup>
+</table>
+
+<para>
+Additional information about the MK48T02 NVRAM chip can be found in the
+<ulink url="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">
+Sun NVRAM/Hostid FAQ</ulink>.
+</para>
+
+<para>
+The procedure for using a Sun IPX, SS1 or SS2 for reprogramming the NVRAM
+is as follows:
+</para>
+
+<orderedlist>
+<listitem><para>Remove NVRAM from Mips machine and install into Sun Workstation</para></listitem>
+<listitem><para>Boot Sun Workstation and break into firmware monitor</para></listitem>
+<listitem><para>Enter new command mode by entering n</para></listitem>
+<listitem><para>Read the machine serial number which should look like 00ABCD-9111
+     where ABCD is a 4 digit serial number.</para></listitem>
+<listitem><para>Type the following commands in sequence:</para>
+<programlisting>
+    02000000 obio 0 map-page
+    0 7f8 ff fill
+    0 0 c!
+    0 1 c!
+    6b 2 c!
+    AB 3 c!        <emphasis>(AB is first 2 digits of serial number)</emphasis>
+    52 4 c!
+    CD 5 c!        <emphasis>(CD is last 2 digits of serial number)</emphasis>
+    0a 6 c!
+    10 7 c!
+    44 8 c!
+    3A 9 c!        <emphasis>(3 followed by first serial number digit)</emphasis>
+    3B a c!        <emphasis>(3 followed by second serial number digit)</emphasis>
+    3C b c!        <emphasis>(3 followed by third serial number digit)</emphasis>
+    3D c c!        <emphasis>(3 followed by last serial number digit)</emphasis>
+</programlisting>
+</listitem>
+<listitem><para>While at the monitor prompt immediately power down the machine
+ (don't attempt to reboot otherwise the NVRAM will be reinitialized).
+ Transplant the MK48T02 chip into your Mips machine.</para></listitem>
+
+<listitem><para>With a newly initialized NVRAM chip you will hear a beep at powerup
+ and see the startup diagnostics when you connect a terminal to serial 1
+ at 9600 baud.</para>
+ <para>
+ You will probably witness a NVRAM checksum error - at this stage we
+ are unable to locate enough information about the NVRAM format and checksum
+ procedure to correct this.  For now the machine will be usable on the
+ network even with a checksum failure.</para></listitem>
+</orderedlist>
+
+</sect3>
+</sect2>
+</sect1>
+
+<parentsec url="./" text="NetBSD/mipsco ports page"/>
+
+</webpage>

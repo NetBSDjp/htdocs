@@ -1,0 +1,258 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-prep-faq">
+<config param="desc" value="NetBSD/prep Frequently Asked Questions"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.1 2007/06/09 13:33:01 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 13:33:01 $"/>
+<head>
+
+<!-- Copyright (c) 2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD/prep Frequently Asked Questions</title>
+</head>
+
+<sect1 role="toc">
+
+    <sect2 id="partitioning">
+      <title>Disk partitioning/booting</title>
+
+      <sect3 id="what-is-prep">
+	<title>What is PReP?</title>
+	<para>
+	  PReP (sometimes called PRP) is the PowerPC Reference Platform. It was
+	  a joint specification between IBM, Motorola, and a few other
+	  manufacturers defining how PowerPC machines should be designed.  It
+	  was more or less a failure in the marketplace, and very few actual
+	  PReP machines were ever built.  Mostly by IBM and Motorola.
+	</para>
+      </sect3>
+
+      <sect3 id="what-machines">
+	<title>Which machines are PReP?</title>
+	<para>
+	  Generally, early IBM RS/6000 machines with ISA/PCI that do NOT have
+	  OpenFirmware on them are PReP machines.  These include the 6015,
+	  6050, 6070, 7020, 7248, 7249, 7043-140, 7043-240, 7024, 7025-F30,
+	  7025-F40 and the 7026-H10.
+	</para>
+	<para>
+	  Motorola machines are much more difficult to identify.  The MTX
+	  series of boards are all generally PReP compliant.  Most, but not
+	  all PowerPC MVME machines are PReP compliant.  Generally to be PReP
+	  compliant the machine needs a relatively modern version of PPCBUG.
+	  Anything with OpenFirmWorks or DINK is not PReP.
+	</para>
+	<para>
+	  ANY IBM machine with MCA, or a 64 bit CPU is *NOT* PReP compliant.
+	  A 64bit machine is CHRP, and would be covered by port-ofppc. An MCA
+	  machine is pre-PReP, and would be covered by port-rs6000 if that
+	  port ever exists.  Any other machine with Open Firmware is CHRP.
+	</para>
+      </sect3>
+
+      <sect3 id="how-to-boot-ibm">
+	<title>How do you boot one of these machines? (IBM)</title>
+	<para>
+	  When an IBM machine first powers up, you will see it testing
+	  the keyboard, mouse, SCSI, etc.  At the point where the
+	  keyboard icon or text is displayed, you can hit the "magic
+	  character".  This differs depending on what model you have,
+	  but is usually 1, 5, 6 or similar.  Note that if you are
+	  using a physical console instead of serial, it would be F6
+	  instead of 6.  There is a specific time when this keystroke
+	  must but hit, and it can only be entered once.  If you miss
+	  it, power off and try again.
+	</para>
+	<para>
+	  This will generally bring you to an SMS menu of some sort.
+	  From here you can set things like the boot order, IP address
+	  for netbooting, etc.  To install NetBSD, it is suggested
+	  that you set the machine to netboot.  You can also install
+	  via floppy, but it is much more difficult.  Once the machine
+	  has been installed, you can return to the SMS menu to set
+	  the default boot device to the hard drive.
+	</para>
+      </sect3>
+
+      <sect3 id="how-to-boot-motorola">
+	<title>How do you boot one of these machines?
+	  (Motorola)</title>
+	<para>
+	  To netboot a Motorola machine, issue the "nbo" command from
+	  the PPCBUG prompt.
+	</para>
+	<para>
+	  There are also some values which need to be set on the machine
+	  before it can be used for PReP.  These are set using the "niot"
+	  command at the PPCBUG prompt.  Note that the most important settings
+	  are the boot file load and execution addresses, as well as the
+	  boot filename setting.
+	  <programlisting>
+PPC1-Bug>niot
+Controller LUN =00?
+Device LUN     =00?
+Node Control Memory Address =01F9E000?
+Client IP Address      =xxx.xxx.xxx.xxx?
+Server IP Address      =xxx.xxx.xxx.yyy?
+Subnet IP Address Mask =255.255.255.0?
+Broadcast IP Address   =255.255.255.255?
+Gateway IP Address     =0.0.0.0?
+Boot File Name ("NULL" for None)     =netbsd?
+Argument File Name ("NULL" for None) =?
+Boot File Load Address         =00800000?
+Boot File Execution Address    =00800000?
+Boot File Execution Delay      =00000000?
+Boot File Length               =00000000?
+Boot File Byte Offset          =00000000?
+BOOTP/RARP Request Retry       =00?
+TFTP/ARP Request Retry         =00?
+Trace Character Buffer Address =00000000?
+BOOTP/RARP Request Control: Always/When-Needed (A/W)=W?
+BOOTP/RARP Reply Update Control: Yes/No (Y/N)       =Y?
+PPC1-Bug>
+	</programlisting>
+	The "env" command will allow you to set some other required values.
+	Note specifically the Network PReP-Boot Mode setting, which must
+	be enabled.
+	<programlisting>
+PPC1-Bug>env
+Bug or System environment [B/S] = B?
+Field Service Menu Enable [Y/N] = N?
+Probe System for Supported I/O Controllers [Y/N] = Y?
+Auto-Initialize of NVRAM Header Enable [Y/N] = Y?
+Network PReP-Boot Mode Enable [Y/N] = Y?
+SCSI Bus Reset on Debugger Startup [Y/N]   = N?
+Primary SCSI Bus Negotiations Type [A/S/N] = A?
+Primary SCSI Data Bus Width [W/N]          = N?
+Secondary SCSI Identifier                  = "07"?
+NVRAM Boot List (GEV.fw-boot-path) Boot Enable [Y/N]           = N?
+NVRAM Boot List (GEV.fw-boot-path) Boot at power-up only [Y/N] = N?
+NVRAM Boot List (GEV.fw-boot-path) Boot Abort Delay            = 5?
+Auto Boot Enable [Y/N]           = N?
+Auto Boot at power-up only [Y/N] = N?
+Auto Boot Scan Enable [Y/N]      = Y?
+Auto Boot Scan Device Type List  = FDISK/CDROM/TAPE/HDISK/?
+Auto Boot Controller LUN   = 00?
+Auto Boot Device LUN       = 00?
+Auto Boot Partition Number = 00?
+Auto Boot Abort Delay      = 7?
+Auto Boot Default String [NULL for an empty string] = ?
+ROM Boot Enable [Y/N]            = N?
+ROM Boot at power-up only [Y/N]  = Y?
+ROM Boot Abort Delay             = 5?
+ROM Boot Direct Starting Address = FFF00000?
+ROM Boot Direct Ending Address   = FFFFFFFC?
+Network Auto Boot Enable [Y/N]           = N?
+Network Auto Boot at power-up only [Y/N] = N?
+Network Auto Boot Controller LUN = 00?
+Network Auto Boot Device LUN     = 00?
+Network Auto Boot Abort Delay    = 5?
+Network Auto Boot Configuration Parameters Offset (NVRAM) = 00001000?
+Watchdog prior status ignored at autoboot [Y/N] = N?
+Watchdog reset at board reset             [Y/N] = N?
+Memory Size Enable [Y/N]         = Y?
+Memory Size Starting Address     = 00000000?
+Memory Size Ending Address       = 02000000?
+DRAM Speed in NANO Seconds (0=AUTO) = 60?
+ROM First Access Length (0 - 31) = 10?
+ROM Next Access Length  (0 - 15) = 0?
+DRAM Parity Enable [On-Detection/Always/Never - O/A/N]    = O?
+L2Cache Parity Enable [On-Detection/Always/Never - O/A/N] = O?
+PCI Interrupts Route Control Registers (PIRQ0/1/2/3) = 0A050000?
+Serial Startup Code Master Enable [Y/N] = N?
+Serial Startup Code LF Enable [Y/N] =     N?
+Claim domain A [Y/N] = N?
+Claim domain B [Y/N] = N?
+Firmware Command Buffer Enable [Y/N] = N?
+Firmware Command Buffer Delay  = 5?
+Firmware Command Buffer :
+['NULL' terminates entry]?
+PPC1-Bug>
+	</programlisting>
+	</para>
+      </sect3>
+
+      <sect3 id="how-to-update-kernel">
+	<title>How do I update my kernel?</title>
+	<para>
+	  The boot method for NetBSD/prep is slightly different than
+	  it is for other NetBSD ports because of limitations of the
+	  firmware in a PReP machine.  A PReP machine boots off a
+	  specific MS-DOS partition type (83) found on the hard
+	  drive.  If you have installed via sysinst (any version after
+	  about 3.99.14), sysinst will have automatically created an
+	  "e" partition on your disk, and labeled it type "boot".
+	  This partition contains your boot image.
+	</para>
+	<para>
+	  You can replace this image by running the mkbootimage
+	  command.  See example below:
+	  <programlisting>
+/usr/mdec/mkbootimage -s -k /netbsd -b /usr/mdec/boot_com0 /bi
+dd if=/bi of=/dev/rsd0e bs=512 conv=sync
+	  </programlisting>
+	  The above commands will create a bootimage file called
+	  "/bi", which consists of the kernel "/netbsd" and the serial
+	  bootloader.  The dd command will write it to your boot partition.
+	</para>
+      </sect3>
+
+      <sect3 id="how-to-raidframe">
+	<title>How do I boot off a RAID1 RaidFrame mirror?</title>
+	<para>
+	  Technically you cannot mirror the rootdisk on a PReP
+	  machine.  However, you can effectively mirror it quite
+	  easily.  When building your machine, create partition e
+	  (your boot partition) normally, and assign partition a to a
+	  type RAID.  Build the second disk the same way, configure
+	  RaidFrame, and set the raid0 to autoconfigure.  When you
+	  update your kernel, or rewrite the boot image, just make
+	  sure to update *both* disks boot images.  The only thing
+	  that will not be automatically mirrored via this will be
+	  your boot image.  Once you set the raid to autoconfigure,
+	  NetBSD will automatically detect the root on raid and boot
+	  off the raid normally.
+	</para>
+      </sect3>
+      
+      <sect3 id="what-about-x">
+	<title>Is X Windows Supported?</title>
+	<para>
+	  No.  It should be easy to fix support, for someone who is
+	  inclined to do so.  However, I am not overly interested in
+	  running X on these machines, so I will likely not fix it
+	  myself.  I strongly advise the use of the serial console for
+	  access to these machines.
+	</para>
+      </sect3>
+
+      <sect3 id="netboot-broke">
+	<title>Netboot seems to not work</title>
+	<para>
+	  In order to netboot an IBM machine, you need a genuine IBM
+	  network card that the machine recognizes.  If the card is
+	  not listed as a possible boot device in the SRM, it will not
+	  be a bootable device.  As for Motorola, the list is much shorter.
+	</para>
+      </sect3>
+
+  </sect2>
+</sect1>
+
+  <sect2 id="other">
+    <title>Other sources of information</title>
+
+    <itemizedlist>
+      <listitem><ulink url="http://penguinppc.org/otherhw/">Linux on
+	  PowerPC</ulink> - Various PReP related links.</listitem>
+      <listitem><ulink
+	  url="http://publib.boulder.ibm.com/infocenter/pseries/v5r3/index.jsp?topic=/com.ibm.pseries.doc/hardware_docs/rs6000_704343pseries.htm">IBM 7043 Documentation</ulink>- Official IBM manuals for the 7043 (and others)</listitem>
+
+    </itemizedlist>
+
+  </sect2>
+</webpage>

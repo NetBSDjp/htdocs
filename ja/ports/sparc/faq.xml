@@ -1,0 +1,1045 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+    "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-sparc-faq">
+<config param="desc" value="NetBSD/sparc Frequently Asked Questions"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.1 2007/06/09 13:33:07 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 13:33:07 $"/>
+<head>
+<!-- Copyright (c) 2005
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<title>NetBSD/sparc Frequently Asked Questions</title>
+</head>
+
+<sect1 role="toc">
+
+<sect2 id="general">
+<title>General Questions</title>
+
+<sect3 id="mpg123-nosupportedrate">
+<title>I'm getting a <code><emphasis role="bold">No supported rate found!</emphasis></code> error from mpg123</title>
+<para>
+If you've gotten this error you'll have to pass arguments to mpg123 for your
+number of channels and rate of stream.  Older systems (such as the sun4c 
+machines and the SPARC Classic) only support an 8 bit 8 kHz mono sampling
+rate.  For these systems, you would specify:
+</para>
+
+<programlisting>
+mpg123 -m -r 8000 <filename>filename</filename>
+</programlisting>
+
+<para>
+
+The -m option is for mixing both channels for mono output, and the -r specifies
+the rate that the audio card supports. 
+
+</para>
+</sect3>
+
+<sect3 id="serial-console-garbage">
+<title>Serial console displays garbage</title>
+<para>
+Typically this is because the default terminal type for console is <code>sun</code>
+and most serial terminals are <code>vt100</code> (or similar), and they
+use different escape codes.  The temporary fix is to change your terminal type:
+<programlisting># <emphasis role="bold">setenv TERM vt100</emphasis></programlisting>
+
+The permanent solution is to edit <code>/etc/ttys</code> and change
+the <code>console</code> line to read:
+<programlisting>console "/usr/libexec/getty suncons"    vt100 on secure</programlisting>
+Then you need to <code>kill -HUP 1</code> or reboot.
+
+</para>
+</sect3>
+
+<sect3 id="consoleopt">
+<title>How do I change console options such as colour or font size?</title>
+<para>
+You have to recompile a kernel for this. For example, for a white on black
+console, add the following to your kernel config file: 
+<programlisting> 
+options         RASTERCONSOLE_FGCOL=WSCOL_WHITE 
+options         RASTERCONSOLE_BGCOL=WSCOL_BLACK
+</programlisting>
+</para>
+<para>
+For a smaller font, add the following:
+<programlisting>
+options         FONT_BOLD8x16
+</programlisting>
+</para>
+<para>
+Another useful option is
+<programlisting>
+options         RASTERCONS_FULLSCREEN
+</programlisting>
+
+</para>
+</sect3>
+
+<sect3 id="voyager-mouse">
+<title>The mouse on SPARCstation Voyager acts weird in X (<code>ms0: input error (0xc47)</code>)</title>
+<para>
+Apparently the original mouse that came with the Voyager (the Compact1
+370-1865-01 mouse, but not the 370-1865-03) runs at a faster serial speed
+than every other Sun mouse (4800 bps instead of 1200 bps).  You have two
+options: 
+
+<itemizedlist>
+<listitem>Use another mouse</listitem>
+<listitem>Add <code>options SUN_MS_BPS=4800</code> to your kernel configuration and 
+  recompile</listitem>
+</itemizedlist>
+
+See &man.ms.4; for more information.
+
+</para>
+</sect3>
+
+<sect3 id="cgsix-framebuffer-garbage">
+<title>Framebuffer displays garbage on scrollback</title>
+<para>
+When exiting vi, and sometimes when scrolling back, the display scrolls
+back for a few seconds displaying a lot of garbage. There is usually
+garbage in the non-text portion of the screen as well. This is
+purported to be caused by a firmware bug on Sbus cgsix boards, and has
+to date been noticed on all machines in which a cgsix board is installed.
+</para>
+<para>
+Some options:
+</para>
+<para>
+
+<itemizedlist>
+<listitem>Set your terminal type to <code>sun-cgsix</code>.</listitem>
+<listitem>Edit your termcap so that the default '<code>sun</code>' entry has
+<code>:tc=sun-cgsix:</code> instead of <code>:tc=sun-il:</code></listitem>
+<listitem>Edit <code>/etc/ttys</code> and change
+<programlisting>console "/usr/libexec/getty suncons"    sun on secure</programlisting>
+to
+<programlisting>console "/usr/libexec/getty suncons"    sun-cgsix on secure</programlisting>
+</listitem>
+</itemizedlist>
+
+</para>
+</sect3>
+
+<sect3 id="sparclinux-sun4c">
+<title>Why is NetBSD so much faster than SparcLinux on sun4c</title>
+<para>
+The memory management hardware on sun4c machines (SPARCstation
+1, 1+, 2, IPC, IPX, SLC, ELC and clones) is not handled
+particularly well by Linux. Until Linux reworks their MMU code
+NetBSD will be significantly faster on this hardware.  There was a 
+longstanding bug prior to NetBSD 1.6.2 on SPARCstation/server 1, 
+SPARCstation/server 1+, and Sun IPC models.  We recommend updating these 
+models to the latest version of NetBSD to for improved stability and 
+speed.  See <ulink url="#sun4c-sw-cache"><code>sw flush: cache enabled</code></ulink>.
+
+</para>
+</sect3>
+
+<sect3 id="illegal-reloc">
+<title>I get a <code><emphasis role="bold">ld: /usr/lib/c++rt0.o: illegal reloc type mix</emphasis></code> when compiling</title>
+<para>
+For versions older than 1.4.3, the default NetBSD/sparc /usr/lib/c++rt0.o
+is compiled -fpic.  This means it can only handle offsets up to a certain
+size, and can fail to work in large programs.  Compiling -fPIC allows
+larger offsets and should permit large programs to function.
+</para>
+<para>
+
+If you're using a NetBSD release before 1.4.3, replacing /usr/lib/c++rt0.o
+with a -fPIC version, located at <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/sparc/c++rt0/">ftp://ftp.NetBSD.org/pub/NetBSD/arch/sparc/c++rt0/</ulink>,
+will solve this problem. 
+
+</para>
+</sect3>
+
+<sect3 id="boot-floppy">
+<title>Making install boot floppies</title>
+<para>
+To create install floppies for NetBSD/sparc, you first need to have the
+release source.  You also need to have the release files installed; you'll
+find them under the
+<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-release-1-6/tar_files/src/distrib.tar.gz">
+NetBSD-release</ulink> section.  Note that the release source extracts to
+the <code>src</code> directory, so be sure to extract the archive under <code>/usr</code>.
+Next, create the INSTALL kernel:
+<programlisting>
+# cd /sys/arch/sparc/INSTALL; make</programlisting>
+After the kernel has build, you can create the installation floppies:
+<programlisting># cd /usr/src/distrib/sparc/sysinst.ramdisk; make
+# cd /usr/src/distrib/sparc/sysinst.bootfs; make</programlisting>
+
+</para>
+</sect3>
+
+<sect3 id="bootcd">
+<title>Making a bootable CD-ROM</title>
+<para>
+See the <ulink
+url="../../Documentation/bootcd.html#sparcimage">NetBSD
+Bootable CD ROM HOWTO</ulink>.
+
+</para>
+</sect3>
+
+<sect3 id="nell">
+<title>Using the <emphasis>nell</emphasis> sbus-to-PCMCIA bridge</title>
+<para>
+NetBSD 1.6 and later support cardbus and PCMCIA cards with the SPARCstation 
+Voyager's on-board interface and with the nell sbus-to-PCMCIA bridge card.
+Support was dramatically improved in NetBSD 2.0, fixing many longstanding 
+bugs.  All PCMCIA devices listed on the
+<ulink url="../../Hardware/pcmcia.html">Machine-independent PCMCIA drivers</ulink>
+page should work in NetBSD 2.0.  Some have been tested.  The GENERIC 
+kernel has the nell interface disabled by default.  You'll need to build a 
+kernel with the nell and various pcmcia interfaces uncommented.
+
+</para>
+<para>In NetBSD 1.6.x, there is a byte endian issue which currently prevents 
+16 bit devices from working.  See the 
+<ulink url="http://mail-index.NetBSD.org/port-sparc/2002/03/10/0002.html">post</ulink>
+by Martin Husemann on nell support. 
+This problem is fixed in NetBSD 2.0 and later.  
+
+</para>
+<para>In NetBSD 1.6.x, There is a conflict between the <emphasis>audioamd</emphasis> device 
+in sun4c and some sun4m models and the (nell) device.  
+This problem is fixed in NetBSD 2.0 and later.  
+
+</para>
+<para>If your 1.6.x system has the audioamd device on-board and you want to 
+use it and the nell interface, you need to build a new kernel with
+the following option:
+<programlisting>
+options 	AUDIO_C_HANDLER
+</programlisting>
+This problem is fixed in NetBSD 2.0 and later.  
+
+</para>
+<para>If you wish to use the Lucent WaveLAN card on 1.6.x, you will need to
+add the following hack to your kernel configuration:
+<programlisting>
+options	WI_AT_BIGENDIAN_BUS_HACK
+wi*	at pcmcia? function ?		# Lucent WaveLan IEEE (802.11)
+</programlisting>
+
+</para>
+</sect3>
+</sect2>
+
+<html:hr/>
+
+<sect2 id="hardware">
+<title>Hardware Questions</title>
+
+<sect3 id="smp-cpus">
+<title>What CPU modules are capable of running multiprocessor</title>
+<para>
+<emphasis>Note:  This capability was added in NetBSD 2.0.  NetBSD 1.6.x and 
+earlier will only use one CPU if more than one is present.</emphasis>
+
+</para>
+<para>The only NetBSD/sparc models capable of SMP are the Sun 
+4/600, SPARCstation/server 10, SPARCstation/server 20, and clones of these
+models.  Most SuperSPARC-I, SuperSPARC-II, and hyperSPARC MBus CPU modules 
+can be used in an SMP system.  Briefly, two
+modules with the same speed and (non-zero) cache size will have no problems. 
+Modules with different cache sizes and speeds have been reported to work,
+but you run into trouble when using older (i.e. slower) modules and
+modules without caches. Check the following references: 
+<itemizedlist>
+<listitem><ulink url="http://www.sunshack.org/data/suncpum.html">Sun CPU
+    and Memory Tables</ulink></listitem>
+<listitem><ulink url="http://mbus.sunhelp.org/">The Rough Guide to MBus Modules</ulink></listitem>
+</itemizedlist>
+
+</para>
+<para>You will need to use the GENERIC.MP kernel, or a kernel with the 
+following options enabled:
+<programlisting>options         MULTIPROCESSOR          # include multiprocessor support
+cpu*            at mainbus0             # declare additional
+CPUs</programlisting>
+
+</para>
+<para>To boot from a different CPU, run the following commands at the PROM 
+prompt:
+<programlisting>&lt;#0&gt; ok <emphasis role="bold">N switch-cpu</emphasis></programlisting>
+
+Where <code><emphasis role="bold">N</emphasis></code> is the cpu number you want to switch to.  0 is 
+the primary CPU on the first mbus module.  1 is the second CPU on the 
+first module.  2 is the first CPU on the second module.  3 is the second 
+CPU on the second module.  Switching to a non-existent CPU may cause
+your system to hang.
+You must have already booted NetBSD once to load the CPU code into the 
+PROM.  See Paul Kranenburg's <ulink 
+url="http://mail-index.NetBSD.org/port-sparc/2003/01/20/0016.html">post</ulink>.
+
+</para>
+</sect3>
+
+<sect3 id="video-cables">
+<title>How do I hook up a VGA monitor to my Sun</title>
+<para>
+Well, there are two ways, build your own cable, or purchase an
+adapter.  The adapters can be found for around US$30 and the framebuffer
+will typically "just work" at its default resolution.
+</para>
+<para>
+
+To build your own cable, can follow the 
+<ulink url="http://mail-index.NetBSD.org/port-sparc/2000/04/22/0001.html">instructions
+</ulink> provided by Izumi Tsutsui.
+</para>
+<para>
+
+Don't forget to take a look at the <ulink
+url="http://www.sunhelp.org/faq/FrameBuffer.html">Frame Buffer FAQ</ulink>
+for information on your framebuffer, what resolutions it supports, and how
+to set the default resolution in the prom.
+
+</para>
+</sect3>
+
+<sect3 id="pmap-failure">
+<title>What does a message similar to <code>"*** U0209 ***</code>" "<code>PMAP 000d5000, Exp = 00000000, Obs = 04000000</code>" from the PROM mean</title>
+<para>
+If the page map ram on a sparc2 fails the PROM will not initialise the
+framebuffer, but will output a message similar to
+<programlisting>
+*** U0209 ***
+	PMAP = 000d5000, Exp = 00000000, Obs = 04000000
+</programlisting>
+to the serial console. (the U0209 can also be U0208).
+The only options are to replace the chip, which requires exceptionally
+delicate soldering work, or the entire motherboard.
+
+</para>
+</sect3>
+
+<sect3 id="ross-mbus">
+<title>Are hyperSPARC mbus modules supported?</title>
+<para>
+Yes.  All Ross hyperSPARC modules should work.  See also
+<ulink url="#smp-cpus">What CPU modules are capable of running multiprocessor</ulink>.
+
+</para>
+</sect3>
+
+<sect3 id="ross-memory">
+<title>What is the memory configuration in a Ross sparc 20 clone?</title>
+<para>
+Ben Cottrell reports that:
+<quote>For anyone else who's curious about this, the slots in a Ross sparc
+20 clone go like: 0 4 1 5 2 6 3 7, going top to bottom, looking down on
+the case in its conventional orientation.
+</quote>
+
+</para>
+</sect3>
+
+<sect3 id="oldscsi">
+<title>How do I hook up this strange SCSI connector to a normal device</title>
+<para>
+Older sun4 machines might have an old style SCSI connector with three rows
+of pins.  The pins are listed on <ulink url="oldscsipins.html">this page</ulink>.
+
+
+</para>
+</sect3>
+</sect2>
+
+<html:hr/>
+
+<sect2 id="booting">
+<title>PROM/Booting Questions</title>
+
+<sect3 id="abort-to-prom">
+<title>How to abort to the prom</title>
+<para>
+There are three ways to abort to the prom:
+</para>
+<para>
+
+<itemizedlist>
+<listitem>If using a Sun keyboard, Press <code>[L1]</code>+<code>[A]</code>,
+    (or <code>[STOP]</code>+<code>[A]</code>)</listitem>
+<listitem>If using a Tadpole SPARCbook keyboard, press <code>[Pause]</code>+<code>[A]</code></listitem>
+<listitem>If using a serial console, send a BREAK signal (the method may very from
+    terminal to terminal).</listitem>
+</itemizedlist>
+</para>
+<para>
+
+Once at the prom you can continue with '<code>go</code>' ('ok' prompt), or
+'<code>c</code>' (&gt; prompt).
+
+</para>
+</sect3>
+
+<sect3 id="prom-troubleshooting">
+<title>Troubleshooting PROM problems</title>
+<para>
+See the troubleshooting guide at 
+<ulink url="http://docs.sun.com/db?p=/doc/806-2906-10/6jc3f0abd&amp;a=view">docs.sun.com</ulink>.
+Additionally, if your ethernet address is <code>FF:FF:FF:FF:FF:FF</code>, then your
+NVRAM is dead and you may have trouble booting.  See 
+<ulink url="#dead-nvram">Ethernet address or hostid are all ones</ulink>.
+
+</para>
+</sect3>
+
+<sect3 id="non-sun-cdrom">
+<title>Why won't my non-Sun SCSI CD-ROM drive boot the NetBSD/sparc CD-ROM?</title>
+<para>
+Most UNIX workstations, including Sun's OpenBoot PROM, have a PROM that
+requires the CD-ROM to support a 512 byte block size.  Most OEM Sun CD-ROM
+drives are set to 512 byte block size by default.  Most newer 3rd party
+drives automatically support both 512 and 2048 byte block sizes.  Older
+3rd party drives may have a jumper to change the value from 2048 bytes to
+512 bytes.  Check with your hardware vendor -- those drives that do not 
+support 512 byte sectors will be unusable for booting, but will be useable 
+once the kernel is loaded for normal operations. 
+
+</para>
+<para>See the <ulink url="http://www.pimpworks.org/sun/cdrom.html">Sun CD-ROM 
+FAQ</ulink>.
+
+</para>
+</sect3>
+
+<sect3 id="sun4c-sw-cache">
+<title><code>sw flush: cache enabled</code></title>
+<para>
+Prior to NetBSD 1.6.2, there was a longstanding MMU bug in the sun4c 
+architecture.  NetBSD 1.6 and 1.6.1 attempted to work around this bug by 
+using a slower caching mechanism on the SPARCstation/server 1, 
+SPARCstation/server 1+, and Sun IPC.  All known problems are fixed in 
+1.6.2 and later.  Read Paul Kranenburg's 
+<ulink url="http://mail-index.NetBSD.org/port-sparc/2003/07/18/0002.html">post</ulink>
+for more information.
+
+</para>
+</sect3>
+
+<sect3 id="no-kernel-1-6-install">
+<title><code>open netbsd: no such file or directory</code></title>
+<para>
+D'oh.  The NetBSD 1.6 installer does not install a kernel if you select 
+the default install.  This is, of course, corrected in NetBSD 1.6.1 and 
+later.
+
+</para>
+<para>The easy fix is to run the installer again and select <code>Re-install 
+sets or install additional sets</code> and chose the 
+<code>kern-GENERIC.tgz</code> package to install.
+
+</para>
+</sect3>
+
+<sect3 id="sun4c-framebuffer-speedup">
+<title>How to speed up the framebuffer on sun4c hosts</title>
+<para>
+Here is a shellscript provided by greywolf@starwolf.com which speeds up
+PROM access to the framebuffer on sun4c hosts running OBP version 2 and
+greater (such as the IPX).
+<programlisting>
+#! /bin/sh -
+eeprom 'nvramrc=probe-all install-console
+ramforth
+: cache-page dup pgmap@ cacheable swap pgmap! ;
+up@ cache-page
+here origin do i cache-page pagesize +loop
+banner'
+eeprom 'use-nvramrc?=true'
+exit 0
+</programlisting>
+
+</para>
+</sect3>
+
+<sect3 id="cylinders">
+<title>Do I really have to have my partitions start and end on cylinder boundaries</title>
+<para>
+Yes and no.  The prom only knows how to load a bootloader from the
+beginning of a cylinder.  This means that your bootable partitions need to
+start on cylinder boundaries.   The cylinder size in your disklabel does
+not have to bear any relation to the actual physical cylinder size of the
+disk.  You can't just set your cylinder size to 1 (i.e. the number of
+cylinders = the number of sectors), since the number of cylinders is
+stored as a 16 bit number (i.e. your disk could only be about 32 MB).
+</para>
+<para>
+
+The partitions apparently do not need to end on cylinder boundaries, and
+there are no bad side-effects of doing so.
+
+
+</para>
+</sect3>
+
+<sect3 id="prom-passwd">
+<title>The PROM wants a password when I abort booting</title>
+<para>
+You need physical access to the machine to erase the password.  Power off,
+power on, hold <code>[L1]</code>+<code>[N]</code>,
+    (or <code>[STOP]</code>+<code>[N]</code>) until the PROM prompt.  This will
+reset your PROM to the factory defaults.
+</para>
+<para>
+
+Alternatively (this is not for the faint of heart), power on, abort, wait
+for the password prompt, carefully remove the PROM chip, hit return,
+carefully replace the PROM, enter a new password.
+
+</para>
+</sect3>
+
+<sect3 id="cachechipbug">
+<title>What does the <code><emphasis role="bold">cache chip bug; trap page uncached</emphasis></code> kernel message mean?</title>
+<para>
+If you get this kernel message, nothing has gone wrong.  Machines with
+"buserr-type" 1 have a bug in the cache chip that affects traps.  The
+<code><emphasis role="bold">cache chip bug; trap page uncached</emphasis></code> message is the kernel
+activating a workaround for this bug.
+</para>
+<para>
+
+Without this workaround, the cache simply delivers wrong data.  Often this
+turns into an illegal instruction, so that you get a trap during a trap,
+which causes a reset.  This condition can only be caught by the ROM, and
+by then it is too late to do anything about it.  This message, if you happen
+to get it, just means you'll avoid that problem.
+
+</para>
+</sect3>
+
+<sect3 id="floppy-memory-boundary">
+<title>When booting from 1.4.2 floppies, you get "Data Access Exception"</title>
+<para>
+Unfortunately, the NetBSD 1.4.2 floppies, have a problem with the
+bootloader on some machines (in particular, sun4c machines with
+non-contiguous memory banks, such as the IPX).  If you
+encounter this error, then you will need to download the repaired 
+<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/sparc/1.4.2-bootfs/">floppy
+images</ulink> or install a 16 MB SIMM in the first bank of your machine (4 MB
+isn't large enough to hold the broken bootloader and the kernel).
+</para>
+<para>
+
+This problem is only present on 1.4.2 boot floppies.
+It has been fixed in -current and will not be present in future
+releases of NetBSD/sparc.
+
+</para>
+</sect3>
+
+<sect3 id="powerlite85-floppy">
+<title>How do I boot an RDI PowerLite 85 or 100 from a floppy disk?</title>
+<para>
+The PowerLite 85 (and 100) seems to have an OpenBoot PROM bug in the floppy driver.
+Cliff Wright has determined the nvramrc patch to fix this:
+<programlisting>: trk0_delay
+    50 ms 4
+;
+['] trk0_delay false ['] 4 false ffd34e90 (patch)
+4 true ['] 2 false ffd34f28 (patch)</programlisting>
+
+See his 
+<ulink url="http://mail-index.NetBSD.org/port-sparc/2001/05/14/0001.html">post</ulink>
+for more information.
+
+</para>
+</sect3>
+</sect2>
+
+<html:hr/>
+
+<sect2 id="serial">
+<title>Serial Port Questions</title>
+
+<sect3 id="sparc2-serial-console">
+<title>Problems running a serial console on a SPARCstation 2 prior to NetBSD 1.4.2</title>
+<para>
+When booting a 1.4  or 1.4.1 kernel from a serial console, the following
+messages may appear:
+<programlisting>Warning: unparseable stdin-path property
+Warning: unparseable stdout-path property
+cninit: invalid inSource 0xffffffff</programlisting>
+
+This is a know problem when booting with a serial console on a
+SPARCstation 2
+with a PROM revision prior to 2.4.  The full details can be found under
+<ulink url="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=7409">
+PR/7409</ulink>.  The problem has been solved in NetBSD 1.4.2.  If you need a
+patched 1.4.1 GENERIC kernel, try
+<ulink url="ftp://ftp.yubyub.net/pub/NetBSD/NetBSD-1.4.1/sparc/netbsd.GENERIC_SS2_CONSOLE.gz">
+this one</ulink>.  A patch which alters <code>src/arch/sparc/dev/zs.c</code> to force
+<code>/dev/ttya</code> as the only serial console can be found as
+<ulink url="ftp://ftp.yubyub.net/pub/NetBSD/NetBSD-1.4.1/sparc/zs.diff">
+zs.diff</ulink>.
+Note that this patch does not prevent a standard keyboard and monitor from
+being the console; it forces <code>/dev/ttya</code> to be the console should a
+serial console be selected.
+
+</para>
+</sect3>
+
+<sect3 id="serial-unplug">
+<title>Whenever I unplug the serial console, my machine reboots!</title>
+<para>
+A continuous stream of zeros is equivalent to a "BREAK" command which will
+enter the prom.  This might happen, since the serial lines are floating
+when you unplug your cable.  If you build a special switchbox that uses
+a pullup resistor, then you can avoid this problem.
+</para>
+<para>
+
+Put a 4.7 KOhm resistor between pins 3 and 25.
+
+</para>
+</sect3>
+
+<sect3 id="serial-port-minidin8">
+<title>Can I use a Macintosh serial cable on machines that have a MiniDin8 connector?</title>
+<para>
+Yes and no.  Yes, you can use it, but it doesn't support the same hardware
+handshaking lines so you won't get hardware handshaking.
+</para>
+<para>
+
+See the <ulink url="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial 
+Port Primer</ulink> for more information.
+
+</para>
+</sect3>
+
+<sect3 id="serial-port-splitter">
+<title>Splitting the serial port on a SPARCstation 20 and SPARC classic</title>
+<para>
+Some sparc machines, such as the SPARCstation 20 and SPARC Classic, have 2
+serial
+ports but use a single DB-25 connector. Serial port A is wired
+using the standard pin out so that it may be used with a "normal"
+(whatever that means with serial ports) serial cable. To use serial
+port B, an adapter cable is required. Dan McMahill has traced the pin
+out on a Sun P/N 530-1677-01 cable.
+</para>
+<para>
+
+<itemizedlist>
+<listitem><ulink url="faq/sun_530-1677-01-rev50.txt">Cable Diagram (ascii 4k)</ulink></listitem>
+<listitem><ulink url="faq/sun_530-1677-01-rev50.jpg">Cable Diagram (jpeg 76k)</ulink></listitem>
+<listitem><ulink url="faq/sun_530-1677-01-rev50.ps">Cable Diagram (postscript 18k)</ulink></listitem>
+</itemizedlist>
+
+</para>
+</sect3>
+
+<sect3 id="fastserial">
+<title>Can I run my built-in serial port faster than 38400 bps?</title>
+<para>
+The short answer: No.
+</para>
+<para>
+The long answer is that you can possibly run it at non-standard speeds
+(such as 76800 bps and 51200 bps).  der Mouse has patched things
+in the attempt to run the serial chip in an even 
+<ulink url="http://mail-index.NetBSD.org/port-sparc/2000/04/25/0005.html">faster
+mode</ulink>, but it is very unreliable (i.e. very error-prone).
+</para>
+<para>
+
+Note that some of the <ulink url="../sparc64/">sparc64</ulink> machines can run
+their serial ports faster, but they use a different serial chipset.
+
+</para>
+</sect3>
+</sect2>
+
+<html:hr/>
+
+<sect2 id="ethernet">
+<title>Ethernet Questions</title>
+
+<sect3 id="ether-address">
+<title>All my ethernet interfaces have the same hardware address</title>
+<para>
+Yes, that's correct.  In general, each machine only has one ethernet 
+hardware address (a.k.a. MAC) for <emphasis>all</emphasis> ethernet interfaces attached
+to it, since the MAC address is stored in the NVRAM on the motherboard
+instead of on the ethernet interface.
+</para>
+<para>
+
+This means that if you have a sparc box with more than one ethernet
+interface, no two interfaces can be on the same subnet. In most practical 
+situations, this should not be a problem.  For example:
+<programlisting>smaug% ifconfig -a
+le0: flags=8822&lt;BROADCAST,NOTRAILERS,SIMPLEX,MULTICAST&gt; mtu 1500
+        address: 08:00:20:20:e2:54
+        media: Ethernet autoselect
+be0: flags=8863&lt;UP,BROADCAST,NOTRAILERS,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1500
+        address: 08:00:20:20:e2:54
+        media: Ethernet autoselect (10baseT half-duplex)
+</programlisting>
+
+</para>
+</sect3>
+
+<sect3 id="dead-nvram">
+<title>Ethernet address or hostid are all ones</title>
+<para>
+If a machine boots up with with an all-ones ethernet address (i.e.
+ff:ff:ff:ff:ff:ff) or hostid, it is most likely because the NVRAM has
+reached the end of its life cycle. This is especially common on sun4c
+class machines because the NVRAM used in those systems have relatively
+short life spans many of which are currently ending now.
+</para>
+<para>
+
+See the <ulink url="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">
+Sun NVRAM/Hostid FAQ</ulink> for information on how to replace and reinitialize
+the chip and possible workarounds if you cannot find a new NVRAM chip.  You
+may also find <ulink url="http://www.bhargavaz.net/nvram/">this IDPROM/NVRAM
+Battery Replacement Page</ulink> useful.
+
+</para>
+<para>If you don't know your system's original hostid and ethernet address, it
+may be possible to reconstruct them using the information on the nvram chip's
+barcode.  See this 
+<ulink url="http://mail-index.NetBSD.org/port-sparc/2001/09/04/0002.html">post</ulink>
+and this
+<ulink url="http://mail-index.NetBSD.org/port-sparc/2001/09/04/0003.html">post</ulink>
+for more information.
+
+</para>
+</sect3>
+
+<sect3 id="tadpole-3gx-transceiver">
+<title>Tadpole 3GX transceiver does not work if not plugged in at boot</title>
+<para>
+The interface may be autosensing to 10BaseT, even though there's
+no physical 10Base-T port.
+</para>
+<para>
+
+Check the media type in the output of "<code><emphasis role="bold">ifconfig le0</emphasis></code>".
+it should read <code>10Base5</code> to use the external transceiver, if
+not issue a "<code><emphasis role="bold">ifconfig le0 media 10base5</emphasis></code>" command.
+
+</para>
+</sect3>
+</sect2>
+
+<html:hr/>
+
+<sect2 id="javastation">
+<title>JavaStation Questions</title>
+
+<sect3 id="javastation-supported">
+<title>Which JavaStations are supported?</title>
+
+<para>Read the <ulink url="javastation.html"> JavaStation Status</ulink> page to
+determine what JavaStation you have, and which hardware is supported.
+
+
+</para>
+</sect3>
+
+<sect3 id="javastation-info">
+<title>Hardware information</title>
+<para>
+The Linux on the Sun JavaStation NC HOWTO contains gobs of good info.  <ulink
+url="http://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html_single/JavaStation-HOWTO.html#WHATISCHAPTER">
+Section 2</ulink> covers the various models and what sorts of guts they've
+got. <ulink
+url="http://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html_single/JavaStation-HOWTO.html#BACKGROUNDREQUIREMENTSCHAPTER">
+Section 3</ulink> describes the netboot environment (also see the NetBSD <ulink
+url="../../Documentation/network/netboot/">Diskless HOW-TO</ulink> on how to
+set up netbooting for these puppies).  And <ulink
+url="http://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html_single/JavaStation-HOWTO.html#APPENDIXCHAPTER">
+Section 10</ulink> lists the jumper settings for JavaStations.
+
+
+</para>
+</sect3>
+
+<sect3 id="fox">
+<title>What was the Fox?</title>
+<para>
+The Fox is probably best described as a brick sized SS4. Among it's features:
+</para>
+<para>
+
+<itemizedlist>
+<listitem> one SBus and one AFX slot side by side so you can only use
+one</listitem>
+<listitem> Crystal Semiconductor 4231 audio
+<emphasis>(audiocs)</emphasis></listitem>
+<listitem> stp4020 (PCMCIA) <emphasis>(nell)</emphasis></listitem>
+<listitem> the usual onboard serial a/b, SCSI, 10BaseT</listitem>
+</itemizedlist>
+</para>
+<para>
+
+This was used in the early versions of the Java car, which later moved to
+a faster machine.
+
+
+
+</para>
+</sect3>
+</sect2>
+
+<html:hr/>
+
+<sect2 id="emulation">
+<title>SunOS and Solaris Emulation Questions</title>
+
+<sect3 id="solaris-filesystem">
+<title>Does NetBSD support the Solaris filesystem?</title>
+<para>
+Kinda.  If Solaris 5 or later created a filesystem with access control
+lists (ACL), NetBSD's &man.fsck.8; will render the superblock unusable to
+Solaris (i.e. Solaris can't mount the filesystem again). 
+
+</para>
+<para>You should either mount your Solaris filesystem read-only or have
+created it without ACLs.  See this
+<ulink url="http://mail-index.NetBSD.org/port-sparc/2001/03/10/0001.html">post</ulink>
+by Christos Zoulas on this topic.
+
+</para>
+</sect3>
+
+<sect3 id="emulation-setup">
+<title>How do I set up SunOS/Solaris emulation?</title>
+<para>
+<emphasis role="bold">Note:</emphasis>  Remember, despite Sun's marketing and the misleading
+output of uname on Solaris, SunOS and Solaris are not the same OS!
+SunOS 4.x (Solaris 1.x) is BSD, Solaris 2.x is SysV. SunOS uname says
+`SunOS 4.x', Solaris uname says `SunOS 5.x'.
+</para>
+<para>
+To setup Solaris emulation, you'll need to compile a kernel with
+COMPAT_SVR4, and copy the appropriate files from a Solaris system.
+For more information, please consult &man.compat.svr4.8;.
+</para>
+<para>
+To setup SunOS emulation, you'll need to compile a kernel with
+COMPAT_SUNOS, and some of SunOS's libraries.  They can
+be found at Sun's support site. You'll need the following libraries:
+
+</para>
+<para>
+<itemizedlist>
+<listitem><code><ulink url="http://sunsolve.sun.com/pub-cgi/pdownload.pl?target=102545-13&amp;method=f">
+http://sunsolve.sun.com/pub-cgi/pdownload.pl?target=102545-13&amp;method=f
+</ulink></code>
+ - This archive contains <code>102545-13/lib/libc.so19</code> and
+<code>102545-13/5lib/libc.so29</code>, which should be renamed to
+<code>/emul/sunos/usr/lib/libc.so.1.9</code> and
+ <code>/emul/sunos/usr/5lib/libc.so.2.9</code> respectively.</listitem>
+<listitem><code><ulink url="http://sunsolve.sun.com/pub-cgi/pdownload.pl?target=100257-06&amp;method=f">
+http://sunsolve.sun.com/pub-cgi/pdownload.pl?target=100257-06&amp;method=f</ulink></code>
+ - This archive contains <code>100257-06/4.1.3c/sun4/ld.so</code>, which
+should be renamed to <code>/emul/sunos/usr/lib/ld.so</code></listitem>
+<listitem>Lastly, you'll need to get <code>libdl.so.1.0</code> from any
+SunOS machine, and place this file in <code>/emul/sunos/usr/lib</code>.
+Please note that the <code>libdl.so.1.0</code> from Solaris will
+not work for SunOS emulation.
+<para>
+For more information see &man.compat.sunos.8;.
+</para>
+</listitem>
+</itemizedlist>
+
+</para>
+</sect3>
+
+<sect3 id="netscape">
+<title>Can NetBSD/sparc run Netscape</title>
+<para>
+There are three 'Netscape' browsers in the <ulink url="../../Documentation/software/packages.html">NetBSD packages collection</ulink>:
+</para>
+<para>
+
+<itemizedlist>
+<listitem><filename role="pkg">www/communicator</filename> - complete Netscape communicator install including email. (requires SunOS or Solaris libraries)</listitem>
+<listitem><filename role="pkg">www/navigator</filename> - Standalone Navigator browser (requires SunOS or Solaris libraries)</listitem>
+<listitem><filename role="pkg">www/mozilla</filename> - Free version of the Netscape
+browser.</listitem>
+</itemizedlist>
+</para>
+<para>
+
+Both the communicator and navigator packages will run faster and
+provide more features than mozilla, but they require either Solaris
+libraries in /emul/svr4 (see &man.compat.svr4.8;) or SunOS-4.1 libraries in
+/emul/sunos (see &man.compat.sunos.8;). All of the SunOS-4.1 libraries
+except libdl.so are
+available from Sun<ulink url="#emulation-setup">(see above)</ulink>. If anyone is interested in putting together a libdl it would
+be greatly appreciated :)
+
+The Solaris-2.5.1 versions of communicator and navigator are the defaults as 
+current netscape versions are available for Solaris.  It appears that netscape-4.61
+was the last SunOS-4.1 version available.  If you wish to use the SunOS-4.1
+version of netscape, set the NS_USE_SUNOS variable in /etc/mk.conf.
+
+</para>
+</sect3>
+
+<sect3 id="sunos-netscape-socket">
+<title>Under SunOS emulation, Netscape fails with `Error: Can't open display: :0.0'</title>
+<para>
+Solaris Netscape (at least, version 4.51 attempts to use a pipe rather
+than a Unix domain socket to connect to the X server. Put
+<emphasis role="bold">DISPLAY=unix:0.0</emphasis> into netscape's environment before starting it
+and it will work ok. The easiest way to do this, as well as the other
+variables you need to set up for it, is to have a shell script that does
+this before executing netscape:
+</para>
+<para>
+
+<programlisting>#!/bin/sh
+export XKEYSYMDB=/usr/X11R6/lib/X11/XKeysymDB
+export MOZILLA_HOME=/usr/local/netscape.svr4
+export XNLSPATH=$MOZILLA_HOME/nls
+exec $MOZILLA_HOME/netscape $* </programlisting>
+</para>
+
+</sect3>
+</sect2>
+
+<html:hr/>
+
+<sect2 id="other-sources">
+<title>Other sources of information</title>
+
+<sect3 id="sun-system-handbook">
+<title>Sun System Handbook</title>
+
+<ulink url="http://sunsolve.sun.com/handbook_pub/">Sun System Handbook</ulink> - Sun's online system docs
+</sect3>
+
+<sect3 id="memory-modules">
+<title>Memory Modules</title>
+
+<ulink url="http://sunsolve.sun.com/handbook_private/Devices/Memory/MEM_Modules.html">Memory Modules</ulink> - memory module compatability
+(requires a SunSolve login with a valid Sun Service Plan;
+<ulink url="http://www.sunshack.org/data/sh/2.1/infoserver.central/data/syshbk/Devices/Memory/MEM_Modules.html">alternative, free but unofficial link</ulink>)
+</sect3>
+
+<sect3 id="SunHelp">
+<title>SunHELP</title>
+
+<ulink url="http://www.sunhelp.org/">SunHELP</ulink> - much sun related information
+</sect3>
+
+<sect3 id="sun-hardware-reference">
+<title>Sun Hardware Reference FAQ</title>
+
+<ulink url="http://www.sunhelp.org/faq/sunref1.html">Sun
+    Hardware Reference FAQ</ulink> - overview of Sun hardware over the
+years
+</sect3>
+
+<sect3 id="openboot-collection">
+<title>OpenBoot Collection</title>
+
+<ulink url="http://docs.sun.com/?p=/coll/216.2">OpenBoot Collection</ulink>
+    reference on PROM commands and variables
+</sect3>
+
+<sect3 id="sun-hostid-faq">
+<title>Sun NVRAM/Hostid FAQ</title>
+
+<ulink url="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">Sun
+    NVRAM/Hostid FAQ</ulink> - if your machine PROM's battery has gone
+dead
+</sect3>
+
+<sect3 id="sun-erial-port">
+<title>Sun Serial Port &amp; Cable Pinouts</title>
+
+<ulink url="http://www.stokely.com/unix.serial.port.resources/A-B-Ycablepinout.html">
+    Sun Serial Port &amp; Cable Pinouts</ulink> - lists serial port pinouts for
+    almost all models
+
+</sect3>
+
+<sect3 id="frame-buffer-faq">
+<title>Frame Buffer FAQ</title>
+
+<ulink url="http://www.sunhelp.org/faq/FrameBuffer.html">Frame Buffer
+FAQ</ulink> by David Tong
+</sect3>
+
+<sect3 id="sunchack-data">
+<title>The SunShack Data Archive</title>
+
+<ulink url="http://lios.apana.org.au/~cdewick/data/">The SunShack Data 
+    Archive</ulink> collected by Craig Dewick (includes BootROM upgrades
+    and the Sun Field Engineer Handbook)
+
+</sect3>
+
+<sect3 id="sparc-cpu-resources">
+<title><ulink url="http://www.users.qwest.net/~eballen1/sparc.tech.links.html">Technical SPARC CPU resources</ulink></title>
+</sect3>
+
+<sect3 id="mixing-mbus">
+<title><ulink url="http://mbus.sunhelp.org/misc/genconf.htm">Information about mixing MBus modules</ulink></title>
+</sect3>
+
+</sect2>
+
+<html:hr/>
+
+<sect2 id="other-onsite">
+<title>Other sources of information from NetBSD.org</title>
+
+<sect3 id="install-notes">
+<title>NetBSD 2.0 install notes</title>
+
+<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-2.0/sparc/INSTALL.html">
+    NetBSD 2.0 install notes</ulink> - supported hardware and how to
+install.
+</sect3>
+
+<sect3 id="port-sparc-ml">
+<title>port-sparc mail list</title>
+
+<ulink url="../../MailingLists/#port-sparc"> port-sparc mail list</ulink>
+    - if you have any additional questions please subscribe.
+</sect3>
+
+<sect3 id="diskless-howto">
+<title><ulink url="../../Documentation/network/netboot/">Diskless
+    NetBSD HOW-TO</ulink>.</title>
+</sect3>
+
+<sect3 id="serial-primer">
+<title><ulink url="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial 
+Port Primer</ulink></title>
+</sect3>
+
+<sect3 id="general-docs">
+<title>General NetBSD Documentation</title>
+<ulink url="../../Documentation/">General NetBSD Documentation</ulink>
+    - for questions not specific to NetBSD/sparc.
+</sect3>
+
+</sect2>
+
+<parentsec url="." text="NetBSD/sparc Port Page"/>
+
+</sect1>
+</webpage>

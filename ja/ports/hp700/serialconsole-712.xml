@@ -1,0 +1,339 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-hp700-serialconsole-712">
+<config param="desc" value="&os;/hp700: change to serial console on 9000/712"/>
+<config param="cvstag" value="$NetBSD: serialconsole-712.xml,v 1.1 2007/06/09 13:32:11 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 13:32:11 $"/>
+<head>
+
+<!-- Copyright (c) 2002-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD/hp700: Changing to Serial Console on HP 9000/712 models</title>
+
+</head>
+
+
+<sect1 id="hp700_serialconsole-712">
+
+  <para>
+    <emphasis>
+      WARNING: Improper setting of the console path may cause the
+      system to become inoperable. Beware.
+    </emphasis>
+  </para>
+
+  <para>
+    Unfortunately, HP decided that the 712 should be hard to configure for 
+    headless use.  Briefly, you must get to the HP-UX bootloader prompt (which 
+    they call the <code>ISL</code>) which will allow you to permanently set your
+    preferred console location to the first serial port at 9600 8N1.
+  </para>
+
+  <para>
+    The original source of this information is 
+    <ulink url="http://lists.parisc-linux.org/pipermail/parisc-linux/1999-December/008117.html"
+	   >http://lists.parisc-linux.org/pipermail/parisc-linux/1999-December/008117.html</ulink>.
+  </para>
+
+  <para>
+    To change to a serial console, you need:
+  </para>
+  <orderedlist>
+    <listitem>a PS/2 style keyboard</listitem>
+    <listitem>a monitor with VGA style interface</listitem>
+    <listitem>the HP-UX ISL (either an HP-UX bootable hard drive or netboot)</listitem>
+  </orderedlist>
+
+  <para>
+    First, you need to get to the BootROM prompt.
+    When your system prints the following on screen, press and hold <code>ESC</code>
+    until you get the <code>BOOT_ADMIN&gt;</code> prompt:
+    <screen>Press &lt;ESCAPE&gt; to stop boot sequence.</screen>
+  </para>
+
+  <sect2 id="monitor_type">
+    <title>Step 1: Setting monitor type</title>
+
+    <para>
+      If your display doesn't show properly, the frequency may be out-of-range.
+      You can select the monitor type suitable to your display.
+    </para>
+
+    <para>
+      If your 712 has the add-in VRAM board, normal VGA 680x480 mode is monitor 
+      type 7.  Without the VRAM board, the number may be different
+      (possibly 5?).
+    </para>
+
+<programlisting>
+BOOT_ADMIN&gt; <emphasis role="bold">monitor 7</emphasis>
+        Monitor Choices
+Type     Resolution     Frequency
+----     ----------     ---------
+  1      1280x1024        72Hz
+  2      1024x768         75Hz
+  3      1024x768         70Hz
+  4      1024x768         75Hz     Flat Panel
+  5      1280x1024        60Hz
+  6      1024x768         60Hz
+  7       640x480         60Hz
+  8      1280x1024        75Hz     VESA
+  9      1024x768         75Hz     VESA
+ 10       800x600         75Hz     VESA
+ 11       640x480         75Hz     VESA
+ 12      1280x1024        72Hz     Greyscale
+ 13      1280x1024        50Hz
+
+Current Monitor Type is
+  7       640x480         60Hz
+
+BOOT_ADMIN&gt; <emphasis role="bold">reset</emphasis></programlisting>
+  </sect2>
+
+  <sect2 id="hpux_local_disk">
+    <title>Step 2, Case 1: If you have HP-UX installed on local disk</title>
+
+<programlisting>
+BOOT_ADMIN&gt; <emphasis role="bold">boot pri isl</emphasis>
+
+Booting
+
+ISL Revision A.00.38  OCT 26, 1994 
+
+
+ISL&gt;</programlisting>
+  </sect2>
+
+  <sect2 id="no_local_hpux">
+    <title>Step 2, Case 2: If you don't have HP-UX</title>
+
+    <para>
+      Preparation:
+    </para>
+
+    <orderedlist>
+      <listitem>
+	Get the firmware update
+	(<ulink url="ftp://ftp.itrc.hp.com/firmware_patches/hp/cpu/PF_C7120023"
+	>PF_C7120023</ulink>) from HP site
+	(but we are not updating firmware here).
+      </listitem>
+      <listitem>
+	Extract the binary.
+<screen>
+    % <emphasis role="bold">mkdir /tmp/712</emphasis>
+    % <emphasis role="bold">cd /tmp/712</emphasis>
+    % <emphasis role="bold">sh /<varname>somewhere</varname>/PF_C7120023</emphasis>
+    x - C7120023.text
+    Compiling unpacker for non-ascii files
+    /tmp/ccIy0Rg8.o: warning: this program uses gets(), which is unsafe.
+    x - C7120023.frm [compressed]
+    ERROR: wc results of C7120023.frm are 5518 32547 709632 should be 5518 22318 709632
+    % <emphasis role="bold">rm /tmp/uud*end</emphasis></screen>
+
+    <para>
+      The checksum may not match if you execute this on an OS other than HP-UX,
+      which is probably OK.
+    </para>
+      </listitem>
+      <listitem>
+	<ulink url="../../Documentation/network/netboot/intro.hp700.html">
+	  Set up netbooting</ulink> (using BOOTP and tftp) to boot the file extracted above
+	  (just specify C7120023.frm in dhcpd.conf or bootptab, and
+	  setup tftpd).
+      </listitem>
+      <listitem>
+	Boot 712 from LAN.
+<screen>
+BOOT_ADMIN&gt; <emphasis role="bold">boot lan isl</emphasis>
+
+Booting
+
+ISL Revision A.00.25 November 18, 1992 
+
+
+ISL&gt;</screen>
+      </listitem>
+    </orderedlist>
+  </sect2>
+
+  <sect2 id="set_console_location">
+    <title>Step 3: Setting console location</title>
+
+    <para>
+      Run the following command to set your 712 to use a serial
+      console:
+    </para>
+<screen>ISL&gt; <emphasis role="bold">conspath 2/0/4.0x283</emphasis></screen>
+
+    <para>
+      To set your 712 to use the local console (i.e. keyboard and screen), run
+      the following command:
+    </para>
+<screen>
+ISL&gt; <emphasis role="bold">conspath 1/0/0.0</emphasis></screen>
+
+    <para>
+      You can use the <command>display</command> and <command>information</command> commands to
+      verify that your settings have been stored properly.  Once you're sure
+      everything looks right, power cycle your workstation to start using your
+      serial console. 
+    </para>
+
+    <para>
+      Additionally, you can temporarily use the local console by pressing 
+      the <quote>Esc</quote> key on the PS/2 keyboard while resetting.
+      This is setting only affects the console location temporarily and only works
+      with firmware rev 1.6 and later.
+    </para>
+  </sect2>
+
+  <sect2 id="example">
+    <title>Example</title>
+
+<screen>
+----------------------------------------------------------------------------
+BootRom Version    1.6  
+
+Memory Size:  64 MB
+----------------------------------------------------------------------------
+
+
+
+
+(c) Copyright 1990-1993, Hewlett-Packard Company.
+All rights reserved
+
+Press &lt;ESCAPE&gt; to stop boot sequence.
+<emphasis role="bold">&lt;ESC&gt;</emphasis>
+Selecting a system to boot.
+----------------------------------------------------------------------------
+Command                             Description
+-------                             -----------
+Auto [boot|search] [on|off]         Display or set auto flag
+Boot [pri|alt|scsi.addr] [isl]      Boot from primary, alternate or SCSI
+Boot lan[.lan_addr] [install] [isl] Boot from LAN
+Chassis [on|off]                    Enable chassis codes
+Diagnostic [on|off]                 Enable/disable diagnostic boot mode
+Fastboot [on|off]                   Display or set fast boot flag
+Help                                Display the command menu
+Information                         Display system information
+LanAddress                          Display LAN station addresses
+Monitor [type]                      Select monitor type
+Path [pri|alt] [lan.id|SCSI.addr]   Change boot path
+Pim [hpmc|toc|lpmc]                 Display PIM info
+Search [ipl] [scsi|lan [install]]   Display potential boot devices
+Secure [on|off]                     Display or set security mode
+----------------------------------------------------------------------------
+BOOT_ADMIN&gt; <emphasis role="bold">monitor 7</emphasis>
+        Monitor Choices
+Type     Resolution     Frequency
+----     ----------     ---------
+  1      1280x1024        72Hz
+  2      1024x768         75Hz
+  3      1024x768         70Hz
+  4      1024x768         75Hz     Flat Panel
+  5      1280x1024        60Hz
+  6      1024x768         60Hz
+  7       640x480         60Hz
+  8      1280x1024        75Hz     VESA
+  9      1024x768         75Hz     VESA
+ 10       800x600         75Hz     VESA
+ 11       640x480         75Hz     VESA
+ 12      1280x1024        72Hz     Greyscale
+ 13      1280x1024        50Hz
+
+Current Monitor Type is
+  7       640x480         60Hz
+
+BOOT_ADMIN&gt; <emphasis role="bold">reset</emphasis>
+
+----------------------------------------------------------------------------
+BootRom Version    1.6  
+
+Memory Size:  64 MB
+----------------------------------------------------------------------------
+
+
+
+
+(c) Copyright 1990-1993, Hewlett-Packard Company.
+All rights reserved
+
+Press &lt;ESCAPE&gt; to stop boot sequence.
+<emphasis role="bold">&lt;ESC&gt;</emphasis>
+Selecting a system to boot.
+----------------------------------------------------------------------------
+Command                             Description
+-------                             -----------
+Auto [boot|search] [on|off]         Display or set auto flag
+Boot [pri|alt|scsi.addr] [isl]      Boot from primary, alternate or SCSI
+Boot lan[.lan_addr] [install] [isl] Boot from LAN
+Chassis [on|off]                    Enable chassis codes
+Diagnostic [on|off]                 Enable/disable diagnostic boot mode
+Fastboot [on|off]                   Display or set fast boot flag
+Help                                Display the command menu
+Information                         Display system information
+LanAddress                          Display LAN station addresses
+Monitor [type]                      Select monitor type
+Path [pri|alt] [lan.id|SCSI.addr]   Change boot path
+Pim [hpmc|toc|lpmc]                 Display PIM info
+Search [ipl] [scsi|lan [install]]   Display potential boot devices
+Secure [on|off]                     Display or set security mode
+----------------------------------------------------------------------------
+BOOT_ADMIN&gt; <emphasis role="bold">boot lan isl</emphasis>
+
+Booting
+
+ISL Revision A.00.25 November 18, 1992 
+
+
+ISL&gt; <emphasis role="bold">display</emphasis>
+
+    Fastsize value is 0000000F
+
+    Autoboot is ON (enabled)
+
+    Autosearch is ON (enabled)
+
+    Primary boot path is 2/0/1.6.0.0.0.0.0
+    Primary boot path is (hex) 2/0/1.6.0.0.0.0.0
+
+    Alternate boot path is 2/0/2.0.0.0.0.0.0
+    Alternate boot path is (hex) 2/0/2.0.0.0.0.0.0
+
+    System console path is 1.0.0.0.0.0.0
+    System console path is (hex) 1.0.0.0.0.0.0
+
+ISL&gt; <emphasis role="bold">conspath 2/0/4.0x283</emphasis>
+
+ISL&gt; <emphasis role="bold">display</emphasis>
+
+    Fastsize value is 0000000F
+
+    Autoboot is ON (enabled)
+
+    Autosearch is ON (enabled)
+
+    Primary boot path is 2/0/1.6.0.0.0.0.0
+    Primary boot path is (hex) 2/0/1.6.0.0.0.0.0
+
+    Alternate boot path is 2/0/2.0.0.0.0.0.0
+    Alternate boot path is (hex) 2/0/2.0.0.0.0.0.0
+
+    System console path is 2/0/4.643.0.0.0.0.0
+    System console path is (hex) 2/0/4.283.0.0.0.0.0
+
+ISL&gt; 
+
+</screen>
+
+    <para>Then, cycle the power.</para>
+  </sect2>
+</sect1>
+<parentsec url="./" text="NetBSD/hp700 Port Page"/>
+</webpage>
