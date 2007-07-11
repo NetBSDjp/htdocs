@@ -1,100 +1,103 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 
-<html>
+<html lang="ja">
 <head>
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.org">
+<link rev="made" href="mailto:www@jp.NetBSD.org">
 <title>Introduction (sparc and sun3 specific), Diskless NetBSD HOW-TO</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="intro.html">Previous</a> |
-<a href="rarp.html">Next</a> |
-<a href="./">Table of Contents</a>
+<a href="intro.html">戻る</a> |
+<a href="rarp.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Introduction (sparc- and sun3-specific), Diskless NetBSD HOW-TO</h1>
+<h1>Diskless NetBSD HOW-TO 序説 (sparc と sun3 固有な部分)</h1>
 
-<h2>Sun Firmware procedures</h2>
+<h2>Sun Firmware 手順</h2>
 <dl><dt><dd>
-<big><b>Which Sun machines can netboot</b></big>
+<big><b>どの Sun のマシンが netboot 可能か</b></big>
 <p>
 
-All sparc and sun3 workstations and servers are capable of booting
-over a network interface. A network boot-strap procedure can be
-started by entering the appropriate <em>PROM</em> command. The
-exact format of the PROM command that must be used is dependent on
-the PROM's version (see below).
+すべての sparc と sun3 のワークステーションとサーバーは、内蔵ネット
+ワークインターフェース経由でのブートが可能です。ネットワークブート
+ストラップ手順は、適切な<em>PROM</em>コマンドを入力する事により開始
+されます。使うべき PROM コマンドの正しいフォーマットは、PROM のバー
+ジョンに依存します(以下を参照してください)。
 <p>
 
-There are currently two supported JavaStation models, the JavaStation-1 and
-the JavaStation-NC.  Some JavaStation-1 units have OpenBoot PROM 2, and
-you should follow the directions below.  Some JavaStation-1 and all 
-JavaStation-NC units have Open Firmware.  You should read this separate
-page on <a href="intro.sun.ofw.html">Open Firmware-based 
-JavaStation</a> Diskless NetBSD HOW-TO.
+JavaStation のサポート機種は現在のところ、 JavaStation-1 と JavaStation-NC
+のふたつがあります。 JavaStation-1 の一部のユニットは OpenBoot PROM 2 を持っており、
+こちらは以下に示す手順に従ってください。これ以外の JavaStation-1 とすべての
+JavaStation-NC ユニットは Open Firmware を持っています。これらでは、
+<a href="intro.sun.ofw.html">Open Firmware ベースの JavaStation</a>
+向けの Diskless NetBSD HOW-TO ページをご覧ください。
 <p>
 
-sparc64 systems also netboot in a slightly different manner.  Go to the 
-page on <a href="intro.sun.ofw.html">Open Firmware-based 
-sparc64</a> Diskless NetBSD HOW-TO.
+sparc64 システムも、若干異なる方法でネットブートできます。
+<a href="intro.sun.ofw.html">Open Firmware ベースの
+sparc64</a> 向けの Diskless NetBSD HOW-TO ページをご覧ください。
 <p>
 
-<big><b>Determining your ethernet hardware address</b></big>
+<big><b>イーサネットハードウェアアドレスの決定</b></big>
 <p>
-When you power on your machine, it will print out its MAC address.  If it
-claims your ethernet address is <tt>ff:ff:ff:ff:ff:ff</tt>, then your
-NVRAM battery is dead.  See the 
+電源をいれた時に、MAC アドレスが表示されるはずです。もし、
+イーサネットアドレスが <tt>ff:ff:ff:ff:ff:ff</tt> と表示されたら、
+NVRAM バッテリーがあがっています。
 <a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">Sun
-NVRAM/Hostid FAQ</a>.  Your system will not netboot without a working NVRAM.
+NVRAM/Hostid FAQ</a> を参照してください。NVRAM が動作しないと netboot する
+事はできません。
 <p>
 
-<big><b>Obtaining an IP address via RARP</b></big>
+<big><b>RARP を使った IP アドレスの取得</b></big>
 <p>
 
-When instructed to boot "over the net", your workstation will first
-try to acquire an IP address by using the Reverse ARP (or RARP)
-protocol. Thus you need to run a <a href="rarp.html">RARP server</a>
-somewhere in the same network broadcast domain as your
-workstation. The ethernet address of the machine (needed when setting up the
-RARP server) should be displayed in the banner when it is powered on or reset.
+ネットワーク経由でブートするように PROM コマンドを入力したら、ワーク
+ステーションは最初に、Reverse ARP (あるいは RARP) プロトコルを使い IP
+アドレスを取得しようとします。したがって、ワークステーションと同じネット
+ワークブロードキャストドメイン内のどこかで<a 
+href="rarp.html">RARP サーバー</a>を起動させる必要があります。電源を投入
+した時、あるいはリセットした時に、マシンのイーサネットアドレス(RARP サー
+バーの設定に必要です)がバナーに表示されるはずです。
 <p>
 
-Sometimes the arp entry gets corrupt on the <tt>rarpd</tt> server.  If this
-happens, you may need to run (on the <tt>rarpd</tt> server):
+時々、<tt>rarpd</tt>サーバーの arp エントリーが間違っている事があります。
+もし、このような現象が発生したら、以下のコマンドを実行する必要がありま
+す(<tt>rarpd</tt>サーバー上で):
 <pre># <b>arp -s client.test.net CC:CC:CC:CC:CC:CC temp</b></pre>
 <p>
 
-Note:  if the client doesn't detect a <tt>rarpd</tt> server, it will patiently
-wait for one and will not display any error messages (as described in
-the <tt>rarpd</tt> pages).
+注: もし、クライアントが <tt>rarpd</tt> サーバーを見つけることができな
+かったら、クライアントは気長に待ち続け、エラーメッセージはまったく表示
+されません(<tt>rarpd</tt> ページに書かれています)。
 <p>
 
-<big><b>Downloading the boot loader</b></big>
+<big><b>ブートローダーのダウンロード</b></big>
 <p>
 
-If the RARP phase is completed successfully, the firmware in the
-workstation expects to be able to download a program via the <a
-href="tftpd.html">TFTP protocol</a>. It will do this by setting up a
-TFTP connection to the server that answered the earlier RARP request,
-and asking for a file named based on the machine's IP address and
-architectural class.  Sun 3's (verified for 3/50's and 3/60's) may 
-omit the architectural class from the file name.
+RARP フェーズが成功したら、ワークステーションの firmware は、<a
+href="tftpd.html">TFTP プロトコル</a>を使い、プログラムをダウン
+ロードします。これは、最初の RARP リクエストで返されたサーバー
+への TFTP コネクションを設定し、マシンの IP アドレスとアーキテク
+チャークラスを元にした名前のファイルを要求することによりおこなわ
+れます。Sun 3 (3/50 および 3/60 で確認) では、
+このファイル名にアーキテクチャークラスを付けないことがあります。
 <p>
 
-<big><b><a name="naming">Naming the boot loader</a></b></big>
+<big><b><a name="naming">ブートローダーの名前</a></b></big>
 <p>
 
-The netbooting machine will ask via tftp for a file named as follows:
+netboot するマシンは、tftp を使い、以下の名前のファイルを要求します:
 <ul>
-<li>The first eight characters are obtained by converting the four
-    octets of the IP address into hexadecimal representation.
-<li>For a sparc and newer sun3 machines, a dot (`.') is appended, followed
-    by the machine's architectural class, in uppercase. 
+<li>最初の 8 文字は、IP アドレスの 4 つのオクテットを十六進で表記した
+    ものです。
+<li>sparc と新しい sun3 マシンの場合、ドット(`.')が付加され、その後に
+    マシンのアーキテクチャークラスが大文字で続きます。
 </ul>
-You can use bc(1) to calculate this name as follows:
+このファイル名の計算には、以下のように bc(1) が使えます:
 <pre>$ <b>bc</b>
 <b>obase=16</b>
 <b>192</b>
@@ -106,143 +109,143 @@ A8
 <b>10</b>
 A
 <b>quit</b></pre>
-Thus, a sun4c machine or a newer sun3 machine which has been assigned 
-IP address 192.168.1.10, will make an TFTP request for
-`<tt>C0A8010A.SUN4C</tt>', while an older sun3 machine with the same 
-IP address will request `<tt>C0A8010A</tt>'.
+よって、 192.168.1.10 という IP アドレスが割り振られた sun4c
+マシンおよび新しい sun3 マシンは、
+`<tt>C0A8010A.SUN4C</tt>' のようなファイルを TFTP で要求しますが、
+同じ IP アドレスの古い sun3 マシンは、
+`<tt>C0A8010A</tt>' を要求します。
 <p>
 
-Normally, it is arranged on the TFTP server that this file is a symbolic
-link to an appropriate second-stage boot program, which should of course
-be located in a place where the TFTP daemon can find it (remember, many
-TFTP daemons run in a chroot'ed environment).
-You can find the second-stage boot program in 
-<tt>installation/netboot/boot.net</tt> (sparc) or
+通常、このファイルは適切なセカンドステージブートプログラムをさすシンボ
+リックリンクになるよう TFTP サーバー上で設定されています。もちろん、この
+ファイルは TFTP daemon が見つけることができる場所に存在する必要があります
+(多くの TFTP daemon は chroot された環境で動いている事を忘れないでください)。
+NetBSD の配布物の中の
+<tt>installation/netboot/boot.net</tt> (sparc) または
 <tt>installation/netboot/netboot</tt> (sun3)
-in the NetBSD distribution.
+に、セカンドステージブートプログラムがあります。
 
 </dd></dl>
 
-<h2>Firmware commands</h2>
+<h2>Firmware コマンド</h2>
 <dl><dt><dd>
-These depend on the version of the Openboot firmware.
+コマンドは Openboot firmware のバージョンによって異なります。
 <ul>
-<li>Version 1 usually has a '<tt><b>&gt;</b></tt>' prompt, and
-<li>Version 2 usually responds with an '<tt><b>ok</b></tt>' prompt
+<li>バージョン 1 は普通 '<tt><b>&gt;</b></tt>' プロンプトを表示し、
+<li>バージョン 2 は普通 '<tt><b>ok</b></tt>' プロンプトを表示します。
 </ul>
-The kernel to load and other arguments can be passed to the boot loader by
-specifying them on the end of the command line.
+ロードするカーネルと他の引数は、コマンドラインの最後に指定することに
+より、ブートローダーに渡すことができます。
 <p>
 
-<big><b>Version 1 Openboot firmware</b></big>
+<big><b>バージョン 1 Openboot firmware</b></big>
 <p>
 
-Uses the following syntax to initiate a a boot-strap procedure on a
-network device:
+ネットワークデバイスによるブートストラップ手順の初期化するためには、
+以下の文法を使用してください:
 <p>
 
 <ul>
-<li>`<tt><b>b <em>xx</em>()</b></tt>' where <tt><b><em>xx</em></b></tt> is a
-two-letter device specifier, e.g. `<tt><b>b le</b>(,,)</tt>' or `<tt><b>b ie(0,0,0)</b></tt>'
+<li>`<tt><b>b <em>xx</em>()</b></tt>' <tt><b><em>xx</em></b></tt> は
+2文字のデバイス指定子です。例えば、`<tt><b>b le</b>(,,)</tt>' や `<tt><b>b ie(0,0,0)</b></tt>'
 </ul>
 <p>
 
-The complete syntax is:
+完全な文法は:
 <p>
 
 <ul>
 <li>`<tt><b>b [[!][[<em>device</em>([<em>controller</em>],[<em>unit</em>],[<em>partition</em>])<em>pgm</em>
 	[<em>arg1,...,arg7</em>]]]/?]</b></tt>'
-  Boot <em>pgm</em>
-  using a default boot sequence device, an EEPROM-specified device, or a
-  user-specified device, or view the list of available boot devices
-  ('?').  If argument '!' is present, the system won't be reset prior
-  to booting.  Up to seven optional arguments will then be passed to the 
-  booting program.<br>
-    The
+  <em>pgm</em> を起動します。
+  デフォルトのブートシークエンスデバイス、EEPROM に設定されたデバイス、
+  あるいはユーザーが指定したデバイスを使用することができます。また、引数に '?'
+  を与えれば、ブート可能なデバイスの一覧を見ることができます。
+  もし、引数に '!' があれば、システムはブートの前にリセットされません。
+  残りの7つのオプションは、ブートプログラムに渡されます。<br>
     <tt><b>(<em>controller</em>,<em>unit</em>,<em>partition</em>)</b></tt>
-    arguments can be used to specify an TFTP server (???) [<em>If
-    anyone has more details on this, <a
-    href="http://www.NetBSD.org/cgi-bin/feedback.cgi">please let us know</a></em>]
+    引数は、TFTP サーバーの指定に使用されます(???)。 [<em>誰か
+    詳細を御存知の方は、<a
+    href="http://www.NetBSD.org/cgi-bin/feedback.cgi">私達に連絡してください。</a></em>]
 </ul>
 <p>
 
-<big><b>Version 2 Openboot firmware</b></big>
+<big><b>バージョン 2 Openboot firmware</b></big>
 <p>
 
-Uses a generalized syntax to specify the boot device for use with
-the `<tt>boot</tt>' command:
+`<tt>boot</tt>' コマンドの、ブートデバイスを指定する一般的な文法を
+使います。
 <p>
 
 <ul>
 <li>`<tt><b>boot net</b></tt>';<br>
-    this will most likely work in all cases
-    where there is a single network interface on the machine. In this
-    case `<tt>net</tt>' will have been setup by the firmware as an
-    alias to the full pathname of the on-board network device.
+    ひとつしかネットワークインターフェースを
+    持たないマシンでは、これでうまくいくでしょう。この場合、`<tt>net</tt>' 
+    は、オンボードネットワークデバイスのフルパス名へのエイリアスとして、firmware 
+    によって設定されているはずです。
 
-<p><li>You may want to specify a different kernel name or options.  These 
-    are listed after the device name:
+<p><li>異なるカーネル名やオプションを指定したいことがあるかもしれません。
+    その場合は、カーネル名とオプションをデバイス名の後に並べます:
     <p>`<tt><b>boot net netbsd-GENERIC.MP.gz -a</b></tt>'
 
-<p><li>You may also need to be explicit about the network device you want
-    to use, e.g. because there's more than one interface in the
-    machine, possibly connected to different subnets. In this case, use
-    the full device path name in the boot command, for instance:
+<p><li>使うネットワークデバイスを明示的に指定する必要がある場合もあります。
+    例えば、二つの異なるサブネットに接続するために一つ以上のインター
+    フェースを持つマシンの場合です。この場合、ブートコマンドで完全な
+    デバイスパス名を指定します。例えば:
 
     <p>`<tt><b>boot /iommu/sbus/lebuffer@2,40000/le@2,60000</b></tt>';<br>
-    would select the `<tt>le</tt>' interface located on an "FSBE/S"
-    board in Sbus slot 2; while
+    は Sbus スロット 2 の "FSBE/S" ボードにある `<tt>le</tt>' 
+    インターフェースを選択します。
 
     <p>`<tt><b>boot /iommu/sbus/ledma:tpe/le</b></tt>';<br>
-    selects the on-board network interface in twisted-pair mode.
+    はツイストペアーモードのオンボードネットワークインターフェースを選択します。
 </ul>
 </dd></dl>
 
-<h2>Begin setting things up (suggested order):</h2>
+<h2>設定を始める (次の順番に読むのが良いでしょう):</h2>
 <dl><dt><dd>
-Get <tt>installation/netboot/boot.net</tt> from the NetBSD distribution
-This is what is sent by TFTP.  Copy this file to an
-appropriately named file in <tt>/tftpboot</tt>, as described above in the
-<a href="#naming">Naming the boot loader</a> section.
+NetBSD 配布物から、 <tt>installation/netboot/boot.net</tt> を取得してください。
+これは TFTP で送られるものです。それから、先に
+<a href="#naming">ブートローダーの名前</a> セクションで記述したように、
+このファイルを適切な名前で <tt>/tftpboot</tt> にコピーしてください。
 <p>
 
 <ol>
 <li><a href="rarp.html"><tt>rarp</tt></a>
-<li><a href="bootparams.html"><tt>bootparams</tt></a> (sun3 only)
+<li><a href="bootparams.html"><tt>bootparams</tt></a> (sun3 のみ)
 <li><a href="tftpd.html"><tt>tftpd</tt></a>
 <li><a href="nfs.html"><tt>nfs</tt></a>
-<li><a href="files.html">client filesystem</a>
-<li><a href="finish.html">finishing up</a>
+<li><a href="files.html">クライアントのファイルシステム</a>
+<li><a href="finish.html">終了</a>
 </ol>
 </dd></dl>
 
 <hr>
 
-<a href="intro.html">Previous</a> |
-<a href="rarp.html">Next</a> |
-<a href="./">Table of Contents</a>
+<a href="intro.html">戻る</a> |
+<a href="rarp.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-        src="../../../images/NetBSD-flag.png" border="0"
+        src="../../../../images/NetBSD-flag.png" border="0"
         width="90" height="90" alt=""></a> 
   </td><td>
     <a href="../../../"><img
-        src="../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">Home Page</a>
+        src="../../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
     <a href="../../../Documentation/"><img
-        src="../../../images/NetBSD-flag.png" border="0"
+        src="../../../../images/NetBSD-flag.png" border="0"
         width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../../Documentation/"><img
-        src="../../../images/empty.gif" border="0"
+        src="../../../../images/empty.gif" border="0"
         width="1" height="1" alt="NetBSD ">Documentation top level</a>
   </td></tr></table>
 </td></tr></table>
@@ -250,8 +253,12 @@ appropriately named file in <tt>/tftpboot</tt>, as described above in the
 <hr>
 <address>
   <small>
-  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
+       www@jp.NetBSD.org</a>)<br>
   $NetBSD: intro.sun.html,v 1.1 2007/06/09 11:34:06 dsieger Exp $<br>
+  <!-- Based on english version: -->
+  <!-- NetBSD: intro.sun.html,v 1.1 2007/06/09 11:34:06 dsieger Exp   -->
   <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

@@ -1,120 +1,123 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="ISO-2022-JP"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
-<webpage id="docs-network-pf">
+<webpage id="ja-docs-network-pf">
 <config param="desc" value=""/>
 <config param="cvstag" value="$NetBSD: pf.xml,v 1.1 2007/06/09 11:33:55 dsieger Exp $"/>
+<!-- Based on english version: -->
+<!-- NetBSD: pf.xml,v 1.1 2007/06/09 11:33:55 dsieger Exp   -->
 <config param="rcsdate" value="$Date: 2007/06/09 11:33:55 $"/>
 
 <head>
 <!-- Copyright (c) 1994-2006
 The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<title>NetBSD Packet Filter information</title>
+<title>NetBSD Packet Filter 情報</title>
 </head>
 
 <para>
-The <ulink url="http://www.benzedrine.cx/pf.html">OpenBSD Packet Filter</ulink>
-has been integrated in NetBSD since July 2004 and the first supporting
-release is
-<ulink url="../../Releases/formal-3/NetBSD-3.0.html">NetBSD 3.0</ulink>.
-Usage of PF is NetBSD basically the same as in OpenBSD, but there are a few
-differences. This page tries to explain such differences and provides
-additional information about the port and integration of PF in NetBSD.
+<ulink url="http://www.benzedrine.cx/pf.html">OpenBSD Packet Filter</ulink> (PF)
+は、 2004 年 7 月以来 NetBSD に統合されており、リリース版としては
+<ulink url="../../Releases/formal-3/NetBSD-3.0.html">NetBSD 3.0</ulink>
+で初めて対応しました。
+NetBSD での PF の使い方は、基本的に OpenBSD と同じですが、若干の違いがあります。
+このページでは、その違いについて説明するとともに、
+PF の NetBSD への移植と統合に関する追加情報を提供します。
 </para>
 
 <sect1 role="toc">
 
 <sect2 id="overview">
-<title>Information</title>
+<title>情報</title>
 
 <sect3 id="availability">
-<title>Availability</title>
+<title>可用性</title>
 <para>
-NetBSD -current includes PF from OpenBSD 3.7 with patches from the 3.7 branch.
+NetBSD -current には、 OpenBSD 3.7 由来の PF に 3.7 枝由来の修正がおこなわれたものが附属します。
 </para>
 
 <para>
-NetBSD 3.0 is the first release with official support for PF.
-It includes PF from OpenBSD 3.6 with patches from the 3.6 branch.
+NetBSD 3.0 は PF に公式に対応した最初のリリース版です。
+NetBSD 3.0 には、 OpenBSD 3.6 由来の PF に 3.6 枝由来の修正がおこなわれたものが附属します。
 </para>
 
 <para>
-NetBSD 2.x does not have support for PF in the base system, but there's a
-LKM available in pkgsrc (<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/security/pflkm/README.html">security/pflkm</ulink>)
-that provides support for PF. See the
+NetBSD 2.x のベースシステムは PF に対応していませんが、
+pkgsrc に LKM (<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/security/pflkm/README.html">security/pflkm</ulink>)
+があり、これにより PF に対応できます。
+さらなる情報については、
 <ulink url="http://nedbsd.nl/~ppostma/pf/">PF loadable kernel module for NetBSD 2</ulink>
-page for more information.
+のページをご覧ください。
 </para>
 
 <para>
-NetBSD 1.6 or older does not have support for PF.
+NetBSD 1.6 以前は、 PF に対応していません。
 </para>
 </sect3>
 
 <sect3 id="kernel">
-<title>Kernel options</title>
+<title>カーネルオプション</title>
 <para>
-To use PF, you don't need to compile your own kernel, you can use the LKM
-<filename>/usr/lkm/pf.o</filename>. Use &man.modload.8; to load the LKM:
+PF を使うためにカーネルのコンパイルは必要ありません。 LKM <filename>/usr/lkm/pf.o</filename>
+を使うことができます。 &man.modload.8; を使ってこの LKM をロードします。
 <screen>
 # modload /usr/lkm/pf.o
 </screen>
-But if you prefer to use PF in the kernel, then you need least the
-following option enabled:
+しかし、 PF をカーネル内に組み込んでおきたい場合は、
+少なくとも以下のオプションを有効にする必要があります。
 <screen>
 options 	PFIL_HOOKS	# &man.pfil.9; packet filter hooks
 </screen>
-This option should be enabled in the GENERIC kernel by default.
-To enable PF in the kernel, the following pseudo-devices should be added
-to the kernel configuration:
+このオプションは、GENERIC カーネルでデフォルトで有効になっているはずです。
+カーネル内で PF を有効にするためには、
+以下の擬似デバイスをカーネルコンフィギュレーションに追加しておきます。
 <screen>
 pseudo-device	pf		# PF packet filter
 pseudo-device	pflog		# PF log interface
 </screen>
-If you're not interested in logging packets with PF, then you might want
-to leave out the pflog device.
+PF を使ったパケットのロギングに興味がなければ、
+pflog デバイスは外してもよいでしょう。
 </para>
 
 <para>
-You need to recompile and install the kernel for the settings to take effect.
+以上の設定を有効にするため、カーネルを再コンパイルしてインストールする必要があります。
 </para>
 </sect3>
 
 <sect3 id="enable">
-<title>Enabling PF</title>
+<title>PF を有効化する</title>
 <para>
-To enable PF at boot-time, set <userinput>pf=YES</userinput> in
-<filename>/etc/rc.conf</filename>.
+ブート時に PF を有効化するには、<filename>/etc/rc.conf</filename> で
+<userinput>pf=YES</userinput> を設定します。
 
-Please note that the boot procedure will be aborted if the PF configuration
-file doesn't exist
-(see also <ulink url="#configuration">Configuration</ulink>).
+なお、 PF の設定ファイルが存在しない場合、
+ブート手続きは中断します。
+(<ulink url="#configuration">設定</ulink>もご覧ください)。
 
-To start, stop, restart or reload PF manually, you can use the rc.d script
-<filename>/etc/rc.d/pf</filename>.
+PF の手動での起動、停止、再起動、再読み込みには、rc.d スクリプト
+<filename>/etc/rc.d/pf</filename> を使えます。
 </para>
 
 <para>
-To enable &man.pflogd.8; (the pf logging daemon) at boot-time,
-set <userinput>pflogd=YES</userinput> in <filename>/etc/rc.conf</filename>.
-To start, stop or restart &man.pflogd.8; manually, you can use the rc.d
-script <filename>/etc/rc.d/pflogd</filename>.
+ブート時に &man.pflogd.8; (pf ロギングデーモン) を有効化するには、
+<filename>/etc/rc.conf</filename> で <userinput>pflogd=YES</userinput> を設定します。
+&man.pflogd.8; の手動での起動、停止、再起動には、rc.d スクリプト
+<filename>/etc/rc.d/pflogd</filename> を使えます。
 </para>
 
 <para>
-To load the LKM at boot-time, you need to set <userinput>lkm=YES</userinput>
-in <filename>/etc/rc.conf</filename> and add the following line to
-<filename>/etc/lkm.conf</filename>:
+ブート時に LKM をロードするには、 <filename>/etc/rc.conf</filename> で
+<userinput>lkm=YES</userinput> を設定し、以下の行を
+<filename>/etc/lkm.conf</filename> に追加する必要があります。
 <screen>
 /usr/lkm/pf.o - - - - BEFORENET
 </screen>
 </para>
 
 <para>
-If /usr is on another partition from the root partition, you'll also need to 
-add the following to <filename>/etc/rc.conf</filename>:
+/usr がルートパーティションとは別のパーティションにある場合は、
+以下の内容を <filename>/etc/rc.conf</filename> に追加することも必要です。
 <screen>
 critical_filesystems_local="${critical_filesystems_local} /usr"
 </screen>
@@ -123,57 +126,57 @@ critical_filesystems_local="${critical_filesystems_local} /usr"
 </sect3>
 
 <sect3 id="configuration">
-<title>Configuration</title>
+<title>設定</title>
 <para>
-The default configuration file is <filename>/etc/pf.conf</filename>.
-This can be changed by setting the variable <userinput>pf_rules</userinput>
-in <filename>/etc/rc.conf</filename>.
+デフォルトの設定ファイルは <filename>/etc/pf.conf</filename> です。
+これは、 <filename>/etc/rc.conf</filename> で変数 <userinput>pf_rules</userinput>
+を設定して変えることができます。
 </para>
 
 <para>
-The initial configuration file is
-<filename>/etc/defaults/pf.boot.conf</filename>. This configuration is only
-used during the network configuration to protect the machine from
-possible attacks. You can override the default initial configuration by
-creating a file named <filename>/etc/pf.boot.conf</filename>, but that
-should not be needed in most setups.
-Please see &man.pf.boot.conf.5; for more information about this file.
+初期設定ファイルは
+<filename>/etc/defaults/pf.boot.conf</filename> です。この設定は、
+ネットワーク設定をしている最中にマシンを攻撃から防御するためだけのものです。
+このデフォルト設定は、 <filename>/etc/pf.boot.conf</filename> というファイルを作ることで
+上書きすることができますが、ほとんどの場合は必要ないはずです。
+このファイルに関するさらなる情報は、 &man.pf.boot.conf.5; をご覧ください。
 </para>
 
 <para>
-The syntax of both configuration files are described in the manual page
-&man.pf.conf.5;.
+両設定ファイルの書式は、
+&man.pf.conf.5; マニュアルページで説明されています。
 </para>
 </sect3>
 
 <sect3 id="bridge">
-<title>PF in bridge setup</title>
+<title>ブリッジにおける PF の設定</title>
 <para>
-PF in bridging mode is supported, but you need to compile a new kernel
-to enable packet filtering on a bridge. The following line should be added
-to the kernel configuration:
+PF はブリッジングモードに対応していますが、ブリッジ上でのパケットフィルタリングを有効化するには、
+カーネルを再コンパイルする必要があります。
+以下の行をカーネルコンフィギュレーションに追加します。
 <screen>
 options         BRIDGE_IPF	# bridge uses IP/IPv6 pfil hooks too
 </screen>
-Configure the bridge as described in the
-<ulink url="../../guide/en/chap-net-misc.html#chap-net-misc-bridge">NetBSD Guide</ulink>.
-Then use the &man.brconfig.8; command to enable packet filtering on the bridge:
+<ulink url="../../../guide/en/chap-net-misc.html#chap-net-misc-bridge">NetBSD Guide</ulink> で説明されているとおり、
+ブリッジを設定します。
+次に、 &man.brconfig.8; コマンドを使ってブリッジ上でパケットフィルタリングを有効化します。
 <screen>
 # brconfig bridgeN ipf
 </screen>
-The "ipf" option also applies to PF, because this option actually enables
-the &man.pfil.9; interface.
-PF should now be able to filter packets on the interfaces configured as
-the bridge. Note that it's only needed to filter on one interface because
-the same data goes through both interfaces.
+"ipf" オプションは PF に対しても適用されます。このオプションは実際には
+&man.pfil.9; インターフェースを有効にするものだからです。
+これで、ブリッジとして設定されたインターフェース上のパケットを
+PF がフィルターできるようになったはずです。なお、
+同じデータが両インターフェースを通過するので、
+フィルターする必要があるのは片方のインターフェース上だけです。
 </para>
 </sect3>
 
 <sect3 id="altq">
 <title>ALTQ</title>
 <para>
-Using ALTQ in PF will be supported in NetBSD 4.0. The following kernel options
-are relevant:
+PF での ALTQ の使用は、NetBSD 4.0 で対応する予定です。
+以下のカーネルオプションが関係します。
 <screen>
 options         ALTQ            # Manipulate network interfaces' output queues
 options         ALTQ_CBQ        # Class-Based Queueing
@@ -181,56 +184,56 @@ options         ALTQ_HFSC       # Hierarchical Fair Service Curve
 options         ALTQ_PRIQ       # Priority Queueing
 options         ALTQ_RED        # Random Early Detection
 </screen>
-Please note that you must compile pf in the kernel, using the PF LKM and ALTQ in
-the kernel will not work.
+なお、pf を組み込んだカーネルをコンパイルする必要があることに注意してください。
+PF LKM とカーネル内の ALTQ の組合せは動作しません。
 </para>
 
 <para>
-For the configuration of ALTQ is nothing special needed, just follow the documentation to
-setup the rules. Some example rules can be found in <filename>/usr/share/examples/pf</filename>.
+ALTQ の設定については、特別なことは何ら必要ありません。ドキュメンテーションに従ってルールを設定するだけです。
+ルールの設定例がいくつか <filename>/usr/share/examples/pf</filename> にあります。
 </para>
 </sect3>
 
 <sect3 id="differences">
-<title>Differences with OpenBSD</title>
+<title>OpenBSD との差異</title>
 <para>
-There are a few differences in PF for NetBSD when compared to OpenBSD.
-Most of them are missing features.
+NetBSD 用の PF は、OpenBSD のものとくらべ若干の違いがあります。
+違いのほとんどは、機能の欠如です。
 
 <itemizedlist>
 <listitem>
 <ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=pfsync">pfsync(4)</ulink>
-is not supported (due to protocol # assignment issues).
-This will hopefully be solved in a future release.
+には対応していません (プロトコル番号の割り当ての問題のため)。
+うまくいけば将来のリリースで解決するでしょう。
 </listitem>
 <listitem>
-ALTQ will be supported in NetBSD 4.0, earlier versions will not work.
+ALTQ には NetBSD 4.0 で対応する予定です。それより前のバージョンでは動作しません。
 </listitem>
 <listitem>
 <ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=carp">carp(4)</ulink>
-will be supported in NetBSD 4.0.
+には NetBSD 4.0 で対応する予定です。
 </listitem>
 <listitem>
-The 'group' keyword does nothing, because NetBSD doesn't keep the GID
-in the uidinfo structure. This issue will probably be solved in a future
-release.
+'group' キーワードは何もしません。
+NetBSD は GID を uidinfo 構造体に保持しないからです。
+おそらく、将来のリリースでは解決するでしょう。
 </listitem>
 <listitem>
-Filtering on route labels is not working, NetBSD doesn't have labels
-for routes. It is unknown whether this will be supported in a future release
-or not.
+ルートラベルにもとづくフィルタリングは機能しません。 NetBSD は
+経路用のラベルを持ちません。将来のリリースで対応するかどうかは、
+わかりません。
 </listitem>
 <listitem>
-The initial configuration file &man.pf.boot.conf.5; is a NetBSD specific
-file. OpenBSD loads the initial configuration for PF from /etc/rc which is
-a bit clumsy in case you need to change it. For this reason has NetBSD
-added a new file for the initial PF configuration.
+初期設定ファイル &man.pf.boot.conf.5; は NetBSD 特有のファイルです。
+OpenBSD は  PF の初期設定を /etc/rc から読み込みますが、
+このファイルは変更が必要なときの扱いが面倒です。
+このため、 NetBSD では PF の初期設定用に新しいファイルを追加しています。
 </listitem>
 <listitem>
 <ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=spamd">spamd</ulink>
-was orginally imported into NetBSD, but it was removed before 3.0 was released.
-It is not considered to be part of PF and has been made available via pkgsrc
-(<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/mail/spamd/README.html">mail/spamd</ulink>).
+は最初は NetBSD に導入されましたが、 3.0 のリリース前に削除されました。
+これは PF の一部とはされず、 pkgsrc で利用可能になっています
+(<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/mail/spamd/README.html">mail/spamd</ulink>)。
 </listitem>
 </itemizedlist>
 </para>
@@ -239,10 +242,10 @@ It is not considered to be part of PF and has been made available via pkgsrc
 </sect2>
 
 <sect2 id="links">
-<title>Links</title>
+<title>リンク</title>
 
 <sect3 id="misclinks">
-<title>Miscellaneous links</title>
+<title>雑多なリンク</title>
 <itemizedlist>
 <listitem>
 <ulink url="http://www.openbsd.org/faq/pf/index.html">OpenBSD PF User's Guide</ulink>
@@ -257,17 +260,17 @@ It is not considered to be part of PF and has been made available via pkgsrc
 </sect3>
 
 <sect3 id="manpages">
-<title>Manual pages</title>
+<title>マニュアルページ</title>
 <itemizedlist>
-<listitem>&man.pf.4; - packet filter</listitem>
-<listitem>&man.pflog.4; - packet filter logging interface</listitem>
-<listitem>&man.pf.boot.conf.5; - initial configuration for packet filter</listitem>
-<listitem>&man.pf.conf.5; - packet filter configuration file</listitem>
-<listitem>&man.pf.os.5; - format of the operating system fingerprints file</listitem>
-<listitem>&man.authpf.8; - authenticating gateway user shell</listitem>
-<listitem>&man.ftp-proxy.8; - Internet File Transfer Protocol proxy server</listitem>
-<listitem>&man.pfctl.8; - control the packet filter (PF) and network address translation (NAT) device</listitem>
-<listitem>&man.pflogd.8; - packet filter logging daemon</listitem>
+<listitem>&man.pf.4; - パケットフィルター</listitem>
+<listitem>&man.pflog.4; - パケットフィルターロギングインターフェース</listitem>
+<listitem>&man.pf.boot.conf.5; - パケットフィルターの初期設定</listitem>
+<listitem>&man.pf.conf.5; - パケットフィルターの設定ファイル</listitem>
+<listitem>&man.pf.os.5; - オペレーティングシステムの指紋ファイルの形式</listitem>
+<listitem>&man.authpf.8; - 認証ゲートウェイユーザーシェル</listitem>
+<listitem>&man.ftp-proxy.8; - インターネットファイル転送プロトコルのプロキシーサーバー</listitem>
+<listitem>&man.pfctl.8; - パケットフィルター (PF) およびネットワークアドレス変換 (NAT) デバイスの制御</listitem>
+<listitem>&man.pflogd.8; - パケットフィルターロギングデーモン</listitem>
 </itemizedlist>
 </sect3>
 
@@ -275,5 +278,5 @@ It is not considered to be part of PF and has been made available via pkgsrc
 
 </sect1>
 
-<parentsec url="./" text="Networking documentation"/>
+<parentsec url="./" text="ネットワーキングドキュメンテーション"/>
 </webpage>

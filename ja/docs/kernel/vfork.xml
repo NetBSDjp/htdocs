@@ -1,101 +1,109 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="ISO-2022-JP"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/share/xml/website-netbsd.dtd">
 
-<webpage id="docs-kernel-vfork">
-<config param="desc" value="Why implement traditional vfork()"/>
+<webpage id="ja-docs-kernel-vfork">
+<config param="desc" value="なぜ伝統的な vfork()を実装したのか"/>
 <config param="cvstag" value="$NetBSD: vfork.xml,v 1.1 2007/06/09 11:33:47 dsieger Exp $"/>
+<!-- Based on english version: -->
+<!-- NetBSD: vfork.xml,v 1.1 2007/06/09 11:33:47 dsieger Exp   -->
 <config param="rcsdate" value="$Date: 2007/06/09 11:33:47 $"/>
 <head>
 
 <!-- Copyright (c) 1994-2007
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-<title>NetBSD Documentation: Why implement traditional vfork()</title>
+<title>NetBSD ドキュメンテーション: なぜ伝統的な vfork()を実装したのか</title>
 </head>
 
 <sect1 role="toc">
 <sect2 id="vfork">
 <sect3 id="intro">
-<title>Introduction</title>
-<para><function>vfork()</function> is designed to be used in the specific case where
-the child will <function>exec()</function> another program, and the parent can
-block until this happens. A traditional <function>fork()</function> required
-duplicating all the pages of the parent process in the child - a
-significant overhead.</para>
+<title>序</title>
+<para><function>vfork()</function>
+は、子プロセスがいずれ他のプログラムを <function>exec()</function>し、
+かつ親プロセスはそれが起きるまで待っているという、特別な状況で
+用いるために設計されたものです。
+伝統的な <function>fork()</function> では、子プロセスに親プロセスの
+すべてのページを複製するという著しいオーバーヘッドが生じます。</para>
 
 <para>
-The Mach VM system added Copy On Write (COW), which made the
-<function>fork()</function> much cheaper, and in BSD 4.4, <function>vfork()</function>
-was made synonymous to <function>fork()</function>.  After NetBSD 1.3, a
-traditional <function>vfork()</function> was reimplemented.</para>
+COW (コピーオンライト)が追加された
+Mach VM システムでは
+<function>fork()</function> の負荷が大変軽くなり、
+BSD 4.4では <function>vfork()</function>は <function>fork()</function> と
+同義のものとされました。
+NetBSD 1.3 以降では、伝統的な <function>vfork()</function> が再実装されました。</para>
 
-<para>A good amount of effort was directed at making COW better in <ulink
-url="uvm.html"><emphasis role="bold">UVM</emphasis></ulink>, but an
-address space-sharing <function>vfork()</function> <emphasis>still</emphasis>
-turns out to be a win.  It shaves several seconds off a build of libc
-on a 200MHz PPro.</para>
+<para><ulink
+url="uvm.html"><emphasis role="bold">UVM</emphasis></ulink>で COW を
+よりよいものにするために多大な努力がおこなわれました。
+しかしアドレス空間を共有する <function>vfork()</function>が <emphasis>いまだに</emphasis>
+勝ることが分かったのです。
+これにより、200MHz PPro での libcのビルドの所要時間を
+数秒削ることができます。</para>
 </sect3>
 <sect3 id="4bsd-vfork-cow">
-<title><function>vfork()</function>/<function>exec()</function> using the 4.4BSD
-<function>vfork()</function> and COW</title>
+<title>4.4BSDの <function>vfork()</function>/<function>exec()</function> を使った
+<function>vfork()</function> と COW の処理</title>
 
 <itemizedlist>
-<listitem><para>Traverse parent's vm_map, marking the writable portions of the
-        address space COW.  This means invoking the pmap, modifying PTEs,
-        and flushing the TLB.</para></listitem>
+<listitem><para>親の vm_map をたどって、アドレス空間の書き込み可能な部分を
+        COW とマークする。これは、 pmapを呼び出し、 PTEを修正し、
+        TLBをフラッシュすることを意味します。</para></listitem>
 
-<listitem><para>Create a vm_map for the child, copy the parent's vm_map entries
-        into the child's vm_map.  Optionally, invoke the pmap to copy
-        PTEs from the parent's page tables into the child's page tables.</para></listitem>
+<listitem><para>子プロセスの vm_map を生成し、親の vm_map エントリーを子の vm_mapにコピーします。
+        場合によっては、 pmapを呼び出して親のページテーブルから
+        このページテーブルに PTE をコピーします。</para></listitem>
 
-<listitem><para>Block parent.</para></listitem>
+<listitem><para>親をブロックします。</para></listitem>
 
-<listitem><para>Child runs.  If PTEs were <emphasis>not</emphasis> copied, take page fault to get
-        a physical mapping for the text page at the current program counter.</para></listitem>
+<listitem><para>子が走ります。 PTEがコピー <emphasis>されてない</emphasis>場合には、
+        ページフォルトが起きて現在プログラムカウンタのあるテキストページの物理マッピングが得られます。</para></listitem>
 
-<listitem><para>Child execs, and unmaps the entire address space that was just
-        created, and creates a new one.  This implies that the parent's
-        vm_map has to be traversed to mark the COW portions not-COW.</para></listitem>
+<listitem><para>子は exec し、そして 作られたばかりのアドレス空間全体を unmapして
+        新しく作ります。
+        これは、親の vm_mapを辿って COWとマークされた部分を
+        非COWにする作業を伴います。</para></listitem>
 
-<listitem><para>Unblock parent.</para></listitem>
+<listitem><para>親のブロックを解きます。</para></listitem>
 
-<listitem><para>Parent runs, takes page fault when modifying previously R/W
-        data that was marked R/O for COW. No data is copied at this
-        time.</para></listitem>
+<listitem><para>親が走り、以前には R/W であって COWにするために R/Oとマークしたデータを
+        変更するとページフォルトを起こします。この時点ではデータのコピーは行なわれません。</para></listitem>
 </itemizedlist>
 </sect3>
 
 <sect3 id="3bsd-vfork">
-<title>The 3.0BSD/NetBSD <function>vfork()</function>, using address space
-sharing</title>
+<title>アドレス空間共有を用いた
+3.0BSD/NetBSD の <function>vfork()</function> の処理</title>
 
 <itemizedlist>
-<listitem><para>Take reference to parent's vmspace structure.</para></listitem>
+<listitem><para>親プロセスの vmspace構造体への参照を得ます。</para></listitem>
 
-<listitem><para>Block parent.</para></listitem>
+<listitem><para>親をブロックします。</para></listitem>
 
-<listitem><para>Child runs.  No page faults occur because the parent's page
-        tables are being used, and the PTEs are already valid.</para></listitem>
+<listitem><para>子が走ります。 親のページテーブルが用いられるので、 PTEは既に
+        有効でありページフォルトは起こりません。</para></listitem>
 
-<listitem><para>Child execs, deletes the reference it had to the parent's
-	vmspace structure, and creates a new one.</para></listitem>
+<listitem><para>子が exec し、親の vmspace構造体に対して持っていた参照を削除し、
+	新しいものを作ります。</para></listitem>
 
-<listitem><para>Unblock parent.</para></listitem>
+<listitem><para>親のブロックを解きます。</para></listitem>
 
-<listitem><para>Parent runs.  (No page faults occur because the parent's
-        vm_map was not modified.)</para></listitem>
+<listitem><para>親が走ります。(親の vm_mapは変更されていないので、
+        ページフォルトは起こりません。)</para></listitem>
 </itemizedlist>
 
 <para>
-So, in the case where you're going to fork and then exec, the latter
-case is clearly faster. Even if your COW algorithms are good, you still
-have to do a lot more work compared to the vmspace-sharing case!
+このように、fork してさらに execするような場合には、
+明らかに後者がより高速です。
+たとえ良い COWアルゴリズムを使っているとしても、仮想空間を共有する
+場合と比べて大変多くの作業を行なわねばなりません!
 </para>
 </sect3>
 </sect2>
 </sect1>
-<parentsec url="./" text="NetBSD Documentation: Kernel"/>
+<parentsec url="./" text="NetBSD ドキュメンテーション: カーネル"/>
 
 </webpage>
