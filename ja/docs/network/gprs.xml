@@ -1,0 +1,332 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="docs-network-gprs">
+<config param="desc" value=""/>
+<config param="cvstag" value="$NetBSD: gprs.xml,v 1.1 2007/06/09 11:33:54 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 11:33:54 $"/>
+<head>
+
+
+
+
+<!-- Copyright (c) 1994-2004
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+
+<title>GPRS, CDPD HowTo</title>
+</head>
+
+
+
+
+<sect1 role="toc">
+
+<sect2 id="gprs">
+
+<sect3 id="gprs-intro">
+<title>Introduction</title>
+
+
+<para>
+In GPRS/CDPD, the cards
+are modems in the true technical sense, but not in the popular sense.
+ie: they don't dial a PSTN phone number, receive a carrier, negotiate
+a speed, and pass serial data back and forth.
+</para>
+
+<para>
+The cards talk to a cellular base station using cellular packets. Inside
+those packets are IP datagrams and the base stations route those datagrams
+onto the Internet.  The client does not speak 'ppp' to the base
+station.  The client speaks ppp only to the card. The card de-ppp's
+the packets, re-wraps them into either CDPD or GPRS packets, and 
+transmits them out the antenna to the base-station.   The cards present
+a PPP interface to the client so as to make it easier to configure drivers
+for client operating systems.  As you see, there are no modifications
+required to NetBSD utilities, just configurations.
+</para>
+
+<para>
+In the case of GPRS, the modem has (I think) 5 provider configurations.
+You configure one of those configurations for each service provider you
+are signed up with.  There are some parameters you specify using 
+"AT" commands.  
+</para>
+
+<para>
+CDPD also is setup using AT commands but there is only one configuration
+for each provider.
+</para>
+
+<para>
+'kermit' can be used to send the initial AT configuration commands to the modem
+(once, after receiving the modem from the manufacturer). Once the modem
+is configured, you never need to use 'kermit' again.  Supposedly a person 
+could use 'tip' since it's part of the distribution but it's more difficult
+to explain how to set it up and how to use it in a document.
+The configuration of the modems themselves is beyond the scope of
+this document, please check your vendor's documentation. 
+With GPRS etc. evolving, it's possible the provider will pre-configure the
+cards for their customers or provide them with a cheat-sheet.  In all
+likelihood, just like a cellphone, when you buy it from a provider, they will
+do the setup for you.
+</para>
+
+<para>
+In any case, the command which initiates PPP is model specific.  
+</para>
+
+
+</sect3>
+<sect3 id="gprs-using-gprs">
+<title>Using a General Packet Radio Service (GPRS) card</title>
+
+
+<para>
+To use the NovatelWireless GPRS wireless data card, you must first 
+configure the card according to the manufacturer and provider 
+settings.  Please contact your provider.
+Tested GPRS cards include NovatelWireless Merlin G100 and 
+NovatelWireless Merlin G201.
+</para>
+
+<para>
+Once you have done this, a few files need to be edited. These are:
+</para>
+
+<variablelist>
+<varlistentry> <code>/etc/ppp/options.gprs</code>:
+<term></term>
+<listitem>
+<screen>
+/dev/tty03
+115200
+defaultroute
+ipcp-accept-local
+ipcp-accept-remote
+noauth
+novj
+connect 'chat -v -f /etc/ppp/chatscript.gprs'
+user dummy
+usepeerdns
+mru 1500
+mtu 1500
+</screen>
+</listitem></varlistentry>
+
+<varlistentry> <code>/etc/ppp/chatscript.gprs</code>:
+<term></term>
+<listitem>
+<screen>
+ABORT BUSY ABORT 'NO CARRIER' ABORT ERROR '' AT OK 'ATDT*99#' CONNECT
+</screen>
+</listitem></varlistentry>
+
+<varlistentry> <code>/etc/ppp/chap-secrets</code>:
+<term></term>
+<listitem>
+<screen>
+* * "dummy"
+</screen>
+</listitem></varlistentry>
+
+
+<para>
+After that, start with the following commandline:
+</para>
+
+<screen>
+pppd file /etc/ppp/options.gprs
+</screen>
+
+<para>
+This will cause the card to attach to the default provider as configured
+into your card.  To connect to a different provider configured into a
+different config slot in the card, you will have to modify the "ATDT"
+string in /etc/ppp/chatscript.gprs according to the documentation
+provided by NovatelWireless. 
+</para>
+
+<para>
+As documentation for these cards is not easily found anymore,
+these are typically the only settings you will ever need to do, where 'apn'
+is the APN (Access Point Name) supplied to you by your mobile operator and
+1234 is the PIN number for your SIM card:
+</para>
+
+<screen>
+at+cgdcont=1,"IP","apn"
+at+cpin=1234
+</screen>
+
+<para>
+Modify the tty in /etc/ppp/options.gprs as appropriate.  For a typical
+laptop with a builtin modem, com port and IR port, the NovatelWireless
+modem will appear as tty03.
+If your provider doesn't automatically send you DNS configuration upon
+connection you will have to remove the `usepeerdns` option to be able
+to connect.
+</para>
+
+<para>
+Also, make sure to modify /etc/ppp/chap-secrets with your username and
+password as supplied to you by your provider.
+</para>
+
+<para>
+See the <ulink url="./">networking documentation</ulink> for more information on 
+using PPP networking with NetBSD.
+</para>
+</variablelist>
+
+</sect3>
+<sect3 id="gprs-sony-ericcson-t200">
+<title>Using a SonyEricsson t200</title>
+
+
+<small>The following information was provided by Andrew Cagney:</small>
+<para>
+The SonyEricsson t200 GPRS phone has it's serial baud rate wired to 9600.
+It doesn't drop the GPRS connection when pppd disconnects, and finally the USB
+phone cable provided doesn't appear to work under Netbsd at this point in
+time.
+</para>
+<para>The last problem can be worked around by using a USB&lt;-&gt;serial cable and
+connecting that to the SonyEricsson.  The first two problems can be worked
+around/solved by including an init, connect and disconnect script in the
+options or peers file:
+</para>
+
+<screen>
+115200
+init "/etc/ppp/chat/t200.sh"
+connect "chat -v -f /etc/ppp/chat/t200"
+disconnect "chat -v -f /etc/ppp/chat/hup"
+</screen>
+
+<para>
+Then, t200.sh should contain:
+</para>
+
+<screen>
+#!/bin/sh
+# Find out the intended baud rate
+b=`stty -g | sed -e 's/.*ispeed=//' -e 's/:.*//'`
+# Force the serial line to 9600 baud so that it can be re-configured
+stty 9600
+# Ask for the modem to list all baud rates, and the current one.  Then
+# force it to the rate the line was originally set to.
+if chat -v \
+    TIMEOUT 5 '' \
+    +++AT OK \
+    AT+IPR=? OK \
+    AT+IPR? OK \
+    AT+IPR=${b} OK
+then
+    stty ${b}
+    exit 0
+else
+    exit 1
+fi
+</screen>
+The file t200 should contain:
+<screen>
+ABORT BUSY
+ABORT ERROR
+ABORT 'NO CARRIER'
+ABORT 'NO DIALTONE'
+ABORT 'NO DIAL TONE'
+TIMEOUT 10 ''
+AT OK--AT--OK
+# Ask the modem its baud rate - a sanity check
+AT+IPR=? OK
+AT+IPR? OK
+# connect
+ATDT*99# CONNECT
+</screen>
+
+<para>
+And, finally, the hup file should read:
+</para>
+
+<screen>
+TIMEOUT 2
+'' +++ATH OK
+</screen>
+
+</sect3>
+<sect3 id="gprs-using-cdpd">
+<title>Using a Cellular Digital Packet Data (CDPD) card</title>
+
+
+<para>
+Using the NovatelWireless CDPD wireless data card, you must first 
+configure the card according to the manufacturer and provider 
+settings.  Please contact your provider.
+The only card tested so far is the NovatelWireless Merlin CDPD.
+</para>
+
+<para>
+Again, a few files need configuration. These are:
+</para>
+
+<variablelist>
+<varlistentry> <code>/etc/ppp/options.cdpd</code>:
+<term></term>
+<listitem>
+<screen>
+/dev/tty03
+115200
+defaultroute
+ipcp-accept-local
+ipcp-accept-remote
+noipdefault
+novj
+noauth
+connect 'chat -v -f /etc/ppp/chatscript.cdpd'
+mru 1500
+mtu 1500
+</screen>
+</listitem></varlistentry>
+
+<varlistentry> <code>/etc/ppp/chatscript.cdpd</code>:
+<term></term>
+<listitem>
+<screen>
+ABORT BUSY ABORT 'NO CARRIER' ABORT ERROR '' AT OK 'AT\\APPP' CONNECT
+</screen>
+</listitem></varlistentry>
+
+
+<para>
+Once this is done, call the following commandline:
+</para>
+
+<screen>
+pppd file /etc/ppp/options.cdpd
+</screen>
+
+<para>
+Modify the tty in /etc/ppp/options.cdpd as appropriate.  For a typical
+laptop with a builtin modem, com port and IR port, the NovatelWireless
+modem will appear as tty03.
+</para>
+
+
+<para>
+See the <ulink url="./">networking documentation</ulink> for more information on 
+using PPP networking with NetBSD.
+</para>
+
+</variablelist>
+
+
+
+</sect3>
+</sect2>
+ 
+</sect1>
+</webpage>

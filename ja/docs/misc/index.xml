@@ -1,0 +1,1502 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+    "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="docs-misc-index">
+<config param="desc" value="NetBSD Documentation: Other FAQs and HOWTOs"/>
+<config param="cvstag" value="$NetBSD: index.xml,v 1.1 2007/06/09 11:33:50 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 11:33:50 $"/>
+<head>
+<!-- Copyright (c) 2005
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<title>NetBSD Documentation: Other FAQs and HOWTOs</title>
+</head>
+
+<sect1 id="top">
+</sect1>
+
+<sect1 role="toc">
+
+<sect2 id="general">
+<title>General questions about NetBSD</title>
+
+<sect3 id="release-changes">
+<title>What changed between NetBSD releases?</title>
+<para>
+A relatively up-to-date list of all changes (including those in
+NetBSD-current) is <ulink url="../../Changes/">available</ulink>.
+</para>
+<para>There is also a <code>CHANGES</code> file
+in the top level directory of each release, and maintained online for
+<ulink url="http://cvsweb.NetBSD.org/bsdweb.cgi/~checkout~/src/doc/CHANGES.prev?content-type=text/plain">previous</ulink>
+and the
+<ulink url="http://cvsweb.NetBSD.org/bsdweb.cgi/~checkout~/src/doc/CHANGES?content-type=text/plain">next</ulink>
+release. 
+
+</para>
+</sect3>
+
+<sect3 id="64-bit">
+<title>Is NetBSD a 64 bit operating system?</title>
+<para>
+
+NetBSD runs on both 32 bit and 64 bit CPUs. On the <ulink
+url="../../Ports/alpha/">alpha</ulink> CPU the kernel and userland run in
+a mode known as LP64, where <emphasis role="bold">int</emphasis>s are 32 bit, and <emphasis role="bold">long</emphasis>s
+and pointers (and the address space) are 64 bit.  The
+<ulink url="../../Ports/amd64/">amd64</ulink> and
+<ulink url="../../Ports/sparc64/">sparc64</ulink>
+ports runs in both 32-bit and
+64-bit configurations. A 64 bit kernel (LP64) supports 32-bit
+applications in 64-bit mode. A 32 bit kernel, which uses 32 bits for
+all of integers, pointers and long integers (IPL32) can not run 64 bit
+programs.
+</para>
+<para>
+
+On other 64 bit capable CPUs, such as R4000 and newer MIPS (used by <ulink
+url="../../Ports/#in-tree-ports">a number of ports</ulink>) NetBSD runs
+in 32 bit mode though is in the process of being modified to 64 bit.
+</para>
+<para>
+
+All NetBSD ports support 64 bit arithmetic, both in the kernel and in
+userland programs. In the kernel this is used for various counters and
+for FFS, which is the 64 bit 'Fast File System'.
+</para>
+</sect3>
+
+<sect3 id="exportability">
+<title>Is NetBSD exportable from the US?</title>
+<para>
+Up to (and including) NetBSD 1.4.x, everything except the security
+distribution (i.e. secr.tgz) was exportable from the US. 
+The secr.tgz distribution file contained the libraries for crypt.
+Starting with NetBSD 1.5, crypto code is included in the NetBSD base
+distribution. 
+<ulink url="../../Misc/crypto-export.html"> Please refer to
+the NetBSD document on exporting restricted code or binaries</ulink>.
+</para>
+</sect3>
+
+<sect3 id="netbsd-uses">
+<title>For what is NetBSD used?</title>
+<para>
+In the words of Chris G. Demetriou (cgd@NetBSD.org):
+<blockquote><quote>
+NetBSD, in general, is meant as a "stable research platform" -- that is,
+a system that can be used for commercial, home, and research work...  what
+_you_ do with it is up to you.  In general, those of us working on NetBSD
+are trying to improve the system in whatever way we can -- support for more
+hardware, stability, performance, documentation...
+</quote></blockquote>
+
+See our <ulink url="../../Misc/features.html">features page</ulink> for an idea
+of what opportunities NetBSD provides you with!
+</para>
+</sect3>
+</sect2>
+
+<sect2 id="user-configuration">
+<title>User configuration</title>
+
+<sect3 id="adding-a-user">
+<title>Adding a user</title>
+<para>
+You can use the &man.useradd.8; command to add users on recent NetBSD
+release, older releases can install the 
+<filename role="pkg">sysutils/user</filename> package
+to get the same functionality. Editing <code>/etc/passwd</code> will not
+work. If you want to edit the password database, use &man.vipw.8;. See
+also &man.pwd.mkdb.8; for more information.
+</para>
+</sect3>
+
+<sect3 id="gecos-field">
+<title>Changing the information displayed via <code>finger</code>?</title>
+<para>
+Use the &man.chfn.1; and &man.chsh.1; commands, or use
+vipw(8) to edit <code>/etc/master.passwd</code>
+</para>
+</sect3>
+
+<sect3 id="problems-with-root">
+<title>Problems logging in as, or 'su'ing to, root</title>
+<para>
+This covers a number of possible problems:
+</para>
+<para>
+<itemizedlist>
+    <listitem><emphasis role="bold">Unable to login directly as root</emphasis><html:br/>
+	NetBSD will only allow direct root login on terminals marked as
+	'secure' in <code>/etc/ttys</code> (see &man.ttys.5;). To be able to login directly
+	as root across the network (<emphasis role="bold">not</emphasis> recommended) you will need to
+	add '<code>secure</code>' to the end of every network terminal line. For
+	those who prefer not to have to edit each line you can (as root)
+	type:
+	<programlisting>
+		cd /etc
+		cp ttys ttys.orig
+		cat ttys.orig | sed 's/network$/network secure/' &gt; ttys</programlisting>
+    </listitem>
+    <listitem><emphasis role="bold">Unable to 'su' to root</emphasis><html:br/>
+	NetBSD checks the contents of the 'wheel' group in <code>/etc/group</code>
+	for any attempt to &man.su.1; to root. If it is empty (wheel:*:0:) then
+	anyone with the correct password can su to root. Otherwise it should be
+	a comma separated (no spaces!) list of the permitted
+        accounts.</listitem>
+    <listitem><emphasis role="bold">Unable to 'su' to anyone</emphasis>
+        <para>Type "<emphasis role="bold"><code>ls -l /usr/bin/su</code></emphasis>". The first 'word' on the
+	output should be '-r-sr-xr-x'. If it is anything else (such as
+	'-r-xr-xr-x'). Type (as root) "<emphasis role="bold"><code>chmod 4555 /usr/bin/su</code></emphasis>".
+	The 's' in that position
+	indicates it is a 'setuid' binary, which in this case allows 'su' to
+	run with root privileges.
+	</para>
+	<para>
+	This problem can be caused by not giving the '-p' (preserve
+	permissions) flag to tar when extracting the distribution. If this was
+	the case then re-extract all the tarfiles (except etc.tar.gz) as
+	various other utilities will also be broken.
+        </para>
+    </listitem>
+</itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="adding-to-path">
+<title> Adding something to your path</title>
+<para>
+For example, to add /usr/X11R6/bin to your path, edit the file <emphasis>.login</emphasis>
+in your home directory and add the following:
+<programlisting>set path = ( /usr/X11R6/bin $path )</programlisting>
+</para>
+<para>
+This only works for the C-shell &man.csh.1;, and derivatives such as
+<emphasis><filename role="pkg">shells/tcsh</filename>.</emphasis>
+For &man.sh.1; and derivatives (like <filename 
+role="pkg">shells/bash2</filename>), the correct syntax is:
+<programlisting>
+PATH=/usr/X11R6/bin:$PATH
+export PATH</programlisting>
+</para>
+</sect3>
+
+<sect3 id="setting-something-for-all-users">
+<title>Setting something for all users</title>
+<para>
+You can set something for all users running &man.csh.1; or <filename 
+role="pkg">shells/tcsh</filename>
+by adding it to one of the following files:
+<itemizedlist>
+<listitem><emphasis role="bold"><code>/etc/csh.cshrc</code></emphasis><html:br/>
+    This is run every time a new shell is opened, before any
+    <emphasis role="bold"><code>.cshrc</code></emphasis> in the user's home directory.</listitem>
+<listitem><emphasis role="bold"><code>/etc/csh.login</code></emphasis><html:br/>
+    This is run when the user logs in, after anything in
+    <emphasis role="bold"><code>/etc/csh.cshrc</code></emphasis>, but before any <emphasis role="bold"><code>.login</code></emphasis>
+    in the user's home directory.</listitem>
+<listitem><emphasis role="bold"><code>/etc/csh.logout</code></emphasis><html:br/>
+    This is run when the user logs out, before any <emphasis role="bold"><code>.logout</code></emphasis> in
+    the user's home directory.</listitem>
+</itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="shells">
+<title>Cursor key editing or filename completion in a shell</title>
+<para>
+This depends on the type of shell you are using:
+<itemizedlist>
+<listitem>&man.sh.1; (Bourne shell)<html:br/>
+	This shell is used in single-user mode and is the standard
+	user shell since NetBSD 4.0. Command line editing can be
+	enabled with the command '<code>set -E</code>' or '<code>set
+	-o emacs</code>'. Filename completion by TAB can be enabled by
+	'<code>set -o tabcomplete</code>'. The default configuration
+	has both features enabled (in <filename>/etc/shrc</filename>, read from
+	<filename>~/.shrc</filename>).
+	This can be added to the <code>/.profile</code> file so you
+	always have command line editing in single-user mode.
+</listitem>
+<listitem>&man.csh.1; ('C' shell)<html:br/>
+	This was the standard user shell until NetBSD 4.0, it supports
+	filename completion ('<emphasis role="bold">set
+	filec</emphasis>' and use the ESCAPE key) but does not support
+	command line editing.</listitem>
+<listitem>&man.ksh.1; (Korn Shell)<html:br/>
+	This is a public domain version of the Korn Shell, aka pdksh.
+	It supports command line editing in both Emacs or Vi mode
+	('set -o {emacs,vi}'). In Emacs mode, filename and command
+	completion by TAB is enabled by default. Use 'set -o
+	vi-tabcomplete' or 'set -o vi-esccomplete' to get Vi mode with
+	completion by TAB or ESC, respectively.<html:br/>
+	The public domain korn shell is part of the NetBSD base system, but is
+	also available from the <ulink
+	url="../software/packages.html">NetBSD packages
+	collection</ulink>, under <filename 
+	role="pkg">shells/pdksh</filename> for other operating
+	systems.  The KSH-93 is also available in
+	<filename role="pkg">shells/ast-ksh</filename>.</listitem>
+<listitem><emphasis role="bold">bash (GNU Bourne Again Shell)</emphasis><html:br/>
+	'bash' is another extended shell with command line editing,
+	this time based on 'sh'.  You can install it from the <ulink
+	url="../software/packages.html">NetBSD packages
+	collection</ulink>, under <filename 
+	role="pkg">shells/bash2</filename>.</listitem>
+<listitem><emphasis role="bold">tcsh (an extended 'C' shell)</emphasis><html:br/>
+	'tcsh' is a near perfect superset of csh, with many useful
+	extra features, including filename completion (use TAB) and command
+	line editing. You can install it from the <ulink
+	url="../software/packages.html">NetBSD packages
+	collection</ulink>, under <filename 
+	role="pkg">shells/tcsh</filename>.</listitem>
+<listitem><emphasis role="bold">Other shells</emphasis><html:br/>
+	The <ulink url="../software/packages.html">NetBSD packages
+	collection</ulink> also contains various other command line shells
+	under the <filename role="pkg">shells</filename> category.</listitem>
+</itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="languages">
+<title>Specifying a language for messages</title>
+<para>
+NetBSD uses the '<code>LANG</code>' environment variable determine which
+language to use for error messages and suchlike. This can be set in csh
+or tcsh with the command '<code>setenv LANG <emphasis role="bold">XX</emphasis></code>' where XX is
+the two letter country code. For a list of supported codes type '<code>ls
+/usr/share/nls</code>'.
+</para>
+<para>
+<emphasis role="bold">Please note</emphasis>: Only certain messages have been translated. To
+test, set the <code>LANG</code> variable and type
+<programlisting>
+  cd /a_directory_that_does_not_exist</programlisting>
+</para>
+</sect3>
+
+</sect2>
+
+<sect2 id="printing-scanning">
+<title>Printing and Scanning</title>
+
+<sect3 id="postscript-manpages">
+<title>Printing man pages as PostScript</title>
+<para>
+    Man pages are held in &man.nroff.1; source in
+    /usr/share/man/man<emphasis>X</emphasis>/<emphasis>manpage</emphasis>.<emphasis>X</emphasis>, where
+    <emphasis>X</emphasis> is the section number (eg: 1 in the case of nroff).
+    To convert them into PostScript one can use:
+    <programlisting>groff -Tps -mandoc /usr/share/man/man<emphasis>X</emphasis>/<emphasis>manpage</emphasis>.<emphasis>X</emphasis></programlisting>
+    For example to convert the &man.ls.1; man page into PostScript and send it
+    directly to the default printer via &man.lpr.1; you can use.
+    <programlisting>groff -Tps -mandoc /usr/share/man/man1/ls.1 |lpr</programlisting>
+    If you wish to print on a different type of printer you may want to
+    use the <filename role="pkg">print/ghostscript</filename> package 
+    from pkgsrc.
+</para>
+</sect3>
+
+<sect3 id="smbprint">
+  <title>Printing to a remote SMB printer from NetBSD</title>
+<para>
+Please see <ulink url="smbprint/">this page</ulink> for details.
+</para>
+</sect3>
+
+<sect3 id="jetdirect">
+<title>Configuring a HP JetDirect Card via DHCP</title>
+<para>
+If you have a JetDirect print server such as the JetDirect EX Plus, you can use
+dhcpd(8) under NetBSD to configure the print server.  The steps are:
+
+Create an entry in <code>/etc/dhcpd.conf</code> for the JetDirect server:
+<programlisting>
+options jd-tftp-cfg		code 144 = string;
+options jd-tftp-server		code 150 = string;
+
+allow				bootp;
+
+# [...]
+
+host hp690c {
+	fixed-address		hp690c;			# set to the DNS name or address of the JetDirect
+	hardware ethernet	00:60:b0:00:11:22;	# set to the MAC address of the JetDirect
+	option	log-servers	servername;		# set to the DNS name or address of log server
+	option	jd-tftp-server	servername;		# set to the DNS name or address of tftp server
+	option	jd-tftp-cfg	"hpnp/hp690c.cfg";	# name of the JetDirect config file
+}</programlisting>
+See &man.dhcpd.conf.5; for more information on this file.
+</para>
+<para>
+Make sure that <code>tftpd</code> is enabled in <code>/etc/inetd.conf</code>,
+Note the argument to "-s" on the <code>tftp</code> line of <code>/etc/inetd.conf</code>.  This is
+the &man.tftpd.8; root directory.  For the rest of this example it is assumed that
+the &man.tftpd.8; root directory is set to <code>/tftpboot</code>.
+</para>
+<para>
+Make sure that <code>dhcpd</code> is enabled in <code>/etc/rc.conf</code>.
+</para>
+<para>
+
+Next create a Network Printer Interface (NPI) configuration file.
+In this example, the file
+is <code>/tftpboot/hpnp/hp690c.cfg</code>.  This file should look something like:
+<programlisting>
+name: printer name
+location: Location of the Printer 
+contact: Contact Person 
+idle-timeout: 1800
+banner: 0</programlisting>
+
+If you made changed to <code>/etc/inetd.conf</code>, make sure &man.inetd.8;
+re-reads &man.inetd.conf.5; by doing
+<code>kill -HUP `cat /var/run/inetd.pid`</code>.
+When you reboot the JetDirect print server (or printer with HP JetDirect
+card), the server should get configured by DHCP.
+On some printers, you may have to explicitly enable BOOTP/DHCP configuration
+from the front panel.
+</para>
+</sect3>
+
+<sect3 id="burstpage">
+<title>Why doesn't <emphasis>sh</emphasis> suppress the "burst" page on an HP JetDirect?</title>
+<para>
+The "burst" page is a function of the host with the locally attached printer,
+or in this case, the dedicated hardware emulating &man.lpd.8;. When NetBSD is used
+as a remote spooler, with <emphasis>rm</emphasis>, it never adds an additional burst page.
+The JetDirect's "burst" page is an unusual feature in a dedicated device.
+<ulink url="http://h20015.www2.hp.com/en/document.jhtml?lc=en&amp;docName=bpj02755&amp;prodId=jd2337a">HP (TM)
+actually calls it a "trailer"</ulink>.
+You can disable it as above, by setting <code>banner: 0</code>, or simply telnet
+to port 23 of the device, and issue the command <code>banner 0</code>, then
+<code>quit</code>.
+</para>
+<para>
+Some JetDirect units may need their firmware upgraded to add the
+<code>banner</code> command.
+You will need to use the appropriate JetDirect network management
+tools available from HP to do this.
+You may need to set the SNMP read and write community strings to
+known values in order to perform this upgrade.
+To set these, use the following lines in the NPI configuration
+file.
+<programlisting>
+get-community-name: read-password
+set-community-name: write-password</programlisting>
+(See the above section on configuring the JetDirect cards with DHCP.)
+Just be aware of the security ramifications of leaving these entries
+in a publicly available (via TFTP) configuration file...
+
+</para>
+</sect3>
+
+<sect3 id="scanning">
+<title>Scanning under NetBSD</title>
+<para>
+NetBSD supports various different SCSI scanners using the
+<filename role="pkg">graphics/sane-backends</filename> scanning package.  
+Frontends for accessing the API provided by that package are in the
+<filename role="pkg">graphics/sane-frontends</filename> package, or it can 
+be called directly by graphics tools such as the 
+<filename role="pkg">graphics/gimp</filename>.
+</para>
+<para>
+Note: in versions of NetBSD before 1.4.2 the in kernel &man.ss.4;
+scanner driver may cause problems with <filename 
+role="pkg">graphics/sane-backends</filename>
+and some scanners - the solution is either to recompile a kernel
+without &man.ss.4; and use the &man.uk.4; device, or to upgrade to 1.4.2
+or later.
+</para>
+</sect3>
+</sect2>
+
+<sect2 id="disks-filesystems">
+<title>Disks &amp; Filesystems</title>
+<sect3 id="adding-a-disk">
+<title>Adding a disk to an existing system</title>
+<para>
+<orderedlist>
+<listitem>Halt the system</listitem>
+<listitem>Connect the new drive</listitem>
+<listitem>If your machine has a PROM or BIOS that can list drives, check that the
+    drive is recognised:
+    <itemizedlist>
+    <listitem><emphasis role="bold">recent sparc</emphasis>: Press <code><emphasis role="bold">[STOP][A]</emphasis></code> before the boot
+	starts, then at the "<code>ok</code>" prompt, <code><emphasis role="bold">probe-scsi</emphasis></code>.</listitem>
+    <listitem><emphasis role="bold">i386 with adaptec BIOS</emphasis>: Press <code><emphasis role="bold">[CTRL][A]</emphasis></code> before
+	the boot starts to enter the BIOS.</listitem>
+    <listitem><emphasis role="bold">other</emphasis>: more details welcomed :)</listitem>
+    </itemizedlist></listitem>
+<listitem>boot</listitem>
+<listitem>Check &man.dmesg.8; output to confirm that the drive
+    is recognized</listitem>
+<listitem>Write a &man.disklabel.5; including the partitions using &man.disklabel.8;<html:br/>
+        (if the disk doesn't have a disklabel yet, you'll probably
+         do something like:<programlisting> disklabel -i -I sd1 # ignore any "sd1: no disk label"</programlisting>
+    Partition 'c' is reserved for the entire NetBSD portion of a disk, and
+    on some ports (notably i386), 'd' is similarly reserved for the entire disk.
+    The following is a sample session setting the entire disk to
+    be one filesystem 'e':
+<programlisting>
+	partition&gt; <emphasis role="bold">e</emphasis>
+	Filesystem type [?] [unused]: <emphasis role="bold">4.2BSD</emphasis>
+	Start offset [0c, 0s, 0M]: 
+	Partition size ('$' for all remaining) [0c, 0s, 0M]: <emphasis role="bold">$</emphasis>
+ 	e: 234375000         0     4.2BSD      0     0     0   # (Cyl.    0 - 232514*)
+	partition&gt; <emphasis role="bold">W</emphasis>
+	Label disk [n]? <emphasis role="bold">y</emphasis>
+	partition&gt; <emphasis role="bold">Q</emphasis></programlisting>
+    Inside <code>disklabel -i</code> you can use '?' for additional help.
+</listitem>
+<listitem>For each filesystem added, <code><emphasis role="bold">newfs &lt;filesystem&gt;</emphasis></code>
+    (where <emphasis>&lt;filesystem&gt;</emphasis> is the partition's raw device,
+     like /dev/rsd1e, /dev/rwd1f, ...)
+</listitem>
+<listitem>Put the filesystems into <code>/etc/fstab</code></listitem>
+<listitem>&man.fsck.8; them: <programlisting>fsck -f &lt;filesystem&gt;</programlisting></listitem>
+<listitem>&man.mount.8; them: <programlisting>mount -va</programlisting></listitem>
+</orderedlist>
+</para>
+</sect3>
+
+<sect3 id="softdeps">
+<title>How to use soft updates (softdeps)?</title>
+<para>
+    Frank van der Linden
+    (<ulink url="mailto:frank@wins.uva.nl">frank@wins.uva.nl</ulink>)
+    has brought Kirk McKusick's trickle sync + FFS soft update code into
+    the main tree. 
+</para>
+    <para>
+    To use it, do the following:
+
+    <orderedlist>
+    <listitem>Compile a new kernel with "<code>options SOFTDEP</code>" in your kernel 
+        config file. This option is enabled in GENERIC kernels.</listitem>
+    <listitem>Run the new kernel.</listitem>
+    <listitem>In <code>/etc/fstab</code>, add the "<code>softdep</code>" mount option to
+        all filesystems that you want to use softdeps with. For example
+        change the line reading
+<programlisting>
+/dev/wd0e    /usr    ffs     rw                      1 2</programlisting>
+to:
+<programlisting>
+/dev/wd0e    /usr    ffs     rw<emphasis role="bold">,softdep</emphasis>              1 2</programlisting></listitem>
+    <listitem>Reboot</listitem>
+    <listitem>Have fun!</listitem>
+    </orderedlist>
+
+</para>
+</sect3>
+
+<sect3 id="softdep-impact">
+<title>Are there any measured improvements of softdep?</title>
+<para>
+
+The fact that meta-data isn't immediately written to disk makes
+the system feel a lot faster. No numbers are available to show this
+at this moment. 
+</para>
+<para>
+
+Paul Vixie has run a benchmark on storing and retrieving (in random
+order) 75.000 files into a directory, on both a system
+with and without softdep.
+The results show that file access time for both creating and locating
+files in large directories are generally better on systems with 
+soft dependencies. (The softdep system in this case was FreeBSD 4.2,
+the non-softdep system was BSD/OS 3.1. Similar behaviour will be
+visible on a NetBSD system with and without softdep).
+</para>
+<para>
+</para>
+</sect3>
+
+<sect3 id="ffs-integ">
+<title>How resilient is the Fast File System (FFS), FFS with softdeps and NetBSD's ext2fs implementation with respect to unclean shutdowns?</title>
+<para>
+
+The FFS takes care to correctly order all metadata operations, as well as to
+ensure that all metadata operations precede operations on the data to which
+they refer, so that the file system may be guaranteed to be recoverable after
+a crash.  The last N seconds of <emphasis>file data</emphasis> may not be recoverable, where
+N is the syncer interval, but the file system metadata will be.  N is usually
+30. 
+</para>
+<para>    
+With softdeps running, you've got <emphasis>almost</emphasis> the same guarantee.  With
+softdeps, you have the guarantee that you will get a consistent snapshot
+of the file system as it was at some particular point in time before the
+crash.  So you don't know, as you did without softdeps, that, for example,
+if you did an atomic operation such as a rename of a lock file, the lock
+file will actually be there; but you do know that the directory it was
+in won't be trashed and you do know that ordering dependencies between 
+that atomic operation and future atomic operations will have been preserved, 
+so if you are depending on atomic operations to control, say, 
+some database-like process (e.g. writing mail spool files in batches, 
+gathering data from a transaction system, etc.) you can safely start back 
+up where you appear to have left off.
+</para>
+<para>
+NetBSD's ext2fs implementation gives you the traditional FFS guarantee 
+about metadata (unlike the Linux implementation), so you can actually use 
+it with more confidence than you can use the native ext2fs in Linux. 
+The downside is that it's a bit slower, but that's because it actually does 
+the right thing if the system crashes, instead of potentially  eating your 
+file system itself.
+</para>
+</sect3>
+
+<sect3 id="moving-usr">
+<title>Moving /usr from root to a different partition</title>
+<para>
+    <orderedlist>
+	<listitem>Make sure that the desired new location (e.g. <code>/dev/sd0e</code>)
+	   does not overlap any existing partitions.
+	   Check the output from &man.disklabel.8;.</listitem>
+	<listitem>If it does not already contain a filesystem, run
+	<programlisting># <emphasis role="bold">newfs /dev/sd0e</emphasis></programlisting>
+        </listitem>
+	<listitem>Mount it and copy across data:
+	<programlisting># <emphasis role="bold">mount /dev/sd0e /mnt</emphasis></programlisting>
+        </listitem>
+<listitem><programlisting># <emphasis role="bold">cd /usr</emphasis></programlisting></listitem>
+<listitem><programlisting># <emphasis role="bold">pax -rw -pe . /mnt</emphasis></programlisting></listitem>
+<listitem><programlisting># <emphasis role="bold">umount /mnt</emphasis></programlisting></listitem>
+	<listitem>Edit <code>/etc/fstab</code> and add
+	   '<code>/dev/sd0e /usr ffs rw 1 2</code>' (change <code>/dev/sd0e</code>
+	   for your situation).
+        </listitem>
+	<listitem>Shutdown to single user mode and make new mountpoint:
+	<programlisting># <emphasis role="bold">shutdown now</emphasis></programlisting></listitem>
+<listitem><programlisting># <emphasis role="bold">mv /usr /usr.old</emphasis></programlisting></listitem>
+<listitem><programlisting># <emphasis role="bold">mkdir /usr</emphasis></programlisting></listitem>
+	<listitem>Bring system up, test, and when all OK, '<code>rm -rf
+	   /usr.old</code>'.</listitem>
+    </orderedlist>
+</para>
+</sect3>
+
+<sect3 id="read-only-to-read-write">
+<title>How to mount a 'read-only' filesystem read/write?</title>
+<para>
+Use &man.mount.8;'s <code>-u</code> (update) switch: '<emphasis role="bold"><code>mount -u /</code></emphasis>'.  More than likely, you booted single-user
+which mounts the root filesystem read-only by default.  This gives you a chance
+to run fsck by hand before bringing the system up into multi-user.  One
+other way to mount all the filesystems in <code>/etc/fstab</code> as read/write
+is to use '<emphasis role="bold"><code>mount -a</code></emphasis>'.
+</para>
+<para>
+However, the best way to do this is to go into multi-user mode by exiting
+from your single-user shell.  This will mount all of the filesystems in
+<code>/etc/fstab</code> in whatever mode they are listed.
+</para>
+</sect3>
+
+<sect3 id="using-fsck">
+<title>When is it safe to use fsck?</title>
+<para>
+Only use &man.fsck.8; on an unmounted or read-only filesystem.  Running
+&man.fsck.8; on a r/w filesystem is dangerous and could corrupt the filesystem.
+If you bring the system up into single-user mode, the system will be
+mounted read-only.  From there you can do an '<emphasis role="bold"><code>fsck -p</code></emphasis>'
+to check all filesystems before bringing the system up into multi-user
+mode.  If the filesystem has previously been marked "clean," and you still
+want to check it, you can use the <code>-f</code> flag to &man.fsck.8;.
+</para>
+<para>
+If you do make any changes to the filesystem using fsck, it is probably
+best to type '<emphasis role="bold"><code>reboot -n</code></emphasis>' to reboot the machine immediately
+without syncing the disks.
+</para>
+</sect3>
+
+<sect3 id="kernfs">
+<title>For what is <code>/kern</code> used?</title>
+<para>
+It is used for mounting the kernfs filesystem.  See the &man.mount.kernfs.8;
+manual page.
+</para>
+</sect3>
+
+<sect3 id="procfs">
+<title>For what is <code>/proc</code> used?</title>
+<para>
+It is used for mounting the procfs filesystem.  Consult <emphasis>The Design
+and Implementation of the 4.3BSD UNIX Operating System</emphasis> by Leffler,
+McKusick, et al., p. 104-5, 436.  Also see the &man.mount.procfs.8; manual page.
+</para>
+<para>
+
+This is normally used by creating a '/proc' directory as root, then
+adding the following to /etc/fstab (see &man.fstab.5;):<html:br/>
+<code>/proc /proc procfs rw 0 0</code>
+</para>
+<para>
+
+As <code>/proc</code> in NetBSD is intended for process-related data only,
+other entries known from linux are not present. This can be changed by
+adding the "<code>linux</code>" mount option to the file system flags,
+though: <html:br/>
+<code>/proc /proc procfs rw<emphasis role="bold">,-olinux</emphasis> 0 0</code>
+</para>
+<para>
+</para>
+</sect3>
+
+<sect3 id="cgd-swap">
+<title>Encrypted swap with &man.cgd.4;</title>
+<para>
+Since the topic of swap encryption pops up from time to time, this
+information could be useful for some people who are interested in
+encrypting their swap space but are not sure how to set it up.
+</para>
+<para>
+Currently there is one limitation, cgd devices are created with
+disklabel containing only one slice marked as 4.2BSD which is not
+suitable for swapping into.  This is the reason why using cgd drive
+as a swap device is not straightforward.  Roland Dowdeswell is looking
+into this and it should be resolved in the near future.
+</para>
+<para>
+
+A real world example:
+
+  Our swap device wd0b will be configured as cgd1, using 256 bit aes-cbc
+  key.  Step by step instructions follows:
+
+<programlisting>
+  1) generate a paramsfile for the cgd device.  the default file would be
+     /etc/cgd/wd0b but i will use /etc/cgd/swap for better illustration:
+
+     # cgdconfig -g -V none -k randomkey aes-cbc > /etc/cgd/swap
+
+  2) configure the cgd device over wd0b, (make sure wd0b is not used as a
+     swap device at this moment):
+
+     # cgdconfig cgd1 /dev/wd0b /etc/cgd/swap
+
+  3) edit disklabel for cgd1, we need to create a valid swap slice.  save
+     the disklabel to a file:
+
+     # disklabel -e -I cgd1
+
+     # /dev/rcgd1d:
+     type: cgd
+     disk: cgd
+     label: default label
+     flags:
+     bytes/sector: 512
+     sectors/track: 2048
+     tracks/cylinder: 1
+     sectors/cylinder: 2048
+     cylinders: 128
+     total sectors: 263655
+     rpm: 3600
+     interleave: 1
+     trackskew: 0
+     cylinderskew: 0
+     headswitch: 0           # microseconds
+     track-to-track seek: 0  # microseconds
+     drivedata: 0
+
+     4 partitions:
+     #        size    offset     fstype  [fsize bsize cpg/sgs]
+      d:    263655         0     4.2BSD      0     0     0   # (Cyl.    0 - 128*)
+
+     create a swap slice and change label (that's not really necessary, just for
+     our information):
+
+     # /dev/rcgd1d:
+     type: cgd
+     disk: cgd
+     label: swap
+     flags:
+     bytes/sector: 512
+     sectors/track: 2048
+     tracks/cylinder: 1
+     sectors/cylinder: 2048
+     cylinders: 128
+     total sectors: 263655
+     rpm: 3600
+     interleave: 1
+     trackskew: 0
+     cylinderskew: 0
+     headswitch: 0           # microseconds
+     track-to-track seek: 0  # microseconds
+     drivedata: 0
+
+     4 partitions:
+     #        size    offset     fstype  [fsize bsize cpg/sgs]
+      a:    263655         0       swap                      # (Cyl.    0 - 128*)
+
+     and save it to a file:
+
+     # disklabel cgd1 > /etc/cgd/swap.disklabel
+
+  4) set up the cgd device to be configured automatically at boot.  add the
+     following line into your /etc/cgd/cgd.conf:
+
+     cgd1 /dev/wd0b /etc/cgd/swap
+
+  5) now we need to restore our disklabel to the newly created cgd device at
+     boot time.  create /etc/rc.conf.d/cgd with this simple function:
+
+     swap_device="cgd1"
+     swap_disklabel="/etc/cgd/swap.disklabel"
+     start_postcmd="cgd_swap"
+
+     cgd_swap()
+     {
+             if [ -f $swap_disklabel ]; then
+                     disklabel -R -r $swap_device $swap_disklabel
+             fi
+     }
+
+  6) add the cgd device into /etc/fstab as a swap device:
+
+     /dev/cgd1a none swap sw 0 0</programlisting>
+
+That's all.  Now you can activate your swap partition with 'swapctl -a
+/dev/cgd1a' or just reboot.
+</para>
+<para>
+
+What you see above is a setup from my laptop.
+<programlisting>
+   Device      1K-blocks     Used    Avail Capacity  Priority
+   /dev/cgd1a     131827     8828   122999     7%    0</programlisting>
+</para>
+</sect3>
+</sect2>
+
+<sect2 id="boot-related">
+<title>Boot-Related Questions</title>
+<sect3 id="why-single-user">
+<title>What is single-user mode? Why and how should you use it?</title>
+<para>
+'single-user' mode is when the kernel has booted, but only runs a
+single shell on the console. If you boot single-user only the root
+filesystem will be mounted, and it will be mounted read-only.  Among
+the many uses for single-user mode are:
+<itemizedlist>
+<listitem><code>fsck</code> your filesystem due to suspected
+corruption.</listitem>
+<listitem>edit corrupted system configuration files in
+<code>/etc</code>.</listitem>
+<listitem>install a new set of binaries which you downloaded or compiled yourself.</listitem>
+<listitem>make a backup of your filesystem without worrying about interference from user processes.</listitem>
+</itemizedlist>
+You can enter single-user mode by running '<code><emphasis role="bold">shutdown
+now</emphasis></code>' as root on a running system, or  by booting the system
+with the '-s' flag (the method for doing this varies from port to
+port).
+</para>
+<para>
+Once booted single-user you may find some of the following commands useful:
+<itemizedlist>
+<listitem><code><emphasis role="bold">fsck -p ; mount -va</emphasis></code><html:br/>
+    Check the filesystems with &man.fsck.8;, then make them available with &man.mount.8;.
+</listitem>
+<listitem><code><emphasis role="bold">set -E</emphasis></code><html:br/>
+    Enable command line editing.
+</listitem>
+<listitem><code><emphasis role="bold">TERM=vt220 ; export TERM</emphasis></code><html:br/>
+    Set and export the TERM variable, to permit editors such as &man.vi.1; to
+    work. Note: You may need to use a different terminal type from
+    'vt220', depending on the console type.
+</listitem>
+<listitem><code><emphasis role="bold">sh /etc/rc.d/network start</emphasis></code><html:br/>
+    Bring up the network. If you have any nfs mounted filesystems you
+    may want to do this before the fsck and mount. If you have a system prior
+    to NetBSD 1.5, the command to use is <code><emphasis role="bold">sh /etc/netstart</emphasis></code>.
+</listitem>
+</itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="single-user-to-multi-user">
+<title>How to switch from single-user to multi-user</title>
+<para>
+Exit the single-user shell with "exit" or ctrl-D.
+</para>
+<para>
+
+The system will boot up to multi-user mode, starting all kind of services, etc.
+Note that disks are not checked when going from single-user to multi-user
+mode!
+</para>
+</sect3>
+
+<sect3 id="boot-messages">
+<title>How to read the boot messages?</title>
+<para>
+The system message buffer can be displayed with &man.dmesg.8;. This is usually
+(in 1.4 and later) automatically stored in /var/run/dmesg.boot immediately
+after each boot. If kernfs (see &man.mount.kernfs.8;) is enabled, as in install
+kernels, you can also <code><emphasis role="bold">more /kern/msgbuf</emphasis></code>.
+</para>
+</sect3>
+
+<sect3 id="shutting-down">
+<title>How to shutdown the machine?</title>
+<para>
+To drop back into single-user mode, use '<emphasis role="bold"><code>shutdown now</code></emphasis>'.  To
+halt the machine, use '<emphasis role="bold"><code>shutdown -h now</code></emphasis>'.  On some ports,
+you may need to use '<emphasis role="bold"><code>shutdown -p now</code></emphasis>' to actually power off
+the machine.  Please see the &man.shutdown.8; manual page for complete details.
+</para>
+</sect3>
+
+<sect3 id="rebooting">
+<title>How to reboot the machine?</title>
+<para>
+Use '<emphasis role="bold"><code>shutdown -r now</code></emphasis>' or '<emphasis role="bold"><code>reboot</code></emphasis>'.  See the
+shutdown(8) or &man.reboot.8; manual pages for further details.
+</para>
+</sect3>
+
+<sect3 id="cron-reboot">
+<title>Starting a program at boot time</title>
+<para>
+To start programs at system boot time, any commands can be added to
+<code>/etc/rc.local</code>, which will be ran at the end of the boot
+process.
+</para>
+<para>
+
+As an alternative mostly for non-root users, the Vixie &man.cron.8; (used
+in NetBSD)'s special <emphasis role="bold">@reboot</emphasis> time specification can
+be used to start a given program at &man.cron.8; startup time, which
+usually coincides with the system booting. This also allows users
+without root privileges to run commands automatically at startup.
+</para>
+</sect3>
+</sect2>
+
+<sect2 id="memory-swap">
+<title>Memory/Swap Configuration</title>
+
+<sect3 id="swap">
+<title>How much swap space</title>
+<para>
+    On older unix systems it was recommended to have twice as much swap
+    space as RAM. This was because active pages in RAM had to have pages
+    allocated in swap, effectively limiting the total virtual memory to
+    the size of the swap space.
+    On NetBSD this is no longer true, so total virtual memory is approximately
+    swap + RAM.
+</para>
+    <para>
+    Under NetBSD there are three primary uses for swap space:
+</para>
+    <orderedlist>
+    <listitem><emphasis role="bold">Additional virtual memory</emphasis><html:br/>
+	Less active pages containing modified data can be migrated
+	to swap space allowing virtual memory to be larger than
+	physical memory.
+    </listitem>
+    <listitem><emphasis role="bold">An area for kernel core dumps</emphasis><html:br/>
+	This is then read by &man.savecore.8;, on boot. For this to
+	work the primary swap partition must be slightly larger
+	than the total RAM.
+    </listitem>
+    <listitem><emphasis role="bold">For &man.mfs.8; filesystems</emphasis><html:br/>
+	Classically mounted on /tmp in order to speed up any
+	programs using /tmp, by adding the following to the
+	&man.fstab.5; file:
+	<programlisting>	swap  /tmp  mfs  rw,-s=<emphasis>SIZE</emphasis> 0 0</programlisting>
+	where <emphasis>SIZE</emphasis> is in 512byte blocks.
+	The space required is taken from the swap space as the
+	filesystem is used.
+    </listitem>
+    </orderedlist>
+    <para>
+    The 'correct' value for swap is dependent on the usage of the
+    system, but for some general rules:
+    <itemizedlist>
+    <listitem>A good base size is the larger of RAM or 32MB, plus the total size
+	of any &man.mfs.8; filesystems.
+    </listitem>
+    <listitem>If you intend to run &man.X.7;, add the larger of 1/2 of RAM or 16MB.
+    </listitem>
+    <listitem>Always try to split swap across as many disks as possible to
+	increase the available swap bandwidth.
+    </listitem>
+    <listitem>Guess high, rather than low - running out of swap can cause the system
+	to have to kill running processes.
+    </listitem>
+    </itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="adding-swap">
+<title>Adding more swap to a running system</title>
+<para>
+    Systems should be configured with sufficient swap space, as per
+    the <ulink url="#swap">How much swap</ulink> entry.
+</para>
+    <para>
+    There are three ways to add swap to a configured system:
+</para>
+    <para>
+    <orderedlist>
+    <listitem><emphasis role="bold">Rebuild the system disk, using a larger swap partition.
+	</emphasis><html:br/>
+	While arguably the cleanest solution, this obviously involves
+	significant disruption.
+    </listitem>
+    <listitem><emphasis role="bold">Add an additional swap partition.</emphasis><html:br/>
+	When you add a disk it is usually a good idea to include a small
+	'b' partition for additional swap, and add an entry of the form:
+	<programlisting>	/dev/<emphasis>DISK</emphasis>b       none    swap sw 0 0</programlisting>
+	to your <code>/etc/fstab</code> file to automatically enable on boot.
+	(Where <code><emphasis>DISK</emphasis></code> is the disk name such as 'sd1' or 'wd2').
+    </listitem>
+    <listitem><para><emphasis role="bold">Create a swap file.</emphasis></para><para>
+	The quickest and simplest option is to create a file in an existing
+	filesystem, and use it as additional swap space. While accessing this
+	will be slightly slower than dedicated swap partitions (due to
+	fragmentation and filesystem overhead), it is ideal for solving a
+	temporary swap shortage.
+	</para>
+	<para>
+	To add 10 MBytes of swap space is as easy as selecting a filesystem
+	with sufficient free space and:
+	<programlisting>	# <emphasis role="bold">dd if=/dev/zero bs=1m count=10 of=/somefilesystem/swap</emphasis>
+	# <emphasis role="bold">chmod 600 /somefilesystem/swap</emphasis>
+	# <emphasis role="bold">swapctl -a -p 1 /somefilesystem/swap</emphasis></programlisting>
+	The &man.dd.1; command creates a 10 MByte file
+	`<code>/somefilesystem/swap</code>'.  This swap file needs to
+	be &man.chmod.1; 600 so that unprivileged users may not read
+	its contents (&man.swapctl.8; will reject world readable files).
+	Then &man.swapctl.8; command adds <code>/somefilesystem/swap</code>
+	to the system swap space at priority 1.  Priority 0 is the
+	(default) highest priority, and since swapping to files is
+	slightly slower we only want the system to use the file
+	when conventional swap has all been used.
+	</para>
+	<para>
+	To make swapping to that file permanent and enable it on
+	every reboot, put something like the following into
+	/etc/fstab:
+	</para>
+	<programlisting>/somefilesystem/swap none swap sw,priority=1 0 0</programlisting>
+    </listitem>
+    </orderedlist>
+</para>
+</sect3>
+<sect3 id="tuning-vm">
+<title>Tuning Virtual Memory to improve performance on low-memory systems</title>
+<para>
+According to a <ulink url="http://mail-index.NetBSD.org/tech-kern/2002/11/27/0005.html">
+post by Simon Burge</ulink> on the tech-kern list, it is possible to greatly improve
+the performance of small-memory machines by tweaking the virtual memory settings. 
+While it is in your best interests to read his entire post and decide for yourself 
+what your settings should be, the gist is that you'll want to run <code>sysctl -w 
+vm.anonmax=95</code>. According to the &man.sysctl.3; page, this changes "The percentage 
+of physical memory which will be reclaimed from other types of memory usage to 
+store anonymous application data."
+</para>
+</sect3>
+</sect2>
+
+<sect2 id="common-problems">
+<title>Common (and less common) problems</title>
+
+<sect3 id="nroff-missing">
+<title><emphasis role="bold">/usr/bin/nroff: not found</emphasis> when running 'man'</title>
+<para>
+You need to install the 'text' set, text.tgz. See your base install notes.
+</para>
+</sect3>
+
+<sect3 id="var-mail-permissions">
+<title>'<emphasis role="bold">Unable to lock mailbox: Permission denied</emphasis>' when reading mail</title>
+<para>
+Check the permissions on the <code>/var/mail</code> directory. They should be
+'<code>drwxrwxrwt</code>':
+<programlisting>
+% <emphasis role="bold">ls -ld /var/mail</emphasis>
+drwxrwxrwt  2 root  wheel  512 Nov  6 08:21 /var/mail</programlisting>
+If they are not, as root run '<code><emphasis role="bold">chmod 1777 /var/mail</emphasis></code>'.
+</para>
+</sect3>
+
+<sect3 id="kernel-not-netbsd">
+<title><emphasis role="bold">netstat: kvm_read kvm_read: Bad address</emphasis> when running '<code>netstat -r</code>'</title>
+<para>
+This is nothing to worry about.  Basically, the file <code>/netbsd</code>
+is not your current kernel.  A number of programs (such as <code>ps</code>,
+<code>who</code>, <code>systat</code> etc.) and libkvm &man.kvm.3;, access
+<code>/netbsd</code> to learn what's going on in the kernel.  So you
+can simply rename your current kernel to <code>/netbsd</code> to make
+this kind of error go away.  Make sure that you are not overwriting
+a working kernel when you do this, though, unless that is exactly
+what you intend to do.
+</para>
+</sect3>
+
+<sect3 id="libkvm-mismatch">
+<title>When I try '<code>netstat -r</code>' I get an endless stream of question marks.  What's wrong?</title>
+<para>
+That's a mis-match between <code>libkvm/netstat</code> and <code>/netbsd</code>.
+Or it's that you're running a kernel that's not named <code>/netbsd</code>.
+Other symptoms of this problem are likely to be that <code>who</code>,
+<code>ps</code>, <code>ifconfig</code>, and <code>systat</code> will not work either.
+If you update your binaries and your kernel at the same time, then you
+should be OK.
+</para>
+</sect3>
+
+<sect3 id="kernel-upgrade">
+<title><code>w</code>, <code>ps</code>, and <code>netstat</code> do not work after upgrading to a new kernel</title>
+<para>
+One of two things.  Either your currently booted kernel isn't named
+<code>/netbsd</code> or else you have a mismatch between your kernel and the
+binaries you are using.  In the first case, simply making a link from your
+currently booted kernel to <code>/netbsd</code> will solve the problem.
+</para>
+<para>
+In the second case, dynamically linked binaries can usually be fixed by
+upgrading libkvm to match your new kernel.  Statically linked binaries need
+to be replaced with more recent versions.  Since they are statically
+linked, if you are going to recompile them yourself, you need to rebuild
+<code>libkvm.a</code> <emphasis role="bold">before</emphasis> you rebuild the program in question.
+</para>
+<para>
+Thanks to John Wittkowski (jpw@netscape.com), here is a list of most of the
+programs (besides <code>/bin/ps</code>) that depend on libkvm (all of these are
+in <code>/usr/bin</code>): 
+<itemizedlist>
+<listitem><code>fstat</code></listitem>
+<listitem><code>gdb</code></listitem>
+<listitem><code>ipcs</code></listitem>
+<listitem><code>netstat</code></listitem>
+<listitem><code>nfsstat</code></listitem>
+<listitem><code>systat</code></listitem>
+<listitem><code>uptime</code></listitem>
+<listitem><code>vmstat</code></listitem>
+<listitem><code>w</code></listitem>
+</itemizedlist>
+</para>
+</sect3>
+
+<sect3 id="proc-size-mismatch">
+<title>After changing kernels, 'ps' reports <emphasis role="bold">"proc size mismatch"</emphasis></title>
+<para>
+Like the previous three questions on this subject, the answer is most
+likely that your libkvm is out of sync with your kernel or binaries.  To
+solve this problem, you can either get a binary distribution which matches
+your kernel, or you can build you own by following the instructions below:
+
+<programlisting>
+If you get the "proc size mismatch" error and you determine
+that you need to update your libs, here's what to do:
+
+1. Get all the source code. If you're not willing to do this
+   and recompile things than you'll have to find someone who
+   will do it for you and you can try installing everything
+   by hand.
+
+2. Make sure that your include files are up to date. Do 
+   this by:
+      cd /usr/src
+      make includes
+   This will take a while. I had some trouble with this
+   because some of the Makefiles didn't have the INSTALL
+   variable defined. Whenever the "make includes" failed,
+   I went to the last directory listed and added the
+   following line to the Makefile:
+      INSTALL=/usr/bin/install
+   I had to do this several times before the make finished
+   without any errors.
+
+   (If you make sure that /usr/bin/make and all the files in
+   /usr/share/mk are up to date first, the above difficulties
+   can probably be avoided)
+
+3. Rebuild the libkvm and install it:
+      cd /usr/src/lib/libkvm
+      make
+      make install
+   Note that in order to get the libkvm to compile on
+   my system I had to add the following link:
+      cd /usr/include/machine
+      ln -s ../m68k/kcore.h kcore.h
+   This may have been a quirk of my system so try 
+   compiling without it first.
+
+4. Then rebuild the binaries that are STATICALLY linked to
+   libkvm. The only statically linked program that I am 
+   aware of is "/bin/ps". To rebuild ps, simply:
+      cd /usr/src/bin/ps
+      make
+      make install
+
+5. You may or may not need to rebuild the binaries that
+   are dynamically linked to libkvm. This is because (I
+   think) if the major version number of the lib changes
+   then the old binaries will expect the old version
+   number and not work with the newer version of the lib.
+   For example, my old libkvm was libkvm.so.4.0. The new
+   one was libkvm.so.5.0. Without recompiling the 
+   dynamically linked binaries, it would still complain
+   about "proc size mismatch" (if the 4.0 lib was still
+   there) or some lib missing error (if the 4.0 lib
+   had been removed from /usr/lib). If the version minor
+   number changes (4.0 to 4.1, for example), I think it
+   will run with a warning and so you may not need to
+   recompile all of these things.
+
+   The dynamically linked binaries that I am aware of
+   will give the  "proc size mismatch" error (if the 4.0
+   lib was still there) or some lib missing error (if the
+   4.0 lib had been removed from /usr/lib). If the version
+   minor number changes (4.0 to 4.1, for example), I think
+   it will run with a warning, and you may not need to
+   recompile all of these things.
+
+   The dynamically linked binaries that I am aware of
+   are:
+      /usr/bin/fstat
+      /usr/bin/gdb
+      /usr/bin/ipcs
+      /usr/bin/netstat
+      /usr/bin/nfsstat
+      /usr/bin/systat
+      /usr/bin/uptime (linked to /usr/bin/w)
+      /usr/bin/vmstat
+      /usr/bin/w
+   Note that /usr/bin/uptime is a link to /usr/bin/w and
+   will be set up properly when you do the "make install"
+   for w.
+
+   To recompile these, do the following:
+      cd /usr/src/usr.bin/&lt;cmd&gt;
+      make 
+      make install
+   For example, to recompile /usr/bin/vmstat:
+      cd /usr/src/usr.bin/vmstat
+      make
+      make install</programlisting>
+
+Much thanks to John Wittkowski (jpw@netscape.com) for providing such a
+detailed answer for this one.
+
+</para>
+<para>
+A little background: the reason that these system utilities need to
+grovel through kernel memory to get information, including going
+through all the trouble mentioned above, is that this method also
+works on kernel crash dumps, which can be quite a useful feature
+when debugging kernels.
+</para>
+</sect3>
+
+<sect3 id="hash-map-alias0">
+<title>'<emphasis role="bold">hash map "Alias0":unsafe map file
+    <code>/etc/aliases</code>: No such file or directory</emphasis>' is displayed</title>
+<para>
+You can fix this by typing '<emphasis role="bold"><code>newaliases</code></emphasis>' as root.<html:br/>
+Sendmail reports this when the &man.aliases.5; file is not present. Note that
+sendmail(8) actually uses <code>/etc/aliases.db</code> (which is a fast lookup
+hash(3) map built from <code>/etc/aliases</code>), so the error message can be
+a little misleading.  This should only really be noticed in NetBSD 1.3
+to 1.4, other versions have a different <code>/etc/sendmail.cf</code> which
+instructs sendmail to automatically rebuild <code>/etc/aliases.db</code> as
+needed.  If you are not running at least NetBSD 1.4.1 you should probably
+upgrade to a newer <ulink url="../../Releases/formal.html">formal release</ulink>. 
+</para>
+</sect3>
+
+<sect3 id="portmap-messup">
+<title>How do I prevent <code>portmap</code> messages from showing up in shells, when logged in as root</title>
+<para>
+Use <filename role="pkg">security/sudo</filename> and never log in as root.
+</para>
+<para>
+If you must log in as root, then you can edit your
+<code>/etc/syslog.conf</code> file and remove the necessary facilities to
+prevent the annoying messages.  In most cases, it's sufficient to disable
+<code>auth.debug</code> in the line reading:
+<programlisting>*.notice;auth.debug                                     root</programlisting>
+This will eliminate those annoying 
+<code>portmap&nbsp;[pid]:&nbsp;connect&nbsp;from&nbsp;some.other.host&nbsp;...</code>
+messages.  Be sure to <code>kill&nbsp;-HUP</code> the pid of
+your <code>syslogd</code> process.
+</para>
+<para>
+You may also wish to look at the <ulink url="../x/#xconsole">FAQ entry</ulink> 
+for using an <code>xconsole</code>.
+</para>
+</sect3>
+
+<sect3 id="locales">
+<title>How do I get umlauts and other localised characters displayed?</title>
+<para>
+
+Per default, NetBSD 1.6 has already numerous locales installed.  You can find
+them in <code>/usr/share/locales</code>.  Choose the locale most suitable for your
+location and set the LC_ALL environment variable accordingly.  Note that it is
+<emphasis>not</emphasis> sufficient to set LC_ALL to, say, ``de_DE'', but that you should
+use the <emphasis>full</emphasis> locale, such as ``de_DE.ISO8859-15''.
+</para>
+<para>
+For older versions of NetBSD, here's a tip from the <ulink
+url="http://mail-index.NetBSD.org/netbsd-users/2000/11/09/0019.html">mail
+archives</ulink>:
+<orderedlist>
+<listitem> Grab <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/i386/french-1.4/locale.tgz">locale.tgz</ulink></listitem>
+<listitem> Unpack it in /: <code>tar plzvxCf / locale.tgz</code></listitem>
+<listitem> In your shell, set LC_ALL=iso_8859_1 (make it permanent in .cshrc, 
+     .profile, ...)</listitem>
+<listitem> Restart your shell or re-login</listitem>
+<listitem> See your shell, vi, etc. accept all these umlauts from your keyboard: &ouml;&auml;&uuml;&Auml;&Ouml;&Uuml;...</listitem>
+</orderedlist>
+</para>
+</sect3>
+</sect2>
+
+<sect2 id="other-questions">
+<title>Other Questions</title>
+
+<sect3 id="bluetooth">
+  <title>How does Bluetooth support in NetBSD work?</title>
+  <para>
+    The first official NetBSD version that comes with Bluetooth
+    support is NetBSD 4.0. A 
+    <ulink url="http://homepages.rya-online.net/plunky/HOWTO.txt">howto</ulink>
+    for setup and configuration is available.
+    <!-- This should be put into the NetBSD Guide... - hubertf -->
+  </para>
+</sect3>
+
+<sect3 id="editing-files">
+<title>Editing files under NetBSD</title>
+<para>
+There are two obvious options in the base system:
+<itemizedlist>
+<listitem>&man.ed.1; (Line orientated text editor)<html:br/>
+    <code>ed</code> is a very simplistic text editor. It has a command
+    mode, (active when first started) and an input mode. Its primary
+    advantages are it is available even in single-user mode with
+    only the '/' filesystem mounted, and will work even without a
+    correct terminal type set.  It is worth gaining a basic
+    understanding of &man.ed.1; - enough to fix &man.fstab.5; and &man.rc.conf.5;
+    files in an emergency.</listitem>
+<listitem>&man.vi.1; (Screen orientated text editor)<html:br/>
+    <code>vi</code> retains the command and input modes of &man.ex.1;, but
+    adds a full screen visual interface. vi is the only screen
+    editor available in the base install, and requires a valid
+    terminal type to run.<html:br/>
+    There are a number of online vi tutorials:
+    <itemizedlist>
+    <listitem><filename role="pkg">editors/vilearn</filename> - in pkgsrc and highly recommended.</listitem>
+    <listitem><ulink url="http://www.thomer.com/vi/vi.html">
+	VI lovers home page</ulink>.</listitem>
+    <listitem><ulink url="https://engineering.purdue.edu/ECN/Resources/KnowledgeBase/Categories/editors/vi/">Purdue
+	University Engineering Computer Network</ulink>.</listitem>
+    <listitem><ulink url="http://engr.smu.edu/co/help/vi-tutorial.html">A
+	number of references at the Southern Methodist University</ulink>.
+    </listitem>
+    </itemizedlist>
+    If you are trying to use vi to setup &man.rc.conf.5;, you should
+    read the entry on <ulink url="#why-single-user">single-user
+    mode</ulink>.
+    </listitem>
+</itemizedlist>
+<para>
+There are a large number of editors available under the 
+<filename role="pkg">editors</filename>
+category in pkgsrc, including:
+</para>
+<itemizedlist>
+<listitem><emphasis role="bold"><filename role="pkg">editors/joe</filename></emphasis><html:br/>
+    A small, fast editor capable of emulating WordStar and emacs key
+    bindings (<emphasis>jstar</emphasis>, <emphasis>jmacs</emphasis>).
+    <filename role="pkg">editors/joe</filename> will be
+    familiar to people who have used Borland IDEs.
+    </listitem>
+<listitem><emphasis role="bold"><filename 
+    role="pkg">editors/pico</filename></emphasis><html:br/>
+    A very simple to use text editor, as used in the 
+    <filename role="pkg">mail/pine</filename>
+    mail package.
+    </listitem>
+<listitem><emphasis role="bold"><filename 
+    role="pkg">editors/nedit</filename></emphasis><html:br/>
+    A simple yet reasonably flexible X based GUI editor.
+    </listitem>
+<listitem><emphasis role="bold"><filename 
+    role="pkg">editors/emacs</filename></emphasis><html:br/>
+    A proverbial 'everything and the kitchen sink' editor, including a
+    complete lisp interpreter. Not recommended for small machines.
+    </listitem>
+</itemizedlist>
+
+</para>
+</sect3>
+
+<sect3 id="rebuilding-dev">
+<title>Rebuilding /dev</title>
+<para>
+The /dev directory contains the necessary device files for accessing hardware
+and pseudo devices. If it becomes damaged, much strangeness can ensue.<html:br/>
+To rebuild the /dev directory, you should first boot single-user (it should
+be possible to perform while multiuser, but not recommended), then:
+<programlisting>
+mkdir /newdev
+cd /newdev
+cp /dev/M* .
+sh MAKEDEV all
+cd /
+mv dev olddev; mv newdev dev
+rm -r olddev</programlisting>
+</para>
+</sect3>
+
+<sect3 id="connecting-a-ups">
+<title>Connecting a UPS to a NetBSD system</title>
+<para>
+Connecting one is trivial, but monitoring it such that the NetBSD can shut down
+cleanly when the power is about to fail requires a little more:<html:br/>
+Simon J. Gerraty has a page on using a
+<ulink url="http://www.crufty.net/sjg/apcmon.html">APC Smart-UPS</ulink>.
+If you are writing your own software to talk to the UPS you will probably need
+to set the softcar flag via tcsetattr(). Wolfgang Rupprecht has researched the
+field briefly:
+</para>
+<para>
+<blockquote>
+There two different types of UPS interfaces, sometimes both are
+available on the same UPS. The 9-pin connector on the UPS is never
+a wired up as a normal PC-style rs-232.  At best its a three-wire
+rs-232 interface, with the pins rearranged just to keep things
+interesting.  At worst its a contact closure signal that is not
+even at the rs-232 signaling voltages and one must use a funny
+cable with level-translators in it to convert the voltages to
+something the rs-232 port can even see transitions on.  The signal
+from the latter type of interface can only send out a one-bit
+(normal / powerfail) signal.  It must be run into some modem-control
+line such as DCD and is then detected via a program that checks
+the status of that modem control line.  Unless one is careful, it is
+possible to confuse the modem-control-line-only cables that come
+with some UPSs as a real rs-232 cable.
+<html:br/><html:br/>
+Poking around APC web page, and a few promising altavista hits
+revealed that they have 3 basic interfaces.  Low end UPSs ("back
+UPS") have only the modem-control line type interface.  The two high
+end lines ("Back UPS Pro", "Smart UPS") have both combination modem
+control line and 3-wire rs-232 signals available.  In both cases one
+needs to use one of two special cables.  The cable for the modem
+control line interface has transistors and diodes in it to do the
+level shifting (and power grabbing from some of the other wires).  It's
+a real kludge, with the word UGLY coming to mind as the correct
+modifier.  The second type of cable will get the UPS talking serially,
+but some of the 3-rd party docs indicated that the UPS will only talk
+if you send 2 stop bits.  The protocols don't appear to be officially
+documented and the back-UPS pro and smart UPS appear to talk different
+serial line protocols.  Only the back-UPS pro line appears to have any
+3-rd party support, and many of the details of the protocol are only
+guessed at.
+<html:br/><html:br/>
+Competitors all seem to have similar offerings (modem control line
+only, and proprietary serial line protocols with special cables).  In
+no case could I find someone with an openly documented standard.
+</blockquote>
+</para>
+</sect3>
+
+<sect3 id="changing-motd">
+<title>After changing <code>/etc/motd</code> something reset it to its original contents</title>
+<para>
+If you delete the header of <code>/etc/motd</code>, the startup process
+will overwrite your 
+changes on boot.  This can be disabled by setting
+<code>update_motd=NO</code> in <code>/etc/rc.conf</code>, in which
+<code>/etc/motd</code> will not be touched at all, and you can change it at
+will.
+
+</para>
+</sect3>
+
+<sect3 id="selling-hardware">
+<title>Where to sell NetBSD related hardware?</title>
+<para>
+For occasional items you can generally post to a given port's <ulink
+url="../../MailingLists/">mailing list</ulink>, and to <ulink
+url="mailto:netbsd-forsale@mono.org">netbsd-forsale@mono.org</ulink>.<html:br/>
+If you would be willing to donate any hardware to assist in the
+development of NetBSD you should check the <ulink
+url="../../contrib/hardware.html">Hardware contributions page</ulink>, or
+contact <ulink url="mailto:finance-exec@NetBSD.org">finance-exec@NetBSD.org</ulink>.
+</para>
+</sect3>
+
+<sect3 id="setup-ccd">
+<title>Setting up a striped (ccd) drive</title>
+<para>
+
+Disk striping can either be done with RAIDframe or &man.ccd.4; in NetBSD.
+Here is how to use &man.ccd.4;:
+
+<orderedlist>
+<listitem>disklabel all disks:<html:br/>
+create the partitions you want to concatenate, make sure there's an offset to
+the beginning (I think 16 sectors is more than enough - but I'm not sure). I
+don't know if the type matters, I've used "normal" 4.2BSD partitions.
+</listitem>   
+<listitem>configure the ccd.<html:br/>
+For performance tuning you will have to experiment a little to find the best
+interleave. 48 works fine for me with two disks. AFAIK with 16 and some other
+numbers it can happen that all inodes will be on the same disk, which should
+be avoided for performance reasons. IIRC I got some problems, if the number of
+sectors of an component is not a multiple of the interleave.
+</listitem>   
+   
+<listitem>disklabel the ccd as you would do with a normal harddisk</listitem>
+<listitem>newfs the ccd.   </listitem>
+<listitem>mount it.</listitem>
+</orderedlist>
+</para>
+<para>
+See the &man.ccd.4; and &man.ccdconfig.8; man pages for more information.
+</para>
+</sect3>
+
+<sect3 id="edit-fonts">
+<title>Utility for editing or creating console bitmap fonts?</title>
+<para>
+Install the <filename role="pkg">sysutils/pcvt-utils</filename> package.
+It provides fed and fontedit:
+two font editors that can also be used on
+the fonts in <filename>/usr/share/wscons/fonts</filename>.
+</para>
+</sect3>
+
+</sect2>
+
+<sect2 id="other-links">
+<title>Other Links</title>
+
+<sect3 id="mreriksson">
+<title><ulink url="http://www.mreriksson.net/faqs/netbsd/">Ola Eriksson's NetBSD FAQ</ulink></title>
+</sect3>
+
+<sect3 id="cynjut">
+<title><ulink url="http://cynjut.neonramp.com/">*BSD FAQ site</ulink> (no longer actively maintained)</title>
+</sect3>
+
+<sect3 id="japanese-language-support">
+<title><ulink url="http://ezine.daemonnews.org/200202/japanese-netbsd.html">Japanese Language Support in NetBSD</ulink></title>
+</sect3>
+
+</sect2>
+</sect1>
+
+</webpage>

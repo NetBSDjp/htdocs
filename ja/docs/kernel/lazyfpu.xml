@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="docs-kernel-lazyfpu">
+  <config param="desc" 
+    value="NetBSD Documentation: How lazy FPU context switch works"/>
+  <config param="cvstag" 
+    value="$NetBSD: lazyfpu.xml,v 1.1 2007/06/09 11:33:44 dsieger Exp $"/>
+  <config param="rcsdate" value="$Date: 2007/06/09 11:33:44 $"/>
+
+  <head>
+    <!-- Copyright (c) 1994-2005
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+    <title>NetBSD Documentation: How lazy FPU context switch works</title>
+  </head>
+
+  <sect1 id="top">
+    <blockquote>
+      <para>Explanation of how lazy FPU context switching works.</para>
+      <para>Tohru Nishimura - Nara Insititute of Science and Technology</para>
+    </blockquote>
+
+    <para>FPU hardware typically has a single set of hardware
+      registers to hold the current FPU context. Each process has an
+      area of memory reserved (in u_pcb under NetBSD/mips), to hold
+      that processes state while not executing.
+      Loading and saving the FPU state upon each context switch
+      consumes a significant number CPU cycles.</para>
+    
+    <para>Modern CPUs provide an option to disable the ability to
+      execute any FP instructions.  When the CPU attempts to execute
+      an FP instruction, an exception is posted and operating system
+      starts processing the 'FPU was unavailable for me' handler for
+      the executing process. This can then check and prepare the
+      FPU for use, then restart the process at the FP instruction
+      which posted the exception. This time FP instructions will be
+      executed normally and not produce the 'FPU is unavailable'
+      condition unless another process later takes the FPU.</para>
+
+    <para>Every process is created without FPU ownership and
+      prohibited from use FPU. If the process never executes any FP
+      instructions, nothing special happens to it and the FPU is not
+      touched during the execution of that process.</para>
+
+    <para>If a process prohibited from using FPU attempts to execute
+      a FP instruction, the CPU posts an 'unavailable' exception.
+      The global variable fpcurproc indicates which process has the
+      ownership of FPU. At that point the FPU hardware will contain
+      the state for that owner process, which will be different from
+      the curproc that posted the exception.  The unavailable
+      handler saves the FPU hardware context into the reserved area
+      of fpcurproc, and loads the curproc's FPU hardware context
+      into FPU registers. The initial load of process FPU context
+      clears the entire FPU.  In this way, FPU context switch is
+      deferred until a different process attempts to use the FPU.
+      Because the vast majority of programs do not use any FP
+      instructions, deferred lazy FPU context switch significantly
+      reduces the number of expensive FPU save/load operations.</para>
+
+    <para><emphasis>Matt Thomas adds that you need to be careful to
+	properly cleanup the lazy FP context with the fpcurproc
+	exits.</emphasis></para>
+
+    <para>The expensive FPU context switch syndrome is similar to
+      the situation faced by an MMU on process context switch.  The
+      MMU is a rather complicated device which may hold a complex
+      internal 'state' describing the process' address space, or
+      more unusually, a 'task description' for runtime environment,
+      nature and features of processes defined by CPU hardware
+      foundation. Some MMUs have dedicated register(s) to point to
+      the memory region which describes processes address space.  In
+      that case the cost of an MMU context switch can be reduced by
+      having multiple memory regions and switching between them by
+      updating dedicated register(s) via a special MMU instruction.
+      A certain CPU design is widely known to have a hilariously
+      spectacular method of MMU context switch which involves
+      saving/loading a number of registers, then traversing a memory
+      region to establish new process runtime context, with the cost
+      of an astonishingly large number of CPU cycles.  The hardware
+      supported context switch capability is costly, seldom used in
+      practice, and many consider it as CISCy or a waste of
+      silicon.</para>
+  </sect1>
+
+  <parentsec url="." text="NetBSD Documentation: Kernel"/>
+
+</webpage>

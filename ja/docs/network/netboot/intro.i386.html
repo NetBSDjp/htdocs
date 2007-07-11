@@ -1,0 +1,302 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998-2005
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
+<title>Introduction (i386-specific), Diskless NetBSD HOW-TO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<a href="intro.html">Previous</a> |
+<a href="nfs.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr>
+
+<h1>Introduction (i386-specific), Diskless NetBSD HOW-TO</h1>
+
+<h2>There are several ways to load the NetBSD kernel for 'diskless'
+    operation:</h2>
+<dl><dt><dd>
+<ol>
+<li><b>Via netboot rom</b>
+    <p>
+    You will need a BIOS supporting boot from network and a matching
+    network card. This is becoming more popular in new PCs, especially
+    ones with build in network adapters. Setup a server on the
+    network (see
+    <a href="http://man.NetBSD.org/man/diskless+8+NetBSD-current">diskless(8)</a>)
+    and modify your BIOS settings to try the network boot first.
+    <p>
+    If your BIOS does not support this, but you have a network card
+    supported by NetBSD's 'netboot' bootloader, you can boot to
+    DOS (see the discussion about <tt>dosboot.com</tt> below) and
+    use '<tt>netboot.com</tt>' to load your kernel over the network.
+    To generate a suitable '<tt>netboot.com</tt>' cd to
+    <tt>/usr/src/sys/arch/i386/stand/netboot</tt>, edit the
+    <tt>Makefile</tt> to define the options for your network adapter
+    and run "<code>make netboot.com</code>".
+<p>
+
+<li><b>Via PXE</b>
+    <p>
+If your hardware is capable of netbooting using PXE, it first tries to
+acquire an IP address using the Dynamic Host Configuration protocol
+(DHCP). The dhcpd server uses the ethernet address (MAC) of the client
+machine to determine its IP address and a bootloader filename.  If this
+request is successful, PXE expects to be able to download a second-stage
+boot program via the Trivial File Transfer Protocol (TFTP). It will do
+this by setting up a TFTP connection to the server that answered the
+earlier DHCP request, and asking for the file name returned by the server.
+The second-stage boot program then loads the kernel using NFS from the
+server and path specified by the DHCP request.
+
+<p>There are two PXE bootloader files available in 
+the <tt>/usr/mdec/</tt> directory of <tt>base.tgz</tt> from the NetBSD 
+distribution.  <tt>pxeboot_ia32.bin</tt> should be used for most cases, 
+since <tt>pxeboot_ia32_com0.bin</tt> will force the client to use its 
+first serial port as the console.  The serial console PXE file may be 
+necessary for embedded systems (such as the Soekris line of hardware) 
+which only have a serial console.  Use 9600 8N1 settings.
+
+<p>Something like the following can be used in
+<tt>/etc/dhcpd.conf</tt>:
+
+<pre>
+host pxehost {
+  hardware ethernet 01:23:45:67:89:ab;       # MAC address of PXE host
+  fixed-address 192.168.17.42;               # IP address of PXE host
+  
+  # stage 1: 
+  filename "pxeboot_ia32.bin";               # relative to /tftpboot
+  
+  # stage 2:
+  next-server 192.168.42.1;                  # IP of NFS server
+  option root-path "/usr/tmp/pxestuff/root"; # path on NFS server
+}</pre>
+
+
+<p>As a shortcut, if you have a lot of PXE systems, you can set up
+<tt>/etc/dhcpd.conf</tt> to group them all together:
+
+<pre>
+class "pxe-clients-ia32" {
+        match if substring (option vendor-class-identifier, 0, 20)
+                 = "PXEClient:Arch:00000";
+        filename "pxeboot_ia32_com0.bin";
+}
+</pre>
+
+<p>
+
+<li><b>Via GRUB</b>
+    <p>
+    <a href="http://www.gnu.org/software/grub/">GRUB</a> is a boot loader,
+    that is capable of booting different OS types and some of them
+    via network. GRUB itself is loaded from disk or network using a
+    PXE or NBI (such as <a
+    href="http://etherboot.sourceforge.net">Etherboot</a>)
+    loader. Etherboot &amp; GRUB supports many different NICs,
+    more than the NetBSD's 'netboot'
+    bootloader does. Note you'd need to use GRUB version 0.90 or later.
+    GRUB and Etherboot require <a
+    href="http://www.gnu.org/software/gcc/gcc.html">GCC</a> and <a
+    href="http://www.gnu.org/software/binutils/binutils.html">GNU Binutils</a>
+    2.9.1 or later. They can be compiled on any system,
+    they don't need to be compiled on NetBSD host.
+   <p>
+   You'd need to setup environment so that EtherBoot would load and execute
+   appropriate GRUB image, and configure GRUB so that it would load NetBSD
+   kernel. The necessary steps are outlined below.
+   <ol>
+   <li>Put appropriate EtherBoot EPROM image to your EPROM.</li>
+   <li>Build GRUB 0.90. You need to configure it with options
+	<tt>--enable-diskless</tt>
+	and <tt>--enable-*</tt> appropriate for your NIC</li>
+   <li>Put built GRUB <tt>stage2/nbgrub</tt> image on TFTP server.</li>
+   <li>Configure <tt>dhcpd</tt> for the diskless machine, <tt>dhcpd</tt>
+	entry could look like this:
+<PRE>
+ option option-150 code 150 = text;
+ group {
+  subnet 192.168.0.0 netmask 255.255.255.0 {
+    option log-servers 192.168.0.1;
+    option domain-name-servers 192.168.0.1;
+    # location of GRUB configuration file
+    option option-150 "/tftpboot/grub.conf";
+    # NFS root path
+    option root-path "/home/dolecek/netbsd-root";
+    # path of image EtherBoot should load and execute
+    filename "/tftpboot/nbgrub";
+  }
+  host foobar { fixed-address foobar; hardware ethernet 00:c0:6c:76:17:46; }
+ }
+</PRE></li>
+  <li>Create configuration file for GRUB and put it on TFTP server
+	as configured in <tt>option-150</tt> of <tt>dhcpd</tt>.
+        An example configuration for NetBSD follows.
+<PRE>
+# uncomment following two lines to use serial terminal
+# serial --unit=0 --speed=57600
+# terminal --timeout=0 serial
+
+# Boot automatically after 5 secs.
+timeout 5
+
+# By default, boot the first entry.
+default 0
+
+# Fallback to the first entry.
+fallback 0
+
+# For booting the NetBSD
+title NetBSD
+kernel --type=netbsd /tftpboot/netbsd
+</PRE></li>
+  <li>GRUB doesn't pass boot information to NetBSD. Thus, if you want
+      to be able to autoboot NetBSD, you'd need to configure kernel's
+      root explicitly, like:
+<PRE>
+config netbsd root on ? type nfs
+</PRE>
+     Then, build the kernel and put it on TFTP server as configured
+     in GRUB configuration file.</li>
+   <li>If you want to use serial console, you'd need to configure both
+       GRUB and kernel to use it. To use serial line for GRUB,
+       uncomment the <tt>serial</tt> and
+       <tt>terminal</tt> entries in above example GRUB configuration.
+	To use serial
+       line as NetBSD console, add option like
+<PRE>
+options "CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
+</PRE>
+	to your kernel configuration.
+   <li>That should be it!</li>
+  </ol>
+<p>
+
+<li><b>From floppy disk</b>
+    <p>
+    The kernel on the floppy may be configured to mount
+    the root filesystem over the network by using this in your kernel
+    config file:
+    <pre>	config netbsd root on ? type nfs
+    </pre>
+    If you have not compiled a kernel before you should see the
+    notes on <a href="../../kernel/#how_to_build_a_kernel">how
+    to build a kernel</a>.
+<p>
+
+<li><b>Via "<tt>dosboot.com</tt>" for DOS or Windows (not NT)</b>
+    <p>
+    NetBSD compiles a special version of the bootloader into a
+    small DOS program, called "<tt>dosboot.com</tt>".  This is
+    located in /usr/mdec on installed systems or in the base.tgz
+    set. To use, copy both <tt>dosboot.com</tt> and your kernel
+    onto a FAT (msdos) partition, and boot to DOS.
+    <p>
+    <ul>
+    <li>Windows 95 or 98
+	<p>
+	Press F8 while the string "Loading Windows XX" is displayed
+	to enter the boot menu. The menu items displayed there will
+	depend on your installation.
+	<p>
+	You may need to avoid loading the HIMEM.SYS driver and the
+	EMM386.SYS driver. In this case choose "Step-by-step
+	confirmation" and answer all questions with "n" or ESC.
+	<p>
+	If you don't mind HIMEM.SYS getting loaded, choose "Command
+	prompt only".  
+	<p>
+
+    <li>DOS or Windows 3.1
+	<p>
+	Hold down the SHIFT key when the computer is booting to
+	skip config.sys and autoexec.bat.
+    </ul>
+
+    At the DOS prompt, change into the directory where you have
+    put "dosboot.com" and the kernel. Enter "<tt>dosboot</tt>" to
+    boot "netbsd", or "<tt>dosboot filename</tt>" if your kernel
+    file has a different name.
+    <p>
+
+    The dosboot utility is able to handle extended memory, as provided by 
+    the HIMEM.SYS driver. Unfortunately this gets into the way if NetBSD
+    is going to make calls to the APM BIOS. There is no problem if you don't
+    have an APM BIOS, or your NetBSD kernel does not use it (no 
+    "apm0 at mainbus0"). If you are going to use APM, don't load HIMEM.SYS
+    when using dosboot.
+    <p>
+
+    If you wish to create a customised version of dosboot.com, cd
+    to <tt>/usr/src/sys/arch/i386/stand/dosboot</tt>, edit the
+    <tt>Makefile</tt> for special options (serial console, ...)
+    and run "<tt>make</tt>".
+</li>
+ 
+<li><b>Via the NT boot selector</b>
+    <p>
+    NT's boot selector can be used to directly bootstrap NetBSD.
+    For more details see the <a
+    href="../../../Ports/i386/faq.html#nt_boot">Adding NetBSD to
+    the Windows NT boot menu</a> section in the NetBSD/i386 FAQ.
+</ol>
+</dd></dl>
+
+<h2>Begin setting things up (suggested order):</h2>
+<dl><dt><dd>
+<ol>
+<li><a href="dhcpd.html"><tt>dhcpd</tt></a>
+<li><a href="tftpd.html"><tt>tftpd</tt></a> (PXE)
+<li><a href="nfs.html"><tt>nfs</tt></a>
+<li><a href="files.html">client filesystem</a>
+<li><a href="finish.html">finishing up</a>
+</ol>
+</dd></dl>
+
+<hr>
+
+<a href="intro.html">Previous</a> |
+<a href="nfs.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: intro.i386.html,v 1.1 2007/06/09 11:34:05 dsieger Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>
