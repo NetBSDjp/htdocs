@@ -1,0 +1,99 @@
+<!-- $NetBSD: chap-probs.xml,v 1.1 2007/06/09 13:32:36 dsieger Exp $ -->
+
+<chapter id="chap-probs">
+  <title>Known Problems and Solutions</title>
+
+  <sect1 id="intro">
+    <title>Introduction</title>
+    <para>This section is not for bugs. It is for things such as
+    system limitations that might have work-arounds.</para>
+  </sect1>
+
+  <sect1 id="scsi">
+    <title>SCSI difficulties</title>
+    <para>Many users have reported filesystem corruption under
+    NetBSD. Symptoms include mysterious hangs and the transformation
+    of numerous files from executable binaries into device files. The
+    problem seems to plague Quantum drives more often than other
+    models. This problem only happens on '030-based Macs using the
+    ncrscsi driver.</para>
+
+    <para>Although this problem is technically a bug in the ncrscsi
+    driver, it does have a workaround. The solution is to change to a
+    kernel using the sbc SCSI driver instead. One of these kernels is
+    available from: <ulink
+    url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/mac68k/new/">ftp://ftp.NetBSD.org/pub/NetBSD/arch/mac68k/new/</ulink></para>
+  </sect1>
+
+  <sect1 id="installer">
+    <title>Installer dies during install with the error: <quote>Error
+    on SCSIRead(), #5</quote></title>
+    <para>The most recent version of the Installer (1.1g as of this
+    writing) still has difficulties with partitions on large drives
+    (i.e. greater than 1GB in size). The problems seem to occur most
+    often on Quantum Fireball drives (I don't believe that it is
+    limited to them), but the key factors seem to revolve around
+    having partitions (often large partitions) located on the upper
+    portion of the disk (i.e. beyond the first 1GB of the disk) and
+    writing large distribution sets to these partitions (smaller sets
+    often complete, but the base distribution set will often die). A
+    similar bug in the Installer was fixed a while ago, but this one
+    appears to be slightly different.</para>
+
+    <para>There are a few workarounds. The first thing to try is to
+    increase the amount of memory allocated to the Installer to as
+    much as you can give it. The next thing to try is to move your
+    NetBSD partitions to the start of the drive (or as close to it as
+    possible). If this doesn't work, you'll need to install as many
+    distribution sets as you can using the Installer, then use the
+    Installer's Mini-Shell to copy in the distribution sets to your
+    NetBSD partition, and finally finish installing the sets from
+    within NetBSD.</para>
+  </sect1>
+
+  <sect1 id="boot-hang">
+    <title>Boot hangs while recognizing ethernet or video card</title>
+    <para>This problem is usually a result of a conflict between
+    ethernet and video cards. One possible solution is to simply
+    reorder the cards in their slots. If this does not work, try
+    removing whichever card you cannot live without and see if the
+    boot sequence stops hanging.</para> 
+
+    <para>If you're boot sequence is hanging merely because of a video
+    card, chances are the kernel is not yet properly clearing the
+    interrupts for your card. There is a HOWTO for locating the
+    information necessary for doing this:</para>
+
+    <para><ulink url="http://www.macbsd.com/macbsd/howto/video.html">http://www.macbsd.com/macbsd/howto/video.html</ulink></para>
+
+    <para>With the proper information, changes can be made to the
+    kernel to allow your machine to boot without having to remove the
+    card.</para>
+  </sect1>
+
+  <sect1 id="mkfs">
+    <title>Problems with Mkfs 1.4 recognizing the last partition on the drive</title>
+    <para>The symptoms of this problem are that you have created a
+    partition of whatever type that you want to convert into a NetBSD
+    partition, but Mkfs 1.4 refuses to recognize the partition.</para>
+
+    <para>This problem is caused by an off-by-one error in the
+    Partition Map which is created by several hard drive formatters
+    (including the latest HD SC setup from Apple). Basically, the
+    number of Partition Map entries is one greater than the reported
+    size of the Map. Mkfs 1.4 ignores this last entry (and rightly so,
+    since it might be the Driver Partition in a correctly formatted
+    drive).</para>
+
+    <para>The solution is to upgrade to Mkfs 1.45 or later where this
+    bug is fixed. If you cannot locate Mkfs 1.45 or later, you have
+    two choices. You can either use a formatter which correctly writes
+    the Partition Map or else you can place a small partition at the
+    end of the disk. If you are going to keep a Mac OS partition
+    around, this is an excellent place to put one. On the other hand,
+    if you'd rather conserve space, a 1 kB Scratch partition at the
+    end of the disk should also work.</para>
+  </sect1>  
+</chapter>
+
+

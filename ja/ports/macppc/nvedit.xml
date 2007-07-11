@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-macppc-nvedit">
+<config param="desc" value="&os;/macppc nvedit howto"/>
+<config param="cvstag" value="$NetBSD: nvedit.xml,v 1.1 2007/06/09 13:32:40 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 13:32:40 $"/>
+<head>
+
+<!-- Copyright (c) 1998-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>NetBSD/macppc nvedit HOW-TO</title>
+</head>
+
+<sect1 id="intro">
+  <title>Introduction</title>
+
+  <para>
+    This page gives a quick introduction to the commands needed to edit the
+    contents of the Open Firmware NVRAMRC.  The NVRAMRC is a permanently
+    stored file that may be run at each reboot of your system.  Usually, it
+    holds a set of FORTH commands which modify the behavior of your system
+    during boot.  For more information on creating the contents of an NVRAMRC,
+    the <ulink url="http://docs.info.apple.com/article.html?artnum=60285">Apple
+    Network Server 500,700: Open Firmware Read Me</ulink> Technote is a good
+    place to start.
+  </para>
+
+  <para>
+    There is a set of commands within Open Firmware that deal with this
+    NVRAMRC.  These commands are entered from the Open Firmware prompt
+    (i.e. the <code>0 &gt;</code> prompt).  As with all Open Firmware settings, it
+    is best if you reset your machine after changing any settings using the
+    <command>reset-all</command> command.
+  </para>
+
+  <para>
+    Modifying the NVRAMRC is pretty annoying, because the FORTH syntax is
+    <emphasis>very</emphasis> picky (particularly about white space presence or
+    absence) and the editor is very primitive.  You might want
+    to temporarily change to using a serial console so you can just paste in
+    whatever patches you want.
+  </para>
+</sect1>
+
+<sect1 id="commands">
+  <title>Commands</title>
+  
+  <informaltable>
+  <tgroup cols="2">
+    <tbody>
+      <row>
+	<entry><code>nvedit</code></entry>
+	<entry>start the editor with the current nvramrc contents.  If
+	there is still a file in the temporary buffer, it resumes editing
+	that file.  Otherwise, it copies the NVRAMRC contents into the temporary
+      buffer and starts editing it. </entry></row>
+
+      <row><entry><code>nvstore</code></entry>
+      <entry>stores the temporary nvram buffer into NVRAMRC and discards
+      the contents of the temporary buffer</entry></row>
+
+      <row><entry><code>nvquit</code></entry>
+      <entry>discards the contents of the temporary nvramrc buffer
+      without writing to NVRAMRC</entry></row>
+
+      <row><entry><code>nvrun</code></entry>
+      <entry>executes the contents of the temporary nvram buffer</entry></row>
+
+      <row><entry><code>nvalias
+      &lt;alias&gt; &lt;device-path-name&gt;</code></entry>
+      <entry><para>defines an alias to the specified device (you must use the full path, 
+      not other devaliases), for example:</para>
+      <screen>nvalias bsd-cd /bandit/gc/mesh/sd@3:0,\OFWBOOT.XCF</screen>
+      will let you type `<code>boot bsd-cd</code>' and it will load
+      <code>ofwboot.xcf</code> from the CD-ROM drive in a PowerMacintosh
+      7300</entry></row>
+
+      <row><entry><code>nvunalias &lt;alias&gt;</code></entry>
+      <entry>removes the device alias from the NVRAMRC</entry></row>
+      
+      <row><entry><code>setenv use-nvramrc? &lt;value&gt;</code></entry>
+      <entry>where &lt;value&gt; is either <code>true</code> or <code>false</code>.  This
+      environment variable determines whether or not the contents of the NVRAM
+      are executed each time the machine is reset or rebooted</entry></row>
+    </tbody>
+  </tgroup>
+  </informaltable>
+
+  <para>
+    <emphasis>Note: some Open Firmware 1.0.5 systems do not have enough NVRAM storage
+    for the System Disk patches in addition to a <code>nvalias</code> 
+    setting.  You should probably keep the System Disk patches instead of the
+    <code>nvalias</code></emphasis>.
+  </para>
+</sect1>
+
+<sect1 id="nvedit">
+  <title><code>nvedit</code> Editor</title>
+
+  <para>
+    As specified in the Open Firmware spec, there is an editor built into all
+    Open Firmware implementations.  These are the commands to use the
+    editor.  You may notice
+    that some of the commands are very similar to emacs.  We use <code>C-x</code>
+    to represent holding down the control key and the <code>x</code> key.
+  </para>
+
+  <informaltable>
+    <tgroup cols="2">
+      <tbody>
+	<row><entry><code>C-l</code></entry>
+	<entry>refreshes the display</entry></row>
+
+	<row><entry><code>C-k</code></entry>
+	<entry>deletes from the cursor to the end of that line of text</entry></row>
+
+	<row><entry><code>C-n</code></entry>
+	<entry>moves to the next line of text</entry></row>
+
+	<row><entry><code>C-p</code></entry>
+	<entry>moves to the previous line of text</entry></row>
+
+	<row><entry><code>C-f</code></entry>
+	<entry>moves forward one character</entry></row>
+
+	<row><entry><code>C-b</code></entry>
+	<entry>moves back one character</entry></row>
+
+	<row><entry><code>C-c</code></entry>
+	<entry><para>exit the editor and store edited contents into a temporary buffer</para>
+	<emphasis>note: this does <emphasis role="bold">not</emphasis> save the changes to the
+	NVRAMRC, you still need to run <code>nvstore</code></emphasis></entry></row>
+
+      </tbody>
+    </tgroup>
+  </informaltable>
+
+
+  <sect2 id="nvedit_example">
+    <title>Example</title>
+    
+    <para>
+      Here is an example of an Open Firmware session entering a NVRAMRC patch (to
+      allow use of the Performa 5500 on-board video).
+      <code><emphasis role="bold">&lt;CR&gt;</emphasis></code> is the "return" or "enter" key and 
+      <code><emphasis role="bold">&lt;C-c&gt;</emphasis></code> is control-c.
+    </para>
+
+<screen>0 &gt; <emphasis role="bold">nvedit</emphasis>
+<emphasis role="bold">cpoke 0a7 0f3000032
+cpoke 093 0f3000033
+cpoke 03e 0f300003a</emphasis>
+<emphasis role="bold">&lt;C-c&gt;</emphasis>
+0 &gt; <emphasis role="bold">nvstore</emphasis>
+0 &gt; <emphasis role="bold">setenv use-nvramrc? true</emphasis>
+0 &gt; <emphasis role="bold">reset-all</emphasis>
+</screen>
+</sect2>
+</sect1>
+<parentsec url="." text="NetBSD/macppc Port Page" />
+</webpage>

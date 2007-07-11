@@ -1,0 +1,2806 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+    "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-macppc-faq">
+<config param="desc" value="NetBSD/macppc Frequently Asked Questions"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.1 2007/06/09 13:32:38 dsieger Exp $"/>
+<config param="rcsdate" value="$Date: 2007/06/09 13:32:38 $"/>
+<head>
+<!-- Copyright (c) 1998-2005
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<title>NetBSD/macppc Frequently Asked Questions</title>
+</head>
+
+<sect1 role="toc">
+
+<sect2 id="general">
+<title>General problems and questions</title>
+
+<sect3 id="intro">
+<title>Introduction</title>
+
+<para>Here are some frequently asked questions (and answers) about
+NetBSD/macppc.</para>
+
+<para>This FAQ is very much a work in progress.  If you have additional
+information, questions, or answers, send mail to <ulink
+url="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</ulink>.</para>
+
+<para>See also the following related information:</para>
+
+<itemizedlist>
+  <listitem>
+    <para><ulink url="SystemDisk-tutorial/">NetBSD/macppc System Disk
+    Tutorial</ulink>.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="models.html">NetBSD/macppc Model Support
+    Page</ulink>.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="nvedit.html">NetBSD/macppc nvedit HOW-TO</ulink>, for
+    info on how to edit the contents of the NVRAMRC.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="partitioning.html">NetBSD/macppc Partitioning
+    HOW-TO</ulink>.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="x11.html">NetBSD/macppc X11 FAQ</ulink>.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="../../Documentation/elf.html">NetBSD ELF
+    FAQ</ulink>.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="../../guide/en/chap-cons.html#chap-cons-wscons">wscons documentation</ulink>, for
+    NetBSD's platform-independent workstation console driver.</para>
+  </listitem>
+</itemizedlist>
+
+<para>Additional information is also available:</para>
+
+<itemizedlist>
+  <listitem>
+    <para><ulink
+    url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/macppc/INSTALL.html">NetBSD
+    3.1 install notes</ulink> &mdash; supported hardware and how to
+    install.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="../../MailingLists/#port-macppc"> port-macppc mail
+    list</ulink> &mdash; if you have any additional questions please
+    subscribe.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="../../Documentation/network/netboot/">Diskless NetBSD
+    HOW-TO</ulink>.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="../../Documentation/Hardware/Misc/serial.html">NetBSD
+    Serial Port Primer</ulink>.</para>
+  </listitem>
+
+  <listitem>
+    <para><ulink url="../../Documentation/">General NetBSD
+    Documentation</ulink>
+    &mdash; for questions not specific to NetBSD/macppc.</para>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="boot-trouble">
+<title>Help, I can't boot NetBSD!</title>
+
+<para>Unfortunately, there are several causes of this problem.  It's
+actually rather more common than we'd like, but is primarily due to the
+variety of machines that we support and all the undocumented changes Apple
+made along the line.</para>
+
+<para>First, check to make sure your <ulink url="models.html">model</ulink>
+is supported.  Next, did you <emphasis>really</emphasis> read through the
+INSTALL notes and ignore the instructions for Open Firmware versions other
+than your model?  Next, read through this FAQ entry, and if you still can't
+make your machine boot into NetBSD, post to <ulink
+url="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</ulink>.</para>
+
+<para>Look at the messages below to determine which problem you are
+encountering.</para>
+
+<screen>Open Firmware, 1.0.5
+To continue booting the MacOS type:
+BYE&lt;return&gt;
+To continue booting from the default boot device type:
+BOOT&lt;return&gt;
+ ok
+<prompt>0 &gt; </prompt></screen>
+
+<para>If you don't see this message on screen (or serial console), then you
+haven't properly entered Open Firmware.  If your machine starts to boot
+Mac OS (i.e.  the screen turns grey and a happy mac, broken folder, or
+flashing question mark appears), then skip down to <xref
+linkend="ofw-access" />.  If your screen stays black and you have an older
+mac, see <xref linkend="ofw-boot-serial" />. If your screen is all weird,
+then see how to fix the <xref linkend="non-sync-monitor" />.  If you
+entered some bad Open Firmware settings and it doesn't enter Open Firmware
+or boot Mac OS anymore, you may need to read <xref linkend="ofw-clear"
+/>.</para>
+
+<para>OK, now Open Firmware has started and is ready for user commands if
+you set it to stop at the Open Firmware prompt (the
+"<literal>0&nbsp;&gt;</literal>").  If you specified that it not stop, Open
+Firmware tries to boot using the settings you previously supplied (the Open
+Firmware variables <literal>boot-command</literal>,
+<literal>boot-device</literal>, and <literal>boot-file</literal>).  See
+<xref linkend="ofw-use" /> for help using the Open Firmware command line
+interface.</para>
+
+<para>The next step is usually the trickiest &mdash; getting Open Firmware
+to load the bootloader from the correct location.  See what boot methods
+are supported (<xref linkend="boot-support" />), Open Firmware boot
+commands (<xref linkend="boot-disk" />), and some common Open Firmware
+booting problems (<xref linkend="common-of-probs" />).  Questions related
+to netbooting are covered in the <ulink
+url="../../Documentation/network/netboot/">Diskless HOW-TO</ulink>,
+particularly in the <ulink
+url="../../Documentation/network/netboot/intro.macppc.html">macppc-specific</ulink>
+section, and the section on common netboot problems (<xref
+linkend="netboot-probs" />).</para>
+
+<screen><prompt>0 &gt; </prompt><emphasis role="bold">boot enet:,ofwboot.xcf</emphasis> file: 192.168.0.11,/ofwboot.xcfloading XCOFF
+tsize=C280 dsize=14AC bsize=2620 entry=600000
+SECTIONS:
+.text    00600000 00600000 0000C280 000000E0
+.data    0060D000 0060D000 000014AC 0000C360
+.bss     0060E4B0 0060E4B0 00002620 00000000
+loading .text, done..
+loading .data, done..
+clearing .bss, done..</screen>
+
+<para>If there are memory addressing issues, it might stop and print
+<literal>CLAIM failed</literal> (see <xref linkend="ofw-claim-failed"
+/>).</para>
+
+<screen>&gt;&gt; NetBSD/macppc OpenFirmware Boot, Revision 1.3
+&gt;&gt; (tsubai@mint.iri.co.jp, Sun Nov 26 01:41:27 JST 2000)
+1701508+177748 [100+68176+55886]=0x1e9468</screen>
+
+<para>If it hangs here, then you need to set the
+<literal>real-base</literal> (described in <xref linkend="ofw-real-base"
+/>) of your Open Firmware 1.0.5 or 2.0.x machine.  If you get several
+<literal>READ TIMEOUT@</literal> messages (described in <xref
+linkend="ofw-read-timeout" />), then Open Firmware is having
+trouble reading your floppy disk. If you get past this point, then your
+kernel has started to load.  Now, if you have problems, it is most likely
+no longer an Open Firmware problem, but a NetBSD problem.</para>
+
+<para>If your screen turns black, and you have a laptop, the LCD brightness
+may have been turned down all the way.  See <xref linkend="black-lcd"
+/>.</para>
+
+<screen>start=0x100000
+Copyright (c) 1996, 1997, 1998, 1999, 2000, 2001
+    The NetBSD Foundation, Inc.  All rights reserved.
+Copyright (c) 1982, 1986, 1989, 1991, 1993
+    The Regents of the University of California.  All rights reserved.
+
+NetBSD 1.5S (AL) #0: Thu Mar 15 00:52:56 PST 2001
+    mw@al:/usr/src/sys/arch/macppc/compile/AL
+total memory = 192 MB
+avail memory = 172 MB
+using 2483 buffers containing 9932 KB of memory
+[...]
+boot device: sd0
+root on sd0a dumps on sd0b
+root file system type: ffs</screen>
+
+<para>Sometimes the kernel can't figure out where it was booting from.  You
+may need to build a kernel with the root device hard-coded; see <xref
+linkend="dash-a" />.</para>
+
+<para>If your system hangs here and you have a new PowerBook, then read
+<xref linkend="powerbook" />.</para>
+
+<screen>swapctl: adding /dev/sd0b as swap device at priority 0
+Automatic boot in progress: starting file system checks.
+[...]</screen>
+
+<para>OK, now you've started in "multi-user mode" and the boot process is
+complete.  If your keyboard doesn't work, see <xref linkend="powerbook"
+/>.</para>
+
+<para>If you're running sysinst and it says <literal>I can not find any
+hard disk for use by NetBSD</literal> then you should see <xref
+linkend="nodisk" />.</para>
+
+</sect3>
+
+<sect3 id="macos-newbie">
+<title>Help, I don't know anything about Mac OS!</title>
+
+<para>This may or may not be a problem depending on your <ulink
+url="models.html">model</ulink>. Some older models require nvram patches
+before they can boot NetBSD/macppc.  Often, the easiest way to add these
+patches is by using a Mac OS utility.  If you don't know the basics (such as
+to use StuffIt Expander to extract a BinHex file, how to start a Mac OS app,
+or even how to copy files in the Mac OS Finder), you're probably better off
+trying to avoid using Mac OS (unless you want to learn!).</para>
+
+<para>There are ways that unix-heads can set things up easily that would
+pain the most experienced Mac OS user.  This FAQ entry is aimed at such
+unix-heads, since the INSTALL notes are aimed at people with Mac OS
+experience and minimal unix background.</para>
+
+<sect4 id="macos-newbie-of3">
+<title>If you have an Open Firmware 3 system</title>
+
+<para>If you want NetBSD entirely contained on one hard drive, there are
+two approaches.  By far the easiest is to briefly boot Mac OS, use a Mac OS
+utility or pdisk to repartition your disk, then copy the bootloader
+<filename>ofwboot.xcf</filename> to an HFS partition.  See the <ulink
+url="partitioning.html">Partitioning HOW-TO</ulink>.</para>
+
+<para>For those unable or unwilling to use Mac OS, you still must boot an
+operating system to partition your disk.  There are at present three open
+source OSes you could use (NetBSD, Darwin, and Linux).  Partition using the
+NetBSD <command>pdisk</command>, create the HFS filesystem, and copy
+<filename>ofwboot.xcf</filename> to the HFS partition.</para>
+
+<itemizedlist>
+  <listitem>
+    <para>Boot NetBSD, use <ulink
+    url="partitioning.html#pdisk">pdisk</ulink> to partition, and use
+    <ulink
+    url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
+    hfstools</ulink> to format the partition and copy the
+    bootloader.</para>
+  </listitem>
+
+  <listitem>
+    <para>Boot <ulink
+    url="http://developer.apple.com/darwin/projects/darwin/">Darwin</ulink>
+    (Apple's open source BSD), partition with the NetBSD <ulink
+    url="partitioning.html#pdisk">pdisk</ulink> (not the native Darwin
+    pdisk), and run the following commands (using the correct disk and
+    partition numbers, ofcourse):</para>
+
+    <screen><prompt>#</prompt> <userinput>newfs_hfs /dev/disk0s3</userinput>
+<prompt>#</prompt> <userinput>mkdir -p /mnt</userinput>
+<prompt>#</prompt> <userinput>mount /dev/disk0s3 /mnt</userinput>
+<prompt>#</prompt> <userinput>cp ofwboot.xcf /mnt</userinput></screen>
+  </listitem>
+
+  <listitem>
+    <para>Boot Linux and partition using the NetBSD <ulink
+    url="partitioning.html#pdisk">pdisk</ulink> (not the native Linux
+    pdisk).  Some distributions come with HFS filesystem capabilities
+    built-in.  Mail <ulink
+    url="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</ulink>  if
+    you can provide a little more detail here.</para>
+  </listitem>
+</itemizedlist>
+
+<para>If you're willing to compromise a bit, you can permanently keep
+<filename>ofwboot.xcf</filename> on a netboot server, an ISO 9660 CD-R, or
+an MS-DOS disk (you'd set your <literal>boot-device</literal> to the
+bootloader location, and your <literal>boot-file</literal> to the path to
+your kernel).  See info on <xref linkend="ofw-variables" />.</para>
+
+</sect4>
+
+<sect4 id="macos-newbie-ofpre3">
+<title>If you have an earlier, Open Firmware 1.0.5, 2.0.x, or 2.4
+system</title>
+
+<para>Things get a little more interesting here, since many of these models
+default to using a serial console (see <xref
+linkend="ofw-input-output-devices" />).  The quick easy way to determine
+your model's default console type is to power on the machine, and during
+the chime, hold down the four <literal>Command-Option-O-F</literal> keys
+until the screen turns black, grey, or white.  Black means either bad
+hardware or a serial console.  Grey means that you didn't successfully
+enter Open Firmware and it's trying to boot Mac OS.  White (with text) means
+the default is a local console.</para>
+
+<para>Once you've got the <literal>0&nbsp;&gt;</literal> Open Firmware
+prompt on your screen or serial console, you can try installing NetBSD
+starting at the "Getting to the Open Firmware Prompt (Without using Mac OS)"
+section in the INSTALL notes.  If your system can't boot NetBSD, then post
+to <ulink
+url="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</ulink> asking
+someone to mail you the nvram patches for your model.  You can use your
+serial console to paste the nvram patches into Open Firmware.  See the
+<ulink url="nvedit.html">NetBSD/macppc nvedit HOW-TO</ulink> for help with
+this step.  Once you do this, you should be golden.</para>
+
+</sect4>
+
+<para>Good luck!</para>
+
+</sect3>
+
+<sect3 id="disk-sharing">
+<title>How do I share files between the OSes on my machine?</title>
+
+<para>Integrated into the <ulink url="partitioning.html">Partitioning
+HOW-TO</ulink>.</para>
+
+</sect3>
+
+<sect3 id="partitions">
+<title>Explaining the partition naming schemes</title>
+
+<para>Moved to the <ulink url="partitioning.html#nomenclature">Partitioning
+HOW-TO</ulink>.</para>
+
+</sect3>
+
+<sect3 id="scroll-speed">
+<title>Why does the screen scroll text so slowly?</title>
+
+<para>The text console code is not optimized in the GENERIC kernel.  There
+is accelerated text console code in NetBSD 1.6 and later, but it is not
+enabled by default.</para>
+
+<para>You will need to build a new kernel.  Add the following line to your
+<ulink url="../../Documentation/kernel/#how_to_build_a_kernel"> kernel
+configuration</ulink>:</para>
+
+<programlisting>options OFB_ENABLE_CACHE</programlisting>
+
+<para>For information on X11 servers, see the <ulink
+url="x11.html">NetBSD/macppc X11 FAQ</ulink>.</para>
+
+</sect3>
+
+<sect3 id="usb-mouse-bug">
+<title>My USB mouse is not recognized</title>
+
+<para>Try plugging it into the back of the Mac instead of into the
+keyboard.</para>
+
+</sect3>
+
+<sect3 id="ethernet-bad-date">
+<title>Ethernet isn't working</title>
+
+<para>Aside from the usual sorts of problems (such as cables and <ulink
+url="../../Documentation/network/">configuration</ulink>), NetBSD/macppc
+seems to have a problem using network interfaces if the date stored in the
+PRAM is too old (such as if your system has lost power or gotten reset in
+such a way that the date is set to 1904 or 1956).  The symptom is that
+<literal>ifconfig</literal> doesn't complain, but no packets are sent or
+received.</para>
+
+<screen><prompt>%</prompt> <userinput>ping 10.0.1.1</userinput>
+PING 10.0.1.1 (10.0.1.1): 56 data bytes
+<userinput>^C</userinput>
+----10.0.1.2 PING Statistics----
+0 packets transmitted, 0 packets received,</screen>
+
+The solution is to use &man.date.1; to set the time correctly.
+
+</sect3>
+
+<sect3 id="power-manager">
+<title>My PowerBook or iBook won't power on, charge the battery, or
+recognize the charger</title>
+
+<para>Your power manager memory might be corrupted.</para>
+
+<para>See <ulink
+url="http://docs.info.apple.com/article.html?artnum=14449">TIL
+14449</ulink> for info on how to reset it.</para>
+
+</sect3>
+
+<sect3 id="timedrift">
+<title>My PowerComputing clone's clock drifts too much.</title>
+
+<para>Yeah, it appears that the <literal>timebase</literal> in Open
+Firmware doesn't match the hardware.  You need to correct it.</para>
+
+<para>See the <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/08/03/0003.html">post</ulink>
+by Adam Lebsack.</para>
+
+</sect3>
+
+<sect3 id="dash-a">
+<title>Why does the kernel always prompt me for the root device?</title>
+
+<para>Various people have reported that they can't get their NetBSD/macppc
+systems to boot unattended.  What happens is that Open Firmware loads the
+kernel just fine, but the kernel can't seem to find the root device (i.e.
+where the / filesystem is located).</para>
+
+<para>At the prompt, type in the device name for your root disk (usually
+something like <literal>sd0a</literal> or <literal>wd0a</literal>), swap
+(usually something like <literal>sd0b</literal> or
+<literal>wd0b</literal>), and filesystem type (usually
+<literal>ffs</literal>, <literal>nfs</literal>, or
+<literal>cd9660</literal>).</para>
+
+<para>Until this situation is fixed, there is a workaround.  You need to
+<ulink url="../../Documentation/kernel/#how_to_build_a_kernel"> build a
+kernel</ulink> with the following setting:</para>
+
+<programlisting>#config		netbsd	root on ? type ? #to automatically detect root device
+config		netbsd	root on sd0a type ffs #for SCSI disk
+#config		netbsd	root on wd0a type ffs #for IDE disk
+#config		netbsd	root on ? type nfs #for netboot</programlisting>
+
+<para>where <literal>sd0a</literal> is the name of the partition with your
+root filesystem.</para>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="hardware">
+<title>Supported Hardware</title>
+
+<sect3 id="supported-models">
+<title>NetBSD/macppc supported models</title>
+
+<para>See the <ulink url="models.html">NetBSD/macppc supported models
+list</ulink>.  Also, see the list of supported peripherals in <xref
+linkend="peripherals" />.</para>
+
+</sect3>
+
+<sect3 id="nubus">
+<title>Are NuBus-based Power Macs supported (7100, 8100, etc)?</title>
+
+<para>No.  NetBSD/macppc doesn't support NuBus.  In addition,the
+NuBus-based Power Macs don't have Open Firmware, which NetBSD/macppc
+depends on heavily for bootstrapping and console operations.</para>
+
+<para>There are four groups of NuBus based Power Macintosh machines:</para>
+
+<itemizedlist>
+  <listitem>
+    <para><emphasis>Apple PDM</emphasis>: Any x1xx machine, e.g. 6100,
+    6150, 7100, 8100.</para>
+  </listitem>
+
+  <listitem>
+    <para><emphasis>Apple PERFORMA class</emphasis>: 52xx, 53xx, 62xx, 63xx
+    (except 6360).</para>
+  </listitem>
+
+  <listitem>
+    <para><emphasis>Apple POWERBOOK (or 'M2') class</emphasis>: 1400, 2300,
+    5300.</para>
+  </listitem>
+
+  <listitem>
+    <para><emphasis>Power Computing "Power" series</emphasis>: Such as the
+    "Power 100" and "Power 120".</para>
+  </listitem>
+</itemizedlist>
+
+<para>These systems won't work even if you upgrade the processor to a G3,
+because the remaining hardware is still unsupported.  (But if you get a
+complete logic board upgrade, they will work, because they then essentially
+become a new machine.)</para>
+
+<para>At the current time, we don't know of anyone working on supporting
+these systems. If you are interested in trying to get one of them working,
+<ulink url="mailto:port-macppc@NetBSD.org">let us know</ulink>!</para>
+
+<para>We already have support for the 603 microprocessor, and the RS/6000
+porting effort is working on the 601 microprocessor support.  We have
+support for the motherboard chipsets in <ulink
+url="../mac68k/">NetBSD/mac68k</ulink>.  It's just a matter of sharing
+these drivers and figuring out a bootloader that's compatible with the Open
+Firmware method of booting the currently supported macppc models.  See
+David A Gatwood's <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2002/01/14/0021.html">post</ulink>
+for suggestions on where to start and what needs to be done.</para>
+
+</sect3>
+
+<sect3 id="68k-upgrade">
+<title>Are 68k-based Macs with PowerPC processor upgrades
+supported?</title>
+
+<para>No, for the same reasons as above. (This applies only to
+<emphasis>processor</emphasis> upgrades. If you upgrade the whole
+motherboard, it essentially becomes a new machine, in which case it may be
+supported.)</para>
+
+</sect3>
+
+<sect3 id="601">
+<title>Are the Power Macintosh 7200 or 7500 supported?  (601
+processor)</title>
+
+<para>These machines have PCI and Open Firmware, but use the PowerPC 601
+processor, which is not currently supported. However, the 7500's processor
+is upgradable, so if you buy a 603/604/G3/G4 upgrade for it, NetBSD will
+work.  See <xref linkend="cpu-upgrade" />.</para>
+
+<para>In addition, some work is in progress on a RS/6000 port, and it will
+bring 601 support to NetBSD.  Once this is done, it will be a matter of
+sharing this code between rs6000 and macppc.</para>
+
+</sect3>
+
+<sect3 id="powerbook">
+<title>Are PowerPC-based PowerBooks supported?</title>
+
+<para>Many of them.  See the <ulink url="models.html">NetBSD/macppc
+supported models list</ulink>.</para>
+
+<para>The PowerBook 1400, 2300, and 5300 are not supported, because they do
+not have Open Firmware.</para>
+
+<para>Sometimes newly released laptop models have different built-in
+keyboard glue and it takes NetBSD a while to catch up.  If you have a newly
+released model, try posting to <ulink
+url="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</ulink>.</para>
+
+<para> Note that power management is not yet supported, so it is not
+possible to suspend and resume a PowerBook while running NetBSD.</para>
+
+<para>See also <xref linkend="power-manager" />.</para>
+
+</sect3>
+
+<sect3 id="cpu-upgrade">
+<title>Are PowerPC CPU upgrades supported?</title>
+
+<para>Sure!</para>
+
+<para>Many people upgrade their slow 601, 603, 604, or G3 CPUs with a
+faster 604, G3, or G4 CPU.  Actually, it's currently necessary if you have
+a PowerMacintosh 7500 with the original PowerPC 601 chip.</para>
+
+<para>People have reported success with upgrading the CPU in original PCI
+PowerMacintosh systems (7300 - 9600), supported PowerBooks, and earlier G3
+systems.  The common manufacturers are Newer Technology, Powerlogix,
+Sonnet, and XLR8.  If the CPU works in Mac OS, it should work in
+NetBSD.</para>
+
+<para>Some users have reported that their system won't boot NetBSD if a new
+CPU is installed into the early PCI PowerMacintosh systems (7300 - 9600).
+If you find that this is the case (i.e. you downgrade to a 604 and NetBSD
+works), then you may need to boot Mac OS once to install the
+<literal>nvramrc</literal> patches for your CPU daughtercard.  From this
+point on, you should <emphasis>not</emphasis> use System Disk, as it will
+install its own <literal>nvramrc</literal>, overwriting your CPU
+manufacturer's <literal>nvramrc</literal>.  Use <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/macos-utils/bootvars/">Boot
+Variables</ulink> instead.  This will mean that your monitor may not sync
+if you are using the built-in <literal>/chaos/control</literal> in
+PowerMacintosh 7300 - 8600 models; see <xref linkend="non-sync-monitor"
+/>.</para>
+
+<para>Other models will not need the Mac OS "virtual firmware" type of patch
+&mdash; NetBSD initializes the CPU just fine.</para>
+
+<para>Unfortunately, the Metabox Jocard G4 has some problems.  See Thomas
+Michael Wanka's <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/09/01/0002.html">post</ulink>
+on this topic.</para>
+
+<para>For some combinations of CPU upgrade in a particular model, you may
+need to compile a special kernel to enable the L2 cache on G3 or G4 CPUs in
+older systems.  Usually this is not necessary, and it "just works".  When
+it doesn't, you'll see a message like the following:</para> <screen>cpu0 at
+mainbus0: L2 cache not enabled</screen>
+
+<para>If, when you boot, there is a message like this, then you should
+follow the directions in this <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/01/05/0000.html">post</ulink>
+and this <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/01/05/0007.html">post</ulink>.</para>
+
+<para>If your L3 cache is not enabled by default, then follow the
+directions in this <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2003/02/27/0000.html">post</ulink></para>
+
+</sect3>
+
+<sect3 id="peripherals">
+<title>What peripherals are supported?</title>
+
+<para>The <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/macppc/INSTALL.html">
+NetBSD/macppc 3.1 Install Notes</ulink> have a full list of supported
+hardware in the section "Supported devices".  Unless otherwise specified,
+third-party devices (such as PCI and cardbus cards) cannot be used to boot
+NetBSD/macppc.</para>
+
+<itemizedlist>
+  <listitem>
+    <para>CPU</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>PowerPC 603, 604, G3, and G4 (and variants of each): See
+        <xref linkend="cpu-upgrade" />.</para>
+      </listitem>
+
+      <listitem>
+        <para>Support for multiprocessor CPU cards is available in
+        NetBSD/macppc 2.0 and later.  You will need to use a
+        <filename>GENERIC.MP</filename> kernel or add "<literal>options
+        MULTIPROCESSOR</literal>" to your kernel configuration.  Without these
+        options, NetBSD will only use one CPU.</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>Ethernet</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>On-board 79C950 (MACE) ethernet
+        (<emphasis>mc</emphasis>)</para>
+      </listitem>
+
+      <listitem>
+        <para>On-board bmac ethernet, 10Base-T only
+        (<emphasis>bm</emphasis>)</para>
+      </listitem>
+
+      <listitem>
+        <para>On-board gmac ethernet (<emphasis>gem</emphasis>)</para>
+      </listitem>
+
+      <listitem>
+        <para>On-board AirPort (a.k.a. AirMac) (<emphasis>wi</emphasis>):
+        See <xref linkend="airport" />.</para>
+      </listitem>
+
+      <listitem>
+        <para>PCI, PCMCIA, cardbus, and USB ethernet devices
+        (<emphasis>tlp</emphasis>, <emphasis>epic</emphasis>,
+        <emphasis>ex</emphasis>, <emphasis>fxp</emphasis>,
+        <emphasis>rtk</emphasis>, <emphasis>vr</emphasis>,
+        <emphasis>ne</emphasis>, <emphasis>aue</emphasis>,
+        <emphasis>cue</emphasis>, and <emphasis>kue</emphasis>): such as
+        Asante, Farallon, SMC, 3Com, Intel, RealTek, D-Link, NE2000, and
+        other compatible devices</para>
+      </listitem>
+    </itemizedlist>
+
+  </listitem>
+
+  <listitem>
+    <para>SCSI</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>On-board 53c94 SCSI controller
+        (<emphasis>esp</emphasis>).</para>
+      </listitem>
+
+      <listitem>
+        <para>On-board MESH SCSI controller
+        (<emphasis>mesh</emphasis>).</para>
+      </listitem>
+
+      <listitem>
+        <para>Adaptec / Future Domain PCI SCSI (<emphasis>ahc</emphasis>):
+        Many Adaptec cards have Macintosh firmware on them and can be used
+        to boot NetBSD/macppc.  See <xref linkend="boot-pci" />.</para>
+      </listitem>
+
+      <listitem>
+        <para>Advansys 1200[A,B] 9xx[U,UA] PCI SCSI
+        (<emphasis>adv</emphasis>).</para>
+      </listitem>
+
+      <listitem>
+        <para>AMD 53c974 (<emphasis>pcscp</emphasis>).</para>
+      </listitem>
+
+      <listitem>
+        <para>Apple 53c875 Ultra Wide SCSI (in some Beige G3 models)
+        (<emphasis>siop</emphasis>): May need firmware update to boot
+        NetBSD.  Use the <ulink
+        url="http://docs.info.apple.com/article.html?artnum=25176">Mac OS X
+        SCSI Card Updater</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>NCR/Symbios 53c8xx (<emphasis>siop</emphasis>)
+        </para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>IDE</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>On-board IDE controllers (<emphasis>wdc</emphasis>)</para>
+      </listitem>
+
+      <listitem>
+        <para>Promise Ultra66 (<emphasis>pciide</emphasis>)</para>
+      </listitem>
+
+      <listitem>
+        <para>Acard ATP-850/860 controllers (such as Sonnet Tempo ATA/66
+        and Acard AEC-6210/6260) (<emphasis>pciide</emphasis>)</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>Input devices</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Most ADB keyboards, mice, trackballs, and trackpads.</para>
+      </listitem>
+
+      <listitem>
+        <para>Most USB keyboards, mice, trackballs, and trackpads.</para>
+      </listitem>
+
+      <listitem>
+        <para>Most PS/2 keyboards, mice, and trackballs (middle button on
+        3-button mice may not work).</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>Video (see <xref linkend="ofw-input-output-devices" />)</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>On-board video on most models (<emphasis>ofb</emphasis>):
+        Some <ulink url="models.html#no.ofw.fb">models</ulink> are not able
+        to boot NetBSD/macppc when using their on-board video.</para>
+      </listitem>
+
+      <listitem>
+        <para>PCI video cards with Open Firmware support
+        (<emphasis>ofb</emphasis>): ATI, IMS, Matrox, and NVIDIA have
+        models that support Open Firmware.</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>Audio</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>On-board AWACS audio on most models (experimental &mdash;
+        disabled by default due to interrupt conflicts with some G4 models)
+        (<emphasis>awacs</emphasis>).</para>
+      </listitem>
+
+      <listitem>
+        <para>USB audio (<emphasis>uaudio</emphasis>).</para>
+      </listitem>
+
+      <listitem>
+        <para>PCI audio cards, although only the Ensoniq AudioPCI
+        (<emphasis>eap</emphasis>) has been thoroughly tested.</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>Serial.  NetBSD/macppc refers to the on-board serial ports as
+    <filename>tty00</filename> and <filename>tty01</filename>.  Open
+    Firmware uses the names listed below.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>On-board RS-422 serial ports (modem port is
+        <emphasis>ttya</emphasis> and printer port is
+        <emphasis>ttyb</emphasis>): On-board Serial support is very poor
+        and may cause your system to hang.  See <xref linkend="badserial"
+        />.</para>
+      </listitem>
+
+      <listitem>
+        <para>On-board RS-232 Xserve serial port: Can be used as a serial
+        console</para>
+      </listitem>
+
+      <listitem>
+        <para>Gee Three Stealth Serial Port and Griffin Technology
+        gPort: These replace the internal modem on desktop G3 and G4
+        models and can be used as serial consoles.</para>
+      </listitem>
+
+      <listitem>
+        <para>USB, PCI, and cardbus-based serial ports.</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>USB devices</para>
+
+    <itemizedlist>
+      <listitem><para>Many add-on USB devices are supported.  See the page
+      on the <ulink url="../../Hardware/usb.html">Machine-independent USB
+      drivers</ulink>.</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>PCMCIA and CardBus cards</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Many cards are supported, but untested with NetBSD/macppc.
+        See the pages on the <ulink
+        url="../../Hardware/pcmcia.html">Machine-independent PCMCIA
+        drivers</ulink> and the <ulink
+        url="../../Hardware/cardbus.html">Machine-independent Cardbus
+        drivers</ulink>.</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+
+  <listitem>
+    <para>PCI cards</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Many cards are supported, but untested with NetBSD/macppc See
+        the pages on the <ulink
+        url="../../Hardware/pci.html">Machine-independent PCI
+        drivers</ulink>.</para>
+      </listitem>
+    </itemizedlist>
+  </listitem>
+</itemizedlist>
+
+<para>NetBSD/macppc does not yet support:</para>
+
+<itemizedlist>
+  <listitem>
+    <para>Floppy drives (built-in or USB), other than for booting.</para>
+  </listitem>
+
+  <listitem>
+    <para>Power management.</para>
+  </listitem>
+
+  <listitem>
+    <para>Full <ulink url="../../guide/en/chap-cons.html#chap-cons-wscons">wscons</ulink>
+    capabilities such as virtual terminals and color text.</para>
+  </listitem>
+
+  <listitem>
+    <para>Common FireWire (IEEE 1394) devices, such as disks, CD-RWs, and
+    scanners.</para>
+  </listitem>
+
+  <listitem>
+    <para>On-board video capture.</para>
+  </listitem>
+
+  <listitem>
+    <para>AirPort Extreme.</para>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="badserial">
+<title>I'm having troubles using my serial port!</title>
+
+<para>That's because the built-in serial ports don't work very well.
+Actually, they're really only good enough for console use (and even then,
+they're sometimes flaky).</para>
+
+<para>Until someone fixes this, don't assume you can run a modem, ppp, sync
+your palm, or whatever.  If you have any experience with serial drivers and
+a willingness to help, please contact <ulink
+url="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</ulink>.</para>
+
+</sect3>
+
+<sect3 id="pppmacppc">
+<title>How do I get ppp working?</title>
+
+<para>Ouch.  Unfortunately, since the built-in serial ports don't work,
+there are a few bugs in the ppp drivers that haven't been quashed.</para>
+
+<para>See Donald Lee's <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/07/26/0023.html">post</ulink>
+on how he got his Cyclades PCI card to run ppp.</para>
+
+</sect3>
+
+<sect3 id="airport">
+<title>How do I use my AirPort or AirMac network?</title>
+
+<para>Wireless networking was first supported in NetBSD 1.6.  AirPort
+Extreme is not currently supported.</para>
+
+<para>Briefly, what you need to do is set up your wireless card to use DHCP
+to find its IP address, and set up the correct media type (typically
+<literal>DS11</literal>), and the correct network (with the
+<literal>nwid</literal> parameter).  For example, to connect to my closed
+AirPort Base Station, I have the following in
+<filename>/etc/rc.conf</filename>:</para>
+
+<programlisting>ifconfig_wi0="nwid Gizmonet media DS11"
+dhclient=YES
+dhclient_flags="wi0"</programlisting>
+
+<para>Each time I reboot, the AirPort card looks for a base station serving
+the <literal>Gizmonet</literal> and asks it for an IP address.</para>
+
+<para>You can find more information in &man.ifconfig.8;, &man.wiconfig.8;,
+&man.wi.4; and &man.ifmedia.4;.  Additionally, see the <ulink
+url="../../Documentation/network/wavelan.html">Using WaveLAN IEEE under
+NetBSD</ulink> page.</para>
+
+<para>If your AirPort base station was set up under Mac OS and you use
+encryption, you may need to run the <literal>AirPort Admin
+Utility</literal>, configure your base station, and find the equivalent
+network password.  Please see <ulink
+url="http://www.info.apple.com/kbnum/n106864">www.info.apple.com</ulink>
+for details on how to use Apple's AirPort Admin Utility.</para>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="open-firmware">
+<title>Open Firmware</title>
+
+<sect3 id="ofw">
+<title>What is Open Firmware, and why do I care?</title>
+
+<para>Briefly, it is a command environment using the FORTH language which
+the NetBSD kernel uses to gether information about your system, and to
+control some of your devices. It is part of the boot ROMs in most
+PowerPC-based Macintosh systems, and we use it to load the kernel from disk
+or network.</para>
+
+<para>Open Firmware, as specified by "IEEE Std 1275-1994: IEEE Standard for
+Boot Firmware (Initialization Configuration) Firmware: Core Requirements
+and Practices" and its supplements, is a platform-independent boot
+firmware. It is based on Sun's OpenBoot firmware, and uses ANS Forth as a
+processor-independent interface language.</para>
+
+<para>You can find more about Open Firmware at the <ulink
+url="http://playground.sun.com/1275/home.html">Open Firmware Working Group
+home page</ulink> or at the <ulink
+url="http://bananajr6000.apple.com">Apple Computer Open Firmware Home
+Page</ulink>.  Also, Apple has some nice Technical Notes available, such as
+<ulink
+url="http://developer.apple.com/technotes/tn/tn1061.html">1061</ulink>.</para>
+
+</sect3>
+
+<sect3 id="ofw-version">
+<title>Which version of Open Firmware does my machine have?</title>
+
+<para>Look at the <ulink url="models.html">Model Support</ulink> page.  If
+your machine isn't listed, you can find out from within Open Firmware.
+From the Open Firmware prompt (see <xref linkend="ofw-access" /> and <xref
+linkend="ofw-use" />), type:</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>dev /openprom</userinput>
+<prompt>0 &gt; </prompt><userinput>.properties</userinput>
+name                    openprom
+device_type             BootROM
+model                   OpenFirmware 3
+relative-addressing
+supports-bootinfo
+
+ ok</screen>
+
+<para>Alternatively, any machine which did not ship with a G3 or G4
+processor is either Open Firmware 1.0.5 or 2.0.x.  All desktop models
+without an internal floppy drive have Open Firmware 3.  All laptop models
+without built-in SCSI have Open Firmware 3.</para>
+
+<note>
+  <para>Open Firmware 3 systems have a rewritable "firmware", also called
+  the <emphasis>BootROM</emphasis>. It's easy to get the BootROM version
+  confused with the Open Firmware version.  When you use an Apple firmware
+  updater, it updates the BootROM. This will <emphasis
+  role="strong">not</emphasis> change the version of Open Firmware in your
+  machine &mdash; it will still be Open Firmware 3. The BootROM is what is
+  first executed when you power on or reset your system. The BootROM then
+  loads Open Firmware, which boots your operating system.</para>
+
+  <para>This BootROM version can be found using Apple System Profiler in
+  Mac OS.  Often, it is listed on the first line of your screen when you
+  first boot into Open Firmware.  For example, my PowerBook (FireWire)
+  prints:</para>
+
+  <screen>Apple PowerBook3,1 2.1f1 BootROM built on 01/29/00 at 22:38:07
+Copyright 1994-2000 Apple Computer, Inc.
+All Rights Reserved
+
+Welcome to Open Firmware.
+[...]</screen>
+
+  <para>indicating that the BootROM version is 2.1f1.</para>
+</note>
+
+</sect3>
+
+<sect3 id="ofw-bugs">
+<title>Are there bugs in my machine's Open Firmware implementation?</title>
+
+<para>Probably.  The <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/macppc/INSTALL.html">
+NetBSD/macppc 3.1 Install Notes</ulink> describe how to patch or upgrade
+your Open Firmware to work around these bugs.  See the section on "Updating
+your BootROM" for Open Firmware 3 systems, and the section "Older Open
+Firmware System Preparation" for systems with Open Firmware 1.0.5, 2.0.x,
+and 2.4.</para>
+
+</sect3>
+
+<sect3 id="ofw-access">
+<title>How do I get to the Open Firmware prompt?</title>
+
+<para>Read the <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/macppc/INSTALL.html">NetBSD
+3.1 install notes</ulink>.  In particular, scroll down to the section on
+"Getting to Open Firmware" for your particular version of Open
+Firmware.</para>
+
+<para>For the lazy, you can use Apple's <literal>System Disk</literal> to
+set your machine to always boot into Open Firmware.  See the brief <ulink
+url="SystemDisk-tutorial/">tutorial</ulink> on how to do this.</para>
+
+</sect3>
+
+<sect3 id="ofw-boot-serial">
+<title>I tried to get into Open Firmware, but it just stopped booting, and
+my monitor isn't showing anything.</title>
+
+<para>You didn't read the <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/macppc/INSTALL.html">NetBSD
+3.1 install notes</ulink>.  In particular, scroll down to the section on
+"Getting to the Open Firmware Prompt on Older Models".  It's a bit lengthy,
+but very clear in describing the proper steps to set up Open
+Firmware.</para>
+
+<para>Briefly, all Open Firmware 1.0.5 and most Open Firmware 2.0.x systems
+will default to using the `Modem' serial port for the console instead of
+the ADB keyboard and the monitor attached to the on-board video. Unless you
+use a Mac OS-based utility to set these variables correctly, you
+<emphasis>will</emphasis> need to hook up a serial console temporarily to
+set them before you can use your keyboard and screen.</para>
+
+<para>Open Firmware seems to ignore the settings on most DB15 to VGA
+adapters.  Depending on your model, it will default to either 640 x 480 at
+60 Hz or to the resolution previously selected in Mac OS.  Make sure that
+your monitor can handle these resolutions.</para>
+
+<para>If you think you have set your system up correctly using <ulink
+url="SystemDisk-tutorial/">System Disk</ulink> and you're using a
+PowerMacintosh 7300 - 8600 model, then you may need to apply the additional
+patches for your <literal>/chaos/control</literal> on-board video to sync
+propertly (see <xref linkend="non-sync-monitor" />).</para>
+
+<para>If you're using a Performa 5500 or 6500, you may need to apply some
+NVRAMRC patches to use your on-board video.  See the <ulink
+url="models.html#5500">footnote</ulink> on that model.</para>
+
+<para>See also <xref linkend="ofw-input-output-devices" />.</para>
+
+</sect3>
+
+<sect3 id="ofw-boot-video">
+<title>How do I use a PCI video card?</title>
+
+<para>This section describes how to tell Open Firmware to use your
+PCI-based video card, whether you purchased it separately from your
+computer, or it came with it. Some models of Macintosh and some clones
+shipped without an on-board video interface (see the <ulink
+url="models.html#no.fb">NetBSD/macppc Model Support</ulink> page for more
+info). These models shipped with a video card in one of the PCI
+slots.</para>
+
+<para>In all cases, your video card must have Open Firmware support on
+it.</para>
+
+<para>Open Firmware uses a different device path depending on the model of
+the card and the PCI slot it is located in.  You will need to figure out
+what the path is to your video card, and how to tell Open Firmware to use
+it.</para>
+
+<orderedlist>
+  <listitem>
+    <para>Get to the Open Firmware prompt (the <literal>0 &gt;</literal>
+    prompt); see <xref linkend="ofw-access" />.</para>
+
+    <para>Older models may need to use a serial console initially.</para>
+  </listitem>
+
+  <listitem>
+    <para>If this is your first experience with Open Firmware, you might
+    want to read <xref linkend="ofw-use" />.</para>
+  </listitem>
+
+  <listitem>
+    <screen><prompt>0 &gt; </prompt><userinput>dev / ls</userinput></screen>
+
+    <para>This will list all of the devices present in your system.  Look
+    for something matching your video card.  For example, part of the
+    listing from a PowerMacintosh 9500/150 is:</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>dev /</userinput>
+<prompt>0 &gt; </prompt><userinput>ls</userinput>
+  [...]
+FF8313F0: /bandit@F4000000
+  [...]
+FF83F8A0:   /ATY,mach64@D
+  [...]
+ ok</screen>
+
+    <para>Typically, if a card has Open Firmware support, it will list a
+    four character vendor ID similar to the vendor's name (such as
+    <literal>ATY</literal> for ATI, <literal>IMS</literal> for IMS, and
+    <literal>ADPT</literal> for Adaptec), and a string describing the model
+    of the card.  The "@" sign separates the card name from its address in
+    the computer.</para>
+
+    <para>Now, note that the <literal>/ATY,mach64@D</literal> entry is
+    indented below the <literal>/bandit@F4000000</literal> entry.  This
+    means that the <literal>bandit</literal> device contains the
+    <literal>ATY</literal> device.  In this case,
+    <literal>/bandit@F4000000</literal> is Open Firmware's name for the PCI
+    bus, and the ATI card is located on the PCI bus.</para>
+  </listitem>
+
+  <listitem>
+    <para>Therefore, <literal>/bandit@F4000000/ATY,mach64@D</literal> is
+    this card's path in the Open Firmware device tree.  Now, to confirm if
+    it really supports Open Firmware, type the following:</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>dev /bandit@F4000000/ATY,mach64@D</userinput>
+<prompt>0 &gt; </prompt><userinput>words</userinput></screen>
+
+    <para>If the word <literal>open</literal> is among those listed, then
+    chances are very high that your card should work.</para>
+  </listitem>
+
+  <listitem>
+    <para>Now, you'd want to type the following to set up a Mach64 card to
+    be the Open Firmware output device in your system:</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>setenv output-device /bandit@F4000000/ATY,mach64@D</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+  </listitem>
+</orderedlist>
+
+<para>If the monitor attached to your video card stays black after the
+computer resets, then there was a problem (possibly you mistyped the path
+to the card or the card doesn't really support Open Firmware).</para>
+
+</sect3>
+
+<sect3 id="non-sync-monitor">
+<title>My monitor doesn't always sync when I enter Open Firmware</title>
+
+<para>This is a problem with the PowerMacintosh 7300 - 8600 machines,
+wherein the video signals do not settle quickly enough.  You should apply
+the <ulink url="SystemDisk-tutorial/of105patch.html">patches</ulink> for
+Open Firmware 1.0.5.</para>
+
+<para> If you have a Twentieth Anniversary Macintosh, there is no known
+solution.  See <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/04/26/0008.html">this
+post</ulink> describing the issues.  At this time, no one has reported a
+successful install onto a TAM, although, this should be possible by setting
+the input and output devices to <literal>ttya</literal> with <ulink
+url="SystemDisk-tutorial/">System Disk</ulink> and connecting a serial
+cable to another machine running a terminal emulator.</para>
+
+</sect3>
+
+<sect3 id="ofw-clear">
+<title>How do I clear a corrupt Open Firmware?</title>
+
+<para>If you have an Open Firmware 3 model and you've changed settings such
+that you can't even get to the Open Firmware prompt or boot Mac OS, then you
+may have corrupted the BootROM (such as with a bad
+<literal>load-base</literal> or <literal>real-base</literal>; see <xref
+linkend="ofw-load-base" /> and <xref linkend="ofw-real-base" />).  You may
+need to get Apple to re-flash your BootROM firmware.</para>
+
+<para>If you have an earlier model (Open Firmware 1.0.5, 1.1.22, 2.0.x,
+2.4), then you will need to unplug your machine from the AC mains (110 or
+220 V) and remove the battery from the motherboard.  It may take some time
+(hours) for the charge stored in the power supply to drain and the NVRAM to
+clear.  To speed up the process you might try pressing the power button.
+More riskily (i.e. do at your own risk) you can try connecting the battery
+backwards in the socket or shorting the terminals with a resistor.</para>
+
+<para>Don't forget to set the date!</para>
+
+</sect3>
+
+<sect3 id="ofw-backslash">
+<title>Help, I can't type the backslash <literal>\</literal> key in Open
+Firmware!</title>
+
+<para>Unfortunately, even if Mac OS and NetBSD understand your non-US
+keyboard, Open Firmware typically doesn't.  That means that some non
+alphanumeric keys may not correspond to what character is printed on the
+keys.</para>
+
+<para>A simple, but awkward solution is to use the hexadecimal
+representation of the character you want to use.  Enclose the entire
+command in double-quotes <literal>"</literal> and replace the character
+with its hex code preceeded by a double-quote and enclosed in parenthesis.
+For example backslash is replaced by <literal>"(5C)</literal>.  After the
+command in quotes you need to have the FORTH commands to either display
+your converted string, or to execute it.  To display, use
+<literal>cr&nbsp;type&nbsp;cr</literal>.  To execute, use
+<literal>evaluate</literal> And make sure you include the single space
+between the enclosing double-quote and the start of the command.</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>" setenv boot-device hd:,"(5C)ofwboot.xcf" cr type cr</userinput>
+setenv boot-device hd:,\ofwboot.xcf
+ ok
+<prompt>0 &gt; </prompt><userinput>" setenv boot-device hd:,"(5C)ofwboot.xcf" evaluate</userinput>
+<prompt>0 &gt; </prompt></screen>
+
+<para>More permanently, you can reprogram Open Firmware (using <ulink
+url="nvedit.html"><literal>nvedit</literal></ulink>) using the instructions
+at the <ulink
+url="http://members.aol.com/plforth/ofpong/macofx5c.html">PLForth</ulink>
+page.</para>
+
+</sect3>
+
+<sect3 id="ofw-use">
+<title>What can I do at the Open Firmware prompt?</title>
+
+<anchor id="ofw-misc" />
+
+<para>You can configure various properties of your system related to
+booting.  This table merely lists the common commands you might be
+using and their syntax.</para>
+
+<table id="ofw-common-commands">
+<title>Common commands</title>
+<tgroup cols="2">
+
+<thead>
+  <row>
+    <entry>Command name</entry>
+    <entry>Comment</entry>
+  </row>
+</thead>
+
+<tbody>
+  <row>
+    <entry><literal>dev&nbsp;<emphasis>device</emphasis></literal></entry>
+    <entry>changes to current <emphasis>device</emphasis> in Open Firmware
+    device tree (similar to <literal>cd</literal> in a filesystem)</entry>
+  </row>
+
+  <row>
+    <entry><literal>unselect-dev</literal></entry>
+    <entry>returns to original state of having no device selected (usually
+    not necessary)</entry>
+  </row>
+
+  <row>
+    <entry><literal>ls</literal></entry>
+    <entry>lists the devices below the current node in the device tree
+    (similar to <literal>ls</literal> in a filesystem)</entry>
+  </row>
+
+  <row>
+    <entry><literal>pwd</literal></entry>
+    <entry>lists the location of the current node in the device tree
+    (similar to <literal>pwd</literal> in a filesystem)</entry>
+  </row>
+
+  <row>
+    <entry><literal>words</literal></entry>
+    <entry>lists the FORTH commands available at the current node in the
+    device tree.  To boot, a device must have at least the word
+    "<literal>open</literal>"</entry>
+  </row>
+
+  <row>
+    <entry><literal>.properties</literal></entry>
+    <entry>lists the properties of the current node in the device
+    tree</entry>
+  </row>
+
+  <row>
+    <entry><literal>printenv</literal></entry>
+    <entry>prints the current and default values of the settings in the
+    Open Firmware environment</entry>
+  </row>
+
+  <row>
+    <entry><literal>setenv <emphasis>variable</emphasis>
+    <emphasis>value</emphasis></literal></entry>
+    <entry>sets a new <emphasis>value</emphasis> for a particular Open
+    Firmware <emphasis>variable</emphasis>.  See <xref
+    linkend="ofw-variables" />.</entry>
+  </row>
+
+  <row>
+    <entry><literal>set-default
+    <emphasis>variable</emphasis></literal></entry>
+    <entry>sets the <emphasis>variable</emphasis> to its default value.
+    See <xref linkend="ofw-variables" />.</entry>
+  </row>
+
+  <row>
+    <entry><literal>boot <emphasis>boot-device</emphasis>
+    <emphasis>boot-file</emphasis></literal></entry>
+    <entry>loads and runs a program <emphasis>boot-file</emphasis> on
+    <emphasis>boot-device</emphasis>, we use it to load
+    <literal>ofwboot</literal> (the "partition zero" bootloader) or
+    <literal>ofwboot.xcf</literal> and then the NetBSD kernel</entry>
+  </row>
+
+  <row>
+    <entry><literal>dir <emphasis>device</emphasis></literal></entry>
+    <entry>print a listing of the files on a
+    particular <emphasis>device</emphasis> (the same as
+    <literal>ls</literal> in unix); see <xref linkend="ofw-dir-listing"
+    /></entry>
+  </row>
+
+  <row>
+    <entry><literal>eject fd</literal></entry>
+    <entry>eject a floppy disk</entry>
+  </row>
+
+  <row>
+    <entry><literal>reset-all</literal></entry>
+    <entry>permanently store the Open Firmware environment variables and
+    reboot the computer</entry>
+  </row>
+
+  <row>
+    <entry><literal>shut-down</literal></entry>
+    <entry>permanently store the Open Firmware environment variables and
+    power down the computer</entry>
+  </row>
+
+  <row>
+    <entry><literal>bye</literal></entry>
+    <entry>Boot Mac OS on an Open Firmware 1.0.5, 2.0.x, or 2.4
+    system</entry>
+  </row>
+
+  <row>
+    <entry><literal>mac-boot</literal></entry>
+    <entry>Boot Mac OS on an Open Firmware 3 system</entry>
+  </row>
+
+  <row>
+    <entry><literal>devalias <emphasis>alias</emphasis>
+    <emphasis>device</emphasis></literal></entry>
+    <entry>modify or create an <emphasis>alias</emphasis> to a
+    <emphasis>device</emphasis> (similar to <literal>alias</literal> in
+    <literal>csh</literal> and its variants).  With no options, it lists
+    all current device aliases</entry>
+  </row>
+
+  <row>
+    <entry><literal>nvalias <emphasis>alias</emphasis>
+    <emphasis>device</emphasis></literal></entry>
+    <entry> permanently modify or create an <emphasis>alias</emphasis> to a
+    <emphasis>device</emphasis> (similar to <literal>alias</literal> in
+    <literal>csh</literal> and its variants).  With no options, it lists
+    all stored device aliases</entry>
+  </row>
+</tbody>
+
+</tgroup>
+</table>
+
+<para>Additionally, here are a few handy keystrokes for effective Open
+Firmware use:</para>
+
+<table id="ofw-keystrokes">
+<title>Open Firmware keystrokes</title>
+<tgroup cols="2">
+
+<thead>
+  <row>
+    <entry>Keystroke</entry>
+    <entry>Function</entry>
+  </row>
+</thead>
+
+<tbody>
+  <row>
+    <entry>Backspace</entry>
+    <entry>delete back one character</entry>
+  </row>
+
+  <row>
+    <entry>Delete</entry>
+    <entry>delete back one character</entry>
+  </row>
+
+  <row>
+    <entry>^h</entry>
+    <entry>delete back one character</entry>
+  </row>
+
+  <row>
+    <entry>^d</entry>
+    <entry>delete forward one character</entry>
+  </row>
+
+  <row>
+    <entry>Enter</entry>
+    <entry>send line to FORTH parser</entry>
+  </row>
+
+  <row>
+    <entry>^b</entry>
+    <entry>move back one character (same as left arrow key)</entry>
+  </row>
+
+  <row>
+    <entry>^f</entry>
+    <entry>move forward one character (same as right arrow key)</entry>
+  </row>
+
+  <row>
+    <entry>ESC b</entry>
+    <entry>move back one word</entry>
+  </row>
+
+  <row>
+    <entry>ESC f</entry>
+    <entry>move forward one word</entry>
+  </row>
+
+  <row>
+    <entry>^a</entry>
+    <entry>move back to beginning of line</entry>
+  </row>
+
+  <row>
+    <entry>^e</entry>
+    <entry>move forward to end of line</entry>
+  </row>
+
+  <row>
+    <entry>ESC h</entry>
+    <entry>delete and save back to beginning of word</entry>
+  </row>
+
+  <row>
+    <entry>^w</entry>
+    <entry>delete and save back to beginning of word</entry>
+  </row>
+
+  <row>
+    <entry>ESC d</entry>
+    <entry>delete and save forward to end of word</entry>
+  </row>
+
+  <row>
+    <entry>^k</entry>
+    <entry>delete and save forward to end of line</entry>
+  </row>
+
+  <row>
+    <entry>^u</entry>
+    <entry>delete and save entire line</entry>
+  </row>
+
+  <row>
+    <entry>^r</entry>
+    <entry>retype line</entry>
+  </row>
+
+  <row>
+    <entry>^q</entry>
+    <entry>quote next character</entry>
+  </row>
+
+  <row>
+    <entry>^y</entry>
+    <entry>insert saved characters before cursor</entry>
+  </row>
+
+  <row>
+    <entry>^p</entry>
+    <entry>previous line in history (same as up arrow key)</entry>
+  </row>
+
+  <row>
+    <entry>^n</entry>
+    <entry>next line in history (same as down arrow key)</entry>
+  </row>
+
+  <row>
+    <entry>^l</entry>
+    <entry>display history</entry>
+  </row>
+
+  <row>
+    <entry>^space</entry>
+    <entry>if word so far has a unique completion, complete it.  if word
+    so far has several completions, fill in as many characters as
+    possible.   if word so far has no completions, erase characters until
+    there is at least one completion</entry>
+  </row>
+
+  <row>
+    <entry>^/</entry>
+    <entry>show completions (maybe none) for word so far</entry>
+  </row>
+
+  <row>
+    <entry>^?</entry>
+    <entry>show completions (maybe none) for word so far</entry>
+  </row>
+
+
+  <row>
+    <entry>^@</entry>
+    <entry>same as ^space (Apple-specific)</entry>
+  </row>
+
+  <row>
+    <entry>^o</entry>
+    <entry>same as ^/ (Apple-specific)</entry>
+  </row>
+
+  <row>
+    <entry>^\</entry>
+    <entry>same as ^b (Apple-specific)</entry>
+  </row>
+
+  <row>
+    <entry>^]</entry>
+    <entry>same as ^f (Apple-specific)</entry>
+  </row>
+
+  <row>
+    <entry>^^</entry>
+    <entry>same as ^p (Apple-specific)</entry>
+  </row>
+
+  <row>
+    <entry>^_</entry>
+    <entry>same as ^n (Apple-specific)</entry>
+  </row>
+</tbody>
+
+</tgroup>
+</table>
+
+<para>Also see the <ulink url="nvedit.html">NetBSD/macppc nvedit
+HOW-TO</ulink>, the <ulink
+url="http://docs.info.apple.com/article.html?artnum=60285">Apple Network
+Server 500,700: Open Firmware Read Me</ulink> technote, the <ulink
+url="http://bananajr6000.apple.com/">Apple Computer Open Firmware Home
+Page</ulink> <ulink
+url="http://developer.apple.com/technotes/tn/tn2001.html">"Technote 2001 -
+Running files from a hard drive in Open Firmware</ulink>, and the <ulink
+url="http://playground.sun.com/1275/home.html">Open Firmware Working Group
+home page</ulink>.</para>
+
+</sect3>
+
+<sect3 id="ofw-variables">
+<title>The Open Firmware variables of interest</title>
+
+<para>These are variables that are used by and stored in Open Firmware that
+affect booting.  Use the <literal>printenv</literal>,
+<literal>setenv</literal>, and <literal>set-default</literal> commands to
+modify these variables (see <xref linkend="ofw-use" />), or use the Mac OS
+SystemDisk utility (see the <ulink
+url="SystemDisk-tutorial/">tutorial</ulink>).  Use the commands in the
+<ulink url="nvedit.html">NetBSD/macppc nvedit HOW-TO</ulink> to modify the
+information in the <literal>nvramrc</literal> variable.  Alternatively, you
+can hack System Disk with ResEdit. Look in the <literal>OFtc</literal>
+resource to determine which ID System Disk uses for your model. Then edit
+the appropriate <literal>OFpt</literal> resource.</para>
+
+<para>Make sure that, after you are done modifying your settings, that you
+store them permanently, by typing:</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+
+<table id="ofw-common-variables">
+<title>Common variables</title>
+<tgroup cols="2">
+
+<thead>
+  <row>
+    <entry>Variable name</entry>
+    <entry>Typical value</entry>
+    <entry>Function</entry>
+  </row>
+</thead>
+
+<tbody>
+  <row>
+    <entry><literal>auto-boot?</literal></entry>
+    <entry>false</entry>
+    <entry>If <literal>false</literal>, stops at Open Firmware prompt when
+    computer is reset.  If <literal>true</literal>, executes
+    <literal><emphasis>boot-command boot-device
+    boot-file</emphasis></literal></entry>
+  </row>
+
+  <row>
+    <entry><literal>use-nvramrc?</literal></entry>
+    <entry>true</entry>
+    <entry>If <literal>true</literal> runs commands in variable
+    <literal>nvramrc</literal></entry>
+  </row>
+
+  <row>
+    <entry><literal>real-base</literal></entry>
+    <entry><emphasis>depends on Open Firmware version</emphasis></entry>
+    <entry>Kernel memory location. <xref linkend="ofw-real-base"
+    />.</entry>
+  </row>
+
+  <row>
+    <entry><literal>load-base</literal></entry>
+    <entry><emphasis>depends on Open Firmware version</emphasis></entry>
+    <entry>bootloader memory location. <xref linkend="ofw-load-base"
+    /></entry>
+  </row>
+
+  <row>
+    <entry><literal>boot-device</literal></entry>
+    <entry><emphasis>depends on configuration</emphasis>.  See
+    <literal>ofwboot(8)</literal> for suggestions</entry>
+    <entry>Device from which to load primary bootloader</entry>
+  </row>
+
+  <row>
+    <entry><literal>boot-file</literal></entry>
+    <entry><emphasis>depends on configuration</emphasis>.  See
+    <literal>ofwboot(8)</literal> for suggestions</entry>
+    <entry>kernel location</entry>
+  </row>
+
+  <row>
+    <entry><literal>input-device</literal></entry>
+    <entry><emphasis>depends on hardware</emphasis>.  See <xref
+    linkend="ofw-input-output-devices" /> for suggestions</entry>
+    <entry>ADB keyboard, USB keyboard, or serial console</entry>
+  </row>
+
+  <row>
+    <entry><literal>output-device</literal></entry>
+    <entry><emphasis>depends on hardware</emphasis>.  See <xref
+    linkend="ofw-input-output-devices" /> for suggestions</entry>
+    <entry>On-board video, PCI video, or serial console</entry>
+  </row>
+
+  <row>
+    <entry><literal>nvramrc</literal></entry>
+    <entry><emphasis>entered by System Disk</emphasis></entry>
+    <entry>If <literal>use-nvramrc?</literal> is set to
+    <literal>true</literal>, these FORTH commands will be run when the
+    computer is reset</entry>
+  </row>
+
+  <row>
+    <entry><literal>boot-command</literal></entry>
+    <entry>boot</entry>
+    <entry>If <literal>auto-boot?</literal> is <literal>true</literal>,
+    this command will be executed when the computer is reset</entry>
+  </row>
+</tbody>
+
+</tgroup>
+</table>
+
+<note>
+  <para>Zapping your PRAM <literal>Command-Option-P-R</literal> will erase
+  any settings you have made to these Open Firmware variables.</para>
+
+  <para>Booting your Open Firmware 1.0.5 system into Mac OS will erase any
+  settings you have made to these Open Firmware variables.</para>
+
+  <para>In some extreme cases, you may have messed up your Open Firmware
+  settings such that your system won't boot anymore.  Zapping the PRAM
+  doesn't fix it.  In this case, you will need to unplug your system and
+  remove the battery from your motherboard for about 10 minutes.  On a
+  PowerBook, the equivalent is to resetting your power manager.</para>
+</note>
+
+</sect3>
+
+<sect3 id="ofw-load-base">
+<title>What's the deal with the "load-base" setting?</title>
+
+<para>The Open Firmware environment variable <literal>load-base</literal>
+is the address at which Open Firmware loads the bootloader from your
+<literal>boot-device</literal>.  The behavior is different for the various
+versions of Open Firmware and <literal>boot-device</literal>s.  The symptom
+of an incorrectly set <literal>load-base</literal> is a <literal>CLAIM
+failed</literal> message (see <xref linkend="ofw-claim-failed" />).</para>
+
+<sect4 id="ofw-load-base-ofw3">
+<title>Open Firmware 3</title>
+
+<para><emphasis role="strong">Do not change the
+<literal>load-base</literal></emphasis>.  Open Firmware 3 machines have
+re-writable firmware, and users have found that changing the
+<literal>load-base</literal> has overwritten their flash BootROM, rendering
+their machines dead (requiring an expensive trip back to Apple).  <emphasis
+role="strong">Do not change the <literal>load-base</literal> on an Open
+Firmware 3 machine.</emphasis>  Apple has fixed Open Firmware 3 such that
+you needn't change <literal>load-base</literal> to boot.</para>
+
+</sect4>
+
+<sect4 id="ofw-load-base-ofwpre3">
+<title>Open Firmware 1.0.5, 1.1.22, 2.0.x, and 2.4</title>
+
+<para>The default value of <literal>load-base</literal> on these systems is
+4000, which isn't very good for our purposes.  <ulink
+url="SystemDisk-tutorial/">System Disk</ulink> sets
+<literal>load-base</literal> to 600000, which is what we use.  mkLinux uses
+a different value, which may prevent you from booting NetBSD/macppc.  If
+you're using NetBSD 1.5.2 or earlier, read the <ulink
+url="oldfaq.html#old-ofw-load-base">old FAQ</ulink> entry on
+load-base.</para>
+
+<para>Once you are entirely positive that your machine has Open Firmware
+1.0.5, 1.1.22, 2.0.x, or 2.4 (see <xref linkend="ofw-version" />), run the
+following commands to set your <literal>load-base</literal>
+properly:</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>setenv load-base 600000</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+
+<para>You should double-check that this value has been set using the
+<literal>printenv</literal> command.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 id="ofw-real-base">
+<title>What's the deal with the "real-base" setting?</title>
+
+<para>The Open Firmware environment variable <literal>real-base</literal>
+is the address where OpenFirmware uses for itself.  The default value of
+<literal>real-base</literal> might be -1 (0xffffffff), but it will cause
+problems because OF 1.0.5 and 2.x machines use 0x400000 if
+<literal>real-base</literal> is the default value.  The kernel is loaded to
+the address 0x100000 by default, so the problem occurs when you try to load
+a kernel larger than about 3 MB.</para>
+
+<para>Open Firmware 3 machines have re-writable firmware, and users have
+found that changing the <literal>real-base</literal> will overwrite their
+firmware, rendering their machines dead (requiring an expensive trip back
+to Apple).  <emphasis role="strong">Do not change the
+<literal>real-base</literal> on an Open Firmware 3 machine</emphasis>.
+Open Firmware 3 does a much better job of dealing with large kernels, so
+this is not really an issue.</para>
+
+<para>Once you are entirely positive that your machine has Open Firmware
+1.0.5, 2.0.x, or 2.4 (see <xref linkend="ofw-version" />), run the
+following commands to set your <literal>real-base</literal> properly (note,
+System Disk will <emphasis role="strong">not</emphasis> set this variable
+properly &mdash; you will need to re-set your <literal>real-base</literal>
+after each use of System Disk):</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>setenv real-base F00000</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+
+<para>You should double-check that this value has been set using the
+<literal>printenv</literal> command. If you set wrong value here, it might
+make your machine no longer boot (see <xref linkend="ofw-clear" /> to
+recover from it).</para>
+
+<para>A workaround for this problem is that you can build a kernel that is
+less than 3 MB in size.  Since none of the Open Firmware 1.0.5, 2.0.x, or
+2.4 models have built-in USB, you can <ulink
+url="../../Documentation/kernel/#how_to_build_a_kernel">build a
+kernel</ulink> without any USB drivers (unless you have a PCI USB
+card).</para>
+
+</sect3>
+
+<sect3 id="ofw-input-output-devices">
+<title>How do I figure out my <literal>input-device</literal> and
+<literal>output-device</literal>?</title>
+
+<para>This depends entirely on what devices you want use to interact with
+Open Firmware (and thus NetBSD/macppc), as well as the version of Open
+Firmware you are using and the hardware you are using.</para>
+
+<para>Once you figure this out, you will need to set these values and store
+them.  See <xref linkend="ofw-access" /> and <xref linkend="ofw-use" />
+for help getting started in Open Firmware.  Briefly, you'll want to run the
+following three commands (where <emphasis>in-device</emphasis> and
+<emphasis>out-device</emphasis> are what you chose to use):</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>setenv input-device in-device</userinput>
+<prompt>0 &gt; </prompt><userinput>setenv output-device out-device</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+
+<para>Alternately, to immediately change your input and output devices
+without permanently storing the changes, run the following two commands
+(make sure to put the space after the first quotation mark):</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>" out-device" output</userinput>
+<prompt>0 &gt; </prompt><userinput>" in-device" input</userinput></screen>
+
+<sect4 id="ofw-input-output-devices-ofwpre3-monitor">
+<title>Open Firmware 1.0.5, 2.0.x, or 2.4 using a keyboard and monitor
+(or built-in LCD)</title>
+
+<para>By default, most of these models default to a serial console (which
+is why many novice users find that when they boot into Open Firmware, their
+monitor stays black).  Additionally, some of these <ulink
+url="models.html#no.ofw.fb">models</ulink> have troubles using the on-board
+video device in Open Firmware (and in NetBSD/macppc).  For these
+troublesome systems, your only options are a PCI video card or a serial
+console.</para>
+
+<para>Go to the <ulink url="models.html">NetBSD/macppc Model Support
+Page</ulink> and look up your model.  It should list an
+<literal>output-device</literal> for your system.  If there is no
+<literal>output-device</literal> listed, then you should use
+<literal>screen</literal>.</para>
+
+<para>See also <xref linkend="ofw-boot-video" /> for suggestions on
+figuring out your <literal>output-device</literal>.</para>
+
+<para>For all these systems, the <literal>input-device</literal> for an ADB
+or built-in keyboard is <literal>kbd</literal>.</para>
+
+</sect4>
+
+<sect4 id="ofw-input-output-devices-ofw3-monitor">
+<title>Open Firmware 3 using a keyboard and monitor (or built-in
+LCD)</title>
+
+<para>By default, all of these systems default to using the USB or built-in
+keyboard and the on-board video or built-in LCD.  You shouldn't have to do
+anything.</para>
+
+<para>See also <xref linkend="ofw-boot-video" /> for suggestions on
+figuring out your <literal>output-device</literal>.</para>
+
+<para>The default values are <literal>input-device</literal> is
+<literal>keyboard</literal> (using the built-in or USB keyboard), and
+<literal>output-device</literal> is <literal>screen</literal> (using the
+built-in LCD, screen, or on-board video interface).</para>
+
+</sect4>
+
+<sect4 id="ofw-input-output-devices-ofwpre3-serial">
+<title>Open Firmware 1.0.5, 2.0.x, or 2.4 using a serial console</title>
+
+<anchor id="serial-console" />
+
+<para>Open Firmware calls your computer's "modem" serial port
+<literal>ttya</literal>, and its "printer" serial port
+<literal>ttyb</literal>.  Some systems have an internal modem (such as the
+Performa 54xx, 6360, 6400, and 6500) that blocks off the built-in serial
+port.  You will need to set and use your printer port
+<literal>ttyb</literal> for serial console on these models.</para>
+
+<para>On almost all of these machines, the default values for both
+<literal>input-device</literal> and <literal>output-device</literal> is
+<literal>ttya</literal>, which is why many novice users find that when they
+boot into Open Firmware, their monitor stays black.</para>
+
+<para>Your serial console settings should be 38400 bps, 8 bits, no parity,
+1 stop bit, no flow control, and you can typically use a standard Mac
+"printer" cable to connect two Macs (even m68k-based Macs).  See the <ulink
+url="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial Port
+Primer</ulink> for additional help.</para>
+
+</sect4>
+
+<sect4 id="ofw-input-output-devices-ofw3-serial">
+<title>Open Firmware 3 using a serial console</title>
+
+<para>None of the Open Firmware 3 models ship with serial ports.  Most do,
+however have internal modems.  You can purchase a third party device which
+replaces the internal modem on most desktop systems with a serial port
+(such as the Gee Three Stealth Serial Port and Griffin Technology gPort).
+If you purchase one of these, you can set it up to be a serial console.
+Set <literal>scca</literal> for both your <literal>input-device</literal>
+and <literal>output-device</literal>.</para>
+
+<para>Your serial console settings should be 57600 bps, 8 bits, no parity,
+1 stop bit, no flow control, and you can typically use a standard Mac
+"printer" cable to connect two Macs (even m68k-based Macs).  See the <ulink
+url="../../Documentation/Hardware/Misc/serial.html">NetBSD Serial Port
+Primer</ulink> for additional help.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 id="ofw-dir-listing">
+<title>How do I get a listing (in Open Firmware) of the files on my
+disk?</title>
+
+<para>With the <literal>dir</literal> command, of course!</para>
+
+<para>The syntax is simply
+<literal>dir
+<emphasis>device</emphasis>:<emphasis>[partition]</emphasis>,\</literal>
+where <emphasis>device</emphasis> is the <literal>devalias</literal> or
+full path to the device you're trying to get a listing of and
+<emphasis>[partition]</emphasis> is the partition number to get the listing
+of.  If you do not specify the partition number, Open Firmware will try to
+find the first partition it understands.  The comma separates the device
+and partition from the directory or files.</para>
+
+<para>Unfortunately, there's no method of listing the partition map from
+within Open Firmware.  You can, however, use the NetBSD <ulink
+url="partitioning.html#pdisk">pdisk</ulink> on any OS to list your
+partitions.</para>
+
+<para>Open Firmware uses backslash characters to separate directories, and
+you must specify the top level of a device with an "<literal>\</literal>".
+You can also get directory listings of individual files or files in folders
+using backslash characters to separate directories.</para>
+
+<para>Keep in mind that the Open Firmware <literal>dir</literal> command
+can only list the contents of file systems that Open Firmware understands.
+For Open Firmware 1.0.5, 1.1.22, and 2.0.x, you can list ISO 9660
+(<emphasis>not hybrid</emphasis>) and MS-DOS.  For Open Firmware 2.4, you
+can list ISO 9660, HFS, HFS+, and MS-DOS.  For Open Firmware 3, you can
+list hybrid ISO 9660/HFS (<emphasis>not</emphasis> pure ISO 9660), HFS,
+HFS+, and MS-DOS.</para>
+
+<para>The official NetBSD install CD-R image and floppy images are a bit
+funky (i.e. they have a "partition zero" bootloader).  You won't be able to
+get a listing of the files from within Open Firmware.</para>
+
+<para>For example, to get a listing of the files on a floppy, type:</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>dir fd:,\</userinput></screen>
+
+<para>To get a listing of the files on a CD-ROM, type (for example):</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>dir scsi-int/sd@3:,\</userinput></screen>
+
+<para>To get a listing of the files in the macppc folder on an HFS
+partition, type:</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>dir hd:9,\macppc\</userinput></screen>
+
+<para>To get your client's dhcp or bootp information from ethernet,
+type:</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>dir enet:</userinput></screen>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="booting">
+<title>Booting</title>
+
+<sect3 id="boot-support">
+<title>What are the supported ways of booting NetBSD/macppc?</title>
+
+<para>See the <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/macppc/INSTALL.html">
+NetBSD/macppc 3.1 Install Notes</ulink> and read the section entitled
+"Available Boot Media".</para>
+
+</sect3>
+
+<sect3 id="boot-disk">
+<title>How do I make a disk bootable, and what are the Open Firmware
+commands to boot from it?</title>
+
+<para>This depends entirely on what version of Open Firmware your machine
+has, and what you're trying to boot from. Read the "Preparing the Bootable
+Media" and "Open Firmware boot syntax" sections of the <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/macppc/INSTALL.html">
+NetBSD/macppc 3.1 Install Notes</ulink>.</para>
+
+<para>See also <xref linkend="ofw-version" />, the
+<literal>ofwboot(8)</literal> man page, the
+<literal>installboot(8)</literal> man page.</para>
+
+</sect3>
+
+<sect3 id="boot-pci">
+<title>How do I boot from a device attached to a PCI card?</title>
+
+<para>Your PCI card must have Open Firmware drivers.  Very few do.  Many
+Adaptec SCSI cards and some IDE/ATA cards have Open Firmware drivers.
+Asante made some ethernet cards with Open Firmware drivers (though no one
+has tested them).  Cards manufactured for UltraSPARC systems often have
+Open Firmware drivers.  Not much else does.</para>
+
+<para>Just because a card works in Open Firmware does not mean it's
+supported by NetBSD (and vice versa).  This is the case with some of the
+Mac OS IDE/ATA cards.</para>
+
+<para>The first step is to figure out what the PCI card is called in terms
+of Open Firmware names.  Apple created <literal>devalias</literal>
+shortcuts for the on-board devices (such as scsi, hd, and enet).  PCI card
+manufacturers cannot do this.  Open Firmware uses a different device path
+depending on the model of the card and the PCI slot it is located in. You
+will need to figure out what the path is to your PCI card, and how to tell
+Open Firmware to use it.</para>
+
+<orderedlist>
+  <listitem>
+    <para>Get to the Open Firmware prompt (the <literal>0 &gt;</literal>
+    prompt); see <xref linkend="ofw-access" />.</para>
+  </listitem>
+
+  <listitem>
+    <para>If this is your first experience with Open Firmware, you might
+    want to read <xref linkend="ofw-use" />.</para>
+  </listitem>
+
+  <listitem>
+    <screen><prompt>0 &gt; </prompt><userinput>dev / ls</userinput></screen>
+
+    <para>This will list all of the devices present in your system.  Look
+    for something that might match your PCI card.  For example, part of
+    the listing from a PowerMacintosh G3 (Blue and White) with an Adaptec
+    2930 SCSI interface is:</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>dev /</userinput>
+<prompt>0 &gt; </prompt><userinput>ls</userinput>
+  [...]
+FF8313F0: /pci@F2000000
+  [...]
+FF83F8A0:   /pci-bridge@D
+  [...]
+FF83F90D:     /ADPT,2930@3
+ ok</screen>
+
+    <para>Typically, if a card has Open Firmware support, it will list a
+    four character vendor ID similar to the vendor's name (such as
+    <literal>ATY</literal> for ATI, <literal>IMS</literal> for IMS, and
+    <literal>ADPT</literal> for Adaptec), and a string describing the model
+    of the card.  The "@" sign separates the card name from its address in
+    the computer.</para>
+
+    <para>Now, note that the <literal>/ADPT,2930@3</literal> entry is
+    indented below the <literal>/pci-bridge@D</literal> entry, which is
+    indented below the <literal>/pci@F2000000</literal> entry.  This means
+    that the <literal>pci</literal> device contains the
+    <literal>pci-bridge</literal> device which contains the
+    <literal>ADPT,2930</literal> device.</para>
+  </listitem>
+
+  <listitem>
+    <para>Therefore, <literal>/pci/pci-bridge@D/ADPT,2930@3</literal> is
+    this card's path in the Open Firmware device tree.  Now, to confirm if
+    it really supports Open Firmware, type the following:</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>dev /pci/pci-bridge@D/ADPT,2930@3</userinput>
+<prompt>0 &gt; </prompt><userinput>words</userinput></screen>
+
+    <para>If the word "<literal>open</literal>" is among those listed, then
+    chances are very high that your card should work.</para>
+  </listitem>
+
+  <listitem>
+    <para>If you're extra lucky, the <literal>show-children</literal> word
+    is listed.  Otherwise, you'll need to know the SCSI ID of the drive you
+    are trying to boot from.  The SCSI ID gets appended to the path of your
+    device with an <literal>/@N</literal> (where <literal>N</literal> is
+    the SCSI ID).</para>
+  </listitem>
+
+  <listitem>
+    <para>Next you need to figure out what boot method you're using so you
+    can specify the partition number and the bootloader filename.
+    Typically, Open Firmware 1.0.5, 2.0.x, and 2.4 systems use a "partition
+    zero" bootloader, and thus <literal>:0</literal> is appended to the
+    path.  Open Firmware 3 systems load <literal>ofwboot.xcf</literal> from
+    an HFS partition (usually 9 or higher), so you'd append something like
+    <literal>:9,\ofwboot.xcf</literal> to the path.  Use the NetBSD <ulink
+    url="partitioning.html#pdisk">pdisk</ulink> to list the partition
+    map.</para>
+  </listitem>
+
+  <listitem>
+    <para>Now, you'd want to type the following to set up a hard drive with
+    <literal>ofwboot.xcf</literal> on the 9th partition of a SCSI ID 5
+    drive attached to an Adaptec 2930 card to be the Open Firmware
+    <literal>boot-device</literal> in your PowerMacintosh G3 (Blue and
+    White):</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>setenv boot-device /pci/pci-bridge@D/ADPT,2930@3/@5:9,\ofwboot.xcf</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+
+    <para>Some Beige G3 models shipped with an Apple 53c875 Ultra Wide SCSI
+    host adapter.  To boot from the drive at SCSI ID 0, you would set your
+    <literal>boot-device</literal> to:</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>setenv boot-device /pci/Apple53C875Card/sd@0:0</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+  </listitem>
+</orderedlist>
+
+<note>
+  <title>Note about the Adaptec 2940 series of SCSI cards</title>
+
+  <para>There are three versions of the Firmware for this series of SCSI
+  cards.  If you are using this card on a PowerMacintosh 7300 thru 9600,
+  then you cannot use the card to boot from Open Firmware.  See <ulink
+  url="http://mail-index.NetBSD.org/port-macppc/2001/04/27/0000.html">this
+  post</ulink> which has more information.</para>
+</note>
+
+</sect3>
+
+<sect3 id="boot-net">
+<title>How do I set up netbooting?</title>
+
+<para>See the <ulink url="../../Documentation/network/netboot/">Diskless
+NetBSD HOW-TO</ulink>.</para>
+
+<para>Mitchell Spector has also created a page containing a concise <ulink
+url="http://www.enchantedlearning.com/tech/netbsd_imac.shtml">iMac-specific
+netbooting information</ulink>.</para>
+
+</sect3>
+
+<sect3 id="cdr-image">
+<title>Where is the official NetBSD/macppc CD-R image stored?</title>
+
+<para>Look for the <ulink url="../../mirrors/#iso">NetBSD Download
+Site</ulink> closest to you, download the image, and burn it to a
+CD-R.</para>
+
+<para>See the section titled "Creating the NetBSD/macppc CD-R"
+in the <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/macppc/INSTALL.html">
+NetBSD/macppc 3.1 Install Notes</ulink>.</para>
+
+</sect3>
+
+<sect3 id="bootx">
+<title>Can I use the Linux BootX utility to boot NetBSD/macppc?</title>
+
+<para>No, although the BootX maintainer has said he will accept patches for
+NetBSD support if someone else writes them. (See the <ulink
+url="http://mail-index.NetBSD.org/port-macppc/1999/03/12/0002.html">port-macppc
+mail archives</ulink>.)</para>
+
+<para>Note, this is entirely different than the Darwin BootX
+bootloader.</para>
+
+</sect3>
+
+<sect3 id="yaboot">
+<title>Can I use the Linux yaboot bootloader to boot NetBSD/macppc?</title>
+
+<para>Yes, although it is a bit tricky.  Yaboot itself provides a mechanism
+to boot BSD systems, but unfortunately it does not work correctly (at
+least, with NetBSD).  However, you can benefit from this feature because,
+with little manual intervention, it works.  Follow these steps:</para>
+
+<orderedlist>
+  <listitem>
+    <para>Edit Yaboot's configuration file,
+    <filename>/etc/yaboot.conf</filename>, from within your Linux system
+    and add a <literal>bsd</literal> line that points to your NetBSD
+    partition.  For example: <literal>bsd=/dev/hda4</literal>.</para>
+  </listitem>
+
+  <listitem>
+    <para>Run <command>ybin</command> to regenerate the Open Firmware
+    boot script in Yaboot's partition.</para>
+  </listitem>
+
+  <listitem>
+    <para>Mount Yaboot's partition.  E.g.:</para>
+
+    <screen><prompt># </prompt><userinput>mount -t hfs /dev/hda2 /mnt</userinput></screen>
+  </listitem>
+
+  <listitem>
+    <para>Edit the <filename>ofboot.b</filename> script within the
+    partition you have just mounted (e.g.
+    <filename>/mnt/ofboot.b</filename>).  Locate the line that starts with
+    <literal>:bootybsd</literal>: it holds the command required to
+    launch our NetBSD installation, which we must correct to make it
+    work.  That said, edit the line and place the command you typically use
+    from within Open Firmware to boot NetBSD.  Here is an example:</para>
+
+    <programlisting>:bootybsd " Booting BSD..." .printf 100 ms load-base release-load-area " hd:2,ofwboot hd:5/netbsd" $boot ;</programlisting>
+  </listitem>
+
+  <listitem>
+    <para>Unmount the Yaboot partition and you are done!</para>
+  </listitem>
+</orderedlist>
+
+<para>Be careful, though, to not rerun <command>ybin</command> again or
+you will lose your changes.  If this happens, you will have to reconfigure
+the script.  (Of course, a much better solution could be to teach Yaboot
+how to run NetBSD properly...)</para>
+
+</sect3>
+
+<sect3 id="bootx-darwin">
+<title>Can I use the Darwin/Mac OS X BootX bootloader to boot
+NetBSD/macppc?</title>
+
+<para>No, although it should be easier to port to NetBSD/macppc than the
+linuxppc BootX, since the Darwin BootX uses Open Firmware.</para>
+
+<para>See <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2000/12/12/0003.html"> this
+post</ulink> for instructions on getting the BootX source code if you're
+interested in working on this.</para>
+
+<para>This repository also contains nvram patches for machines with Open
+Firmware 2.4 and earlier, based on the patches in System Disk.</para>
+
+</sect3>
+
+<sect3 id="ofw-boot-keys">
+<title>Are there any other magic keys to change the boot sequence?</title>
+
+<para>Besides the familiar Command-Option-P-R to reset the PRAM (which will
+erase your Open Firmware settings), and the slightly-less-familiar
+Command-Option-Shift-Delete to boot from the first bootable device other
+than the normal boot device, on some machines you can also hold down "C" to
+boot off the internal CD-ROM drive, "N" to net boot, "Z" to boot from an
+internal Zip drive, or "D" for force booting from the internal disk if the
+default boot device has been set to something else. (These are referred to
+as "snag keys" in Apple's literature.)</para>
+
+<para>These actually use the "cd", "enet", "zip", and "hd" devaliases in
+Open Firmware, respectively, so changing the aliases will change the
+effects of these keys. Some models do not support all of the keys.</para>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="booting-problems">
+<title>Booting problems</title>
+
+<sect3 id="common-of-probs">
+<title>Common Open Firmware Booting Problems</title>
+
+<para>See info on getting to the Open Firmware prompt (<xref
+linkend="ofw-access" />), <literal>CLAIM failed</literal> (<xref
+linkend="ofw-claim-failed" />), <literal>DEFAULT CATCH!</literal> (<xref
+linkend="default-catch" />), <literal>can't OPEN</literal> (<xref
+linkend="cant-open" />), <literal>unrecognized Client Program</literal>
+(<xref linkend="formatstate-not-valid" />), <literal>bad partition
+number</literal> (<xref linkend="bad-partition" />), hard drive doesn't
+spin up quickly enough (<xref linkend="drive-spinup" />)
+and <literal>real-base</literal> (<xref linkend="ofw-real-base" />).</para>
+
+</sect3>
+
+<sect3 id="netboot-probs">
+<title>Common netboot problems</title>
+
+<itemizedlist>
+  <listitem>
+    <screen><prompt>0 &gt; </prompt><userinput>boot enet:,ofwboot.xcf </userinput>BOOTP failed
+ can't OPEN enet:
+ ok</screen>
+
+    <para>Bootp or DHCP server isn't responding to client's request.  Check
+    that the server is running, that it's on the same ethernet subnet, and
+    that it has the correct ethernet hardware (MAC) address for the client.
+    Look for <literal>local-mac-address</literal> in the output of:</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>dev enet</userinput>
+<prompt>0 &gt; </prompt><userinput>.properties</userinput></screen>
+  </listitem>
+
+  <listitem>
+    <screen>TFTP timeout</screen>
+
+    <para>Either the server's TFTP server isn't running, or you're using a
+    model with Open Firmware 1.0.5 and not specifying the location of the
+    bootloader.  Unfortunately, on the early models,
+    <literal>ofwboot.xcf</literal> gets confused and doesn't work right
+    unless you load it explicitly from the <literal>boot-device</literal>,
+    even if the bootp or DHCP server provides the correct information.  You
+    need to boot with a command like:</para>
+
+    <screen><prompt>0 &gt; </prompt><userinput>boot enet:,ofwboot.xcf</userinput></screen>
+  </listitem>
+
+  <listitem>
+    <screen>enet:,/netbsd.ram.gz: Inappropriate file type or format</screen>
+
+    <para>Some systems booting over ethernet can't load compressed kernels.
+    Use <literal>gunzip(1)</literal> to uncompress the kernel before
+    attempting to netboot.</para>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="ofw-claim-failed">
+<title><literal>CLAIM failed</literal></title>
+
+<para>This is a general message from Open Firmware to the effect that it
+failed to allocate some memory or memory is messed up.</para>
+
+<para>First, make sure you have <literal>load-base</literal> set correctly;
+see <xref linkend="ofw-load-base" />.</para>
+
+<para>Reset your system and try using a different boot command (this is the
+only way some people have gotten their Open Firmware 2.4 systems to
+work):</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>0 bootr boot-device boot-file</userinput></screen>
+
+<para>If you tried one boot command and it failed, then you tried a second
+and got the <literal>CLAIM failed</literal> message, then this is an
+indication that you should reboot between attempts (the Open Firmware
+command is "reset-all").</para>
+
+<para>Contradictorily, if your machine is Open Firmware version 1.0.5,
+2.0.x or 2.4, this error does sometimes appear randomly.  You might try the
+boot command a second time (this is known to work on some models).</para>
+
+<para>There are several <ulink url="models.html#no.ofw.fb">models</ulink>
+that cannot be booted while using the on-board video and keyboard.  Try
+using a serial console (see <xref
+linkend="ofw-input-output-devices-ofwpre3-serial" />).</para>
+
+</sect3>
+
+<sect3 id="default-catch">
+<title><literal>DEFAULT CATCH!</literal></title>
+
+<para>This is a general message from Open Firmware to the effect that it
+had trouble loading a file.</para>
+
+<para>If your machine is Open Firmware version 1.0.5 or 2.X, this error
+does sometimes appear randomly.  You might try the boot command a second
+time (this is known to work on some models).  It's also an indication that
+either your floppy disk is bad, or the floppy drive is bad.  Try doing a
+low-level format on the floppy, re-copy the files, and try again.</para>
+
+<para>There are several <ulink url="models.html#no.ofw.fb">models</ulink>
+that cannot be booted while using the on-board video and keyboard.  Try
+using a serial console (see <xref
+linkend="ofw-input-output-devices-ofwpre3-serial" />).</para>
+
+</sect3>
+
+<sect3 id="cant-open">
+<title><literal>can't OPEN</literal></title>
+
+<para>Open Firmware either can't open the device you specified (because it
+is not present or the device path is mistyped) or the file you specified.
+Check your typing and check to make sure that the media has the files you
+think it has.</para>
+
+<para>Use the NetBSD <ulink url="partitioning.html#pdisk">pdisk</ulink> to
+get a listing of the partition map and the Open Firmware
+<literal>dir</literal> command (see <xref linkend="ofw-dir-listing" />) to
+get a listing of the files on that partition.</para>
+
+</sect3>
+
+<sect3 id="formatstate-not-valid">
+<title><literal>unrecognized Client Program formatstate not
+valid</literal></title>
+
+<para>This is a general Open Firmware error message indicating that the
+filename you tried to open either doesn't exist or is in the wrong format.
+For Open Firmware 1 and 2 machines, it must be an XCOFF file (such as
+<literal>ofwboot.xcf</literal>) and for Open Firmware 3 machines, it must
+be either XCOFF or ELF (such as a kernel).</para>
+
+</sect3>
+
+<sect3 id="bad-partition">
+<title><literal>bad partition number, using 0no bootable HFS
+partition</literal></title>
+
+<para>You tried booting an Open Firmware 1.x or 2.0.x machine from a device
+which has an HFS filesystem on it (such as a hybrid CD-R or a hard drive
+with Mac OS partitions).</para>
+
+</sect3>
+
+<sect3 id="ofw-read-timeout">
+<title><literal>READ TIMEOUT@</literal></title>
+
+<para>Open Firmware is having trouble reading your floppy disk.  Things to
+try:</para>
+
+<itemizedlist>
+  <listitem>
+    <para>Try booting from the floppy again.</para>
+  </listitem>
+
+  <listitem>
+    <para>Try a different floppy disk.</para>
+  </listitem>
+
+  <listitem>
+    <para>Try writing the floppy on the same machine you're trying to
+    boot.</para>
+  </listitem>
+
+  <listitem>
+    <para>Clean the floppy drive.</para>
+  </listitem>
+
+  <listitem>
+    <para>Use another boot method.</para>
+  </listitem>
+</itemizedlist>
+
+</sect3>
+
+<sect3 id="drive-spinup">
+<title>My hard drive doesn't spin up before Open Firmware tried
+booting</title>
+
+<para>To add a delay before trying to boot (to allow a hard drive to spin
+up), set the following Open Firmware variable:</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>setenv boot-command catch 5000 ms boot</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+
+<para>If the drive does not spin up until right before it tries booting,
+you may need to change a jumper on your hard drive which specifies whether
+the drive automatically spins up.  Most drive manufacturers have online
+manuals listing jumper locations.</para>
+
+<para>Two alternate methods are another <literal>boot-command</literal>
+variation and an nvramrc patch.</para>
+
+<screen><prompt>0 &gt; </prompt>setenv <userinput>boot-command begin ['] boot catch 999 ms cr again</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+
+<para>There are reports that this single-line alternative doesn't work on
+some early Open Firmware 1.0.5 models.</para>
+
+<para>You can also try the <ulink
+url="SystemDisk-tutorial/of105patch2.txt">following patch</ulink> in your
+nvramrc:</para>
+
+<screen>: wBoot
+begin
+ boot-device ['] $boot catch drop
+ ." -Waiting for boot-device" cr
+ d# 500 ms
+key? until
+;</screen>
+
+<para>Then you need to run <literal>nvstore</literal>.  See the <ulink
+url="nvedit.html">NetBSD/macppc nvedit HOW-TO</ulink> for more help
+patching your nvramrc.  Now, you need to specify that your boot command is
+different, so at the Open Firmware prompt, type:</para>
+
+<screen><prompt>0 &gt; </prompt><userinput>setenv boot-command wBoot</userinput>
+<prompt>0 &gt; </prompt><userinput>reset-all</userinput></screen>
+
+</sect3>
+
+<sect3 id="grey-screen">
+<title>Why does the screen turn grey with an icon in the center?</title>
+
+<para>This means that your system is trying to boot Mac OS.  You might get
+to this state if you didn't properly enter Open Firmware (see <xref
+linkend="ofw-access" />), or if your Open Firmware boot command is
+misformed.</para>
+
+<para>If you typed a bad <literal>boot</literal> command, Open Firmware
+tries to boot from the <literal>boot-device</literal> variable, whose
+default value is the Mac OS ROM.  See info on <xref linkend="ofw-variables"
+/> for help here.</para>
+
+<para>The grey screen with the icon is generated by the Mac OS ROM.  A
+flashing question-mark or broken folder means that your machine is looking
+for a bootable Mac OS filesystem, but can't find one.  A globe icon means
+that your machine is looking for a netboot server.  A happy face means it's
+trying to boot Mac OS.</para>
+
+<para>The boot floppy does not have a bootable Mac OS filesystem, it has a
+bootable NetBSD filesystem.</para>
+
+<para>Reboot, re-enter Open Firmware and check your syntax
+carefully.</para>
+
+</sect3>
+
+<sect3 id="black-lcd">
+<title>Why did my screen turn black during boot?</title>
+
+<para>This is a bug.  The NetBSD kernel has turned off your backlight.
+Turn up the brightness on your PowerBook screen to fix this.</para>
+
+<para>If you don't have a PowerBook, then see <xref
+linkend="ofw-boot-serial" />.</para>
+
+</sect3>
+
+<sect3 id="nodisk">
+<title>Where's my disk? (a.k.a. sysinst says <literal>I can not find any
+hard disk for use by NetBSD</literal>)</title>
+
+<para>Well, that's a good question!</para>
+
+<para>The root cause is that NetBSD didn't find your hard drive (or, more
+insidiously, didn't find your drive controller).  There a variety of
+reasons why this happens.  First determine whether it found your IDE
+controller (in the boot messages that scroll by, you should see a line with
+<literal>wdc0</literal> (for IDE) or <literal>scsibus0</literal> (for
+SCSI)).  If not, then you'll just have to use a different kernel that
+supports your drive bus.  Post to <ulink
+url="mailto:port-macppc@NetBSD.org">port-macppc@NetBSD.org</ulink> for
+help.</para>
+
+<para>Now, eliminate the easy problems (drive plugged in, powered on, and
+has jumpers set correctly).  Check that the drive works under Mac OS.</para>
+
+<para>If NetBSD still can't find the disk, then for SCSI disks, check the
+termination.  Even though Mac OS can use it, NetBSD may be pickier about the
+timings on the SCSI bus.</para>
+
+<para>If you've got an IDE drive, then you may have a PowerMacintosh G3
+(Blue and White) or an earlier system.  It wasn't until after the B&amp;W
+system that Apple fully worked out all the kinks with IDE devices.  Many
+people report that they have to put their NetBSD drive on the alternate IDE
+bus, and/or make it master (setting the CD-ROM to be slave).</para>
+
+<para>Unfortunately, you may need to play around a bit to find the right
+combination that works for all the OSes you use on your system.  Keep in
+mind that any system that does not have Open Firmware 3 cannot boot from
+slave devices (an Open Firmware limitation).</para>
+
+<para>Chris Tribo has posted a good breakdown of the early G3 models and
+their limitations/identification.  See his <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/07/26/0019.html">post</ulink>.
+Also see the Apple <ulink
+url="http://docs.info.apple.com/article.html?artnum=24342">Power Macintosh
+G3 and G4: IDE Master and Slave Support and Configuration</ulink> article
+on this topic.</para>
+
+<para>Additionally, there were a few disk-related problems with earlier
+releases of NetBSD.  See the <ulink url="oldfaq.html#old-nodisk">old
+FAQ</ulink>.</para>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="misc">
+<title>Misc</title>
+
+<sect3 id="moved">
+<title>This FAQ entry has moved</title>
+
+<anchor id="cannot-allocate-vm-panic" />
+<anchor id="wdc-lost-interrupt" />
+<anchor id="pciide-lost-interrupt" />
+<anchor id="mesh-fifo" />
+<anchor id="bm0-device-timeouts" />
+<anchor id="usb-keyboard-problems" />
+<anchor id="power-off" />
+<anchor id="pb418" />
+
+<para>FAQ entries about problems with NetBSD versions prior to the 1.6
+release have been moved to the <ulink url="oldfaq.html">Old
+FAQ</ulink>.</para>
+
+</sect3>
+
+<sect3 id="lang-kbd">
+<title>How do I use an alternate keyboard mapping?</title>
+
+<para>See the <ulink
+url="../../guide/en/chap-cons.html#chap-cons-wscons">WSCONS
+documentation</ulink> for a description of how to set up keyboards in non-US
+languages or alternate layouts (such as Dvorak).  For X, read Hauke Fath's
+<ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/12/05/0001.html">post</ulink>.
+See also <xref linkend="no-swapctrlcaps" />.</para>
+
+</sect3>
+
+<sect3 id="elf">
+<title>Where is
+<literal>ldconfig</literal>/<literal>ld.so.conf</literal>?</title>
+
+<para>NetBSD/macppc uses ELF, so it does not have
+<literal>ldconfig</literal> or <literal>ld.so.conf</literal>. See the
+<ulink url="../../Documentation/elf.html">NetBSD ELF FAQ</ulink> for more
+details.</para>
+
+</sect3>
+
+<sect3 id="cross-compile">
+<title>How can I cross-compile from another host/OS?</title>
+
+<para>NetBSD 1.6 and later systems have full support for cross-compilation
+of the base system, even as a non-root user and even on non-NetBSD hosts.
+See the <ulink url="../../Documentation/cross/">Cross-building
+NetBSD</ulink> under <ulink url="../../Documentation/">NetBSD Documentation
+pages</ulink> for details.</para>
+
+</sect3>
+
+<sect3 id="linux">
+<title>Can NetBSD/macppc run MkLinux or LinuxPPC binaries?</title>
+
+<para>Yes. Linux binary compatibility for PowerPC ports is supported in
+NetBSD 1.6 and later, but is not enabled by default.  You will need to
+<ulink url="../../Documentation/kernel/#how_to_build_a_kernel">build a
+kernel</ulink> with <literal>options COMPAT_LINUX</literal> uncommented.
+Applications that are reported to work include <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/www/communicator/README.html">
+Netscape Communicator</ulink>, <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/lang/blackdown-jdk13/README.html">Blackdown's
+JDK-1.3.0</ulink>, and <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/graphics/blender/README.html">Blender</ulink>.
+All theses programs are included in the <ulink
+url="http://www.NetBSD.org/Documentation/software/packages.html"> NetBSD
+package collection</ulink></para>
+
+<para>Binaries that have known problem are: <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/www/opera/README.html">Opera</ulink>,
+which will crash on first startup. On the second startup, if you go to the
+advanced settings dialog and uncheck "asynchronous DNS", it should work
+without troubles.</para>
+
+<para>It is probably worth mentioning that the JDK works quite well. Java
+applications such as <ulink
+url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/www/cocoon/README.html">Cocoon</ulink>
+have been reported to work without any problem.</para>
+
+</sect3>
+
+<sect3 id="macos">
+<title>Can NetBSD/macppc run Mac OS binaries?</title>
+
+<para>Well, some day someone might get <ulink
+url="http://www.ibrium.se/linux/mac_on_linux.html">Mac-on-linux</ulink>
+(for LinuxPPC) to work.  Meanwhile, try <filename
+role="pkg">emulators/BasiliskII</filename> or <ulink
+url="http://www.vmac.org">VMac</ulink> both of which emulate a 68k
+Mac.</para>
+
+</sect3>
+
+<sect3 id="macosx">
+<title>Can NetBSD/macppc run Darwin/Mac OS X binaries?</title>
+
+<para>Work is in progress, and some support for running Darwin binaries is
+present in NetBSD-current. Check the COMPAT_MACH and COMPAT_DARWIN
+<ulink url="http://hcpnet.free.fr/applebsd.html">status page</ulink>
+for up to date information about this project.</para>
+
+</sect3>
+
+<sect3 id="keys">
+<title>Explanation of some keyboard icons</title>
+
+<para>Apple has some unusual keys on its keyboards that may confuse some
+people (particularly with non-US keyboards).</para>
+
+<para>The key with the
+<inlinemediaobject>
+  <imageobject>
+    <imagedata fileref="../../images/ports/macppc/icon-command.gif"
+    format="GIF" />
+  </imageobject>
+</inlinemediaobject>
+symbol shown on it is commonly referred to as the "Command" key.  Some
+keyboards also have an "open apple" (as
+<inlinemediaobject>
+  <imageobject>
+    <imagedata fileref="../../images/ports/macppc/icon-open-apple.gif"
+    format="GIF" />
+  </imageobject>
+</inlinemediaobject>) on the command key as well.</para>
+
+<para>On non-US keyboards, the key with the
+<inlinemediaobject>
+  <imageobject>
+    <imagedata fileref="../../images/ports/macppc/icon-option.gif"
+    format="GIF" />
+  </imageobject>
+</inlinemediaobject>
+symbol on it is labeled as the "option" key on US keyboards.</para>
+
+<para>Often, when you read Mac documentation, you'll see the instruction to
+hold down "C-O-p-r" or some other variation.  This means you should hold
+down the command and option keys in addition to the letters "p" and
+"r".</para>
+
+</sect3>
+
+<sect3 id="german-kbd-at">
+<title>Where's the "at" (@) key on a German ADB keyboard?</title>
+
+<para>Under Mac OS, it is Shift-Alt-1, and in Open Firmware, it is
+Shift-Alt-2.</para>
+
+</sect3>
+
+<sect3 id="adb-short">
+<title>How do I boot my system without an ADB keyboard?</title>
+
+<para>If you're using a serial console, don't have an ADB keyboard, and
+don't want to reach behind (or wherever) your real power switch is located,
+you can create a hardware hack that appears to the computer to be the
+"power" key on an ADB keyboard.  All Macs have a real power switch (be it
+soft or hard power), it may just be a bit hidden.  This will void your
+warrantee, don't hold us liable, etc.  See Chris Tribo's <ulink
+url="http://mail-index.NetBSD.org/port-macppc/2001/06/09/0002.html">post</ulink>
+to the mailing list on this topic.</para>
+
+</sect3>
+
+<sect3 id="no-swapctrlcaps">
+<title>Why there's no wscons mapping "us.swapctrlcaps" for ADB
+keyboard?</title>
+
+<para>ADB keyboard generates weird key code &mdash; it generates a key code
+when it gets pressed then released (= caps lock set), and another key code
+when it gets pressed and released (= caps lock released).  In the kernel
+code <filename>sys/arch/macppc/dev/akbd.c</filename> the weird key code
+gets translated into wscons key code.  Because of this weirdness, the best
+result we will be able to get is, unfortunately, a locking control
+key.</para>
+
+<para>On NetBSD-current (1.6A or later), <literal>options
+CAPS_IS_CONTROL</literal> will hardcode capslock key into control key.
+(Even with weird LED behavior it should be useful.)</para>
+
+</sect3>
+
+<sect3 id="keyboard-ddb">
+<title>How do I enter DDB from the console?</title>
+
+<para><literal>command-option-power</literal> on ADB keyboards.</para>
+
+</sect3>
+
+</sect2>
+
+<parentsec url="." text="NetBSD/macppc Port Page" />
+
+</sect1>
+</webpage>
