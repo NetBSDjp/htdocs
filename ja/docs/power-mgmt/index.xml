@@ -1,0 +1,306 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="docs-power-mgmt-index">
+  <config param="desc" value="NetBSD Documentation: Power Managment"/>
+  <config param="cvstag" value="$NetBSD: index.xml,v 1.1 2007/06/09 11:34:46 dsieger Exp $"/>
+  <config param="rcsdate" value="$Date: 2007/06/09 11:34:46 $"/>
+  <head>
+
+  <!-- Copyright (c) 1994-2007
+        The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+    <title>&os; Documentation: Power Managment</title>
+  </head>
+
+  <sect1 role="toc">
+    <sect2 id="power_managment">
+      <title>Power Management for Laptops</title>
+
+      <sect3 id="introduction">
+        <title>Introduction</title>
+
+	<para>This documentation describes some of the power
+	  management facilities available in &os;, including the
+	  Advanced Power Management (APM) support found in most modern
+	  laptops.</para>
+
+	<para>Currently most of the information on this page is i386
+	  specific.  When &os; starts supporting more laptop
+	  architectures, then this documentation will be expanded to
+	  cover the power management features for those
+	  architectures.</para>
+      </sect3>
+
+      <sect3 id="basics">
+        <title>The Basics of Power Management</title>
+
+	<para>The core of laptop power management is centered around
+	  Advanced Power Management, or APM for short.  This is a set
+	  of BIOS provided service routines that provide an interface
+	  to the laptop hardware power management features.  It is via
+	  this interface that &os; receives APM events (such as
+	  suspend requests) or makes power management requests or
+	  queries (such as the current battery level).</para>
+
+	<para>APM specifies two different power saving modes: standby
+	  and suspend.  What this actually does at a hardware level is
+	  dependent on the particular laptop being
+	  used. <quote>standby</quote> typically means a light sleep,
+	  which consumes more power and is quicker to restore from
+	  than the <quote>suspend</quote> mode.  Typically the APM
+	  timers for standby and suspend mode are configured in a
+	  machine's BIOS.  After a machine has been determined
+	  <quote>idle</quote> for the appropriate period of time, the
+	  BIOS will request that the operating system go into the
+	  appropriate power saving mode.</para>
+
+	<para>At the &os; level, there are three components to APM
+	  support.  The kernel driver, which is the interface to the
+	  APM BIOS, the apm daemon <application>apmd</application>,
+	  which interfaces with the APM kernel driver and runs the
+	  userland event scripts, and the command line program
+	  <command>apm</command>, which interfaces to
+	  <application>apmd</application> and can be used to query
+	  battery level or initiate a system suspend.</para>
+
+	<para>The way power management events generally flow
+	  is:</para>
+
+	<orderedlist>
+	  <listitem>The APM BIOS determines a machine has been idle
+	    for the appropriate amount of time, and queues a
+	    standby/suspend request.</listitem>
+	  <listitem>The APM kernel driver gets the request event the
+	    next time it polls the APM BIOS (typically once per
+	    second) and queues the standby/suspend request to the apm
+	    daemon.</listitem>
+	  <listitem>The apm daemon determines whether or not to accept
+	    this request, based on the current power source and the
+	    daemon configuration.  If the request is accepted, it
+	    performs any standby/suspend activities, then sends the
+	    accept/reject notice back to the kernel driver.</listitem>
+	  <listitem>The kernel driver sends the accept/reject notice
+	    to the APM BIOS.</listitem>
+	  <listitem>If the event request was accepted, the APM BIOS
+	    places the hardware in the specified mode.</listitem>
+	</orderedlist>
+      </sect3>
+
+      <sect3 id="configuring">
+        <title>Configuring &os; APM Support</title>
+
+	<para>First off, you need to compile a kernel with the APM
+	  driver enabled.  Add (or uncomment) the following line in
+	  your kernel configuration file:</para>
+
+	<programlisting>
+	apm0	at mainbus0	# Advanced power management</programlisting>
+
+	<para>See <ulink url="../../guide/en/chap-kernel.html">how to
+	  build a kernel</ulink> for details on how to build your own
+	  kernels.</para>
+
+	<para>Once you have a kernel with the APM kernel driver built,
+	  run the apm daemon (<application>apmd</application>) at boot
+	  time by setting the <code>apmd</code> variable
+	  <filename>/etc/rc.conf</filename> to
+	  <code>YES</code>.</para>
+
+	<para>Once you've done both of these steps, you can use the
+	  <application>apm</application> utility to interface with the
+	  APM system.  For example:</para>
+	<programlisting>
+% apm
+Battery charge state: high
+Battery remaining: 98 percent
+A/C adapter state: not connected
+Power management enabled</programlisting>
+
+        <para>Read &man.apm.8; and &man.apmd.8; for more detailed
+	  information on how to use the APM support.</para>
+
+      </sect3>
+
+      <sect3 id="hints">
+        <title>Power Management Hints and Tricks</title>
+
+	<para>The primary interfaces for power management events are
+	  the scripts in <filename>/etc/apm</filename>:
+	  <filename>standby</filename>, <filename>suspend</filename>,
+	  and <filename>resume</filename>.  <filename>apmd</filename>
+	  will run these scrips when it receives the appropriate APM
+	  event.</para>
+
+	<para>Some things you might want to do in a
+	  <filename>standby</filename> or <filename>suspend</filename>
+	  script are:</para>
+
+	<itemizedlist>
+	  <listitem>Turn off power to a network interface card.  If
+	    you are using PCMCIA network interface cards, you can do
+	    this by <code>ifconfig &lt;interface&gt;
+	    down</code>.</listitem>
+	  <listitem>Unmount network filesystems (if you plan on
+	    resuming a laptop in a place where that filesystem might
+	    not be accessible).</listitem>
+	  <listitem>Stop running <command>dhclient</command> or
+	    <command>pppd</command>.</listitem>
+	</itemizedlist>
+
+	<para>Conversely, you can run all the appropriate commands to
+	  undo all of the things you did at standby or suspend time in
+	  your <filename>resume</filename> script.</para>
+
+	<para>New in &os; 1.4 is the <command>atactl</command>
+	  command.  This command can be used to control power
+	  management features of ATA devices (more commonly known as
+	  IDE).  You can use the <option>setidle</option> option of
+	  <command>atactl</command> to set the standby timer used to
+	  control disk spindown.  See &man.atactl.8; for more specific
+	  information.</para>
+
+	<para>If you're wondering what value to set for the ATA
+	  standby timer, I would recommend reading the following
+	  papers:</para>
+
+	<itemizedlist>
+	  <listitem>
+	    <quote>A Quantitative Analysis of Disk Drive Power
+	      Management in Portable Computers</quote>, Kester Li,
+	      Roger Kumpf, Paul Horton, Thomas Anderson, Computer
+	      Science Division, University of California, Berkeley,
+	      Winter 1994 Usenix.
+	  </listitem>
+	  <listitem>
+	    <quote>Thwarting the Power-Hungry Disk</quote>, Fred
+	      Douglas, P. Krishnan, Brian Marsh, Matsushita
+	      Information Technology Laboratory, Winter 1994
+	      Usenix.
+	  </listitem>
+	</itemizedlist>
+
+	<para>These papers both recommend low values for a standby
+	  timer, on the order of 2 to 8 seconds.</para>
+
+	<para>One problem with setting a low value for the standby
+	  timer is that by default &os; writes to the disk often
+	  enough that the disk is constantly spinning up (at least
+	  once every 30 seconds, or however often
+	  <command>update</command> runs).  It turns out the most
+	  common cause of this is the filesystem updating the last
+	  access timestamps on files and the last modified time on
+	  device special files (such as pseudo-ttys).  This behavior
+	  can be suppressed by the &man.mount.8; options
+	  <option>noatime</option> and (new in &os; 1.4)
+	  <option>nodevmtime</option>.  If you decide to do this as
+	  well, you might want to also change or remove completely the
+	  <command>atrun</command> job inside of
+	  <application>cron</application> - by default it will run
+	  once every 10 minutes and append an entry to the
+	  <application>cron</application> log file, causing a disk
+	  spinup.</para>
+
+	<para>It is also desirable in some circumstances to use
+	  different or disable completely power management settings
+	  depending if one is powered by line power or battery.  A new
+	  feature in &os; 1.4 is two additional
+	  <application>apmd</application> scripts:
+	  <filename>line</filename> and <filename>battery</filename>.
+	  These scripts are run by <application>apmd</application>
+	  whenever APM detects a power source change.  The
+	  <filename>line</filename> script is run upon transition to
+	  line/AC power, and the <filename>battery</filename> script
+	  is run upon transition to battery power.  The script
+	  corresponding to the current power source is also run when
+	  <application>apmd</application> is first started.</para>
+
+	<para>You can place commands inside of these scripts to change
+	  the power management settings when using battery or line
+	  power.  Here are some example scripts:</para>
+
+	<itemizedlist>
+	  <listitem>
+	    <filename>/etc/apm/line</filename>
+	    <programlisting>
+#!/bin/sh
+
+mount -u /
+mount -u /usr
+atactl wd0 setidle 0</programlisting>
+          </listitem>
+	  <listitem>
+	    <filename>/etc/apm/battery</filename>
+	    <programlisting>
+#!/bin/sh
+
+mount -u -o async,noatime,nodevmtime /
+mount -u -o async,noatime /usr
+atactl wd0 setidle 5</programlisting>
+          </listitem>
+	</itemizedlist>
+
+	<para>See also
+	  <filename>/usr/share/examples/apm/script</filename> for an
+	  example script that can be used to also handles
+	  configuration of network interfaces etc.</para>
+
+	<para>Another useful feature is the <option>-a</option> flag
+	 to <command>apmd</command> which will cause
+	 <application>apmd</application> to ignore standby or suspend
+	 events if the machine is currently on line power.</para>
+
+      </sect3>
+
+      <sect3 id="squid">
+        <title>Squid is making my laptop disk spin up</title>
+
+	<para>Squid probes one of its cache directories every 15
+	  seconds.  With 16 first level and 256 second level
+	  directories being used, as default, to construct the cache,
+	  some quick math suggests:</para>
+
+	<para><code>16 * 256 * 8k(block size) = ~32mb</code></para>
+
+	<para>Squid will slowly work its way through this, each time a
+	  new directory is read that it missed in the buffer cache.
+	  Tweaking <filename>squid.conf</filename> to reduce the
+	  number of directories should fix the problem of a laptop
+	  disk spinning up.</para>
+
+      </sect3>
+
+      <sect3 id="syslog">
+        <title>Preventing syslog from waking up the disk</title>
+
+	<para>
+	  A problem when trying to spin the disk down is that it
+	  gets woken up periodically e.g. by &man.syslogd.8;
+	  which tries to write things to disk.
+	</para>
+
+	<para>
+	  An elegant way to work around that is by redirecting all
+	  syslog output to a virtual console instead of to disk.
+	  To do so, put the following into
+	  <filename>/etc/syslog.conf</filename>:
+	</para>
+
+	<screen>
+*.*		/dev/ttyE3
+	</screen>
+
+	<para>
+	  Of course you can choose whatever virtual console you prefer
+	  instead of <filename>/dev/ttyE3</filename>.
+	</para>
+
+      </sect3>
+    </sect2>
+  </sect1>
+
+  <parentsec url="../" text="&os; Documentation"/>
+
+</webpage>

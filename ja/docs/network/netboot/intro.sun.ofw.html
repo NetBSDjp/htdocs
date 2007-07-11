@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+<!-- Copyright (c) 1998-2004
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+<link rev="made" href="mailto:www@NetBSD.org">
+<title>Introduction (JavaStation and sparc64 specific), Diskless NetBSD 
+HOW-TO</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<a href="intro.html">Previous</a> |
+<a href="rarp.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr>
+
+<h1>Introduction (JavaStation- and sparc64-specific), Diskless NetBSD 
+HOW-TO</h1>
+
+<h2>Sun Firmware procedures</h2>
+<dl><dt><dd>
+<big><b>Which Sun machines can netboot</b></big>
+<p>
+
+All JavaStation and sparc64 workstations and servers are capable of booting
+over a network interface. A network boot-strap procedure can be
+started by entering the appropriate <em>OpenFirmware</em> command.  Some 
+JavaStation-1 systems do not have OpenFirmware and should follow the 
+OpenBoot <a href="intro.sun.html">sparc</a> Diskless NetBSD HOW-TO.<p>
+
+<big><b>Determining your ethernet hardware address</b></big>
+<p>
+When you power on your machine, it will print out its MAC address.  If it
+claims your ethernet address is <tt>ff:ff:ff:ff:ff:ff</tt>, then your
+NVRAM battery is dead.  See the 
+<a href="http://www.squirrel.com/squirrel/sun-nvram-hostid.faq.html">Sun
+NVRAM/Hostid FAQ</a>.  Your system will not netboot without a working NVRAM.
+<p>
+
+<big><b>Obtaining an IP address via RARP</b></big>
+<p>
+
+When instructed to boot "over the net", your workstation will first
+try to acquire an IP address by using the Reverse ARP (or RARP)
+protocol. Thus you need to run a <a href="rarp.html">RARP server</a>
+somewhere in the same network broadcast domain as your
+workstation. The ethernet address of the machine (needed when setting up the
+RARP server) should be displayed in the banner when it is powered on or reset.
+<p>
+
+Sometimes the arp entry gets corrupt on the <tt>rarpd</tt> server.  If this
+happens, you may need to run (on the <tt>rarpd</tt> server):
+<pre># <b>arp -s client.test.net CC:CC:CC:CC:CC:CC temp</b></pre>
+<p>
+
+Note:  if the client doesn't detect a <tt>rarpd</tt> server, it will patiently
+wait for one and will not display any error messages (as described in
+the <tt>rarpd</tt> pages).
+<p>
+
+<big><b>Downloading the boot loader</b></big>
+<p>
+
+If the RARP phase is completed successfully, the firmware in the
+workstation expects to be able to download a program via the <a
+href="tftpd.html">TFTP protocol</a>. It will do this by setting up a
+TFTP connection to the server that answered the earlier RARP request,
+and asking for a file named based on the machine's IP address.
+<p>
+
+<big><b><a name="naming">Naming the boot loader</a></b></big>
+<p>
+
+The netbooting machine will ask via tftp for a file named as follows:
+<ul>
+<li>The first eight characters are obtained by converting the four
+    octets of the IP address into hexadecimal representation.
+</ul>
+You can use bc(1) to calculate this name as follows:
+<pre>$ <b>bc</b>
+<b>obase=16</b>
+<b>192</b>
+C0
+<b>168</b>
+A8
+<b>1</b>
+1
+<b>10</b>
+A
+<b>quit</b></pre>
+Thus, a machine which has been assigned 
+IP address 192.168.1.10, will make an TFTP request for
+`<tt>C0A8010A</tt>'.
+
+<p>For sparc64 systems, this file should be a symbolic link to
+<tt>installation/netboot/ofwboot.net</tt> from the NetBSD/sparc64
+distribution.  For OpenFirmware-based JavaStation systems, this file
+should be a link to <tt>installation/netboot/bootjs.net</tt> from the
+NetBSD/sparc distribution. Of course this bootloader should be located in
+a place where the TFTP daemon can find it (remember, many TFTP daemons run
+in a chroot'ed environment).
+
+</dd></dl>
+
+<h2>Firmware commands</h2>
+<dl><dt><dd>
+<p>
+
+Open Firmware uses a generalized syntax to specify the boot device for use 
+with the `<tt>boot</tt>' command.  By default, the JavaStations will 
+attempt to boot from the net automatically.
+<p>
+
+<ul>
+<li>`<tt><b>boot net</b></tt>'; this will most likely work in all cases
+    where there is a single network interface on the machine. In this
+    case `<tt>net</tt>' will have been setup by the firmware as an
+    alias to the full pathname of the network device.
+
+<p><li>You may want to specify a different kernel name or options.  These 
+    are listed after the device name:
+    <p>`<tt><b>boot net netbsd-GENERIC_SUN4U.gz -a</b></tt>'
+
+<p><li>You may also need to be explicit about the network device you want
+    to use, e.g. because there's more than one interface in the
+    machine, possibly connected to different subnets. In this case, use
+    the full device path name in the boot command, for instance:
+
+    <p>`<tt><b>boot /pci@1f,4000/network@1,1</b></tt>';<br>
+    would select the on-board <tt>hme</tt> interface located on an 
+    Ultra 30.
+</ul>
+</dd></dl>
+
+<h2>Begin setting things up (suggested order):</h2>
+<dl><dt><dd>
+Get <tt>installation/netboot/ofwboot.net</tt> (sparc64) or 
+<tt>installation/netboot/bootjs.net</tt> from the NetBSD distribution.
+This is what is sent by TFTP.  Copy this file to an
+appropriately named file in <tt>/tftpboot</tt>, as described above in 
+the <a href="#naming">Naming the boot loader</a> section.
+<p>
+<ol>
+<li><a href="rarp.html"><tt>rarp</tt></a>
+<li><a href="tftpd.html"><tt>tftpd</tt></a>
+<li><a href="nfs.html"><tt>nfs</tt></a>
+<li><a href="files.html">client filesystem</a>
+<li><a href="finish.html">finishing up</a>
+</ol>
+</dd></dl>
+
+<hr>
+
+<a href="intro.html">Previous</a> |
+<a href="rarp.html">Next</a> |
+<a href="./">Table of Contents</a>
+
+<hr> 
+
+<table width="100%"><tr><td>
+  <table><tr><td>
+    <a href="../../../"><img
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a> 
+  </td><td>
+    <a href="../../../"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Home Page</a>
+  </td></tr></table>
+</td><td>
+  <table><tr><td> 
+    <a href="../../../Documentation/"><img
+        src="../../../images/NetBSD-flag.png" border="0"
+        width="90" height="90" alt=""></a>
+  </td><td>
+    <a href="../../../Documentation/"><img
+        src="../../../images/empty.gif" border="0"
+        width="1" height="1" alt="NetBSD ">Documentation top level</a>
+  </td></tr></table>
+</td></tr></table>
+
+<hr>
+<address>
+  <small>
+  <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">(Contact us)</a>
+  $NetBSD: intro.sun.ofw.html,v 1.1 2007/06/09 11:34:07 dsieger Exp $<br>
+  <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2004
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
+  </small>
+</address>
+
+</body>
+</html>

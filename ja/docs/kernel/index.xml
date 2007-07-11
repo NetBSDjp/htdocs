@@ -1,0 +1,1006 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="docs-kernel-index">
+  <config param="desc" value="NetBSD Documentation: Kernel"/>
+  <config param="cvstag" value="$NetBSD: index.xml,v 1.1 2007/06/09 11:33:43 dsieger Exp $"/>
+  <config param="rcsdate" value="$Date: 2007/06/09 11:33:43 $"/>
+  
+  <head>
+    <!-- Copyright (c) 1994-2005
+         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+    <title>NetBSD Documentation: Kernel</title>
+  </head>
+
+  <sect1 role="toc">
+  <sect2>
+    <title>Frequently Asked Kernel Questions</title>
+
+    <sect3 id="downloading_kernel_source">
+      <title>Where to download the kernel source</title>
+      
+      <sect4 id="official_release_kernel_source">
+        <title>Official release source</title>
+
+        <para>
+          To compile a custom kernel for the same release as you already
+  	have installed you only need the kernel
+  	<code>syssrc.tgz</code> file. For a given release this is held
+  	in the gzipped tarfile 'source/sets/syssrc.tgz' under the main
+  	directory for that release. For example NetBSD 3.1 kernel
+  	source is in the file <ulink
+  	url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/source/sets/syssrc.tgz">/pub/NetBSD/NetBSD-3.1/source/sets/syssrc.tgz</ulink>.
+        </para>
+        
+        <para>
+          If you have a <ulink url="../../Sites/cdroms.html">NetBSD
+  	CD-Rom</ulink>, the 'source/syssrc.tgz' file should be
+  	included. The source can be extracted anywhere, though the
+  	traditional location is inside /usr/src. To extract use
+  	"<emphasis role="bold"><code>cd / ; tar xvzpf
+  	&lt;FILENAME&gt;</code></emphasis>".
+        </para>
+      </sect4>
+  
+      <sect4 id="bleeding_edge">
+        <title>'Bleeding edge' -current source, for the adventurous
+               only!</title>
+  
+        <para>
+          The latest kernel sources are available from ftp.NetBSD.org or
+  	one of the mirrors in the directory <ulink
+  	url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/sys/">/pub/NetBSD/NetBSD-current/src/sys/</ulink>.
+  	To compile a kernel you should download the following from
+  	<ulink
+  	url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/">
+  	/pub/NetBSD/NetBSD-current/tar_files/src</ulink>:
+        </para>
+  
+        <para>
+  	<itemizedlist>
+  	  <listitem>
+  	    <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</ulink>
+              (Source for the &man.config.8; program)
+            </listitem>
+            <listitem>
+  	    <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/sys.tar.gz">sys.tar.gz</ulink>
+              (Complete kernel source for all architectures)
+            </listitem>
+  	</itemizedlist>
+        </para>
+  
+        <para>
+  	You should first build and install the 'config' program, in
+  	case it has changed since the version you are running. Since
+  	-current is on the active edge of NetBSD development, there
+  	can be <ulink
+  	url="#problems_compiling_a_current_kernel">problems compiling
+  	a -current kernel</ulink>. You are recommended to use source
+  	from an <ulink url="#official_release_kernel_source">Official
+  	Release</ulink> until you are familiar with the configuration
+  	process.
+        </para>
+      </sect4>
+        
+      <sect4 id="downloading_kernel_source_by_date">
+        <title>Downloading the kernel source from a certain date</title>
+  
+        <para>
+          You might need to do this if you have installed a snapshot on
+  	your machine and need to rebuild the kernel (and the -current
+  	kernel is too recent).  Follow the directions on how to <ulink
+  	url="../current/#using-anoncvs">Track NetBSD-current with
+  	anoncvs</ulink>.
+        </para>
+      </sect4>
+    </sect3>
+
+    <sect3 id="how_to_build_a_kernel">
+      <title>How to build a kernel</title>
+      
+      <anchor id="building_a_kernel" />
+      <!-- Don't change the above targets - SAs reference them. -->
+
+      The procedure below applies only if you are compiling the kernel
+      of the same version of NetBSD that you have already installed. Updating
+      to a newer kernel of the same major version should be also fine
+      using this procedure, but if you update a -current kernel, or
+      want to update to a newer major release, compiling a new
+      toolchain first is required. Follow the description of building
+      the toolchain and new kernel with the <code>build.sh</code>
+      script in the documentation about tracking -current:
+      <itemizedlist>
+	<listitem>
+	  <ulink url="../current/">Updating an existing system</ulink>
+	  (only the <code>build.sh tools</code> and <code>build.sh
+	  kernel</code> steps are needed)
+	</listitem>
+	<listitem>
+	  <ulink url="../../guide/en/chap-build.html">
+	    Crosscompiling NetBSD with build.sh</ulink>
+	</listitem>
+	<listitem>
+	  <ulink url="../../guide/en/chap-kernel.html#chap-kernel-build.sh">
+	    Building the kernel using build.sh</ulink>
+	</listitem>
+      </itemizedlist>
+      The steps to build a kernel are:
+      <orderedlist>
+        <listitem>
+	  Ensure you have installed the Compilers (<code>comp.tgz</code>) set
+  	  that came with your base system.
+        </listitem>
+        <listitem>
+	  Download and extract the kernel source (see
+  	  <ulink url="#downloading_kernel_source">Where to download kernel
+	  source</ulink>).
+        </listitem>
+        <listitem>
+	  "<code>cd /usr/src/sys/arch/&lt;ARCH&gt;/conf</code>", 
+  	  where &lt;ARCH&gt; is your machine's architecture such as 'i386',
+	  'sparc', 'mac68k'.
+        </listitem>
+        <listitem>
+	  "<code>cp GENERIC &lt;MYCONF&gt;</code>", where
+  	  &lt;MYCONF&gt; is your name for this configuration. You
+  	  could use your hostname, the machine type, or even your
+  	  first name. Keep to letters, numbers, and _ characters.
+        </listitem>
+        <listitem>
+	  <emphasis role="bold">Edit &lt;MYCONF&gt;</emphasis>. 
+  	  Initially you can skip this stage.
+	  You can remove drivers for CPU types, hardware, and devices you do
+	  not have or use, or even enable options, such as on i386 commenting out
+	  the 'pc0' line and enabling the 'vt0' to gain virtual consoles.
+	  A good start to determining what hardware drivers you definitely need to
+	  keep is to read the output of "<emphasis role="bold"><code>dmesg</code></emphasis>" or
+	  "<code>dmesg | grep ' at '</code>".  For every line containing
+	  '&lt;XXX&gt; at &lt;YYY&gt;' you need to keep the entries for both
+	  &lt;XXX&gt; and &lt;YYY&gt;. You should also read <emphasis role="bold">&man.options.4;</emphasis>
+	  for information on the different kernel configuration options.
+        </listitem>
+        <listitem> run
+	  <quote><code>config &lt;MYCONF&gt;</code></quote>, which will generate the
+  	  kernel build directory for &lt;MYCONF&gt;. 
+        </listitem>
+        <listitem>
+	  "<code>cd ../compile/&lt;MYCONF&gt;</code>" changes to the
+  	  kernel build directory.
+        </listitem>
+        <listitem>
+	  "<code>make depend</code>" generates a '.depend' file that
+  	  enables the make program to see what needs to be
+  	  rebuilt (at this point it will be everything!). 
+        </listitem>
+        <listitem>
+	  "<code>make</code>" will compile the kernel. If all goes
+  	  well you will be left with a 'netbsd' kernel. This may take
+  	  some significant time if you are on a VAX, some time
+  	  on a big Alpha, and somewhere in-between for the 
+  	  rest of us.
+        </listitem>
+        <listitem>
+	  "<code>mv /netbsd /netbsd.old ; mv
+  	  /usr/src/sys/arch/&lt;ARCH&gt;/compile/&lt;MYCONF&gt;/netbsd
+  	  /</code>" saves your current kernel,
+  	  (<emphasis>very</emphasis> important), and moves the new
+  	  kernel ready to be booted. 
+        </listitem>
+        <listitem>
+	  "<code>reboot</code>" should reboot using your new kernel -
+  	  the boot messages should contain a line of the form:
+  	  'NetBSD &lt;VERSION&gt; (&lt;MYCONF&gt;) #0: &lt;COMPILE_DATE&gt;'
+        </listitem>
+        <listitem>
+	  <emphasis role="bold">If you have any problems:</emphasis>
+  	  You should boot your 'netbsd.old' kernel in single user mode. The
+	  procedure varies from port to port depending on the boot procedure,
+	  but on i386 it would be:
+	  
+	  <orderedlist>
+	    <listitem><emphasis role="bold">Press <code>SPACE</code> when the first NetBSD message appears</emphasis></listitem>
+	    <listitem>"<emphasis role="bold"><code>boot netbsd.old -s</code></emphasis>"</listitem>
+	  </orderedlist>
+	
+	  Then swap your kernel back:
+	
+          <orderedlist>
+            <listitem>"<emphasis role="bold"><code>fsck /</code></emphasis>"</listitem>
+            <listitem>"<emphasis role="bold"><code>mount /</code></emphasis>"</listitem>
+            <listitem>"<emphasis role="bold"><code>mv netbsd.old netbsd</code></emphasis>"</listitem>
+            <listitem>"<emphasis role="bold"><code>exit</code></emphasis>"</listitem>
+          </orderedlist>
+        </listitem>
+      </orderedlist>
+    </sect3>
+
+    <sect3 id="generic_kernel">
+      <title>What exactly is a GENERIC kernel?</title>
+      
+      <para>
+        The term GENERIC refers to a kernel that is configured to run
+	on just about any machine supported by the machine
+	architecture.  The term originated from a line in the kernel
+	configuration file which specified that the root device was
+	"generic" as well as a configuration option.  This option and
+	that format of the configuration line is no longer used, but
+	the name will probably stick for a while.
+      </para>
+      
+      <para>
+        Since these kernels tend to include support for all the
+	available device drivers and many models of machines that you
+	are not using, you are encouraged to <ulink
+	url="#how_to_build_a_kernel">compile your own custom
+	kernel</ulink>. 
+      </para>
+    </sect3>
+
+    <sect3 id="mclpool-limit">
+      <title>What does <code>mclpool limit reached: increase NMBCLUSTERS</code> mean?</title>
+      
+      <para>
+        This means the kernel has run out of space to map mbuf clusters.
+        mbuf clusters are used by the network code to store packets and
+        other network related data.
+      </para>
+      
+      <para>
+        The default setting for NMBCLUSTERS is 1024 (256 in NetBSD 1.5
+        and earlier), so if you have this problem, try doubling the
+        value until the error message disappears.  To display the
+        current value of NMBCLUSTERS you can use &man.sysctl.8; as
+        follows:
+	
+<screen>
+	# sysctl kern.mbuf.nmbclusters
+</screen>
+
+        Alternatively, try
+	
+<screen>
+        # echo 'print nmbclusters' | gdb -q /netbsd
+</screen>
+
+        See also &man.options.4; for more details on kernel
+	configuration options. 
+        To change the value, add
+	
+<screen>
+	options NMBCLUSTERS=2048
+</screen>
+
+        to your <ulink url="#how_to_build_a_kernel">kernel
+	configuration</ulink>, or patch the binary:
+	
+<screen>
+        # <emphasis role="bold">gdb --write /netbsd</emphasis>
+        (gdb) <emphasis role="bold">set nmbclusters=2048</emphasis>
+        (gdb) <emphasis role="bold">quit</emphasis>
+</screen>
+
+        Note that if you patch the binary only, you will need to
+	reboot for the change to take effect.  If you're on a platform
+	which supports it, you can set the value with:
+	
+<screen>
+	# <emphasis role="bold">sysctl -w kern.mbuf.nmbclusters=2048</emphasis>
+</screen>
+
+        This will work, but will be lost on the next reboot.
+	Combining this, and patching the binary, would mean no need to
+	build a new kernel or reboot.
+      </para>
+    </sect3>
+
+    <sect3 id="spl_not_lowered">
+      <title>What does <code>WARNING: SPL NOT LOWERED ON SYSCALL EXIT</code> mean?</title>
+      
+      <para>
+        This kernel message means that there is a bug in the kernel
+	where a syscall did "<code>int x = splfoo();</code>" and did
+	not call "<code>splx(x);</code>" before it returned.  The
+	<code>splx(x);</code> function in this example would restore
+	the system priority level to the one encoded in
+	<code>x</code>, which was a 
+	value previously returned by one of the other spl functions
+	(in this case, the made up example of
+	<code>splfoo();</code>). 
+      </para>
+	
+      <para>
+        If you get this kernel message you should be dropped into
+	&man.ddb.4;, the in-kernel debugger.  A stack trace in ddb,
+	accomplished by pushing 't', might show you the offending
+	syscall().  It is probably a good idea to &man.send-pr.1; the
+	output of the trace command (as well as any other relevant
+	information), since you should under no circumstances be
+	getting this kernel message. 
+      </para>
+      
+      <para>
+        See also &man.spl.9; for more information on spl functions.
+      </para>
+    </sect3>
+
+    <sect3 id="stray-ir7">
+      <title>What does <code>Stray interrupt on IRQ 7</code> mean?</title>
+      
+      <para>
+        The "Stray interrupt on IRQ 7" kernel message means that the
+        interrupt controller reported an unmasked interrupt on IRQ 7, but
+        no driver attached to that IRQ 'claimed' it. 
+      </para>
+      
+      <para>
+        There are two reasons this can happen:
+      </para>
+ 
+      <para>
+        <orderedlist> 
+          <listitem>
+	    <para>
+  	      In anything other than a PC, it would almost always means
+	      that there is a driver attached to the IRQ (otherwise it
+	      would be masked), but it is the wrong driver.
+	    </para>
+          </listitem>
+          <listitem>
+	    <para>
+	      In a PC, there is the more obscure issue of 'default
+	      IR7's.  That is, when a device asserts an IRQ, but the IRQ
+	      is deasserted after the PIC latches the interrupt and
+	      before the CPU acknowledges it, the PIC just flat out lies
+	      about which IRQ it was.
+	    </para>
+	    
+	    <para>
+	      There is a scheme for recognizing 'default IR7's, but it
+	      turns out that it fails badly on some older systems, and
+	      in general it's better to fix drivers to not generate them
+	      in the first place.  In some cases it's difficult to
+	      completely prevent them when using edge-triggered
+	      interrupts though.
+	    </para>
+          </listitem>
+        </orderedlist>
+      </para>
+      <para>
+        You should only get this kernel message running a kernel with the
+        DEBUG option defined.
+      </para>
+    </sect3>
+
+    <sect3 id="why_msoft_float">
+      <title>Why are kernels compiled with <code>-msoft-float</code></title>
+
+      <para>
+        When a process makes a system call the kernel needs to save
+        the processor state, so that it can later switch back to the
+        process. Floating point registers tend to be large and
+        relatively plentiful, making saving and restoring them an
+        expensive operation. If the FPU is in the middle of an
+        operation the CPU will additionally be forced to sit and wait
+        for it to finish before it can then copy the registers.
+      </para>
+      
+      <para>
+        Avoiding floating point registers in the kernel gives a
+        significant performance win for system calls. Some processors,
+        such as sparc, can also use lazy FP context switching to
+        sometimes avoid having to  save and restore FP registers even
+        when switching between processes.
+      </para>
+      
+      <para>
+        On some architectures the compiler can use floating point
+        registers to speed up certain operations (such as block memory
+        copies), breaking the above, so '-msoft-float' is required.
+      </para>
+    </sect3>
+
+    <sect3 id="kernel-compile-slow">
+      <title>Kernel compiles on low memory machine seem very slow</title>
+
+      <para>
+        By default NetBSD installs a GENERIC kernel which includes
+        drivers for almost every supported item of hardware, network
+        protocol, and filesystem. While this allows one kernel to run
+        on virtually every machine for a given port, it does result in
+        it using more space than is really needed, particularly on a
+        small memory machine. This is compounded by kernel compiles
+        using the -O2 optimisation level which tells the compiler to
+        use extra memory and time to make the kernel as fast as
+        possible.
+      </para>
+      
+      <para>
+        One option when <ulink url="#how_to_build_a_kernel">building
+        your own kernel</ulink> is to use "<code><emphasis
+        role="bold">make&nbsp;COPTS=-O</emphasis></code>" which
+        instructs the compiler to perform only the most effective
+        optimisations. This will result in a fractionally slower
+        kernel, but it will take less time to compile.
+      </para>
+	
+      <para>
+        If you are intending to take several 'compile and reboot into
+        new kernel' passes while customising a kernel on a low memory
+        machine it may make sense to make the first few passes using
+        "<code>make&nbsp;COPTS=-O</code>", and then switch to
+        "<code>make</code>" for the final pass.
+      </para>
+      
+      <para>
+        Of course, generally the fastest way to compile a kernel on a
+        low memory machine is to use another machine, or temporarily
+        add some more memory!
+      </para>
+    </sect3>
+
+    <sect3 id="problems_compiling_a_current_kernel">
+      <title>Problems compiling a -current kernel</title>
+      
+      <para>
+        The first point to note is you should subscribe to the <ulink
+        url="../../MailingLists/#current-users">current-users</ulink>
+        mail list.  Tracking -current without reading current-users is
+        akin to driving in the dark without any lights. You have been
+        warned :).
+      </para>
+      
+      <para>
+        It is always worth downloading the latest <ulink
+        url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz">config.tar.gz</ulink>,
+        compiling, installing and rerunning on your config file -
+        config changes reasonably frequently between releases.
+      </para>
+      
+      <para>
+        Sometimes, binaries and/or libraries need to be updated before
+        you will be able to build -current on a release. In these
+        situations, it may be simpler to install from a binary
+        snapshot, and then build -current. Snapshots of -current for
+        i386 (for example) can be found in <ulink
+        url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/i386/snapshot/">/pub/NetBSD/arch/i386/snapshot/</ulink>.
+        The <ulink
+        url="http://cvsweb.NetBSD.org/bsdweb.cgi/src/UPDATING?rev=HEAD&amp;content-type=text/x-cvsweb-markup">src/UPDATING</ulink>
+        file contains information about these important changes which
+        you should be aware of when attempting to build -current, or a
+        -current kernel.
+      </para>
+    </sect3>
+	
+    <sect3 id="debugging_a_kernel_crash_dump">
+      <title>Debugging a kernel crash dump</title>
+      
+      <orderedlist>
+        <listitem>
+	  Ensure you have <ulink url="#how_to_build_a_kernel">built a
+          kernel</ulink> from the     same source with
+          <code>DEBUG</code>, and '<code>makeoptions
+          DEBUG="-g"</code>' enabled in the config file.
+	</listitem>
+        <listitem>
+	  "<code>gdb netbsd.gdb</code>" (in kernel compile directory).
+	</listitem>
+        <listitem>
+	  "<code>target kvm /var/crash/netbsd.0.core</code>" at the
+          gdb prompt. Use "<code>target kcore ...</code>" if your system
+	  has gdb5 instead of gdb6.
+	</listitem>
+      </orderedlist>
+
+      <para>
+        You can use the usual &man.gdb.1; commands, such as '<emphasis
+        role="bold"><code>bt</code></emphasis>' to get a backtrace.
+      </para>
+    </sect3>
+
+    <sect3 id="backtraces">
+      <title>Getting backtraces when debugging a kernel crash dump</title>
+
+      <para>
+        You can get backtraces of an arbitrary process from gdb when
+        debugging a kernel crash dump with two easy steps:
+      </para>
+      
+      <orderedlist>
+        <listitem>
+	  get the address of the lwp structure of the LWP
+	  : <code>ps -ax -O laddr -M
+          netbsd.x.core</code>
+	  <para>
+	  (LWP or lightweight process correspond to a process, or a
+	  thread of a process which runs in the kernel. For
+	  nonthreaded programs, there is exactly one LWP corresponding
+	  to the process, for threaded there can be more of them.)
+	  </para>
+        </listitem>
+        <listitem>
+	  tell gdb to use it "<code>proc 0x&lt;addr&gt;</code>" 
+        </listitem>
+      </orderedlist>
+    </sect3>
+
+    <sect3 id="ddb">
+      <title>What is DDB and what can I do in it?</title>
+      
+      <para>
+        DDB is the optional in-kernel debugger. It is usually entered
+        via one of three methods: 
+      </para>
+      
+      <itemizedlist>
+        <listitem>
+	  At any time via a port specific key sequence (see
+          &man.ddb.4; for a list). 
+        </listitem>
+	<listitem>
+	  It can be set to be invoked when the kernel panics.
+        </listitem>
+	<listitem>
+	  By specifying '-d' as a boot flag (<code>boot netbsd -d</code>). 
+        </listitem>
+      </itemizedlist>
+      
+      <para>
+        Some of the more useful commands are:
+      </para>
+      
+      <itemizedlist>
+        <listitem>
+	  <code>trace</code> - Produce a stack trace. Very useful when
+          <ulink url="../../Misc/send-pr.html#submitting">submitting a
+          PR</ulink> on a kernel panic.
+        </listitem>
+	<listitem>
+	  <code>reboot</code> - Reboot the system.
+        </listitem>
+	<listitem>
+	  <code>sync</code> - produce a crashdump and reboot
+        </listitem>
+      </itemizedlist>
+    </sect3>
+
+    <sect3 id="generating-a-crash-dump">
+      <title>Generating a kernel crash dump</title>
+      
+      <para>
+        Usually the kernel will automatically generate a crashdump on
+        panic, which is then picked up by &man.savecore.8; on
+        reboot. However you can force a crashdump in &man.ddb.4; by
+        using <code>sync</code> (or <code>reboot&nbsp;0x100</code>).
+        If the kernel panics or hangs while 
+        attempting to sync the buffer cache you can use
+        <code>reboot&nbsp;0x104</code> which will bypass the sync.
+      </para>
+    </sect3>
+	
+    <sect3 id="adding_a_kernel_to_a_boot_floppy">
+      <title>Adding a kernel to a boot floppy</title>
+
+      <para>
+        Some ports are already setup to build a boot floppy by
+        "<code>cd
+        /usr/src/distrib/<emphasis>&lt;ARCH&gt;</emphasis>/floppies ;
+        make </code>". (You may need to build the INSTALL kernel
+        manually before running this. If you have an existing
+        <filename>boot.fs</filename> image you can replace the kernel
+        with:
+      </para>
+
+      <orderedlist>
+        <listitem><emphasis role="bold"><code>vnconfig -c vnd0 boot.fs</code></emphasis></listitem>
+        <listitem><emphasis role="bold"><code>mount /dev/vnd0a /mnt</code></emphasis></listitem>
+        <listitem><emphasis role="bold"><code>gzip -c -9 &lt; netbsd &gt; /mnt/netbsd.gz</code></emphasis></listitem>
+        <listitem><emphasis role="bold"><code>umount /mnt</code></emphasis></listitem>
+        <listitem><emphasis role="bold"><code>vnconfig -u vnd0</code></emphasis></listitem>
+      </orderedlist>
+
+      <para>
+        This assumes you have "<code>pseudo-device vnd</code>" in your
+        kernel config file, and a ready to use kernel.
+      </para>
+    </sect3>
+
+    <sect3 id="scsi_device_numbers">
+      <title>I'm having trouble mounting the SCSI device for a new partition I've just created.  What's up with this device-numbering scheme?</title>
+
+      <para>
+        By default, SCSI devices under NetBSD are numbered starting
+        from 0 in the order of SCSI ID number.  In other words, you
+        lowest-numbered SCSI device will be <code>/dev/sd0</code>, the
+        next device will be <code>/dev/sd1</code>, etc.  Notice that
+        this is the assignment that they are given during the boot
+        process. 
+      </para>
+
+      <para>
+        If you compile your own kernels, you can set the SCSI devices
+        to point to any SCSI ID number you want with a kernel
+        configuration line like:
+      </para>
+	
+<screen>
+sd0             at scsibus0 target 4 lun 0
+sd*             at scsibus? target ? lun ?
+</screen>
+
+      <para>
+        The above lines will make device sd0 point to the disk at SCSI
+        ID#4 and the rest of the devices will be assigned as described
+        above. This is often referred to as "hardwiring" your SCSI
+        devices, and is recommended if you are using RAIDframe or
+        <code>ccd</code> so as to avoid the device IDs being changed
+        out from under the configuration if one device is powered off
+        or broken. 
+      </para>
+    </sect3>
+  </sect2>
+
+  <sect2 id="FAQ_hardware">
+    <title>Frequently Asked Hardware Questions</title>
+
+    <sect3 id="device-not-configured">
+      <title>What does <code>device not configured</code> mean?</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            If this message appears during the autoconfiguration
+            output of system boot, it means that the kernel discovered
+            a piece of hardware in your system that it doesn't have a
+            device driver for. This means that either the device
+            driver exists and has not been compiled into the kernel
+            you booted, or the device driver doesn't exist at all (in
+            which case, it's time to contact a friendly developer and
+            offer him testing hardware in exchange for writing a
+            device driver).
+          </para>
+
+          <para>
+            Since GENERIC kernels are used for basic installation, it
+            is important that they be stable and known to work; as
+            such, device drivers that are not yet stable are not
+            compiled into GENERIC kernels by default. Examination of a
+            GENERIC kernel configuration file for your system may
+            reveal experimental device drivers for your device which
+            are "commented out." If you compile a kernel of your own
+            (please don't call it GENERIC), you can try experimental
+            device drivers.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            If this message appears when you try to access a device
+            node in <code>/dev</code> (e.g. a SCSI disk), this means
+            that the driver can't find the specific device unit you
+            tried to access, e.g. accessing a SCSI disk that isn't
+            there, or the driver is not compiled in the kernel.
+          </para>
+
+          <para>
+            Often, this happens when the device nodes in
+            <code>/etc/fstab</code> don't match what the kernel
+            found during autoconfiguration at boot time, and the
+            "mount" command in <code>/etc/rc</code> tries to mount
+            all the filesystems. You should double check that the
+            devices you're trying to use were actually found by the
+            kernel at boot time, by examining
+            <code>/var/run/dmesg.boot</code> (a saved copy of the
+            boot time autoconfiguration output).
+          </para>
+
+	  <para>
+	    Another case where this can happen is when a certain
+	    kernel subsystem which is implemented as a pseudo-device
+	    is not compiled into the kernel or loaded as an LKM and a
+	    configuration program wants to configure it using a device
+	    node in <code>/dev</code>. For example when a firewall is
+	    not compiled into the kernel or loaded as an LKM and the
+	    &man.pfctl.8; or &man.ipf.8; utility attempts to load
+	    firewall rules. If such utility does not print a helpful
+	    message indicating what device it tried to use,
+	    &man.ktrace.1; can help you find what's going on inside a
+	    command, and to determine you what's being accessed that
+	    may cause the error message.
+	  </para>
+
+	  <para>
+	    And it can happen in many other cases when a nonexistent
+	    device or device without a driver is accessed, like when a
+	    nonexistent network interface name is passed to
+	    &man.ifconfig.8; (in this case, if you are sure that you
+	    have the right driver, maybe the interface must be
+	    explicitly created by a command like <code>ifconfig vlan0
+	    create</code> &mdash; this is true for most of the network
+	    pseudo-devices like &man.sl.4;, &man.vlan.4; or
+	    &man.stf.4;).
+	  </para>
+        </listitem>
+      </itemizedlist>
+    </sect3>
+
+    <sect3 id="atapi_devices">
+      <title>Debugging ATAPI or ATA (IDE) devices</title>
+      
+      <para>
+        If a kernel is compiled with <code>WDCDEBUG</code> defined,
+        then gdb can be used  to patch
+        <code>wdcdebug_atapi_mask</code> and
+        <code>wdcdebug_mask</code>. Setting the appropriate bits in
+        these variables will cause the kernel to output verbose
+        information about ATAPI and ATA operations. (Currently
+        NetBSD defaults to <code>WDCDEBUG</code> enabled.)
+      </para>
+      
+      <para>
+	For the maximum level of output, use:
+      </para>
+      
+<screen>
+	# <emphasis role="bold">gdb --write /netbsd</emphasis>
+	(gdb) <emphasis role="bold">set wdcdebug_atapi_mask=0xff</emphasis>
+	(gdb) <emphasis role="bold">set wdcdebug_mask=0xff</emphasis>
+	(gdb) <emphasis role="bold">quit</emphasis>
+</screen>
+
+      <para>
+        Note: This will produce an <emphasis>extremely</emphasis>
+        large quantity of output. To select individual options, look
+        for the list of bitflags directly above:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+	  <code>wdcdebug_atapi_mask</code> in <ulink
+        url="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/scsipi/atapi_wdc.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup">/usr/src/sys/dev/scsipi/atapi_wdc.c</ulink> 
+        </listitem>
+	<listitem>
+	  <code>wdcdebug_mask</code> in <ulink
+        url="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/ic/wdc.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup">/usr/src/sys/dev/ic/wdc.c</ulink> 
+        </listitem>
+      </itemizedlist>
+    </sect3>
+
+    <sect3 id="usb-debugging">
+      <title>Debugging USB devices</title>
+
+      <para>
+        If you have problems with USB devices, you can enable verbose
+        messages in the usb driver:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+	  Compile a kernel with <code>USB_DEBUG</code> and
+          <code>DDB</code> defined.
+	</listitem>
+	<listitem>
+	  Boot with <code><emphasis role="bold">-d</emphasis></code>
+          to enter &man.ddb.4;.
+	</listitem>
+	<listitem>
+	  In ddb set the variables usbdebug and uhcidebug to 5
+          ("write usbdebug 5" and "write uhcidebug 5")
+	</listitem>
+	<listitem>
+	  Plug something in and type <code>continue</code>. 
+	</listitem>
+      </itemizedlist>
+    </sect3>
+
+    <sect3 id="new_pnp_device">
+      <title>Recognising a new PnP device</title>
+      
+      <para>
+        This assumes the device is of a generic type which is already
+        supported, but the device ID is not recognised. Adding a
+        device that performs differently includes writing code.
+      </para>
+
+      <orderedlist>
+        <listitem>
+          <para>
+	    It should be reported in the boot messages as '<code>not
+            configured</code>'. Note the device ID (in this case
+            <code><emphasis role="bold">USR3031</emphasis></code>):
+          </para>
+	
+	  <screen>isapnp0: &lt;U.S. Robotics 56K FAX INT, <emphasis role="bold">USR3031</emphasis>, , &gt; port 0x3e8/8 irq 5 not configured</screen>
+        </listitem>
+
+	<listitem>
+	  <para>
+	    Add an appropriate entry to <filename>
+	    <ulink
+	    url="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/isapnp/isapnpdevs?rev=HEAD&amp;content-type=text/x-cvsweb-markup">/usr/src/sys/dev/isapnp/isapnpdevs</ulink></filename>:
+          </para>
+
+	  <screen>devlogic       com     USR3031         USR 56k Faxmodem</screen>
+	</listitem>
+
+	<listitem>
+	  Regenerate <code>isapnpdevs.{c,h}</code> using
+	  '<code>make -f Makefile.isapnpdevs</code>'.
+	</listitem>
+	
+	<listitem>
+	  <ulink url="#how_to_build_a_kernel">Rebuild the kernel</ulink>
+	</listitem>
+	
+	<listitem>
+	  Submit a PR with the changes, via &man.send-pr.1; or the
+          <ulink url="../../Misc/send-pr.html#submitting">online
+          form</ulink>. 
+	</listitem>	
+      </orderedlist>
+    </sect3>
+
+    <sect3 id="new_pcmcia_device">
+      <title>Recognising a new PCMCIA device</title>
+      
+      <para>
+        This assumes the device is of a generic type which is already
+        supported, but the device ID is not recognised. Adding a
+        device that performs differently includes writing code.
+      </para>
+	
+	<orderedlist>
+	  <listitem>
+	    Compile a kernel with &man.options.4;
+            <code>PCMCIAVERBOSE</code>. 
+	</listitem>	
+	<listitem>
+	  Check the boot messages - the card should be reported as
+          '<code>not configured</code>'. Note the Manufacturer and
+          product codes (in this case <code><emphasis
+          role="bold">0x143</emphasis></code> and <code><emphasis
+          role="bold">0x201</emphasis></code>):
+	
+<screen>pcmcia0: CIS version PCMCIA 2.0 or 2.1
+pcmcia0: CIS info: Grey Cell, GCS2000, Gold II, 1
+pcmcia0: Manufacturer code <emphasis role="bold">0x143</emphasis>, product <emphasis role="bold">0x201</emphasis>
+pcmcia0: function 0: network adapter, ccr addr 3f8 mask 1
+</screen>
+	</listitem>	
+
+	<listitem>
+	  Add <code>vendor</code> and <code>product</code> entries to
+          <code> <ulink
+          url="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/pcmcia/pcmciadevs?rev=HEAD&amp;content-type=text/x-cvsweb-markup">/usr/src/sys/dev/pcmcia/pcmciadevs</ulink> </code>
+	</listitem>
+	
+	<listitem>
+	  Regenerate <code>pcmciadevs.h</code> and
+          <code>pcmciadevs_data.h</code> using '<code>make -f
+          Makefile.pcmciadevs</code>'. 
+	</listitem>
+	
+	<listitem>
+	  Add an entry to the device table at the top of the
+          appropriate bus attach file in <code>/usr/src/sys/dev/pcmcia/</code>,
+          for example an ne2000 compatible card would use <ulink
+          url="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/pcmcia/if_ne_pcmcia.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup">/usr/src/sys/dev/pcmcia/if_ne_pcmcia.c</ulink> 
+	</listitem>
+
+	<listitem>
+	  <ulink url="#how_to_build_a_kernel">Rebuild the kernel</ulink>
+	</listitem>
+	
+	<listitem>
+	  Submit a PR with the changes, via &man.send-pr.1; or the
+          <ulink url="../../Misc/send-pr.html#submitting">online
+          form</ulink>. 
+	</listitem>
+      </orderedlist>
+    </sect3>
+
+    <sect3 id="plip_support">
+      <title>Is PLIP (Parallel Line IP) supported</title>
+
+      <para>
+        There are patches from Martin Husemann which add PLIP support
+        to NetBSD/i386, submitted as <ulink
+	url="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=1278">PR 1278</ulink>. 
+	The patches at the end of the PR should apply to the NetBSD
+        1.3.3 source tree.
+      </para>
+    </sect3>
+	
+    <sect3 id="ubc">
+      <title>What is UBC?</title>
+      
+      <para>
+        UBC stands for the Unified Buffer Cache project. It was
+        written by Chuck Silvers, and has been integrated into NetBSD
+        since 1.5L (Nov 2000).  When upgrading from a non-UBC setup,
+        you'll need to rerun config(8) again, but before you do, you'll
+        want to  remove any settings for "BUFCACHE", "NBUF" or
+        "BUFPAGES", and let the size of the buffer cache go back to
+        the default.  Under UBC, the traditional buffer cache is no
+        longer used for storing regular file data, only metadata, so
+        you want to allow the VM system to manage most of your
+        physical memory. The default buffer cache size will be fine
+        for most people, regardless of the amount of memory in the
+        machine.  The amount of memory in the boot messages about
+        "using X buffers containing Y memory" no longer indicates the
+        amount of memory available for caching file data, so don't
+        worry if those numbers don't change.
+      </para>
+
+      <para>
+        The important difference is that more memory will be available
+        for caching regular file data, so filesystem i/o will be
+        faster since there will be more times when the data you're
+        accessing is already in memory.  How much faster depends on
+        what you're doing, but you'll probably notice the difference.
+      </para>
+
+      <para>
+        See also:
+	<ulink
+        url="http://www.usenix.org/publications/library/proceedings/usenix2000/freenix/full_papers/silvers/silvers_html/">UBC:
+        An Efficient Unified I/O and Memory Caching Subsystem for
+        NetBSD</ulink> by Chuck Silvers. 
+      </para>
+    </sect3>
+  </sect2>
+
+  <sect2 id="further_reading">
+    <title>Further reading</title>
+
+    <sect3 id="NetBSD_specific_documentation">
+      <title>NetBSD specific documentation</title>
+    
+      <itemizedlist>
+      <listitem><ulink url="programming.html">Kernel programming FAQ</ulink></listitem>
+      <listitem><ulink url="pseudo/">Writing a pseudo-device driver</ulink></listitem>
+      <listitem><ulink url="profiling/">Kernel Profiling HOWTO</ulink></listitem>
+      <listitem><ulink url="elf-notes.html">Vendor-specific ELF Note Elements</ulink></listitem>
+      <listitem><ulink url="uvm.html">UVM, the new Virtual Memory system</ulink></listitem>
+      <listitem><ulink url="vfork.html">Why implement traditional vfork()</ulink></listitem>
+      <listitem><ulink url="kgdb.html">Debugging the NetBSD kernel with GDB HOWTO</ulink></listitem>
+      <listitem><ulink url="non-exec.html">Information about non-executable mappings</ulink></listitem>
+      <listitem><ulink url="../internals/en/">NetBSD Internals</ulink></listitem>
+      </itemizedlist>
+    </sect3>
+
+    <sect3 id="other_online_documentation">
+      <title>Other online documentation</title>
+    
+      <itemizedlist>
+        <listitem><ulink url="http://www.teamten.com/lawrence/291.paper/291.paper.html">
+          Porting BSD UNIX to a New Platform</ulink></listitem>
+        <listitem><ulink url="http://www.netapp.com/tech_library/nfsbook.html">
+          Chapter 9 (NFS) from Design and Implementation of 4.4BSD</ulink></listitem>
+        <listitem><ulink url="config-torek.ps">Device Configuration in 4.4BSD</ulink></listitem>
+        <listitem><ulink url="http://www.mckusick.com/softdep/index.html">Information about Soft Updates (Soft Dependencies, softdep) and Snapshots</ulink></listitem>
+        <listitem><ulink url="http://www.ccrc.wustl.edu/pub/chuck/">Integrating ATM Networking into BSD</ulink></listitem>
+        <listitem><ulink url="http://www.pdl.cs.cmu.edu/RAID/index.html">Lots of docs around RAID and RAIDframe</ulink></listitem>
+        <listitem><ulink url="http://dinsen.net/netbsd/kernel.html">Anders Dinsen's
+          kernel documentation overview</ulink></listitem>
+        <listitem>
+	  <para>
+	  Jochen Kunz' "NetBSD Device Driver Writing Guide": 
+	  </para>
+	  <para>
+          [<ulink url="http://www.unixag-kl.fh-kl.de/~jkunz/projekte/NetBSD-driver_writing-1.0.1e.pdf.gz">gzipped PDF</ulink> | <ulink url="http://www.unixag-kl.fh-kl.de/~jkunz/projekte/NetBSD-driver_writing-1.0.1e.ps.gz">gzipped PS</ulink>] (<small>English</small>)
+	  </para>
+	  <para>
+          [<ulink url="http://www.unixag-kl.fh-kl.de/~jkunz/projekte/NetBSD-treiber_schreiben-1.0.1.pdf.gz">gzipped PDF</ulink> | <ulink url="http://www.unixag-kl.fh-kl.de/~jkunz/projekte/NetBSD-treiber_schreiben-1.0.1.ps.gz">gzipped PS</ulink>] (<small>German</small>)
+	  </para>
+           </listitem>
+        <listitem><ulink url="http://www.home.unix-ag.org/bmeurer/NetBSD/howto-lkm.html">Introduction to NetBSD loadable kernel modules</ulink></listitem>
+	<listitem><ulink url="http://www.mit.edu/people/nathanw/usenix/">Explanation of the thread implementation in NetBSD 2.0 and later (scheduler activations)</ulink></listitem>
+      </itemizedlist>
+    </sect3>
+  </sect2>
+  
+</sect1>
+
+<parentsec url=".." text="NetBSD Documentation"/>
+</webpage>

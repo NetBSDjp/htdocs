@@ -1,0 +1,672 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="docs-mirror">
+  <config param="desc" value="NetBSD Mirror FAQ"/>
+  <config param="cvstag" 
+    value="$NetBSD: mirror.xml,v 1.1 2007/06/09 11:32:56 dsieger Exp $"/>
+  <config param="rcsdate" value="$Date: 2007/06/09 11:32:56 $"/>
+
+  <head>
+
+    <!-- Copyright (c) 1994-2006
+    The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+    <!--
+    ==  created by Jun-ichiro itojun Hagino
+    -->
+    
+    <title>NetBSD Mirror FAQ</title>
+  </head>
+
+  <sect1 role="toc">
+
+    <sect2 id="ftp-mirror">
+      <title>FTP and ISO Mirror FAQ</title>
+
+      <sect3 id="ftp-overview">
+	<title>Overview for setting up a NetBSD FTP/ISO Mirror</title>
+
+	<para>The basic steps for setting up a NetBSD FTP or ISO Mirror
+	  are:</para>
+
+	<orderedlist>
+	  <listitem><simpara>Prepare disk space.  See "<ulink
+	      url="#ftp-diskspace">How much disk space is needed
+	      for an FTP/ISO mirror</ulink>" 
+	    entry below for information on amount of space
+	    required.</simpara></listitem>
+	  <listitem><simpara>Retrieve a copy of the NetBSD FTP site
+	    contents</simpara></listitem>
+	  <listitem><simpara>Set things up to synchronize the contents of your
+	    mirror with <code>ftp.NetBSD.org</code>.</simpara></listitem>
+
+	  <listitem><simpara>Send in the information about your mirror to
+	    <email>mirrors@NetBSD.org</email>. See "<ulink 
+	      url="#ftp-contactinfo">Contact information format for
+	      FTP/ISO Mirrors</ulink>" 
+	    for details on that.</simpara></listitem>
+	</orderedlist>
+      </sect3>
+
+      <sect3 id="ftp-diskspace">
+	<title>How much disk space is needed for an FTP/ISO mirror?</title>
+
+	<para>The amount of disk space needed fluctuates due to things
+	  such as pre-built packages being added, binary snapshots
+	  being deprecated, and new formal releases of NetBSD. At
+	  this time (2005-11) a complete mirror of NetBSD needs
+	  about 220 GB and a new release of NetBSD adds between 10
+	  and 25 GB (including binary packages and ISO images).</para>
+
+	<para>Space requirements for ISO files are dependent on
+	  how many binary releases are supported at the time. The
+	  size may be severely decreased when old branches becomes
+	  obsolete and would grew when new versions of NetBSD will
+	  be released. Each release takes from 7 up to 9 GB, and
+	  currently (2005-11) the complete iso area needs around
+	  36 GB space.</para>
+      </sect3>
+
+      <sect3 id="ftp-bandwidth">
+	<title>How much bandwidth does offering an FTP/ISO mirror require?</title>
+
+	<para>At the moment, we do not have any detailed numbers on bandwidth
+          usage from our mirrors.  The actual usage of any mirror depends too
+          heavily on a variety of factors such as already available bandwidth,
+          geographical location relative to other mirrors and amount of data
+          mirrored for us to provide you with accurate numbers.</para>
+
+        <para>If you have been running a full mirror for a while and have
+          collected bandwidth statistics, please <ulink
+          url="http://www.NetBSD.org/cgi-bin/feedback.cgi">let us
+          know</ulink>.</para>
+      </sect3>
+
+
+      <sect3 id="ftp-retrieve-sync">
+	<title>Retrieving/Syncing a copy of the NetBSD FTP site
+	  and ISO images area</title>
+
+	<para>There are several ways that you can retrieve and sync
+	  the files. Depending on your personal preference, your
+	  network connection, the packages installed on your systems
+	  etc. you may choose one over the other. Either way, it's
+	  probably a good idea to first run the relevant command by
+	  hand and then, when you have confirmed that everything is
+	  working as it should, create a script to be run by
+	  &man.cron.8;.</para>
+
+	<para>All ISO images of the NetBSD distributions are stored on
+	  the FTP site inside <filename>iso/</filename> subdirectory.
+	  Thus, mirroring of ISO images is very similar to mirroring
+	  the entire FTP site.</para>
+
+	<para>Below you can find some examples of how to keep your
+	  local copy in sync. Simply replace "&lt;FTPROOT&gt;" with
+	  the actual root of your ftp server.</para>
+
+	<itemizedlist>
+	  <listitem><para>Using <filename role="pkg">net/rsync</filename>:
+	    <screen>$ rsync -v -Wartz --delete rsync://rsync.NetBSD.org/NetBSD &lt;FTPROOT&gt;/pub/NetBSD/</screen>
+	    For ISO files only:
+	    <screen>$ rsync -v -Wartz --delete rsync://rsync.NetBSD.org/NetBSD/iso &lt;FTPROOT&gt;/pub/NetBSD/iso</screen></para></listitem>
+	  <listitem><para>Using <filename role="pkg">net/wget</filename>:
+	    <screen>$ cd &lt;FTPROOT&gt;
+$ wget -v -xnH -m ftp://ftp.NetBSD.org/pub/NetBSD/</screen>
+	    For ISO files only:
+	    <screen>$ cd &lt;FTPROOT&gt;
+$ wget -v -xnH -m ftp://ftp.NetBSD.org/pub/NetBSD/iso/</screen></para></listitem>
+	  <listitem><para>Using <filename role="pkg">net/mirror</filename>:
+	    <screen>$ cat &gt; ftp.NetBSD.org &lt;&lt;EOF
+package=netbsd
+comment=NetBSD
+site=ftp.NetBSD.org
+remote_dir=/pub/NetBSD
+local_dir=&lt;FTPROOT&gt;/pub/NetBSD
+do_deletes=true
+algorithm=1
+EOF
+$ mirror ftp.NetBSD.org</screen>
+	    For ISO files only:
+	    <screen>$ cat &gt; iso.NetBSD.org &lt;&lt;EOF
+package=netbsd
+comment=NetBSD
+site=iso.NetBSD.org
+remote_dir=/pub/NetBSD/iso
+local_dir=&lt;FTPROOT&gt;/pub/NetBSD/iso
+do_deletes=true
+algorithm=1
+EOF
+$ mirror iso.NetBSD.org</screen></para></listitem>
+	</itemizedlist>
+      </sect3>
+
+      <sect3 id="ftp-notes">
+	<title>Notes about a NetBSD FTP/ISO mirror</title>
+
+	<para>As a NetBSD FTP/ISO mirror, it's important that you
+	  synchronize your copy of the NetBSD FTP tree and ISO
+	  images area regularly. Otherwise, old and/or obsolete
+	  files may confuse users.</para>
+
+	<para>Also, it might happen that due to an e.g. security
+	  issue, file removal (or another administrative task) may be
+	  requested from the NetBSD Project.</para>
+      </sect3>
+
+      <sect3 id="ftp-outage">
+	<title>Where should an outage be announced</title>
+	
+	<para>If your FTP/ISO mirror experiences any significant system
+	  outage, you should notify <email>mirrors@NetBSD.org</email>
+	  as soon as possible so that we can temporarily redirect your
+	  CNAME (if there is one) to a nearby alternative. Also, you
+	  may wish to send a note about the outage to the <ulink
+	    url="../MailingLists/#netbsd-users">netbsd-users mailing list</ulink>.</para>
+
+	<para>If the CNAME for your mirror has been redirected, be
+	  sure to let us know when the situation is rectified, so we
+	  can revert the change.</para>
+      </sect3>
+      
+      <sect3 id="ftp-contactinfo">
+	<title>Contact information format for FTP/ISO mirrors</title>
+
+	<para>Contact information needs to be submitted to
+	  <email>mirrors@NetBSD.org</email>.</para>
+
+	<para>This information gets added to an internal mirrors
+	  database, from which the mirror-related documentation gets
+	  generated. The "<code>contact*</code>" fields are never made
+	  public. Contact information for NetBSD FTP/ISO mirrors should be
+	  sent in the following format:</para>
+
+	<screen>mirror          *machine name*
+country         *location (country) of host*
+location        *more specific location (e.g, ``University of Foo'')*
+ftp		*url to NetBSD ftp mirror area*
+ftp-host	*fqdn of the host providing ftp mirror service*
+ftp-releng	*url to NetBSD release engineering files, aka NetBSD-daily*
+iso		*url to NetBSD iso images area*
+iso-host	*fqdn of the host providing iso images mirror service*
+organisation    *organisation name*
+contactperson   *contact person's name*
+contactemail    *contact person's electronic mail address*
+contactkeyid	*contact person's pgp key id*
+contactphone    *contact person's telephone number*
+contactaddress  *contact person's postal address*</screen>
+
+	<para>An example submission might look like this.</para>
+	<screen>mirror          netbsd.foo.com
+country         Japan
+location        Department of Computer Science, Foo University
+ftp             ftp://ftp.foo-univ.ac.jp/pub/NetBSD/
+ftp-host        ftp.foo-univ.ac.jp
+iso		ftp://iso.foo-univ.ac.jp/pub/NetBSD/iso/
+iso-host	iso.foo-univ.ac.jp
+organisation    Foo University
+contactperson   Foo Bar
+contactemail    Bar@foo-univ.ac.jp
+contactkeyid	GA23FG12
+contactphone    +81 3 xxxx yyyy
+contactaddress  9876 Foo City, Tokyo 1234567 Japan</screen>
+
+	<para>Please use <literal>ftp*</literal> and
+	  <literal>iso*</literal> fileds in case only if you
+	  providing appropriate mirror services.  For example, omit
+	  <literal>ftp-releng</literal> field if there are no releng
+	  files on your server, or don't use any of <literal>ftp*</literal>
+	  fields if you running ISO mirror only.</para>
+
+	<para>If the contact information for your mirror ever needs to
+	  be changed, please feel free to let us know at
+	  <email>mirrors@NetBSD.org</email>.</para>
+      </sect3>
+
+      <sect3 id="ftp-cname">
+	<title>How to get (ftp|iso).country-code.NetBSD.org</title>
+
+	<para>We have temporarily stopped assigning names in the
+	  .NetBSD.org domain to mirrors as we are re-evaluating our
+	  mirror policies.</para>
+      </sect3>
+
+      <sect3 id="ftp-teardown">
+	<title>If you can no longer provide a FTP/ISO mirror</title>
+
+	<para>Please let us know at <email>mirrors@NetBSD.org</email>
+	  so that we can remove your site from our list and redirect
+	  the DNS name to an alternative site.</para>
+      </sect3>
+    </sect2>
+
+    <sect2 id="bitorrent">
+      <title>BitTorrent Mirror FAQ</title>
+
+      <sect3 id="bittorrent-what">
+	<title>Bit-what?</title>
+
+	<para><ulink 
+	    url="http://bitconjurer.org/BitTorrent/">BitTorrent</ulink>
+	  is a tool for distributing files. It's extremely easy to
+	  use - downloads are started by clicking on hyperlinks.
+	  Whenever more than one person is downloading at once
+	  they send pieces of the file(s) to each other, thus
+	  relieving the central server's bandwidth burden.  Even with
+	  many simultaneous downloads, the upload burden on the
+	  central server remains quite small, since each new
+	  downloader introduces new upload capacity.</para>
+      </sect3>
+
+      <sect3 id="bittorrent-overview">
+	<title>Overview for setting up a NetBSD Bittorrent Mirror</title>
+
+	<para>The basic steps for setting up a NetBSD BitTorrent
+	  Mirror are:</para>
+
+	<orderedlist>
+	  <listitem><simpara>Install <filename
+	      role="pkg">net/bittorrent</filename></simpara></listitem>
+	  <listitem><simpara>Fetch the <filename>.torrent</filename> files from
+	    our FTP site. The files are in the
+	    <filename>/pub/NetBSD/iso/&lt;release&gt;</filename>
+	    subdirectory, so if you already are mirroring this
+	    directory, you're all set. For more information see <ulink
+	      url="../mirrors/torrents/">this page</ulink>.</simpara></listitem>
+	  <listitem><para>Start BitTorrent: 
+	    <screen>cd /ftp/pub/NetBSD/iso/&lt;release&gt;; (btlaunchmany.py .) &gt;/dev/null 2&gt;/dev/null &amp;</screen>
+	    If you didn't download the ISO images already, they will be
+	    downloaded now. You can use the 
+	    <code>--max_upload_rate arg</code>
+	    and <code>--max_download_rate arg</code>
+	    options to limit the transfer rates.</para></listitem>
+	</orderedlist>
+      </sect3>
+
+      <sect3 id="bittorrent-contactinfo">
+	<title>Contact information format for BitTorrent mirrors</title>
+
+	<para>Contact information needs to be submitted to
+	  <email>mirrors@NetBSD.org</email>.
+	  This information gets added to an internal mirrors database,
+	  from which the mirror-related documentation gets generated.
+	  The "<code>contact*</code>" fields are never made public.
+	  Contact information for NetBSD BitTorrent mirrors should be
+	  sent in the following format:</para>
+
+	<screen>mirror          *machine name*
+country         *location (country) of host*
+location        *more specific location (e.g, ``University of Foo'')*
+bittorrent	*BitTorrent URL / URL with additional Information*
+ipv6		*yes or no, if your server supports IPv6*
+organisation    *organisation name*
+contactperson   *contact person's name*
+contactemail    *contact person's electronic mail address*
+contactkeyid	*contact person's pgp key id*
+contactphone    *contact person's telephone number*
+contactaddress  *contact person's postal address*</screen>
+
+	<para>An example submission might look like this.</para>
+
+	<screen>mirror           ftp.NetBSD.org
+country         USA
+location        Silicon Valley, California
+bittorrent	http://www.NetBSD.org/mirrors/torrents/
+ipv6            yes
+organisation    The NetBSD Foundation, Inc.
+contactperson   Admins
+contactemail    &lt;email-here&gt;@NetBSD.org
+contactkeyid	AF226A4C
+contactphone    555-123-1234
+contactaddress 	Somwhere in Silicon Valley, California</screen>
+      </sect3>
+    </sect2>
+
+    <sect2 id="www">
+      <title>WWW Mirror FAQ</title>
+
+      <sect3 id="www-overview">
+	<title>Overview for setting up a NetBSD WWW Mirror</title>
+
+	<para>The following is an overview of the recommended
+	  procedure for setting up a NetBSD WWW mirror:</para>
+
+	<orderedlist>
+	  <listitem><simpara>For setting up a mirror with this procedure,
+	    you'll need cvs, ssh, and wget. Both cvs and ssh ship with
+	    NetBSD versions after 1.5, and wget is available from the
+	    <ulink url="software/packages.html">NetBSD packages collection</ulink> 
+	    (see <filename role="pkg">net/wget</filename>).Of
+	    course you'll also need a web server, such as apache.</simpara></listitem>
+	  <listitem><simpara>Retrieve a copy of the NetBSD WWW site.  See "<ulink
+	      url="#www-retrieve">Retrieving a copy of the NetBSD WWW site</ulink>"
+	    for instructions on how to do so with anoncvs.</simpara></listitem>
+	  <listitem><simpara>Set things up to synchronize the contents of your
+	    mirror with <code>www.NetBSD.org</code>. 
+	    See "<ulink url="#www-sync">Syncing the NetBSD WWW site contents</ulink>"
+	    for an example of how to do so using a cron job.</simpara></listitem>
+	  <listitem><simpara>Send in the information about your mirror to
+	    <email>mirrors@NetBSD.org</email>. See 
+	    "<ulink url="#www-contactinfo">Contact information format for WWW Mirrors</ulink>"
+	    for details on that.</simpara></listitem>
+	</orderedlist>
+      </sect3>
+
+      <sect3 id="www-diskspace">
+	<title>How much disk space is needed for a WWW mirror?</title>
+
+	<para>The amount of diskspace needed for a complete copy of
+	  the htdocs repository is currently (2005-11) around 96 MB.
+	  The total amount should not vary too much, but will
+	  obviously grow with time.</para>
+      </sect3>
+
+      <sect3 id="www-retrieve">
+	<title>Retrieving a copy of the NetBSD WWW site</title>
+	
+	<para>To retrieve a copy of <code>www.NetBSD.org</code> via
+	  anoncvs, you should do:
+	  <screen># su - nbwww
+# cd /path/to/htdocs
+# env CVS_RSH=ssh CVSROOT=anoncvs@anoncvs.NetBSD.org:/cvsroot \
+  cvs checkout -P htdocs</screen>
+
+	  <emphasis role="bold">Note:</emphasis>
+	  "<filename>/path/to/htdocs</filename>"
+	  should be where you want the mirror of
+	  <code>www.NetBSD.org</code> to reside.  The directory
+	  should be owned by an e.g. "nbwww" user.</para>
+      </sect3>
+      
+      <sect3 id="www-sync">
+	<title>Syncing the NetBSD WWW site contents</title>
+	
+	<para>The best way to do this is to set up a cron job for
+	  your e.g. nbwww user to update the web site at a regular
+	  interval using anoncvs and wget (more on the wget usage
+	  below):
+	  <screen id="www-mirror-commands"># crontab -u nbwww -e
+SHELL=/bin/sh
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/pkg/bin
+MAILTO=whoever@gets.the.mirror.mail
+CVS_RSH=ssh
+CVSROOT=anoncvs@anoncvs.NetBSD.org:/cvsroot
+0 1 * * * cd /path/to/htdocs &amp;&amp; cvs update -dP &amp;&amp; wget -B http://www.NetBSD.org/ -nv -xnH -N -Fi mirrors/fetch.html &amp;&amp; wget -nv -xnH -N -r -np http://www.NetBSD.org/Gnats/</screen>
+	  <emphasis role="bold">Note:</emphasis> In the suggested
+	  contents, you'll want to change "MAILTO" to reflect who
+	  should get the mirror-related mail. 
+	  Also, "<filename>/path/to/htdocs</filename>" should be
+	  changed to where your <code>www.NetBSD.org</code> mirror
+	  resides.</para>
+      </sect3>
+
+      <sect3 id="www-fetch">
+	<title>What is the purpose of <filename>htdocs/mirrors/fetch.html</filename></title>
+
+	<para>The <filename>fetch.html</filename> file links to the
+	  handful of documents on <code>www.NetBSD.org</code> that
+	  are generated <emphasis>by</emphasis>
+	  <code>www.NetBSD.org</code>.  These files get generated
+	  daily from content in the <code>doc</code> module of the
+	  NetBSD CVS repository.</para>
+	
+	<para>In the example cron tab above, you'll see 
+	  "<code>wget -nv -xnH -NFi mirrors/fetch.html</code>".
+	  This means that daily, through wget, these
+	  <code>www.NetBSD.org</code> created files 
+	  will be updated in your copy of the web site
+	  contents.</para>
+      </sect3>
+      
+      <sect3 id="www-http-1.0">
+	<title>Ensuring HTTP/1.0 clients get the right page</title>
+	
+	<para>It is much preferred that NetBSD WWW mirror sites run
+	  a separate virtual web server for a
+	  <code>www.NetBSD.org</code> mirror on a separate IP
+	  address.  This is so that clients using HTTP/1.0 still
+	  get to the correct web site.</para>
+	
+	<para>If that's not possible in your set up, then the other
+	  solution for HTTP/1.0 clients would be putting the NetBSD
+	  mirror as the primary name-based virtual host.</para>
+      </sect3>
+      
+      <sect3 id="www-contactinfo">
+	<title>Contact information format for WWW mirrors</title>
+	
+	<para>Contact information needs to be submitted to
+	  <email>mirrors@NetBSD.org</email>.
+	  This information gets added to an internal mirrors
+	  database, from which the mirror-related documentation gets
+	  generated.  The "<code>contact*</code>" fields are never
+	  made public.  Contact information for NetBSD WWW mirrors
+	  should be sent in the following format:</para>
+	<screen>mirror          *machine name*
+country         *location (country) of host*
+location        *more specific location (e.g, ``University of Foo'')*
+www             *WWW URL*
+www-host        *external WWW name*
+organisation    *organisation name*
+contactperson   *contact person's name*
+contactemail    *contact person's electronic mail address*
+contactkeyid	*contact person's pgp key id*
+contactphone    *contact person's telephone number*
+contactaddress  *contact person's postal address*</screen>
+
+	<para>An example submission might look like this.</para>
+
+	<screen>mirror          netbsd.foo-univ.ac.jp
+country         Japan
+location        Department of Computer Science, Foo University
+www             http://netbsd.foo-univ.ac.jp/
+www-host        netbsd.foo-univ.ac.jp
+organisation    Foo University
+contactperson   Foo Bar
+contactemail    Bar@foo-univ.ac.jp
+contactkeyid	GA23FG12
+contactphone    +81 3 xxxx yyyy
+contactaddress  9876 Foo City, Tokyo 1234567 Japan</screen>
+
+	<para>If the contact information for your mirror ever needs
+	  to be changed, please feel free to let us know at
+	  <email>mirrors@NetBSD.org</email>.</para>  
+      </sect3>
+
+      <sect3 id="www-cname">
+	<title>How to get www.country-code.NetBSD.org</title>
+
+	<para>We have temporarily stopped assigning names in the
+	  .NetBSD.org domain to mirrors as we are re-evaluating our
+	  mirror policies.</para>
+      </sect3>
+      
+      <sect3 id="www-teardown">
+	<title>If you can no longer provide a WWW mirror</title>
+	
+	  <para>Please let us know at
+	  <email>mirrors@NetBSD.org</email> so that we can remove your
+	  site from our list and redirect the DNS name to an
+	  alternative site.</para>
+      </sect3>
+    </sect2>
+
+    <sect2 id="cvsweb">
+      <title>CVSweb Mirror FAQ</title>
+
+      <sect3 id="cvsweb-overview">
+	<title>Overview for setting up a NetBSD CVSweb Mirror</title>
+
+	<para>The following is an overview of the recommended
+	  procedure for setting up a NetBSD CVSweb mirror:</para>
+
+	<orderedlist>
+	  <listitem><simpara>For setting up a mirror with this procedure,
+	    you'll need cvs, cvsup, and the cvsweb CGI script.  NetBSD
+	    1.6 and above ship with CVS, both cvsup and the cvsweb CGI
+	    script are available from the <ulink 
+	      url="software/packages.html">NetBSD packages collection</ulink>
+	    (see <filename role="pkg">devel/cvsup</filename> and <filename
+	      role="pkg">www/cvsweb</filename>).  Of course you'll also
+	    need a web server, such as <filename 
+	      role="pkg">www/apache</filename>.</simpara></listitem>
+	  <listitem><simpara>Retrieve a copy of the NetBSD CVS tree.  See
+	    "<ulink url="#cvsweb-retrieve">Retrieving a copy of the NetBSD CVS tree</ulink>"
+	    for instructions on how to do so with cvsup.</simpara></listitem>
+	  <listitem><simpara>Set things up to synchronize the contents of your
+	    mirror with the cvsup server. See "<ulink
+	      url="#cvsweb-sync">Syncing the NetBSD CVS tree contents</ulink>"
+	    for an example of how to do so using a cron job.</simpara></listitem>
+	  <listitem><simpara>Send in the information about your mirror to
+	    <email>mirrors@NetBSD.org</email>. See  "<ulink 
+	      url="#cvsweb-contactinfo">Contact information format for CVSweb Mirrors</ulink>"
+	    for details on that.</simpara></listitem>
+	  </orderedlist>
+      </sect3>
+
+      <sect3 id="cvsweb-diskspace">
+	<title>How much disk space is needed for a CVSweb mirror?</title>
+
+	<para>The amount of disk space needed is rather large due to
+	  the fact that you are providing an interface to the
+	  <emphasis>entire CVS repository</emphasis>. Currently
+	  (2006-05), the total disk space required for all sources in
+	  CVS is around 4.3 GB.</para>
+      </sect3>
+
+      <sect3 id="cvsweb-retrieve">
+	<title>Retrieving a copy of the NetBSD CVS tree</title>
+
+	<para>To retrieve a copy of the CVS tree via cvsup, you
+	  should do:
+	  <screen># su - cvsweb
+# mkdir -p /home/cvsweb/netbsd
+# cd /home/cvsweb</screen>
+
+	  <emphasis role="bold">Note:</emphasis> 
+	  "<filename>/home/cvsweb/netbsd</filename>"
+	  should be where you want the mirror of the tree to reside.
+	  The directory should be owned by an e.g. "cvsweb"
+	  user. Create an "supfile" using your editor (For examples,
+	  see <ulink url="netbsd-supfile">netbsd-supfile</ulink>).
+	  Please take a look at the list of available public cvsup
+	  servers, you'll find the list <ulink
+	    url="../mirrors/index.html#cvsup">here</ulink>.
+	  <screen># cvsup -g -L 2 netbsd-supfile</screen>
+	</para>
+      </sect3>
+
+      <sect3 id="cvsweb-sync">
+	<title>Syncing the NetBSD CVS tree contents</title>
+
+	<para>The best way to do this is to set up a cron job for your
+	  e.g. cvsweb user to update the tree at a regular interval
+	  using cvsup:
+	  <screen># crontab -u cvsweb -e
+SHELL=/bin/sh
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/pkg/bin
+MAILTO=whoever@gets.the.mirror.mail
+0 1 * * * cvsup -g /home/cvsweb/netbsd-supfile</screen>
+
+	  <emphasis role="bold">Note:</emphasis> In the suggested
+	  contents, you'll want to change "MAILTO" to reflect who
+	  should get the mirror-related mail.</para>
+      </sect3>
+
+      <sect3 id="cvsweb-cgi">
+	<title>How to setup the cvsweb CGI script</title>
+
+	<para>Take a look at the <filename>cvsweb.conf</filename> and
+	  be sure to edit the following options:</para>
+	  <screen>
+@CVSrepositories = (
+        'netbsd'  => ['NetBSD',           '/home/cvsweb/netbsd'],
+);
+
+$mancgi = "http://netbsd.gw.com/cgi-bin/man-cgi?%s+%s+NetBSD-current";
+</screen>
+	  <para>Place cvsweb.cgi in your web servers' cgi-bin
+	  directory and be sure to edit it to point to your
+	  <filename>cvsweb.conf</filename>.</para>
+      </sect3>
+
+      <sect3 id="cvsweb-http-1.0">
+	<title>Ensuring HTTP/1.0 clients get the right page</title>
+
+	<para>It is much preferred that NetBSD CVSweb mirror sites run
+	  a separate virtual web server for a CVSweb mirror on a
+	  separate IP address.  This is so that clients using HTTP/1.0
+	  still get to the correct web site.</para>
+
+	<para>If that's not possible in your set up, then the other
+	  solution for HTTP/1.0 clients would be putting the NetBSD
+	  mirror as the primary name-based virtual host.</para>
+      </sect3>
+
+      <sect3 id="cvsweb-contactinfo">
+	<title>Contact information format for CVSweb mirrors</title>
+
+	<para>Contact information needs to be submitted to
+	  <email>mirrors@NetBSD.org</email>.
+
+	  This information gets added to an internal mirrors database, from
+	  which the mirror-related documentation gets generated. The
+	  "<code>contact*</code>" fields are never made public.
+	  Contact information for NetBSD CVSweb mirrors should be sent
+	  in the following format:</para>
+
+	<screen>mirror          *machine name*
+country         *location (country) of host*
+location        *more specific location (e.g, ``University of Foo'')*
+cvsweb          *CVSweb URL*
+cvsweb-host     *external CVSweb name*
+organisation    *organisation name*
+contactperson   *contact person's name*
+contactemail    *contact person's electronic mail address*
+contactkeyid	*contact person's pgp key id*
+contactphone    *contact person's telephone number*
+contactaddress  *contact person's postal address*</screen>
+
+	<para>An example submission might look like this.</para>
+
+	<screen>mirror          netbsd.foo-univ.ac.jp
+country         Japan
+location        Department of Computer Science, Foo University
+cvsweb          http://netbsd.foo-univ.ac.jp/cgi-bin/cvsweb.cgi/
+cvsweb-host     cvsweb.netbsd.foo-univ.ac.jp
+organisation    Foo University
+contactperson   Foo Bar
+contactemail    Bar@foo-univ.ac.jp
+contactkeyid	GA23FG12
+contactphone    +81 3 xxxx yyyy
+contactaddress  9876 Foo City, Tokyo 1234567 Japan</screen>
+
+	<para>If the contact information for your mirror ever needs to
+	  be changed, please feel free to let us know at
+	  <email>mirrors@NetBSD.org</email>.</para>
+      </sect3>
+
+      <sect3 id="cvsweb-cname">
+	<title>How to get cvsweb.country-code.NetBSD.org</title>
+
+	<para>We have temporarily stopped assigning names in the
+	  .NetBSD.org domain to mirrors as we are re-evaluating our
+	  mirror policies.</para>
+      </sect3>
+
+      <sect3 id="cvsweb-teardown">
+	<title>If you can no longer provide a CVSweb mirror</title>
+
+	<para>Please let us know at <email>mirrors@NetBSD.org</email>
+	  so that we can remove your site from our list and redirect the
+	  DNS name to an alternative site.</para>
+      </sect3>
+    </sect2>
+  </sect1>
+  
+  <parentsec url="." text="NetBSD Documentation"/>
+
+</webpage>
