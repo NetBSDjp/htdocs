@@ -1,4 +1,11 @@
 # $NetBSD: Makefile,v 1.1 2007/06/09 13:32:33 dsieger Exp $
+# <!-- Based on english version: -->
+# <!-- NetBSD: Makefile,v 1.1 2007/06/09 13:32:33 dsieger Exp   -->
+
+DOCLANG=        ja
+XML_ENCODING=   EUC-JP
+SP_ENCODING=    EUC-JP
+SX_ENCODING=    EUC-JP
 
 # Do not use Tidy
 NO_TIDY= YES
@@ -22,14 +29,14 @@ SRCS+=	chapters.ent
 XSL_DBX_WITH_TOC_SECTION_DEPTH?= 2
 
 # Reuse stuff from The NetBSD Guide.
-CATALOGS+=              ../../../guide/en/share/catalog
-DSSSL?=                 ../../../guide/en/share/default.dsl
-XSLT_LOCAL_SINGLE?=     ../../../guide/en/share/default-html.xsl
-XSLT_LOCAL_SPLIT?=      ../../../guide/en/share/default-html-chunk.xsl
+CATALOGS+=              ../../../../guide/en/share/catalog
+DSSSL?=                 ../../../../guide/en/share/default.dsl
+XSLT_LOCAL_SINGLE?=     ../../../../guide/en/share/default-html.xsl
+XSLT_LOCAL_SPLIT?=      ../../../../guide/en/share/default-html-chunk.xsl
 
 all:    # doing this as depends doesn't work
 	${MAKE} lint
 	-${MAKE} html-split
 	-${MAKE} html 
 
-.include "../../../share/mk/doc.docbook.mk"
+.include "../../../../share/mk/doc.docbook.mk"

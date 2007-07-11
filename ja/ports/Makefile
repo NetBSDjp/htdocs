@@ -1,4 +1,6 @@
 # $NetBSD: Makefile,v 1.1 2007/06/09 13:31:41 dsieger Exp $
+# <!-- Based on english version: -->
+# <!-- NetBSD: Makefile,v 1.1 2007/06/09 13:31:41 dsieger Exp   -->
 
 SUBDIR+=	acorn26
 SUBDIR+=	acorn32
@@ -8,7 +10,7 @@ SUBDIR+=	amd64
 SUBDIR+=	amiga
 SUBDIR+=	amigappc
 SUBDIR+=	arc
-SUBDIR+=	arm
+# SUBDIR+=	arm
 SUBDIR+=	arm26
 SUBDIR+=	arm32
 SUBDIR+=	atari
@@ -42,7 +44,7 @@ SUBDIR+=	mvmeppc
 SUBDIR+=	news68k
 SUBDIR+=	newsmips
 SUBDIR+=	next68k
-SUBDIR+=	pc532
+# SUBDIR+=	pc532
 SUBDIR+=	playstation2
 SUBDIR+=	pmax
 SUBDIR+=	pmppc
@@ -60,6 +62,7 @@ SUBDIR+=	x68k
 SUBDIR+=	xen
 SUBDIR+=	zaurus
 
-XMLDOCS+=	index emulators
+XMLDOCS+=	index
+# XMLDOCS+=	emulators
 
-.include "../share/mk/web.site.mk"
+.include "../../share/mk/web.site.mk"

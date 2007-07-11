@@ -1,100 +1,103 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 
-<html>
+<html lang="ja">
 <head>
 <!-- Copyright (c) 1998-2003
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<link rev="made" href="mailto:www@NetBSD.org">
+<link rev="made" href="mailto:www@jp.NetBSD.org">
 <title>NetBSD/macppc Open Firmware 1.0.5 Patch</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<h1>NetBSD/macppc Open Firmware 1.0.5 Patch</h1>
+<h1>NetBSD/macppc Open Firmware 1.0.5 パッチ</h1>
 
 <hr>
 <p>
 
-This is describes how to patch Apple's System Disk utility to fix a few
-minor problems on Open Firmware 1.0.5 machines that use 
-<tt><font color="green">output-device</font> /chaos/control</tt>
-(i.e. PowerMacintosh 7300 - 8600).  It is based
-on a <a href="http://lppcfom.sourceforge.net/fom-serve/cache/378.html">
-post</a> by one of the Copland developers, and a <a
-href="http://mail-index.NetBSD.org/port-macppc/2000/03/21/0002.html">post</a>
-by Monroe Williams to the port-macppc mailing list.
+ここでは、 <tt><font color="green">output-device</font> /chaos/control</tt>
+を使う Open Firmware 1.0.5 のマシン (即ち PowerMacintosh 7300 - 8600)
+上の若干の軽微な問題を直すために、
+Apple 社の System Disk ユーティリティーにパッチを当てる方法を説明します。
+これは、 Copland 開発者による<a href="http://lppcfom.sourceforge.net/fom-serve/cache/378.html">
+投稿</a>と、 port-macppc メーリングリストの Monroe Williams による<a
+href="http://mail-index.NetBSD.org/port-macppc/2000/03/21/0002.html">投稿</a>
+に基づいています。
 <p>
-The instructions herein are aimed at someone with a minimal knowledge of
-Mac OS.  If you are more comfortable with serial terminals and emacs than 
-Mac OS, see <a href="../faq.html#macos-newbie">Help, I don't know anything 
-about Mac OS!</a>.
+この説明は、読者に Mac OS に関する最低限の知識があることを前提としています。
+Mac OS よりシリアル端末や emacs に慣れているような方は、
+FAQ 項目 <a href="../faq.html#macos-newbie">助けてください、 Mac OS
+のことを何も知らないのです!</a> を参照してください。
 
 
 <ol>
-  <li><big><b>Boot into Mac OS</b></big>
+  <li><big><b>Mac OS の起動</b></big>
       <p>
-      You must be running Mac OS 8.0 or higher.
+      Mac OS 8.0 以降が必要です。
       <p>
-      If you don't have Mac OS 8.0 or higher, you can simply download the 
+      もし Mac OS 8.0 以降がなければ、
       <a href="http://download.info.apple.com/Apple_Support_Area/Apple_Software_Updates/English-North_American/Macintosh/System/Mac_OS_8.1_Update/Disk_Tools_PPC.img.bin">Disk
-      Tools PPC.img</a> from Apple's site.  This is a Mac OS 8.1 boot
-      floppy.  You can boot from this and swap floppies to get System Disk, or
-      you can copy the files from this floppy onto a partition on your hard
-      drive.  You will need to use 
+      Tools PPC.img</a> を Apple のサイトからダウンロードします。
+      これは Mac OS 8.1 のブートフロッピーです。このフロッピーからブートして
+      System Disk のフロッピーと入れ換えるか、あるいは、フロッピーのファイルを
+      ハードディスクにコピーします。 Disk Tools イメージをフロッピーに
+      書き込むには、
       <a href="http://docs.info.apple.com/article.html?artnum=60353">Disk Copy 6.3.3</a>
-      or later to write the Disk Tools image to a floppy (you can use 
-      any Mac OS 7.0.1 or later system, including pre-PowerPC (i.e. m68k) Macs).
-      You cannot, however, simply dump the boot floppy image to a disk via 
-      <tt>dd(8)</tt> or <tt>rawrite</tt>.
+      以降を使う必要があります (これは、 PowerPC より前の (つまり m68k) Mac
+      を含む、 Mac OS 7.0.1 以降の全システムで使えます) 。
+      しかし、ブートフロッピーイメージを単に <tt>dd(8)</tt> や
+      <tt>rawrite</tt> でフロッピーに書き出すことは、できません。
       <p>
-      Note, for future reference, that any time you boot your machine into
-      Mac OS, all Open Firmware settings (including the nvram) will be set to
-      their default values.
+      古いマシン (Open Firmware 1.0.5) では、 Mac OS をブートするたびに、
+      Open Firmware のすべての設定 (nvram を含む)
+      がデフォルト値に戻されますので注意してください。
       <p>
 
-  <li><big><b>Download</b></big>
+  <li><big><b>ダウンロード</b></big>
       <p>
       <a href="ftp://ftp.apple.com/developer/macosxserver/utilities/SystemDisk2.3.1.smi.bin">ftp://ftp.apple.com/developer/macosxserver/utilities/SystemDisk2.3.1.smi.bin</a>
       <p>
-      You may need to use StuffIt Expander (or some other utility) to
-      convert that file from MacBinary format into the self-mounting disk image.
-      See <a href="http://www.stuffit.com/expander/notes.html">Aladdin Systems'
-      help page</a>.
+      MacBinary から自動マウントディスクイメージへの変換のため、
+      StuffIt Expander (または別のユーティリティー) が必要です。
+      <a href="http://www.stuffit.com/expander/notes.html">Aladdin Systems の
+      ヘルプページ</a>を参照してください。
       <p>
 
-  <li><big><b>Mount the Self-Mounting Image</b></big>
+  <li><big><b>ディスクイメージのマウント</b></big>
       <p>
-      Open the self-mounting image to mount it on your
-      desktop, and locate the <tt>System Disk</tt> utility on the disk image.
-      <p>
-
-  <li><big><b>NVRAM Patches (Easy Method)</b></big>
-      <p>
-      If you're using System Disk 2.3.1, download this ResCompare 
-      <a href="systemdisk-of105-patch.hqx">System Disk 2.3.1 OF105
-      patch.hqx</a>.  This program will patch your System Disk to add some
-      delays to let the video settle properly and always sync up at 680x480 at
-      60 Hz (this is apparently the only resolution Open Firmware supports
-      on these machines).
+      ディスクイメージを開いてデスクトップにマウントすると、
+      イメージ中に <tt>System Disk</tt> ユーティリティーがあります。
       <p>
 
-  <li><big><b>NVRAM Patches (Guru Method)</b></big>
+  <li><big><b>NVRAM へのパッチ当て (容易な方法)</b></big>
       <p>
-      Download <a
+      もしあなたが System Disk 2.3.1 を使っているなら、この ResCompare 
+      <a href="../../../../Ports/macppc/SystemDisk-tutorial/systemdisk-of105-patch.hqx">System Disk 2.3.1 OF105
+      patch.hqx</a>をダウンロードして下さい。
+      このプログラムは、 640x480 60Hz (Open Firmware がサポートしている、
+      見たところ唯一の解像度) のビデオを正確に設定し、常に同期する様に
+      若干の遅延を加えるためのパッチをあなたの System Disk に当てるでしょう。
+      <p>
+
+  <li><big><b>NVRAM へのパッチ当て (上級者向けの方法)</b></big>
+      <p>
+      次の URL から ResEdit をダウンロードして伸張して下さい。
+      <a
         href="http://download.info.apple.com/Apple_Support_Area/Apple_Software_Updates/English-North_American/Macintosh/Utilities/ResEdit_2.1.3.sea.bin"
         >http://download.info.apple.com/Apple_Support_Area/Apple_Software_Updates/English-North_American/Macintosh/Utilities/ResEdit_2.1.3.sea.bin</a>
-      and extract ResEdit.  Drag the System Disk application onto ResEdit
-      and (if you've got System Disk 2.3.1) open <tt>OFpt</tt> resource ID 128.
-      If you have a different version of System Disk, then you need to open
-      the <tt>OFtc</tt>
-      resource and determine which ID corresponds to your model of
-      PowerMacintosh.
+      もしあなたが System Disk 2.3.1 を持っているなら、 ResEdit に System Disk
+      アプリケーションをドラッグして、 <tt>OFpt</tt> リソースの ID
+      128 を開いて下さい。
+      別のバージョンの System Disk では、 <tt>OFtc</tt> リソースを開いて、
+      いずれの ID があなたの Power Macintosh のモデルに対応するか
+      判断する必要があります。
       <p>
-      Once you've found the correct <tt>OFpt</tt> resource, paste the
-      <a href="of105patch.txt">following</a> at the end of the big long
-      string.  Be sure to include a trailing carraige return or else System
-      Disk will complain that the last line ends abruptly.  Also, note the
-      initial <tt>\</tt>, which belongs on the end of the
-      last line of Apple's patches (<tt>unselect-dev</tt>)
+      当該 <tt>OFpt</tt> リソースの、大きく長い文字列の終わりに
+      <a href="../../../../Ports/macppc/SystemDisk-tutorial/of105patch.txt">次の内容</a>をペーストして下さい。
+      (ペーストした)文字列の末尾に、キャリッジリターンがあることを確認して下さい。
+      そうしないと System Disk が「最後のラインが突然に終わる」と不平を言うでしょう。
+      最初の <tt>\</tt> にも注意してください。これは Apple 社製のパッチ
+      (先に開いた <tt>OFpt</tt> リソース) の最後の行の終わり
+      (<tt>unselect-dev</tt>) に続けて書きます。
       <p>
       <pre>        \
         dev /bandit/gc/via-cuda\
@@ -105,20 +108,22 @@ about Mac OS!</a>.
         : P2 0C 2 ms ;\
         &amp;W E0 + ' P2 BLpatch device-end</pre>
       <p>
-      <cite>Th[is] block fixes a bug in the via-cuda driver in which not
-      enough time is given for the device to settle when it is told to set the
-      video controller's clocks up.</cite>
+      <cite>このブロックは、 via-cuda ドライバーがビデオコントローラーのクロックを
+      準備しろと言われてからデバイスを設定するまでに十分な時間が与えられないバグを
+      修正します。</cite>
       <p>
-      The author of this patch also created a patch for machines that try to
-      boot before their drives have spun up, however, it seems nvram isn't
-      quite big enough to fit both of these patches in addition to the patches
-      that come with System Disk.  It's not clear if this patch is really
-      needed though.  So, instead of the above block, you should paste in the
-      <a href="of105patch2.txt">following</a> at the end of the big long
-      string.  Be sure to include a trailing carraige return or else Startup
-      Disk will complain that the last line ends abruptly.  Also, note the
-      initial <tt>\</tt>, which belongs on the end of the
-      last line of Apple's patches (<tt>unselect-dev</tt>)
+      このパッチの著者は、ドライブが回転する前に起動しようとするマシンのため
+      のパッチも作りました。
+      しかしながら、 nvram が、 System Disk のパッチの他に、これらの両方のパッチ
+      を入れるのに十分な大きさを持っていない様に思われます。
+      けれどもこのパッチが本当に必要とされるかどうかは明確ではありません。
+      それで、あなたは上記のブロックの代わりに大きく長い文字列の終わりに
+      <a href="../../../../Ports/macppc/SystemDisk-tutorial/of105patch2.txt">次の物</a>をペーストするべきかも知れません。
+      (ペーストした)文字列の末尾に、キャリッジリターンがあることを確認して下さい。
+      そうしないと System Disk が「最後のラインが突然に終わる」と不平を言うでしょう。
+      最初の <tt>\</tt> にも注意してください。これは Apple 社製のパッチ
+      (先に開いた <tt>OFpt</tt> リソース) の最後の行の終わり
+      (<tt>unselect-dev</tt>) に続けて書きます。
       <p>
       <pre>        \
         : wBoot\
@@ -129,21 +134,21 @@ about Mac OS!</a>.
         key? until\
         ;</pre>
       <p>
-      <cite>Th[is] block defines a FORTH word that can be used in place of
-      the normal boot-command contents to wait for the disk to spin up before
-      attempting to really boot.  This avoids the standard "black screen the
-      first time you power on the computer each day" problem.</cite>
+      <cite>このブロックは、標準的な起動コマンドの変わりに、
+      ディスクが回転するまで待つと言うことを FORTH 言語で定義します。
+      これは、標準での「コンピューターの画面が何時まで待っても黒いまま」問題を
+      回避します。</cite>
       <p>
-      This means you'll need to make sure your boot command is not
-      <tt>boot</tt>, but <tt>wBoot</tt> (this is set in the Advanced Options
-      panel).
+      これは、起動コマンドとして <tt>boot</tt> の代わりに
+      <tt>wBoot</tt> を使用する必要があることを意味します。
+      (起動コマンドは Advanced Options 画面で設定します)
       <p>
 
-  <li><big><b>Save, Run, Save</b></big>
+  <li><big><b>保存、実行、保存</b></big>
       <p>
-      Save your ResEdit changes and quit.  Now, run the modified System Disk
-      program and click on <tt>Power User (Open Firmware)</tt> then click the
-      <tt>Save</tt> button to write the new nvram contents.
+      ResEdit の変更を保存して終了して下さい。変更された System Disk プログラム
+      を実行して、 <tt>Power User (Open Firmware)</tt> をクリックして下さい。
+      そして、新しい nvram の内容を保存するために <tt>Save</tt> ボタンをクリックして下さい。
 </ol>
 <p>
 
@@ -154,30 +159,32 @@ about Mac OS!</a>.
 <table width="100%"><tr><td>
   <table><tr><td>
     <a href="../../../"><img
-	src="../../../images/NetBSD-flag.png" border="0"
+	src="../../../../images/NetBSD-flag.png" border="0"
 	width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../../"><img
-	src="../../../images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">Home Page</a>
+	src="../../../../images/empty.gif" border="0"
+	width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td>
     <a href="../../../Ports/"><img
-	src="../../../images/NetBSD-flag.png" border="0"
+	src="../../../../images/NetBSD-flag.png" border="0"
 	width="90" height="90" alt=""></a>
   </td><td>
     <a href="../../../Ports/"><img
-	src="../../../images/empty.gif" border="0"
-	width="1" height="1" alt="NetBSD ">Supported Architectures</a>
+	src="../../../../images/empty.gif" border="0"
+	width="1" height="1" alt="NetBSD ">対応機種</a>
   </td></tr></table>
 </td></tr></table>
 
 <hr>
 <address>
   <small>
-  www@NetBSD.org<br>
+  www@jp.NetBSD.org<br>
   $NetBSD: of105patch.html,v 1.1 2007/06/09 13:32:42 dsieger Exp $<br>
+  <!-- Based on english version: -->
+  <!-- NetBSD: of105patch.html,v 1.1 2007/06/09 13:32:42 dsieger Exp   -->
   <a href="../../../Misc/disclaimer.html">Copyright &copy; 1998-2003
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED.</a>
   </small>

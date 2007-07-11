@@ -1,103 +1,105 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="ISO-2022-JP"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
-<webpage id="ports-macppc-partitioning">
-<config param="desc" value="&os;/macppc partitioning howto"/>
+<webpage id="ja-ports-macppc-partitioning">
+<config param="desc" value="&os;/macppc パーティショニング howto"/>
 <config param="cvstag" value="$NetBSD: partitioning.xml,v 1.1 2007/06/09 13:32:41 dsieger Exp $"/>
+<!-- Based on english version: -->
+<!-- NetBSD: partitioning.xml,v 1.1 2007/06/09 13:32:41 dsieger Exp   -->
 <config param="rcsdate" value="$Date: 2007/06/09 13:32:41 $"/>
 <head>
 
 <!-- Copyright (c) 1998-2007
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-<title>NetBSD/macppc Partitioning HOW-TO</title>
+<title>NetBSD/macppc パーティショニング HOW-TO</title>
 </head>
 
 <sect1 id="preface">
-  <title>Preface</title>
+  <title>文書の概要</title>
 
   <para>
-    This document is broken into four main parts:
+    この文書は、 4 個の部分に分かれています:
   </para>
 
   <orderedlist>
-    <listitem><ulink url="#intro">Introduction (Understanding Partitions)</ulink></listitem>
-    <listitem>Partitioning a disk
+    <listitem><ulink url="#intro">はじめに (パーティションについて理解する)</ulink></listitem>
+    <listitem>ディスクのパーティショニング
     <itemizedlist>
-      <listitem><ulink url="#drive-setup">Partitioning using Drive Setup</ulink> (Mac OS 9)</listitem>
-      <listitem><ulink url="#disk-utility">Partitioning using Disk Utility</ulink> (Mac OS X)</listitem>
-      <listitem><ulink url="#pdisk">Partitioning using <code>pdisk</code> and 
-      <code>newfs</code></ulink> (Mac OS 9, Mac OS X, Darwin, NetBSD,  Linux)</listitem>
+      <listitem><ulink url="#drive-setup">Drive Setup を使ったパーティショニング</ulink> (Mac OS 9)</listitem>
+      <listitem><ulink url="#disk-utility">Disk Utility を使ったパーティショニング</ulink> (Mac OS X)</listitem>
+      <listitem><ulink url="#pdisk"><code>pdisk</code> と <code>newfs</code>
+      を使ったパーティショニング</ulink> (Mac OS 9, Mac OS X, Darwin, NetBSD,  Linux)</listitem>
     </itemizedlist>
     </listitem>
-    <listitem><ulink url="#msdos">Creating a shared MS-DOS filesystem</ulink></listitem>
-    <listitem><ulink url="#nomenclature">Partition nomenclature</ulink></listitem>
+    <listitem><ulink url="#msdos">共有 MS-DOS ファイルシステムの作成</ulink></listitem>
+    <listitem><ulink url="#nomenclature">パーティション命名規則</ulink></listitem>
   </orderedlist>
 
   <para>
-    <emphasis>Note: the Linux <code>pdisk</code> command does not properly set the
-    flags for NetBSD/macppc.  If you have already partitioned your disk using
-    the Linux <code>pdisk</code>, you'll need to use the NetBSD <code><ulink
-    url="#pdisk">pdisk</ulink></code> to delete and re-create the NetBSD root and
-    swap partitions.</emphasis>
+    <emphasis>注意: Linux の <code>pdisk</code> コマンドは、 NetBSD/macppc 用のフラグを
+    適切に設定しません。ディスクが Linux の <code>pdisk</code> を使って
+    パーティション分割済みの場合は、 NetBSD の <code><ulink
+    url="#pdisk">pdisk</ulink></code> を使い、パーティションを消してから
+    NetBSD のルートおよびスワップパーティションを作り直す必要があります。</emphasis>
   </para>
 </sect1>
 
 <sect1 id="intro">
-  <title>Introduction (Understanding Partitions)</title>
+  <title>はじめに (パーティションについて理解する)</title>
 
   <para>
-    This document describes in depth how to partition a disk for use with 
-    NetBSD/macppc and Mac OS.  Whether you can boot your machine from a 
-    particular disk into a particular operating system depends on your 
-    machine's version of <ulink url="faq.html#ofw-version">Open Firmware</ulink>.  
-    The overall goal is to create an Apple Partition Map that Open Firmware 
-    can understand (and thus boot from) and that the NetBSD kernel can 
-    understand and use to find its root partition.
+    この文書では、 NetBSD/macppc と Mac OS を使うためにディスクを分割する
+    方法を詳しく説明します。お使いのマシンのあるディスクから
+    あるオペレーティングシステムをブートできるかどうかは、そのマシンの
+    <ulink url="faq.html#ofw-version">Open Firmware</ulink> のバージョンに依ります。
+    全体としての目標は、 Open Firmware が理解することのでき (さらに、
+    そこからブートでき) 、かつ、 NetBSD カーネルが理解することができて
+    ルートパーティションとして使うことができるような Apple Partition Map を作成することです。
   </para>
 
   <para>
-    There are four tools to partition a disk: Apple's Drive Setup (Mac OS
-    9), Apple's Disk Utility (Mac OS X), NetBSD's 
+    4 個のディスク分割用のツールがあります: Apple の Drive Setup (Mac OS
+    9)、 Apple の Disk Utility (Mac OS X)、 NetBSD の
     <ulink url="http://man.NetBSD.org/man/pdisk+8.macppc+NetBSD-current">
-      <code>&man.pdisk.8;</code></ulink> (all OSes), and NetBSD's 
+      <code>&man.pdisk.8;</code></ulink> (全 OS)、そして、 NetBSD の
       <ulink url="http://man.NetBSD.org/man/disklabel+8.macppc+NetBSD-current">
-	<code>&man.disklabel.8;</code></ulink> (NetBSD/macppc only).  The first two tools 
-	(Drive Setup and Disk Utility) are distributed by Apple with Mac OS and 
-	are located on bootable Mac OS installation CDs.  You can use them to 
-	partition a disk, create the filesystems, and to install Mac OS 
-	bootloaders (called disk drivers in Mac OS terminology).
+	<code>&man.disklabel.8;</code></ulink> (NetBSD/macppc のみ) です。最初の 2 個のツール
+	(Drive Setup と Disk Utility) は Apple が Mac OS と共に配布しており、
+	ブート可能な Mac OS インストール CD に含まれています。これらを使って、
+	ディスクのパーティション分割、ファイルシステム作成、 Mac OS ブートローダー
+	(Mac OS 用語ではディスクドライバー) のインストールをすることができます。
   </para>
 
   <para>
-    The <code>pdisk</code> program is a command-line program which can be 
-    compiled and run on most unix-like systems (particularly the ones that 
-    run on PowerPC-based Macintosh and clone machines).  This program can 
-    only partition a disk -- it can't install bootloaders or create 
-    filesystems.
+    <code>pdisk</code> プログラムはコマンドラインプログラムで、ほとんどの
+    unix-like システム (特に、 PowerPC ベースの Macintosh や互換機で動くシステム)
+    上でコンパイルおよび実行することができます。このプログラムでできることは、
+    ディスクのパーティション分割だけです─ブートローダーのインストールや
+    ファイルシステムの作成をすることはできません。
   </para>
 
   <para>
-    NetBSD's <code>disklabel</code> creates a NetBSD-style 
+    NetBSD の <code>disklabel</code> は、 NetBSD 方式の
     <ulink url="http://man.NetBSD.org/man/disklabel+5.macppc+NetBSD-current">
-      <code>&man.disklabel.5;</code></ulink>.  Unlike the other three tools, it can only
-      create a fake Apple Partition Map (thus you can't use it to create a disk
-      that's bootable by Mac OS).  That's OK, since some versions of Open
-      Firmware require you to use <code>disklabel</code> to install the bootloader. 
-      Additionally, <code>disklabel</code> is the partition tool that is used in the
-      NetBSD installer.
+      <code>&man.disklabel.5;</code></ulink> を作成します。上述の 3 種のツールとは異なり、
+      これでできることは、疑似的な Apple Partition Map の作成だけです (それゆえ、
+      この <code>disklabel</code> を使って Mac OS がブート可能なディスクを作ることはできません)。
+      ですが、これで十分です。 Open Firmware の一部のバージョンでは、
+      ブートローダーをインストールするのに <code>disklabel</code> を使う必要があります。
+      なお、 <code>disklabel</code> は NetBSD インストーラーのパーティションツールとしても使われています。
   </para>
 
   <para>
-    In the tables below, "yes" means the disk is bootable, "mount only" 
-    means that the OS can mount partitions on the disk, but cannot boot from 
-    it, and "no" means the OS can't mount partitions or boot from the disk.
+    以下の表で、 "yes" はそのディスクがブート可能であることを、 "mount only" は OS
+    がディスク上のパーティションのマウントは可能だがそこからのブートはできないことを、
+    "no" は OS がパーティションのマウントもディスクからのブートもできないことを意味します。
   </para>
 
   <para>
-    <emphasis role="bold">Open Firmware 1.0.5 or 2.0.x:</emphasis>
+    <emphasis role="bold">Open Firmware 1.0.5 または 2.0.x:</emphasis>
   </para>
 
   <informaltable>
@@ -121,7 +123,7 @@
 <entry>no</entry>
 <entry>no</entry></row>
 
-<row><entry><emphasis role="bold">Mac OS X and Darwin</emphasis></entry>
+<row><entry><emphasis role="bold">Mac OS X および Darwin</emphasis></entry>
 <entry>yes</entry>
 <entry>yes</entry>
 <entry>yes</entry>
@@ -135,7 +137,7 @@
     </tbody>
   </tgroup>
 </informaltable>
-<para><emphasis role="bold">Open Firmware 2.4 or 3:</emphasis></para>
+<para><emphasis role="bold">Open Firmware 2.4 または 3:</emphasis></para>
 <informaltable>
   <tgroup cols="2">
     <tbody>
@@ -157,7 +159,7 @@
 <entry>no</entry>
 <entry>no</entry></row>
 
-<row><entry><emphasis role="bold">Mac OS X and Darwin</emphasis></entry>
+<row><entry><emphasis role="bold">Mac OS X および Darwin</emphasis></entry>
 <entry>yes</entry>
 <entry>yes</entry>
 <entry>yes</entry>
@@ -173,64 +175,64 @@
 </informaltable>
 
 <para>
-  The Apple Partition Map stores partition information as a numbered list
-  (usually in order of location on disk).  Partition "zero" is where the
-  primary bootloader is stored for Open Firmware 1.0.5 or 2.0.x models.  The
-  partition map is partition number 1.  A disk with Mac OS 9 will usually have
-  partitions 2 thru 8 reserved for its drivers.  The user defined 
-  partitions (HFS, HFS+, UFS, NetBSD, etc.) will start at partition 9 
-  (Mac OS 9 disk), or 2 (no Mac OS 9).  
+  Apple パーティションマップは、パーティション情報を、番号の付けられたリスト
+  (通常はディスク上の場所の順序) の形で保持しています。最初のブートローダーが納まる
+  パーティション "ゼロ" は Open Firmware 1.0.5 または 2.0.x の機種向けのものです。
+  パーティションマップ自体はパーティション番号 1 です。 Mac OS 9 の入ったディスクでは、
+  通常、パーティション 2 から 8 まではドライバー用に予約されています。
+  ユーザーが定義したパーティション (HFS、 HFS+、 UFS、 NetBSD などなど) は、
+  パーティション 9 (Mac OS 9 のディスク) または 2 (Mac OS 9 のないディスク) からになります。
 </para>
 
 <para>
-  Keep in mind that Open Firmware uses Apple Partition Map numbers when 
-  determining the command to boot your machine into NetBSD/macppc.  You can 
-  use <ulink url="#pdisk"><code>pdisk</code></ulink> to print out the Apple Partition 
-  Map, regardless of how it was created.
+  マシンを NetBSD/macppc でブートさせるためのコマンドを決める際に、
+  Open Firmware は Apple パーティションマップの番号を使うことを留意しておいてください。
+  <ulink url="#pdisk"><code>pdisk</code></ulink> を使うと、 Apple パーティションマップを、
+  (どの方法で作られたパーティションマップであっても) プリントアウトできます。
 </para>
 
 <para>
-  To make matters a little more confusing, NetBSD/macppc uses its own 
-  partition naming scheme, the letters 'a' thru 'h'.  The root partition 
-  (regardless of its Apple Partition Map location) is partition 'a'.  The 
-  swap partition is partition 'b'.  Partition 'c' represents the whole 
-  disk.  The '/usr' partition (if it exists) is partition 'g'.  The rest of 
-  the partitions fill in the remainder of the letters.
+  若干混乱を招いていますが、 NetBSD/macppc は、文字 'a' から 'h' という
+  独自のパーティション命名規則を使っています。ルートパーティションは、
+  (Apple パーティションマップの位置とは関係なく) パーティション 'a' になります。
+  スワップパーティションはパーティション 'b' です。パーティション 'c' は、
+  ディスク全体を表します。 '/usr' パーティションは (もしあれば) パーティション 'g' です。
+  それ以外のパーティションは、残りの文字が充てられます。
 </para>
 
 <para>
-  See the section on <ulink url="#nomenclature">Partition nomenclature</ulink> 
-  beelow for a more thorough discussion. 
+  もっと筋道だった説明は、後述の
+  <ulink url="#nomenclature">パーティション命名規則</ulink>の節を見てください。
 </para>
 
 <para>
-  There are a whole slew of filesystem types you may encounter.  Briefly,
-  HFS is Apple's old filesystem which has been in use since the '80s.  HFS+
-  (also known as "extended") is an enhanced version of HFS which allows
-  larger file (and filesystem) size, storage of unix-style owner and
-  permissions.  HFS+ is the recommended filesystem type for Mac OS &gt;  8.1,
-  including Mac OS X.  UFS is Apple's NeXT-derived version of good old BSD
-  FFS.  MS-DOS (also known as FAT) is the filesystem standardized on the
-  MS-DOS/Windows platform.  BSD FFS is the standard filesystem used by most
-  BSD unix-like OSes since the '80s (including NetBSD).  ext2fs is the most
-  common linux filesystem. 
+  あなたが取り扱う可能性のあるファイルシステムは、実に多岐にわたります。
+  簡単に説明しますと、 HFS は 80 年代から使われてきた Apple 旧来のファイルシステムです。
+  HFS+ (「拡張」ファイルシステムともいう) は HFS の拡張版で、より大きな容量の
+  ファイル (やファイルシステム) を使うことができ、 unix 的なファイル所有者や
+  パーミッションを持つことができます。 HFS+ は、 Mac OS &gt;  8.1 (Mac OS X を含む)
+  での推奨ファイルシステム型です。 UFS は、古き良き BSD FFS の、 NeXT 由来の
+  Apple 版です。 MS-DOS (FAT ともいう) は、 MS-DOS/Windows プラットフォームで
+  標準化されているファイルシステムです。 BSD FFS は、 80 年代からほとんどの
+  BSD unix-like OS (NetBSD も含む) で使われてきた標準的なファイルシステムです。
+  ext2fs は linux で最も一般的なファイルシステムです。
 </para>
 
 <para>
-  You may want to consider whether to include a partition that will be
-  shared among your OSes.  The most compatible format is MS-DOS FAT, but it
-  lacks features (such as permissions and good repair tools). 
-  Unfortunately, NetBSD doesn't yet support the Macintosh HFS and HFS+ file
-  systems natively.  NetBSD-current has full support for Apple's UFS.  Here's 
-  the quick breakdown: 
+  他の OS と共有するパーティションを用意するかどうか、
+  検討したい方もいるでしょう。もっとも互換性の高いフォーマットは MS-DOS FAT
+  ですが、機能が足りません (パーミッションや、よい修復ツールなどです)。
+  残念ながら NetBSD は Macintosh HFS および HFS+ システムをネイティブでは
+  まだサポートしていません。 NetBSD-current では Apple の UFS を完全にサポートしています。
+  以下に早見表を掲げます:
 </para>
 
 <informaltable>
   <tgroup cols="5">
     <tbody>
-<row><entry>format</entry>
+<row><entry>フォーマット</entry>
  <entry>Mac OS 8.1-9.x</entry>
- <entry>Mac OS X and Darwin</entry>
+ <entry>Mac OS X および Darwin</entry>
  <entry>NetBSD</entry>
  <entry>Linux</entry></row>
 <row><entry>Apple HFS</entry>
@@ -269,122 +271,125 @@
   </tgroup>
 </informaltable>
 
-<para>1 - Either use the stable
-<ulink url="http://www.mars.org/home/rob/proj/hfs/">hfsutils</ulink> or the 
-experimental in-kernel support.
+<para>1 - 安定している
+<ulink url="http://www.mars.org/home/rob/proj/hfs/">hfsutils</ulink>、 または
+実験的なカーネルサポートを使用します。
 </para>
-<para>2 - Either use the experimental 
-<ulink url="http://ftp.penguinppc.org/projects/hfsplus/">hfsplus</ulink> utils
-or the experimental
+<para>2 - 実験的な
+<ulink url="http://ftp.penguinppc.org/projects/hfsplus/">hfsplus</ulink> utils、
+または実験的な
 <ulink url="http://sourceforge.net/projects/linux-hfsplus">linux-hfsplus</ulink>
-kernel module.</para>
-<para>3 - Use the highly experimental 
-<ulink url="http://sourceforge.net/projects/ext2fsx/">Ext2 Filesystem</ulink> kernel
-extension.</para>
+カーネルモジュールを使用します。</para>
+<para>3 - 非常に実験的な
+<ulink url="http://sourceforge.net/projects/ext2fsx/">Ext2 Filesystem</ulink>
+カーネル拡張を使用します。</para>
 
 <para>
-  If you want to create a partition you can share with Mac OS 9, you
-  should create an HFS partition which you will later convert to MS-DOS
-  format.  See <ulink url="#msdos">Creating a shared MS-DOS filesystem</ulink>
-  after you've partitioned your disk. 
+  Mac OS 9 と共有可能なパーティションを作りたければ、 HFS
+  パーティションを作り、あとで MS-DOS フォーマットへ変換するのがよいです。
+  ディスクを分割してから<ulink url="#msdos">共有 MS-DOS ファイルシステムの作成</ulink>
+  を見てください。
 </para>
 
 <para>
-  If you don't care about Classic Mac OS, then UFS is probably the best 
-  bet.  Just make the UFS partition from within Mac OS X or Darwin, and make 
-  sure you are using a -current NetBSD kernel.  UFS will be supported in 
-  the next major release of NetBSD (i.e. not the 1.6.x branch).
+  Classic Mac OS のことは気にしないのであれば、おそらく UFS
+  が最良の選択肢です。 Mac OS X か Darwin で UFS パーティションを作り、
+  -current NetBSD を使うようにするだけです。 UFS は次の NetBSD
+  メジャーリリースではサポートされる予定です (つまり 1.6.x 枝ではサポートされません)。
 </para>
 
 <para>
-  Partitioning will erase the contents of your drive, so back up
-  everything from the disk you will be partitioning.  Follow the
-  instructions for the partitioning tool you wish to use. 
+  パーティショニングは、ドライブの内容を消去しますので、
+  分割しようとするディスクをすべてバックアップしてください。
+  あなたが使おうとしているツールの説明に従ってください。
 </para>
 
 <itemizedlist>
-<listitem><ulink url="#drive-setup">Partitioning using Drive Setup</ulink> (Mac OS 9)</listitem>
-<listitem><ulink url="#disk-utility">Partitioning using Disk Utility</ulink> (Mac OS X)</listitem>
-<listitem><ulink url="#pdisk">Partitioning using <code>pdisk</code> and 
- <code>newfs</code></ulink> (Mac OS 9, Mac OS X, Darwin, NetBSD,  Linux)</listitem>
-<listitem>A <code>&man.disklabel.8;</code> is created by the <code>sysinst</code> installer 
- when you follow the directions in the <ulink 
+<listitem><ulink url="#drive-setup">Drive Setup を使ったパーティショニング</ulink> (Mac OS 9)</listitem>
+<listitem><ulink url="#disk-utility">Disk Utility を使ったパーティショニング</ulink> (Mac OS X)</listitem>
+<listitem><ulink url="#pdisk"><code>pdisk</code> と <code>newfs</code>
+ を使ったパーティショニング</ulink> (Mac OS 9, Mac OS X, Darwin, NetBSD,  Linux)</listitem>
+<listitem><code>&man.disklabel.8;</code> は、 <ulink 
  url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-&release.latest;/macppc/INSTALL.html">
- NetBSD &release.latest; install notes</ulink>.</listitem>
+ NetBSD &release.latest; インストールノート</ulink>のやり方に従うと、 <code>sysinst</code>
+ インストーラーが作成します。</listitem>
 </itemizedlist>
 </sect1>
 
 <sect1 id="drive-setup">
-  <title>Partitioning using Drive Setup (Mac OS 9)</title>
+  <title>Drive Setup を使ったパーティショニング (Mac OS 9)</title>
 
   <orderedlist>
     <listitem>
       <para>
-	You will need to use Drive Setup version 1.8.1 or later.  This is the 
-	version that comes with Mac OS 9.0.  If you are unsure, you need to select 
-	Drive Setup and pick <code>Get Info</code> from the <code>File</code> menu.
+	Drive Setup はバージョン 1.8.1 以降が必要です。このバージョンは
+	Mac OS 9.0 に附属のバージョンです。バージョンがわからない場合は、
+	(訳註: Finder で) Drive Setup を選び、 <code>File</code> メニューから
+	<code>Get Info</code> します。
       </para>
 
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/drive-setup.gif"
+	  <imagedata fileref="../../../images/ports/macppc/drive-setup.gif"
 		     format="GIF" width="354" height="401" />
 	</imageobject>
 	<textobject><phrase>drive setup</phrase></textobject>
       </inlinemediaobject>
 
       <para>
-	If you have an older version of Mac OS,  you can download either the 
+	古いバージョンの Mac OS をお使いの場合、
 	<ulink url="http://docs.info.apple.com/article.html?artnum=60791">Mac OS 
-	9.0.4</ulink> (12.2 MB), 
+	9.0.4</ulink> (12.2 MB)、
 	<ulink url="http://docs.info.apple.com/article.html?artnum=75103">Mac OS 9.1</ulink>
-	(71 MB), 
+	 (71 MB)、
 	<ulink url="http://docs.info.apple.com/article.html?artnum=120030">Mac OS
-	9.2.1</ulink> (82 MB), or
+	9.2.1</ulink> (82 MB)、または
 	<ulink url="http://docs.info.apple.com/article.html?artnum=75186">Mac OS 
-	9.2.2</ulink> (21.3 MB) updates, all of which include a 
-	version of Drive Setup that works for us.  Note, these are big Mac OS 
-	updates, so you will have to download a multi-megabyte disk image just to 
-	get the 500 KB Drive Setup application.  Apple has not provided a recent 
-	version of Drive Setup as a standalone update.
+	9.2.2</ulink> (21.3 MB) アップデートをダウンロードできます。
+	これらには、使えるバージョンの Drive Setup が含まれています。
+	これらは大きな Mac OS アップデートであり、 500 KB の Drive Setup
+	アプリケーションの入手のために、メガバイト級のディスクイメージを
+	ダウンロードする必要があることに注意してください。
+	Apple は、最近のバージョンの Drive Setup を単体では提供していません。
       </para>
 
       <para>
-	Also, the 
+	また、
 	<ulink url="http://www.opensource.apple.com/projects/darwin/1.4/release.html">Darwin 
-	installer</ulink> has a version of Drive Setup that works.  
-	Darwin is also enormous (120.7 MB), since it contains a complete operating 
-	system.
+	インストーラー</ulink>にも、使えるバージョンの Drive Setup が含まれます。
+	オペレーティングシステム一式を含んでいるため、 Darwin も巨大 (120.7 MB)
+	です。
       </para>
 
       <para>
-	You'll need to open the disk image and copy Drive Setup to a hard drive, 
-	RAM disk, Zip disk, or floppy disk (it can't run from the disk image).
+	ディスクイメージを開き、 Drive Setup をハードドライブ、 RAM ディスク、
+	Zip ディスク、フロッピーディスク等にコピーします (Drive Setup
+	はディスクイメージからは実行できません) 。
       </para>
     </listitem>
     <listitem>
       <para>
-	When you first run Drive Setup, it'll give you a screen like this, 
-	where you can select the drive that you want to re-partition.
+	Drive Setup を最初に走らせると、次のような画面が出ます。
+	ここで、再分割しようとするドライブを選びます。
       </para>
 
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/drive-selection.gif"
+	  <imagedata fileref="../../../images/ports/macppc/drive-selection.gif"
 		     format="GIF" width="328" height="257" />
 	</imageobject>
 	<textobject><phrase>select a drive</phrase></textobject>
       </inlinemediaobject>
 
       <para>
-	Select the drive to re-partition and click the <code>Initialize...</code> 
-	button.  This will open another dialog box.  Click the <code>Custom 
-	Setup...</code> button.
+	再分割するドライブを選び、 <code>Initialize...</code> ボタンをクリックします。
+	すると別のダイアログが出ます。 <code>Custom Setup...</code>
+	ボタンをクリックします。
       </para>
 
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/initialize.gif"
+	  <imagedata fileref="../../../images/ports/macppc/initialize.gif"
 		     format="GIF" width="330" height="244" />
 	</imageobject>
 	<textobject><phrase>initialize</phrase></textobject>
@@ -392,51 +397,50 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Select the number of partitions you'll be using.  You will probably 
-	need at least 5 partitions, see the INSTALL notes for suggestions.
+	使う予定のパーティションの数を選びます。おそらく、少なくとも
+	5 パーティションは必要でしょう。インストールノートの提示を参照してください。
       </para>
 
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/custom-setup.gif"
+	  <imagedata fileref="../../../images/ports/macppc/custom-setup.gif"
 		     format="GIF" width="480" height="355" />
 	</imageobject>
 	<textobject><phrase>custom setup</phrase></textobject>
       </inlinemediaobject>
 
       <para>
-	Pick the <code>Partitioning Scheme</code> first since you lose all of your 
-	<code>Volumes</code> info each time you chose a different number of 
-	partitions.
+	パーティション数を変えると、 <code>Volumes</code> の情報はすべて消えるので、
+	まず最初に <code>Partitioning Scheme</code> を選んでください。
       </para>
     </listitem>
     <listitem>
       <para>
-	For each of the <code>Volumes</code> set the <code>Type:</code> under the 
-	<code>Volume Info</code> and <code>Size:</code> as suggested in the INSTALL notes.
+	各 <code>Volumes</code> ごとに、 <code>Volume Info</code> にある <code>Type:</code>
+	と <code>Size:</code> を、インストールノートに提示されているように設定します。
       </para>
       
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/custom-type.gif"
+	  <imagedata fileref="../../../images/ports/macppc/custom-type.gif"
 		     format="GIF" width="480" height="428" />
 	</imageobject>
 	<textobject><phrase>custom type</phrase></textobject>
       </inlinemediaobject>
 
       <para>
-	You can use the <code>TAB</code> key to rotate through the <code>Volumes</code>.
+	<code>Volumes</code> の移動には <code>TAB</code> キーが使えます。
       </para>
     </listitem>
     <listitem>
       <para>
-	When you're done, you should have something like the following (you 
-	get to name the Mac OS partitions later from the Finder):
+	設定が済むと、次のようになるはずです (Mac OS パーティション名は、
+	後ほど Finder から設定します):
       </para>
       
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/suggested-layout.gif"
+	  <imagedata fileref="../../../images/ports/macppc/suggested-layout.gif"
 		     format="GIF" width="480" height="355" />
 	</imageobject>
 	<textobject><phrase>suggested layout</phrase></textobject>
@@ -445,124 +449,124 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Click the <code>OK</code> button.  It will request confirmation of the 
-	changes.
+	<code>OK</code> ボタンをクリックします。すると、
+	変更について確認を求めてきます。
       </para>
       <para>
-	<emphasis>This is the point of no return!  If you accept the changes, it will 
-	erase all contents of your drive</emphasis>
+	<emphasis>ここまでくると、やり直せません ! ここで、確認に同意すると、
+	ドライブの内容はすべて消去されます</emphasis>
       </para>
     </listitem>
     <listitem>
       <para>
-	After it's done partitioning and creating the HFS(+) partitions, it 
-	will return to the original screen.
+	パーティショニングと HFS(+) パーティションの作成が済むと、
+	最初の画面に戻ります。
       </para>
 
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/drivesetup-done.gif"
+	  <imagedata fileref="../../../images/ports/macppc/drivesetup-done.gif"
 		     format="GIF" width="328" height="257" />
 	</imageobject>
 	<textobject><phrase>after partitioning</phrase></textobject>
       </inlinemediaobject>
 
       <para>
-	Note: the <code>A/UX</code> partitions are not accessible to Mac OS.
+	注意: <code>A/UX</code> パーティションは Mac OS からはアクセスできません。
       </para>
     </listitem>
     <listitem>
       <para>
-	You can quit Drive Setup, you're done with it.  Now, from the 
-	Finder, you can rename your HFS(+) partitions.  If you are using an Open 
-	Firmware 1.0.5 or 2.0.x model, you're done -- continue with the INSTALL 
-	notes.
+	Drive Setup での作業は完了し、 Drive Setup を終了できます。
+	これで、 Finder から、 HFS(+) パーティションの名前を変更できます。
+	Open Firmware 1.0.5 または 2.0.x の機種では、これで完了です─
+	インストールノートに従い、作業を続けてください。
       </para>
 
       <para>
-	If your model has Open Firmware 2.4 or 3, and you're going to 
-	make this disk bootable for NetBSD, you still need to do one more step.  
+	Open Firmware 2.4 または 3 の機種では、ディスクを NetBSD ブート可能に
+	するために、もう一段階必要です。
       </para>
 
       <para>
-	You will need to copy <code>ofwboot.xcf</code> (the bootloader) and 
-	<code>netbsd.GENERIC_MD.gz</code> or <code>netbsd.ram.gz</code> (the installer) to 
-	one of the HFS(+) partitions on your drive.  Make sure that you have 
-	downloaded these files in <code>binary</code> mode.
+	<code>ofwboot.xcf</code> (ブートローダー) と、 <code>netbsd.GENERIC_MD.gz</code>
+	または <code>netbsd.ram.gz</code> (インストーラー) を、 HFS(+) パーティションの
+	ひとつにコピーする必要があります。これらのファイルは
+	<code>バイナリー</code>モードでダウンロードしてあることを確認しておいてください。
       </para>
     </listitem>
   </orderedlist>
 </sect1>
 
 <sect1 id="disk-utility">
-  <title>Partitioning using Disk Utility (Mac OS X)</title>
+  <title>Disk Utility を使ったパーティショニング (Mac OS X)</title>
 
   <para>
-    The Mac OS X Disk Utility program cannot directly create NetBSD 
-    partitions, but where there's a will, there's a way.  The advantage of 
-    Disk Utility is that it is available from the Mac OS X install CDs.  
-    Disk Utility can only create "Mac OS Extended" (HFS+), "Mac OS Standard" 
-    (HFS), "UNIX File System" (UFS), and "Free Space" partitions.
+    Mac OS X の Disk Utility プログラムは NetBSD パーティションを直接作ることは
+    できませんが、最終的に NetBSD パーティションを作る方法はあります。
+    Disk Utility の利点は、 Mac OS X インストール CD から利用可能なことです。
+    Disk Utility が作成可能なのは、 "Mac OS Extended" (HFS+)、 "Mac OS Standard"
+    (HFS)、 "UNIX File System" (UFS) および "Free Space" パーティションのみです。
   </para>
 
   <para>
-    NetBSD/macppc -current kernels can use UFS partitions, even as the root 
-    partition.  At present, if there are no normal NetBSD A/UX-style partitions 
-    available, NetBSD/macppc does not fall back to assuming that an UFS 
-    partition is the root.  You may need to figure out what partition NetBSD 
-    thinks the UFS is at (e.g. "e") and create a kernel with the UFS 
-    partition specified as the <ulink url="faq.html#dash-a">root device</ulink>.
+    NetBSD/macppc -current カーネルは UFS パーティションを使うことができ、
+    ルートパーティションであっても使うことができます。現状、通常の NetBSD
+    A/UX-形式で利用可能なパーティションが存在しない場合に、 NetBSD/macppc
+    は UFS パーティションがルートであるとの仮定をするようにはなっていません。
+    NetBSD に、どのパーティション (たとえば "e") が UFS であるとみなすかを
+    教えてやる必要や、<ulink url="faq.html#dash-a">ルートデバイス</ulink>が UFS
+    であることを指定したカーネルを作る必要があるかもしれません。
   </para>
 
   <para>
-    If this doesn't suit your needs, then you can use Disk Utility to 
-    create your Mac OS HFS+ partitions and leave free space for NetBSD.  
-    You'll need to use <ulink url="#pdisk"><code>pdisk</code></ulink> to create the 
-    NetBSD partitions.
+    これでは足りないという場合、 Disk Utility で Mac OS HFS+ を作り、
+    NetBSD 用に free space を残しておくという使い方ができます。
+    あとは <ulink url="#pdisk"><code>pdisk</code></ulink> を使って NetBSD
+    パーティションを作る必要があります。
   </para>
 
   <orderedlist>
     <listitem>
       <para>
-	Launch Disk Utility.  From the install CDs, it's under the 
-	"Install" menu.  From Mac OS X, open /Applications/Utilities/Disk Utility.
+	Disk Utility を起動します。インストール CD から使う場合は "Install" メニューにあります。
+	Mac OS X から使う場合は /Applications/Utilities/Disk Utility を開きます。
       </para>
     </listitem>
     <listitem>
       <para>
-	You may need to authenticate.  If it says "Click the lock to make 
-	changes." in the lower left corner of the window, click the lock and type 
-	in your password (you <emphasis>are</emphasis> using an administrative account, aren't 
-	you).
+	ここで認証が必要かもしれません。ウィンドウ左下で "Click the lock to make
+	changes." といわれた場合は、錠前をクリックしてパスワードを入力します
+	(管理者用のアカウントを使っていますよね?)。
       </para>
     </listitem>
     <listitem>
       <para>
-	Select the disk to partition in the left panel.  Click on the 
-	"Partition" tab.  Pick your "Volume Scheme" (i.e. the number of 
-	partitions you want).
+	左側のパネルで、ディスクを選びます。 "Partition" タブを
+	クリックします。 "Volume Scheme" (つまり、必要なパーティション数)
+	を選びます。
       </para>
     </listitem>
     <listitem>
       <para>
-	Set the names, formats, and sizes of your partitions.  Hint:  to 
-	make partitions smaller than it recommends, type a number into the size box 
-	and hit enter to get it to accept your partition size.  "Mac OS Extended" 
-	HFS+ partitions have a minimum size of 4 MB.  For example, on 
-	my two-partition disk (a small HFS partition for <code>ofwboot.xcf</code> and 
-	a large UFS partition for NetBSD), Disk Utility looks like this:
+	パーティションの名前、フォーマットとサイズを設定します。ヒント:
+	推奨より小さいパーティションを作るには、サイズ欄に数字を入れ、それを
+	パーティションサイズにするため enter キーを押します。 "Mac OS Extended"
+	HFS+ パーティションの最小サイズは 4 MB です。例えば、筆者の 2 パーティションの
+	ディスク (<code>ofwboot.xcf</code> 用の小さい HFS パーティションと NetBSD 用の大きな
+	UFS パーティション) では、このようになります:
       </para>
 
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/diskutil-hfs.gif"
+	  <imagedata fileref="../../../images/ports/macppc/diskutil-hfs.gif"
 		     format="GIF" width="705" height="519" />
 	</imageobject>
 	<textobject><phrase>small HFS partition</phrase></textobject>
       </inlinemediaobject>
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/diskutil-ufs.gif"
+	  <imagedata fileref="../../../images/ports/macppc/diskutil-ufs.gif"
 		     format="GIF" width="705" height="519" />
 	</imageobject>
 	<textobject><phrase>large NetBSD UFS partition</phrase></textobject>
@@ -571,41 +575,41 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Choose whether to install Mac OS 9 disk drivers.  This is your only 
-	opportunity if you think you'll ever want to access any partitions on 
-	this disk from Mac OS 9 or earlier.  Even HFS partitions are inaccessible 
-	from Mac OS 9 if you don't click this button.
+	Mac OS 9 のディスクドライバーをどこにインストールするか選択します。
+	今後  Mac OS 9 かそれより前から、このディスクのパーティションのどれかへ
+	アクセスするつもりがある場合、これが唯一の機会です。ここでボタンをクリック
+	しなかった場合、 Mac OS 9 からは HFS パーティションにすらアクセスできなくなります。
       </para>
     </listitem>
     <listitem>
       <para>
-	Click OK and follow through.
+	OK をクリックして先へ進みます。
       </para>
     </listitem>
     <listitem>
       <para>
-	You can quit Disk Utility, you're done with it.  Now, from the 
-	Finder, you can rename your HFS(+) and UFS partitions.  If you are using an 
-	Open Firmware 1.0.5 or 2.0.x model, you're done -- continue with the INSTALL 
-	notes.
+	これで Disk Utility 抜けて結構です。作業は終わりました。これで、
+	Finder から HFS(+) や UFS パーティションの名前を変えられます。 Open Firmware
+	1.0.5 または 2.0.x の機種の場合、これで完了です─ INSTALL ノートに従って
+	作業を続けてください。
       </para>
 
       <para>
-	If your model has Open Firmware 2.4 or 3, and you're going to 
-	make this disk bootable for NetBSD, you still need to do one more step.
+	Open Firmware 2.4 または 3 の機種で、このディスクを NetBSD のブートに
+	使えるようにする場合は、さらに以下の手順を踏む必要があります。
       </para>
 
       <para>
-	You will need to copy <code>ofwboot.xcf</code> (the bootloader) to one of the
-	HFS(+) partitions on your drive.  Copy <code>netbsd.GENERIC_MD.gz</code> (the
-	installer) to your UFS partition (though it can also sit on an HFS(+)
-	partition).  Make sure that you have downloaded these files in
-	<code>binary</code> mode.
+	<code>ofwboot.xcf</code> (NetBSD 用のブートローダー) を、ドライブの HFS(+)
+	パーティションのひとつにコピーする必要があります。 <code>netbsd.GENERIC_MD.gz</code>
+	を UFS パーティションにコピーします (これは HFS(+)
+	パーティションに置いておくこともできますが)。これらのファイルは
+	<code>バイナリー</code>モードでダウンロードしてあることを確認しておいてください。
       </para>
 
       <para>
-	Remember, you'll need a -current kernel to use UFS as a root 
-	partition, and it may not be recognized by NetBSD as partition "a".
+	UFS をルートパーティションに使うために -current カーネルが必要であること、
+	NetBSD がこのパーティションをパーティション "a" であると認識しない可能性があることに注意してください。
       </para>
     </listitem>
   </orderedlist>
@@ -613,79 +617,79 @@ extension.</para>
 
 <sect1 id="pdisk">
   <title>
-    Partitioning using <code>pdisk</code> and <code>newfs</code> 
+    <code>pdisk</code> と <code>newfs</code> を使ったパーティショニング
     (Mac OS 9, Mac OS X, Darwin, NetBSD, Linux)
   </title>
 
   <para>
-    The command-line <code>pdisk</code> utility is used to view and modify the 
-    Apple Partition Map on a disk.  NetBSD, Mac OS X, and Darwin can all mount 
-    disks partitioned with <code>pdisk</code>.  Mac OS 9 and earlier need special 
-    drivers to be installed to mount a disk (see <ulink url="#drive-setup">Drive 
-    Setup</ulink> and <ulink url="#disk-utility">Disk Utility</ulink>).  <code>pdisk</code> 
-    can create partition maps which will be bootable on  Open Firmware 2.4 or 
-    3 machines running NetBSD, Mac OS X, and Darwin.  
+    コマンドラインの <code>pdisk</code> ユーティリティーは、ディスク上の Apple
+    パーティションマップの閲覧と修正に使われます。 NetBSD、 Mac OS X、 Darwin
+    はいずれも、 <code>pdisk</code> でパーティション分割されたディスクをマウント可能です。
+    Mac OS 9 およびそれ以前は、これをマウントするには特別なドライバーのインストールが
+    必要です (<ulink url="#drive-setup">Drive Setup</ulink> と <ulink url="#disk-utility">Disk
+    Utility</ulink> 参照)。 <code>pdisk</code> は、 Open Firmware 2.4 または 3 の機種で
+    NetBSD、 Mac OS X、 Darwin のブート可能なパーティションマップを作成可能です。
   </para>
 
   <para>
-    You may still find <code>pdisk</code> useful to modify a partition map 
-    created by another utility or simply to list the partition map of a disk.
-    If you are merely interested in listing the partition map of a disk, 
-    follow steps 1 through 4.
+    さらに、 <code>pdisk</code> は別のユーティリティーで作ったパーティションマップの修正や、
+    単にディスクのパーティションマップのリストを見るためにも使えることがおわかりでしょう。
+    ディスクのパーティションマップのリストを見たいだけの場合は、
+    1 から 4 までの手順に従ってください。
   </para>
 
   <para>
-    Before starting, some caveats about partitioning:
+    始める前に、パーティショニングに関していくらか警告しておきます:
   </para>
 
   <itemizedlist>
     <listitem>
       <para>
-	If you create the partition map from <code>pdisk</code> (not just modify
-	a partition map created using a Mac OS utility), you won't be able to
-	access the partitions on this disk from Mac OS 9 and earlier.
+	(Mac OS ユーティリティーで作ったパーティションマップを単に修正するのではなく)
+	パーティションマップを <code>pdisk</code> で一から作った場合、このディスク上の
+	パーティションは Mac OS 9 およびそれ以前からはアクセスできなくなります。
       </para>
     </listitem>
     <listitem>
       <para>
-	You can't create NetBSD A/UX-style partitions using the native 
-	Mac OS X, Darwin, or Linux <code>pdisk</code> program.
+	Mac OS X、 Darwin や Linux のネイティブな <code>pdisk</code> では、
+	NetBSD A/UX-形式のパーティションを作ることはできません。
       </para>
     </listitem>
     <listitem>
       <para>
-	The Mac OS 9 <code>pdisk</code> is a little out of date, and may act 
-	slightly different than the stuff below, but it still does the job.
+	Mac OS 9 の <code>pdisk</code> は、やや旧式のものであり、
+	以下の説明とは若干異なる動作をすることがありますが、それでも使用可能です。
       </para>
     </listitem>
     <listitem>
       <para>
-	Mac OS X and Darwin won't let you write the <code>pdisk</code> partition 
-	map onto a drive that is currently in use.  This means you can't 
-	repartition your boot drive.  Boot from another disk (or create a 
-	bootable CD using a tool like <ulink url="http://charlessoft.com/">BootCD</ulink>).
+	Mac OS X および Darwin では、使用中のドライブに <code>pdisk</code>
+	パーティションマップを書き込むことができません。つまり、ブートドライブの
+	分割し直しはできないということです。別のディスクからブートして作業してください
+	(または、 <ulink url="http://charlessoft.com/">BootCD</ulink> 等のツールでブート可能な CD を作ってください)。
       </para>
     </listitem>
   </itemizedlist>
 
   <para>
-    The partition numbers listed by <code>pdisk</code> 
-    are the same that Open Firmware uses.  If you're trying to boot an Open 
-    Firmware 2.4 or 3 machine with this disk, remember which 
-    <code>Apple_HFS</code> partition number has <code>ofwboot.xcf</code> and which 
-    <code>Apple_UNIX_SVR2</code> or <code>Apple_UFS</code> partition is your NetBSD 
-    root partition.
+    <code>pdisk</code> によってリストされるパーティション番号は、 Open Firmware
+    が使っているものと同じものです。 Open Firmware 2.4 または 3 の機種で
+    ディスクをブート可能にしようとする場合は、 <code>Apple_HFS</code>
+    パーティションに <code>ofwboot.xcf</code> を置くことと、 <code>Apple_UNIX_SVR2</code>
+    または <code>Apple_UFS</code> パーティションを NetBSD
+    ルートパーティションにすることを忘れないでください。
   </para>
 
   <orderedlist>
-    <listitem><para>Get <code>pdisk</code>.</para>
+    <listitem><para><code>pdisk</code> を入手する。</para>
     <itemizedlist>
       <listitem>
-	<para>NetBSD -current, <code>/sbin/pdisk</code></para>
+	<para>NetBSD -current では、 <code>/sbin/pdisk</code></para>
       </listitem>
       <listitem>
 	<para>
-	  NetBSD 1.6.x, <ulink 
+	  NetBSD 1.6.x では、 <ulink 
 	  url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.macppc-1-6">
 	  ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.macppc-1-6
 	</ulink>
@@ -694,7 +698,7 @@ extension.</para>
       </listitem>
       <listitem>
 	<para>
-	  Mac OS X 10.2.5 (known to also work on Mac OS X 10.1.5), <ulink
+	  Mac OS X 10.2.5 (Mac OS X 10.1.5 でも動作することがわかっています) では、 <ulink
 	  url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.macos-10-2">
 	  ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.macos-10-2</ulink>
 	</para>
@@ -702,17 +706,17 @@ extension.</para>
       </listitem>
       <listitem>
 	<para>
-	  Mac OS 9, <ulink
+	  Mac OS 9 では、 <ulink
 	  url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/macos-utils/pdisk.sea.hqx">
 	  ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/macos-utils/pdisk.sea.hqx</ulink>
 	</para>
 	<para>
-	  Uncompress the archive, and run <code>pdisk ppc</code>
+	  アーカイブを伸長し、<code>pdisk ppc</code> を実行する
 	</para>
       </listitem>
       <listitem>
 	<para>
-	  Everything else (Mac OS X, Darwin, Linux), <ulink
+	  それ以外 (Mac OS X、 Darwin、 Linux) では、 <ulink
 	  url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.src.20030424.tgz">
 	  ftp://ftp.NetBSD.org/pub/NetBSD/arch/macppc/netbsd-pdisk/netbsd-pdisk.src.20030424.tgz</ulink>
 	</para>
@@ -723,9 +727,9 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Determine the device name for the disk you're going to repartition 
-	or view.  If you are repartitioning, unmount any of those disk's 
-	partitions that might be mounted.
+	閲覧またはパーティション再分割しようとしているディスクのデバイス名を
+	調べます。パーティション再分割する場合は、そのディスクのマウントされている
+	パーティションはすべてアンマウントします。
       </para>
 
       <itemizedlist>
@@ -739,15 +743,15 @@ extension.</para>
 	    Mac OS 9:
 	  </para>
 	  <para>
-	    Drag the disk to the trash.
-	    Open <code>pdisk ppc</code> and type <code><emphasis
-	    role="bold">L</emphasis></code> to list the disks, their
-	    fake names, and their partitions
+	    ディスクのアイコンをゴミ箱に捨てます。
+	    <code>pdisk ppc</code> を開き、<code><emphasis
+	    role="bold">L</emphasis></code> をタイプしてディスク、その偽名、
+	    パーティションを列挙させます
 	  </para>
 	</listitem>
 	<listitem>
 	  <para>
-	    Mac OS X and Darwin:
+	    Mac OS X および Darwin:
 	  </para>
  <screen># <emphasis role="bold">/usr/sbin/diskutil list</emphasis>
 # <emphasis role="bold">/usr/sbin/disktool -u disk2</emphasis></screen>
@@ -763,13 +767,13 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Run <code>pdisk /dev/<emphasis>disk-device</emphasis></code>, where 
-	<emphasis>disk-device</emphasis> is something like:
+	<code>pdisk /dev/<emphasis>disk-device</emphasis></code> を実行します。ここで
+	<emphasis>disk-device</emphasis> は以下のようになります:
       </para>
       <itemizedlist>
-	<listitem>NetBSD <code>/dev/sd2c</code> (use the "<code>c</code>" partition)</listitem>
-	<listitem>Mac OS X and Darwin <code>/dev/disk2</code> (use no partition designation)</listitem>
-	<listitem>Linux <code>/dev/hdc</code> (use no partition designation)</listitem>
+	<listitem>NetBSD では <code>/dev/sd2c</code> ("<code>c</code>" パーティションを使用)</listitem>
+	<listitem>Mac OS X および Darwin では <code>/dev/disk2</code> (パーティション名は指定しない)</listitem>
+	<listitem>Linux では <code>/dev/hdc</code> (パーティション名は指定しない)</listitem>
       </itemizedlist>
 
 <programlisting>  # <emphasis role="bold">./pdisk /dev/disk2</emphasis>
@@ -800,8 +804,8 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Double-check you're on the right disk.  If it's already got an
-	Apple Partition Map, everything should be OK.  
+	作業対象のディスクが正しいか、再確認します。 Apple
+	パーティションマップがすでにあれば、大丈夫なはずです。
       </para>
 
 <programlisting>  Command (? for help): <emphasis role="bold">P</emphasis>
@@ -830,8 +834,8 @@ extension.</para>
   4:  34 @ 232, type=0xf8ff</programlisting>
 
       <para>
-	If the disk does not have an APM, it'll give you some errors and you'll
-	need to initialize the APM before creating new partitions. 
+	もし Apple パーティションマップ (APM) がなければ、エラーが出ますし、
+	新しいパーティションを作る前に APM の初期化が必要です。
       </para>
 
 <screen>  Command (? for help): <emphasis role="bold">P</emphasis>
@@ -850,32 +854,32 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Delete unused partitions and create your partitions.  There's no 
-	need to delete the <code>Apple_Free</code> partitions, those automatically 
-	take up any unassigned space.
+	未使用パーティションを削除し、新しいパーティションを作ります。
+	<code>Apple_Free</code> パーティションは、自動的に未使用領域に計上されますので、
+	削除する必要はありません。
       </para>
 
       <para>
-	Use the <code>P</code> command to list the partitions to make sure you 
-	delete the right one(s).
+	<code>P</code> コマンドでパーティションの一覧を表示し、
+	正しくパーティションを削除したか確認します。
       </para>
 <screen>  Command (? for help): <emphasis role="bold">d</emphasis>
   Partition number: <emphasis role="bold">9</emphasis></screen>
 
       <para>
-	Useful partition types you might want to create are:
+	作成される有用なパーティション型には、以下のようなものがあります:
       </para>
       
       <informaltable>
 	<tgroup cols="2">
 	  <tbody>
 	    <row><entry><code>Apple_HFS</code></entry>
-	    <entry>HFS and HFS+ partitions (also <ulink url="#msdos">shared 
-	    MS-DOS</ulink>)</entry></row>
+	    <entry>HFS および HFS+ パーティション (<ulink url="#msdos">共有
+	    MS-DOS</ulink> パーティションもこれ)</entry></row>
 	    <row><entry><code>Apple_UFS</code></entry>
-	    <entry>UFS partitions</entry></row>
+	    <entry>UFS パーティション</entry></row>
 	    <row><entry><code>Apple_UNIX_SVR2</code></entry>
-	    <entry>A/UX-style partition for NetBSD and Linux</entry></row>
+	    <entry>NetBSD および Linux 用の A/UX-形式パーティション</entry></row>
 	  </tbody>
 	</tgroup>
       </informaltable>
@@ -923,7 +927,7 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Write out the new partition map and quit.
+	新しいパーティションを書き出し、 pdisk を終了します。
       </para>
 
 <screen>  Command (? for help): <emphasis role="bold">w</emphasis>
@@ -932,16 +936,16 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Create new filesystems.
+	新しいファイルシステムを作ります。
       </para>
       <itemizedlist>
 	<listitem>
 	  <para>
-	    NetBSD can only create its own filesystem (FFS) for the root and user 
-	    partitions.  It can't directly create UFS, HFS, HFS+, or non-floppy sized 
-	    MS-DOS filesystems.  You can use <ulink
+	    NetBSD は、ルートおよびユーザーパーティションとして固有のファイルシステム
+	    (FFS) しか作ることができません。 UFS、 HFS、 HFS+ や、フロッピーサイズ以外の MS-DOS
+	    ファイルシステムを直接作ることはできません。 HFS ファイルシステムの作成には <ulink
 	    url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
-	    hfstools</ulink> to create an HFS filesystem.
+	    hfstools</ulink> を使うことができます。
 	  </para>
 
 	  <screen># <emphasis role="bold">newfs /dev/sd2a</emphasis>
@@ -950,19 +954,19 @@ extension.</para>
 	
 	<listitem>
 	  <para>
-	    Mac OS 9 will ask to create HFS and HFS+ filesystems when you 
-	    reboot.  After the reboot, it will recognize the new partition map, 
-	    notice those partitions don't have filesystems and ask to create them.  
-	    See <ulink url="#msdos">Creating a shared MS-DOS filesystem</ulink> on how to 
-	    format a shared MS-DOS partition.
+	    Mac OS 9 は、リブートすると HFS と HFS+ ファイルシステムの作成を要求してきます。
+	    リブート後、 OS は新しいパーティションマップを認知し、このパーティションに
+	    ファイルシステムがないことを警告して、ファイルシステムを作るよう求めてきます。
+	    共有 MS-DOS パーティションのフォーマット方法は、
+	    <ulink url="#msdos">共有 MS-DOS ファイルシステムの作成</ulink> を見てください。
 	  </para>
 	</listitem>
 	<listitem>
 	  <para>
-	    Mac OS X and Darwin can create UFS, HFS+, and HFS filesystems.  It
-	    can't create NetBSD FFS, or non-floppy sized MS-DOS filesystems using
-	    command-line utilities. You won't need an HFS (non-extended) partition
-	    unless you intend to use it with Mac OS 8.0 or earlier.
+	    Mac OS X および Darwin は、 UFS、 HFS+ および HFS パーティションを作ることができます。
+	    NetBSD FFS やフロッピーサイズ以外の MS-DOS ファイルシステムをコマンドラインユーティリティーを使って
+	    作ることはできません。 Mac OS 8.0 やそれ以前を使うことを考えない限り、
+	    (拡張ではない通常の) HFS パーティションは必要ないはずです。
 	  </para>
 	  <screen># <emphasis role="bold">newfs_hfs /dev/disk2s2</emphasis></screen>
 	  <para>
@@ -975,11 +979,11 @@ extension.</para>
 	</listitem>
 	<listitem>
 	  <para>
-	    Linux can only create its own filesystem (ext2fs) for the root, swap 
-	    and user partitions and MS-DOS filesystems.  It can't directly create UFS, 
-	    HFS, or HFS+.  You can use <ulink
+	    Linux は、ルート用の Linux 固有のファイルシステム (ext2fs)、スワップ、
+	    ユーザーパーティションおよび MS-DOS ファイルシステムを作ることしかできません。
+	    UFS、 HFS および HFS+ を直接作ることはできません。 HFS ファイルシステムは、 <ulink
 	    url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/sysutils/hfsutils/README.html">
-	    hfstools</ulink> to create an HFS filesystem.
+	    hfstools</ulink> を使って作ることができます。
 	  </para>
 <screen># <emphasis role="bold">mkfs -t ext2 /dev/hdc2</emphasis>
 # <emphasis role="bold">mkdosfs /dev/hdc3</emphasis>
@@ -989,12 +993,12 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Mount your new filesystems.
+	新しいファイルシステムをマウントします。
       </para>
       <itemizedlist>
 	<listitem>
 	  <para>
-	    NetBSD (use the same commands for FFS and UFS):
+	    NetBSD (FFS でも UFS でも同じコマンドを使います):
 	  </para>
 <screen># <emphasis role="bold">mount /dev/sd2a /mnt</emphasis>
 # <emphasis role="bold">hmount /dev/sd2e</emphasis></screen>
@@ -1004,7 +1008,7 @@ extension.</para>
 	</listitem>
 	<listitem>
 	  <para>
-	    Mac OS X and Darwin:
+	    Mac OS X および Darwin:
 	  </para>
 <screen>  # <emphasis role="bold">/sbin/autodiskmount -v</emphasis>
   ** /dev/rdisk2s2
@@ -1027,13 +1031,13 @@ extension.</para>
 <para>
  (OSX UFS)
 </para>
-<screen># <emphasis role="bold">hmount /dev/hdc3</emphasis></screen><para>(virtual hfsutils mount)</para>
+<screen># <emphasis role="bold">hmount /dev/hdc3</emphasis></screen><para>(hfsutils の仮想的な mount)</para>
 <screen># <emphasis role="bold">mount -t hfs /dev/hdc3 /mnt/macos</emphasis></screen>
-<para>(experimental in-kernel HFS)</para>
+<para>(実験的なカーネル内 HFS)</para>
 <screen># <emphasis role="bold">hpmount /dev/hdc4</emphasis></screen>
-<para>(virtual hfsplus utils mount)</para>
+<para>(hfsplus utils の仮想的な mount)</para>
 <screen># <emphasis role="bold">mount -t hfsplus -o ro /dev/hdc4 /mnt/macosx</emphasis></screen>
-<para>(experimental in-kernel HFS+)</para>
+<para>(実験的なカーネル内 HFS+)</para>
 <screen># <emphasis role="bold">mount -t ext2 /dev/hdc5 /mnt/linux</emphasis></screen>
 <para>(linux ext2fs)</para>
 	</listitem>
@@ -1041,61 +1045,61 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	If you are using an Open Firmware 1.0.5 or 2.0.x model, you may
-	want to copy <code>netbsd.GENERIC_MD.gz</code> (the installer) to your FFS or
-	UFS partition.  Make sure that you have downloaded this file in
-	<code>binary</code> mode.  You'll still need to load <code>ofwboot.xcf</code> 
-	from another source to boot your machine, though.
+	Open Firmware 1.0.5 または 2.0.x の機種では、
+	<code>netbsd.GENERIC_MD.gz</code> (インストーラー) を FFS または UFS
+	パーティションにコピーしておくとよいでしょう。このファイルのダウンロードは
+	<code>バイナリー</code>モードでダウンロードしてあることを確認しておいてください。
+	ブートするためにはさらに <code>ofwboot.xcf</code> を別のところからロードする必要があります。
       </para>
 
       <para>
-	If your model has Open Firmware 2.4 or 3, and you're going to make this
-	disk bootable for NetBSD, you will need to copy <code>ofwboot.xcf</code> (the
-	bootloader) to one of the HFS(+) partitions on your drive.  From NetBSD,
-	use the <code>hcopy</code> command.  Copy <code>netbsd.GENERIC_MD.gz</code> (the
-	installer) to your FFS or UFS partition (though it can also sit on an
-	HFS(+) partition).  Make sure that you have downloaded these files in
-	<code>binary</code> mode.
+	Open Firmware 2.4 または 3 の機種で、このディスクから NetBSD
+	がブート可能なようにするためには、 <code>ofwboot.xcf</code> (ブートローダー)
+	をHFS(+) パーティションのひとつにコピーする必要があります。 NetBSD から行なうには
+	<code>hcopy</code> コマンドを使います。 <code>netbsd.GENERIC_MD.gz</code> (インストーラー)
+	を FFS または UFS パーティションにコピーします (これは HFS(+)
+	パーティションに置いておくこともできますが)。これらのファイルは
+	<code>バイナリー</code>モードでダウンロードしてあることを確認しておいてください。
       </para>
 
       <para>
-	Remember, you'll need a -current kernel to use UFS as a root 
-	partition, and it may not be recognized by NetBSD as partition "a".
+	UFS をルートパーティションに使うために -current カーネルが必要であること、
+	NetBSD がこのパーティションをパーティション "a" であると認識しない可能性があることに注意してください。
       </para>
     </listitem>
   </orderedlist>
 </sect1>
 <sect1 id="msdos">
-  <title>Creating a shared MS-DOS filesystem</title>
+  <title>共有 MS-DOS ファイルシステムの作成</title>
 
   <para>
-    You can create an MS-DOS format partition that works in all OSes such
-    that classic Mac OS will automatically mount it, and the unix-like OSes
-    (NetBSD, Linux, Darwin, and Mac OS X) can mount it using the
-    <code>mount_msdos</code> command.  The steps below outline the most
-    straightforward technique. 
+    すべての OS で利用可能な、 MS-DOS フォーマットのパーティションを作ることができます。
+    古い Mac OS ではこれを自動的にマウントしますし、 
+    unix-like OS (NetBSD、 Linux、 Darwin、 Mac OS X) では
+    <code>mount_msdos</code> コマンドを使ってマウントできます。
+    以下に、最も素直な方法の手順を概説します。
   </para>
 
   <orderedlist>
     <listitem>
       <para>
-	Partition your hard drive with an HFS partition (type 
-	<code>Apple_HFS</code>) reserved for MS-DOS.
+	ハードドライブのパーティションを切り、 MS-DOS 用に HFS
+	パーティション (type <code>Apple_HFS</code>) を確保しておきます。
       </para>
     </listitem>
     <listitem>
       <para>
-	Next, boot Mac OS 8.1-9.x, grab a copy of 
+	次に、 Mac OS 8.1-9.x をブートし、
 	<ulink url="http://hyperarchive.lcs.mit.edu/cgi-bin/NewSearch?key=disk+charmer&amp;search=&amp;sp=sp">
-	  Disk Charmer</ulink> or
-	  <ulink url="http://www.versiontracker.com/moreinfo.fcgi?id=1253">DiskCharmer</ulink>,
-	  and set it up to create an
-	  MS-DOS file system.  Your settings should look something like this:
+	  Disk Charmer</ulink> または
+	  <ulink url="http://www.versiontracker.com/moreinfo.fcgi?id=1253">DiskCharmer</ulink>
+	  を入手し、 MS-DOS ファイルシステムを作るよう設定します。
+	  設定画面は次のようになるはずです:
       </para>
 
       <inlinemediaobject>
 	<imageobject>
-	  <imagedata fileref="../../images/ports/macppc/diskcharmer.gif"
+	  <imagedata fileref="../../../images/ports/macppc/diskcharmer.gif"
 		     format="GIF" width="405" height="251" />
 	</imageobject>
 	<textobject><phrase>screenshot of DiskCharmer</phrase></textobject>
@@ -1104,39 +1108,39 @@ extension.</para>
     </listitem>
     <listitem>
       <para>
-	Drag the partition onto DiskCharmer's window and it will prompt you
-	before erasing it and creating an MS-DOS file system in place of the HFS 
-	file system you created in the first step.
+	パーティションを DiskCharmer のウィンドウ上にドラッグします。すると、
+	最初に作った HFS パーティションを消去し、そこに MS-DOS ファイルシステムを
+	作る前に、プロンプトが出ます。
       </para>
     </listitem>
     <listitem>
       <para>
-	Now, when you boot Classic Mac OS, this partition will automatically 
-	mount using PC Exchange or File Exchange (depending on what it's called in your 
-	version of Mac OS).  
+	これで、古い Mac OS をブートしたら、このパーティションが PC Exchange
+	または File Exchange (これの呼び名は Mac OS のバージョンによります)
+	によって自動的にマウントされるようになりました。
       </para>
 
-      <para>When you boot into Mac OS X, Linux, or NetBSD, run the following command:</para>
+      <para>Mac OS X、 Linux や NetBSD をブートしたときは、次のコマンドを実行します:</para>
 
       <screen>mkdir -p /msdos.filesystem;/sbin/mount_msdos -m 777 /dev/disk0s11 /msdos.filesystem</screen>
 
       <para>
-	where <code>/msdos.filesystem</code> is the mount point you'd like, and 
-	<code>/dev/disk0s11</code> is the device name for your partition.  Alternatively,
-	for NetBSD and Linux, you can add an entry to your <code>/etc/fstab</code>
-	to always mount this filesystem.
+	ここで <code>/msdos.filesystem</code> はあなたが決めたマウントポイント、
+	<code>/dev/disk0s11</code> はそのパーティションのデバイス名です。あるいは、
+	NetBSD や Linux では、 <code>/etc/fstab</code> に項目を追加して、
+	このファイルシステムがいつもマウントされるようにもできます。
       </para>
     </listitem>
     <listitem>
       <para>
-	To get Mac OS X and Darwin to automatically mount your MS-DOS file system,
-	you need to create a System Startup bundle.  The 
+	Mac OS X や Darwin で MS-DOS ファイルシステムを自動的にマウントする
+	ためには、 System Startup ファイル群を作成する必要があります。
 	<ulink url="http://www.darwinfo.org/howto/SystemStarter_HOWTO.shtml">SystemStarter
-	HOWTO</ulink> is a good reference if you want to learn more about creating your
-	own startup bundles.  There's probably a way to do this using 
-	<code>autodiskmount</code>, but this technique works fine.  The only downside is
-	that the MS-DOS filesystem is unavailable to the Classic environment.
-	Here's an example of what to do:
+	HOWTO</ulink> が、スタートアップファイル群の作成方法を学ぶうえでのよい参考資料と
+	なるでしょう。 <code>autodiskmount</code> を使った方法もおそらくあるのでしょうが、
+	ここで説明する方法でうまくいきます。唯一の欠点は、 MS-DOS ファイルシステムが
+	Classic 環境では扱えないことです。
+	以下に例を示します:
       </para>
 
       <orderedlist>
@@ -1145,9 +1149,9 @@ extension.</para>
 	</listitem>
 	<listitem>
 	  <para>
-	    Create 
-	    <code>/Library/StartupItems/MountMSDOS/StartupParameters.plist</code> with
-	    the following contents:
+	    以下の内容を持つファイル
+	    <code>/Library/StartupItems/MountMSDOS/StartupParameters.plist</code>
+	    を作成します:
 	  </para>
 <programlisting>{
   Description     = "Mount MSDOS partitions";
@@ -1163,9 +1167,9 @@ extension.</para>
 	</listitem>
 	<listitem>
 	  <para>
-	    Create
-	    <code>/Library/StartupItems/MountMSDOS/MountMSDOS</code> with
-	    the following contents:
+	    以下の内容を持つファイル
+	    <code>/Library/StartupItems/MountMSDOS/MountMSDOS</code>
+	    を作成します:
 	  </para>
 	  <programlisting>#!/bin/sh
 
@@ -1192,93 +1196,93 @@ mount_msdos /dev/disk0s11 /Volumes/Thingies</programlisting>
 </sect1>
 
 <sect1 id="nomenclature">
-  <title>Partition nomenclature</title>
+  <title>パーティション命名規則</title>
 
   <para>
-    There are three partition identification schemes you'll run across
-    when using NetBSD/macppc.  Each identification scheme sorts the 
-    partitions differently, even though the partition's location on the disk 
-    doesn't change.  Some schemes hide certain partitions.
+    NetBSD/macppc を使うときに、あなたが関わるであろうパーティション特定方式は
+    三種類あります。各方式は、ディスク上のパーティション位置は変わらないにもかかわらず、
+    異なるやり方でパーティションの順序を変えます。
+    方式によっては、一部のパーティションを隠します。
   </para>
 
   <orderedlist>
     <listitem>
       <para>
-	<emphasis role="bold">Actual order on the disk (0 thru max
-	partition number):</emphasis>
+	<emphasis role="bold">ディスク上の実際の順序 (0
+	から最大のパーティション番号まで):</emphasis>
       </para>
       <para>
-	This is the scheme used by Open Firmware and the <code>/dev/diskXsY</code>
-	device files in Mac OS X and Darwin. The order of partitions is directly
-	related to the order you selected in Drive Setup, pdisk, or the NetBSD
-	partitioning tools. You can print out this list from any OS using <ulink
-	url="partitioning.html#pdisk">pdisk</ulink>.
+	これは、 Open Firmware や、 Mac OS X と Darwin の <code>/dev/diskXsY</code>
+	デバイスファイルが使っている方式です。パーティションの順序は、
+	Drive Setup や pdisk や NetBSD のパーティショニングツールにおける順序
+	そのままです。この方式によるパーティション一覧は、各 OS で <ulink
+	url="partitioning.html#pdisk">pdisk</ulink> を使ってプリントアウトできます。
       </para>
 
       <informaltable>
 	<tgroup cols="2">
 	  <tbody>
 	    <row><entry>0</entry>
-	    <entry>A special "partition" reserved for a primary bootloader.</entry></row>
+	    <entry>最初の段階のブートローダーのために予約された、特別な "パーティション"。</entry></row>
 	    <row><entry>1</entry>
-	    <entry>The Apple Partition Map.</entry></row>
-	    <row><entry>2 thru ~8</entry>
-	    <entry>Reserved for Mac OS 9 drivers if the drive is formatted with a 
-	    Mac OS tool.  Otherwise, user created partitions.</entry></row>
-	    <row><entry>~9 thru ~15</entry>
-	    <entry>User created partitions, placed in order of their physical location on
-	    disk.</entry></row>
+	    <entry>Apple パーティションマップ。</entry></row>
+	    <row><entry>2 から ~8</entry>
+	    <entry>Mac OS のツールでフォーマットされたドライブでは、 Mac OS 9 ドライバー
+	    のために予約されている。そうでない場合は、ユーザーが作ったパーティション。</entry></row>
+	    <row><entry>~9 から ~15</entry>
+	    <entry>ユーザーが作ったパーティション、
+	    配置はディスクの物理的な位置の順。</entry></row>
 	  </tbody>
 	</tgroup>
       </informaltable>
     </listitem>
     <listitem>
       <para>
-	<emphasis role="bold">Mac OS-visible partitions (by partition
-	name in Finder):</emphasis>
+	<emphasis role="bold">Mac OS で見えるパーティション (Finder
+	上のパーティション名による):</emphasis>
       </para>
       <para>
-	While you may have created a bunch of partitions in Drive Setup, only
-	those partitions visible to Mac OS will show up in the Finder.
+	Drive Setup でパーティションの群を作ったかもしれませんが、
+	この Mac OS で見えるパーティションだけが Finder で表示されます。
       </para>
 
       <para>
-	The only partitions visible to Mac OS 9 and earlier are those formatted in
-	HFS, HFS+, or MS-DOS formats.  The only partitions visible to Mac OS X and later
-	are those formatted in HFS, HFS+, UFS, and MS-DOS (<emphasis>not</emphasis> NetBSD's 
-	4.2BSD FFS).
+	Mac OS 9 以前で見えるパーティションは、 HFS、 HFS+ または MS-DOS フォーマット
+	でフォーマットされたものだけです。 Mac OS X 以降で見えるパーティションは、
+	HFS、 HFS+、 UFS および MS-DOS (NetBSD の 4.2BSD FFS では <emphasis>ありません</emphasis>)
+	でフォーマットされたものだけです。
       </para>
     </listitem>
     <listitem>
       <para>
-	<emphasis role="bold">NetBSD-visible partitions (letters a thru h, as seen by 
-	<code>disklabel</code>):</emphasis>
+	<emphasis role="bold">NetBSD で見えるパーティション (<code>disklabel</code> で見られるとおりの
+	a から h までの文字):</emphasis>
       </para>
       <para>
-	NetBSD reorders the partitions such that things work out better for 
-	itself.  The <code>fstype</code> reported by <code>&man.disklabel.8;</code> is set
-	by the Apple Partition Map flags, and does not depend on the actual
-	type of filesystem on that partition (be it NetBSD FFS, Apple HFS, or MS-DOS).
-	In particular, MS-DOS formatted partitions show up as <code>HFS</code> 
-	partitions, if created using the method in <ulink url="#msdos">
-	Creating a shared MS-DOS filesystem</ulink>.
+	NetBSD は、自分が処理しやすいような形にパーティションを並べ替えます。
+	<code>&man.disklabel.8;</code> で得られる <code>fstype</code> は、
+	Apple パーティションマップのフラグによっており、パーティション上の実際の
+	ファイルシステム (NetBSD FFS、 Apple HFS や MS-DOS) によってはいません。
+	特に、 MS-DOS フォーマットのパーティションは、それが<ulink url="#msdos">
+	共有 MS-DOS ファイルシステムの作成</ulink>の方法で作られた場合、
+	<code>HFS</code> パーティションに見えます。
       </para>
 
       <informaltable>
 	<tgroup cols="2">
 	  <tbody>
 	    <row><entry>a</entry>
-	    <entry>Your "A/UX Root" partition, regardless of its order on the disk</entry></row>
+	    <entry>"A/UX Root" パーティション、ディスク上の順序とは無関係</entry></row>
 	    <row><entry>b</entry>
-	    <entry>Your "A/UX Swap" partition, regardless of its order on the disk</entry></row>
+	    <entry>"A/UX Swap" パーティション、ディスク上の順序とは無関係</entry></row>
 	    <row><entry>c</entry>
-	    <entry>This is the entire disk (first sector to last sector)</entry></row>
+	    <entry>ディスク全体 (最初のセクターから最後のセクターまで)</entry></row>
 	    <row><entry>d-f</entry>
-	    <entry>First few non-A/UX partitions (usually the user HFS(+) partitions)</entry></row>
+	    <entry>最初のほうにある A/UX 以外のパーティション (普通はユーザー HFS(+) パーティション)</entry></row>
 	    <row><entry>g</entry>
-	    <entry>Your "A/UX User" partition (if present), regardless of its order on the disk</entry></row>
+	    <entry>(作ってあれば) "A/UX User" パーティション、ディスク上の順序とは無関係</entry></row>
 	    <row><entry>h</entry>
-	    <entry>Additional non-A/UX partitions (usually user HFS(+) partitions)</entry></row>
+	    <entry>さらにある A/UX 以外のパーティション (普通はユーザー HFS(+) パーティション)</entry></row>
 	  </tbody>
 	</tgroup>
       </informaltable>
@@ -1286,8 +1290,8 @@ mount_msdos /dev/disk0s11 /Volumes/Thingies</programlisting>
   </orderedlist>
 
   <para>
-    So, for example the following is what Drive Setup created on my PowerBook 
-    (FireWire):
+    そして、たとえば以下は PowerBook (FireWire) に Drive Setup
+    で作成したものです:
   </para>
 
   <informaltable>
@@ -1366,14 +1370,14 @@ mount_msdos /dev/disk0s11 /Volumes/Thingies</programlisting>
   </informaltable>
 
   <para>
-    After installation, one of the HFS partitions, "Untitled" (which is
-    partition 9 to Open Firmware, and partition d to NetBSD) has 
-    <code>ofwboot.xcf</code>, and one of the A/UX partitions (which is partition 12
-    to Open Firmware, and partition a to NetBSD) has my NetBSD kernel, so I use 
-    the following command to boot:
+    インストール後、 HFS パーティションのひとつである "Untitled" (
+    Open Firmware のパーティションは 9、 NetBSD のパーティションは d) に
+    <code>ofwboot.xcf</code> が、 A/UX パーティションのひとつ (Open Firmware
+    のパーティションは 12、 NetBSD のパーティションは a) には NetBSD
+    カーネルがあり、ブートのためのコマンドは次のようになります:
   </para>
 
   <screen>boot hd:9,ofwboot.xcf hd:12</screen>
 </sect1>
-<parentsec url="./" text="&os;/macppc Port Page"/>
+<parentsec url="./" text="&os;/macppc ポートのページ"/>
 </webpage>
