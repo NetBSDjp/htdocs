@@ -3,9 +3,9 @@
   PUBLIC "-//NetBSD/DTD NetBSD XSLT 1.0 DTD//EN"
 	 "http://www.NetBSD.org/XML/htdocs/share/xml/xslt10-netbsd.dtd">
 
-<!-- $NetBSD: index.xsl,v 1.1 2007/06/09 12:43:39 dsieger Exp $ -->
+<!-- $NetBSD: index.xsl,v 1.2 2007/06/09 19:05:16 dsieger Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: index.xsl,v 1.1 2007/06/09 12:43:39 dsieger Exp   -->
+<!-- NetBSD: index.xsl,v 1.2 2007/06/09 19:05:16 dsieger Exp   -->
 
 <!-- Copyright (c) 2005-2006
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -113,8 +113,8 @@
       <!-- map listname to groupname -->
       <xsl:variable
 	name="groupname"
-	xmlns:newsgroups="http://www.NetBSD.org/MailingLists/list2group.xsl"
-	select="document('../../MailingLists/list2group.xsl')/*/newsgroups:group[@list=$listname]/text()" />
+	xmlns:newsgroups="http://www.NetBSD.org/mailinglists/list2group.xsl"
+	select="document('../../mailinglists/list2group.xsl')/*/newsgroups:group[@list=$listname]/text()" />
 
       <tr valign="top">
 	<!-- subscribe link -->
