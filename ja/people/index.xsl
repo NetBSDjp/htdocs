@@ -1,7 +1,9 @@
-<?xml version="1.0" encoding="ISO-8859-1"?> <!-- -*- html -*- -->
+<?xml version="1.0" encoding="ISO-2022-JP"?> <!-- -*- html -*- -->
 <!DOCTYPE xsl:stylesheet [<!ENTITY nbsp "&#160;">]>
 
 <!-- $NetBSD: index.xsl,v 1.1 2007/06/09 21:08:46 dsieger Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: index.xsl,v 1.1 2007/06/09 21:08:46 dsieger Exp   -->
 
 <!-- Copyright (c) 1994-2006
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -10,7 +12,7 @@
                 xmlns:html="http://www.w3.org/1999/xhtml"
                 version="1.0">
 
-  <xsl:include href="../share/xsl/netbsd-webpage-en.xsl"/>
+  <xsl:include href="../../share/xsl/netbsd-webpage-ja.xsl"/>
 
   <xsl:template match="developer">
     <xsl:variable name="email"><xsl:value-of select="email"/></xsl:variable>
@@ -56,7 +58,7 @@
             <xsl:value-of select="email"/>
             <xsl:text>%40NetBSD.org%3E&amp;op=index&amp;exact=on</xsl:text>
           </xsl:attribute>
-          <xsl:text>PGP key</xsl:text>
+          <xsl:text>PGP 鍵</xsl:text>
         </a>
         </xsl:if>
       </td>
