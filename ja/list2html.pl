@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.99 2007/01/24 15:26:36 kano Exp $
+# $NetBSD: list2html.pl,v 1.100 2007/07/13 17:41:26 kano Exp $
 # Process *.list files into indexed *.html files. (abs)
 # Looks for these compulsary tags:
 #	<LIST>			Include generated list of entries here.
@@ -68,7 +68,7 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.99 $';
+$version = '$Revision: 1.100 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:qhV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -103,7 +103,7 @@ if ($opt{'q'})
 
 '<HEADING>\s*(.*)',
 '<table><tr><td>
-    <a href="$HOME/Misc/disclaimer.html#bsd-daemon"><img
+    <a href="$HOME/about/disclaimer.html#bsd-daemon"><img
      align="middle" src="$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
@@ -115,7 +115,7 @@ if ($opt{'q'})
 
 '<DEVHEADING>\s*(.*)',
 '<table><tr><td>
-    <a href="$HOME/Misc/disclaimer.html#bsd-daemon"><img
+    <a href="$HOME/about/disclaimer.html#bsd-daemon"><img
      align="middle" src="$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
@@ -271,9 +271,9 @@ sub extras_generate
     	$home = $1;
     }
 
-    $pathtodoc = "$home/Documentation/";
+    $pathtodoc = "$home/docs/";
     $pathtodev = "$home/developers/";
-    $pathtoports = "$home/Ports/";
+    $pathtoports = "$home/ports/";
     $pathtogal = "$home/gallery/";
     foreach $str ( keys %extras )
 	{
