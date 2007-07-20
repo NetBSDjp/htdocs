@@ -2,6 +2,8 @@
 <!DOCTYPE xsl:stylesheet [<!ENTITY nbsp "&#160;"> <!ENTITY lf "&#10;">]>
 
 <!-- $NetBSD: group.xsl,v 1.1 2007/06/17 15:20:02 pavel Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: group.xsl,v 1.1 2007/06/17 15:20:02 pavel Exp   -->
 
 <!-- Copyright (c) 1994-2006
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -9,7 +11,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 		xmlns:vendor="http://exslt.org/common"
                 version="1.0">
-  <xsl:import href="../share/xsl/selgrp.xsl"/>
+  <xsl:import href="../../share/xsl/selgrp.xsl"/>
   <xsl:output method="xml"/>
 
 
@@ -35,7 +37,7 @@
       <xsl:when  test="$endlist='no'">,&lf;</xsl:when>
       <xsl:otherwise>
 	<xsl:choose>
-	  <xsl:when test="position()=last()-1">,&lf;and </xsl:when>
+	  <xsl:when test="position()=last()-1">,&lf;</xsl:when>
 	  <xsl:when test="position()=last()">.&lf;</xsl:when>
 	  <xsl:otherwise>,&lf;</xsl:otherwise>
 	</xsl:choose>
