@@ -1,8 +1,8 @@
 #! /usr/bin/awk -f
 #
-#	$NetBSD: gentab.awk,v 1.26 2006/09/09 18:11:41 heinz Exp $
+#	$NetBSD: gentab.awk,v 1.27 2007/07/21 09:03:30 kano Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: gentab.awk,v 1.26 2006/09/09 18:11:41 heinz Exp   -->
+#	<!-- NetBSD: gentab.awk,v 1.27 2007/07/21 09:03:30 kano Exp   -->
 #
 # Copyright (c) 1998 Tyler C. Sarna
 # All rights reserved.
@@ -214,7 +214,7 @@ END {
 
 	printf("<tbody>\n");
 	for (i = 0; i < nport; i++) {
-		printf("<tr><th><a href=\"../../Ports/%s/\">%s</a></th>\n", port_subdir[i], port[i])
+		printf("<tr><th><a href=\"../../ports/%s/\">%s</a></th>\n", port_subdir[i], port[i])
 
 		for (j = 0; j < nfeature; j++) {
 			featname = feature[j]
@@ -229,7 +229,7 @@ END {
 			printf("<td>%s</td>\n", val)
 		}
 
-		printf("<th><a href=\"../../Ports/%s/\">%s</a></th></tr>\n", port_subdir[i], port[i])
+		printf("<th><a href=\"../../ports/%s/\">%s</a></th></tr>\n", port_subdir[i], port[i])
 	}
 	printf("</tbody>\n");
 
