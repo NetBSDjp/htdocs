@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE xsl:stylesheet [<!ENTITY nbsp "&#160;">]>
 
-<!-- $NetBSD: index.xsl,v 1.1 2007/06/17 15:22:40 pavel Exp $ -->
+<!-- $NetBSD: index.xsl,v 1.2 2007/06/17 15:35:15 pavel Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: index.xsl,v 1.1 2007/06/17 15:22:40 pavel Exp   -->
+<!-- NetBSD: index.xsl,v 1.2 2007/06/17 15:35:15 pavel Exp   -->
 
 <!-- Copyright (c) 1994-2007
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -12,8 +12,8 @@
                 xmlns:html="http://www.w3.org/1999/xhtml"
                 version="1.0">
 
-  <xsl:include href="../../../share/xsl/netbsd-webpage-ja.xsl"/>
-
   <xsl:include href="../group.xsl"/>
+
+  <xsl:include href="../../../share/xsl/netbsd-webpage-ja.xsl"/>
 
 </xsl:stylesheet>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-2022-JP"?> <!-- -*- html -*- -->
 <!DOCTYPE xsl:stylesheet [<!ENTITY nbsp "&#160;">]>
 
-<!-- $NetBSD: index.xsl,v 1.1 2007/06/09 21:08:46 dsieger Exp $ -->
+<!-- $NetBSD: index.xsl,v 1.2 2007/06/17 15:47:37 pavel Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: index.xsl,v 1.1 2007/06/09 21:08:46 dsieger Exp   -->
+<!-- NetBSD: index.xsl,v 1.2 2007/06/17 15:47:37 pavel Exp   -->
 
 <!-- Copyright (c) 1994-2006
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -18,6 +18,7 @@
     <xsl:variable name="email"><xsl:value-of select="email"/></xsl:variable>
     <xsl:variable name="url"><xsl:value-of select="url"/></xsl:variable>
     <xsl:variable name="area"><xsl:value-of select="area"/></xsl:variable>
+    <xsl:variable name="note"><xsl:value-of select="note"/></xsl:variable>
     <xsl:variable name="key"><xsl:value-of select="key"/></xsl:variable>
     <tr>
       <td>
@@ -43,11 +44,18 @@
       <td>
       <xsl:attribute name="class">developerslistwrap</xsl:attribute>
       <xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
-        <xsl:for-each select="group">
-          <xsl:value-of select="." />
-          <xsl:if test="position() != count(../group) or ../area">, </xsl:if>
-        </xsl:for-each>
-        <xsl:value-of select="area"/>
+      <xsl:choose>
+	<xsl:when test="note">
+	  <xsl:value-of select="note"/>
+	</xsl:when>
+	<xsl:otherwise>	  
+	  <xsl:for-each select="group">
+	    <xsl:value-of select="." />
+	    <xsl:if test="position() != count(../group) or ../area">, </xsl:if>
+	  </xsl:for-each>
+	  <xsl:value-of select="area"/>
+	</xsl:otherwise>
+      </xsl:choose>
       </td>
       <td>
         <xsl:attribute name="bgcolor">#e8e8e8</xsl:attribute>
