@@ -2,7 +2,7 @@
 #	<!-- Based on english version: -->
 #	<!-- NetBSD: Makefile,v 1.1 2007/06/09 12:59:09 dsieger Exp   -->
 
-# XMLDOCS+=	current formal index release-map
+XMLDOCS+=	current formal index release-map
 
 #SUBDIR+=	formal-0.8
 #SUBDIR+=	formal-0.9
