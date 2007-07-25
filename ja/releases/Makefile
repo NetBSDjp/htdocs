@@ -13,7 +13,7 @@
 SUBDIR+=	formal-1.4
 SUBDIR+=	formal-1.5
 SUBDIR+=	formal-1.6
-# SUBDIR+=	formal-2.0
-# SUBDIR+=	formal-3
+SUBDIR+=	formal-2.0
+SUBDIR+=	formal-3
 
 .include "../../share/mk/web.site.mk"
