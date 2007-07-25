@@ -1,11 +1,10 @@
-#	$NetBSD: Makefile,v 1.45 2005/10/14 09:00:03 rillig Exp $
+#	$NetBSD: Makefile,v 1.50 2007/06/12 14:30:34 reed Exp $
 
 XMLDOCS+=	addsite
 XMLDOCS+=	articles
 XMLDOCS+=	devotionalia
 XMLDOCS+=	consultants
 XMLDOCS+=	events
-XMLDOCS+=	groups
 XMLDOCS+=	hardware
 XMLDOCS+=	index
 XMLDOCS+=	logos
@@ -13,7 +12,6 @@ XMLDOCS+=	mobile-logos
 XMLDOCS+=	other-logos
 XMLDOCS+=	preinstalled
 XMLDOCS+=	products
-XMLDOCS+=	resources
 XMLDOCS+=	research
 XMLDOCS+=	sites
 XMLDOCS+=	software
@@ -22,14 +20,12 @@ XMLDOCS+=	testimonial
 SUBDIR=		advocacy
 SUBDIR+=	events
 SUBDIR+=	in-Action
-SUBDIR+=	xearth
+SUBDIR+=	presentations
+SUBDIR+=	xplanet
 
 .SUFFIXES:	.data .html .xml
 
-all: events sitemap
-
-events: events.html
-	cd ..; ${MAKE} index; cd gallery;
+all: sitemap
 
 sitemap: sitemap.html sitemap.links
 
