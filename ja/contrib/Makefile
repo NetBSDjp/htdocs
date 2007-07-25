@@ -1,14 +1,9 @@
-#	$NetBSD: Makefile,v 1.4 1999/10/26 15:19:43 abs Exp $
-#	Process .list files into .html files
+#	$NetBSD: Makefile,v 1.18 2007/02/02 23:01:38 martin Exp $
 
-all::	donations.html howto.html hardware.html
+SUBDIR=		org
 
-all::
-	@for dir in `echo */Makefile | sed 's:/Makefile::g'` ; do \
-	    echo "-> ${PDIR}$$dir";cd $$dir;${MAKE} PDIR=${PDIR}$$dir/; cd .. ;\
-	done
+XMLDOCS+=	donations index hardware
+XMLDOCS+=	howto projects
+XMLDOCS+=	soc-application soc-projects
 
-.SUFFIXES:	.list .html
-
-.list.html:
-	../list2html.pl $< $@
+.include "../share/mk/web.site.mk"
