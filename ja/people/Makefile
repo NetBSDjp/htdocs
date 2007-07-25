@@ -1,6 +1,8 @@
 #	$NetBSD: Makefile,v 1.3 2007/06/17 15:11:49 pavel Exp $
+#	<!-- Based on english version: -->
+#	<!-- NetBSD: Makefile,v 1.3 2007/06/17 15:11:49 pavel Exp   -->
 
-SUBDIR+=	pages
+# SUBDIR+=	pages
 SUBDIR+=	groups
 
 XMLDOCS+=	core
@@ -13,4 +15,4 @@ XMLDOCS+=		supporting-cast:index.xsl,docbook-website::
 
 developers.html: developerdb.xml
 
-.include "../share/mk/web.site.mk"
+.include "../../share/mk/web.site.mk"
