@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.41 2005/10/14 09:00:01 rillig Exp $
+#	$NetBSD: Makefile,v 1.45 2007/06/03 15:40:31 dsieger Exp $
 
 SUBDIR+=	cvs-repos
 SUBDIR+=	features
@@ -10,9 +10,12 @@ XMLDOCS+=	announce
 XMLDOCS+=	commit-guidelines
 XMLDOCS+=	de-lint
 XMLDOCS+=	htdocs
+XMLDOCS+=	htdocs-changes
 XMLDOCS+=	manpages
 XMLDOCS+=	mirrors
 XMLDOCS+=	new-port
+XMLDOCS+=	notes
+XMLDOCS+=	PR
 XMLDOCS+=	pgp
 XMLDOCS+=	restricted
 XMLDOCS+=	security
@@ -20,8 +23,7 @@ XMLDOCS+=	translate
 XMLDOCS+=	style
 XMLDOCS+=	www
 
-LISTDOCS=	PR.list
 LISTDOCS+=	translate-german.list translate-french.list
-LISTDOCS+=	translate-spanish.list notes.list
+LISTDOCS+=	translate-spanish.list
 
 .include "../share/mk/web.site.mk"
