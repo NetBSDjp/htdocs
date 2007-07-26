@@ -1,6 +1,6 @@
-# $NetBSD: Makefile,v 1.1 2007/06/09 13:31:41 dsieger Exp $
+# $NetBSD: Makefile,v 1.2 2007/07/26 22:09:01 kano Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: Makefile,v 1.1 2007/06/09 13:31:41 dsieger Exp   -->
+# <!-- NetBSD: Makefile,v 1.2 2007/07/26 22:09:01 kano Exp   -->
 
 SUBDIR+=	acorn26
 SUBDIR+=	acorn32
@@ -41,15 +41,20 @@ SUBDIR+=	mipsco
 SUBDIR+=	mmeye
 SUBDIR+=	mvme68k
 SUBDIR+=	mvmeppc
+SUBDIR+=	netwinder
 SUBDIR+=	news68k
 SUBDIR+=	newsmips
 SUBDIR+=	next68k
+SUBDIR+=	ofppc
 # SUBDIR+=	pc532
+SUBDIR+=	pdp10
 SUBDIR+=	playstation2
 SUBDIR+=	pmax
 SUBDIR+=	pmppc
 SUBDIR+=	prep
 SUBDIR+=	s390
+SUBDIR+=	sandpoint
+SUBDIR+=	sbmips
 SUBDIR+=	sgimips
 SUBDIR+=	sh3
 SUBDIR+=	shark
