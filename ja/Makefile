@@ -1,51 +1,50 @@
-# $NetBSD: Makefile,v 1.78 2006/08/01 08:55:00 rillig Exp $
+# $NetBSD: Makefile,v 1.96 2007/06/12 10:54:45 dsieger Exp $
 
-SUBDIR=		Changes
-SUBDIR+=	Documentation
-SUBDIR+=	Foundation
-SUBDIR+=	Goals
-SUBDIR+=	Hardware
-SUBDIR+=	MailingLists
-SUBDIR+=	Misc
-SUBDIR+=	Releases
-SUBDIR+=	People
-SUBDIR+=	Ports
-SUBDIR+=	Security
-SUBDIR+=	Sites
+SUBDIR=		about
+SUBDIR+=	changes
+SUBDIR+=	community
 SUBDIR+=	contrib
 SUBDIR+=	developers
+SUBDIR+=	docs
 SUBDIR+=	donations
 SUBDIR+=	errors
+SUBDIR+=	foundation
 SUBDIR+=	gallery
+SUBDIR+=	images
+SUBDIR+=	mailinglists
 SUBDIR+=	mirrors
+SUBDIR+=	releases
 SUBDIR+=	releng
+SUBDIR+=	people
+SUBDIR+=	ports
+SUBDIR+=	sites
+SUBDIR+=	support
 
-DATA+=		.htaccess
+DATA+=		.htaccess robots.txt
 
-NEWS_LANGS=	   cs de es et fr ja ko lt nl pl pt_PT pt_BR ru sv zh_CN zh_TW
-DOCLANGS=	bg cs de es et fr ja ko lt nl pl pt_PT pt_BR ru sv zh_CN zh_TW
+INDEX_LANGS=	   # cs de es et fr ja ko lt nl pl pt_BR ru sv zh_CN zh_TW
+DOCLANGS=	bg cs de es et fr ja ko lt nl pl pt_BR ru sv zh_CN zh_TW
 AUTOLAYOUTDIR=	${.CURDIR}
-FILES=	gallery/events.* layout.xml
+FILES=	gallery/events.xml gallery/events.html layout.xml
 
-.for l in ${NEWS_LANGS}
+.for l in ${INDEX_LANGS}
 SUBDIR+=	${l}
-.  if (exists(${l}/Changes/index.list))
-FILES+=${l}/Changes/index.list ${l}/Changes/index.html
-.  elif (exists(${l}/Changes/index.xml))
-FILES+=${l}/Changes/index.xml ${l}/Changes/index.html
+.  if (exists(${l}/changes/index.list))
+FILES+=${l}/changes/index.list ${l}/changes/index.html
+.  elif (exists(${l}/changes/index.xml))
+FILES+=${l}/changes/index.xml ${l}/changes/index.html
 .  endif
 .  if exists(${l}/index.html)
 FILES+=${l}/index.html
 .  endif
 .endfor
-FILES+=index.html Changes/index.xml Changes/index.html
+FILES+=index.html changes/index.xml changes/index.html
 
-# This target regenerates the news files in all language subdirectories.
-regenerate-news:
-.for lang in ${NEWS_LANGS} .
-	cd ${lang} && ${MAKE} index.html
+# This target regenerates the index files in all language subdirectories.
+regenerate-index:
+.for lang in ${INDEX_LANGS} .
+	${RUN} cd ${lang} && ${MAKE} language-index
 .endfor
-	
 
 update:
 	cvs update -A ${FILES} makeindex.sh Makefile share
@@ -61,6 +60,31 @@ commit:
 # This target prints the changes in the news and events.
 diff:
 	cvs diff -bu ${FILES}
+
+#
+# Some simple integrity checks.
+#
+
+LINT_LAYOUT_SKIP_FILES=		docs/internals/*.xml
+LINT_LAYOUT_SKIP_FILES+=	autolayout.xml
+LINT_LAYOUT_SKIP_FILES+=	docs/guide/??/*.xml
+LINT_LAYOUT_SKIP_FILES+=	layout.xml
+LINT_LAYOUT_SKIP_FILES+=	pt_BR/Documentation/pkgsrc/*.xml
+LINT_LAYOUT_SKIP_FILES+=	share/xml/*.xml
+
+# The lint-layout target checks that all XML files are mentioned in the
+# layout.xml file.
+lint: lint-layout
+.PHONY: lint-layout
+lint-layout:
+	${RUN} ${FIND} * -name '*.xml' -print				\
+	| while read f; do						\
+		case "$$f" in						\
+		${LINT_LAYOUT_SKIP_FILES:@.m.@${.m.}) continue;;@}	\
+		esac;							\
+		${FGREP} -q "\"$$f\"" layout.xml			\
+		|| echo "WARNING: [lint-layout] \"$$f\" is not mentioned in layout.xml." 1>&2; \
+	done
 
 .include "share/mk/language.mk"
 .include "share/mk/web.site.mk"
