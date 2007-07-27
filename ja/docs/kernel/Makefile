@@ -10,7 +10,7 @@ XMLDOCS+=	index kgdb programming
 # XMLDOCS+=	lazyfpu uvm scsidma vfork
 XMLDOCS+=	lazyfpu uvm vfork
 # XMLDOCS+=	converting-ethernet-drivers
-# XMLDOCS+=	porting-freebsd-net
+XMLDOCS+=	porting-freebsd-net
 XMLDOCS+=	elf-notes
 
 .include "../../../share/mk/web.site.mk"

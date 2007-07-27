@@ -4,7 +4,7 @@
 
 SUBDIR+=	Hardware
 # SUBDIR+=	bsd
-SUBDIR+=	cross
+# SUBDIR+=	cross
 SUBDIR+=	current
 # SUBDIR+=	internals
 SUBDIR+=	kernel
