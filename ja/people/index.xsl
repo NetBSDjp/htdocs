@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?> <!-- -*- html -*- -->
+<?xml version="1.0" encoding="ISO-2022-JP"?>
 <!DOCTYPE xsl:stylesheet [<!ENTITY nbsp "&#160;">]>
 
-<!-- $NetBSD: index.xsl,v 1.2 2007/06/17 15:47:37 pavel Exp $ -->
+<!-- $NetBSD: index.xsl,v 1.3 2007/07/29 12:09:14 pavel Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: index.xsl,v 1.2 2007/06/17 15:47:37 pavel Exp   -->
+<!-- NetBSD: index.xsl,v 1.3 2007/07/29 12:09:14 pavel Exp   -->
 
 <!-- Copyright (c) 1994-2006
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
