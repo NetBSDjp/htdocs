@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: act2html.pl,v 1.9 2007/01/24 15:26:36 kano Exp $
+# $NetBSD: act2html.pl,v 1.10 2007/07/29 02:41:25 kano Exp $
 # Process index.act file into index.html for the in-Action
 # gallery.  Customized version of DKBrownlee's list2html.pl.
 #
@@ -29,7 +29,7 @@ my($version,%opt,%pkgname);
 
 $months_previous=9;	# previous months to display for DATE entries
 
-$version='$Revision: 1.9 $';
+$version='$Revision: 1.10 $';
 $version =~ /([\d.]+)/ && ($version=$1);
 
 if (!&getopts('a:c:m:hV',\%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -248,7 +248,7 @@ sub sub_external_links
 	}
 
     # Expand <PORTPAGE>portname entries
-    $text =~ s#<PORTPAGE>([^\s<]+[^<\s.]+\w)#<a href="../../Ports/$1/">NetBSD/$1</a>#g;
+    $text =~ s#<PORTPAGE>([^\s<]+[^<\s.]+\w)#<a href="../../ports/$1/">NetBSD/$1</a>#g;
 
     # Expand <user@host> email addresses
     #
