@@ -4,8 +4,8 @@
 #
 # Please run 'make update' before adding NEWS.
 
-# XMLDOCS+=	000804
-# XMLDOCS+=	rss
+XMLDOCS+=	000804
+XMLDOCS+=	rss
 XMLDOCS+=	1998
 XMLDOCS+=	1999
 XMLDOCS+=	2000
