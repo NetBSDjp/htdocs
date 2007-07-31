@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: act2html.pl,v 1.10 2007/07/29 02:41:25 kano Exp $
+# $NetBSD: act2html.pl,v 1.11 2007/07/31 13:45:38 kano Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: act2html.pl,v 1.10 2007/07/29 02:41:25 kano Exp   -->
+# <!-- NetBSD: act2html.pl,v 1.11 2007/07/31 13:45:38 kano Exp   -->
 # Process index.act file into index.html for the in-Action
 # gallery.  Customized version of DKBrownlee's list2html.pl.
 #
@@ -31,7 +31,7 @@ my($version,%opt,%pkgname);
 
 $months_previous=9;	# previous months to display for DATE entries
 
-$version='$Revision: 1.10 $';
+$version='$Revision: 1.11 $';
 $version =~ /([\d.]+)/ && ($version=$1);
 
 if (!&getopts('a:c:m:hV',\%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -94,7 +94,7 @@ sub extras_generate
 
     if ($0 !~ m#(.*)/[^/]+.pl#)
         { &fail("Unable to extract path from '$0'"); }
-    $pathtodoc="$1/Documentation";
+    $pathtodoc="$1/docs";
     foreach $str ( keys %extras )
         {
         $extras{$str} =~ s#\$HOME#$pathtodoc/..#g;
