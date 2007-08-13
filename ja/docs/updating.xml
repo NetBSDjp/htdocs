@@ -6,10 +6,10 @@ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
 <webpage id="ja-docs-updating">
   <config param="desc" value="安定版 NetBSD リリースの更新" />
   <config param="cvstag"
-  value="$NetBSD: updating.xml,v 1.3 2007/08/08 00:51:06 weinem Exp $" />
+  value="$NetBSD: updating.xml,v 1.5 2007/08/11 09:25:52 kano Exp $" />
   <!-- Based on english version: -->
-  <!-- NetBSD: updating.xml,v 1.3 2007/08/08 00:51:06 weinem Exp   -->
-  <config param="rcsdate" value="$Date: 2007/08/08 00:51:06 $" />
+  <!-- NetBSD: updating.xml,v 1.5 2007/08/11 09:25:52 kano Exp   -->
+  <config param="rcsdate" value="$Date: 2007/08/11 09:25:52 $" />
   <head>
     <!-- Copyright (c) 2003-2006
            The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -37,7 +37,15 @@ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
           時々ソースを更新のうえシステムまたはカーネルを再構築すべきです。
        </para>
 
-       <para> 
+       <para>以下に示す各手順のほとんどは、一般ユーザーの権限でおこなうことができます。
+       新しいカーネルとユーザーランドのインストールのみ、
+       root 権限が必要です。
+       以下の例示では、作業ディレクトリーとして <filename>/usr</filename>
+       を使っていますが、ユーザーのホームディレクトリー以下で作業をおこなうことができます。
+       通常、一般ユーザーは <filename>/usr</filename> 以下への書き込み権限を持っていませんが、
+       これは root が変更することができます。 </para>
+
+     <para> 
          リリース版のソースの再現や更新は、適切な枝タグを指定して、
          <ulink url="current/#using-anoncvs-over-ssh">anoncvs オーバー
           ssh</ulink>
@@ -48,7 +56,8 @@ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         </para>
         <programlisting>
 $ cd /usr
-$ env CVS_RSH=ssh cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot co -r netbsd-3-1 -P src</programlisting>
+$ export CVS_RSH=ssh 
+$ cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot co -r netbsd-3-1 -P src</programlisting>
 
   <note>
   間違ってソースツリーを<emphasis>ダウングレード</emphasis>することのないよう、
@@ -59,10 +68,25 @@ $ env CVS_RSH=ssh cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot co -r netbsd-3-1 -P
 
 <programlisting>
 $ cd /usr/src
-$ env CVS_RSH=ssh 
+$ export CVS_RSH=ssh 
 $ cvs update -dP</programlisting>
 
-      </sect3>
+</sect3>
+
+<sect3 id="tools">
+  <title>必要なツールを構築する</title>
+
+  <para>次にすることは、toolchain の構築です。
+  あらかじめ <filename>obj/</filename> および <filename>tools/</filename>
+  ディレクトリーを作成してから、<command>build.sh</command> を実行する必要があります。</para>
+
+  <programlisting>
+$ mkdir /usr/obj /usr/tools
+$ cd /usr/src
+$ ./build.sh -O /usr/obj -T /usr/tools -U -u tools</programlisting>
+
+</sect3>
+
 
       <sect3 id="kernel">
         <title>新しいカーネルを構築する</title>
@@ -120,14 +144,16 @@ $ cd /usr/src
 $ su
 # ./build.sh -O ../obj -T ../tools -U install=/ </programlisting>
 
-<para>新しいカーネル "netbsd" がうまくブートしなかった場合は、
-"netbsd.old" カーネルをブートして、以前の状態に戻すことができます。</para>
+<para>新しいカーネル <filename>netbsd</filename> がうまくブートしなかった場合は、
+<filename>netbsd.old</filename> カーネルをブートして、
+以前の状態に戻すことができます。</para>
 
 </sect3>
 
 
       <sect3 id="parts">
         <title>ソースツリーの一部だけを更新する</title>
+
         <para>
           セキュリティー勧告が発行され、
           再構築が必要となったライブラリーやアプリケーションだけを構築したい場合、
@@ -137,35 +163,38 @@ $ su
 
 <programlisting>
 $ cd src
-$ env CVS_RSH=ssh cvs update -d -P -r netbsd-3-1 gnu/dist/sendmail/sendmail
+$ export CVS_RSH=ssh cvs update -d -P -r netbsd-3-1 gnu/dist/sendmail/sendmail
 $ cd gnu/usr.sbin/sendmail
 $ make USETOOLS=no cleandir dependall
 $ su
 # make USETOOLS=no install</programlisting>
 
-      </sect3>
+</sect3>
 
-      <sect3 id="summary">
-        <title>更新手順の簡潔なまとめ</title>
-        <itemizedlist>
+<sect3 id="summary">
+  <title>更新手順の簡潔なまとめ</title>
+<itemizedlist>
+
           <listitem>
             <para>ソースの更新:</para>
             <programlisting>
 $ cd /usr/src
-$ env CVS_RSH=ssh cvs update -dP</programlisting>
-
+$ export CVS_RSH=ssh 
+$ cvs update -dP</programlisting>
           </listitem>
-          <listitem>
-            <para>カーネルとユーザーランドの再構築:</para>
-            <programlisting>
+
+
+  <listitem>
+  <para>カーネルとユーザーランドの再構築:</para>
+  <programlisting>
 $ cd /usr/src
 $ ./build.sh -O ../obj -T ../tools kernel=&lt;KERNEL&gt;
 $ ./build.sh -U distribution</programlisting>
-</listitem>
+  </listitem>
 
-<listitem>
-<para>Installing the new kernel and userland:</para>
-<programlisting>
+  <listitem>
+  <para>Installing the new kernel and userland:</para>
+  <programlisting>
 $ su
 # mv /netbsd /netbsd.old
 # mv /usr/src/sys/arch/&lt;ARCH&gt;/compile/&lt;KERNEL&gt;/netbsd /
@@ -174,10 +203,9 @@ $ su
 $ cd /usr/src
 $ su
 # ./build.sh -O ../obj -T ../tools -U install=/ </programlisting>
-</listitem>
+  </listitem>
 
 </itemizedlist>
-
 </sect3>
 
     </sect2>
