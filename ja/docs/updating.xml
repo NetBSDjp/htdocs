@@ -6,8 +6,8 @@ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
 <webpage id="docs-updating">
   <config param="desc" value="Updating a stable NetBSD release" />
   <config param="cvstag"
-  value="$NetBSD: updating.xml,v 1.3 2007/08/08 00:51:06 weinem Exp $" />
-  <config param="rcsdate" value="$Date: 2007/08/08 00:51:06 $" />
+  value="$NetBSD: updating.xml,v 1.5 2007/08/11 09:25:52 kano Exp $" />
+  <config param="rcsdate" value="$Date: 2007/08/11 09:25:52 $" />
   <head>
     <!-- Copyright (c) 2003-2006
            The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -36,7 +36,16 @@ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
           applied to the branch since its release.
        </para>
 
-       <para> 
+       <para>Most of the following steps can be done as ordinary user. 
+       Only the installation of a new kernel and the userland will require 
+       root privileges.
+       Although <filename>/usr</filename> is choosen as the working 
+       directory in the following examples, the procedure can also 
+       take place in a user's home directory. Ordinary users have normally not 
+       the permissions to make changes in <filename>/usr</filename>, 
+       but this can be changed by root. </para>
+
+     <para> 
          You can retrieve or update the sources for your
          release using 
          <ulink url="current/#using-anoncvs-over-ssh">anoncvs over
@@ -47,7 +56,8 @@ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         </para>
         <programlisting>
 $ cd /usr
-$ env CVS_RSH=ssh cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot co -r netbsd-3-1 -P src</programlisting>
+$ export CVS_RSH=ssh 
+$ cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot co -r netbsd-3-1 -P src</programlisting>
 
   <note>
   Be sure to take care in selecting the correct and desired branch tag so
@@ -58,10 +68,25 @@ $ env CVS_RSH=ssh cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot co -r netbsd-3-1 -P
 
 <programlisting>
 $ cd /usr/src
-$ env CVS_RSH=ssh 
+$ export CVS_RSH=ssh 
 $ cvs update -dP</programlisting>
 
-      </sect3>
+</sect3>
+
+<sect3 id="tools">
+  <title>Building the tools</title>
+
+  <para>The next step is to build the toolchain. You need to 
+  create an <filename>obj/</filename> and a <filename>tools/</filename> 
+  directory, followed by a run of <command>build.sh</command>:</para>
+
+  <programlisting>
+$ mkdir /usr/obj /usr/tools
+$ cd /usr/src
+$ ./build.sh -O /usr/obj -T /usr/tools -U -u tools</programlisting>
+
+</sect3>
+
 
       <sect3 id="kernel">
         <title>Building a new kernel</title>
@@ -115,14 +140,16 @@ $ cd /usr/src
 $ su
 # ./build.sh -O ../obj -T ../tools -U install=/ </programlisting>
 
-<para>If the new kernel "netbsd" does not boot successfully, you can 
-fall back on booting the "netbsd.old" kernel.</para>
+<para>If the new kernel <filename>netbsd</filename> does not boot 
+successfully, you can fall back on booting the 
+<filename>netbsd.old</filename> kernel.</para>
 
 </sect3>
 
 
       <sect3 id="parts">
         <title>Updating only parts of the source tree</title>
+
         <para>
           If a security advisory has been issued, and you want
           to just rebuild the necessary libraries and applications,
@@ -132,35 +159,38 @@ fall back on booting the "netbsd.old" kernel.</para>
 
 <programlisting>
 $ cd src
-$ env CVS_RSH=ssh cvs update -d -P -r netbsd-3-1 gnu/dist/sendmail/sendmail
+$ export CVS_RSH=ssh cvs update -d -P -r netbsd-3-1 gnu/dist/sendmail/sendmail
 $ cd gnu/usr.sbin/sendmail
 $ make USETOOLS=no cleandir dependall
 $ su
 # make USETOOLS=no install</programlisting>
 
-      </sect3>
+</sect3>
 
-      <sect3 id="summary">
-        <title>Terse summary of the updating procedure</title>
-        <itemizedlist>
+<sect3 id="summary">
+  <title>Terse summary of an updating procedure</title>
+<itemizedlist>
+
           <listitem>
-            <para>Update the sources:</para>
+            <para>Updating the sources:</para>
             <programlisting>
 $ cd /usr/src
-$ env CVS_RSH=ssh cvs update -dP</programlisting>
-
+$ export CVS_RSH=ssh 
+$ cvs update -dP</programlisting>
           </listitem>
-          <listitem>
-            <para>Building the new kernel and userland:</para>
-            <programlisting>
+
+
+  <listitem>
+  <para>Building the new kernel and userland:</para>
+  <programlisting>
 $ cd /usr/src
 $ ./build.sh -O ../obj -T ../tools kernel=&lt;KERNEL&gt;
 $ ./build.sh -U distribution</programlisting>
-</listitem>
+  </listitem>
 
-<listitem>
-<para>Installing the new kernel and userland:</para>
-<programlisting>
+  <listitem>
+  <para>Installing the new kernel and userland:</para>
+  <programlisting>
 $ su
 # mv /netbsd /netbsd.old
 # mv /usr/src/sys/arch/&lt;ARCH&gt;/compile/&lt;KERNEL&gt;/netbsd /
@@ -169,10 +199,9 @@ $ su
 $ cd /usr/src
 $ su
 # ./build.sh -O ../obj -T ../tools -U install=/ </programlisting>
-</listitem>
+  </listitem>
 
 </itemizedlist>
-
 </sect3>
 
     </sect2>
