@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.1 2007/06/03 17:33:36 dsieger Exp $
+#	$NetBSD: Makefile,v 1.2 2007/08/26 15:42:29 dsieger Exp $
 
 XMLDOCS+=	call-it-a-duck 
 XMLDOCS+=	crypto-export
@@ -14,7 +14,6 @@ XMLDOCS+=	redistribution
 XMLDOCS+=	standards 
 XMLDOCS+=	system
 XMLDOCS+=	roadmap
-XMLDOCS+=	y2k
 
 DEPENDS.roadmap+=	escape-cvs-tags
 
