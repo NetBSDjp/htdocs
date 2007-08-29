@@ -1,6 +1,6 @@
-#	$NetBSD: Makefile,v 1.45 2007/06/03 15:40:31 dsieger Exp $
+#	$NetBSD: Makefile,v 1.46 2007/08/29 09:39:54 dsieger Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: Makefile,v 1.45 2007/06/03 15:40:31 dsieger Exp   -->
+# <!-- NetBSD: Makefile,v 1.46 2007/08/29 09:39:54 dsieger Exp   -->
 
 SUBDIR+=	cvs-repos
 SUBDIR+=	features
@@ -12,7 +12,6 @@ XMLDOCS+=	index
 # XMLDOCS+=	commit-guidelines
 # XMLDOCS+=	de-lint
 XMLDOCS+=	htdocs
-# XMLDOCS+=	htdocs-changes
 # XMLDOCS+=	manpages
 # XMLDOCS+=	mirrors
 XMLDOCS+=	new-port
