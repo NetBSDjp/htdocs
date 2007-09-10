@@ -4,7 +4,7 @@
 
 XMLDOCS+=	index NetBSD-3.0
 # XMLDOCS+=	NetBSD-3.0.1
-# XMLDOCS+=	NetBSD-3.1
+XMLDOCS+=	NetBSD-3.1
 # XMLDOCS+=	NetBSD-3.0.2
 
 .include "../../../share/mk/web.site.mk"
