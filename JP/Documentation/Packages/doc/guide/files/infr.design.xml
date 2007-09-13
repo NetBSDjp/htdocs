@@ -1,115 +1,117 @@
 <!-- $NetBSD: infr.design.xml,v 1.8 2007/08/15 06:33:45 rillig Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: infr.design.xml,v 1.8 2007/08/15 06:33:45 rillig Exp   -->
 
 <chapter id="infr.design"> <?dbhtml filename="infr.design.html"?>
-<title>Design of the pkgsrc infrastructure</title>
+<title>pkgsrc の基盤の設計</title>
 
-	<para>The pkgsrc infrastructure consists of many small Makefile
-	fragments. Each such fragment needs a properly specified
-	interface. This chapter explains how such an interface looks
-	like.</para>
+	<para>pkgsrc の基盤は、Makefile の小さな断片がたくさん集まってできています。
+	それぞれの断片に、適切なインターフェースを定義することが必要です。
+	本章では、そのようなインターフェースの何たるかを説明します。</para>
 
 <!--
 <sect1 id="infr.intro">
-<title>Introduction</title>
+<title>序</title>
 
 </sect1>
 -->
 
 <sect1 id="infr.vardef">
-<title>The meaning of variable definitions</title>
+<title>変数定義の意図するもの</title>
 
-	<para>Whenever a variable is defined in the pkgsrc
-	infrastructure, the location and the way of definition provide
-	much information about the intended use of that variable.
-	Additionally, more documentation may be found in a header
-	comment or in this pkgsrc guide.</para>
+	<para>pkgsrc の基盤において変数が定義されている場合、
+	変数が定義されている場所や定義の方法自体が、
+	その変数の使用目的について多くを語っています。
+	また、変数を定義しているファイルの冒頭のコメントや、
+	この手引きに、さらなる資料があることもあります。</para>
 
-	<para>A special file is
-	<filename>mk/defaults/mk.conf</filename>, which lists all
-	variables that are intended to be user-defined. They are either
-	defined using the <literal>?=</literal> operator or they are
-	left undefined because defining them to anything would
-	effectively mean <quote>yes</quote>. All these variables may be
-	overridden by the pkgsrc user in the <varname>MAKECONF</varname>
-	file.</para>
+	<para>特別なファイルとして、
+	<filename>mk/defaults/mk.conf</filename> があります。このファイルには、
+	利用者が定義する変数がすべて書かれています。
+	これらの変数のなかには <literal>?=</literal> 演算子を使って定義されているものもありますが、
+	そうでないものは、何かを定義すると <quote>yes</quote> を意味することになるため、
+	定義されていません。これらの変数はすべて、
+	pkgsrc 利用者が <varname>MAKECONF</varname>
+	ファイルで定義して上書きすることができます。</para>
 
-	<para>Outside this file, the following conventions apply:
-	Variables that are defined using the <literal>?=</literal>
-	operator may be overridden by a package.</para>
+	<para>このファイル以外では、以下のようなならわしとなっています。
+	<literal>?=</literal> 演算子を使って定義されている変数は、
+	個々のパッケージで上書きすることができます。</para>
 
-	<para>Variables that are defined using the <literal>=</literal>
-	operator may be used read-only at run-time.</para>
+	<para>また、<literal>=</literal> 演算子を使って定義されている変数は、
+	実行時に読み出し専用で使うことができます。</para>
 
-	<para>Variables whose name starts with an underscore must not be
-	accessed outside the pkgsrc infrastructure at all. They may
-	change without further notice.</para>
+	<para>変数名が下線で始まる変数は、
+	pkgsrc の基盤以外からは一切読み書きできません。
+	これらは、特記のない限り、変更してもかまいません。</para>
 
-	<note><para>These conventions are currently not applied
-	consistently to the complete pkgsrc
-	infrastructure.</para></note>
+	<note><para>以上のならわしは、現在のところ、
+	pkgsrc の基盤全体に一貫して適用されているわけではありません。</para></note>
 
 </sect1>
 
 <sect1 id="infr.vardef.problems">
-<title>Avoiding problems before they arise</title>
+<title>問題を未然に防ぐ</title>
 
-	<para>All variables that contain lists of things should default
-	to being empty. Two examples that do not follow this rule are
-	<varname>USE_LANGUAGES</varname> and
-	<varname>DISTFILES</varname>. These variables cannot simply be
-	modified using the <literal>+=</literal> operator in package
-	<filename>Makefile</filename>s (or other files included by
-	them), since there is no guarantee whether the variable is
-	already set or not, and what its value is. In the case of
-	<varname>DISTFILES</varname>, the packages <quote>know</quote>
-	the default value and just define it as in the following
-	example.</para>
+	<para>リストを含む変数はすべて、標準状態では空になっているものです。
+	このならわしに従わない変数は、
+	<varname>USE_LANGUAGES</varname> と
+	<varname>DISTFILES</varname> の二つです。この二変数は、
+	パッケージの <filename>Makefile</filename>
+	(その他、ここからインクルードされるファイル) において、
+	<literal>+=</literal> 演算子を使って単純に変更することができません。
+	あらかじめ値が設定されているかどうかや、
+	何が設定されているかがまったくわからないからです。
+	<varname>DISTFILES</varname> については、
+	パッケージ側で標準の値が<quote>わかっている</quote>ので、
+	以下の例のように定義するだけですみます。</para>
 
 <programlisting>
 DISTFILES=      ${DISTNAME}${EXTRACT_SUFX} additional-files.tar.gz
 </programlisting>
 
-	<para>Because of the selection of this default value, the same
-	value appears in many package Makefiles. Similarly for
-	<varname>USE_LANGUAGES</varname>, but in this case the default
-	value (<quote><literal>c</literal></quote>) is so short that it
-	doesn't stand out. Nevertheless it is mentioned in many
-	files.</para>
+	<para>このような標準の値を使っているために、
+	同じ値が多くのパッケージの Makefile に現れます。
+	<varname>USE_LANGUAGES</varname> についても同様ですが、
+	こちらは、標準の値 (<quote><literal>c</literal></quote>)
+	が非常に短いために目立ちません。
+	とはいえ、多くのファイルにこの値が書かれています。</para>
 
 </sect1>
 
 <sect1 id="infr.var">
-<title>Variable evaluation</title>
+<title>変数の評価</title>
 
 <sect2 id="infr.var.load">
-<title>At load time</title>
+<title>読み込み時</title>
 
-	<para>Variable evaluation takes place either at load time or at
-	runtime, depending on the context in which they occur. The
-	contexts where variables are evaluated at load time are:</para>
+	<para>変数の評価は、変数が使われる文脈によって、
+	読み込み時におこなわれる場合と、実行時におこなわれる場合があります。
+	変数が読み込み時に評価されるのは、以下のような文脈においてです。</para>
 
 	<itemizedlist>
 
-	<listitem><para>The right hand side of the <literal>:=</literal>
-	and <literal>!=</literal> operators,</para></listitem>
+	<listitem><para><literal>:=</literal>
+	および <literal>!=</literal> 演算子の右辺</para></listitem>
 
-	<listitem><para>Make directives like <literal>.if</literal> or
-	<literal>.for</literal>,</para></listitem>
+	<listitem><para><literal>.if</literal> や
+	<literal>.for</literal> のような make ディレクティブ</para></listitem>
 
-	<listitem><para>Dependency lines.</para></listitem>
+	<listitem><para>(訳註: &man.make.1; の) 依存性を記述した行。</para></listitem>
 
 	</itemizedlist>
 
-	<para>A special exception are references to the iteration
-	variables of <literal>.for</literal> loops, which are expanded
-	inline, no matter in which context they appear.</para>
+	<para>特別な例外として、<literal>.for</literal> ループの反復変数があります。
+	これは、どの文脈で使われるかにかかわらず、
+	インライン展開されます。</para>
 
-	<para>As the values of variables may change during load time,
-	care must be taken not to evaluate them by accident. Typical
-	examples for variables that should not be evaluated at load time
-	are <varname>DEPENDS</varname> and
-	<varname>CONFIGURE_ARGS</varname>. To make the effect more
-	clear, here is an example:</para>
+	<para>変数の値は読み込みによって変わる可能性があるので、
+	誤って評価することのないよう注意する必要があります。
+	読み込み時に評価してはいけない変数の典型例は、
+	<varname>DEPENDS</varname> および
+	<varname>CONFIGURE_ARGS</varname> です。
+	評価の結果何が起きるかをわかりやすくするため、
+	以下の例を見てください。</para>
 
 	<programlisting>
 CONFIGURE_ARGS=         # none
@@ -121,186 +123,184 @@ CONFIGURE_ARGS:=        ${CONFIGURE_ARGS}
 CFLAGS+=                -Wall
 	</programlisting>
 
-	<para>This code shows how the use of the <literal>:=</literal>
-	operator can quickly lead to unexpected results. The first
-	paragraph is fairly common code. The second paragraph evaluates
-	the <varname>CONFIGURE_ARGS</varname> variable, which results in
-	<literal>CFLAGS=-O</literal>. In the third paragraph, the
-	<literal>-Wall</literal> is appended to the
-	<varname>CFLAGS</varname>, but this addition will not appear in
-	<varname>CONFIGURE_ARGS</varname>. In actual code, the three
-	paragraphs from above typically occur in completely unrelated
-	files.</para>
+	<para>このコードからわかることは、<literal>:=</literal> 演算子を使うと、
+	容易に、予期しない結果を生むということです。
+	最初の段落はごくふつうのコードです。二つ目の段落では
+	<varname>CONFIGURE_ARGS</varname> を評価しており、この結果、
+	<literal>CFLAGS=-O</literal> になります。三つ目の段落では、
+	<literal>-Wall</literal> を
+	<varname>CFLAGS</varname> に付け加えていますが、この追加が
+	<varname>CONFIGURE_ARGS</varname> には反映されません。
+	実際のコードではたいてい、
+	この三つの段落が完全に無関係のファイルに現れます。</para>
 
 </sect2>
 <sect2 id="infr.var.run">
-<title>At runtime</title>
+<title>実行時</title>
 
-	<para>After all the files have been loaded, the values of the
-	variables cannot be changed anymore. Variables that are used in
-	the shell commands are expanded at this point.</para>
+	<para>ファイルがすべて読み込まれた後は、変数の値は一切変更することができません。
+	シェルコマンド内で使われる変数は、
+	この時点で展開されます。</para>
 
 </sect2>
 </sect1>
 
 <sect1 id="infr.varspec">
-<title>How can variables be specified?</title>
+<title>変数の仕様を定める方法は?</title>
 
-	<para>There are many ways in which the definition and use of a
-	variable can be restricted in order to detect bugs and
-	violations of the (mostly unwritten) policies. See the
-	<literal>pkglint</literal> developer's documentation for further
-	details.</para>
+	<para>バグや (ほとんどは文書化されていない)
+	方針への違反を検出するために、
+	変数の定義や使い方を制限する方法はたくさんあります。詳細は、
+	<literal>pkglint</literal> の開発者向けドキュメンテーションをご覧ください。</para>
 
 </sect1>
 
 <sect1 id="infr.design.intf">
-<title>Designing interfaces for Makefile fragments</title>
+<title>Makefile の断片のインターフェースを設計する</title>
 
-	<para>Most of the <filename>.mk</filename> files fall into one
-	of the following classes. Cases where a file falls into more
-	than one class should be avoided as it often leads to subtle
-	bugs.</para>
+	<para>ほとんどの <filename>.mk</filename> ファイルは、
+	以下の二種類のいずれかに分類されます。
+	一つのファイルが複数の種類の性質を持つと、
+	見つけにくいバグの原因となることがしばしばあるので、そういうことは避けるようにします。</para>
 
 <sect2 id="infr.design.intf.proc">
-<title>Procedures with parameters</title>
+<title>引数を伴うプロシージャー</title>
 
-	<para>In a traditional imperative programming language some of
-	the <filename>.mk</filename> files could be described as
-	procedures. They take some input parameters and&mdash;after
-	inclusion&mdash;provide a result in output parameters. Since all
-	variables in <filename>Makefile</filename>s have global scope
-	care must be taken not to use parameter names that have already
-	another meaning. For example, <varname>PKGNAME</varname> is a
-	bad choice for a parameter name.</para>
+	<para>伝統的な命令型プログラミング言語の言葉で説明すると、
+	いくつかの <filename>.mk</filename> ファイルはプロシージャーということになります。
+	プロシージャーは入力引数をとり、&mdash;インクルードされた後に&mdash;
+	出力引数を返します。<filename>Makefile</filename>
+	内の変数はすべて大域的なスコープをもつため、
+	すでに別の意味で使われている引数名を使わないよう注意する必要があります。
+	たとえば、<varname>PKGNAME</varname>
+	は、引数名としては不適切なものです。</para>
 
-	<para>Procedures are completely evaluated at preprocessing time.
-	That is, when calling a procedure all input parameters must be
-	completely resolvable. For example,
-	<varname>CONFIGURE_ARGS</varname> should never be an input
-	parameter since it is very likely that further text will be
-	added after calling the procedure, which would effectively apply
-	the procedure to only a part of the variable. Also, references
-	to other variables wit will be modified after calling the
-	procedure.</para>
+	<para>プロシージャーは、プリプロセッシングの際に完全に評価されます。
+	このため、プロシージャーを呼ぶときには、
+	入力引数はすべて完全に解決可能である必要があります。たとえば、
+	<varname>CONFIGURE_ARGS</varname> は、たいていは、
+	プロシージャーを呼んだ後にテキストが追加されることから、
+	変数の一部しかプロシージャーに渡されないことになるので、
+	決して入力引数として使ってはいけません。
+	また、他の変数から導かれる値への参照は、
+	プロシージャーの呼び出しの後に更新されます。</para>
 
-	<para>A procedure can declare its output parameters either as
-	suitable for use in preprocessing directives or as only
-	available at runtime. The latter alternative is for variables
-	that contain references to other runtime variables.</para>
+	<para>プロシージャーは、その出力引数を、
+	プリプロセッシングディレクティブ内で使うものとして、または、
+	実行時のみに利用可能なものとして、いずれかを宣言することができます。
+	後者は、他の実行時変数への参照を含む変数用です。</para>
 
-	<para>Procedures shall be written such that it is possible to
-	call the procedure more than once. That is, the file must not
-	contain multiple-inclusion guards.</para>
+	<para>プロシージャーは、複数の呼び出しが可能なように書くものです。
+	つまり、ファイルに多重インクルードの防護策を施してはいけません。</para>
 
-	<para>Examples for procedures are
-	<filename>mk/bsd.options.mk</filename> and
-	<filename>mk/buildlink3/bsd.builtin.mk</filename>. To express
-	that the parameters are evaluated at load time, they should be
-	assigned using the <literal>:=</literal> operator, which should
-	be used only for this purpose.</para>
+	<para>プロシージャーの例としては、
+	<filename>mk/bsd.options.mk</filename> や
+	<filename>mk/buildlink3/bsd.builtin.mk</filename> があります。
+	引数が読み込み時に評価されることを表すため、
+	引数は <literal>:=</literal> 演算子を使って与えます。
+	この演算子は、この目的のためだけに使うようにします。</para>
 
 </sect2>
 <sect2 id="infr.design.intf.action">
-<title>Actions taken on behalf of parameters</title>
+<title>引数に応じたアクション</title>
 
-	<para>Action files take some input parameters and may define
-	runtime variables. They shall not define loadtime variables.
-	There are action files that are included implicitly by the
-	pkgsrc infrastructure, while other must be included
-	explicitly.</para>
+	<para>アクションファイルは、入力引数をとり、
+	実行時変数を定義することができます。
+	読み込み時変数を定義することはできません。
+	アクションファイルには
+	pkgsrc の基盤によって暗黙のうちにインクルードされるものもありますが、
+	そのようなもの以外は明示的にインクルードする必要があります。</para>
 
-	<para>An example for action files is
-	<filename>mk/subst.mk</filename>.</para>
+	<para>アクションファイルの例としては、
+	<filename>mk/subst.mk</filename> があります。</para>
 
 </sect2>
 </sect1>
 
 <sect1 id="infr.order">
-<title>The order in which files are loaded</title>
+<title>ファイルが読み込まれる順序</title>
 
-	<para>Package <filename>Makefile</filename>s usually consist of
-	a set of variable definitions, and include the file
-	<filename>../../mk/bsd.pkg.mk</filename> in the very last line.
-	Before that, they may also include various other
-	<filename>*.mk</filename> files if they need to query the
-	availability of certain features like the type of compiler or
-	the X11 implementation. Due to the heavy use of preprocessor
-	directives like <literal>.if</literal> and
-	<literal>.for</literal>, the order in which the files are loaded
-	matters.</para>
+	<para>パッケージの <filename>Makefile</filename> は、通常、
+	一連の変数の定義からできており、最後の行で
+	<filename>../../mk/bsd.pkg.mk</filename> ファイルをインクルードしています。
+	コンパイラーや X11 の実装の種類など、
+	特定の機能の有無を問い合わせる必要がある場合は、
+	最後のインクルードの前に、これ以外の各種
+	<filename>*.mk</filename> ファイルをインクルードすることができます。
+	<literal>.if</literal> や
+	<literal>.for</literal> のようなプリプロセッサーディレクティブを多用しているので、
+	ファイルを読み込む場所と順序が問題になります。</para>
 
-	<para>This section describes at which point the various files
-	are loaded and gives reasons for that order.</para>
+	<para>本節では、各種ファイルをどこで読み込むか、
+	および、その順序の理由を説明します。</para>
 
 <sect2 id="infr.order.prefs">
-<title>The order in <filename>bsd.prefs.mk</filename></title>
+<title><filename>bsd.prefs.mk</filename> での順序</title>
 
-	<para>The very first action in <filename>bsd.prefs.mk</filename>
-	is to define some essential variables like
-	<varname>OPSYS</varname>, <varname>OS_VERSION</varname> and
-	<varname>MACHINE_ARCH</varname>.</para>
+	<para><filename>bsd.prefs.mk</filename> で最初におこなわれることは、
+	<varname>OPSYS</varname>, <varname>OS_VERSION</varname>,
+	<varname>MACHINE_ARCH</varname> など、基本的な変数をいくつか定義することです。</para>
 
-	<para>Then, the user settings are loaded from the file specified
-	in <varname>MAKECONF</varname>, which is usually &mk.conf;.
-	After that, those variables
-	that have not been overridden by the user are loaded from
-	<filename>mk/defaults/mk.conf</filename>.</para>
+	<para>次に、<varname>MAKECONF</varname> (通常は &mk.conf;)
+	で指定されているファイルから、ユーザーによる設定が読み込まれます。
+	それから、ユーザーによって上書きされたもの以外の変数が
+	<filename>mk/defaults/mk.conf</filename> から読み込まれます。</para>
 
-	<para>After the user settings, the system settings and platform
-	settings are loaded, which may override the user
-	settings.</para>
+	<para>ユーザーによる設定の後に、
+	システムの設定とプラットフォームの設定が読み込まれます。
+	これらはユーザーによる設定を上書きすることがあります。</para>
 
-	<para>Then, the tool definitions are loaded. The tool wrappers
-	are not yet in effect. This only happens when building a
-	package, so the proper variables must be used instead of the
-	direct tool names.</para>
+	<para>その後、ツールの定義が読み込まれます。
+	この時点では、ツールのラッパーはまだ影響しません。
+	ラッパーは、パッケージを構築する時に影響をおよぼします。
+	このため、ツール名を直接使うのではなく、適切な変数を使う必要があります。</para>
 
-	<para>As the last steps, some essential variables from the
-	wrapper and the package system flavor are loaded, as well as the
-	variables that have been cached in earlier phases of a package
-	build.</para>
+	<para>最後に、ラッパーおよびパッケージシステムのフレーバーから、
+	必須の変数がいくつか、
+	パッケージ構築過程の初期段階でキャッシュされていた変数とともに、
+	読み込まれます。</para>
 
 </sect2>
 
 <sect2 id="infr.order.pkg">
-<title>The order in <filename>bsd.pkg.mk</filename></title>
+<title><filename>bsd.pkg.mk</filename> での順序</title>
 
-	<para>First, <filename>bsd.prefs.mk</filename> is loaded.</para>
+	<para>最初に、<filename>bsd.prefs.mk</filename> が読み込まれます。</para>
 
-	<para>Then, the various <filename>*-vars.mk</filename> files are
-	loaded, which fill default values for those variables that have
-	not been defined by the package. These variables may later
-	be used even in unrelated files.</para>
+	<para>次に、パッケージ側で定義されない変数の標準状態の値を定義している、
+	各種の <filename>*-vars.mk</filename> ファイルが読み込まれます。
+	この変数は、後になって、無関連のファイルで使われる可能性もあります。</para>
 
-	<para>Then, the file <filename>bsd.pkg.error.mk</filename>
-	provides the target <literal>error-check</literal> that is added
-	as a special dependency to all other targets that use
-	<varname>DELAYED_ERROR_MSG</varname> or
-	<varname>DELAYED_WARNING_MSG</varname>.</para>
+	<para>その次に、<filename>bsd.pkg.error.mk</filename> ファイルから
+	<literal>error-check</literal> ターゲットが提供されます。
+	このターゲットは、
+	<varname>DELAYED_ERROR_MSG</varname> または
+	<varname>DELAYED_WARNING_MSG</varname>
+	を使う他のターゲットすべてに対して、特別な依存性として追加されます。</para>
 
-	<para>Then, the package-specific hacks from
-	<filename>hacks.mk</filename> are included.</para>
+	<para>その後、<filename>hacks.mk</filename> から、
+	パッケージ固有のハックがインクルードされます。</para>
 
 	<!-- bsd.pkg.use.mk -->
 
-	<para>Then, various other files follow. Most of them don't have
-	any dependencies on what they need to have included before or
-	after them, though some do.</para>
+	<para>そして、他の各種ファイルのインクルードが続きます。
+	この段階でインクルードされるファイルのほとんどは、
+	インクルードされる順序に関して依存性を持ちませんが、
+	なかには依存性を持つものもあります。</para>
 
-	<para>The code to check <varname>PKG_FAIL_REASON</varname> and
-	<varname>PKG_SKIP_REASON</varname> is then executed, which
-	restricts the use of these variables to all the files that have
-	been included before. Appearances in later files will be
-	silently ignored.</para>
+	<para>ここで、<varname>PKG_FAIL_REASON</varname> と
+	<varname>PKG_SKIP_REASON</varname> を検査するコードが実行されます。
+	ここまでの段階でインクルードされるすべてのファイルに対しては、
+	この両変数の使用が制限されます。
+	これより後にインクルードされるファイルでは、黙って無視されます。</para>
 
-	<para>Then, the files for the main targets are included, in the
-	order of later execution, though the actual order should not
-	matter.</para>
+	<para>それから、目的のターゲットに対応するファイルが、
+	この後で実行される順序でインクルードされますが、
+	実際の順序は問題とはならないはずです。</para>
 
-	<para>At last, some more files are included that don't set any
-	interesting variables but rather just define make targets to be
-	executed.</para>
+	<para>最後に、何ら興味深い変数を設定するものではなく、
+	実行される make ターゲットを定義するだけのファイルが、
+	さらにいくつかインクルードされます。</para>
 
 </sect2>
 </sect1>
