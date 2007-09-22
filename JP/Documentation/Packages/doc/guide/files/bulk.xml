@@ -1,120 +1,126 @@
 <!-- $NetBSD: bulk.xml,v 1.1 2007/09/18 08:17:21 rillig Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: bulk.xml,v 1.1 2007/09/18 08:17:21 rillig Exp   -->
 
 <chapter id="bulk">
-<title>Creating binary packages for everything in pkgsrc (bulk
-builds)</title>
+<title>pkgsrc のバイナリーパッケージを全部作成する
+(バルクビルド)</title>
 
-<para>When you have multiple machines that should run the same packages,
-it is wasted time if they all build their packages themselves from
-source. There are two ways of getting a set of binary packages: The old
-bulk build system, or the new (as of 2007) parallel bulk build (pbulk)
-system. This chapter describes how to set them up so that the packages
-are most likely to be usable later.</para>
+<para>同じパッケージが動くマシンが複数ある場合、
+それぞれのマシンでソースからパッケージを構築するのは、時間の無駄です。
+バイナリーパッケージ一式を作る方法が二通りあります。
+古いバルクビルドシステムと、新しい (2007 年からの) 分散バルクビルド
+(parallel bulk build, pbulk) システムです。本章では、
+構築したパッケージが有用なものにできるよう、
+この二通りのバルクビルドの設定方法を説明します。</para>
 
 <sect1 id="bulk.pre">
-<title>Think first, build later</title>
+<title>まず考察、構築はその後</title>
 
-<para>Since a bulk build takes several days or even weeks to finish, you
-should think about the setup before you start everything. Pay attention
-to at least the following points:</para>
-
-<itemizedlist>
-
-<listitem><para>If you want to upload the binary packages to
-ftp.NetBSD.org, make sure the setup complies to the requirements for binary
-packages:</para>
+<para>バルクビルドを最後までおこなうには、数日、あるいは数週間かかることもあります。
+このため、始める前に、その準備について考えたほうがよいでしょう。
+少なくとも、以下の点に注意を払ってください。</para>
 
 <itemizedlist>
 
-<listitem><para>To end up on ftp.NetBSD.org, the packages must be built
-by a NetBSD developer on a trusted machine (that is, where you and only
-you have root access).</para></listitem>
+<listitem><para>バイナリーパッケージを
+ftp.NetBSD.org にアップロードしたい場合、バイナリーパッケージに関する以下の条件を、
+かならず満たすようにします。</para>
 
-<listitem><para>Packages on ftp.NetBSD.org should only be created from
-the stable branches (like 2007Q1), so that users browsing the available
-collections can see at a glance how old the packages
-are.</para></listitem>
+<itemizedlist>
 
-<listitem><para>The packages must be built as root, since some packages
-require set-uid binaries at runtime, and creating those packages as
-unprivileged user doesn't work well at the moment.</para></listitem>
+<listitem><para>ftp.NetBSD.org に置かれるパッケージは、
+NetBSD 開発者が、信頼のおけるマシン (つまり、あなたが root 権限を持っており、かつ、
+あなただけが root 権限を持つマシン) で構築したものである必要があります。</para></listitem>
+
+<listitem><para>ftp.NetBSD.org には、安定版の枝 (たとえば 2007Q1 など)
+から作成されたものだけを置くようにします。これは、利用者が一見しただけで、
+置かれているパッケージがどれだけ古いものかわかるようにするためです。</para></listitem>
+
+<listitem><para>パッケージは root で構築する必要があります。
+パッケージのなかには、実行時に set-uid バイナリーを必要とするものがあり、
+今のところ、そのようなパッケージを特権ユーザー以外で作成すると、うまく動作しないからです。</para></listitem>
 
 </itemizedlist>
 </listitem>
 
-<listitem><para>Make sure that the bulk build cannot break anything in
-your system. Most bulk builds run as root, so they should be run at least
-in a chroot environment or something even more restrictive, depending on
-what the operating system provides. There have been numerous cases where
-certain packages tried to install files outside the
-<filename>LOCALBASE</filename> or wanted to edit some files in
-<filename>/etc</filename>. Furthermore, the bulk builds install and
-deinstall packages in <filename>/usr/pkg</filename> (or whatever
-<filename>LOCALBASE</filename> is) during their operation, so be sure
-that you don't need any package during the build.</para></listitem>
+<listitem><para>バルクビルドによって、お使いのシステムが壊されることのないようにしてください。
+バルクビルドの大半は、root 権限で動くので、少なくとも chroot 環境か、
+(お使いのオペレーティングシステムに応じた) 何らかの制限環境で実行するようにします。
+個々のパッケージが、ファイルを
+<filename>LOCALBASE</filename> 以外の場所にインストールしようとしたり、
+<filename>/etc</filename> にあるファイルを編集しようとしたりする事例が、
+いくつもあります。
+さらに、バルクビルドでは、その過程において、
+<filename>/usr/pkg</filename> (あるいは
+<filename>LOCALBASE</filename> で設定された場所)
+にパッケージをインストールしたりアンインストールしたりするので、
+構築中は、どのパッケージも必要ない (アンインストールされても困らない)
+ようにしておいてください。</para></listitem>
 
 </itemizedlist>
 </sect1>
 
 <sect1 id="bulk.req">
-<title>Requirements of a bulk build</title>
+<title>バルクビルドに必要なもの</title>
 
-<para>A complete bulk build requires lots of disk space. Some of the
-disk space can be read-only, some other must be writable. Some can be on
-remote filesystems (such as NFS) and some should be local. Some can be
-temporary filesystems, others must survive a sudden reboot.</para>
+<para>完全なバルクビルドには、大量のディスク容量が必要です。
+ディスクスペースの一部は読み取り専用でもかまいませんが、
+書き込みが必要なものもあります。
+ディスクスペースの一部はリモートファイルシステム (NFS など) でもかまいませんが、
+ローカルとしたほうがよいものもあります。
+ディスクスペースの一部は一時ファイルシステムでもかまいませんが、
+突然リブートしても平気な (恒久的な) ファイルシステムが必要なものもあります。</para>
 
 <itemizedlist>
 
-<listitem><para>10 GB for the distfiles (read-write, remote, temporary)</para></listitem>
+<listitem><para>10 GB: distfile 用 (要読み書き、リモート可、一時可)</para></listitem>
 
-<listitem><para>10 GB for the binary packages (read-write, remote, permanent)</para></listitem>
+<listitem><para>10 GB: バイナリーパッケージ用 (要読み書き、リモート可、要恒久)</para></listitem>
 
-<listitem><para>400 MB for the pkgsrc tree (read-only, remote, permanent)</para></listitem>
+<listitem><para>400 MB: pkgsrc ツリー用 (読み取り専用可、リモート可、要恒久)</para></listitem>
 
-<listitem><para>5 GB for <filename>LOCALBASE</filename> (read-write, local, temporary for pbulk, permanent for old-bulk)</para></listitem>
+<listitem><para>5 GB: <filename>LOCALBASE</filename> 用 (要読み書き、ローカル推奨、pbulk では一時可、旧形式では要恒久)</para></listitem>
 
-<listitem><para>5 GB for the log files (read-write, remote, permanent)</para></listitem>
+<listitem><para>5 GB: ログファイル用 (要読み書き、リモート可、要恒久ファイルシステム)</para></listitem>
 
-<listitem><para>5 GB for temporary files (read-write, local, temporary)</para></listitem>
+<listitem><para>5 GB: 一時ファイル用 (要読み書き、ローカル推奨、一時ファイルシステム可)</para></listitem>
 
 </itemizedlist>
 
 </sect1>
 
 <sect1 id="bulk.old">
-<title>Running an old-style bulk build</title>
+<title>旧方式のバルクビルドを実行する</title>
 
-<warning><para>The rest of this section is rather old. Don't rely on it
-too much.</para></warning>
+<warning><para>以下、本節は古い内容です。
+あまりあてにしないでください。</para></warning>
 
 <sect2 id="binary.configuration">
-<title>Configuration</title>
+<title>設定</title>
 
 <!-- begin old -->
       <sect3 id="binary.bulk.build.conf">
 	<title><filename>build.conf</filename></title>
 
-	<para>The <filename>build.conf</filename> file is the main
-	configuration file for bulk builds. You can configure how your
-	copy of pkgsrc is kept up to date, how the distfiles are
-	downloaded, how the packages are built and how the report is
-	generated. You can find an annotated example file in
-	<filename>pkgsrc/mk/bulk/build.conf-example</filename>. To use
-	it, copy <filename>build.conf-example</filename> to
-	<filename>build.conf</filename> and edit it, following the
-	comments in that file.</para>
+	<para><filename>build.conf</filename> ファイルは、
+	バルクビルドの主たる設定ファイルです。pkgsrc ツリーを最新に保つ方法、
+	distfile のダウンロード方法、パッケージの構築方法や、
+	報告の作成方法を設定することができます。註釈つきの設定例が
+	<filename>pkgsrc/mk/bulk/build.conf-example</filename> にあります。
+	これを使うには、<filename>build.conf-example</filename> を
+	<filename>build.conf</filename> にコピーし、
+	このファイル中のコメントに従って編集します。</para>
       </sect3>
 
       <sect3 id="binary.mk.conf">
 	<title>&mk.conf;</title>
 
-	<para>You may want to set variables in &mk.conf;.
-	Look at <filename>pkgsrc/mk/defaults/mk.conf</filename> for
-	details of the default settings. You will want to ensure that
-	<varname>ACCEPTABLE_LICENSES</varname> meet your local policy.
-	As used in this example, <varname>_ACCEPTABLE=yes</varname>
-	completely bypasses the license check.</para>
+	<para>&mk.conf; で以下の変数を設定するとよいでしょう。デフォルト設定についての詳細
+	は<filename>pkgsrc/mk/defaults/mk.conf</filename>を見てください。
+	<varname>ACCEPTABLE_LICENSES</varname>はローカルポリシーに適合するようにしておきます。
+	この例では <varname>_ACCEPTABLE=yes</varname> としており、
+	ライセンスの検査を一切おこないません。</para>
 
 <programlisting>
 PACKAGES?=      ${_PKGSRCDIR}/packages/${MACHINE_ARCH}
@@ -127,63 +133,64 @@ PKG_DEVELOPER?= yes
 _ACCEPTABLE=    yes
 </programlisting>
 
-	<para>Some options that are especially useful for bulk builds
-	can be found at the top lines of the file
-	<filename>mk/bulk/bsd.bulk-pkg.mk</filename>. The most useful
-	options of these are briefly described here.</para>
+	<para>バルクビルド用として、特に有用なオプションが、
+	<filename>mk/bulk/bsd.bulk-pkg.mk</filename>
+	の冒頭にいくつかあります。そのなかでも最も有用な部類のものを、
+	ここで簡単に説明します。</para>
 
 	<itemizedlist>
 
-	  <listitem><para>If you are on a slow machine, you may want to
-	  set <varname>USE_BULK_BROKEN_CHECK</varname> to
-	  <quote>no</quote>.</para></listitem>
+	  <listitem><para>遅いマシンを使っている場合は、
+	  <varname>USE_BULK_BROKEN_CHECK</varname> を
+	  <quote>no</quote> に設定するとよいでしょう。</para></listitem>
 
-	  <listitem><para>If you are doing bulk builds from a read-only
-	  copy of pkgsrc, you have to set <varname>BULKFILESDIR</varname>
-	  to the directory where all log files are created. Otherwise the
-	  log files are created in the pkgsrc directory.</para></listitem>
+	  <listitem><para>読み出し専用の pkgsrc ツリーを使ってバルクビルドをする場合は、
+	  ログファイルが作られるディレクトリーとして <varname>BULKFILESDIR</varname>
+	  を設定する必要があります。そうしないと、
+	  pkgsrc ディレクトリー内にログファイルが作られます。</para></listitem>
 
-	  <listitem><para>Another important variable is
-	  <varname>BULK_PREREQ</varname>, which is a list of packages that
-	  should be always available while building other
-	  packages.</para></listitem>
+	  <listitem><para>このほか、重要な変数として
+	  <varname>BULK_PREREQ</varname> があります。
+	  これは、他のパッケージを構築する際には常に使える状態になっているべきパッケージを
+	  並べたリストです。</para></listitem>
 
 	</itemizedlist>
 
-	<para>Some other options are scattered in the pkgsrc
-	infrastructure:</para>
+	<para>その他、いくつかのオプションが、
+	pkgsrc の基盤内に散在しています。</para>
 
 	<itemizedlist>
 
 	  <listitem><para><varname>ALLOW_VULNERABLE_PACKAGES</varname>
-	  should be set to <literal>yes</literal>. The purpose of the bulk
-	  builds is creating binary packages, no matter if they are
-	  vulnerable or not. When uploading the packages to a public
-	  server, the vulnerable packages will be put into a directory of
-	  their own. Leaving this variable unset would prevent the bulk
-	  build system from even trying to build them, so possible
-	  building errors would not show up.</para></listitem>
+	  は <literal>yes</literal> に設定するようにします。
+	  バルクビルドの目的はバイナリーパッケージを作ることであり、
+	  脆弱性の有無は重要ではありません。
+	  作成したパッケージを公開サーバーにアップロードする時には、
+	  脆弱性のあるパッケージは専用のディレクトリーに置かれます。
+	  この変数を設定しておかないと、バルクビルドにおいて、
+	  脆弱性のあるパッケージを構築しようとしなくなるため、
+	  構築でエラーがあっても検出できなくなってしまいます。</para></listitem>
 
 	  <listitem><para><varname>CHECK_FILES</varname>
-	  (<filename>pkgsrc/mk/check/check-files.mk</filename>) can be set to
-	  <quote>yes</quote> to check that the installed set of files
-	  matches the <filename>PLIST</filename>.</para></listitem>
+	  (<filename>pkgsrc/mk/check/check-files.mk</filename>) を
+	  <quote>yes</quote> に設定すると、インストールされた一連のファイルが
+	  <filename>PLIST</filename> と一致することを確認することができます。</para></listitem>
 
 	  <listitem><para><varname>CHECK_INTERPRETER</varname>
-	  (<filename>pkgsrc/mk/check/check-interpreter.mk</filename>) can be set to
-	  <quote>yes</quote> to check that the installed
-	  <quote>#!</quote>-scripts will find their
-	  interpreter.</para></listitem>
+	  (<filename>pkgsrc/mk/check/check-interpreter.mk</filename>) を
+	  <quote>yes</quote> に設定すると、インストールされた
+	  <quote>#!</quote> で始まるスクリプトが、
+	  指定されたインタープリターを見つけられることを確認することができます。</para></listitem>
 
-	  <listitem><para><varname>PKGSRC_RUN_TEST</varname> can be
-	  set to <quote><literal>yes</literal></quote> to run each
-	  package's self-test before installing it. Note that some
-	  packages make heavy use of <quote>good</quote> random
-	  numbers, so you need to assure that the machine on which you
-	  are doing the bulk builds is not completely idle. Otherwise
-	  some test programs will seem to hang, while they are just
-	  waiting for new random data to be
-	  available.</para></listitem>
+	  <listitem><para><varname>PKGSRC_RUN_TEST</varname> を
+	  <quote><literal>yes</literal></quote> に設定して、
+	  各パッケージのインストール前に自己診断を実行することができます。
+	  なお、パッケージのなかには<quote>良質の</quote>乱数を大量に使うものがあるので、
+	  バルクビルドを実行しているマシンが、
+	  完全なアイドル状態にはならないようにする必要があります。
+	  さもないと、一部の診断プログラムが、
+	  新しい乱数データが使えるようになるのを待つ間、
+	  ハングしているかのように見えるようになります。</para></listitem>
 
 	</itemizedlist>
 
@@ -192,38 +199,31 @@ _ACCEPTABLE=    yes
       <sect3 id="pre-build.local">
 	<title><filename>pre-build.local</filename></title>
 
-	<para>It is possible to configure the bulk build to perform
-	certain site-specific tasks at the end of the pre-build
-	stage.  If the file
-	<filename>pre-build.local</filename> exists in
-	<filename>/usr/pkgsrc/mk/bulk</filename>, it will be executed
-	(as a &man.sh.1; script) at the end of the usual pre-build
-	stage.  An example use of
-	<filename>pre-build.local</filename> is to have the line:</para>
+	<para>バルクビルドでは、ビルド前の段階の最後に、サイト独自の作業を行なうよう設定
+	することができます。<filename>/usr/pkgsrc/mk/bulk</filename>に
+	<filename>pre-build.local</filename>ファイルがあると、ビ
+	ルド前の段階の最後に、このファイルが(&man.sh.1;スクリプトとして)実行されます。
+	<filename>pre-build.local</filename>の使い方の例としては、このファイルに</para>
 
 	<screen>echo "I do not have enough disk space to build this pig." \
 	&gt; misc/openoffice/$BROKENF</screen>
 
-	<para>to prevent the system from trying to build a particular package
-	which requires nearly 3 GB of disk space.</para>
+	<para>のような内容を書いておいて、3 GB近くのディスク容量が必要な個々のパッケージ
+	の構築をしないようにする、というものがあります。</para>
       </sect3>
     </sect2>
 
     <sect2 id="other-environmental-considerations">
-      <title>Other environmental considerations</title>
+      <title>ほか、環境に関する考察</title>
 
-      <para>As <filename>/usr/pkg</filename> will be completely
-      deleted at the start of bulk builds, make sure your login
-      shell is placed somewhere else. Either drop it into
-      <filename>/usr/local/bin</filename> (and adjust your login
-      shell in the passwd file), or (re-)install it via
-      &man.pkg.add.1; from <filename>/etc/rc.local</filename>, so
-      you can login after a reboot (remember that your current
-      process won't die if the package is removed, you just can't
-      start any new instances of the shell any more).  Also, if you
-      use &os; earlier than 1.5, or you still want to use the pkgsrc
-      version of ssh for some reason, be sure to install ssh before
-      starting it from <filename>rc.local</filename>:</para>
+      <para><filename>/usr/pkg</filename>はバルクビルド開始時に完全に削除されるので、ログインシェルが別の場
+      所にあることを確認してください。ログインシェルを<filename>/usr/local/bin</filename>に移して(それ
+      に合わせて passwd ファイルも修正して)おくか、<filename>/etc/rc.local</filename>で&man.pkg.add.1;を使っ
+      て(再)インストールするようにしておきます。これでリブート後もログインできま
+      す(パッケージが削除されてもシェルのプロセスは死なず、シェルを新たに起動でき
+      なくなるだけです)。また、1.5より前の&os;を使っていたり、何らかの
+      理由でpkgsrc版のsshを使いたい場合は、<filename>rc.local</filename>でsshdが起動する前にsshをイン
+      ストールするようにしておきます:</para>
 
 <programlisting>
 (cd /usr/pkgsrc/security/ssh && make bulk-install)
@@ -232,157 +232,145 @@ if [ -f /usr/pkg/etc/rc.d/sshd ]; then
 fi
 </programlisting>
 
-      <para>Not doing so will result in you being not able to log in
-      via ssh after the bulk build is finished or if the machine
-      gets rebooted or crashes. You have been warned! :)</para>
+      <para>こうしておかないと、バルクビルド終了後や、あるいはマシンがリブートやクラッ
+      シュした場合にsshでログインできなくなります。警告しておきましたよ! :)</para>
     </sect2>
 
     <sect2 id="operation">
-      <title>Operation</title>
+      <title>操作</title>
 
-      <para>Make sure you don't need any of the packages still
-      installed.</para>
+      <para>すでにインストールされているどのパッケージも必要ない状態にしてください。</para>
 
       <warning>
-	<para>During the bulk build, <emphasis>all packages, their
-	configuration files and some more files from
-	<filename>/var</filename>, <filename>/home</filename> and
-	possibly other locations will be removed! So don't run a bulk
-	build with privileges that might harm your
-	system.</emphasis></para>
+	<para>バルクビルドの過程で、<emphasis>すべてのパッケージ、
+	設定ファイルと、さらに、
+	<filename>/var</filename>, <filename>/home</filename>
+	その他の場所にあるファイルがいくつか削除されます。
+	なので、システムに悪影響を与えるおそれのある権限で、
+	バルクビルドを実行しないでください。</emphasis></para>
       </warning>
 
-      <para>Be sure to remove all other things that might
-      interfere with builds, like some libs installed in
-      <filename>/usr/local</filename>, etc. then become root and type:</para>
+      <para>その他、
+      構築の妨げになりうるもの(<filename>/usr/local</filename>にインストールされているライブラリーなど)
+      もすべて削除しておいてください。root になって、以下のようにタイプします:</para>
 
       <screen>
 &rprompt; <userinput>cd /usr/pkgsrc</userinput>
 &rprompt; <userinput>sh mk/bulk/build</userinput>
       </screen>
 
-      <para>If for some reason your last build didn't complete (power
-      failure, system panic, ...), you can continue it by
-      running:</para>
+      <para>何らかの理由で前回の構築が完了していない場合(電源断、システムパニックなど)
+      は、以下を実行すると、その続きをすることができます:</para>
 
       <screen>&rprompt; <userinput>sh mk/bulk/build restart</userinput></screen>
 
-      <para>At the end of the bulk build, you will get a summary via mail,
-      and find build logs in the directory specified by
-      <varname>FTP</varname> in the <filename>build.conf</filename>
-      file.</para>
+      <para>バルクビルドが終わると、その要約がメールで届きます。また、<filename>build.conf</filename>
+      ファイルの<varname>FTP</varname>で指定したディレクトリーに、構築ログがあります。</para>
     </sect2>
 
     <sect2 id="what-it-does">
-      <title>What it does</title>
+      <title>何を実行するのか</title>
 
-      <para>The bulk builds consist of three steps:</para>
+      <para>バルクビルドは三つの段階からなります:</para>
 
       <variablelist>
 	<varlistentry>
-	  <term>1. pre-build</term>
+	  <term>1. ビルド前</term>
 
 	  <listitem>
-	    <para>The script updates your pkgsrc tree via (anon)cvs, then
-	    cleans out any broken distfiles, and removes all
-	    packages installed.</para>
+	    <para>スクリプトがpkgsrcツリーを(anon)cvsで更新します。そして、壊れている
+	    distfileをすべて一掃し、インストールされているパッケージをすべて削
+	    除します。</para>
 	  </listitem>
 	</varlistentry>
 
 	<varlistentry>
-	  <term>2. the bulk build</term>
+	  <term>2. バルクビルド</term>
 
 	  <listitem>
-	    <para>This is basically <quote>make bulk-package</quote> with
-	    an optimised order in which packages will be
-	    built. Packages that don't require other packages will
-	    be built first, and packages with many dependencies will
-	    be built later.</para>
+	    <para>これは基本的に、
+	    <quote>make bulk-package</quote>を、パッケージの構築順
+	    序を最適化しておこなうものです。他のパッケージに依存しないパッケー
+	    ジが最初に構築され、多くの依存関係を持つパッケージは後に構築されま
+	    す。</para>
 	  </listitem>
 	</varlistentry>
 
 	<varlistentry>
-	  <term>3. post-build</term>
+	  <term>3. ビルド後</term>
 
 	  <listitem>
-	    <para>Generates a report that's placed in the directory
-	    specified in the <filename>build.conf</filename> file
-	    named <filename>broken.html</filename>, a short version
-	    of that report will also be mailed to the build's
-	    admin.</para>
+	    <para>報告を作成し、<filename>build.conf</filename>で指定されたディレクトリーに
+	    <filename>broken.html</filename> という名前で置きます。あわせて、この報告の簡略版が
+	    構築管理者にメールで送られます。</para>
 	  </listitem>
 	</varlistentry>
       </variablelist>
 
-      <para>During the build, a list of broken packages will be compiled
-      in <filename>/usr/pkgsrc/.broken</filename> (or
-      <filename>.../.broken.${MACHINE}</filename> if
-      <varname>OBJMACHINE</varname> is set), individual build logs
-      of broken builds can be found in the package's
-      directory. These files are used by the bulk-targets to mark
-      broken builds to not waste time trying to rebuild them, and
-      they can be used to debug these broken package builds
-      later.</para>
+      <para>構築中、壊れているパッケージの一覧が<filename>/usr/pkgsrc/.broken</filename>
+      (<varname>OBJMACHINE</varname>
+      が設定されている場合は
+      <filename>.../.broken.${MACHINE}</filename>)
+      に作られ、構築が壊れているものの個々の
+      構築ログは、各パッケージのディレクトリーに置かれます。これらのファイルは、
+      壊れているパッケージを再度構築しようとするような無駄をなくすために、bulk-ター
+      ゲットが構築が壊れていることを記録するのに使われます。また、壊れているパッ
+      ケージを後でデバッグするためにも使えます。</para>
     </sect2>
 
     <sect2 id="disk-space-requirements">
-      <title>Disk space requirements</title>
+      <title>必要なディスク容量</title>
 
-      <para>Currently, roughly the following requirements are valid for
-      NetBSD 2.0/i386:</para>
+      <para>現在、
+      NetBSD 2.0/i386 ではおおむね以下の容量が必要です:</para>
 
       <itemizedlist>
 	<listitem>
-	  <para>10 GB - distfiles (NFS ok)</para>
+	  <para>10 GB - distfile (NFSでも可)</para>
 	</listitem>
 
 	<listitem>
-	  <para>8 GB - full set of all binaries (NFS ok)</para>
+	  <para>8 GB - 全バイナリー一式 (NFSでも可)</para>
 	</listitem>
 
 	<listitem>
-	  <para>5 GB - temp space for compiling (local disk recommended)</para>
+	  <para>5 GB - コンパイル用の一時領域 (ローカルディスクを推奨)</para>
 	</listitem>
       </itemizedlist>
 
-      <para>Note that all pkgs will be de-installed as soon as they are
-      turned into a binary package, and that sources are removed,
-      so there is no excessively huge demand to disk
-      space. Afterwards, if the package is needed again, it will
-      be installed via &man.pkg.add.1; instead of building again, so
-      there are no cycles wasted by recompiling.</para>
+      <para>各パッケージは、バイナリーパッケージ作成直後にアンインストールされた上、
+      ソースも削除されます。このため、莫大なディスク容量は必要ありません。後
+      になって、このパッケージがまた必要となった場合は、再度構築することなく
+      &man.pkg.add.1; でインストールされるので、
+      無駄な再コンパイルの繰り返しは発生しません。</para>
     </sect2>
 
     <sect2 id="setting-up-a-sandbox">
-      <title>Setting up a sandbox for chrooted builds</title>
+      <title>chroot構築用の砂場を用意する</title>
 
-      <para>If you don't want all the packages nuked from a machine
-      (rendering it useless for anything but pkg compiling), there
-      is the possibility of doing the package bulk build inside a
-      chroot environment.</para>
+      <para>バルクビルドによってパッケージを全部消される(マシンがパッケージのコンパイル
+      以外に無用なものになってしまう)のが嫌な場合は、chroot環境下でパッケージをバ
+      ルクビルドすることもできます。</para>
 
-      <para>The first step is to set up a chroot sandbox,
-      e.g. <filename>/usr/sandbox</filename>.  This can be done by
-      using null mounts, or manually.</para>
+      <para>最初にすることは、chrootされた砂場を、
+      たとえば<filename>/usr/sandbox</filename>に用意することです。
+      これは null マウントを使って、または手動でおこなうことができます。</para>
 
-      <para>There is a shell script called
-      <filename>pkgsrc/mk/bulk/mksandbox</filename> which will set
-      up the sandbox environment using null mounts. It will also
-      create a script called <filename>sandbox</filename> in the
-      root of the sandbox environment, which will allow the null
-      mounts to be activated using the <command>sandbox
-      mount</command> command and deactivated using the
-      <command>sandbox umount</command> command.</para>
+      <para><filename>pkgsrc/mk/bulk/mksandbox</filename> というシェルスクリプトがあり、
+      null マウントを使った砂場の環境を用意してくれます。このスクリプトは、
+      砂場の環境のルートに <filename>sandbox</filename> というスクリプトも作ります。
+      これは、<command>sandbox mount</command> コマンドで null マウントをした状態にしたり、
+      <command>sandbox umount</command>
+      コマンドでアンマウントした状態にしたりすることができるものです。</para>
 
-      <para>To set up a sandbox environment by hand, after extracting all
-      the sets from a &os; installation or doing a <command>make
-      distribution DESTDIR=/usr/sandbox</command> in
-      <filename>/usr/src/etc</filename>, be sure the following items
-      are present and properly configured:</para>
+      <para>砂場の環境を手動で用意するには、
+      &os;のインストール配布物をすべて展開するか、<filename>/usr/src/etc</filename>で
+      <command>make distribution DESTDIR=/usr/sandbox</command>を実行した後、以下のものを用意して
+      適切に設定された状態にします。</para>
 
       <procedure>
 	<step>
-	  <para>Kernel</para>
+	  <para>カーネル</para>
 
 	  <screen>&rprompt; <userinput>cp /netbsd /usr/sandbox</userinput></screen>
 	</step>
@@ -394,99 +382,96 @@ fi
 	</step>
 
 	<step>
-	  <para><filename>/etc/resolv.conf</filename> (for <filename
-	  role="pkg">security/smtpd</filename> and mail):</para>
+	  <para><filename>/etc/resolv.conf</filename> (<filename
+	  role="pkg">security/smtpd</filename>およびメール用):</para>
 
 	  <screen>&rprompt; <userinput>cp /etc/resolv.conf /usr/sandbox/etc</userinput></screen>
 	</step>
 
 	<step>
-	  <para>Working(!) mail config (hostname, sendmail.cf):</para>
+	  <para>動作する(!)ようなメールの設定 (hostname, sendmail.cf):</para>
 
 	  <screen>&rprompt; <userinput>cp /etc/mail/sendmail.cf /usr/sandbox/etc/mail</userinput></screen>
 	</step>
 
 	<step>
-	  <para><filename>/etc/localtime</filename> (for <filename
-	  role="pkg">security/smtpd</filename>):</para>
+	  <para><filename>/etc/localtime</filename> (<filename
+	  role="pkg">security/smtpd</filename>用):</para>
 
 	  <screen>&rprompt; <userinput>ln -sf /usr/share/zoneinfo/UTC /usr/sandbox/etc/localtime</userinput></screen>
 	</step>
 
 	<step>
 
-	  <para><filename>/usr/src</filename> (system sources,
-	  e.&nbsp;g. for <filename
-	  role="pkg">sysutils/aperture</filename>):</para>
+	  <para><filename>/usr/src</filename> (たとえば
+	  <filename
+	  role="pkg">sysutils/aperture</filename> 用のシステムソース):</para>
 
 	  <screen>&rprompt; <userinput>ln -s ../disk1/cvs .</userinput>
 	  &rprompt; <userinput>ln -s cvs/src-2.0 src</userinput></screen>
 	</step>
 
 	<step>
-	  <para>Create <filename>/var/db/pkg</filename> (not part of default install):</para>
+	  <para><filename>/var/db/pkg</filename>を作成する(デフォルトのインストールには含まれません):</para>
 
 	  <screen>&rprompt; <userinput>mkdir /usr/sandbox/var/db/pkg</userinput></screen>
 	</step>
 
 	<step>
-	  <para>Create <filename>/usr/pkg</filename> (not part of default install):</para>
+	  <para><filename>/usr/pkg</filename>を作成する(デフォルトのインストールには含まれません):</para>
 
 	  <screen>&rprompt; <userinput>mkdir /usr/sandbox/usr/pkg</userinput></screen>
 	</step>
 
 	<step>
-	  <para>Checkout pkgsrc via cvs into
-	  <filename>/usr/sandbox/usr/pkgsrc</filename>:</para>
+	  <para>cvs を使って、<filename>/usr/sandbox/usr/pkgsrc</filename>
+	  内にpkgsrcをチェックアウトする:</para>
 
 	  <screen>
 &rprompt; <userinput>cd /usr/sandbox/usr</userinput>
 &rprompt; <userinput>cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot checkout -d -P pkgsrc</userinput>
 	  </screen>
 
-	  <para>Do not mount/link this to the copy of your pkgsrc tree
-	  you do development in, as this will likely cause problems!</para>
+	  <para>この pkgsrc ツリーを、開発用の pkgsrc ツリーにマウントしたりリンクしたりしてはいけません。
+	  そういうことをすると問題を起こしがちだからです。</para>
 	</step>
 
 	<step>
-	  <para>Make
-	  <filename>/usr/sandbox/usr/pkgsrc/packages</filename> and
-	  <filename>.../distfiles</filename> point somewhere
-	  appropriate. NFS- and/or nullfs-mounts may come in handy!</para>
+	  <para><filename>/usr/sandbox/usr/pkgsrc/packages</filename> と
+	  <filename>.../distfiles</filename> が、適切な場所を指すようにする。
+	  これらは NFS や nullfs でマウントしておくと便利かもしれません。</para>
 	</step>
 
 	<step>
-	  <para>Edit &mk.conf;, see <xref linkend="binary.mk.conf"/>.</para>
+	  <para>&mk.conf; を編集する。<xref linkend="binary.mk.conf"/>参照。</para>
 	</step>
 
 	<step>
-	  <para>Adjust <filename>mk/bulk/build.conf</filename> to suit your needs.</para>
+	  <para><filename>mk/bulk/build.conf</filename>を必要に合わせて調整する。</para>
 	</step>
       </procedure>
 
-      <para>When the chroot sandbox is set up, you can start
-      the build with the following steps:</para>
+      <para>chroot砂場の用意ができれば、
+      以下の手順で構築を開始できます:</para>
 
       <screen>
 &rprompt; <userinput>cd /usr/sandbox/usr/pkgsrc</userinput>
 &rprompt; <userinput>sh mk/bulk/do-sandbox-build</userinput>
       </screen>
 
-      <para>This will just jump inside the sandbox and start building.  At
-	the end of the build, mail will be sent with the results of
-	the build. Created binary pkgs will be in
-	<filename>/usr/sandbox/usr/pkgsrc/packages</filename>
-      (wherever that points/mounts to/from).</para>
+      <para>このコマンドは、砂場内に移動して、構築を開始するものです。構築が終わ
+	ると、構築の結果がメールで送信されます。できあがったバイナリーパッケージは、
+      <filename>/usr/sandbox/usr/pkgsrc/packages</filename> (の指す/マウントされた先/元)に置かれます。</para>
     </sect2>
 
     <sect2 id="building-a-partial-set">
-      <title>Building a partial set of packages</title>
+      <title>パッケージを部分的に構築する</title>
 
-      <para>In addition to building a complete set of all packages in
-      pkgsrc, the <filename>pkgsrc/mk/bulk/build</filename> script
-      may be used to build a subset of the packages contained in
-      pkgsrc.  By setting <varname>SPECIFIC_PKGS</varname>
-      in &mk.conf;, the variables</para>
+      <para><filename>pkgsrc/mk/bulk/build</filename> スクリプトは、
+      pkgsrc の全パッケージの一式の構築のほか、
+      pkgsrc に含まれるパッケージの部分集合の構築にも使うことができます。
+      &mk.conf; で <varname>SPECIFIC_PKGS</varname>
+      を定義すると、</para>
 
       <itemizedlist>
 	<listitem><para>SITE_SPECIFIC_PKGS</para></listitem>
@@ -495,64 +480,65 @@ fi
 	<listitem><para>USER_SPECIFIC_PKGS</para></listitem>
       </itemizedlist>
 
-      <para>will define the set of packages which should be built.
-      The bulk build code will also include any packages which are
-      needed as dependencies for the explicitly listed packages.</para>
+      <para>の各変数で構築対象のパッケージを定義できるようになります。
+      構築対象として定義されたパッケージの依存関係によって必要となるパッケージも、
+      バルクビルドのコードが構築対象に追加します。</para>
 
-      <para>One use of this is to do a bulk build with
-      <varname>SPECIFIC_PKGS</varname> in a chroot sandbox
-      periodically to have a complete set of the binary packages
-      needed for your site available without the overhead of
-      building extra packages that are not needed.</para>
+      <para>この使い方のひとつに、
+      サイトで必要なバイナリーパッケージをすべて用意するために、
+      <varname>SPECIFIC_PKGS</varname> を使ったバルクビルドを
+      chroot 環境で定期的に実行するというものがあります。
+      こうすれば、不要なパッケージまで構築するような余計な負荷はかかりません。</para>
 
     </sect2>
 
     <sect2 id="bulk-upload">
-      <title>Uploading results of a bulk build</title>
+      <title>バルクビルドの成果をアップロードする</title>
 
-      <para>This section describes how pkgsrc developers can upload binary
-      pkgs built by bulk builds to ftp.NetBSD.org.</para>
+      <para>本節では、pkgsrc 開発者がバルクビルドで構築したバイナリーパッケージを
+      ftp.NetBSD.org へアップロードする方法を説明します。</para>
 
-      <para>If you would like to automatically create checksum files for the
-      binary packages you intend to upload, remember to set
-      <varname>MKSUMS=yes</varname> in your
-      <filename>mk/bulk/build.conf</filename>.</para>
+      <para>アップロードしようとしているバイナリーパッケージの
+      チェックサムファイルを自動生成したい場合は、
+      <filename>mk/bulk/build.conf</filename> で
+      <varname>MKSUMS=yes</varname> を忘れずに設定してください。</para>
 
-      <para>If you would like to PGP sign the checksum files (highly
-      recommended!), remember to set
-      <varname>SIGN_AS=username@NetBSD.org</varname> in your
-      <filename>mk/bulk/build.conf</filename>.  This will prompt you for
-      your GPG password to sign the files before uploading everything.</para>
+      <para>チェックサムファイルに PGP 署名をしたい場合
+      (そうすることを強くおすすめします)は、
+      <filename>mk/bulk/build.conf</filename> で
+      <varname>SIGN_AS=username@NetBSD.org</varname> を忘れずに設定してください。
+      こうしておくと、ファイルをアップロードする前には常に、そのファイルに署名するため、
+      GPG パスワードの入力を促すようになります。</para>
 
-      <para>Then, make sure that you have <varname>RSYNC_DST</varname>
-      set properly in your <filename>mk/bulk/build.conf</filename>
-      file, i.e. adjust it to something like one of the following:</para>
+      <para>次に、<filename>mk/bulk/build.conf</filename> ファイルで
+      <varname>RSYNC_DST</varname> が適切に設定された状態にします。
+      つまり、この変数値を以下のような形式に調節します。</para>
 
       <screen>RSYNC_DST=ftp.NetBSD.org:/pub/NetBSD/packages/packages-200xQy/NetBSD-a.b.c/arch/upload </screen>
 
-      <para>Please use appropriate values for "packages-200xQy",
-      "NetBSD-a.b.c" and "arch" here. If your login on ftp.NetBSD.org
-      is different from your local login, write your login directly
-      into the variable, e.g. my local account is "feyrer", but for my
-      login "hubertf", I use:</para>
+      <para>このなかの "packages-200xQy",
+      "NetBSD-a.b.c", "arch" を、適切な値にしてください。
+      ftp.NetBSD.org でのログイン名がローカルのログイン名と異なる場合は、
+      そのログイン名を直接指定します。たとえば、
+      筆者のローカルアカウントは "feyrer" ですが、ログイン名は "hubertf" なので、以下のようにします。</para>
 
       <screen>RSYNC_DST=hubertf@ftp.NetBSD.org:/pub/NetBSD/packages/packages-200xQy/NetBSD-a.b.c/arch/upload</screen>
 
-      <para>A separate <filename>upload</filename> directory is used
-      here to allow "closing" the directory during upload. To do
-      so, run the following command on ftp.NetBSD.org next:</para>
+      <para>ここでは、アップロードの最中はディレクトリーを公開しないようにするため、
+      独立した <filename>upload</filename> ディレクトリーにアップロードします。
+      そうするために、ftp.NetBSD.org で以下のコマンドを実行しておきます。</para>
 
       <screen>nbftp% <userinput>mkdir -p -m 750 /pub/NetBSD/packages/packages-200xQy/NetBSD-a.b.c/arch/upload</userinput></screen>
 
-      <para>Please note that <filename>/pub/NetBSD/packages</filename> is
-      only appropriate for packages for the NetBSD operating
-      system. Binary packages for other operating systems should go
-      into <filename>/pub/pkgsrc</filename>.</para>
+      <para>なお、<filename>/pub/NetBSD/packages</filename> は
+      NetBSD オペレーティングシステム用のパッケージ専用です。
+      それ以外のオペレーティングシステム用のバイナリーパッケージは
+      <filename>/pub/pkgsrc</filename> 以下に置きます。</para>
 
-      <para>Before uploading the binary pkgs, ssh authentication needs
-      to be set up. This example shows how to set up temporary keys
-      for the root account <emphasis>inside the sandbox</emphasis>
-      (assuming that no keys should be present there usually):</para>
+      <para>バイナリーパッケージをアップロードする前に、以下のような
+      ssh の認証が必要となります。以下の例は、<emphasis>砂場内における</emphasis>
+      root アカウント用の一時的な鍵を使うようにする方法です。
+      (同じ鍵を常時使うことはしないものとします)。</para>
 
       <screen>
 &rprompt; <userinput>chroot /usr/sandbox</userinput>
@@ -561,19 +547,19 @@ chroot-&rprompt; <userinput>ssh-keygen -t dsa</userinput>
 chroot-&rprompt; <userinput>cat $HOME/.ssh/id-dsa.pub</userinput>
       </screen>
 
-      <para>Now take the output of <filename>id-dsa.pub</filename> and
-      append it to your <filename>~/.ssh/authorized_keys</filename>
-      file on ftp.NetBSD.org. You can remove the key after the
-      upload is done!</para>
+      <para>ここで出力した <filename>id-dsa.pub</filename> の内容を、
+      ftp.NetBSD.org の <filename>~/.ssh/authorized_keys</filename>
+      ファイルに追加します。パッケージのアップロードが終われば、
+      この鍵は削除できます。</para>
 
-      <para>Next, test if your ssh connection really works:</para>
+      <para>次に、ssh でうまく接続できることを確認します。</para>
 
       <screen>chroot-&rprompt; <userinput>ssh ftp.NetBSD.org date</userinput> </screen>
 
-      <para>Use "-l yourNetBSDlogin" here as appropriate!</para>
+      <para>ここでは、適宜 "-l yourNetBSDlogin" を使ってください。</para>
 
-      <para>Now after all this works, you can exit the sandbox and start
-      the upload:</para>
+      <para>すべて順調にいけば、
+      砂場から抜けて、アップロードを始めることができます。</para>
 
       <screen>
 chroot-&rprompt; <userinput>exit</userinput>
@@ -581,21 +567,21 @@ chroot-&rprompt; <userinput>exit</userinput>
 &rprompt; <userinput>sh mk/bulk/do-sandbox-upload</userinput>
       </screen>
 
-      <para>The upload process may take quite some time. Use &man.ls.1; or
-      &man.du.1; on the FTP server to monitor progress of the
-      upload. The upload script will take care of not uploading
-      restricted packages and putting vulnerable packages into the
-      <filename>vulnerable</filename> subdirectory.</para>
+      <para>アップロードにはそれなりに時間がかかるかもしれません。
+      FTP サーバーで &man.ls.1; や &man.du.1; して、アップロードの過程を見てください。
+      アップロード用スクリプトは、制限つきのパッケージはアップロードしないように、
+      また、脆弱性のあるパッケージは <filename>vulnerable</filename>
+      サブディレクトリーに置くように処理してくれます。</para>
 
-      <para>After the upload has ended, first thing is to revoke ssh access:</para>
+      <para>アップロードが終わった後に、最初にすることは、ssh でアクセスして以下のようにすることです。</para>
 
       <screen>nbftp% <userinput>vi ~/.ssh/authorized_keys</userinput>
       Gdd:x! </screen>
 
-      <para>Use whatever is needed to remove the key you've entered
-      before! Last, move the uploaded packages out of the
-      <filename>upload</filename> directory to have them accessible
-      to everyone:</para>
+      <para>アップロード用に事前に追加しておいた鍵はすべて削除してください。
+      最後に、アップロードしたパッケージを
+      <filename>upload</filename> ディレクトリーの外に出して、
+      公開された状態にします。</para>
 
       <screen>
 nbftp% <userinput>cd /pub/NetBSD/packages/packages-200xQy/NetBSD-a.b.c/arch</userinput>
@@ -610,40 +596,35 @@ nbftp% <userinput>chmod 755 .</userinput>
 </sect1>
 
 <sect1 id="bulk.pbulk">
-<title>Running a pbulk-style bulk build</title>
+<title>pbulk 方式のバルクビルドを実行する</title>
 
 <sect2 id="bulk.pbulk.conf">
-<title>Configuration</title>
+<title>設定</title>
 
-<para>TODO; see <ulink
-url="http://wiki.netbsd.se/index.php/pbulk-HOWTO">the wiki</ulink> for
-more information.</para>
+<para>TODO; さらなる情報は <ulink
+url="http://wiki.netbsd.se/index.php/pbulk-HOWTO">wiki</ulink>
+をご覧ください。</para>
 
 </sect2>
 
 </sect1>
 
   <sect1 id="creating-cdroms">
-    <title>Creating a multiple CD-ROM packages collection</title>
+    <title>CD-ROM複数枚に収めたパッケージコレクションの作成</title>
 
-    <para>After your pkgsrc bulk-build has completed, you may wish to
-    create a CD-ROM set of the resulting binary packages to assist
-    in installing packages on other machines.  The
-    <filename role="pkg">pkgtools/cdpack</filename> package provides
-    a simple tool for creating the ISO 9660 images.
-    <command>cdpack</command> arranges the packages on the CD-ROMs in a
-    way that keeps all the dependencies for a given package on the same
-    CD as that package.</para>
+    <para>pkgsrcのバルクビルド完了後、できあがったバイナリーパッケージからCD-ROMを作っ
+    て、他のマシンへのインストール用に使うことができます。
+    <filename role="pkg">pkgtools/cdpack</filename>パッケージに、そのようなISO 9660イメージ作成用の簡単
+    なツールがあります。<command>cdpack</command>は、依存関係が一枚のCD内で完結するように、パッ
+    ケージを複数枚のCD-ROMに編集してくれます。</para>
 
     <sect2 id="cdpack-example">
-      <title>Example of cdpack</title>
+      <title>cdpackの使用例</title>
 
-      <para>Complete documentation for cdpack is found in the cdpack(1)
-      man page. The following short example assumes that the binary
-      packages are left in
-      <filename>/usr/pkgsrc/packages/All</filename> and that
-      sufficient disk space exists in <filename>/u2</filename> to
-      hold the ISO 9660 images.</para>
+      <para>cdpackの完全なドキュメンテーションはcdpack(1)マニュアルページにあります。
+      以下の短い例では、
+      バイナリーパッケージが<filename>/usr/pkgsrc/packages/All</filename>に置いてあり、ISO 9660イメー
+      ジ用の十分なディスク容量が<filename>/u2</filename>にあるものとします。</para>
 
       <screen>
 &rprompt; <userinput>mkdir /u2/images</userinput>
@@ -651,10 +632,8 @@ more information.</para>
 &rprompt; <userinput>cdpack /usr/pkgsrc/packages/All /u2/images</userinput>
       </screen>
 
-      <para>If you wish to include a common set of files
-      (<filename>COPYRIGHT</filename>, <filename>README</filename>,
-      etc.) on each CD in the collection, then you need to create a
-      directory which contains these files. e.g.</para>
+      <para>各CDに共通ファイル(<filename>COPYRIGHT</filename>, <filename>README</filename>, など)を含めたい場合は、そのファイルを
+      含むディレクトリーを作る必要があります。たとえば以下のようにします。</para>
 
       <screen>
 &rprompt; <userinput>mkdir /tmp/common</userinput>
@@ -666,13 +645,12 @@ more information.</para>
 &rprompt; <userinput>chmod 755 /tmp/common/bin/myscript</userinput>
       </screen>
 
-      <para>Now create the images:</para>
+      <para>ここで、以下のようにしてイメージを作成します。</para>
 
       <screen>&rprompt; <userinput>cdpack -x /tmp/common /usr/pkgsrc/packages/All /u2/images</userinput></screen>
 
-      <para>Each image will contain <filename>README</filename>,
-      <filename>COPYING</filename>, and <filename>bin/myscript</filename>
-      in their root directories.</para>
+      <para>こうすると、各イメージのルートディレクトリーに<filename>README</filename>, <filename>COPYING</filename>および
+      <filename>bin/myscript</filename>が含まれるようになります。</para>
     </sect2>
   </sect1>
 </chapter>
