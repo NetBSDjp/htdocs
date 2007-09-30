@@ -4,6 +4,8 @@
 	 "http://www.NetBSD.org/XML/htdocs/share/xml/xslt10-netbsd.dtd">
 
 <!-- $NetBSD: pkgsrc-home.xsl,v 1.3 2007/08/29 14:35:39 mishka Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: pkgsrc-home.xsl,v 1.3 2007/08/29 14:35:39 mishka Exp   -->
 
 <!-- Copyright (c) 1994-2005
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -12,7 +14,7 @@
                 xmlns:html="http://www.w3.org/1999/xhtml"
                 version="1.0">
 
-  <xsl:include href="../../share/xsl/netbsd-webpage-en.xsl"/>
+  <xsl:include href="../../../share/xsl/netbsd-webpage-ja.xsl"/>
 
 <!-- Define how the top part of packages.html will look like -->
   <xsl:template match="/webpage/sect1[@id='pkgsrc-head']">

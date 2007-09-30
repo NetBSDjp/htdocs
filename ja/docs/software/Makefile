@@ -8,6 +8,6 @@ XMLDOCS+=	compiling
 XMLDOCS+=	index
 XMLDOCS+=	pkg-growth
 XMLDOCS+=	pkg-growth-jpg
-XMLDOCS+=	packages:../../../docs/software/pkgsrc-home.xsl,docbook-website::
+XMLDOCS+=	packages:pkgsrc-home.xsl,docbook-website::
 
 .include "../../../share/mk/web.site.mk"
