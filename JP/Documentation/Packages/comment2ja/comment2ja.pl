@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# $Id: comment2ja.pl,v 1.22 2002/01/24 03:08:11 sakamoto Exp $
+# $Id: comment2ja.pl,v 1.23 2007/10/04 02:14:19 kawamoto Exp $
 #
 
 $|=1;
@@ -66,9 +66,9 @@ while (<SRC>) {
 		my ($p) = $1;
 		my ($cat) = $category{$p};
 		if (defined($cat)) {
-			s/(: <TD>).*/$1$cat/;
+			s/(<\/a>:\s*).*(<TD>)/$1$cat$2/;
 		} else {
-			/: <TD>(.*)/;
+			/<\/a>:\s*(.*)<TD>/;
 			$nodata{$p} = $1;
 		}
 	}
@@ -87,13 +87,13 @@ close(SRC);
 open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 open(DST, "|nkf -j > $wwwdir/README-all.html") || die "dst:$wwwsrc/README-all.html\n";
 while (<SRC>) {
-	if (/^<TR VALIGN=TOP><TD><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
+	if (/<TR VALIGN=TOP><TD><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
 		my ($p) = $1;
 		my ($pkg) = $packages{$p};
 		if (defined($pkg)) {
-			s/(\) <TD>).*/$1$pkg/;
+			s/(\) <td>).*/$1$pkg/;
 		} else {
-			/\) <TD>(.*)/;
+			/\) <td>(.*)/;
 			$nodata{$p} = $1;
 		}
 	}
@@ -112,13 +112,13 @@ close(SRC);
 open(SRC, "$tmpfile") || die "src:$tmpfile\n";
 open(DST, "|nkf -j > $wwwdir/README-IPv6.html") || die "dst:$wwwsrc/README-IPv6.html\n";
 while (<SRC>) {
-	if (/^<TR VALIGN=TOP><TD><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
+	if (/<TR VALIGN=TOP><TD><a href=\"([^\/]+\/[^\/]+)\/README.html/) {
 		my ($p) = $1;
 		my ($pkg) = $packages{$p};
 		if (defined($pkg)) {
-			s/(\) <TD>).*/$1$pkg/;
+			s/(\) <td>).*/$1$pkg/;
 		} else {
-			/\) <TD>(.*)/;
+			/\) <td>(.*)/;
 			$nodata{$p} = $1;
 		}
 	}
@@ -156,9 +156,9 @@ foreach $dir (readdir(TOPDIR)) {
 			my ($p) = "$dir/$1";
 			my ($pkg) = $packages{$p};
 			if (defined($pkg)) {
-				s/(: <TD>).*/$1$pkg/;
+				s/(<\/a>:\s*).*(<TD>)/$1$pkg$2/;
 			} else {
-				/: <TD>(.*)/;
+				/<\/a>:\s*(.*)<TD>/;
 				$nodata{$p} = $1;
 			}
 		}
