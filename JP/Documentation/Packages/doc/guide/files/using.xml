@@ -1,6 +1,6 @@
-<!-- $NetBSD: using.xml,v 1.32 2007/08/16 09:25:16 rillig Exp $ -->
+<!-- $NetBSD: using.xml,v 1.33 2007/10/18 22:44:09 rillig Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: using.xml,v 1.32 2007/08/16 09:25:16 rillig Exp   -->
+<!-- NetBSD: using.xml,v 1.33 2007/10/18 22:44:09 rillig Exp   -->
 
 <chapter id="using"> <?dbhtml filename="using.html"?>
 <title>pkgsrc を使う</title>
@@ -16,22 +16,19 @@
 <sect1 id="using-pkg">
   <title>バイナリーパッケージを使う</title>
 
-  <para>バイナリーパッケージを使うためには、管理用のツールがいくつか必要になります。
-  NetBSD では、管理用のツールはあらかじめインストールされています。
-  NetBSD 以外の各オペレーティングシステムでは、
-  まず、管理用のツールをインストールする必要があります。
-  プラットフォームによっては、管理用のツールのパッケージが、
-  最初からアーカイブに入っており、
-  <filename>/</filename> ディレクトリーに展開するだけで使うことができます。
-  このツールは、FTP サーバーの <ulink
-  url="ftp://ftp.NetBSD.org/pub/pkgsrc/bootstrap-pkgsrc"><filename>bootstrap-pkgsrc</filename></ulink>
-  ディレクトリーにあります。</para>
+  <para><ulink url="ftp://ftp.NetBSD.org/">ftp.NetBSD.org</ulink>
+  サーバーとそのミラーサイトには、バイナリーパッケージを揃えて置いてあり、
+  すぐにインストールして使える状態になっています。このバイナリーパッケージは、
+  以下のような、標準のディレクトリーの設定を使って構築されています。</para>
 
-  <para>この構築済みパッケージ用ツールは、基点ディレクトリーとして
-  <filename>/usr/pkg</filename> を使い、
-  インストールされているパッケージのデータベースとして
-  <filename>/var/db/pkg</filename> を使います。
-  何らかの理由 (root 権限がないなど) でこの各ディレクトリーが使えない場合は、
+  <itemizedlist>
+  <listitem><para><varname>LOCALBASE</varname> は <filename>/usr/pkg</filename> で、ここにほとんどのファイルがインストールされます。</para></listitem>
+  <listitem><para>設定ファイルは <filename>/usr/pkg/etc</filename> です。</para></listitem>
+  <listitem><para><varname>VARBASE</varname> は <filename>/var</filename> で、インストール後に変更することのあるファイルはここにインストールされます。</para></listitem>
+  </itemizedlist>
+
+  <para>何らかの理由 (root 権限がないなど) でこの各ディレクトリーが使えない場合は、
+  このバイナリーパッケージを使うことはできないので、
   パッケージ用ツールを自分で構築する必要があります。これについては<xref
   linkend="bootstrapping-pkgsrc" />に説明があります。</para>
 
@@ -50,54 +47,69 @@
     (バージョン番号がついているディレクトリーは、
     歴史的な理由で残っているだけですので、無視してください。)
     次に、ハードウェアアーキテクチャーを選び、
-    その次に、OS のバージョンと pkgsrc の<quote>バージョン</quote>の組合せを選びます。
-    このディレクトリーには <filename>All</filename> というサブディレクトリーがあり、
-    そこに (ほとんど) すべてのバイナリーパッケージが置かれています。
-    「ほとんど」というのは、脆弱性のあるパッケージが、
-    間違ってインストールされることのないよう
-    <filename>vulnerable</filename> ディレクトリーに移されているからです。</para>
+    その次に、OS のバージョンと pkgsrc の<quote>バージョン</quote>の組合せを選びます。</para>
 
+    <para>多くの場合、このディレクトリーには、
+    パッケージ管理ツールが入った <filename>bootstrap.tar.gz</filename>
+    というファイルがあります。このファイルがない場合は、
+    お使いのオペレーティングシステムにパッケージ管理ツールがもともとあるのでしょう。
+    このファイルをダウンロードして <filename>/</filename> ディレクトリーに展開します。
+    展開すると、<filename>/usr/pkg</filename> (この下には、
+    バイナリーパッケージ管理用のツールがある) および <filename>/var/db/pkg</filename>
+    (インストールされたパッケージのデータベース用) の各ディレクトリーが作られます。</para>
   </sect2>
+
   <sect2 id="installing-binary-packages">
     <title>バイナリーパッケージをインストールする</title>
 
-    <para>もし、コンパイル済みのパッケージのファイルがCD-ROM上にある、あるいはハードディ
-    スク上にダウンロードされているのであれば、以下のコマンドでインストールする
-    ことができます(最初にrootに
-    <command>su</command>している事を確認してください):</para>
+    <para>前節で説明したディレクトリーには、
+    <filename>All</filename> というサブディレクトリーがあり、
+    当該プラットフォーム向けのバイナリーパッケージがすべて置かれています。
+    ただし、FTP または CDROM (利用しているメディアによって異なります)
+    経由での配布ができないパッケージと、
+    脆弱性があるため考えなしにインストールするのは危険と判断されたパッケージは、
+    除かれています。</para>
 
-    <screen>&rprompt; <userinput>pkg_add /path/to/package.tgz</userinput></screen>
+    <para>パッケージを FTP または HTTP サーバーから直接インストールするには、
+    Bourne シェルと互換のシェルで、以下のコマンドを実行します (最初に
+    <command>su</command> して root になっておくことを忘れずに)。</para>
 
-    <para>もし、FTPアクセスが可能で、インストール前にFTPを使ってパッケージをダウンロー
-    ドしたくないのであれば、<command>pkg_add</command>にFTPのURLを指定して自動でダウンロードさせる
-    事もできます。</para>
+<screen>
+&rprompt; <userinput>PATH="/usr/pkg/sbin:$PATH"</userinput>
+&rprompt; <userinput>PKG_PATH="ftp://ftp.NetBSD.org/pub/pkgsrc/packages/<replaceable>OPSYS</replaceable>/<replaceable>ARCH</replaceable>/<replaceable>VERSIONS</replaceable>/All"</userinput>
+&rprompt; <userinput>export PATH PKG_PATH</userinput>
+</screen>
 
-    <screen>&rprompt; <userinput>pkg_add ftp://ftp.NetBSD.org/pub/pkgsrc/packages/<replaceable>OPSYS</replaceable>/<replaceable>ARCH</replaceable>/<replaceable>VERSIONS</replaceable>/All/<replaceable>package</replaceable></userinput></screen>
+    <para>CDROM, DVD または NFS でマウントされた置き場所からインストールする場合などは、
+    URL のかわりに、ローカルのパスを使うこともできます。
+    複数の置き場所からパッケージをインストールしたい場合は、
+    それらをセミコロンで区切って <varname>PKG_PATH</varname>
+    に設定することができます。</para>
 
-    <para>パッケージを実行するためにあらかじめ必要な他のパッケージがインストー
-    ルされるかもしれない事にも注意してください。一緒にインストールされる他のパッ
-    ケージも同じ場所に存在していると仮定されます。</para>
+    <para>以上の準備ができれば、
+    パッケージのインストールは非常に簡単です。</para>
 
-    <para>タイプを少なくするために、パス (リモート URL を含む)
-    をセミコロンで区切ったものを <varname>PKG_PATH</varname>
-    環境変数に設定することができます。
-    このパスの末尾にスラッシュをつけることはできません。
-    </para>
+<screen>
+&rprompt; <userinput>pkg_add openoffice2</userinput>
+&rprompt; <userinput>pkg_add kde-3.5.7</userinput>
+&rprompt; <userinput>pkg_add ap2-php5-*</userinput>
+</screen>
 
-    <para><filename>All</filename> ディレクトリーのほかに、
-    脆弱性が知られているバイナリーパッケージの移動先である
-    <filename>vulnerable</filename> ディレクトリーが存在します。
-    バイナリーパッケージを削除してしまうと、
-    依存性が失われることがあるため、移動するのです。
-    ここに移動されたパッケージを使うためには、<varname>PKG_PATH</varname>
-    に <filename>vulnerable</filename> ディレクトリーを追加します。ただし、
-    <filename role="pkg">security/audit-packages</filename> を定期的に
+    <para>なお、インストールしようとするパッケージを実行するために必要となるパッケージも、
+    すべて一緒にインストールされますが、
+    この必要なパッケージも同じ置き場所に用意されていると仮定されます
+    (訳註: 必要なパッケージがすべて揃うように PKG_PATH を設定する必要があるということ)。</para>
+
+    <para>前述のとおり、脆弱性があるとわかっているパッケージは
+    <filename>All</filename> サブディレクトリーには置いてありません。
+    脆弱性のあるパッケージに多数のパッケージが依存していたりすると、
+    非常に面倒だったりするので、これらは削除はされません。
+    そのかわり、<filename>vulnerable</filename> サブディレクトリーに移動されます。
+    このため、このディレクトリーも <varname>PKG_PATH</varname>
+    変数に加えておくことが必要になることがあります。ただし、<filename
+    role="pkg">security/audit-packages</filename> を定期的に
     (特に、パッケージを新たにインストールした後には) 実行して、
-    脆弱性の影響がある構成となっているかどうかを確認するようにしてください。
-    <varname>PKG_PATH</varname> はたとえば以下のようになります:
-    <filename>ftp://ftp.NetBSD.org/pub/NetBSD/packages/&lt;OSVERSION&gt;/&lt;ARCH&gt;/All;ftp://ftp.NetBSD.org/pub/NetBSD/packages/&lt;OSVERSION&gt;/&lt;ARCH&gt;/vulnerable</filename>
-    なお、セミコロン (';') はシェルにとって特別な意味を持つ文字ですので、
-    クォートする必要があるでしょう。</para>
+    脆弱性の影響がある構成となっているかどうかを確認するようにしてください。</para>
 
     <para>パッケージをインストールした後に、<varname>PATH</varname>に
     <filename>/usr/pkg/bin</filename> と <filename>/usr/pkg/sbin</filename> が含まれている事を確
