@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #
-# $NetBSD: list2html.pl,v 1.100 2007/07/13 17:41:26 kano Exp $
+# $NetBSD: list2html.pl,v 1.101 2007/12/01 07:19:02 kano Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: list2html.pl,v 1.100 2007/07/13 17:41:26 kano Exp   -->
+# <!-- NetBSD: list2html.pl,v 1.101 2007/12/01 07:19:02 kano Exp   -->
 # Process *.list files into indexed *.html files. (abs)
 #  $Id$
 #  Japanese support (sakamoto)
@@ -72,7 +72,7 @@ my(%months) = ('Jan' => 1,	'Feb' => 2,	'Mar' => 3,
 $months_previous = 13;	# Previous months to display for DATE entries
 $list_date_links = 8;	# List the first N date entries on stdout
 
-$version = '$Revision: 1.100 $';
+$version = '$Revision: 1.101 $';
 $version =~ /([\d.]+)/ && ($version = $1);
 
 if (!&getopts('a:c:dm:qhV', \%opt) || $opt{'h'} || ( !$opt{'V'} && @ARGV != 2) )
@@ -421,7 +421,7 @@ sub makelist
 		    $linkwrapped = $link; # original: wrap("", "  ", $link);
 
 		    push(@date_links, "<li><font size=\"-1\">\n".
-				      "  <a href=\"Changes/#$href\">\n".
+				      "  <a href=\"changes/#$href\">\n".
 				      "    $linkwrapped</a>\n".
 				      "</font></li>\n");
 		    }
