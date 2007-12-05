@@ -1,7 +1,7 @@
-#	$NetBSD: Makefile,v 1.6 2005/10/14 09:00:00 rillig Exp $
+#	$NetBSD: Makefile,v 1.7 2007/12/02 22:25:48 weinem Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.6 2005/10/14 09:00:00 rillig Exp   -->
+#	<!-- NetBSD: Makefile,v 1.7 2007/12/02 22:25:48 weinem Exp   -->
 
-XMLDOCS+=	help brains toshiba
+XMLDOCS+=	brains toshiba
 
 .include "../../../share/mk/web.site.mk"
