@@ -1,11 +1,10 @@
-#	$NetBSD: Makefile,v 1.2 2007/08/26 15:42:29 dsieger Exp $
+#	$NetBSD: Makefile,v 1.3 2007/12/05 15:26:13 kano Exp $
 
 XMLDOCS+=	call-it-a-duck 
 XMLDOCS+=	crypto-export
 XMLDOCS+=	disclaimer
 XMLDOCS+=	embed
 XMLDOCS+=	features
-XMLDOCS+=	goals
 XMLDOCS+=	history
 XMLDOCS+=	index
 XMLDOCS+=	interop 
