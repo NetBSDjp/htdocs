@@ -1,6 +1,6 @@
-#	$NetBSD: Makefile,v 1.1 2007/06/09 12:59:09 dsieger Exp $
+#	$NetBSD: Makefile,v 1.2 2007/12/19 14:02:59 weinem Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.1 2007/06/09 12:59:09 dsieger Exp   -->
+#	<!-- NetBSD: Makefile,v 1.2 2007/12/19 14:02:59 weinem Exp   -->
 
 XMLDOCS+=	current formal index release-map
 
@@ -15,5 +15,5 @@ SUBDIR+=	formal-1.5
 SUBDIR+=	formal-1.6
 SUBDIR+=	formal-2.0
 SUBDIR+=	formal-3
-
+SUBDIR+=	formal-4
 .include "../../share/mk/web.site.mk"
