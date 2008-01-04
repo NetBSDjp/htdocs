@@ -1,6 +1,6 @@
-#	$NetBSD: Makefile,v 1.9 2007/01/03 17:24:29 wennmach Exp $
+#	$NetBSD: Makefile,v 1.10 2008/01/01 00:25:43 jnemeth Exp $
 #	<!-- Based on english version: -->
-#	<!-- NetBSD: Makefile,v 1.9 2007/01/03 17:24:29 wennmach Exp   -->
+#	<!-- NetBSD: Makefile,v 1.10 2008/01/01 00:25:43 jnemeth Exp   -->
 
 # XSLFILE=	index.xsl
 
@@ -20,5 +20,8 @@ XMLDOCS+=	index
 # 
 # XMLDOCS+=	2007:index.xsl:2007.xml:2007.html
 # PARAMS.2007=	--stringparam autolayout-file  ${AUTOLAYOUTFILE}
+# 
+# XMLDOCS+=	2008:index.xsl:2008.xml:2008.html
+# PARAMS.2008=	--stringparam autolayout-file  ${AUTOLAYOUTFILE}
 
 .include "../../share/mk/web.site.mk"
