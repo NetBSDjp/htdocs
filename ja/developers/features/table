@@ -1,6 +1,6 @@
-# $NetBSD: table,v 1.689 2008/01/04 02:57:00 weinem Exp $
+# $NetBSD: table,v 1.700 2008/01/08 22:06:07 xtraeme Exp $
 # <!-- Based on english version: -->
-# <!-- NetBSD: table,v 1.689 2008/01/04 02:57:00 weinem Exp   -->
+# <!-- NetBSD: table,v 1.700 2008/01/08 22:06:07 xtraeme Exp   -->
 
 # declare ports (rows) ("port <port> [<port_subdir>]")
 # If <port_subdir> is not specified, it defaults to the name of port.
@@ -45,7 +45,6 @@ port news68k
 port newsmips
 port next68k
 port ofppc
-port pc532
 port playstation2
 port pmax
 port prep
@@ -78,7 +77,6 @@ class m68000	sun2
 class m68k	amiga atari cesfic hp300 luna68k mac68k mvme68k news68k next68k sun3 x68k
 class mipseb	ews4800mips mipsco newsmips sbmips sgimips
 class mipsel	algor arc cobalt evbmips hpcmips playstation2 pmax
-class ns32k	pc532
 class powerpc	amigappc bebox evbppc ibmnws macppc mvmeppc ofppc prep rs6000 sandpoint
 class sh3eb	evbsh3 mmeye
 class sh3el	dreamcast hpcsh landisk
@@ -184,7 +182,7 @@ featureend rf-boot
 feature timectrs 0
 	当該ポートが timecounters に対応しているか否か。
 featureend timectrs
-feature generic-todr
+feature generic-todr 0
 	当該ポートが汎用の todr_attach および関連関数を使っているか否か。
 featureend generic-todr
 
@@ -228,6 +226,7 @@ value none <font color="red">none</font>
 value 4.x <font color="green">4.x</font>
 
 # for timectrs
+value amiga <font color="green">clockinterrupt,<br>clock</font>
 value clock-timer <font color="green">clockinterrupt</font>
 value dc21285 <font color="green">clockinterrupt,<br>dc21285_fclk</font>
 value i8253 <font color="green">clockinterrupt,<br>i8253</font>
@@ -238,8 +237,8 @@ value mc6840 <font color="green">clockinterrupt,<br>mc6840</font>
 value mfp <font color="green">clockinterrupt,<br>mfp</font>
 value mips-timer <font color="green">clockinterrupt,<br>mips3_cp0_counter</font>
 value news5000 <font color="green">clockinterrupt,<br>news5000_freerun</font>
-value ns32202 <font color="green">clockinterrupt,<br>ns32202</font>
 value pcc <font color="green">clockinterrupt,<br>PCC</font>
+value pcc_clock <font color="green">clockinterrupt,<br>pcc_clock</font>
 value powerpc-timer <font color="green">clockinterrupt,<br>powerpc_mftb</font>
 value rambo <font color="green">clockinterrupt,<br>rambo_tcount</font>
 value tca64 <font color="green">clockinterrupt,<br>i8254,<br>TSC,<br>ACPI-{Fast,Safe},<br>amdpm,<br>piixpm</font>
@@ -253,6 +252,7 @@ value tmu-counter <font color="green">clockinterrupt,<br>tmu_pclock_4</font>
 value tx39rtc <font color="green">clockinterrupt,<br>tx39rtc,<br>vrrtc</font>
 value saost-count <font color="green">clockinterrupt,<br>saost_count</font>
 value xen-system-time-count <font color="green">xen_system_time</font>
+value vax <font color="green">clockinterrupt,<br>diagtimer,<br>mfpr</font>
 value via1t2 <font color="green">VIA1 T2</font>
 
 # "<value> <feature> <port|class|*>" sets the corresponding row/col
@@ -266,31 +266,29 @@ Latest-Release	4.0	acorn26 acorn32 algor alpha amd64 amiga arc atari
 Latest-Release	4.0	cats cesfic cobalt
 Latest-Release	4.0	dreamcast evbarm evbmips evbppc evbsh3
 Latest-Release	4.0	hp300 hp700 hpcarm hpcmips hpcsh i386 ibmnws iyonix
-Latest-Release	4.0	luna68k mac68k macppc mipsco mmeye mvme68k mvmeppc 
+Latest-Release	4.0	landisk luna68k mac68k macppc mipsco mmeye mvme68k mvmeppc 
 Latest-Release	4.0	netwinder news68k newsmips next68k ofppc pmax
 Latest-Release	4.0	prep sandpoint sbmips sgimips
 Latest-Release	4.0	shark sparc sparc64 sun2 sun3 vax x68k xen
-Latest-Release	1.5.3	pc532
 
 # shared library support: spec by arch, NO POSITIVE WILDCARDS.
-shlibs	no	*
+shlibs 	yes	*
 shlibs	yes	alpha arm hppa i386c m68k mipseb mipsel
-shlibs	yes	powerpc sh3eb sh3el sparc sparc64 x86_64
+shlibs	yes	powerpc sh3eb sh3el sparc sparc64 vax x86_64
 
 # ELF use: spec by arch, NO POSITIVE WILDCARDS.
-ELF	no	*
+ELF	yes	*
 ELF	yes	alpha arm hppa i386c mipseb mipsel m68000 m68k
 ELF	yes	powerpc sh3eb sh3el sparc sparc64 vax x86_64
 
 # Compiler support: spec by arch.
 gcc	gcc4	alpha arm armeb hppa i386c m68000 m68k mipseb mipsel
 gcc	gcc4	powerpc sh3eb sh3el sparc sparc64 vax x86_64
-gcc	gcc336	ns32k
 
 # binutils choice: spec by arch, NO POSITIVE WILDCARDS.
 binutils	other	*
 binutils	2.16.1	alpha arm armeb hppa i386c m68000 m68k mipseb mipsel
-binutils	2.16.1	ns32k powerpc sh3eb sh3el sparc sparc64 vax x86_64
+binutils	2.16.1	powerpc sh3eb sh3el sparc sparc64 vax x86_64
 
 # GDB support: spec by arch, NO POSITIVE WILDCARDS.
 gdb	no	*
@@ -302,9 +300,9 @@ sysinst	N/A	*
 sysinst	yes	acorn26 acorn32 alpha amd64 amiga bebox cats ews4800mips
 sysinst	yes	hp300 hp700 hpcmips i386 mac68k
 sysinst	yes	macppc mipsco mvme68k news68k newsmips
-sysinst	yes	pc532 playstation2 pmax prep
+sysinst	yes	ofppc playstation2 pmax prep
 sysinst	yes	sandpoint shark sparc sparc64 vax x68k xen
-sysinst	no	atari sun2 sun3 ofppc rs6000
+sysinst	no	atari sun2 sun3 rs6000
 
 # X server: spec by machine, NO POSITIVE WILDCARDS.
 X-server	no	*
@@ -312,7 +310,7 @@ X-server	XF4.x	acorn32 alpha amiga cats dreamcast
 X-server	XF4.x	ews4800mips hpcarm hpcmips hpcsh
 X-server	XF4.x	i386 mac68k macppc newsmips sgimips shark sparc sparc64
 X-Server	XF4.x	xen
-X-server	N/A	acorn26 cesfic mvme68k mvmeppc pc532 sandpoint
+X-server	N/A	acorn26 cesfic mvme68k mvmeppc sandpoint
 
 # MI WSCONS use: spec by machine, NO POSITIVE WILDCARDS.
 wscons	no	*
@@ -322,7 +320,7 @@ wscons	yes	i386 luna68k mac68k macppc
 wscons	yes	netwinder newsmips next68k ofppc playstation2 prep shark
 wscons	yes	xen zaurus sparc64 vax
 wscons	partial	arc ibmnws sparc
-wscons	N/A	cesfic mvme68k mvmeppc pc532 sandpoint
+wscons	N/A	cesfic mvme68k mvmeppc sandpoint
 
 # bus_space support: spec by machine, NO POSITIVE WILDCARDS.
 bus-space	no	*
@@ -356,7 +354,7 @@ cf_unit	OK	bebox cats cesfic cobalt evbarm evbmips evbppc
 cf_unit	OK	ews4800mips hp300 hp700 hpcarm hpcmips i386 ibmnws iyonix
 cf_unit	OK	luna68k mac68k macppc mipsco mvme68k mvmeppc
 cf_unit	OK	netwinder news68k newsmips next68k
-cf_unit	OK	ofppc pc532 playstation2 pmax prep rs6000 sandpoint
+cf_unit	OK	ofppc playstation2 pmax prep rs6000 sandpoint
 cf_unit	OK	sbmips sgimips sh3eb sh3el shark sparc sparc64 sun2
 cf_unit	OK	vax x68k xen zaurus
 
@@ -377,12 +375,12 @@ evcnt	yes	acorn26 algor alpha amd64 arc bebox
 evcnt	yes	cats cobalt dreamcast evbarm evbmips evbppc evbsh3 ews4800mips
 evcnt	yes	hp300 hpcsh hpcmips hp700 i386 ibmnws iyonix
 evcnt	yes	macppc mipsco mmeye mvmeppc netwinder
-evcnt	yes	ofppc pc532 playstation2 pmax prep rs6000
+evcnt	yes	ofppc playstation2 pmax prep rs6000
 evcnt	yes	sandpoint sbmips sgimips sparc64 vax xen zaurus
 
 # optimized-in_cksum: spec by arch, no POSITIVE WILDCARDS.
 optimized-in_cksum	NNN	*
-optimized-in_cksum	YNN	alpha hppa m68000 m68k ns32k sh3eb sh3el
+optimized-in_cksum	YNN	alpha hppa m68000 m68k sh3eb sh3el
 optimized-in_cksum	YYN	arm mipseb mipsel powerpc
 optimized-in_cksum	YYN	sparc sparc64 vax
 optimized-in_cksum	YYY	i386c
@@ -411,10 +409,12 @@ topdown-vm	yes	acorn26 i386c mipseb mipsel powerpc vax
 # RAIDframe mirror boot support: spec by machine.
 # NOTE: some machines are probably N/A
 rf-boot	no	*
-rf-boot	yes	alpha i386 pmax prep sparc sparc64 vax xen
+rf-boot	yes	amd64 alpha i386 ofppc pmax prep sparc sparc64
+rf-boot	yes	vax xen
 
 # Timecounters
 timectrs no	*
+timectrs amiga amiga amigappc atari
 timectrs clock-timer cesfic luna68k news68k next68k sun2 sun3
 timectrs dc21285 cats netwinder
 timectrs i8253 shark
@@ -423,10 +423,10 @@ timectrs ioc acorn26
 timectrs itimer hp700
 timectrs mc6840 hp300
 timectrs mfp x68k
-timectrs mips-timer algor arc cobalt evbmips ews4800mips playstation2 sgimips
+timectrs mips-timer algor arc cobalt evbmips ews4800mips playstation2 sgimips sbmips
 timectrs news5000 newsmips
-timectrs ns32202 pc532
 timectrs pcc alpha
+timectrs pcc_clock mvme68k
 timectrs pmax pmax
 timectrs powerpc-timer bebox evbppc ibmnws macppc mvmeppc ofppc prep rs6000 sandpoint
 timectrs rambo mipsco
@@ -440,15 +440,7 @@ timectrs tx39rtc hpcmips
 timectrs saost-count hpcarm zaurus
 timectrs xen-system-time-count xen
 timectrs via1t2 mac68k
+timectrs vax vax
 
 # Generic TODR
-generic-todr no	*
-generic-todr yes acorn26 acorn32 algor alpha amd64 amiga amigappc
-generic-todr yes arc bebox cats cesfic cobalt
-generic-todr yes dreamcast evbarm evbmips evbppc evbsh3 ews4800mips
-generic-todr yes hp300 hp700 hpcarm hpcsh hpcmips i386 ibmnws iyonix
-generic-todr yes landisk luna68k mac68k macppc mipsco mmeye mvme68k mvmeppc
-generic-todr yes netwinder news68k newsmips next68k
-generic-todr yes ofppc pc532 playstation2 pmax prep rs6000
-generic-todr yes sandpoint sbmips sgimips shark sparc sparc64 sun2 sun3 vax
-generic-todr yes x68k zaurus
+generic-todr yes *
