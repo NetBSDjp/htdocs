@@ -5,7 +5,7 @@
 # for community
 
 # XMLDOCS+=	groups
-# XMLDOCS+=	hackathon
+XMLDOCS+=	hackathon
 XMLDOCS+=	index
 
 .include "../../share/mk/web.site.mk"
