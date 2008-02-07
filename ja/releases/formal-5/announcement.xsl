@@ -2,6 +2,8 @@
 <!DOCTYPE xsl:stylesheet>
 
 <!-- $NetBSD: announcement.xsl,v 1.1 2008/02/05 09:35:33 jnemeth Exp $ -->
+<!-- Based on english version: -->
+<!-- NetBSD: announcement.xsl,v 1.1 2008/02/05 09:35:33 jnemeth Exp   -->
 
 <!-- Copyright (c) 1994-2007
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -26,6 +28,6 @@
     <xsl:value-of select="count(id($table)/tr)"/>
   </xsl:template>
 
-  <xsl:include href="../../share/xsl/netbsd-webpage-en.xsl"/>
+  <xsl:include href="../../../share/xsl/netbsd-webpage-ja.xsl"/>
 
 </xsl:stylesheet>
