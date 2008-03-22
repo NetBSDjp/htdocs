@@ -3,9 +3,9 @@
   PUBLIC "-//NetBSD/DTD NetBSD XSLT 1.0 DTD//EN"
 	 "http://www.NetBSD.org/XML/htdocs/share/xml/xslt10-netbsd.dtd">
 
-<!-- $NetBSD: pkgsrc-home.xsl,v 1.3 2007/08/29 14:35:39 mishka Exp $ -->
+<!-- $NetBSD: pkgsrc-home.xsl,v 1.4 2008/03/19 16:13:04 mishka Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: pkgsrc-home.xsl,v 1.3 2007/08/29 14:35:39 mishka Exp   -->
+<!-- NetBSD: pkgsrc-home.xsl,v 1.4 2008/03/19 16:13:04 mishka Exp   -->
 
 <!-- Copyright (c) 1994-2005
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -66,14 +66,14 @@
  	    <xsl:value-of select="sect2[@id='pkgsrc-precompiled-bootstrap']/title" />
           </span>
 
+	  <xsl:variable name="bootstrapkit-nodes" select="/webpage/sect1/table[@id='binary-kits']/tgroup/tbody/row"/>
+
+	  <xsl:variable name="numbootstrapkits">
+	    <xsl:value-of select="count($bootstrapkit-nodes)"/>
+	  </xsl:variable>
+
+	  <xsl:if test="$numbootstrapkits &gt; 0">
           <table cellspacing="5" cellpadding="5">
-
-	    <xsl:variable name="bootstrapkit-nodes" select="/webpage/sect1/table[@id='binary-kits']/tgroup/tbody/row"/>
-
-	    <xsl:variable name="numbootstrapkits">
-	      <xsl:value-of select="count($bootstrapkit-nodes)"/>
-	    </xsl:variable>
-
 	    <tr><td>
 	      <div class="newsindex">
 		<ul>
@@ -94,6 +94,7 @@
 	      </div>
 	    </td></tr>
           </table>
+	  </xsl:if>
 
 	<!-- other download items of interest -->
           <span class="subhead">
