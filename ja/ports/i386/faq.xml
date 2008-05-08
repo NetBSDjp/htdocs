@@ -5,8 +5,8 @@
 
 <webpage id="ports-i386-faq">
 <config param="desc" value="NetBSD/i386 Frequently Asked Questions"/>
-<config param="cvstag" value="$NetBSD: faq.xml,v 1.2 2007/06/09 19:18:08 dsieger Exp $"/>
-<config param="rcsdate" value="$Date: 2007/06/09 19:18:08 $"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.3 2008/04/27 19:11:03 sborrill Exp $"/>
+<config param="rcsdate" value="$Date: 2008/04/27 19:11:03 $"/>
 <head>
 
 <!-- Copyright (c) 2006
@@ -333,54 +333,151 @@ Partition table:
      </sect3>
 
      <sect3 id="nt_boot">
-       <title>Adding NetBSD to the Windows NT boot menu</title>
+       <title>Adding NetBSD to the Windows NT/2000/2003/XP boot menu</title>
        <para>
-         To boot NetBSD using Windows NT bootloader, you need to make
-         a 512 byte bootblock in a file (<code>nbsdX.bb</code>) and put it
-         on your Windows NT's partition, plus a note in the <code>boot.ini</code> 
-         file.
+         <emphasis role="bold">Method 1) Use the NetBSD mbr code</emphasis>
        </para>
        <para>
-         First, you need to create the bootblocks with the following command in
-         <emphasis role="bold">single user mode</emphasis>
-<programlisting>
-dd if=/dev/r<emphasis>XXY</emphasis>a of=nbsd<emphasis>Y</emphasis>.bb count=1 bs=512
-</programlisting>
-
-         where <emphasis>XX</emphasis> is the disk type (usually <code>sd</code> or <code>wd</code>), and
-         <emphasis>Y</emphasis> is the disk number (usually <code>0</code>).
+         Use the NetBSD mbr code which allows you to override options at boot time if
+         required. This requires a working, bootable NetBSD installation.
+         The NetBSD mbr code is installed in an empty file using the fdisk
+         command in NetBSD
        </para>
        <para>
-         Please note that if you don't have NetBSD on your first disk, you'll
-         have to recompile the bootblock and install it, before you can run
-         the above command.  (For the recompiling you need some minor tweaking
-         in /usr/src/sys/arch/i386/boot).
-      </para>
-      <para>
-        Note: We only provide the bootblocks
-        <ulink url="nbsd0.bb">nbsd0.bb(harddisk 0)</ulink>,
-        <ulink url="nbsd1.bb">nbsd1.bb(harddisk 1)</ulink> and
-        <ulink url="nbsd2.bb">nbsd2.bb(harddisk 2)</ulink> for old versions of NetBSD.
-        You <emphasis role="bold">can't</emphasis> use them for NetBSD 1.4 or later.
-      </para>
-      <para>
-        Second, put the bootblocks on your Windows NT partition.
-        Note: You can't write the bootblocks to the NT partition from NetBSD.
-      </para>
-      <para>
-        Finally, add the following to the NT boot menu. 
-        E.g. If NetBSD is installed on the second disk (wd1), you only need
-        to add nbsd1.bb to the boot.ini file as follow.
-      </para>
-
+         In this example, Windows Server 2003 is on disk 0 and a NetBSD 4.0
+         installation is on disk 1.
+       </para>
 <programlisting>
-[boot loader]
-default=c:\nbsd0.bb
-[operating systems]
-c:\nbsd0.bb="NetBSD (harddisk 0)"
-c:\nbsd1.bb="NetBSD (harddisk 1)"
-c:\nbsd2.bb="NetBSD (harddisk 2)"
+devel# rm -f nbmbr
+devel# touch nbmbr
+devel# fdisk -BF -c mbr_ext ./nbmbr
+fdisk: primary partition table invalid, no magic in sector 0
+fdisk: Cannot determine the number of heads
+Update the bootcode from /usr/mdec/mbr_ext? [n] y
+
+Boot selector configuration:
+Timeout value (0 to 3600 seconds, -1 => never): [-1..3600 default: 10] 
+Select the default boot option. Options are:
+
+0: The first active partition
+1: Harddisk 0
+2: Harddisk 1
+3: Harddisk 2
+4: Harddisk 3
+5: Harddisk 4
+6: Harddisk 5
+7: Harddisk 6
+8: Harddisk 7
+Default boot option: [0..8 default: 0] 2
+
+We haven't written the MBR back to disk yet.  This is your last chance.
+Should we write new partition table? [n] y
 </programlisting>
+       <para>
+         Copy nbmbr onto drive C: and add the following to the end of C:\boot.ini
+       </para>
+<programlisting>
+c:\nbmbr="NetBSD disk 1"
+</programlisting>
+       <para>
+         boot.ini is hidden by default. To edit it, open drive C: from My Computer
+         and choose "Folder Options..." on the Tools menu.
+         Then click on the View tab and ensure the checkbox alongside "Hide protected
+         operating system files (Recommended)" is unticked.
+         Click on OK. You will then be able to see and double-click on boot.ini to
+         edit it.
+       </para>
+       <para>
+         <emphasis role="bold">Method 2) Use bootpart to copy the existing
+         code to bootblock</emphasis>
+       </para>
+       <para>
+         Within Windows, get bootpart from
+         <ulink url="http://www.winimage.com/bootpart.htm">http://www.winimage.com/bootpart.htm</ulink>
+         and extract the files from the zip archive onto your harddisk.
+         Go to a command prompt and navigate to the directory containing
+         bootpart.exe. A session transcript is below.
+         In this example, Windows Server 2003 is on disk 0 and a NetBSD 4.0
+         installation is on disk 1.
+       </para>
+       <para>
+         First run bootpart and determine the partition number (which are
+         counted consecutively spanning disk numbers). Remember that
+         NetBSD uses partition type a9 (in hex):
+       </para>
+<programlisting>
+C:\bootpa26>bootpart
+Boot Partition 2.60 for WinNT/2K/XP (c)1995-2005 G. Vollant (info@winimage.com)
+WEB : http://www.winimage.com and http://www.winimage.com/bootpart.htm
+Add partition in the Windows NT/2000/XP Multi-boot loader
+Run "bootpart /?" for more information
+
+Physical number of disk 0 : b4dab4da
+ 0 : C:* type=7  (HPFS/NTFS), size= 19580368 KB, Lba Pos=63
+Physical number of disk 1 : 7f4c256b
+ 1 : D:* type=a9 , size= 39121456 KB, Lba Pos=63
+</programlisting>
+       <para>
+         We want to boot partition 1, so:
+       </para>
+<programlisting>
+C:\bootpa26>bootpart 1 \nbboot "NetBSD disk 1"
+Boot Partition 2.60 for WinNT/2K/XP (c)1995-2005 G. Vollant (info@winimage.com)
+WEB : http://www.winimage.com and http://www.winimage.com/bootpart.htm
+Add partition in the Windows NT/2000/XP Multi-boot loader
+Run "bootpart /?" for more information
+          
+Physical number of disk 0 : b4dab4da
+ 0 : C:* type=7  (HPFS/NTFS), size= 19580368 KB, Lba Pos=63
+Physical number of disk 1 : 7f4c256b
+ 1 : D:* type=a9 , size= 39121456 KB, Lba Pos=63
+C:\nbboot written
+C:\BOOT.INI updated
+</programlisting>
+       <para>            
+         This creates a bootblock called nbboot in the root in drive C:
+         and adds an entry to boot.ini called "NetBSD disk 1"
+       </para>  
+       <para>
+         <emphasis role="bold">Method 3) Use grub4dos</emphasis>
+       </para>
+       <para>
+         The advantages of this method are that you have the wider array of
+         grub options open to you, plus the kernel can be loaded from NTFS
+         (if that is appropriate to your needs, usually you'd just load it
+         from the root of your NetBSD installation). For instance, you might
+         like to have a NetBSD recovery or installation kernel handy for
+         troubleshooting even on a machine without a full NetBSD
+         installation.
+       </para>
+       <para>
+         Download the latest version of grub4dos from
+         <ulink url="http://sourceforge.net/projects/grub4dos">http://sourceforge.net/projects/grub4dos</ulink>
+         and extract the files from the zip archive.
+         Copy grldr to C:\ on Windows and then create c:\menu.lst (this can be
+         created under Windows or NetBSD - the line endings are OK either way)
+         similar to the following:
+       </para>
+<programlisting>
+timeout=5
+console terminal
+Title NetBSD on disk 1 (chainloader)
+    root(hd1,0)
+    chainloader +1
+Title NetBSD install kernel
+    kernel --type=netbsd /NETBSD_INSTALL_LARGE.gz
+</programlisting>       			
+       <para>
+         Non-MULTIBOOT kernels (such as the install kernels) need --type=netbsd.
+         MULTIBOOT kernels must not have this option.
+       </para>
+       <para>
+         Finally, in a similar way to that described in method 1), add a
+         suitable line to C:\boot.ini, e.g.:
+       </para>
+<programlisting>
+C:\gtldr="NetBSD GRUB"
+</programlisting>                                
     </sect3>
 
     <sect3 id="fips">
