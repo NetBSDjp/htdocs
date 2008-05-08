@@ -5,10 +5,10 @@
 
 <webpage id="ja-ports-i386-faq">
 <config param="desc" value="NetBSD/i386 Frequently Asked Questions"/>
-<config param="cvstag" value="$NetBSD: faq.xml,v 1.2 2007/06/09 19:18:08 dsieger Exp $"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.3 2008/04/27 19:11:03 sborrill Exp $"/>
 <!-- Based on english version: -->
-<!-- NetBSD: faq.xml,v 1.2 2007/06/09 19:18:08 dsieger Exp   -->
-<config param="rcsdate" value="$Date: 2007/06/09 19:18:08 $"/>
+<!-- NetBSD: faq.xml,v 1.3 2008/04/27 19:11:03 sborrill Exp   -->
+<config param="rcsdate" value="$Date: 2008/04/27 19:11:03 $"/>
 <head>
 
 <!-- Copyright (c) 2006
@@ -344,56 +344,153 @@ Partition table:
      </sect3>
 
      <sect3 id="nt_boot">
-       <title>Windows NT のブートメニューに NetBSD を加える方法</title>
+       <title>Windows NT/2000/2003/XP のブートメニューに NetBSD を加える方法</title>
        <para>
-         Windows NT のブートローダーを使って NetBSD をブートするには
-         512 byte のブートブロックのファイル(<code>nbsdX.bb</code>)を作成し、
-         Windows NT のパーティションに置く必要があります。
-         さらに、<code>boot.ini</code>ファイルを変更しなければなりません。
+         <emphasis role="bold">方法その 1) NetBSD の mbr コードを使う</emphasis>
        </para>
        <para>
-         まず最初に、<emphasis role="bold">シングルユーザーモード</emphasis>で、以下のコマンドを使い、
-         ブートブロックを作成しなければなりません。
-<programlisting>
-dd if=/dev/r<emphasis>XXY</emphasis>a of=nbsd<emphasis>Y</emphasis>.bb count=1 bs=512
-</programlisting>
-
-         ここで、<emphasis>XX</emphasis> はディスクの種類 (一般には <code>sd</code> か <code>wd</code>)、
-         <emphasis>Y</emphasis> はディスクの番号(通常は <code>0</code>)です。
+         NetBSD の mbr コードは、必要に応じてブート時にオプションを変えられます。
+         この方法を使う場合、動作してブート可能な状態にインストールした NetBSD が必要です。
+         NetBSD の mbr コードは、NetBSD の fdisk コマンドを使って、
+         空のファイルにインストールできます。
        </para>
        <para>
-         もし、NetBSD が最初のディスク以外にインストールされているのであれば、上記の
-         コマンドを実行する前に、ブートブロックをコンパイルし直してインストールする
-         必要があります。(コンパイルし直すには、/usr/src/sys/arch/i386/boot 
-         ディレクトリーで幾つかの変更をする必要があります)。
-      </para>
-      <para>
-        注: 提供しているブートブロック、
-        <ulink url="../../../ports/i386/nbsd0.bb">nbsd0.bb(harddisk 0)</ulink>、
-        <ulink url="../../../ports/i386/nbsd1.bb">nbsd1.bb(harddisk 1)</ulink>、
-        <ulink url="../../../ports/i386/nbsd2.bb">nbsd2.bb(harddisk 2)</ulink>は古いバージョンの
-        NetBSD 用のものです。これらを NetBSD 1.4 以降のバージョンで
-        使うことは<emphasis role="bold">できません</emphasis>。
-      </para>
-      <para>
-        次に、ブートブロックを Windows NT のパーティションに置いてください。
-        注: NetBSD から、NT のパーティションに対してブートブロックを書き込む
-        ことはできません。
-      </para>
-      <para>
-        最後に、以下の内容を NT ブートメニューに追加してください。
-        例えば、NetBSD を 2 個目のディスク (wd1) にインストールしている場合、
-        以下のように nbsd1.bb を boot.ini ファイルに追加するだけです。
-      </para>
-
+         以下の例では、Windows Server 2003 が disk 0 に、NetBSD 4.0
+         が disk 1 にインストールされているものとします。
+       </para>
 <programlisting>
-[boot loader]
-default=c:\nbsd0.bb
-[operating systems]
-c:\nbsd0.bb="NetBSD (harddisk 0)"
-c:\nbsd1.bb="NetBSD (harddisk 1)"
-c:\nbsd2.bb="NetBSD (harddisk 2)"
+devel# rm -f nbmbr
+devel# touch nbmbr
+devel# fdisk -BF -c mbr_ext ./nbmbr
+fdisk: primary partition table invalid, no magic in sector 0
+fdisk: Cannot determine the number of heads
+Update the bootcode from /usr/mdec/mbr_ext? [n] y
+
+Boot selector configuration:
+Timeout value (0 to 3600 seconds, -1 => never): [-1..3600 default: 10] 
+Select the default boot option. Options are:
+
+0: The first active partition
+1: Harddisk 0
+2: Harddisk 1
+3: Harddisk 2
+4: Harddisk 3
+5: Harddisk 4
+6: Harddisk 5
+7: Harddisk 6
+8: Harddisk 7
+Default boot option: [0..8 default: 0] 2
+
+We haven't written the MBR back to disk yet.  This is your last chance.
+Should we write new partition table? [n] y
 </programlisting>
+       <para>
+         nbmbr を C: ドライブにコピーし、以下の行を C:\boot.ini の最後に追加します。
+       </para>
+<programlisting>
+c:\nbmbr="NetBSD disk 1"
+</programlisting>
+       <para>
+         標準状態では、boot.ini は不可視になっています。boot.ini を編集するには、
+         My Computer から C: ドライブを開き、Tools メニューから "Folder Options..." を選びます。
+         しかるのちに、View タブをクリックし、"Hide protected
+         operating system files (Recommended)" のチェックボックスのチェックを外します。
+         最後に OK をクリックします。これで、boot.ini が見えるようになり、
+         ダブルクリックすれば編集できるようになります。
+       </para>
+       <para>
+         <emphasis role="bold">方法その 2) bootpart を使って、
+         既存のコードをブートブロックにコピーする</emphasis>
+       </para>
+       <para>
+         Windows を使って、bootpart を
+         <ulink url="http://www.winimage.com/bootpart.htm">http://www.winimage.com/bootpart.htm</ulink>
+         から入手し、zip アーカイブからファイルをハードディスクに展開します。
+         コマンドプロンプトを使い、bootpart.exe のあるディレクトリーに移動します。
+         一連の操作手順を以下に示します。
+         以下の例では、Windows Server 2003 が disk 0 に、NetBSD 4.0
+         が disk 1 にインストールされているものとします。
+       </para>
+       <para>
+         最初に、bootpart を実行して、パーティション番号
+         (ディスク番号をまたがった通し番号になります) を決めます。
+         NetBSD のパーティションタイプは (十六進数で) a9
+         であることにご注意ください。
+       </para>
+<programlisting>
+C:\bootpa26>bootpart
+Boot Partition 2.60 for WinNT/2K/XP (c)1995-2005 G. Vollant (info@winimage.com)
+WEB : http://www.winimage.com and http://www.winimage.com/bootpart.htm
+Add partition in the Windows NT/2000/XP Multi-boot loader
+Run "bootpart /?" for more information
+
+Physical number of disk 0 : b4dab4da
+ 0 : C:* type=7  (HPFS/NTFS), size= 19580368 KB, Lba Pos=63
+Physical number of disk 1 : 7f4c256b
+ 1 : D:* type=a9 , size= 39121456 KB, Lba Pos=63
+</programlisting>
+       <para>
+         ここではパーティション 1 をブートしたいので、以下のようにします。
+       </para>
+<programlisting>
+C:\bootpa26>bootpart 1 \nbboot "NetBSD disk 1"
+Boot Partition 2.60 for WinNT/2K/XP (c)1995-2005 G. Vollant (info@winimage.com)
+WEB : http://www.winimage.com and http://www.winimage.com/bootpart.htm
+Add partition in the Windows NT/2000/XP Multi-boot loader
+Run "bootpart /?" for more information
+          
+Physical number of disk 0 : b4dab4da
+ 0 : C:* type=7  (HPFS/NTFS), size= 19580368 KB, Lba Pos=63
+Physical number of disk 1 : 7f4c256b
+ 1 : D:* type=a9 , size= 39121456 KB, Lba Pos=63
+C:\nbboot written
+C:\BOOT.INI updated
+</programlisting>
+       <para>            
+         これで、nbboot というブートブロックが C: ドライブのルートディレクトリーに作成され、
+         boot.ini に "NetBSD disk 1" という項目が追加されました。
+       </para>  
+       <para>
+         <emphasis role="bold">方法その 3) grub4dos を使う</emphasis>
+       </para>
+       <para>
+         この方法の利点は、広範囲にわたる grub のオプションが使えることです。
+         さらに、カーネルを NTFS からロードできるという利点もあります
+         (必要があればですが。通常は、インストールされた
+         NetBSD のルートディレクトリーからロードするだけでしょう)。
+         たとえば、問題解決のために、
+         NetBSD がインストールされていないマシンであっても、
+         便利に使えるリカバリー用あるいはインストール用の
+         NetBSD カーネルを使いたいということがあるかもしれません。
+       </para>
+       <para>
+         最新版の grub4dos を
+         <ulink url="http://sourceforge.net/projects/grub4dos">http://sourceforge.net/projects/grub4dos</ulink>
+         からダウンロードし、zip アーカイブからファイルを展開します。
+         grldr を Windows の C:\ にコピーし、以下のようにして
+         c:\menu.lst を作成します (Windows と NetBSD のどちらで作成してもかまいません
+         - 改行はどちらの流儀であっても OK です)。
+       </para>
+<programlisting>
+timeout=5
+console terminal
+Title NetBSD on disk 1 (chainloader)
+    root(hd1,0)
+    chainloader +1
+Title NetBSD install kernel
+    kernel --type=netbsd /NETBSD_INSTALL_LARGE.gz
+</programlisting>       			
+       <para>
+         MULTIBOOT 以外のカーネル (インストールカーネルなど) では、--type=netbsd が必要です。
+         MULTIBOOT カーネルでは、このオプションはつけてはいけません。
+       </para>
+       <para>
+         最後に、方法その 1) の説明と同様に、
+         たとえば以下のような NetBSD 用の行を C:\boot.ini に追加します。
+       </para>
+<programlisting>
+C:\gtldr="NetBSD GRUB"
+</programlisting>                                
     </sect3>
 
     <sect3 id="fips">
