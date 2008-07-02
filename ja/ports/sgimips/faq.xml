@@ -5,8 +5,8 @@
 
 <webpage id="ports-sgimips-faq">
 <config param="desc" value="NetBSD/sgimips: Frequently Asked Questions"/>
-<config param="cvstag" value="$NetBSD: faq.xml,v 1.2 2007/06/09 19:18:13 dsieger Exp $"/>
-<config param="rcsdate" value="$Date: 2007/06/09 19:18:13 $"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.3 2008/06/26 11:43:48 sborrill Exp $"/>
+<config param="rcsdate" value="$Date: 2008/06/26 11:43:48 $"/>
 <head>
 
 <!-- Copyright (c) 1994-2005
@@ -265,6 +265,103 @@ OS (SASH) version installed:
      problem #1.</listitem>
 </orderedlist>
 
+</sect3>
+
+<sect3 id="sgivol">
+<title>Updating the bootloader (using sgivol)</title>
+<para>
+When installing NetBSD using sysinst, it will leave space at the start of the
+disk for the partition that will be used by the PROM to load the bootloader,
+etc. This partition is called the Volume Header.
+This needs to be a minimum of 3135 blocks (see SGI_BOOT_BLOCK_SIZE_VOLHDR in
+/usr/include/sys/bootblock.h). An example disklabel is shown below.
+Partition i will be used for the Volume Header as is SGI convention
+(partition 8). 
+</para>
+<programlisting>
+sgimips# disklabel sd0
+# /dev/rsd0c:
+type: SCSI
+disk: mydisk
+label: fictitious
+flags:
+bytes/sector: 512
+sectors/track: 135
+tracks/cylinder: 8
+sectors/cylinder: 1080
+cylinders: 4078
+total sectors: 4404240
+rpm: 7200
+interleave: 0
+trackskew: 0
+cylinderskew: 0
+headswitch: 0           # microseconds
+track-to-track seek: 0  # microseconds
+drivedata: 0
+
+16 partitions:
+#        size    offset     fstype [fsize bsize cpg/sgs]
+ a:   3377306      3183     4.2BSD   1024  8192 45640  # (Cyl.      2*-    3130*)
+ b:   1024000   3380489       swap                     # (Cyl.   3130*-    4078+)
+ c:   4404489         0    unknown                     # (Cyl.      0 -    4078+)
+ i:      3183         0    unknown                     # (Cyl.      0 -       2*)
+</programlisting>
+<para>
+After installing NetBSD, you can use the sgivol utility (located in
+/usr/mdec) to manipulate this partition. If not set up already, it must be
+initialised (N.B. sysinst will set this up correctly):
+</para>
+<programlisting>sgivol -i sd0</programlisting>
+<para>
+To upgrade the bootloader (or change it if the disk is moved to a different
+model of machine), first delete the existing file:
+</para>
+<programlisting>sgivol -d boot sd0</programlisting>
+<para>
+Next, copy the appropriate bootloader as filename 'boot' into the 
+volume header:
+</para>
+<programlisting>sgivol -w boot /usr/mdec/ip2xboot sd0</programlisting>
+<para>
+You can have multiple bootloaders present (with different
+names). This is very useful when booting different versions of NetBSD
+(e.g. to upgrade from NetBSD 3 to -current using a new INSTALL kernel) as
+changes in bootinfo mean that NetBSD 4.0 and earlier kernels will not work
+with a newer bootloader.
+</para>
+<para>
+The contents of the volume header can be viewed by using the following
+command:
+</para>
+<programlisting>sgivol sd0</programlisting>
+<para>
+Example output is shown below:
+</para>
+<programlisting>disklabel shows 4404240 sectors
+checksum: 00000000
+root part: 0
+swap part: 1
+bootfile: /netbsd
+
+Volume header files:
+sgilabel offset    2 blocks, length      512 bytes (1 blocks)
+ide      offset    3 blocks, length   322048 bytes (629 blocks)
+sash     offset  632 blocks, length   322048 bytes (629 blocks)
+boot     offset 1261 blocks, length    53296 bytes (105 blocks)
+
+SGI partitions:
+ 0:a blocks  3377306 first     3183 type  4 (BSD4.2)
+ 1:b blocks  1024000 first  3380489 type  3 (Raw)
+ 8:i blocks     3199 first        0 type  0 (Volume Header)
+10:k blocks  4404489 first        0 type  6 (Volume)
+</programlisting>
+<para>
+See the <ulink
+url="http://man.NetBSD.org/cgi-bin/man-cgi?boot+8.sgimips+NetBSD-current">boot(8)</ulink>
+and <ulink
+url="http://man.NetBSD.org/cgi-bin/man-cgi?sgivol+8.sgimips+NetBSD-current">sgivol(8)</ulink>
+man pages for more information.
+</para>
 </sect3>
 
 </sect2>
