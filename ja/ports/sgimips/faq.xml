@@ -5,10 +5,10 @@
 
 <webpage id="ja-ports-sgimips-faq">
 <config param="desc" value="NetBSD/sgimips: よくある質問"/>
-<config param="cvstag" value="$NetBSD: faq.xml,v 1.2 2007/06/09 19:18:13 dsieger Exp $"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.3 2008/06/26 11:43:48 sborrill Exp $"/>
 <!-- Based on english version: -->
-<!-- NetBSD: faq.xml,v 1.2 2007/06/09 19:18:13 dsieger Exp   -->
-<config param="rcsdate" value="$Date: 2007/06/09 19:18:13 $"/>
+<!-- NetBSD: faq.xml,v 1.3 2008/06/26 11:43:48 sborrill Exp   -->
+<config param="rcsdate" value="$Date: 2008/06/26 11:43:48 $"/>
 <head>
 
 <!-- Copyright (c) 1994-2005
@@ -268,6 +268,102 @@ PROM バージョンやインストールされた OS (SASH) バージョンによる、
      問題 #1 を見てください。</listitem>
 </orderedlist>
 
+</sect3>
+
+<sect3 id="sgivol">
+<title>ブートローダーを (sgivol を使って) 更新する</title>
+<para>
+sysinst を使って NetBSD をインストールすると、ディスクの先頭部分が、
+PROM がブートローダーを読み込むためなどのパーティション用として確保されます。
+このパーティションは、ボリュームヘッダーと呼ばれます。
+このパーティションには、最低限 3135 ブロックが必要です (/usr/include/sys/bootblock.h
+の SGI_BOOT_BLOCK_SIZE_VOLHDR を参照)。disklabel の例を以下に示します。
+パーティション i がボリュームヘッダーとなっており、
+これは SGI の流儀 (パーティション 8 を使う) と同様です。
+</para>
+<programlisting>
+sgimips# disklabel sd0
+# /dev/rsd0c:
+type: SCSI
+disk: mydisk
+label: fictitious
+flags:
+bytes/sector: 512
+sectors/track: 135
+tracks/cylinder: 8
+sectors/cylinder: 1080
+cylinders: 4078
+total sectors: 4404240
+rpm: 7200
+interleave: 0
+trackskew: 0
+cylinderskew: 0
+headswitch: 0           # microseconds
+track-to-track seek: 0  # microseconds
+drivedata: 0
+
+16 partitions:
+#        size    offset     fstype [fsize bsize cpg/sgs]
+ a:   3377306      3183     4.2BSD   1024  8192 45640  # (Cyl.      2*-    3130*)
+ b:   1024000   3380489       swap                     # (Cyl.   3130*-    4078+)
+ c:   4404489         0    unknown                     # (Cyl.      0 -    4078+)
+ i:      3183         0    unknown                     # (Cyl.      0 -       2*)
+</programlisting>
+<para>
+NetBSD のインストール後、sgivol ユーティリティー (/usr/mdec にあります)
+を使って、このパーティションを操作することができます。まだセットアップされていない場合は、
+以下のようにして、初期化する必要があります (注意: sysinst は適切にセットアップをおこないます)。
+</para>
+<programlisting>sgivol -i sd0</programlisting>
+<para>
+ブートローダーを更新する (あるいは、別機種のマシンにディスクを移した場合に変更する)
+ためには、まず、既存のファイルを消去します。
+</para>
+<programlisting>sgivol -d boot sd0</programlisting>
+<para>
+次に、新しいブートローダーを、ボリュームヘッダーに
+'boot' というファイル名でコピーします。
+</para>
+<programlisting>sgivol -w boot /usr/mdec/ip2xboot sd0</programlisting>
+<para>
+複数のブートローダーを (別々の名前にして) 置いておくこともできます。
+別バージョンの NetBSD をブートする場合 (たとえば、新しい INSTALL
+カーネルを使って NetBSD 3 から -current にアップグレードする場合) には、
+非常に便利です。というのも、bootinfo の変更により、
+NetBSD 4.0 以前のカーネルは新しいブートローダーとの組合せでは動作しないからです。
+</para>
+<para>
+ボリュームヘッダーの内容は、以下のコマンドを使って見ることができます。
+</para>
+<programlisting>sgivol sd0</programlisting>
+<para>
+出力例は以下のとおりです。
+</para>
+<programlisting>disklabel shows 4404240 sectors
+checksum: 00000000
+root part: 0
+swap part: 1
+bootfile: /netbsd
+
+Volume header files:
+sgilabel offset    2 blocks, length      512 bytes (1 blocks)
+ide      offset    3 blocks, length   322048 bytes (629 blocks)
+sash     offset  632 blocks, length   322048 bytes (629 blocks)
+boot     offset 1261 blocks, length    53296 bytes (105 blocks)
+
+SGI partitions:
+ 0:a blocks  3377306 first     3183 type  4 (BSD4.2)
+ 1:b blocks  1024000 first  3380489 type  3 (Raw)
+ 8:i blocks     3199 first        0 type  0 (Volume Header)
+10:k blocks  4404489 first        0 type  6 (Volume)
+</programlisting>
+<para>
+さらなる情報については、<ulink
+url="http://man.NetBSD.org/cgi-bin/man-cgi?boot+8.sgimips+NetBSD-current">boot(8)</ulink>
+および <ulink
+url="http://man.NetBSD.org/cgi-bin/man-cgi?sgivol+8.sgimips+NetBSD-current">sgivol(8)</ulink>
+マニュアルページをご覧ください。
+</para>
 </sect3>
 
 </sect2>
