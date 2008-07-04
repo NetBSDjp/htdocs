@@ -1,0 +1,182 @@
+%%% $Id: xen.mgp,v 1.1 2008/07/04 16:17:16 makoto Exp $
+%include "default.mgp"
+%deffont "typewriter" xfont "courier"
+%deffont "mincho" xfont "-misc-ipagothic-medium-r-normal--*-*-0-0-*-0-jisx0208.1983-0"
+%page   
+% center
+
+% size 6
+  NetBSD/Xen
+%font "mincho"
+
+%fore "white"
+
+% size 6
+
+
+
+
+  藤原 誠
+
+
+  http://www.ki.nu/software/.xen/mgp/
+%page
+%fore "white"
+%left
+
+	Xenとは何か
+
+% size  7
+ある OS の上で
+別の OS を仮想環境として動かす
+
+% size  5
+NetBSD/i386 4.0 から利用可能
+%page
+%image "xen-illustrated.jpeg"
+%page
+
+用語その一
+
+
+Dom0   (Domain 0) host OS
+
+DomU   (Domain U) Guest OS
+
+Hypervisor 基本 I/O を司さどる
+
+%page
+
+用語その二
+
+実は DomU には二種類ある
+
+PVM Para Virtualization Machine
+準仮想化 : 特別 Kernel + I/O 名に変更有
+
+
+HVM Hardware Virtualization Machine
+完全仮想化: x86 なら何でも動く(ことになっている)
+    		但し Intel-VT または AMD-V 機能が必要
+%page
+
+とりあえず試すには
+
+	NetBSD/4.0 i386 
+	HowTo
+%size 5
+http://www.netbsd.org/ports/xen/howto.html
+
+%page
+
+NetBSD/4.0 i386 
+
+
+	起動切替     grub 
+	Dom0 kernel   XEN3_DOM0.gz
+	package
+		xenkernel3
+		xentools3
+	network bridge
+		 /etc/ifconfig.bridge0
+	missing device
+		/dev/xencons 
+		/dev/xenevt
+
+%page
+
+kernel を Dom0 に入替
+
+kernel を Dom0 に入替えるだけなら、余り変らない
+
+
+(ただし現在のところは
+ MP と PowerNow, acpi 等は使えなくなる)
+
+%page
+
+その上で DomU を用意する
+
+	 設定ファイル (/usr/pkg/etc/xen/hoge)
+	 メモリ
+	 disk の一区画か ファイル上の仮想区画
+
+その上で sudo xm create 設定ファイル
+
+%page
+
+区画は NetBSD から見えるもの
+
+そのため、Memory disk kernel 起動や、
+CDROM 起動のようにして、その OS の
+設置作業をする必要がある
+
+PVM の場合には
+	設置カーネル (で設置後)
+	通常カーネル
+と切替えて起動する
+
+%page 
+
+設定例
+
+%page
+
+x_86 と言っても
+
+32bit (i386) 
+32bit PAE (i386)
+64bit (amd64)
+のモードがある (CPU にも依る)
+
+%page
+
+HVM って何
+
+何の変更もない OS を動かすしくみ
+ただし CPU に特殊な機能が必要 (Intel-VT, AMD-V)
+
+(package)
+xentools3-hvm も入れる
+
+	 設定ファイル (/usr/pkg/etc/xen/hoge) の書き方が少し違う
+ 
+%page
+
+試したことのある組合せ(1)
+
+	Let's Note R1 NetBSD/4.0 i386 
+		NetBSD/3.1.1 i386 (PVM)
+	ML115 (Athlon 3500+) NetBSD/i386 4.0 (全て HVM)
+		OpenSUSE 10.3 (X も正常)
+		FreeBSD 6.2 (卓作業完全)
+		Ubuntu 6 ( Xの mouse がうまく動かなかった)
+		Darwin 801 (起動しなかった)
+		Windows XP
+		OpenSolaris 2008/05
+		PC BSD (× ?)
+%page
+
+試したことのある組合せ(2)
+
+	MacBook (core2duo/3G model) NetBSD/i386 (HVM)
+		Windows XP
+		OpenBSD FuguIta 版
+		FreeBSD 6.2 7.0 (×)
+		OpenSolaris 2008/05
+	MacBook (3G/core2duo) NetBSD/amd64
+		PVM NetBSD 4.99.67 (installer のみ)
+		HVM は動かなかった ?
+%page
+
+何がうれしい
+
+	一つの機械でいろいろな OS が動かせるので評価等に使える
+	仮想サーバ・サービスを提供する
+%page
+現状では、まだ 出来ないこと
+%page
+動く機械
+%page 
+設置に必要なもの
+
