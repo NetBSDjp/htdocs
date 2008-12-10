@@ -1,7 +1,8 @@
-#	$NetBSD: Makefile,v 1.4 2007/12/18 21:47:09 weinem Exp $
+#	$NetBSD: Makefile,v 1.5 2008/09/25 15:24:03 tsutsui Exp $
 
 XMLDOCS+=	index
 XMLDOCS+=	NetBSD-4.0:announcement.xsl,docbook-website::
+XMLDOCS+=	NetBSD-4.0.1:announcement.xsl,docbook-website::
 
 #changes.mdoc is a fragment to be pasted to src/distrib/notes/common/main,
 #do not commit it directly
