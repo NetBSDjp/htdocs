@@ -4,7 +4,7 @@
 
 # XMLDOCS+=	addsite
 # XMLDOCS+=	articles
-# XMLDOCS+=	devotionalia
+XMLDOCS+=	devotionalia
 # XMLDOCS+=	consultants
 XMLDOCS+=	events
 # XMLDOCS+=	hardware
