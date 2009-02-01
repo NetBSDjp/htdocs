@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.2 2008/03/02 01:53:15 jschauma Exp $
+#	$NetBSD: Makefile,v 1.3 2009/01/31 18:56:24 jschauma Exp $
 #
 # Please run 'make update' before adding NEWS.
 
@@ -14,6 +14,7 @@ XMLDOCS+=	2004
 XMLDOCS+=	2005
 XMLDOCS+=	2006
 XMLDOCS+=	2007
+XMLDOCS+=	2008
 XMLDOCS+=	index
 
 all:	index.html
