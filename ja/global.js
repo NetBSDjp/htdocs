@@ -1,4 +1,6 @@
 /* $NetBSD: global.js,v 1.1 2009/03/02 16:10:39 mishka Exp $ */
+/* Based on english version: */
+/* NetBSD: global.js,v 1.1 2009/03/02 16:10:39 mishka Exp   */
 
 /*
  * Copyright (c) 2009 The NetBSD Foundation, Inc.
@@ -45,7 +47,7 @@ function validateAmount(amount){
 	if(amount.value.match( /^[0-9]+(\.([0-9]+))?$/)){
 		return true;
 	}else{
-		alert('You must enter a valid donation.');
+		alert('金額を正しい形式で入力してください。');
 		amount.focus();
 		return false;
 	}
