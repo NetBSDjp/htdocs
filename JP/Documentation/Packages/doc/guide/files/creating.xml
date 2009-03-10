@@ -1,6 +1,6 @@
-<!-- $NetBSD: creating.xml,v 1.7 2007/06/01 11:07:24 rillig Exp $ -->
+<!-- $NetBSD: creating.xml,v 1.8 2009/03/05 13:08:02 imil Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: creating.xml,v 1.7 2007/06/01 11:07:24 rillig Exp   -->
+<!-- NetBSD: creating.xml,v 1.8 2009/03/05 13:08:02 imil Exp   -->
 
 <chapter id="creating">
 <title>新しいパッケージを一から作る</title>
@@ -127,6 +127,60 @@ linkend="fixes"/>を調べてください。</para></step>
 <para>KDE アプリケーションは、かならず
 <filename>meta-pkgs/kde3/kde3.mk</filename> をインクルードしてください。
 これには、KDE パッケージでよくある設定が多数含まれています。</para>
+
+</sect2>
+
+<sect2 id="creating.python-module">
+<title>Python モジュールおよびプログラム</title>
+
+<para>Python のモジュールとプログラムは、
+あらかじめ用意された変数を使って、簡単にパッケージを作ることができます。</para>
+
+<para>ほとんどの Python パッケージは、<quote>distutils</quote> または
+easy-setup (<quote>eggs</quote>) のいずれかを使っています。
+ソフトウェアが <quote>distutils</quote> を使っている場合は、
+pkgsrc がこの枠組を使うようにするため、
+<varname>PYDISTUTILSPKG</varname> 変数を <quote>yes</quote> に設定します。
+<quote>distutils</quote> では、<filename>setup.py</filename> という名前のスクリプトを使いますが、
+<quote>distutils</quote> ドライバーが
+<filename>setup.py</filename> という名前でない場合は、
+<varname>PYSETUP</varname> 変数をスクリプト名に設定します。</para>
+
+<para>
+ソフトウェアが既定の Python バージョンに対応していない場合は、
+<varname>PYTHON_VERSIONS_ACCEPTED</varname> 変数を、
+そのソフトウェアが動作する Python バージョンに設定します。
+バージョンは新しいものから古いものの順に並べます。たとえば以下のようにします。
+<programlisting>
+PYTHON_VERSIONS_ACCEPTED=       25 24 23
+</programlisting></para>
+
+<para>
+パッケージにするソフトウェアが Python モジュールである場合は、
+<quote><filename>../../lang/python/extension.mk</filename></quote> をインクルードします。
+この場合は、パッケージのディレクトリー名を
+<quote>py-software</quote> という形式にし、
+<varname>PKGNAME</varname> を
+<quote>${PYPKGPREFIX}-${DISTNAME}</quote> に設定します。たとえば以下のようにします。
+<programlisting>
+DISTNAME=   foopymodule-1.2.10
+PKGNAME=    ${PYPKGPREFIX}-${DISTNAME}
+</programlisting></para>
+
+<para>パッケージにするソフトウェアがアプリケーションである場合は、
+<quote>extension.mk</quote> をインクルードする前に
+<quote><filename>../../lang/python/application.mk</filename></quote> もインクルードします。</para>
+
+<para>パッケージにするソフトウェア (アプリケーションでもモジュールでも) が
+egg に対応している場合、必要なことは、
+<quote><filename>../../lang/python/egg.mk</filename></quote> をインクルードすることだけです。</para>
+
+<para>Python インタープリターへのパスを適切に設定するために、
+<varname>REPLACE_PYTHON</varname> 変数を使います。この変数に、
+パスの修正が必要なファイルのリストを設定します。たとえば以下のようにします。
+<programlisting>
+REPLACE_PYTHON=   ${WRKSRC}/*.py
+</programlisting></para>
 
 </sect2>
 
