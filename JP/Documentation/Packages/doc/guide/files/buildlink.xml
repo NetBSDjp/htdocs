@@ -1,6 +1,6 @@
-<!-- $NetBSD: buildlink.xml,v 1.25 2007/10/01 22:38:42 rillig Exp $ -->
+<!-- $NetBSD: buildlink.xml,v 1.26 2009/03/20 19:33:28 joerg Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: buildlink.xml,v 1.25 2007/10/01 22:38:42 rillig Exp   -->
+<!-- NetBSD: buildlink.xml,v 1.26 2009/03/20 19:33:28 joerg Exp   -->
 
 <chapter id="buildlink">
   <title>buildlink 方法論</title>
@@ -193,51 +193,31 @@ BUILDLINK_API_DEPENDS.foo+=   foo>=1.1.0
       <filename>buildlink3.mk</filename> の実例です。</para>
 
 <programlisting>
-# &#36;NetBSD: buildlink3.mk,v 1.7 2004/03/18 09:12:12 jlam Exp &#36;
+# &#36;NetBSD: buildlink3.mk,v 1.16 2009/03/20 19:24:45 joerg Exp &#36;
 
-BUILDLINK_DEPTH:=       ${BUILDLINK_DEPTH}+
-TIFF_BUILDLINK3_MK:=    ${TIFF_BUILDLINK3_MK}+
+BUILDLINK_TREE+=	tiff
 
-.if ${BUILDLINK_DEPTH} == "+"
-BUILDLINK_DEPENDS+=     tiff
-.endif
+.if !defined(TIFF_BUILDLINK3_MK)
+TIFF_BUILDLINK3_MK:=
 
-BUILDLINK_PACKAGES:=    ${BUILDLINK_PACKAGES:Ntiff}
-BUILDLINK_PACKAGES+=    tiff
-
-.if ${TIFF_BUILDLINK3_MK} == "+"
-BUILDLINK_API_DEPENDS.tiff+=        tiff>=3.6.1
-BUILDLINK_PKGSRCDIR.tiff?=      ../../graphics/tiff
-.endif  # TIFF_BUILDLINK3_MK
+BUILDLINK_API_DEPENDS.tiff+=	tiff>=3.6.1
+BUILDLINK_ABI_DEPENDS.tiff+=	tiff>=3.7.2nb1
+BUILDLINK_PKGSRCDIR.tiff?=	../../graphics/tiff
 
 .include "../../devel/zlib/buildlink3.mk"
 .include "../../graphics/jpeg/buildlink3.mk"
+.endif # TIFF_BUILDLINK3_MK
 
-BUILDLINK_DEPTH:=       ${BUILDLINK_DEPTH:S/+$//}
+BUILDLINK_TREE+=	-tiff
 </programlisting>
 
       <para>ヘッダーとフッターで、
-      <varname>BUILDLINK_DEPTH</varname> の値を操作しています。
-      この変数は、<filename>buildlink3.mk</filename>
-      を何段階インクルードしているかを追跡するために、
+      <varname>BUILDLINK_TREE</varname> の値を操作しています。
+      この変数は、パッケージの依存関係を辿るために、
       すべての <filename>buildlink3.mk</filename> ファイルの間で、
       共通に使われます。</para>
 
-      <para>最初の節では、
-      <replaceable>pkg</replaceable>
-      への依存性が追加されるかどうかを制御しています。
-      <varname>BUILDLINK_DEPENDS</varname> は、
-      buildlink3 によって依存性が追加されるパッケージの大域的なリストです。</para>
-
-      <para>二つ目の節では、<replaceable>pkg</replaceable> の
-      <filename>buildlink3.mk</filename> ファイルがどこかでインクルードされていることを
-      pkgsrc に教えています。
-      <varname>BUILDLINK_PACKAGES</varname> は、<filename>buildlink3.mk</filename>
-      ファイルがインクルードされているパッケージの大域的なリストです。
-      <filename>buildlink3.mk</filename> ファイルでは、
-      この追加を<emphasis>必ず</emphasis>おこなう必要があります。</para>
-
-      <para>三つ目の節では、多重のインクルードを防いだうえで、
+      <para>本体の節では、多重のインクルードを防いだうえで、
       <replaceable>pkg</replaceable> への依存性をどのように追加するかを制御しています。
       いくつもの重要な変数がこの節で設定されます。</para>
 
@@ -344,15 +324,17 @@ BUILDLINK_DEPTH:=       ${BUILDLINK_DEPTH:S/+$//}
 	</listitem>
       </itemizedlist>
 
-      <para>最後の節では、
+      <para>この節では、
       <replaceable>pkg</replaceable> のライブラリー依存性として必要な
-      <filename>buildlink3.mk</filename> をすべてインクルードしています。
+      <filename>buildlink3.mk</filename> をすべてインクルードすることができます。
       ここで <filename>buildlink3.mk</filename> ファイルをインクルードすると、
       <replaceable>pkg</replaceable> の
       <filename>buildlink3.mk</filename> ファイルがインクルードされる場合はいつも、
       これらへの依存性のためのヘッダーやライブラリーも、
       <filename>${BUILDLINK_DIR}</filename>
-      からシンボリックリンクされることになります。</para>
+      からシンボリックリンクされることになります。
+      依存性が追加されるのは、
+      <filename>buildlink3.mk</filename> ファイルを直接インクルードした場合だけです。</para>
     </sect2>
 
     <sect2 id="updating-buildlink-depends">
