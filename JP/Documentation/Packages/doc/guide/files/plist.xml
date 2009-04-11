@@ -1,6 +1,6 @@
-<!-- $NetBSD: plist.xml,v 1.14 2007/06/01 11:07:26 rillig Exp $ -->
+<!-- $NetBSD: plist.xml,v 1.16 2009/03/20 14:55:41 mishka Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: plist.xml,v 1.14 2007/06/01 11:07:26 rillig Exp   -->
+<!-- NetBSD: plist.xml,v 1.16 2009/03/20 14:55:41 mishka Exp   -->
 
 <chapter id="plist">
   <title>PLIST 問題</title>
@@ -147,6 +147,43 @@ PLIST_SUBST+=   SOMEVAR="somevalue"
     <para>こうすると、<filename>PLIST</filename>
     内のすべての <quote>${SOMEVAR}</quote>
     が <quote>somevalue</quote> で置き換えられます。</para>
+
+
+    <para><varname>PLIST_VARS</varname> を使うと、
+    条件に応じて <filename>PLIST</filename>
+    の項目を追加することができます。
+    <literal><varname>PLIST_VARS</varname>+=foo</literal>
+    のように値を追加して、
+    これに対応する <varname>PLIST.foo</varname> 変数を
+    <literal>yes</literal> に設定します。
+    このように設定すると、<filename>PLIST</filename> にある 
+    <quote><varname>${PLIST.foo}</varname></quote> が
+    <quote><literal>""</literal></quote> に置換されるようになります
+    (設定していない場合は
+    <quote><literal>"@comment "</literal></quote> に置換されます)。
+    たとえば、<filename>Makefile</filename> では以下のようにします。</para>
+
+
+    <programlisting>
+PLIST_VARS+=	foo
+.if <replaceable>condition</replaceable>
+PLIST.foo=	yes
+.else
+    </programlisting>
+
+    <para>こうしたうえで、<filename>PLIST</filename> では以下のようにします。</para>
+    <programlisting>
+@comment &#36;NetBSD&#36;
+bin/bar
+man/man1/bar.1
+${PLIST.foo}bin/foo
+${PLIST.foo}man/man1/foo.1
+${PLIST.foo}share/bar/foo.data
+${PLIST.foo}@dirrm share/bar
+    </programlisting>
+
+
+
   </sect1>
 
   <sect1 id="manpage-compression">
