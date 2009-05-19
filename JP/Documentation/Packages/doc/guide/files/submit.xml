@@ -1,6 +1,6 @@
-<!-- $NetBSD: submit.xml,v 1.19 2007/08/15 06:33:46 rillig Exp $ -->
+<!-- $NetBSD: submit.xml,v 1.20 2009/05/02 16:14:37 reed Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: submit.xml,v 1.19 2007/08/15 06:33:46 rillig Exp   -->
+<!-- NetBSD: submit.xml,v 1.20 2009/05/02 16:14:37 reed Exp   -->
 
 <chapter id="submit"> <?dbhtml filename="submit.html"?>
 <title>提出およびコミット</title>
@@ -146,8 +146,35 @@
   もしれません)よりも安定性のほうが好ましいことを念頭に置いてください。</para>
 </sect1>
 
+<sect1 id="renaming-package">
+<title>pkgsrc のパッケージの名前を変更する</title>
+
+<para>パッケージ名の変更は、なるべくしないようにしてください。</para>
+
+
+<para>パッケージ名を変更する際には、かならず、
+  他の Makefile やオプションや buildlink などで古い名前を参照している箇所をすべて修正します。</para>
+
+<para>パッケージ名を変更する際には、さらに、
+  <varname>SUPERSEDES</varname> を旧パッケージのパッケージ名と
+  dewey 式のバージョン番号に設定します。
+  名前が複数回変わっている場合は、複数並べて設定することができます。
+  これで、新しいパッケージで旧名のパッケージを置き換える作業は完了です。
+</para>
+
+<para>なお、CHANGES-<replaceable>YYYY</replaceable> ファイルにおける
+  <quote>successor</quote> の記述は、必ずしも、<emphasis>supersedes</emphasis>
+  の意味ではありません。successor は、厳密な同等品でなくても、
+  代替として使えるものを助言するものでもいいからです。</para>
+
+</sect1>
+
 <sect1 id="moving-package">
 <title>pkgsrcのパッケージを移動する</title>
+
+<para>パッケージの名前の変更や移動は、しないほうがよいのですが、
+  それでも必要な場合は、以下の手順でおこないます。
+</para>
 
 <orderedlist>
 <listitem><para>パッケージのディレクトリーをどこかにコピーします。</para></listitem>
@@ -159,6 +186,21 @@
 
 <listitem><para><varname>CATEGORIES</varname>を修正します。また、<quote>../../category/package</quote>のかわりに単に
 <quote>../package</quote>とすることができる<varname>DEPENDS</varname>のパスをすべて修正します。</para>
+</listitem>
+
+<listitem><para>修正後のパッケージの Makefile で、
+<varname>PREV_PKGPATH</varname> を、移動前のカテゴリー/パッケージのパス名に設定します。
+この <varname>PREV_PKGPATH</varname> は、
+パッケージの更新を pkgsrc の構築によっておこなうツールが使います。
+たとえば、そういったツールは &man.pkg.summary.5; データベースから
+(<varname>SUPERSEDES</varname> がない場合)
+<varname>PREV_PKGPATH</varname> を検索して、これをもとにパッケージの移動後の
+<varname>PKGPATH</varname> を調べることができます。
+なお、この検索で複数のパスが見つかることもありえるので、
+ツールの側では <varname>PKGBASE</varname> もあわせて検査します。
+この <varname>PREV_PKGPATH</varname> の値を設定するのは、
+<varname>SUPERSEDES</varname> が設定されない場合
+(つまり、<varname>PKGBASE</varname> が変わらない場合) です。  </para>
 </listitem>
 
 <listitem><para>新しい場所で、修正後のパッケージを<command>cvs import</command>
