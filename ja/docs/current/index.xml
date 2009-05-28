@@ -5,8 +5,8 @@
 
 <webpage id="docs-current-index">
 <config param="desc" value="Tracking NetBSD-current"/>
-<config param="cvstag" value="$NetBSD: index.xml,v 1.5 2009/01/13 21:49:05 hubertf Exp $"/>
-<config param="rcsdate" value="$Date: 2009/01/13 21:49:05 $"/>
+<config param="cvstag" value="$NetBSD: index.xml,v 1.7 2009/05/14 14:35:45 jschauma Exp $"/>
+<config param="rcsdate" value="$Date: 2009/05/14 14:35:45 $"/>
 <head>
 
 <!-- Copyright (c) 1994-2005
@@ -73,31 +73,48 @@ into your favorite local administrative directory
 when limited by disk space and/or time,
 only kern-GENERIC, etc, base, and comp (if you want a compiler) are
 essential.</listitem>
-<listitem> Extract the desired <code>/etc</code> and kernel:
+<listitem> Extract the desired kernel (usually <code>GENERIC</code>),
+copy it into <code>/</code>, and reboot machine with the new kernel:
 <programlisting>
     $ su
     # cd /root
     # tar -zxpf ~/kern-GENERIC.tgz
     # ln -fh /netbsd /netbsd.old
-    # mv netbsd /netbsd
+    # cp netbsd /netbsd
     # shutdown -r now
 </programlisting>
+<para>
+  <emphasis role="bold">Warning: Don't extract any userland binary sets
+  before rebooting your machine with the new kernel.</emphasis>
+  Newer binaries might use new system calls an old running kernel doesn't
+  support.
+</para>
 </listitem>
 <listitem> Make sure the new kernel boots and works properly.
+If your new kernel has any trouble, you can recover it by loading
+the renamed old one.
 </listitem>
 <listitem> Extract the matching <code>base</code>,
-and any other desirable feature sets:
+and any other desirable feature sets
+<emphasis role="bold">except <code>etc</code></emphasis>:
 <programlisting>
     $ su
     # cd /
+    # tar -zxpf ~/base.tgz
     # tar -zxpf ~/comp.tgz
     # ...
-    # tar -zxpf ~/base.tgz
 </programlisting>
+Don't forget to specify <code>"p"</code> option (preserve permissions)
+on &man.tar.1; command otherwise setuid'ed commands (like &man.su.1;)
+won't work.
+<para>
+  <emphasis role="bold">Warning: Extracting <code>etc.tgz</code> on
+  the installed system will overwrite your local settings.</emphasis>
+</para>
 </listitem>
 <listitem> <ulink url="#etcupdate">Update</ulink> <code>/etc</code>
-as last step: postinstall whill first check and fix most things that
-can be automated, and etcupdate in the second step will ask on what
+as last step: &man.postinstall.8; will first check and fix most things that
+can be automated, and &man.etcupdate.8; in the second step will ask on what
 to merge:
 <programlisting>
     # /usr/sbin/postinstall -s ~/etc.tgz check
