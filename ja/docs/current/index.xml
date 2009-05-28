@@ -5,10 +5,10 @@
 
 <webpage id="ja-docs-current-index">
 <config param="desc" value="Tracking NetBSD-current"/>
-<config param="cvstag" value="$NetBSD: index.xml,v 1.5 2009/01/13 21:49:05 hubertf Exp $"/>
+<config param="cvstag" value="$NetBSD: index.xml,v 1.7 2009/05/14 14:35:45 jschauma Exp $"/>
 <!-- Based on english version: -->
-<!-- NetBSD: index.xml,v 1.5 2009/01/13 21:49:05 hubertf Exp   -->
-<config param="rcsdate" value="$Date: 2009/01/13 21:49:05 $"/>
+<!-- NetBSD: index.xml,v 1.7 2009/05/14 14:35:45 jschauma Exp   -->
+<config param="rcsdate" value="$Date: 2009/05/14 14:35:45 $"/>
 <head>
 
 <!-- Copyright (c) 1994-2005
@@ -72,32 +72,49 @@ ftp://ftp.NetBSD.org/pub/NetBSD-daily/HEAD/
 (たとえば <emphasis><code>$HOME/current</code></emphasis> ) に置きます。
 ディスクスペースや時間が足りない場合は、
 必要不可欠なのは kern-GENERIC, etc, base, comp (コンパイラーが必要な場合) だけです。</listitem>
-<listitem> <code>/etc</code> およびカーネルを展開します。
+<listitem> 適切なカーネル (通常は <code>GENERIC</code>) を展開して
+<code>/</code> にコピーし、そのカーネルでマシンを再起動します。
 <programlisting>
     $ su
     # cd /root
     # tar -zxpf ~/kern-GENERIC.tgz
     # ln -fh /netbsd /netbsd.old
-    # mv netbsd /netbsd
+    # cp netbsd /netbsd
     # shutdown -r now
 </programlisting>
+<para>
+  <emphasis role="bold">注意: 新しいカーネルでマシンを再起動するまでは、
+  ユーザーランドのバイナリーは一切展開してはいけません。</emphasis>
+  新しいバイナリーでは、新しいシステムコール (動作中の古いカーネルでは非対応)
+  を使っているかもしれないからです。
+</para>
 </listitem>
 <listitem> 新しいカーネルが、問題なく起動して動作することを確認します。
+新しいカーネルに問題がある場合は、名前を変えた古いカーネルをロードして、
+元に戻すことができます。
 </listitem>
-<listitem> <code>base</code> ほか一連の必要なものを展開し、
+<listitem> <code>base</code> ほか一連の必要なもの
+(<emphasis role="bold"><code>etc</code> は除く</emphasis>) を展開し、
 配置します。
 <programlisting>
     $ su
     # cd /
+    # tar -zxpf ~/base.tgz
     # tar -zxpf ~/comp.tgz
     # ...
-    # tar -zxpf ~/base.tgz
 </programlisting>
+&man.tar.1; コマンドの <code>"p"</code> オプション (許可属性の保持)
+を忘れずに指定してください。そうしないと、setuid されたコマンド (&man.su.1; など)
+が動作しません。
+<para>
+  <emphasis role="bold">注意: 既存のシステムに対して <code>etc.tgz</code>
+  を展開すると、独自におこなった設定が上書きされてしまいます。</emphasis>
+</para>
 </listitem>
 <listitem> 最後に、 <code>/etc</code>
 を <ulink url="#etcupdate">更新</ulink> します。
-postinstall は、最初の検査をし、自動的に修正できることはほとんど修正してくれます。
-その次にある etcupdate は、どのようにマージするかたずねてきます。
+&man.postinstall.8; は、最初の検査をし、自動的に修正できることはほとんど修正してくれます。
+その次にある &man.etcupdate.8; は、どのようにマージするかたずねてきます。
 <programlisting>
     # /usr/sbin/postinstall -s ~/etc.tgz check
     # /usr/sbin/postinstall -s ~/etc.tgz fix
