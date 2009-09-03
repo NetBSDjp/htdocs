@@ -1,6 +1,6 @@
-<!-- $NetBSD: plist.xml,v 1.17 2009/04/03 01:52:24 snj Exp $ -->
+<!-- $NetBSD: plist.xml,v 1.18 2009/07/20 15:04:27 wiz Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: plist.xml,v 1.17 2009/04/03 01:52:24 snj Exp   -->
+<!-- NetBSD: plist.xml,v 1.18 2009/07/20 15:04:27 wiz Exp   -->
 
 <chapter id="plist">
   <title>PLIST 問題</title>
@@ -244,72 +244,21 @@ ${PLIST.foo}@dirrm share/bar
 
     <para><quote>共有ディレクトリー</quote>とは、複数の (かつ関連のない)
     パッケージがファイルをインストールするディレクトリーのことです。
-    共有ディレクトリーは、条件に応じた削除のために PLIST に特殊な細工をするか、
-    集権的な処理用パッケージを用意する必要があるので、
-    問題を起こすことがあります。</para>
+    以前は、共有ディレクトリーは、条件に応じた削除のために PLIST に特殊な細工をするか、
+    集権的な処理用パッケージを用意する必要があったので、
+    問題を起こすことがありました。</para>
 
-    <para>pkgsrc では、このどちらの方法も使うことができます。
-    あるディレクトリーを数個の無関連なパッケージが共有していても、
-    多くの場合、そのディレクトリーを削除するためにさらにパッケージを追加する必要はありません。
-    このディレクトリーを使っている全パッケージの PLIST で、
-    通常の "@dirrm" 行のかわりに、</para>
+    <para>現在の pkgsrc では、話は単純になっています。
+    各パッケージは、必要に応じて、ディレクトリーを作成してファイルをインストールします。
+    <command>pkg_delete</command> は、パッケージのアンインストール後、
+    空のディレクトリーが残っていればすべて削除します。</para>
 
+    <para>パッケージの動作のために空のディレクトリーが必要な場合は、
+    インストール時に通常と同じようにディレクトリーを作成するようにし、
+    さらに PLIST に以下のような項目を追加します。
     <programlisting>
-@unexec ${RMDIR} %D/path/to/shared/directory 2>/dev/null || ${TRUE}
+@pkgdir path/to/empty/directory
     </programlisting>
-
-    <para>と書くだけでうまくいきます。</para>
-
-    <para>しかし、ディレクトリーを数多くのパッケージが共有している場合、
-    以下の二種類の解決策を使うことができます。</para>
-
-    <orderedlist>
-      <listitem>
-	<para>各パッケージが共通の依存パッケージを持つ場合、
-	その依存先のパッケージでディレクトリーを削除できます。たとえば、
-	<filename role="pkg">textproc/scrollkeeper</filename> を参照してください。
-	このパッケージは共有ディレクトリー
-	<filename>share/omf</filename> を削除しています。</para>
-      </listitem>
-
-      <listitem>
-	<para>パッケージが関連を持たずに共有ディレクトリーを使っている場合
-	(つまり、共通の依存パッケージがない場合)、
-	*-dirs パッケージで共有ディレクトリーを削除します。</para>
-      </listitem>
-    </orderedlist>
-
-    <para>以下、二つ目の解決策について述べます。
-    既存の *-dirs パッケージを把握するため、以下を実行してください。</para>
-
-    <programlisting>
-&cprompt; cd .../pkgsrc
-&cprompt; ls -d */*-dirs
-    </programlisting>
-
-    <para>他のパッケージがこれらを使う方法は非常に簡単です。
-    <varname>USE_DIRS</varname> 変数に、このパッケージ名 (<quote>-dirs</quote> は除く)
-    と必要なバージョン番号 (常に、パッケージを新たに書いたときの最新バージョンを選びます)
-    をつけたものを並べます。</para>
-
-    <para>たとえば、あるパッケージが
-    <filename>share/applications</filename> 以下にファイルをインストールする場合、
-    以下の行を含めておきます。</para>
-
-    <programlisting>
-USE_DIRS+=      xdg-1.1
-    </programlisting>
-
-    <para><command>make
-    print-PLIST</command> を使って PLIST を作り直すと、
-    行が適切に (コメントアウトされて)
-    得られるはずです。</para>
-
-    <para>なお、パッケージがたとえ <filename>$X11BASE</filename>
-    を使う場合であっても、*-x11-dirs パッケージに依存させてはいけません。
-    この部分を除いた名前を指定するだけでよく、そうすれば
-    pkgsrc (特に <filename>mk/dirs.mk</filename>)
-    が処理してくれます。</para>
   </sect1>
 
 </chapter>
