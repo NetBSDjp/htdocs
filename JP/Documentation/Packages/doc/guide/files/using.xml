@@ -1,6 +1,6 @@
-<!-- $NetBSD: using.xml,v 1.35 2008/03/04 02:39:37 jschauma Exp $ -->
+<!-- $NetBSD: using.xml,v 1.36 2009/05/28 09:29:30 wiz Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: using.xml,v 1.35 2008/03/04 02:39:37 jschauma Exp   -->
+<!-- NetBSD: using.xml,v 1.36 2009/05/28 09:29:30 wiz Exp   -->
 
 <chapter id="using"> <?dbhtml filename="using.html"?>
 <title>pkgsrc を使う</title>
@@ -107,7 +107,7 @@
     そのかわり、<filename>vulnerable</filename> サブディレクトリーに移動されます。
     このため、このディレクトリーも <varname>PKG_PATH</varname>
     変数に加えておくことが必要になることがあります。ただし、
-    <command>audit-packages</command> を定期的に
+    <command>pkg_admin audit</command> を定期的に
     (特に、パッケージを新たにインストールした後には) 実行して、
     脆弱性の影響がある構成となっているかどうかを確認するようにしてください。</para>
 
@@ -165,18 +165,18 @@
     </para>
 
     <para>
-      <filename role="pkg">security/audit-packages</filename> を使うと、
+      <command>pkg_admin fetch-pkg-vulnerabilities</command> を使うと、
       このリストを自動的にダウンロードし、
       システムにインストールされているパッケージすべてについて
       セキュリティー検証をすることができます。
     </para>
 
     <para>
-      <filename role="pkg">security/audit-packages</filename>
-      は、ふたつの部分からできています。
-      ひとつは <quote>download-vulnerability-list</quote> で、 NetBSD FTP サイトから
-      脆弱性のリストをダウンロードするものです。もうひとつは
-      <quote>audit-packages</quote> で、インストールされているパッケージに脆弱性が
+      このセキュリティー検証は、ふたつの部分からできています。
+      ひとつめの段階は <command>pkg_admin fetch-pkg-vulnerabilities</command> で、
+      NetBSD FTP サイトから
+      脆弱性のリストをダウンロードするものです。 ふたつめは
+      <command>pkg_admin audit</command> で、インストールされているパッケージに脆弱性が
       ないかどうか検証するものです。脆弱性のあるパッケージがあった場合、
       次のように出力してくれます:
     </para>
@@ -185,15 +185,23 @@
     http://www.samba.org/samba/whatsnew/macroexploit.html</screen>
 
     <para>
-      <filename
-      role="pkg">security/audit-packages</filename>
-      では、
       <ulink url="ftp://ftp.NetBSD.org/pub/pkgsrc/distfiles/vulnerabilities">vulnerabilities</ulink>
-      ファイルを毎日ダウンロードして、さらに、パッケージの検証を
-      daily security script で行なうように設定することができます。
-      これについての詳細は、 <filename role="pkg">security/audit-packages</filename> の <ulink
-      url="http://cvsweb.NetBSD.org/bsdweb.cgi/pkgsrc/security/audit-packages/MESSAGE?rev=HEAD&amp;content-type=text/x-cvsweb-markup">MESSAGE</ulink>
-      ファイルに書かれています。
+      ファイルを毎日ダウンロードして、常に最新の状態にしておきたいという方もいらっしゃることでしょう。
+      root ユーザーの &man.crontab.5; エントリーを適切に書いておけば、そういうこともできます。
+      たとえば、
+      <screen>
+# vulnerabilities ファイルをダウンロード
+0 3 * * * /usr/sbin/pkg_admin fetch-pkg-vulnerabilities >/dev/null 2>&1
+      </screen>
+      というエントリーを書けば、毎日午前 3 時に vulnerability リストを更新することになります。
+      この例は一日一回ですが、もっと頻繁に更新することもできます。
+
+      さらに、パッケージの検証を daily security script でおこないたい方もいらっしゃるでしょう。
+      これは、以下のような行を <filename>/etc/security.local</filename>
+      に書いておけば実現できます。
+      <screen>
+/usr/sbin/pkg_admin audit
+      <screen>
     </para>
   </sect2>
 
