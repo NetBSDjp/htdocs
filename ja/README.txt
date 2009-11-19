@@ -1,16 +1,18 @@
-#	$NetBSD: README.txt,v 1.1 2009/11/18 03:49:06 jun Exp $
+#	$NetBSD: README.txt,v 1.1.1.1 2009/11/19 14:28:09 kano Exp $
 
-メールで簡単な変更を www@jp.NetBSD.org に提出できます。
+Simple changes can be submitted by email to www@NetBSD.org
 
-ウェブページを編集して更新する方法が以下に書いてあります。
+Instructions on how to edit and update the web pages directly are in:
 
-http://www.jp.netbsd.org/developers/htdocs.html
+    http://www.NetBSD.org/developers/htdocs.html
 
-(このファイルはCVSリポジトリーの htdocs/developers/htdocs.htmlにあります)
+(In the CVS repository, this file is in htdocs/developers/htdocs.html)
 
-=== 実装の詳細===
+=== Implementation details ===
 
-カレントディレクトリーにある全てのMakefile.incは1つ上のWEB_PREFIX(通常このhtdocs/
-ディレクトリー)にあるweb.site.mkファイルによって自動的に取り込まれます。
+All Makefile.inc files on the way from the current directory upto
+WEB_PREFIX (usually this htdocs/ directory) are included automatically
+by the web.site.mk file, in this order. That is, you should not include
+them yourself.
 
-新しいXMLファイルを加えるとき、あなたはhtdocs/layout.xmlにエントリーを加えなければなりません。
+When you add new XML files you must add an entry to htdocs/layout.xml.
