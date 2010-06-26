@@ -5,8 +5,8 @@
 
 <webpage id="ports-sgimips-faq">
 <config param="desc" value="NetBSD/sgimips: Frequently Asked Questions"/>
-<config param="cvstag" value="$NetBSD: faq.xml,v 1.3 2008/06/26 11:43:48 sborrill Exp $"/>
-<config param="rcsdate" value="$Date: 2008/06/26 11:43:48 $"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.4 2009/09/19 22:56:15 snj Exp $"/>
+<config param="rcsdate" value="$Date: 2009/09/19 22:56:15 $"/>
 <head>
 
 <!-- Copyright (c) 1994-2005
@@ -24,8 +24,8 @@
 <sect3 id="serialconsole">
 <title>Things worth knowing about the Indy serial console</title>
 <para>
-Note this information may apply to other models too. To get the machine
-boot up with a serial console, make sure the keyboard is unplugged when
+Note that this information may apply to other models too. To get the machine
+to boot up with a serial console, make sure the keyboard is unplugged when
 turning on the machine. The serial console runs on serial #1, at 9600,
 8N1 by default.
 </para>
@@ -34,12 +34,12 @@ It is also possible to do a "<code>setenv console d</code>" in the PROM
 monitor to get the console to serial #1, or a "<code>setenv console d2</code>"
 to get it to serial #2 (default is "<code>g</code>"). Optionally, the console's
 speed can be set with "<code>setenv dbaud &lt;bps&gt;</code>". After setting
-these PROM variables either do an "<code>init</code>" or a reboot of the machine
-is needed.
+these PROM variables either do an "<code>init</code>" or a reboot of the
+machine.
 </para>
 <para>
 
-When booting up Irix on the console, logins on the serial console
+When booting up IRIX on the console, logins on the serial console
 might be disabled. You can enable them by editing /etc/inittab
 and adding the following line:
 </para>
@@ -59,135 +59,8 @@ Primer</ulink> for more information.
 </para>
 </sect3>
 
-
-<sect3 id="bootstrapping">
-<title>How to bootstrap NetBSD/sgimips?</title>
-<para>
-<itemizedlist>
-    <listitem><para>Since NetBSD 3.0 the sgimipscd.iso image is bootable.
-    The easiest way to install NetBSD on your machine is to burn this image
-    to a CD and boot it. Instructions how to boot from a CD
-    can be found here:
-    <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-&release.latest;/sgimips/INSTALL.html#Install%20via%20a%20bootable%20CD-ROM"/>.
-    Of course this assumes your machine has a CD drive. If not, you want
-    to try a netboot.
-    </para></listitem>
-    <listitem><para>If you do not have a CD drive, you need to netboot the kernel  
-     using the SGI's
-     ARCS firmware. See the <ulink url="../../docs/network/netboot/">Diskless NetBSD HOW-TO</ulink> for more information on 
-     setting up netbooting. Some rough steps are:
-     </para>
-
-     <orderedlist>
-     <listitem> Unpack the etc.tgz and base.tgz e.g. in /home/indy/root.
-          Run "<code>sh MAKEDEV all</code>" in the root/dev dir. </listitem>
-     <listitem> Go into the machine's PROM, and retrieve the MAC
-          address. Use "<code>printenv eaddr</code>" to do so.</listitem>
-     <listitem><para>Setup DHCP. Put something like this into <filename>/etc/dhcpd.conf</filename>:</para>
-<programlisting>ddns-update-style       none;
-subnet 10.0.0.0 netmask 255.255.255.0 {			# Adjust
-	host indy {
-		hardware ethernet 08:00:69:09:93:78;    # Adjust to your MAC address
-		fixed-address 10.0.0.15;                # Adjust
-		#filename "/netbsd";                    # XXX Do NOT set!
-		option root-path "/home/indy/root";
-		server-name="10.0.0.3";
-	}
-}</programlisting>
-     <para>
-     Make sure you don not set the "<code>filename</code>", else you
-     cannot specify a different name for the kernel on the PROM's
-     <code>boot</code> command later.
-     </para>
-     </listitem>
-
-     <listitem> Enter the machine's PROM again, and be sure the IP address
-          is set properly:
-     <programlisting>&gt;&gt; <emphasis role="bold">printenv netaddr</emphasis>
-netaddr=1.2.3.4
-&gt;&gt; <emphasis role="bold">setenv netaddr 10.0.0.15</emphasis>
-&gt;&gt; <emphasis role="bold">printenv netaddr</emphasis>
-netaddr=10.0.0.15</programlisting>
-     </listitem>
-
-     <listitem>Make sure you have tftp enabled in <filename>/etc/inetd.conf</filename>, then
-          drop a proper kernel into <filename>/tftpboot</filename>, e.g. <filename>netbsd.IP22</filename>.
-	</listitem>
-
-     <listitem> Tell the PROM to do a netboot, loading the "netbsd.IP22"
-          kernel: 
-     <programlisting>&gt;&gt; <emphasis role="bold">boot -f bootp():/netbsd.IP22</emphasis>
-Setting $netaddr to 10.0.0.15 (from server 10.0.0.3)
-Obtaining /netbsd-IP22 from server 10.0.0.3
-...</programlisting>
-     </listitem>
-
-     <listitem> When asked for root device, enter "<code>?</code>" to get a list of
-          choices. E.g. "<code>sq0</code>" is the Indy's ethernet.</listitem>
-     <listitem> Just press RETURN for the dump device</listitem>
-     <listitem> Unless you have prepared your disk to boot from it, your
-          root filesystem will most probably be via nfs, so give that
-          for root device: "<code>nfs</code>". </listitem>
-     </orderedlist>
-
-     If you encounter trouble, use &man.tcpdump.8; or pkgsrc/net/wireshark
-     to debug the network traffic. See the Irix
-     <ulink url="http://www.mcsr.olemiss.edu/cgi-bin/man-cgi?prom">prom</ulink>
-     manpage for more help on PROM commands.</listitem>
-
-<listitem> Then prepare a second hard disk with NetBSD's FFS and
-     disklabel. You then tell the kernel to use root/swap on the second
-     disk. The firmware can't currently boot the kernel from an FFS
-     filesystem, though, and you'll need to boot that via the net for
-     now.</listitem>
-</itemizedlist>
-</para>
-
-<para>
-To start bootstrapping, the following files are needed:
-</para>
-
-<variablelist>
-<varlistentry>
-<term>Snapshot:</term>
-<listitem><ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/snapshot/">ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/snapshot/</ulink>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>Kernel:</term>
-<listitem><ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/netbsd.ip32">ftp://ftp.NetBSD.org/pub/NetBSD/arch/sgimips/netbsd.ip32</ulink></listitem>
-</varlistentry>
-</variablelist>
-</sect3>
-
-<sect3 id="crosscompiling">
-<title>How to crosscompile a sgimips kernel?</title>
-<para>
-
-NetBSD 1.6 and later systems have full support for cross-compilation
-of the base system, even as a non-root user and even on non-NetBSD hosts.
-See the <ulink url="../../docs/cross/">Cross-building NetBSD</ulink>
-under <ulink url="../../docs/">NetBSD Documentation pages</ulink>
-for details.
-</para>
-</sect3>
-
-<sect3 id="cross-build-boot-cd">
-<title>How can I cross-build an sgimips bootable install CD?</title>
-<para>
-Follow the <ulink url="#crosscompiling">crosscompiling instructions</ulink> to
-cross-build an sgimips release (ie <code>build.sh release</code>), then go to
-the <filename>src/etc</filename> directory and use the nbmake-sgimips wrapper
-created in your tool directory to make a bootable cd:
-</para>
-<programlisting>$TOOLDIR/bin/nbmake-sgimips iso-image</programlisting>
-<para>
-The resulting image can be burnt to CD-RW using your regular cd-writing tools.
-</para>
-</sect3>
-
 <sect3 id="resetting-eaddr">
-<title>How to reset $eaddr on IP22 etc.?</title>
+<title>How do I reset $eaddr on IP22 etc.?</title>
 <para>
 Here's a method to set the ethernet address that works on at
 least the Indy, and perhaps also other machines with HPC3's.
@@ -253,7 +126,7 @@ OS (SASH) version installed:
 
 <orderedlist>
 <listitem> Old versions of SASH have an issue with incorrectly reporting
-     the memory map... If the kernel panics with a UVM related msg
+     the memory map. If the kernel panics with a UVM related message
      on boot (even before the copyright message), try booting the
      kernel directly from the PROM rather than via sash (An I2 also
      had this problem before upgrading to IRIX 6.x -- it was running
@@ -274,9 +147,9 @@ When installing NetBSD using sysinst, it will leave space at the start of the
 disk for the partition that will be used by the PROM to load the bootloader,
 etc. This partition is called the Volume Header.
 This needs to be a minimum of 3135 blocks (see SGI_BOOT_BLOCK_SIZE_VOLHDR in
-/usr/include/sys/bootblock.h). An example disklabel is shown below.
-Partition i will be used for the Volume Header as is SGI convention
-(partition 8). 
+<filename>/usr/include/sys/bootblock.h</filename>). An example disklabel is
+shown below.  Partition <code>i</code> will be used for the Volume Header as
+is SGI convention (partition 8). 
 </para>
 <programlisting>
 sgimips# disklabel sd0
@@ -325,7 +198,7 @@ volume header:
 <para>
 You can have multiple bootloaders present (with different
 names). This is very useful when booting different versions of NetBSD
-(e.g. to upgrade from NetBSD 3 to -current using a new INSTALL kernel) as
+(e.g., to upgrade from NetBSD 3 to 5.0 using a new INSTALL kernel) as
 changes in bootinfo mean that NetBSD 4.0 and earlier kernels will not work
 with a newer bootloader.
 </para>
