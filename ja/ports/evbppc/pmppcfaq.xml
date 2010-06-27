@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+ PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+        "http://www.NetBSD.org/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-pmppc-faq">
+<config param="desc" value="NetBSD/pmppc Frequently Asked Questions"/>
+<config param="cvstag" value="$NetBSD: pmppcfaq.xml,v 1.1 2009/08/15 02:26:44 snj Exp $"/>
+<config param="rcsdate" value="$Date: 2009/08/15 02:26:44 $"/>
+<head>
+
+<!-- Copyright (c) 1998-2007
+	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
+
+<title>Frequently Asked Questions about Artesyn's PM/PPC boards</title>
+</head>
+
+<sect1 role="toc">
+
+<sect2 id="intro">
+<title>Introduction</title>
+<sect3 id="about">
+<title>About this FAQ</title>
+<para>
+Here are some frequently asked questions (and answers) about
+Artesyn's PM/PPC boards.
+</para>
+<para>
+This FAQ is very much a work in progress. If you have additional
+information, questions, or answers, send mail to
+<email>port-powerpc@NetBSD.org</email>.
+</para>
+</sect3>
+</sect2>
+
+<sect2 id="general">
+<title>General Problems/Questions</title>
+
+<sect3 id="booting">
+<title>How do I boot &os;?</title>
+<para>
+&os; is booted over the network.  You need two things: a TFTP
+server to load the kernel image and an NFS server for the file
+systems.</para>
+<para>
+The &os; kernel has been relocated for loading at address 0x40000,
+so the Artesyn monitor has to be set up for this load address.  Use
+the monitor commands <command>nvdisplay</command> and
+<command>nvupdate</command> to configure the boot parameters, and
+<command>boottftp</command> to boot.</para>
+</sect3>
+
+<sect3 id="pci">
+<title>Can &os; configure the PCI devices?</title>
+<para>
+&os; can configure the PCI devices if the option PCI_NETBSD_CONFIGURE
+is used.  This may not work if the firmware also configures
+the devices.  The firmware configuration can be turned off
+using <command>nvdisplay</command>.</para>
+</sect3>
+
+<sect3 id="flash">
+<title>Can the &os; kernel be flashed?</title>
+<para>
+Yes, the same kernel that is booted over TFTP can be flashed.
+The steps are:</para>
+<itemizedlist>
+<listitem><para> Get the kernel into memory:</para>
+<screen> tftp_get kernel-name 40000</screen>
+</listitem>
+<listitem><para> Write it to flash.  The size of the kernel is reported by tftp_get.
+Use it in the command to copy from RAM to flash:</para>
+<screen> flashblkwr 40000 70000000 size</screen>
+</listitem>
+<listitem><para> Use <command>nvdisplay</command> to make sure that <varname>CopyToLoadAdr</varname> is
+set, that <varname>RomBase=70000000</varname>, and that <varname>RomSize</varname> is large
+enough to copy the whole kernel.</para>
+</listitem>
+</itemizedlist>
+</sect3>
+</sect2>
+
+<sect2 id="other_info">
+<title>Other sources of information</title>
+
+<sect3 id="other_info_nbsd">
+<itemizedlist>
+<listitem><para><ulink
+url="../../docs/network/netboot/">Diskless NetBSD HOW-TO</ulink>.</para></listitem>
+<listitem><para><ulink url="../../docs/Hardware/Misc/serial.html">NetBSD Serial 
+Port Primer</ulink></para></listitem>
+<listitem><para><ulink url="../../docs/">General NetBSD Documentation</ulink>
+    - for questions not specific to NetBSD/pmppc.</para></listitem>
+</itemizedlist>
+</sect3>
+</sect2>
+</sect1>
+
+<parentsec url="./" text="NetBSD/evbppc port page"/>
+</webpage>
