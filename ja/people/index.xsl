@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE xsl:stylesheet [<!ENTITY nbsp "&#160;">]>
 
-<!-- $NetBSD: index.xsl,v 1.3 2007/07/29 12:09:14 pavel Exp $ -->
+<!-- $NetBSD: index.xsl,v 1.4 2010/02/20 17:28:15 hubertf Exp $ -->
 
 <!-- Copyright (c) 1994-2006
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -19,6 +19,11 @@
     <xsl:variable name="note"><xsl:value-of select="note"/></xsl:variable>
     <xsl:variable name="key"><xsl:value-of select="key"/></xsl:variable>
     <tr>
+      <xsl:if test="not(contains($email, '@'))">
+       <xsl:attribute name="id">
+         <xsl:value-of select="email"/>
+       </xsl:attribute>
+      </xsl:if>
       <td>
         <xsl:attribute name="bgcolor">#f1f1f1</xsl:attribute>
 	<xsl:attribute name="class">developerslist</xsl:attribute>
