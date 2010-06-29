@@ -5,10 +5,10 @@
 
 <webpage id="ja-docs-network-pppoe-index">
 <config param="desc" value="NetBSD ドキュメンテーション: PPPoE (DSL) 経由の接続手順"/>
-<config param="cvstag" value="$NetBSD: index.xml,v 1.1 2007/06/09 11:34:21 dsieger Exp $"/>
+<config param="cvstag" value="$NetBSD: index.xml,v 1.2 2010/02/15 20:47:34 hubertf Exp $"/>
 <!-- Based on english version: -->
-<!-- NetBSD: index.xml,v 1.1 2007/06/09 11:34:21 dsieger Exp   -->
-<config param="rcsdate" value="$Date: 2007/06/09 11:34:21 $"/>
+<!-- NetBSD: index.xml,v 1.2 2010/02/15 20:47:34 hubertf Exp   -->
+<config param="rcsdate" value="$Date: 2010/02/15 20:47:34 $"/>
 <head>
 <!-- Copyright (c) 1994-2004
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
@@ -555,8 +555,63 @@ ISDN でのものとは異なることに注意してください。 DSL でのユーザー名は
 <ulink url="#t-online">T-Online のアカウント名に関する一般的な情報</ulink>
 の節を参照してください。
 </para>
-
 </sect3>
+
+<sect3 id="pppoe-server">
+<title>PPPoE サーバーのセットアップ</title>
+<para>
+  PPPoE のテストをしたいが DSL 回線がない場合は、どうすればいいでしょうか?
+  もちろん、その場合は自分で PPPoE サーバーをセットアップするのです。
+  &man.pppoe.4; マニュアルページに、必要な情報はほぼすべて載っています。
+
+<itemizedlist>
+  <listitem> <para>
+    カーネルに "options PPPOE_SERVER" が含まれていることを確認します。
+  </para> </listitem>
+  <listitem> <para>
+    サーバーの pppoe0 インターフェースに link0 フラグをセットします。
+  </para> </listitem>
+  <listitem> <para>
+    ローカルおよびリモートの IP アドレスとして、それぞれで使いたいアドレスを設定します。
+    たとえば、サーバーで 10.3.3.1 を使い、
+    クライアントで 10.3.3.2 を使いたい場合は、
+    /etc/ifconfig.pppoe0 ファイルの最後の行を、"0.0.0.0 0.0.0.1 up" ではなく
+    "10.3.3.1 10.3.3.2 up" にします。
+  </para> </listitem>
+  <listitem> <para>
+    認証のために、クライアントで "my" になっている部分は
+    サーバーでは "his" に置き換えてください。たとえば、クライアントで "myauthproto"
+    となっている部分はサーバーでは "hisauthprot" となります。
+  </para> </listitem>
+</itemizedlist>
+</para>
+
+<para>
+  サーバーの /etc/ifconfig.pppoe0 ファイルの全文は、以下のとおりです。
+  <screen>
+create
+# Server:
+link0
+#
+! /sbin/ifconfig re1 up
+! /sbin/pppoectl -e re1 $int
+! /sbin/pppoectl $int hisauthproto=pap hisauthname='foobar@baz.com' hisauthsecret='oink' myauthproto=none
+10.3.3.1 10.3.3.3 up
+  </screen>
+</para>
+
+<para>
+  これに対応するクライアントの /etc/ifconfig.pppoe0 ファイルは、以下のとおりです。
+  <screen>
+create
+! /sbin/ifconfig re1 up
+! /sbin/pppoectl -e re1 $int
+! /sbin/pppoectl $int myauthproto=pap 'myauthname=foobar@baz.com' 'myauthsecret=oink' hisauthproto=none
+0.0.0.0 0.0.0.1 up
+  </screen>
+</para>
+</sect3>
+
 </sect2>
 </sect1>
 </webpage>
