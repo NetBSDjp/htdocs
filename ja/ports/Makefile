@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.3 2008/08/29 20:10:09 tsutsui Exp $
+# $NetBSD: Makefile,v 1.4 2010/05/20 15:50:00 tsutsui Exp $
 
 SUBDIR+=	acorn26
 SUBDIR+=	acorn32
@@ -66,6 +66,6 @@ SUBDIR+=	x68k
 SUBDIR+=	xen
 SUBDIR+=	zaurus
 
-XMLDOCS+=	index emulators
+XMLDOCS+=	index emulators history
 
 .include "../share/mk/web.site.mk"
