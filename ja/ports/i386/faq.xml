@@ -5,8 +5,8 @@
 
 <webpage id="ports-i386-faq">
 <config param="desc" value="NetBSD/i386 Frequently Asked Questions"/>
-<config param="cvstag" value="$NetBSD: faq.xml,v 1.8 2009/08/03 22:55:59 snj Exp $"/>
-<config param="rcsdate" value="$Date: 2009/08/03 22:55:59 $"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.9 2009/09/19 17:11:04 snj Exp $"/>
+<config param="rcsdate" value="$Date: 2009/09/19 17:11:04 $"/>
 <head>
 
 <!-- Copyright (c) 2006
@@ -17,122 +17,36 @@
 
 <sect1 role="toc">
 
-  <sect2 id="partitioning">
-    <title>Disk partitioning/booting</title>
-
-    <sect3 id="boot-floppy-too-big">
-      <title>Boot floppy is too large to fit</title>
-      <para>
-        If you download the boot.fs image in 'ascii' mode (the default for the
-        Windows FTP client and some browsers), it will automatically convert any
-        newlines into carriage return/newline pairs, which renders the image
-        useless (in addition to too large to fit onto the floppy).
-      </para>
-      <para>
-        If you are using the Windows FTP client you should type 'bin' to select
-        binary mode before downloading the files.
-      </para>
-      <para>
-        If you are using some other method you may find it easier to download the
-        boot.fs.gz file and use winzip to uncompress into boot.fs.
-      </para>
-    </sect3>
-
-    <sect3 id="540mb-bios-limit">
-      <title>Using large drives on machines with a 540MB BIOS limit</title>
-      <para>
-        Enter a geometry of 1024/16/63 in the BIOS, and be sure to have
-        your boot partition within the first 540M (so that the kernel
-        can be loaded by BIOS routines). NetBSD will then be able to
-        use the whole disk.
-      </para>
-    </sect3>
-
-    <sect3 id="determining_geometry">
-      <title>How to determine a "correct" disk geometry</title>
-      <para>
-        NetBSD uses the PC BIOS to load the boot program. In order for this to work
-        both NetBSD and the BIOS must agree on the disk geometry (at least the part
-        containing the boot partition).
-      </para>
-      <para>
-        The BIOS in PCs can only cope with a certain number of cylinders, heads, and
-        sectors per disk (<ulink url="#bios_disk_limits">see table</ulink>). (This includes
-        BIOSes on SCSI cards).
-      </para>
-      <para>
-        Since many drives' real geometry cannot fit within these limitations a modern
-        BIOS will 'translate' the geometry by picking fictitious values that multiply
-        out to the same total size (or slightly less).
-      </para>
-      <para>
-        If a disk has a valid DOS MBR partition, (created by DOS, Windows, pfdisk,
-        or similar) it will contain the "correct" BIOS geometry.
-        NetBSD will use this as the BIOS geometry during sysinst.
-        Unfortunately on an empty disk, or one without the MBR set up properly,
-        NetBSD will get the BIOS geometry wrong.
-        Ideally this information should be passed in from the boot program, but
-        there is no certain method of determining the mapping of bios disk to
-        netbsd disk, though it should be possible to improve on the current 0%
-        hitrate.
-      </para>
-      <para>
-        One method of determining the "correct" translated geometry is to use
-        'pfdisk':
-      </para>
-      <para>
-        <orderedlist>
-          <listitem>Download pfdisk from ftp.NetBSD.org (or a mirror), in <ulink
-            url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe">/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe</ulink>.</listitem>
-           <listitem>Run '<code>pfdisk <emphasis>0</emphasis></code>' (0 is the first disk, 1 the second, etc).</listitem>
-           <listitem>Type '<code>list</code>'.</listitem>
-           <listitem>Record geometry, reboot, and use for NetBSD.</listitem>
-         </orderedlist>
-       </para>
-       <para>
-         <emphasis role="bold"><anchor id="bios_disk_limits"/>BIOS disk parameter limits</emphasis>
-       </para>
-       <para>
-         <table border="2" id="bios_disk_limits_table">
-           <tr><th>Parameter</th><th>Bits used</th><th>Max value</th></tr>
-           <tr><td align="right">Cylinders</td>
-	       <td align="right">10</td><td align="right">1023</td></tr>
-           <tr><td align="right">Heads</td>
-	       <td align="right">8</td><td align="right">255</td></tr>
-           <tr><td align="right">Sectors per track</td>
-	       <td align="right">6</td><td align="right">63</td></tr>
-         </table>
-       </para>
-       <para>
-         (This limits drives to 8GBytes, at least from the BIOS' perspective).
-       </para>
-     </sect3>
+   <sect2 id="dualbooting">
+     <title>Getting along with other operating systems</title>
 
      <sect3 id="ms_partition">
        <title>Accessing Microsoft partitions</title>
        <para>
          NetBSD supports a number of different filesystems (for a complete list see
-         &man.fstab.5; including FAT, FAT32, NTFS4 and NTFS5 from Microsoft.
+         &man.fstab.5;) including FAT, FAT32, NTFS4 and NTFS5 from Microsoft.
          Currently only read support works reliably for NTFS filesystems.
          Long filenames are supported on both FAT and NTFS.
        </para>
        <para>
-         To access another filesystem you have to set up a correct "<code>disklabel</code>"
-         which tells the system where to find the data on the disk. With a correct
-         "<code>disklabel</code>" you are able to "<code>mount</code>" it for use with NetBSD.
+         To access another filesystem you have to set up a
+         <code>disklabel</code>, which tells the system where to find the
+         data on the disk. With a correct <code>disklabel</code> you are
+         able to <code>mount</code> it for use with NetBSD.
        </para>
        <para>
          <emphasis role="bold">Setting up the disklabel</emphasis>
        </para>
          <orderedlist>
            <listitem>Determine the disk containing the filesystem<html:br/>
-             If you only have a single IDE/ST506 or SCSI disk it will be <emphasis>wd0</emphasis> or
-             <emphasis>sd0</emphasis>, if you have multiple disks you should check the output from
-             "<code>dmesg | more</code>" to determine the correct disk's
-             name.</listitem>
+             If you only have a single disk it will be <emphasis>wd0</emphasis>
+             or <emphasis>sd0</emphasis>, depending on whether you have IDE
+             or SCSI. If you have multiple disks you should check the output
+             of <code>dmesg | more</code> to determine the name of the desired
+             disk.</listitem>
            <listitem>Determine the size and offset of the partition.<html:br/>
-             Type "<code>fdisk</code>" and you will see the size and offset of the partitions
-             which could be something like:
+             Type <code>fdisk</code> and you will see the size and offset of
+             the partitions which could be something like:
              <programlisting>
 NetBSD disklabel disk geometry:
 cylinders: 16938 heads: 15 sectors/track: 63 (945 sectors/cylinder)
@@ -166,9 +80,10 @@ Partition table:
              3. Windows 2000 NTFS5 inside an "extended" partition
            </para>
          </listitem>
-         <listitem>Type "<code>disklabel &lt;DISKNAME&gt;</code>"<html:br/>
-           If the disk contains only MS-DOS partitions NetBSD will automatically generate
-           a 'fake' disklabel containing an entry for the first MS-DOS partition.<html:br/>
+         <listitem>Type <code>disklabel &lt;DISKNAME&gt;</code><html:br/>
+           If the disk contains only MS-DOS partitions NetBSD will
+           automatically generate a 'fake' disklabel containing an entry
+           for the first MS-DOS partition.<html:br/>
            The output could look something like this:
 <programlisting>
 # disklabel wd0
@@ -199,19 +114,19 @@ Partition table:
            </para>
          </listitem>
          <listitem>Prepare to edit the disklabel<html:br/>
-            If you prefer to use an editor other than <emphasis>vi</emphasis> type
-            "<code>setenv EDITOR &lt;YOUR_EDITOR&gt;</code>", e.g., "<code>setenv EDITOR
-            pico</code>".
+           If you prefer to use an editor other than <emphasis>vi</emphasis>,
+           type <code>setenv EDITOR &lt;YOUR_EDITOR&gt;</code>, e.g.,
+           <code>setenv EDITOR pico</code>.
          </listitem>
-         <listitem>Edit the disklabel with "<code>disklabel -e &lt;DISKNAME&gt;</code>"<html:br/>
+         <listitem>Edit the disklabel with <code>disklabel -e &lt;DISKNAME&gt;</code><html:br/>
            Go down to the bottom of the disklabel and you are ready to edit your
            labels.
            <para>
              You need two things:
            </para>
            <orderedlist>
-             <listitem>The next unused partition letter (eg: 'f').</listitem>
-             <listitem>The 'start/size' value from fdisk (eg: '63').</listitem>
+             <listitem>The next unused partition letter (e.g., 'f').</listitem>
+             <listitem>The 'start/size' value from fdisk (e.g., '63').</listitem>
            </orderedlist>
            <para>
              Add a new line at the bottom that for NTFS reads:
@@ -239,50 +154,54 @@ Partition table:
   g:  4596480  7302960      MSDOS
 </programlisting>
            <para>
-             Notes on partitions: NetBSD/i386 currently only supports eight partitions per
-             disk ('a' - 'h'), also the 'number of partitions' line directly above the
-             partition table should be greater or equal to the number of partitions defined.
+             Note on partitions: NetBSD/i386 currently only supports eight
+             partitions per disk ('a' - 'h') and the 'number of partitions'
+             line directly above the partition table should be greater or
+             equal to the number of partitions defined.
            </para>
          </listitem>
          <listitem>Save and check the disklabel<html:br/>
-            Exit the editor, type "<code>disklabel &lt;DISKNAME&gt;</code>", and confirm your
-            new partition is visible.
+            Exit the editor, type <code>disklabel &lt;DISKNAME&gt;</code>,
+            and confirm your new partition is visible.
          </listitem>
        </orderedlist>
        <para>
          <emphasis role="bold"><anchor id="ms_partition_mounting"/>Mounting the filesystem</emphasis>
        </para>
        <para>
-         Every disk partition has a device entry in '/dev', the form of such an
-         entry is '/dev/' followed by the diskname, followed by the partition letter.
-         In the above example the device entry for the NTFS and MS-DOS partitions would
-         be '/dev/wd0f' and '/dev/wd0g' respectively.
+         Every disk partition has a device entry in <filename>/dev</filename>.
+         The form of such an entry is <filename>/dev/</filename> followed by
+         the disk name, followed by the partition letter.  In the above
+         example, the device entry for the NTFS and MS-DOS partitions would
+         be <filename>/dev/wd0f</filename> and <filename>/dev/wd0g</filename>
+         respectively.
        </para>
 
        <orderedlist>
          <listitem>Create a mountpoint for each partition<html:br/>
-           "<code>mkdir &lt;MOUNTPOINT&gt;</code>", eg: "<code>mkdir /msdos</code>" and
-           "<code>mkdir /nt4</code>".</listitem>
+           <code>mkdir &lt;MOUNTPOINT&gt;</code>, e.g., <code>mkdir /msdos</code> and
+           <code>mkdir /nt4</code></listitem>
          <listitem>Mount the filesystems<html:br/>
-           "<code>mount -t &lt;TYPE&gt; &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;</code>",
-           eg: "<code>mount -t msdos /dev/wd0g /msdos</code>" and "<code>mount -t ntfs
-           /dev/wd0f /nt4</code>".</listitem>
-         <listitem>Check all is ok<html:br/>
-           "<code>ls &lt;MOUNTPOINT&gt;</code>", eg: "<code>ls /msdos</code>" and "<code>ls
-           /nt4</code>".</listitem>
-         <listitem>Set filesystems to be automatically mounted on boot<html:br/>
-           If you want NetBSD to automatically mount the filesystems every time it
-           boots you should edit <emphasis>/etc/fstab</emphasis> and add lines of the form:
+           <code>mount -t &lt;TYPE&gt; &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;</code>,
+           e.g., <code>mount -t msdos /dev/wd0g /msdos</code> and <code>
+           mount -t ntfs /dev/wd0f /nt4</code></listitem>
+         <listitem>Check all is OK<html:br/>
+           <code>ls &lt;MOUNTPOINT&gt;</code>, e.g., <code>ls /msdos</code> and
+           <code>ls /nt4</code></listitem>
+         <listitem>Set filesystems to be automatically mounted at boot<html:br/>
+           If you want NetBSD to automatically mount the filesystems every
+           time it boots, you should edit <filename>/etc/fstab</filename> and
+           add lines of the form:
 <programlisting>
     &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  msdos   rw
-    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  ntfs    rw
+    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  ntfs    ro
 </programlisting>
            <para>
              Again, in the above example this would be:
            </para>
 <programlisting>
     /dev/wd0g /msdos  msdos   rw
-    /dev/wd0f /nt4    ntfs    rw
+    /dev/wd0f /nt4    ntfs    ro
 </programlisting>
          </listitem>
        </orderedlist>
@@ -310,10 +229,10 @@ Partition table:
          <emphasis role="bold">Method 1) Use the NetBSD mbr code</emphasis>
        </para>
        <para>
-         Use the NetBSD mbr code which allows you to override options at boot time if
-         required. This requires a working, bootable NetBSD installation.
-         The NetBSD mbr code is installed in an empty file using the fdisk
-         command in NetBSD
+         Use the NetBSD mbr code which allows you to override options at
+         boot time if required. This requires a working, bootable NetBSD
+         installation.  The NetBSD mbr code is installed in an empty file
+         using the fdisk command in NetBSD.
        </para>
        <para>
          In this example, Windows Server 2003 is on disk 0 and a NetBSD 4.0
@@ -416,7 +335,7 @@ C:\BOOT.INI updated
        <para>
          The advantages of this method are that you have the wider array of
          grub options open to you, plus the kernel can be loaded from NTFS
-         (if that is appropriate to your needs, usually you'd just load it
+         (if that is appropriate to your needs; usually you'd just load it
          from the root of your NetBSD installation). For instance, you might
          like to have a NetBSD recovery or installation kernel handy for
          troubleshooting even on a machine without a full NetBSD
@@ -453,115 +372,28 @@ C:\grldr="NetBSD GRUB"
     </sect3>
 
     <sect3 id="fips">
-      <title>Installing NetBSD on a disk which currently is entirely used by Dos/Windows</title>
+      <title>Installing NetBSD on a disk which currently is entirely used by DOS/Windows</title>
+      <para>Note: this only applies to FAT filesystems.</para>
       <para>
         If you have an installation where DOS/Windows currently occupies the
-        whole disk, you can if there is space left on the drive, make the 
-        DOS/Windows partition smaller and then build a second partition to use
+        whole disk, if there is space left on the drive you can make the 
+        DOS/Windows partition smaller and then create a second partition to use
         with NetBSD.
       </para>
       <para>
         The steps involved in this are
       </para>
       <itemizedlist>
-        <listitem>Moving all data of the DOS partition to the start of that
+        <listitem>Move all data of the DOS partition to the start of that
           partition using the tool <emphasis>defrag</emphasis></listitem>
-        <listitem>Resizing the DOS partition using a tool called <emphasis>FIPS</emphasis>.
-          Fips can be obtained from the <ulink
-          url="http://www.igd.fhg.de/~aschaefe/fips/">FIPS WWW Site</ulink>.
+        <listitem>Resize the DOS partition using a tool called <emphasis>FIPS</emphasis>.
+          FIPS can be obtained from the <ulink
+          url="http://bmrc.berkeley.edu/people/chaffee/fips/fips.html">FIPS
+          web site</ulink>.
           Be sure to read all the documentation!</listitem>
-        <listitem>Installing a bootloader as described <ulink url="#dual_boot">above</ulink></listitem>
-        <listitem>Installing NetBSD</listitem>
+        <listitem>Install a bootloader as described <ulink url="#dual_boot">above</ulink></listitem>
+        <listitem>Install NetBSD</listitem>
       </itemizedlist>
-    </sect3>
-
-    <sect3 id="new_sysid">
-      <title>Changing the partition sysid from 'old NetBSD or FreeBSD'</title>
-      <para>
-        From 1.3.3 onwards NetBSD has changed the default partition sysid from 165
-        to 169. This is to avoid a conflict with FreeBSD.
-        A 1.3.3 (or newer) system will still boot from a partition with sysid 165, it will just
-        give a warning each time it opens the partition.
-        To convert a disk partition from 165 to 169, perform the following steps:
-      </para>
-      <orderedlist>
-        <listitem><emphasis role="bold">Ensure you have a bootable 1.3.3 (or newer) floppy</emphasis><html:br/>
-           This is just in case something goes wrong. To boot the installed
-           system from the floppy, boot the floppy, press space during
-           the countdown and select '<code><emphasis role="bold">boot hd0:</emphasis></code>'.</listitem>
-        <listitem><emphasis role="bold">Ensure you have bootblocks that understand the new ID</emphasis><html:br/>
-          If the system has been installed with a 1.3.3 or later sysinst you
-          <emphasis>should</emphasis> be ok, otherwise run
-          <itemizedlist>
-            <listitem>'<code><emphasis role="bold">/usr/mdec/installboot biosboot.sym /dev/r{DISK}a</emphasis></code>'.</listitem>
-          </itemizedlist>
-
-          If your kernel does not have '<code>options INSECURE</code>' enabled
-          you will need to shutdown to single user mode:
-
-          <itemizedlist>
-            <listitem>'<code><emphasis role="bold">shutdown now</emphasis></code>'</listitem>
-	    <listitem>press ENTER when prompted for a shell</listitem>
-	    <listitem>'<code><emphasis role="bold">fsck -p</emphasis></code>'</listitem>
-	    <listitem>'<code><emphasis role="bold">mount -vat ffs</emphasis></code>'</listitem>
-	    <listitem>'<code><emphasis role="bold">cd /usr/mdec ; ./installboot biosboot.sym
-		/dev/r{DISK}a</emphasis></code>'</listitem>
-          </itemizedlist>
-
-          Where {DISK} is <code>wd0</code> for the first ATA (IDE) disk,
-          <code>sd0</code> for the first SCSI disk, etc.</listitem>
-
-        <listitem><emphasis role="bold">Change the partition id</emphasis><html:br/>
-          Run '<code><emphasis role="bold">fdisk {DISK}</emphasis></code>'.
-          One partition will be indicated as:
-<programlisting>
-X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
-</programlisting>
-          Where X will be 0, 1, 2, or most likely 3.
-          Run '<code><emphasis role="bold">fdisk -u -X {DISK}</emphasis></code>'
-
-         <orderedlist>
-           <listitem><code><emphasis role="bold">ENTER</emphasis></code> to :
-	     <code>Do you want to change our idea of what BIOS thinks? [n]</code></listitem>
-           <listitem><code><emphasis role="bold">y ENTER</emphasis></code> to :
-	     <code>Do you want to change it? [n]</code></listitem>
-           <listitem><code><emphasis role="bold">169 ENTER</emphasis></code> to :
-	     <code>Supply a decimal value for "sysid" [165]</code></listitem>
-           <listitem><code><emphasis role="bold">ENTER</emphasis></code> to :
-	     <code>Supply a decimal value for "start" [......]</code></listitem>
-           <listitem><code><emphasis role="bold">ENTER</emphasis></code> to :
-	     <code>Supply a decimal value for "size" [.......]</code></listitem>
-           <listitem><code><emphasis role="bold">ENTER</emphasis></code> to :
-	     <code>Explicitly specify beg/end address? [n]</code></listitem>
-           <listitem><code><emphasis role="bold">y ENTER</emphasis></code> to :
-	     <code>Is this entry okay? [n]</code></listitem>
-           <listitem><code><emphasis role="bold">y ENTER</emphasis></code> to :
-	     <code>Should we write new partition table? [n]</code></listitem>
-         </orderedlist>
-       </listitem>
-       <listitem><emphasis role="bold">Reboot to confirm all works.</emphasis><html:br/>
-         If you hit any problems you can use fdisk on the boot floppy to
-         reset the values back.
-       </listitem>
-       <listitem><emphasis role="bold">Be particularly relieved that NetBSD should not need to change its
-         partition ID again.</emphasis><html:br/>
-       </listitem>
-     </orderedlist>
-   </sect3>
-
-    <sect3 id="stale-lilo">
-      <title>After installing, I'm just getting <code><emphasis role="bold">LI</emphasis></code> when I reboot</title>
-      <para>
-        A stale LILO is causing your problem.  To fix this you'd want to:
-      </para>
-
-      <orderedlist>
-        <listitem>Boot from the sysinst floppy</listitem>
-        <listitem>Exit the installation system by selecting '<code><emphasis role="bold">Run /bin/sh</emphasis></code>'
-	  from the Utility menu.</listitem>
-        <listitem>Type '<code><emphasis role="bold">fdisk -if</emphasis></code>'</listitem>
-        <listitem>Reboot</listitem>
-      </orderedlist>
     </sect3>
 
     <sect3 id="dosboot">
@@ -579,7 +411,7 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
         The Windows 98 CD is a fine 
         way to get a (real!) MS-DOS prompt if your machine has Windows
         Millennium Edition (Windows ME) installed, and if booting from
-        floppy is not an option, as it's often the case with modern
+        floppy is not an option, as is often the case with modern
         laptops.
         You can press 
         shift+F5 to not load any drivers like "highmem.sys" (see above)
@@ -590,33 +422,6 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
       </para>
     </sect3>
 
-    <sect3 id="onefloppy">
-      <title>How do I make a one-floppy NetBSD system?</title>
-      <para>
-	Recently Lex Wennmacher added the package
-	<filename role="pkg">sysutils/fdgw</filename> to pkgsrc. The package is a tool to
-	build one-floppy NetBSD systems. One application is to
-	turn a PC without a hard disc into a cheap router.
-      </para>
-      <para>
-	There are two images that you can download from the main NetBSD 
-	ftp site. The <ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/misc/wennmach/adslrouter.img">ADSL router</ulink> image has enough on it to provide a
-	basic ADSL router system. The 
-	<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/misc/wennmach/natbox.img">NAT router</ulink> image is designed to provide a simple NAT router.
-      </para>
-      <para>
-	The images can be put onto a floppy using the <code>dd</code> command. 
-	For example,
-	<blockquote><code>dd if=adslrouter.img of=/dev/rfd0a bs=18k</code></blockquote>
-      </para>
-      <para>
-	Although both one-floppy NetBSD systems contain all the files required
-	for proper operation, some customization is required (e. g. to define
-	IP addresses and ipf filter rules). Please refer to
-	<ulink url="http://www.fml.org/software/fdgw/">Ken'ichi Fukamachi's
-	fdgw home page</ulink> for details. 
-      </para>
-    </sect3>
   </sect2>
 
   <sect2 id="specific-hardware">
@@ -652,12 +457,12 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
           <listitem>Compile a new kernel to match the card settings.</listitem>
           <listitem>Buy a different card - in modern PCI PCs an ISA network
 	    card can seriously impact the performance of other devices
-	    - a PCI card such as an &man.fxp.4; (Intel etherexpress-pro),
+	    - a PCI card such as an &man.fxp.4; (Intel EtherExpress Pro),
 	    or &man.tlp.4; (Tulip or clone) is recommended.</listitem>
           <listitem>Manually change the kernel settings with &man.ddb.4;.
             <orderedlist>
 	      <listitem>Boot the kernel with '<code><emphasis role="bold">-d</emphasis></code>' (Hit the space
-	        bar, before boot countdown reaches 0), then type '<code><emphasis role="bold">boot
+	        bar before boot countdown reaches 0), then type '<code><emphasis role="bold">boot
 	        netbsd -d</emphasis></code>'.</listitem>
 	      <listitem>Enter <code><emphasis role="bold">x/xla loc,100</emphasis></code>.
 	        Record the offsets of fields with <code>0x280</code> in them.
@@ -682,57 +487,6 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
         Setup". When enabled you will usually see the 'Serial Controller'
         listed with an IRQ on the BIOS screen just before it starts
         booting NetBSD.
-      </para>
-    </sect3>
-
-    <sect3 id="cyrix-486dlc-cache">
-      <title>What is '<code>WARNING: CYRIX 486DLC CACHE UNCHANGED</code>'?</title>
-      <para>
-        This message indicates the kernel has detected a Cyrix 486DLC and since
-        it does not know if it is safe on this machine, the Cyrix special cache
-        settings have not been touched. This should only affect the Cyrix
-        '386/486 hybrid' upgrade for 386 motherboards, and should not apply in
-        any way to true 486 (or later) processors from any vendor, including
-        Cyrix.
-      </para>
-      <para>
-        Many 386 motherboards (and CPUs) were too primitive to care about CPU
-        cache coherency, requiring the DLC to flush its cache any time a bus
-        hold was asserted by any bus device (indicating that a bus-master
-        transaction was potentially in progress). This obviously results in a
-        speed cost compared to running with full cache coherency.
-      </para>
-      <para>
-        There are two kernel options that can be set to affect the Cyrix cache:
-      </para>
-
-      <itemizedlist>
-        <listitem><code><emphasis role="bold">options CYRIX_CACHE_WORKS</emphasis></code><html:br/>
-          This enables the CPUs cache, but tells it to flush the cache on
-          every external bus hold request.  Slower than a true 486, but
-          faster than a 386 (which has no on-chip cache). This should work on
-          most motherboards.</listitem>
-
-        <listitem><code><emphasis role="bold">options CYRIX_CACHE_REALLY_WORKS</emphasis></code><html:br/>
-          This should only be used on motherboards specifically designed for
-          the 486DLC/486DRX, which have correct and complete bus-mastering
-          and cache coherency support (These are hard to find).  This option
-          lets the cache run full out without flushing on bus holds, as real
-          486s would.</listitem>
-      </itemizedlist>
-      <para>
-        By leaving them both undefined, the chip will run with whatever the
-        BIOS sets up. Most BIOSs will not set any of the cache options, which
-        is safest, but will give the least performance boost. If you have a
-        true 486DLC/486DRX motherboard, or a DLC/DRX-aware BIOS, you may
-        automatically get some of the performance boost listed above.
-      </para>
-      <para>
-        It's worth some experimentation.  The system should fail fairly
-        quickly after boot if the motherboard cannot support the option.
-        Then just build a kernel with less aggressive optimizations.  (Of
-        course, don't overwrite your non-optimized kernel -- you'll need it to
-        reboot if your new kernel doesn't work!)
       </para>
     </sect3>
 
@@ -826,265 +580,93 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
     </sect3>
   </sect2>
 
-  <sect2 id="x-system">
-    <title>Running the X Window System</title>
+  <sect2 id="partitioning">
+    <title>Disk issues with old machines</title>
 
-    <sect3 id="x_needs_insecure_kernel">
-      <title>X will only run with an INSECURE kernel, or in single user mode</title>
+    <sect3 id="540mb-bios-limit">
+      <title>Using large drives on machines with a 540MB BIOS limit</title>
       <para>
-        When run without '<code>options INSECURE</code>' NetBSD will disallow direct
-        access to /dev/mem. If you use a graphics board which requires, or can
-        benefit from, linear memory access you should install the Aperture Driver 
-        from the <ulink url="../../docs/software/packages.html">NetBSD packages
-        collection</ulink> (use "<code>make install</code>" in
-        <filename role="pkg">sysutils/aperture</filename>).
-        This will permit the X server to directly access the VGA framebuffer even if
-        kernel security level is &gt; 0.
+        Enter a geometry of 1024/16/63 in the BIOS and be sure to have
+        your boot partition within the first 540M (so that the kernel
+        can be loaded by BIOS routines). NetBSD will then be able to
+        use the whole disk.
       </para>
     </sect3>
 
-    <sect3 id="xf86mapvidmem-error">
-      <title>X fails with "Fatal server error: xf86MapVidMem: Could not map /dev/vga (Invalid argument)"</title>
-      <para>
-        This is a symptom of the <ulink url="#x_needs_insecure_kernel">problem
-        described above</ulink>.
+    <sect3 id="determining_geometry">
+      <title>How to determine a "correct" disk geometry</title>
+      <para>NetBSD uses the PC BIOS to load the boot program. In order for
+      this to work, both NetBSD and the BIOS must agree on the disk geometry
+      (at least the part containing the boot partition).
       </para>
-    </sect3>
-
-    <sect3 id="x_and_ps2_mouse">
-      <title>X will not recognise a PS/2 mouse</title>
-      <para>
-        Up until 1.3.3 the default NetBSD/i386 GENERIC kernel does not have PS/2 mouse
-        support enabled. In order to enable PS/2 support you need to <ulink
-        url="../../docs/kernel/#how_to_build_a_kernel">build
-        a custom kernel</ulink>.
-        Follow the instructions given and at stage 4 when you edit &lt;MYCONF&gt;
-        you should search for the line:
-
-<programlisting>
-   '#pms0    at pckbd? irq 12'
-</programlisting>
-
-        remove the initial '#', then continue building the kernel.<html:br/>
-        When you boot you should now see a line in the boot messages
-        of the form 'pms0 at pc0' or 'pms0 at vt0'.
+      <para>The BIOS in PCs can only cope with a certain number of cylinders,
+      heads, and sectors per disk (<ulink url="#bios_disk_limits">see
+      table</ulink>). (This includes BIOSes on SCSI cards).
       </para>
-      <para>
-        When setting up Xfree86 you should select the 'wsmouse' Mouse Device and the
-        'wsmouse' protocol.
+      <para>Since modern drives' real geometry cannot fit within these
+      limitations, a modern BIOS will 'translate' the geometry by picking
+      fictitious values that multiply out to the same total size (or slightly
+      less).
       </para>
-    </sect3>
-
-    <sect3 id="x_scroll_mouse">
-      <title>How do I enable a wheel mouse?</title>
-      <para>
-        To enable wheel mouse operation, edit the <code>/etc/XF86Config</code> configuration
-        file and add
-<programlisting>
-   Option     "Buttons"       "5"
-   Option     "ZAxisMapping"  "4 5"
-</programlisting>
-        to the
-<programlisting>
-   Section "InputDevice"
-      Identifier  "Mouse1"
-</programlisting>
-        section of the file.
+      <para>If a disk has a valid DOS MBR partition, (created by DOS,
+      Windows, pfdisk, or similar) it will contain the "correct" BIOS
+      geometry.  NetBSD will use this as the BIOS geometry during sysinst.
+      Unfortunately, on an empty disk, or one without the MBR set up
+      properly, NetBSD will get the BIOS geometry wrong.  Ideally, this
+      information should be passed in from the boot program, but there is
+      no certain method of determining the mapping of BIOS disk to NetBSD
+      disk.
       </para>
-    </sect3>
-  </sect2>
-
-  <sect2 id="other">
-    <title>Other NetBSD/i386 FAQs</title>
-
-    <sect3 id="netscape">
-      <title>Can NetBSD/i386 run Firefox and Mozilla?</title>
-      <para>
-        Firefox and Mozilla have been ported
-        to run on NetBSD natively, and pre-built binary packages are
-        available through the <ulink
-        url="../../docs/software/packages.html">NetBSD packages collection</ulink>
-        (see <filename role="pkg">www/mozilla</filename> and <filename role="pkg">www/firefox</filename>).
+      <para>One method of determining the "correct" translated geometry is
+      to use 'pfdisk':
       </para>
       <para>
-        If you'd like to run binary-only plug-ins, such as Flash, you'll
-	need to use Linux emulation. There are pkgsrc packages
-	for many plugins available already, eg
-	<filename role="pkg">multimedia/adobe-flash-plugin</filename>,
-	that also know which dependencies they have, so if you pkg_add
-	them you ought to be fine.
-      </para>
-    </sect3>
+        <orderedlist>
+          <listitem>Download pfdisk from ftp.NetBSD.org (or a mirror), in <ulink
+            url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe">/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe</ulink>.</listitem>
+           <listitem>Run '<code>pfdisk <emphasis>0</emphasis></code>' (0 is the first disk, 1 the second, etc).</listitem>
+           <listitem>Type '<code>list</code>'.</listitem>
+           <listitem>Record geometry, reboot, and use for NetBSD.</listitem>
+         </orderedlist>
+       </para>
+       <para>
+         <emphasis role="bold"><anchor id="bios_disk_limits"/>BIOS disk parameter limits</emphasis>
+       </para>
+       <para>
+         <table border="2" id="bios_disk_limits_table">
+           <tr><th>Parameter</th><th>Bits used</th><th>Max value</th></tr>
+           <tr><td align="right">Cylinders</td>
+	       <td align="right">10</td><td align="right">1023</td></tr>
+           <tr><td align="right">Heads</td>
+	       <td align="right">8</td><td align="right">255</td></tr>
+           <tr><td align="right">Sectors per track</td>
+	       <td align="right">6</td><td align="right">63</td></tr>
+         </table>
+       </para>
+       <para>
+         (This limits drives to 8GBytes, at least from the BIOS' perspective).
+       </para>
+     </sect3>
 
-    <sect3 id="quake2">
-      <title>Running Quake II for GNU/LINUX under NetBSD</title>
-      <para>
-        It is assumed that you already have <ulink url="./">NetBSD
-        i386</ulink> up and running.  You may also need to know how to <ulink
-        url="../../docs/kernel/#how_to_build_a_kernel">build
-        a kernel</ulink>.  These instructions are relative to the 1.4 (or
-        newer) family of NetBSD releases,
-        <ulink url="http://www.idsoftware.com/games/quake/quake2/">Quake II</ulink>
-        v3.20, and the NetBSD <ulink
-        url="../../docs/software/packages.html">package</ulink> set
-        called suse_* v6.4 in <filename role="pkg">emulators</filename>.
-      </para>
-      <para>
-        Other (especially later) versions will probably work at least as well.
-      </para>
-      <para>
-        Some caveats before you start:
-      </para>
+   </sect2>
 
-      <itemizedlist>
-        <listitem>You will need a fair bit of available disk-space for
-          emulation binaries and for the Quake II game itself.</listitem>
-        <listitem>You will presumably have to install everything as
-          root.
-          This obviously means that you are trusting your system
-          integrity and security to the suse_* &amp; game authors.
-          For a more or less personal system, this is not such a problem;
-          use your best judgement.
-          I have no reason to suppose that either set of authors is
-          a particular threat, but the more complicated your system,
-          and the more that you blindly trust components,
-          the greater the danger.</listitem>
-        <listitem>The only graphics mode that Quake II supports correctly for me
-          is ``ref_softx'', while my X server is in 8-bit mode.
-          OpenGL does not seem to cooperate without ``glide'', and I
-          have no glide support for my card (an STB Nitro 3D).
-          Direct video supposedly works,
-          but I am missing the necessary libraries.
-          (This effectively means that you <emphasis role="bold">need</emphasis> to have
-          set up the X Window System on your system.)
-          The game actually plays in 24-bit X for me,
-          but it distorts the graphics: It uses the standard sized
-          windows, but horizontally squeezes the graphics by a factor of
-          two, leaving blank (black) the right side of the graphics
-          window.</listitem>
-       <listitem>The documentation claims that you can set up Quake II to
-         be run by any user.
-         For me, I <emphasis role="bold">have</emphasis> to run the game as root.</listitem>
-       <listitem>People successfully run Quake II servers under NetBSD;
-         however, I have yet to be able to <emphasis role="bold">play</emphasis> it in
-         network mode.  I don't know what the problem is.</listitem>
-     </itemizedlist>
-     <para>
-       Above all, read the instructions that came with Quake II.
-     </para>
-
-     <orderedlist>
-       <listitem>In NetBSD 1.4.X or newer, if you are <emphasis role="bold">not</emphasis> running
-         a GENERIC NetBSD kernel, you may need to enable COMPAT_LINUX in your kernel
-         config, rebuild, and reboot.</listitem>
-      <listitem>You need to have installed the <ulink
-         url="http://www.linux.org/">GNU/LINUX</ulink>-compatibility package
-         referenced above.
-         <emphasis>N.B.: The linux_* packages do <emphasis role="bold">not</emphasis> provide what
-          you need---although you may wish to lift the GNU/LINUX
-          version of BASH from that package.
-          (Because of the way emulation works,
-          having <emphasis role="bold">some</emphasis> shell running under emulation
-          may occasionally be useful.
-          But, it is <emphasis role="bold">not</emphasis> essential.)</emphasis></listitem>
-       <listitem>&man.mount.8; the distribution CD.</listitem>
-       <listitem>Change into the CD's root directory.</listitem>
-       <listitem>Run &man.sh.1; <code>/bin/sh setup</code>.</listitem>
-       <listitem>During setup, you will be asked about ``rpm'';
-         this is the Red-Hat Package Manager,
-         which is available from the NetBSD package system.
-         (rpm was designed for GNU/LINUX.)
-         However, when I tried to use it, the setup script
-         refused to take advantage of it.
-         Don't panic, though.
-         I simply accepted the default;
-         if you do this, setup will try to use &man.cpio.1;.
-         If you don't use rpm, setup will ask for the location of cpio;
-         under the NetBSD 1.4 family of releases, it is in
-         ``/usr/bin/cpio''.</listitem>
-      <listitem>Things should be fairly smooth, otherwise.
-        Your CD may start and stop several times during setup (mine did).
-        This appears not to be a problem.
-        Looking at my CD, I see distinct track boundaries on the CD-ROM,
-        and assume that it has something to do with how they recorded
-        the master CD-ROM.</listitem>
-    </orderedlist>
-    <para>
-      Tips and trouble shooting.
-    </para>
-
-    <itemizedlist>
-      <listitem>Do you dislike having visible window decorations?
-      If you browse your ../quake2/config.cfg file, you will find
-      two options that control horizontal offset (apparently defaults to 3)
-      and vertical offset (22).
-      Set these to 0 and the titlebar/borders go away.
-      This is of particular value if you are playing in a resolution
-      equal to your screen resolution.</listitem>
-      <listitem>Since the game depends upon GNU/LINUX,
-      you may wish to move Quake II into the GNU/LINUX
-      directory tree.
-      (This presumably will be done automatically if you use the
-      GNU/LINUX BASH to run the setup script.
-      If you run with the NetBSD sh,
-      Quake II will go into /usr/local/games.)</listitem>
-      <listitem>If Quake II exits complaining about not finding a file
-      called something like ``pics/colormap.pcx'',
-      then you are probably <emphasis role="bold">not</emphasis> running as root.
-      You may be able to fix it so that it works as non-root;
-      but the simplest fix is to su to root and play the game that way.</listitem>
-      </itemizedlist>
-    </sect3>
-
-    <sect3 id="windows_refund">
-      <title>Can you get a refund if you do not use Windows</title>
-      <para>
-        Some PC systems are only available with Microsoft Windows preinstalled.
-        Part of the cost of such a system is for the Windows licence.  If
-        you do not want to use Windows, then you may be entitled to a refund
-        from Microsoft.  This however is a complicated an lengthy process.
-      </para>
-      <para>
-        The best approach is to find (and support) a reseller who can
-        provide a PC without Windows altogether.
-      </para>
-    </sect3>
-
-    <sect3 id="kgdb">
-      <title>Debugging the NetBSD kernel via a serial line</title>
-      <para>
-        See the <ulink url="../../docs/kernel/kgdb.html">KGDB HOWTO</ulink>.
-      </para>
-    </sect3>
-  </sect2>
 </sect1>
 
 <sect2 id="other">
   <title>Other sources of information</title>
 
   <itemizedlist>
-    <listitem><ulink url="http://www.xfree86.org/help.html">XFree86 Documentation</ulink>
-    - for problems with installing or configuring X.</listitem>
-<listitem><ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/INSTALL.html">
-    NetBSD 5.0 install notes</ulink> - supported hardware and how to install.</listitem>
-<listitem><ulink url="../../docs/elf.html">The NetBSD ELF FAQ</ulink>.  As
-    of NetBSD 1.5, the i386 port uses ELF instead of a.out.</listitem>
-<listitem><ulink url="../../docs/guide/en/chap-cons.html#chap-cons-wscons">The wscons
-    documentation</ulink>.  NetBSD's platform-independent workstation console
-driver.</listitem>
-<listitem><ulink url="../../mailinglists/#port-i386">port-i386 mail list</ulink>
-    - if you have any additional questions please subscribe.</listitem>
+<listitem><ulink url="../../docs/guide/en/chap-cons.html#chap-cons-wscons">
+    The wscons documentation</ulink>. NetBSD's platform-independent
+    workstation console driver.</listitem>
+<listitem><ulink url="../../mailinglists/#port-i386">port-i386 mailing
+    list</ulink></listitem>
 <listitem><ulink url="../../docs/network/netboot/intro.i386.html">Netbooting
-    NetBSD/i386</ulink> - booting from floppies or dos partitions.</listitem>
+    NetBSD/i386</ulink> - booting from floppies or DOS partitions.</listitem>
 <listitem><ulink url="../../docs/power-mgmt/">Power Management for
     Laptops</ulink></listitem>
 <listitem><ulink url="../../docs/">General NetBSD Documentation</ulink>
     - for questions not specific to NetBSD/i386.</listitem>
-<listitem>Luke Mewburn's
-    <ulink url="http://www.mewburn.net/luke/papers/building-pcs.html">
-    guide on choosing i386 hardware</ulink> for *BSD</listitem>
-<listitem>Toshiba's <ulink url="http://newsletter.toshiba-tro.de/main/">machine/OS
-     compatibility database</ulink>, including NetBSD</listitem>
 <listitem>Reed Media's <ulink url="http://www.reedmedia.net/misc/netbsd/laptops-and-netbsd.html">Laptops and NetBSD</ulink> list</listitem>
 </itemizedlist>
 
