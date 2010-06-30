@@ -5,10 +5,10 @@
 
 <webpage id="ja-ports-i386-faq">
 <config param="desc" value="NetBSD/i386 Frequently Asked Questions"/>
-<config param="cvstag" value="$NetBSD: faq.xml,v 1.8 2009/08/03 22:55:59 snj Exp $"/>
+<config param="cvstag" value="$NetBSD: faq.xml,v 1.9 2009/09/19 17:11:04 snj Exp $"/>
 <!-- Based on english version: -->
-<!-- NetBSD: faq.xml,v 1.8 2009/08/03 22:55:59 snj Exp   -->
-<config param="rcsdate" value="$Date: 2009/08/03 22:55:59 $"/>
+<!-- NetBSD: faq.xml,v 1.9 2009/09/19 17:11:04 snj Exp   -->
+<config param="rcsdate" value="$Date: 2009/09/19 17:11:04 $"/>
 <head>
 
 <!-- Copyright (c) 2006
@@ -19,95 +19,8 @@
 
 <sect1 role="toc">
 
-  <sect2 id="partitioning">
-    <title>ディスクの分割/ブート</title>
-
-    <sect3 id="boot-floppy-too-big">
-      <title>ブートフロッピー(イメージ)が大き過ぎるのですが。</title>
-      <para>
-        もし boot.fs イメージを 'ascii' モード( Windows の FTP client や 
-        いくつかのブラウザーのデフォルトになっています)でダウンロードした場合、newlines は
-        改行/newline に変更されてしまい boot.fs イメージは壊れてしまいます
-        (さらにフロッピーディスクにおさまらない大きさになります)。
-      </para>
-      <para>
-        もし Windows の FTP client を使っているのならば、ブートイメージをダウンロードする前に
-        'bin' とタイプして binary モードにする必要があります。
-      </para>
-      <para>
-        もし、その他の方法を使用している場合は、boot.fs.gz ファイルをダウンロードし
-        winzip を使って伸長したほうが簡単かも知れません。
-      </para>
-    </sect3>
-
-    <sect3 id="540mb-bios-limit">
-      <title>540MB BIOS limit があるマシンで大きなドライブを使用するには</title>
-      <para>
-        BIOS でジオメトリーとして 1024/16/63 を入力し、ブートパーティションが
-        先頭の 540M に含まれていることを確認して下さい (これは、カーネルが
-        BIOS から読み込まれるために必要です)。 そうすれば、NetBSD から
-        ディスク全体を使用することが可能です。
-      </para>
-    </sect3>
-
-    <sect3 id="determining_geometry">
-      <title>"正しい" ディスクジオメトリーの決定法</title>
-      <para>
-        NetBSD はブートプログラムをロードするのに PC BIOS を用いています。
-        これが正しく働くためには NetBSD と BIOS の両方でディスクジオメトリーが
-        共通である(少なくともブートパーティションを含んでいる部分に関しては)ことが必要です。
-      </para>
-      <para>
-        PCに搭載されている BIOS が扱えるディスクのシリンダー数、ヘッド数、セクター数には
-        上限があります(<ulink url="#bios_disk_limits">表参照</ulink>)。(これは SCSIカード上の
-        BIOS も含みます)。
-      </para>
-      <para>
-        多くのディスクの本当のジオメトリーはこれらの制限値におさまらなくなってきたので、
-        新しい BIOS はジオメトリーを制限内におさまり、かつ、全体の大きさが
-        同じ(か少し小さく)なるように解釈しなおします。
-      </para>
-      <para>
-        もし、ディスクに(DOS, Windows, pfdisk 等によって作成された)有効な DOS MBR 
-        パーティションがあれば、それは "正しい" BIOS ジオメトリー を含んでいます。
-        NetBSD は sysinst 中でこれを BIOS ジオメトリーとして用います。
-        しかしながら、新しいディスクや MBR のセットアップが正しく行なわれていない
-        ディスクでは、NetBSD は間違った BIOS ジオメトリーを使用してしまいます。
-        理想としては、この情報はブートプログラムから渡されるべきでしょう。しかしながら
-        BIOS ディスクを NetBSD ディスクにマッピングする確実な方法がありません。
-        もっとも、現在の全然使えない状態を改善することは可能だとは思われます。
-      </para>
-      <para>
-        "正しい"解釈され直したジオメトリーを決定する方法の一つは 'pfdisk' を
-        用いることです。
-      </para>
-      <para>
-        <orderedlist>
-          <listitem>pfdisk を ftp.NetBSD.org (またはそのミラーサイト)からダウンロードします。<ulink
-            url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe">/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe</ulink>.</listitem>
-           <listitem>'<code>pfdisk <emphasis>0</emphasis></code>' を実行します。 (0 は最初のディスクを 1 は二番目のディスクを意味します)。</listitem>
-           <listitem>'<code>list</code>' と入力し、</listitem>
-           <listitem>ジオメトリーを記録した後、リブートをかけ、 NetBSD に用います。</listitem>
-         </orderedlist>
-       </para>
-       <para>
-         <emphasis role="bold"><anchor id="bios_disk_limits"/>BIOS disk parameter limits</emphasis>
-       </para>
-       <para>
-         <table border="2" id="bios_disk_limits_table">
-           <tr><th>パラメーター</th><th>ビット数</th><th>最大値</th></tr>
-           <tr><td align="right">シリンダー数</td>
-	       <td align="right">10</td><td align="right">1023</td></tr>
-           <tr><td align="right">ヘッド数</td>
-	       <td align="right">8</td><td align="right">255</td></tr>
-           <tr><td align="right">1トラック当りのセクター数</td>
-	       <td align="right">6</td><td align="right">63</td></tr>
-         </table>
-       </para>
-       <para>
-         (これにより、少なくとも BIOS が扱える最大の容量は 8Gbytes に制限されます。)
-       </para>
-     </sect3>
+   <sect2 id="dualbooting">
+     <title>他のオペレーティングシステムとの共存</title>
 
      <sect3 id="ms_partition">
        <title>マイクロソフトパーティションへのアクセス</title>
@@ -119,23 +32,24 @@
          Long filename は FAT と NTFS の両方でサポートされています。
        </para>
        <para>
-         他のファイルシステムにアクセスするためには、正しい "<code>disklabel</code>" を
-         セットアップする必要があります。"<code>disklabel</code>" はシステムに対して
+         他のファイルシステムにアクセスするためには、<code>disklabel</code> を
+         セットアップする必要があります。<code>disklabel</code> はシステムに対して
          どこにディスク上のデータを探しにいけば良いか教えます。
-         正しい"<code>disklabel</code>"を用いれば、NetBSD で使用するために
-         "<code>mount</code>" することができます。
+         正しい <code>disklabel</code> を用いれば、NetBSD で使用するために
+         <code>mount</code> することができます。
        </para>
        <para>
          <emphasis role="bold">ディスクラベルの設定</emphasis>
        </para>
          <orderedlist>
            <listitem>ファイルシステムが含まれているディスクを決定する<html:br/>
-             もし、一つの IDE/ST506 または SCSI ディスクしか持っていないのならば、
-             これは <emphasis>wd0</emphasis> または <emphasis>sd0</emphasis> となります。複数のディスクを
-             お持ちならば、"<code>dmesg | more</code>" の出力から該当するディスク名を
+             もし、一つのディスクしか持っていないのならば、
+             それが IDE か SCSI かによって、それぞれ <emphasis>wd0</emphasis>
+             または <emphasis>sd0</emphasis> となります。複数のディスクを
+             お持ちならば、<code>dmesg | more</code> の出力から設定の対象となるディスク名を
              決定して下さい。</listitem>
            <listitem>パーティションのサイズとオフセットの決定<html:br/>
-             "<code>fdisk</code>" と入力すると、各パーティションのサイズとオフセットを
+             <code>fdisk</code> と入力すると、各パーティションのサイズとオフセットを
              見ることができます。出力は次のようになるでしょう:
              <programlisting>
 NetBSD disklabel disk geometry:
@@ -170,7 +84,7 @@ Partition table:
              3. "extended" パーティション中の Windows 2000 NTFS5
            </para>
          </listitem>
-         <listitem>"<code>disklabel &lt;DISKNAME&gt;</code>"と入力する<html:br/>
+         <listitem><code>disklabel &lt;DISKNAME&gt;</code> と入力する<html:br/>
            もしディスクが MS-DOS パーティションしか含んでいない場合、
            NetBSD は自動的に先頭の MS-DOS パーティションを含む '仮想'ディスクラベルを
            生成します。<html:br/>
@@ -204,12 +118,12 @@ Partition table:
            </para>
          </listitem>
          <listitem>ディスクラベル編集の準備<html:br/>
-            <emphasis>vi</emphasis>以外のエディターを用いたい場合は、
-            "<code>setenv EDITOR &lt;YOUR_EDITOR&gt;</code>" 例えば "<code>setenv EDITOR
-            pico</code>"
-            と入力します。
+           <emphasis>vi</emphasis>以外のエディターを用いたい場合は、
+           <code>setenv EDITOR &lt;YOUR_EDITOR&gt;</code> 例えば <code>setenv EDITOR
+           pico</code>
+           と入力します。
          </listitem>
-         <listitem>"<code>disklabel -e &lt;DISKNAME&gt;</code>" と入力して disklabel を編集します<html:br/>
+         <listitem><code>disklabel -e &lt;DISKNAME&gt;</code> と入力して disklabel を編集します<html:br/>
            disklabel の最下部まで進めば label の編集準備は完了です。
            <para>
              必要なのは次の2点です:
@@ -251,7 +165,7 @@ Partition table:
            </para>
          </listitem>
          <listitem>変更を保存し、ディスクラベルをチェックする<html:br/>
-            エディターを終了し、 "<code>disklabel &lt;DISKNAME&gt;</code>" と入力して、
+            エディターを終了し、 <code>disklabel &lt;DISKNAME&gt;</code> と入力して、
             新しいパーティションが存在するか確認して下さい。
          </listitem>
        </orderedlist>
@@ -259,36 +173,36 @@ Partition table:
          <emphasis role="bold"><anchor id="ms_partition_mounting"/>ファイルシステムのマウント</emphasis>
        </para>
        <para>
-         各々のディスクパーティションは '/dev' にデバイスエントリーを持っています。
-         デバイスエントリーの形式は '/dev/'、ディスク名、パーティション文字 となっています。
+         各々のディスクパーティションは <filename>/dev</filename> にデバイスエントリーを持っています。
+         デバイスエントリーの形式は <filename>/dev</filename>、ディスク名、パーティション文字 となっています。
          上記の例題では NTFS と MSDOS パーティションに対するデバイスエントリーはそれぞれ
-         '/dev/wd0f' と '/dev/wd0g' となります。
+         <filename>/dev/wd0f</filename> と <filename>/dev/wd0g</filename> となります。
        </para>
 
        <orderedlist>
          <listitem>それぞれのパーティションに対してマウントポイントを作成する<html:br/>
-           "<code>mkdir &lt;MOUNTPOINT&gt;</code>", 例えば "<code>mkdir /msdos</code>" と
-           "<code>mkdir /nt4</code>".</listitem>
+           <code>mkdir &lt;MOUNTPOINT&gt;</code>, 例えば <code>mkdir /msdos</code> と
+           <code>mkdir /nt4</code></listitem>
          <listitem>ファイルシステムをマウントする<html:br/>
-           "<code>mount -t &lt;TYPE&gt; &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;</code>",
-           例えば "<code>mount -t msdos /dev/wd0g /msdos</code>" と "<code>mount -t ntfs
-           /dev/wd0f /nt4</code>".</listitem>
+           <code>mount -t &lt;TYPE&gt; &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;</code>,
+           例えば <code>mount -t msdos /dev/wd0g /msdos</code> と <code>mount -t ntfs
+           /dev/wd0f /nt4</code></listitem>
          <listitem>うまくいっていることを確認する<html:br/>
-           "<code>ls &lt;MOUNTPOINT&gt;</code>", 例えば "<code>ls /msdos</code>" と "<code>ls
-           /nt4</code>".</listitem>
+           <code>ls &lt;MOUNTPOINT&gt;</code>, 例えば <code>ls /msdos</code> と <code>ls
+           /nt4</code></listitem>
          <listitem>ブート時に自動的にファイルシステムがマウントされるようにする<html:br/>
            もし、NetBSD の起動時に自動的にマウントされるようにしたいならば、
-           <emphasis>/etc/fstab</emphasis> を編集し、次の形式の行を加えて下さい。
+           <filename>/etc/fstab</filename> を編集し、次の形式の行を加えて下さい。
 <programlisting>
     &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  msdos   rw
-    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  ntfs    rw
+    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  ntfs    ro
 </programlisting>
            <para>
              上の例題の場合は
            </para>
 <programlisting>
     /dev/wd0g /msdos  msdos   rw
-    /dev/wd0f /nt4    ntfs    rw
+    /dev/wd0f /nt4    ntfs    ro
 </programlisting>
            <para>
              となります。
@@ -464,7 +378,8 @@ C:\grldr="NetBSD GRUB"
     </sect3>
 
     <sect3 id="fips">
-      <title>全体が Dos/Windows で使用されているディスクに NetBSD をインストールする</title>
+      <title>全体が DOS/Windows で使用されているディスクに NetBSD をインストールする</title>
+      <para>註: この方法は、FAT ファイルシステムにのみ適用できます。</para>
       <para>
         DOS/Windows によって全てのディスク領域が占有されているハードディスクでも、
         ディスクに空き容量がある場合ならば、DOS/Windows のパーティションを
@@ -478,103 +393,13 @@ C:\grldr="NetBSD GRUB"
         <listitem>DOS パーティションの全てのデータを <emphasis>defrag</emphasis> を用いて
           パーティションの先頭に移動する。</listitem>
         <listitem>DOS パーティションの大きさを <emphasis>FIPS</emphasis> を用いて変更する。
-          Fips は 次の場所から手に入れることができます。<ulink
-          url="http://www.igd.fhg.de/~aschaefe/fips/">FIPS WWW サイト</ulink>.
+          FIPS は 次の場所から手に入れることができます。<ulink
+          url="http://bmrc.berkeley.edu/people/chaffee/fips/fips.html">FIPS
+          web サイト</ulink>.
           全ての付属ドキュメントを読む事を忘れないで下さい。</listitem>
         <listitem><ulink url="#dual_boot">上</ulink>で述べられている方法でブートローダーをインストールします。</listitem>
         <listitem>NetBSD をインストールします。</listitem>
       </itemizedlist>
-    </sect3>
-
-    <sect3 id="new_sysid">
-      <title>'old NetBSD or FreeBSD' からパーティション sysid を変更する</title>
-      <para>
-        1.3.3 以降の NetBSD はデフォルトの パーティション sysid が 165 から 169 に
-        変更されています。これは FreeBSD との衝突を避けるために行なわれました。
-        1.3.3 (とそれ以降) のシステムは sysid が 165 のパーティションからもブートしますが、
-        パーティションをオープンする度に警告を発します。
-        ディスクパーティションを 165 から 169 に変更するためには
-        次の手順に従って下さい。
-      </para>
-      <orderedlist>
-        <listitem><emphasis role="bold">1.3.3 (かそれ以降) のブートフロッピーがあることを確認する</emphasis><html:br/>
-           これは何かがうまくいかなかった時に備えるためです。インストール済みのシステムを
-           フロッピーディスクからブートするには、フロッピーから起動して、
-           カウントダウンが行なわれている間にスペースキーを押し、
-           '<code><emphasis role="bold">boot hd0:</emphasis></code>' と入力します。</listitem>
-        <listitem><emphasis role="bold">新しい ID を理解するブートブロックを使用していることの確認</emphasis><html:br/>
-          もし、システムが 1.3.3 以降の sysinst を用いてインストールされているならば、
-          問題ない<emphasis>はず</emphasis>です。そうでないならば、次のコマンドを実行して下さい。
-          <itemizedlist>
-            <listitem>'<code><emphasis role="bold">/usr/mdec/installboot biosboot.sym /dev/r{DISK}a</emphasis></code>'.</listitem>
-          </itemizedlist>
-
-          もしカーネルが '<code>options INSECURE</code>' 無しで作られている場合は
-          シングルユーザーモードにするためにシャットダウンする必要があります。
-
-          <itemizedlist>
-            <listitem>'<code><emphasis role="bold">shutdown now</emphasis></code>'</listitem>
-	    <listitem>shell の入力を求められたら ENTER を押します。</listitem>
-	    <listitem>'<code><emphasis role="bold">fsck -p</emphasis></code>'</listitem>
-	    <listitem>'<code><emphasis role="bold">mount -vat ffs</emphasis></code>'</listitem>
-	    <listitem>'<code><emphasis role="bold">cd /usr/mdec ; ./installboot biosboot.sym
-		/dev/r{DISK}a</emphasis></code>'</listitem>
-          </itemizedlist>
-
-          ここで {DISK} は 最初の ATA (IDE) ディスクに対しては <code>wd0</code>,
-          最初の SCSI ディスクに対しては <code>sd0</code> などを意味します。</listitem>
-
-        <listitem><emphasis role="bold">パーティション ID の変更</emphasis><html:br/>
-          '<code><emphasis role="bold">fdisk {DISK}</emphasis></code>' を実行して下さい。
-          一つのパーティションは次のようになっているはずです。
-<programlisting>
-X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
-</programlisting>
-          ここで、X は 0, 1, 2, あるいはもっとも多そうな 3 です。
-          '<code><emphasis role="bold">fdisk -u -X {DISK}</emphasis></code>' を実行します。
-
-         <orderedlist>
-           <listitem><code>Do you want to change our idea of what BIOS thinks? [n]</code>
-	     に対して<code><emphasis role="bold">ENTER</emphasis></code>と入力。</listitem>
-           <listitem><code>Do you want to change it? [n]</code>
-	     に対して<code><emphasis role="bold">y ENTER</emphasis></code>と入力。</listitem>
-           <listitem><code>Supply a decimal value for "sysid" [165]</code>
-	     に対して<code><emphasis role="bold">169 ENTER</emphasis></code>と入力。</listitem>
-           <listitem><code>Supply a decimal value for "start" [......]</code>
-	     に対して<code><emphasis role="bold">ENTER</emphasis></code>と入力。</listitem>
-           <listitem><code>Supply a decimal value for "size" [.......]</code>
-	     に対して<code><emphasis role="bold">ENTER</emphasis></code>と入力。</listitem>
-           <listitem><code>Explicitly specify beg/end address? [n]</code>
-	     に対して<code><emphasis role="bold">ENTER</emphasis></code>と入力。</listitem>
-           <listitem><code>Is this entry okay? [n]</code>
-	     に対して<code><emphasis role="bold">y ENTER</emphasis></code>と入力。</listitem>
-           <listitem><code>Should we write new partition table? [n]</code>
-	     に対して<code><emphasis role="bold">y ENTER</emphasis></code>と入力。</listitem>
-         </orderedlist>
-       </listitem>
-       <listitem><emphasis role="bold">全てが成功したか確認するためにリブートします</emphasis><html:br/>
-         何か問題が起きた場合はブートフロッピーの fdisk を使って
-         やり直すことが可能です。
-       </listitem>
-       <listitem><emphasis role="bold">NetBSD のパーティション ID を再度変更する必要はないはずですので、
-         ご安心ください。</emphasis><html:br/>
-       </listitem>
-     </orderedlist>
-   </sect3>
-
-    <sect3 id="stale-lilo">
-      <title>インストールした後、リブートすると <code><emphasis role="bold">LI</emphasis></code> しかでません</title>
-      <para>
-        古い LILO によって起こされる問題です。次のようにすれば対処できます:
-      </para>
-
-      <orderedlist>
-        <listitem>sysinst フロッピーからブートします</listitem>
-        <listitem>Utility メニューから '<code><emphasis role="bold">Run /bin/sh</emphasis></code>' を選んで
-	  インストーラーから抜けます。</listitem>
-        <listitem>'<code><emphasis role="bold">fdisk -if</emphasis></code>' と入力します</listitem>
-        <listitem>Reboot</listitem>
-      </orderedlist>
     </sect3>
 
     <sect3 id="dosboot">
@@ -602,33 +427,6 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
       </para>
     </sect3>
 
-    <sect3 id="onefloppy">
-      <title>フロッピー 1 枚の NetBSD システムの作り方</title>
-      <para>
-	最近、 Lex Wennmacher が <filename role="pkg">sysutils/fdgw</filename> パッケージを
-	pkgsrc に追加しました。このパッケージは、フロッピー 1 枚の
-	NetBSD システムを構築するためのツールです。これの応用例としては、
-	PC をハードディスクを使わずに安価なルーターにすることが挙げられます。
-      </para>
-      <para>
-	メイン NetBSD ftp サイトからは 2 種類のイメージがダウンロードできます。
-	<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/misc/wennmach/adslrouter.img">ADSL ルーター</ulink>イメージを使うと、基本的な ADSL
-	ルーターシステムが作れます。
-	<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/misc/wennmach/natbox.img">NAT ルーター</ulink>イメージは、簡単な NAT ルーターを作れるよう設計されています。
-      </para>
-      <para>
-	これらのイメージは <code>dd</code> コマンドを使ってフロッピーに書き込めます。
-	たとえば次のようにします。
-	<blockquote><code>dd if=adslrouter.img of=/dev/rfd0a bs=18k</code></blockquote>
-      </para>
-      <para>
-	これらフロッピー 1 枚の NetBSD システムはいずれも、適切な動作のために
-	必要なファイルをすべて含んでいますが、若干のカスタマイズは必要です
-	(たとえば、 IP アドレスと ipf フィルタールールの定義) 。詳細は、
-	<ulink url="http://www.fml.org/software/fdgw/">深町賢一氏による
-	fdgw ホームページ</ulink>を参照してください。
-      </para>
-    </sect3>
   </sect2>
 
   <sect2 id="specific-hardware">
@@ -665,7 +463,7 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
           <listitem>カード設定に合わせた新しいカーネルをコンパイルする。</listitem>
           <listitem>別のカードを購入する - 最新の PCI ベースの PC において、
 	    ISA ネットワークカードは他のデバイスのパフォーマンスに
-	    かなりの影響を与えます。- &man.fxp.4; (インテル社の etherexpress-pro) や
+	    かなりの影響を与えます。- &man.fxp.4; (インテル社の EtherExpress Pro) や
 	    &man.tlp.4; (Tulip やその互換カード)などの PCI カードがおすすめです。</listitem>
           <listitem>&man.ddb.4;を用いたカーネル設定の手動変更
             <orderedlist>
@@ -694,59 +492,6 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
         "Allocate interrupt for USB" オプションが無効になっている場合に
         起こり得ます。有効にすると、多くの場合 NetBSD が起動する直前に
         BIOS は、IRQ の設定を含んだ 'Serial Controller'リストを表示します。
-      </para>
-    </sect3>
-
-    <sect3 id="cyrix-486dlc-cache">
-      <title> '<code>WARNING: CYRIX 486DLC CACHE UNCHANGED</code>' とは何ですか?</title>
-      <para>
-        このメッセージはカーネルが Cyrix 486DLC を検出したが、Cyrix の特別な
-        キャッシュの設定が使用可能か判断できないために、キャッシュ設定を
-        行わなかったことを意味します。これは 386 マザーボード用の 
-        Cyrix '386/486 hybrid' アップグレードの場合にのみ該当し、
-        Cyrix を含む全てのベンダーの 486(以降の cpu を含む)プロセッサーの場合には
-        該当しないはずです。
-      </para>
-      <para>
-        多くの 386 マザーボードは CPU のキャッシュ一貫性を保つ機能を備えていないため、
-        バスに接続されたデバイスから bus hold 信号がアサートされた時 (これはバスマスタ
-        トランザクションが進行中である可能性を示す) は常に、DLC のキャッシュを
-        フラッシュしなければなりません。これはキャッシュ一貫性を完全に維持できる反面、
-        速度低下の大きな要因になります。
-      </para>
-      <para>
-        Cyrix 用キャッシュ設定のために次の2つのカーネルオプションが存在します:
-      </para>
-
-      <itemizedlist>
-        <listitem><code><emphasis role="bold">options CYRIX_CACHE_WORKS</emphasis></code><html:br/>
-          このオプションは CPU キャッシュを有効にしますが、
-          外部バスの hold リクエスト時にはフラッシュするように指示します。
-          486 よりは遅くなりますが、386(on-chip キャッシュがありません)よりは
-          高速になります。このオプションはほとんどのマザーボードで
-          動作するはずです。</listitem>
-
-        <listitem><code><emphasis role="bold">options CYRIX_CACHE_REALLY_WORKS</emphasis></code><html:br/>
-          このオプションは特別に 486DLC/486DRX 用にデザインされたマザーボードで
-          のみ使用可能です。これらのマザーボードでは正しく完全にバスマスタリングが
-          実装されており、キャッシュ一貫性を保つ機能がサポートされています。
-          (あまり出回っていません。)このオプションは本物の 486 と同様に、
-          バスの hold リクエスト時にフラッシュすることなく、キャッシュを
-          完全に利用します。</listitem>
-      </itemizedlist>
-      <para>
-        これら 2つが両方とも指定されていない場合、chip は BIOS の設定のまま
-        動作します。ほとんどの BIOS はキャッシュオプションを指定しません。
-        これは確実に動作する安全策ではありますが、パフォーマンスは最低となります。
-        もし、486DLC/486DRX マザーボードや DLC/DRX タイプの BIOS ならば、
-        自動的にパフォーマンスが良くなるような設定になっているはずです。
-      </para>
-      <para>
-        これらのオプションは試してみる価値はあります。もしマザーボードが指定されたオプションを
-        サポートしていない場合、ブート後すぐにシステムは動作しなくなります。
-        そうなった場合は、カーネルの最適化を弱めればいいだけです。
-        (もちろん、最適化していないカーネルを上書きしてはいけません。
-        新しいカーネルがブートしなかったときに必要になります!)
       </para>
     </sect3>
 
@@ -841,258 +586,91 @@ X: sysid 165 (FreeBSD or 386BSD or old NetBSD)
     </sect3>
   </sect2>
 
-  <sect2 id="x-system">
-    <title>X Window System の実行</title>
+  <sect2 id="partitioning">
+    <title>古いマシンのディスクの問題</title>
 
-    <sect3 id="x_needs_insecure_kernel">
-      <title>X が INSECURE なカーネルか、シングルユーザーモードでしか起動しない</title>
+    <sect3 id="540mb-bios-limit">
+      <title>540MB BIOS limit があるマシンで大きなドライブを使用するには</title>
       <para>
-        '<code>options INSECURE</code>' が指定されていない場合、NetBSD は /dev/mem への
-        直接アクセスを禁止します。もしもあなたのビデオカードが linear memory access が
-        必要であったり、恩恵を受けることが出来るのならば、aperture ドライバーを
-        <ulink url="../../docs/software/packages.html">NetBSD パッケージ
-        コレクション</ulink> (<filename role="pkg">sysutils/aperture</filename> で
-        "<code>make install</code>" します) からインストールするべきでしょう。
-        これは、たとえ kernel の secure レベルが 0 より大きくても、X サーバーが
-        VGA のフレームバッファーに直接アクセスすることを可能にします。
+        BIOS でジオメトリーとして 1024/16/63 を入力し、ブートパーティションが
+        先頭の 540M に含まれていることを確認して下さい (これは、カーネルが
+        BIOS から読み込まれるために必要です)。 そうすれば、NetBSD から
+        ディスク全体を使用することが可能です。
       </para>
     </sect3>
 
-    <sect3 id="xf86mapvidmem-error">
-      <title>X が実行できず "Fatal server error: xf86MapVidMem: Could not map /dev/vga (Invalid argument)" とのメッセージが出ます</title>
-      <para>
-        これは、<ulink url="#x_needs_insecure_kernel">上で説明した問題</ulink>
-        の症状です。
+    <sect3 id="determining_geometry">
+      <title>"正しい" ディスクジオメトリーの決定法</title>
+      <para>NetBSD はブートプログラムをロードするのに PC BIOS を用いています。
+      これが正しく働くためには NetBSD と BIOS の両方でディスクジオメトリーが
+      共通である(少なくともブートパーティションを含んでいる部分に関しては)ことが必要です。
       </para>
-    </sect3>
-
-    <sect3 id="x_and_ps2_mouse">
-      <title>X が PS/2 mouse を認識しない</title>
-      <para>
-        1.3.3 までのデフォルトの NetBSD/i386 GENERIC カーネルには PS/2 マウスのサポートが
-        含まれていません。PS/2 サポートを有効にするためには <ulink
-        url="../../docs/kernel/#how_to_build_a_kernel">カーネルの
-        再コンパイル</ulink>が必要となります。
-        上記の説明にしたがってステージ 4 の &lt;MYCONF&gt;編集の際に次の行を探し
-        先頭の '#' を取り除いてカーネルを作成して下さい。
-
-<programlisting>
-   '#pms0    at pckbd? irq 12'
-</programlisting>
-
-        これにより、ブート時にブートメッセージ中に 'pms0 at pc0' または
-        'pms0 at vt0' という表示が含まれるようになります。
+      <para>PCに搭載されている BIOS が扱えるディスクのシリンダー数、ヘッド数、セクター数には
+      上限があります(<ulink url="#bios_disk_limits">表参照</ulink>)。(これは SCSIカード上の
+      BIOS も含みます)。
       </para>
-      <para>
-        XFree86 のセットアップを行なう時には、マウスデバイスとして 'wsmouse' を
-        プロトコルとして 'wsmouse' を選択して下さい。
+      <para>現代のディスクの本当のジオメトリーはこれらの制限値におさまらなくなってきたので、
+      新しい BIOS はジオメトリーを制限内におさまり、かつ、全体の大きさが
+      同じ(か少し小さく)なるように解釈しなおします。
       </para>
-    </sect3>
-
-    <sect3 id="x_scroll_mouse">
-      <title>ホイールマウスを有効にする方法は?</title>
-      <para>
-        ホイールマウス操作を使えるようにするには、 <code>/etc/XF86Config</code>
-        設定ファイルを編集し、このファイルの
-<programlisting>
-   Section "InputDevice"
-      Identifier  "Mouse1"
-</programlisting>
-        セクションに、
-<programlisting>
-   Option     "Buttons"       "5"
-   Option     "ZAxisMapping"  "4 5"
-</programlisting>
-        を追加します。
+      <para>もし、ディスクに(DOS, Windows, pfdisk 等によって作成された)有効な DOS MBR 
+      パーティションがあれば、それは "正しい" BIOS ジオメトリー を含んでいます。
+      NetBSD は sysinst 中でこれを BIOS ジオメトリーとして用います。
+      しかしながら、新しいディスクや MBR のセットアップが正しく行なわれていない
+      ディスクでは、NetBSD は間違った BIOS ジオメトリーを使用してしまいます。
+      理想としては、この情報はブートプログラムから渡されるべきでしょう。しかしながら
+      BIOS ディスクを NetBSD ディスクにマッピングする確実な方法がありません。
       </para>
-    </sect3>
-  </sect2>
-
-  <sect2 id="other">
-    <title>その他の NetBSD/i386 FAQs</title>
-
-    <sect3 id="netscape">
-      <title>NetBSD/i386 で Firefox や Mozilla は使えますか</title>
-      <para>
-        Firefox や Mozilla は、 NetBSD でネイティブに動作するよう
-        移植されています。また、バイナリーパッケージが、 <ulink
-        url="../../docs/software/packages.html">NetBSD パッケージコレクション</ulink>
-        (<filename role="pkg">www/mozilla</filename> および <filename role="pkg">www/firefox</filename> 参照)
-        から利用可能です。
+      <para>"正しい"解釈され直したジオメトリーを決定する方法の一つは 'pfdisk' を
+      用いることです。
       </para>
       <para>
-        Flash のようなバイナリーのみによるプラグインを使いたい場合は、
-        Linux エミュレーションを使う必要があります。たとえば
-	<filename role="pkg">multimedia/adobe-flash-plugin</filename>
-	など、多数のプラグインが pkgsrc でパッケージ化されています。
-	これらのパッケージは依存性に関する情報も持っているので、pkg_add
-	するだけで問題なく使えるはずです。
-      </para>
-    </sect3>
+        <orderedlist>
+          <listitem>pfdisk を ftp.NetBSD.org (またはそのミラーサイト)からダウンロードします。<ulink
+            url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe">/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe</ulink>.</listitem>
+           <listitem>'<code>pfdisk <emphasis>0</emphasis></code>' を実行します。 (0 は最初のディスクを 1 は二番目のディスクを意味します)。</listitem>
+           <listitem>'<code>list</code>' と入力し、</listitem>
+           <listitem>ジオメトリーを記録した後、リブートをかけ、 NetBSD に用います。</listitem>
+         </orderedlist>
+       </para>
+       <para>
+         <emphasis role="bold"><anchor id="bios_disk_limits"/>BIOS disk parameter limits</emphasis>
+       </para>
+       <para>
+         <table border="2" id="bios_disk_limits_table">
+           <tr><th>パラメーター</th><th>ビット数</th><th>最大値</th></tr>
+           <tr><td align="right">シリンダー数</td>
+	       <td align="right">10</td><td align="right">1023</td></tr>
+           <tr><td align="right">ヘッド数</td>
+	       <td align="right">8</td><td align="right">255</td></tr>
+           <tr><td align="right">1トラック当りのセクター数</td>
+	       <td align="right">6</td><td align="right">63</td></tr>
+         </table>
+       </para>
+       <para>
+         (これにより、少なくとも BIOS が扱える最大の容量は 8Gbytes に制限されます。)
+       </para>
+     </sect3>
 
-    <sect3 id="quake2">
-      <title>NetBSD 上での GNU/LINUX 用の Quake II の実行</title>
-      <para>
-        すでに、<ulink url="./">NetBSD i386</ulink>が動いていることを仮定します。
-        また、<ulink
-        url="../../docs/kernel/#how_to_build_a_kernel">
-        カーネルの再構築</ulink> の知識も必要です。
-        この方法は NetBSD 1.4 (以降) ファミリー、
-        <ulink url="http://www.idsoftware.com/games/quake/quake2/">Quake II</ulink>
-        バージョン 3.20 と NetBSD の <ulink
-        url="../../docs/software/packages.html">パッケージ</ulink>セット中の
-        suse_* v6.4 <filename role="pkg">emulators</filename> を基にしています。
-      </para>
-      <para>
-        他の (より新しい) バージョンでもおそらく同じように動くことでしょう。
-      </para>
-      <para>
-        始める前の注意点:
-      </para>
+   </sect2>
 
-      <itemizedlist>
-        <listitem>エミュレーション用のバイナリーと Quake II ゲーム本体のために
-          かなりのディスク容量が必要です。</listitem>
-        <listitem>おそらく全てを root としてインストールする必要があります。
-          これは、あなたのシステム全体とセキュリティーを suse_* と ゲームの
-          作者に委ねることを意味します。多くの個人で使用している場合には
-          それほどの問題にならないかも知れませんが、全てはあなたの判断に
-          委ねられます。
-          私個人としては、これらの作者を信じない理由はありませんが、
-          あなたのシステムが複雑であればあるほど、またコンポーネントを
-          無条件で信じれば信じるほど、危険は大きくなることに注意してください。</listitem>
-        <listitem>私が 8-bit モードの X サーバーで試したところ、Quake II がきちんと
-          動作したグラフィックモードは ``ref_softx'' だけでした。
-          OpenGL は``glide'' なしではうまくいかないみたいですが、
-          私が持っているカード(STB Nitro 3D)では glide はサポートされていません。
-          Direct video は動作するようですが、必要なライブラリーを
-          私は持っていません。
-          (これは結局、まずは X Window System の設定が<emphasis role="bold">必要</emphasis>と
-          いうことになります。)
-          ゲーム自体は 24-bit X でも動作しますが、グラフィックがおかしくなります。
-          Quake II は標準サイズのウインドウを使用しますが、水平方向に 1/2 に
-          押し縮められた状態にグラフィックがなってしまいます。この時、
-          画面の右半分は真っ黒になってしまいます。</listitem>
-       <listitem>ドキュメントによれば、Quake II を任意のユーザーが実行できるように
-         設定できることになっています。
-         しかしながら私はゲームを root で<emphasis role="bold">しか</emphasis>
-         実行できませんでした。</listitem>
-       <listitem>多くの人は Quake II サーバーを NetBSD で実行することに成功しています。
-         しかし、私はネットワークモードでしか<emphasis role="bold">実行</emphasis>できていません。
-         何が問題なのかは不明です。</listitem>
-     </itemizedlist>
-     <para>
-       以上で全てです。あとは Quake II 付属の使用説明書を良く読んで下さい。
-     </para>
-
-     <orderedlist>
-       <listitem>NetBSD 1.4.X 以降では、GENERIC NetBSD カーネルを使用して<emphasis role="bold">いない</emphasis>
-         ならば、カーネルコンフィギュレーションファイル中で COMPAT_LINUX オプションを
-         有効にして、カーネルを作り直し、リブートする必要があるかもしれません。</listitem>
-      <listitem>あらかじめ、<ulink
-         url="http://www.linux.org/">GNU/LINUX</ulink>-compatibility package
-         をインストールしておく必要があります。
-         <emphasis>注意: linux_* というパッケージは、必要なものを含んでいるわけでは
-          <emphasis role="bold">ありません</emphasis>。でも、GNU/LINUX 版の BASH を
-          パッケージから入れておきたいと思うはずです。
-          (エミュレーションの動作形態として、エミュレーション中に動作する
-          <emphasis role="bold">いくつかの</emphasis> shell を用意しておくことは
-          便利なときがあります。でも、かならず用意しておく必要が
-          あるわけでは<emphasis role="bold">ありません</emphasis>)</emphasis></listitem>
-       <listitem>配布 CD を &man.mount.8; します。</listitem>
-       <listitem>CD の ルートディレクトリーに移動します。</listitem>
-       <listitem>&man.sh.1; を用いて <code>/bin/sh setup</code> を実行します。</listitem>
-       <listitem>setup の途中で、``rpm'' についてたずねられる場面があります。
-         rpm とは Red-Hat Package Manager の事で、これは NetBSD パッケージとして
-         利用可能です。(rpm はもともと GNU/LINUX 用のコマンドです。)
-         ところが、私がそれを使用するように指定したところ、setup スクリプトは
-         利用しようとしませんでした。
-         でもあわてないでください。
-         私は単にデフォルトを選びました。
-         こうすると、setup は &man.cpio.1; を用います。
-         rpm を使わないならば、setup は cpio の存在する場所を尋ねてきます。
-         NetBSD 1.4 ファミリーでは cpio は ``/usr/bin/cpio'' にあります。</listitem>
-      <listitem>その他の点ではすべてがスムーズに進むはずです。
-        CD は setup の最中に何度もスタートストップを繰り返すかもしれません。(私はそうでした)
-        でも、これは問題ではありません。
-        CD を見てみると、CD-ROM にはトラックが分断されて記録されているようなので
-        マスター CD-ROM の作成に何らかの細工がされているのだと考えています。</listitem>
-    </orderedlist>
-    <para>
-      助言と問題解決のヒント
-    </para>
-
-    <itemizedlist>
-      <listitem>ウィンドウの飾りの表示はお嫌いですか?
-      ../quake2/config.cfg ファイルを見てください。
-      horizontal offset(デフォルト値は 3) と vertical offset (22) という
-      2つのオプションがあるはずです。
-      これらを 0 に設定するとタイトルバーと境界線はなくなります。
-      スクリーンの解像度と同じ解像度でゲームを実行する場合には、
-      こうしておくと良いでしょう。</listitem>
-      <listitem>このゲームは GNU/LINUX 用のものなので、Quake II を GNU/LINUX 
-      ディレクトリーに移動したくなるかもしれません。
-      (もし、setup スクリプトを GNU/LINUX BASH で実行していれば
-      自動的にこうなりますが、NetBSD の sh を用いていれば、
-      Quake II は /usr/local/games にインストールされます。)</listitem>
-      <listitem>Quake II が ``pics/colormap.pcx'' ファイルがないというような
-      エラーで実行できない場合、おそらく root で
-      実行して<emphasis role="bold">いない</emphasis>のでしょう。
-      root 以外が実行できるようにできるかもしれませんが、
-      一番単純なのは ``su root'' をしてから、ゲームを実行してみることです。</listitem>
-      </itemizedlist>
-    </sect3>
-
-    <sect3 id="windows_refund">
-      <title>Windows を使わないのですが、払い戻しが受けられますか</title>
-      <para>
-        いくつかの PC システムは Microsoft Windows がプレインストールされた
-        状態でしか手に入れることが出来ません。このようなシステムの価格には
-        Windows ライセンスの値段が含まれています。もし、あなたが Windows を
-        使用したくないのならば、Microsoft から払い戻しを受ける権利があるかも
-        知れません。ただし、これは複雑で長い時間のかかるものとなるでしょう。
-      </para>
-      <para>
-        もっとも良い方法は Windows を完全に含まない PC の再販ができる業者を探し、
-        支援する事でしょう。
-      </para>
-    </sect3>
-
-    <sect3 id="kgdb">
-      <title>シリアルラインを用いた NetBSD のカーネルのデバッグ法</title>
-      <para>
-        <ulink url="../../docs/kernel/kgdb.html">KGDB HOWTO</ulink> を見てください。
-      </para>
-    </sect3>
-  </sect2>
 </sect1>
 
 <sect2 id="other">
   <title>その他の情報</title>
 
   <itemizedlist>
-    <listitem><ulink url="http://www.xfree86.org/help.html">XFree86 ドキュメンテーション</ulink>
-    - X のインストールや設定に関する問題。</listitem>
-<listitem><ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/INSTALL.html">
-    NetBSD 5.0 インストールノート</ulink> - サポートされているハードウェアおよびインストールの方法。</listitem>
-<listitem><ulink url="../../../docs/elf.html">The NetBSD ELF FAQ</ulink>.
-    NetBSD 1.5以降 i386 port は a.out ではなく、ELF 実行形式を使用します。</listitem>
-<listitem><ulink url="../../../docs/guide/en/chap-cons.html#chap-cons-wscons">wscons
-    ドキュメンテーション</ulink>.  NetBSDの機種非依存のワークステーションコンソールドライバー。
-</listitem>
-<listitem><ulink url="../../mailinglists/#port-i386">port-i386 メーリングリスト</ulink>
-    - さらなる疑問がある場合は参加して下さい。</listitem>
+<listitem><ulink url="../../docs/guide/en/chap-cons.html#chap-cons-wscons">
+    wscons ドキュメンテーション</ulink>. NetBSD
+    の機種非依存のワークステーションコンソールドライバー。</listitem>
+<listitem><ulink url="../../mailinglists/#port-i386">port-i386
+    メーリングリスト</ulink></listitem>
 <listitem><ulink url="../../docs/network/netboot/intro.i386.html">Netbooting
     NetBSD/i386</ulink> - フロッピーまたは DOS パーティションからのブート。</listitem>
 <listitem><ulink url="../../docs/power-mgmt/">ラップトップの
     パワーマネジメント</ulink></listitem>
 <listitem><ulink url="../../docs/">General NetBSD Documentation</ulink>
     - NetBSD/i386 に限らない質問</listitem>
-<listitem>Luke Mewburn による *BSD のための
-    <ulink url="http://www.mewburn.net/luke/papers/building-pcs.html">
-    i386 ハードウェアの選び方ガイド</ulink></listitem>
-<listitem>東芝による、 NetBSD を含む <ulink url="http://newsletter.toshiba-tro.de/main/">マシン/OS
-     互換性データベース</ulink></listitem>
 <listitem>Reed Media による、 <ulink url="http://www.reedmedia.net/misc/netbsd/laptops-and-netbsd.html">ラップトップと NetBSD</ulink> のリスト</listitem>
 </itemizedlist>
 
