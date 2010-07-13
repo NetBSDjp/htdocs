@@ -1,4 +1,4 @@
-#	$NetBSD: Makefile,v 1.3 2009/01/31 18:56:24 jschauma Exp $
+#	$NetBSD: Makefile,v 1.4 2009/12/26 23:05:35 jschauma Exp $
 #
 # Please run 'make update' before adding NEWS.
 
@@ -18,7 +18,7 @@ XMLDOCS+=	2008
 XMLDOCS+=	index
 
 all:	index.html
-	cd .. && ${MAKE} regenerate-index
+	cd .. && ${MAKE} index.html
 	@echo "Index regeneration complete - time to 'make commit'"
 
 update:
