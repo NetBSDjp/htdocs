@@ -1,61 +1,67 @@
-NetBSD/hpcmips installation 
-- building a filesystem on a Compact Flash card -
+NetBSD/hpcmips のインストール
+- コンパクトフラッシュカードにファイルシステムを作る方法 -
 $NetBSD: install.txt,v 1.3 2007/12/01 06:28:42 kano Exp $
+Based on english version:
+NetBSD: install.txt,v 1.3 2007/12/01 06:28:42 kano Exp
 
-0. NetBSD/hpcmips kernel with sysinst
+0. sysinst つきの NetBSD/hpcmips カーネル
 
-The bootloader and system installer for NetBSD/hpcmips is at:
+NetBSD/hpcmips のブートローダーとシステムインストーラーは、以下の場所にあります。
 
 ftp://ftp.NetBSD.org/pub/NetBSD/arch/hpcmips/snapshot/20000315/installation
-[20000315 is snapshot release date. You should check for a newer version.]
+[20000315 はスナップショットのリリース日です。もっと新しいものが出ていないか確認してください。]
 
-Get these files in binary mode:
-netbsd (the kernel)
+以下の各ファイルを、バイナリーモードで取得します。
+netbsd.gz (カーネル)
 pbsdboot.exe
-pbsdboot.exe is a Windows CE applicaton. Start pbsdboot and
- - set hardware type (NEC MobileGear R500...)
- - kernel path. (\Storage Card\netbsd)
 
-[WARNING! Booting NetBSD/hpcmips for the first time will erase the entire
-contents of your memory, including the program memory and storage of your
-Windows CE installation! Before you do this, be sure to do a complete
-backup of your CE files.]
+pbsdboot.exe は、Windows CE のアプリケーションです。
+pbsdboot を起動して、以下の項目を設定します。
+ - ハードウェアの機種 (例: NEC MobileGear R500)
+ - カーネルのパス (\Storage Card\netbsd)
 
-Click the "Boot" button to start NetBSD/hpcmips.
+[警告! NetBSD/hpcmips を起動すると、
+Windows CE 環境のプログラムメモリーやストレージをはじめ、
+メモリーの内容はすべて消えてしまいます。
+作業前に、 CE のファイルを必ずバックアップしておいてください。]
 
-The NetBSD/hpcmips kernel and system installer takes almost 6MB of program
-memory. If you get a "cannot allocate heap" error, adjust the memory
-allocation in Windows CE here:
+"Boot" ボタンをクリックして、NetBSD/hpcmips を起動します。
+
+NetBSD/hpcmips のカーネルとシステムインストーラーは、
+約 6MB のプログラムメモリーを使います。
+"cannot allocate heap" エラーが出た場合は、
+以下のようにして Windows CE のメモリー割当を調整します。
 
 Start->Settings->Control Panel->System
-Choose the Memory tab and move the slider toward the left to allocate more
-program memory.
+(スタート->設定->コントロールパネル->システム)
+で、Memory (メモリ) タブを選び、スライダーを左に動かして、
+プログラムメモリーへの割当を増やします。
 
-If the sysinst application fails, try the following steps:
+sysinst アプリケーションが使えない場合は、以下の手順によってください。
 
-1. CF partition
-Run fdisk on the CF partition.
+1. CF パーティション
+fdisk を実行して、CF のパーティションを以下のように切ります。
 
 /dev/wd1a ffs   112M 
 /dev/wd1b swap   10M 
 /dev/wd1e msdos 5M
 
 Tips:
-To create a CE-readable msdos partition on CF:
-    - Set the primary partition to sysid 6 in fdisk.
-    - Set CF to Windows CE CF slot.
-    - Windows CE will format the partition automatically.
+CE から読める msdos パーティションを CF 上に作る方法。
+    - fdisk で、基本パーティションの sysid を 6 に設定します。
+    - CF を Windows CE の CF スロットに挿します。
+    - Windows CE が自動的にこのパーティションをフォーマットします。
     
-fdisk command results.
-      .........
+fdisk コマンドの実行:
+      .........(略)
 
-disklabel command results.
+disklabel コマンドの実行:
 
-disklabel wd0   --- print wd0 partition information
-disklabel wd0 > label.CF  --- dump wd0 partition information
-edit label.CF   --- edit wd0 partition information
+disklabel wd0   --- wd0 パーティションの情報を表示します
+disklabel wd0 > label.CF  --- wd0 パーティションの情報をファイルに書き出します
+edit label.CF   --- wd0 パーティションの情報を編集します
 
-The fdisk footprint from an example 128MB CF card:
+128MB CF カードでの fdisk 出力の例:
 #        size  offset  fstype [fsize bsize  cpg]
   a:   209920    4352  4.2BSD   1024  4096   16  # (Cyl.    17 - 836)
   b:    12800  214272    swap                    # (Cyl.   837 - 886)
@@ -63,70 +69,71 @@ The fdisk footprint from an example 128MB CF card:
   d:   227584       0  unused      0     0       # (Cyl.     0 - 888)
   e:     4320      32   MSDOS                    # (Cyl.     0*- 16 )
 
-more info. 
+さらなる情報は、
 http://www.NetBSD.org/ports/i386/faq.html#ms_partition
+にあります。
 
-Typical fstab entry:
+通常の fstab の内容:
 /dev/wd0a  /  ffs rw 1 1
 /dev/wd0b none swap sw 0 0
 /kern     /kern kernfs rw
 /dev/wd0e /msdos msdos rw 0 0
 
-2. newfs & mount PC
+2. newfs とマウント
 newfs /dev/wd1a 
 mount /dev/wd1a /mnt
 mount -t msdos /dev/wd1e /msdos2
 
 tips:
-pbsdboot.exe can find the /netbsd kernel on the CF card's ffs partition.
-If your CF card has both msdos and ffs partitions, pbsdboot.exe can find
-ffs:/netbsd from within Windows CE, and you won't need a second kernel
-file on the msdos partition.
+pbsdboot.exe は、CF カードの ffs パーティションにある /netbsd カーネルを見つけることができます。
+CF カードに msdos と ffs の両パーティションがある場合は、
+pbsdboot.exe は Windows CE から ffs:/netbsd を見つけることができますので、
+msdos パーティション上にカーネルファイルをもうひとつ置く必要はありません。
 
-3. get the distribution
-get base.tgz etc.tgz kern.tgz
+3. 配布物の取得
 ftp://ftp.NetBSD.org/pub/NetBSD/arch/hpcmips/snapshot/
+から、base.tgz, etc.tgz, kern.tgz を取得します。
 
-4. copy kernel
+4. カーネルのコピー
 tar xzvf kern.tgz
 netbsd    - root wd0a swap wd0b
 
 cp -p netbsd /mnt/netbsd
 cp -p netbsd /msdos2/netbsd
 
-5. copy pbsdboot
+5. pbsdboot のコピー
 uudecode /usr/src/arch/hpcmips/stand/pbsdboot/pbsdboot.uu
 cp -p pbsdboot.exe /msdos2/pbsdboot.exe
 
-6. extract sets
+6. 配布セットの展開
 tar xzvf base.tgz -C /mnt
 tar xzvf etc.tgz  -C /mnt
 
-If you have no room to stage the sets, these commands will let you extract
-them directly via ftp:
+配布セットを置けるだけのディスク容量がない場合は、
+以下のようにして、ftp を介して直接展開することができます。
 
 cd /; ftp -o "|tar xpfz -" ftp://.....
 
-7. make device nodes
+7. デバイスノードの作成
 
 cd /mnt/dev
 sh ./MAKEDEV all
 
-8. check /etc
+8. /etc の確認
 
 cp /mnt/etc/fstab.wd /mnt/etc/fstab
-edit /etc/fstab
+/etc/fstab を編集します。
 
-edit /etc/rc.conf
+/etc/rc.conf を以下のように編集します。
 
 rc_configured=NO  -> rc_configured=YES
 
-9. Full installation
+9. 完全なインストール
 
-A complete build environment requires over 500MB of storage.
+完全な構築環境を作るためには 500MB を超える容量が必要です。
 
-CF slot:NE-2000 Compatible CF Ether Card
-PCMCIA slot: Adaptec PCMCIA SCSI Card+SCSI Hard Disk
+CF スロット:NE-2000 互換 CF イーサネットカード
+PCMCIA スロット: Adaptec PCMCIA SCSI カード + SCSI ハードディスク
 
 % df
 Filesystem  1K-blocks     Used    Avail Capacity  Mounted on
