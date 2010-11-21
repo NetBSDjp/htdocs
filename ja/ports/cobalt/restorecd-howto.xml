@@ -1,0 +1,983 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+"http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="ports-cobalt-restorecd-howto">
+  <config param="desc"
+  value="NetBSD Cobalt Qube Restore CD HOWTO" />
+  <config param="cvstag"
+  value="$NetBSD: restorecd-howto.xml,v 1.19 2010/09/26 13:54:00 kano Exp $" />
+  <config param="rcsdate" value="$Date: 2010/09/26 13:54:00 $" />
+  <head>
+    <title>NetBSD/cobalt Restore CD HOWTO</title>
+  </head>
+  <sect1 id="top">
+    <table border="0" id="top-table">
+      <tr>
+        <td align="left">
+          <para>This document attempts to explain how to create and use a
+          NetBSD Restore CD for Cobalt Qube/Raq devices. It was
+          originally written by Alex Pelts <email>alexp@broadcom.com</email>
+          and posted to the 
+          <ulink url="../../mailinglists/#port-cobalt">port-cobalt
+          mailinglist</ulink>, then updated by Izumi Tsutsui
+          <email>tsutsui@NetBSD.org</email>
+          for the newer 5.0 restorecd script.</para>
+        </td>
+        <td align="right" valign="bottom">
+          <ulink url="../../about/disclaimer.html#bsd-daemon">
+            <html:img align="middle"
+            src="../../images/BSD-daemon.jpg" border="0"
+            width="146" height="129" alt="BSD daemon" />
+          </ulink>
+        </td>
+      </tr>
+    </table>
+  </sect1>
+
+  <sect1 role="toc">
+    <sect2 id="introduction">
+      <title>Introduction</title>
+      <sect3 id="disclaimer">
+        <title>Disclaimer</title>
+        <para>The author does not accept any liability for your use
+        of this document. It is possible that your use of this
+        document will render your computer useless, damage your
+        hardware, software, break your window or your relationship
+        with a loved one. Use the contents of this document at your
+        own risk. This document is just the authors opinion on how
+        to use hardware and software mentioned herein.</para>
+        <para>You have been warned.</para>
+      </sect3>
+      <sect3 id="copyright">
+        <title>Copyright Information</title>
+        <para>This document is copyrighted (c) 2005 Alex Pelts and
+        also copyrighted (c) 2008, 2009, 2010 Izumi Tsutsui,
+	and distributed under the terms of the OpenContent License
+        (OPL). The full text of the license can be found at 
+        <ulink url="http://www.opencontent.org/opl.shtml" />
+        .</para>
+      </sect3>
+    </sect2>
+
+    <sect2 id="what-is-a-restore-cd">
+      <title>What is a Cobalt Qube/Raq and what is a Restore
+      CD?</title>
+      <sect3 id="what-is-qube">
+        <title>What is a Cobalt Qube/Raq?</title>
+        <para>The Cobalt Qube/Raq is a server appliance. To put it
+        simply, they are just computers without keyboard and
+        monitor and without the ability to attach one. There are
+        several versions of Qubes and Raqs in existence, older MIPS
+        based and newer AMD-K6 based. This document covers only
+        MIPS based server appliances. Further in the document both
+        appliances will be referred to as "Qube". There are
+        differences between the Qube and the Raq but for the
+        purpose of this document they are irrelevant.</para>
+      </sect3>
+      <sect3 id="what-is-cd">
+        <title>What is a Restore CD?</title>
+        <para>Because the Qube does not have an easy way to attach
+        a monitor, a keyboard and most importantly a CDROM drive,
+        there is no easy way to install a new operating system on
+        it. This is where the Restore CD comes in. The Qube has the
+        ability to boot an operating system over the network. A
+        Restore CD provides the environment allowing the Qube to
+        boot an operating system and perform an unattended install
+        of the operating system onto hard drive. An original Linux
+        Restore CD was provided with the device. ISO image of this
+        CD can still be downloaded from Sun's web site.</para>
+        <para>Based on the original Cobalt Restore CD, Dennis
+        Chernoivanov created a NetBSD Restore CD for versions 1.6
+        and 1.6.1. He then published the <ulink
+	url="ftp://ftp.NetBSD.org/pub/NetBSD/misc/cdi/cobalt/">scripts
+	he used to create CD</ulink> and he also updated the script
+	for 3.0 release and 3.99.xx -current. After that his restorecd
+	script has been updated and improved by Izumi Tsutsui
+	for 4.0 and 5.0_BETA.</para>
+        <para>This document describes how to use a Restore CD on installation
+        and how to create a Restore CD for version 5.0 (and later)
+        from scratch.</para>
+      </sect3>
+    </sect2>
+
+    <sect2 id="requirements">
+      <title>Hardware and Software Requirements</title>
+      <sect3 id="hardware-requirements">
+        <title>Hardware Requirements to use Restore CD</title>
+        <para>To create and use a Restore CD you will need
+        following hardware:</para>
+        <itemizedlist>
+          <listitem>MIPS based Qube or RaQ with at least 1GB hard
+          drive installed.</listitem>
+          <listitem>x86 based PC or Laptop with NetBSD supported
+          Ethernet adapter and bootable CDROM drive.</listitem>
+          <listitem>Crossover Ethernet cable or hub with two
+          straight cables.</listitem>
+          <listitem>RS232 Serial cable could be very helpful to
+          diagnose problems.</listitem>
+          <listitem>CD Recorder to create your final CD.</listitem>
+        </itemizedlist>
+      </sect3>
+      <sect3 id="software-requirements">
+        <title>Software Requirements to create Restore CD</title>
+        <para>To create a Restore CD you will need following
+        software:</para>
+        <itemizedlist>
+          <listitem>POSIX-compliant systems which are capable to build
+          NetBSD from sources.  Any of the following should work
+          - NetBSD, FreeBSD, Linux, <ulink
+          url="http://mail-index.NetBSD.org/netbsd-docs/2008/11/16/msg000070.html">Cygwin</ulink>
+          etc.</listitem>
+          <listitem><command>wget</command> or <command>rsync</command>
+          to retrieve all new installation binary and source sets.</listitem>
+          <listitem>Typical unix tools including
+          <command>awk</command>,
+          <command>basename</command>,
+          <command>cat</command>,
+          <command>chmod</command>,
+          <command>cp</command>,
+          <command>dirname</command>,
+          <command>echo</command>,
+          <command>gzip</command>,
+          <command>ln</command>,
+          <command>mkdir</command>,
+          <command>mv</command>,
+          <command>patch</command>,
+          <command>pwd</command>,
+          <command>rm</command>,
+          <command>sed</command>,
+          <command>sh</command>,
+          <command>tar</command>,
+          and
+          <command>touch</command>
+          etc. These usually come with your OS.</listitem>
+          <listitem>More commands to build NetBSD toolchains, including
+          <command>make</command>,
+          <command>cc</command> (or <command>gcc</command>),
+          <command>as</command>,
+          <command>ld</command>,
+          and
+          <command>cmp</command> (required by configure scripts)
+          etc. Usually these also come with your OS.</listitem>
+        </itemizedlist>
+      </sect3>
+    </sect2>
+
+    <sect2 id="installation">
+      <title>Installation with the Restore CD</title>
+
+      <sect3 id="install-overview">
+        <title>Installation Overview</title>
+        <para>
+        The installation instructions below will in order perform the
+        following steps:
+        <orderedlist>
+          <listitem>Boot the assisting PC from the Restore CD.
+          This will enable a dhcp server on the PC and other services
+          which the server appliance will need during installation.</listitem>
+          <listitem>(re)boot the Cobalt server appliance in a state
+          where it is prepared to retrieve the restore CD contents
+          via network</listitem>
+          <listitem>Re-initialize the Cobalt server appliance from
+          the assisting PC's restore CD</listitem>
+        </orderedlist>
+        </para>
+        <para>
+        YouTube video <ulink
+        url="http://www.youtube.com/watch?v=jTSrbkACU8k"><quote>Install
+        NetBSD/cobalt 5.1_RC2 using restorecd</quote></ulink>
+        is also available for a visual example.</para>
+      </sect3>
+
+      <sect3 id="how-to-use">
+        <title>How to Use Your CD</title>
+        <para>
+          <emphasis role="bold">Warning:
+          THIS INSTALLATION WILL DESTROY THE EXISTING CONTENTS OF YOUR COBALT
+          HARDDISK DRIVE.</emphasis>
+          Ensure you have sufficient backups before starting the installation
+          if you need.
+        </para>
+        <para>
+          <emphasis role="bold">Note:</emphasis>
+          on the other hand, restorecd doesn't use harddisk on the i386 server
+          at all (it works even if the server has no hard drive).
+        </para>
+        <orderedlist>
+          <listitem>
+          <para>
+            Connect your i386 server to your cobalt using ether a crossover
+            cable or hub/switch.
+          </para>
+          <para>
+            <emphasis role="bold">Note:</emphasis>
+            for security reason, it's recommended not to connect
+            any other machines than your i386 server and cobalt appliance
+            on the same network.
+          </para>
+          </listitem>
+
+          <listitem>
+          <para>
+            Check your i386 server's manuals to see how to boot from
+            its CDROM drive, then boot it from the Restore CD.
+            An instruction document will be shown by
+            <command>less</command> command during boot process, so
+            use space or return to read and type <quote>q</quote> to quit it.
+            If <quote><code>login:</code></quote> prompt appears
+            the i386 server is ready for installation and
+            no further settings are required on the server.
+          </para>
+          <para>
+            <emphasis role="bold">Note:</emphasis>
+            if your machine has some trouble during boot around ACPI,
+            try alternative kernel settings as shown on the boot menu.
+          </para>
+          </listitem>
+
+          <listitem>
+          <para>
+            Turn on the cobalt appliance while simultaneously pressing and
+            holding down both the left (&lt;) and right (&gt;) arrow buttons
+            on the LCD console to boot cobalt via network.
+          </para>
+          </listitem>
+
+          <listitem>
+          <para>
+            Continue holding down both the left (&lt;) and right (&gt;) arrow
+            buttons until <quote><code>Net booting</code></quote> appears
+            on the LCD display,
+<screen>
+Net booting
+
+</screen>
+          then release the buttons.
+          </para>
+          </listitem>
+
+          <listitem>
+          <para>
+            Wait until the box boots up.
+            Note most boot processes are shown on the LCD display:
+<screen>
+NetBSD/cobalt
+Bootloader
+</screen>
+<screen>
+Loading:
+nfs:netbsd
+</screen>
+<screen width="16">
+NetBSD/cobalt
+Starting up...
+</screen>
+<screen>
+[Starting up]
+  Create /dev/*
+</screen>
+<screen>
+[Starting up]
+  &gt; network
+</screen>
+            If it's ready, <quote><code>restorecd ready</code></quote>
+            message and IP address assigned by the i386 server appear
+            on the LCD screen:
+<screen>
+restorecd ready
+[10.0.0.160]
+</screen>
+            <emphasis role="bold">Note:</emphasis>
+            if you need remote login access for recovery without restoring,
+            you can login to your cobalt from the i386 server via network
+            at this point.
+          </para>
+          </listitem>
+
+          <listitem>
+          <para>
+            To start restorecd operation, push and hold the
+            <quote>Select</quote> button two seconds to enable
+            <command>paneld</command> menu.
+            Once the menu appears on the LCD display,
+            select <quote>Restore</quote> menu by the Select button,
+<screen>
+select:
+  Restore
+</screen>
+            select <quote>Y</quote> (which is default) by the arrow buttons
+            on the confirm menu,
+<screen>
+Start restore?
+  [Y]es / [N]o
+</screen>
+            and then push the <quote>Enter</quote> button
+            to start installation.
+          </para>
+          <para>
+          <emphasis role="bold">Warning:
+          again, whole disk contents on the cobalt appliance will be destroyed
+          once installation is started.</emphasis>
+          </para>
+          <para>
+            During installation, whole procedure will appear
+            on the LCD display and serial console.
+<screen>
+Disk Setup:
+  Reset disk
+</screen>
+<screen>
+Disk Setup:
+  Format root
+</screen>
+<screen>
+System install:
+  base.tgz
+</screen>
+          </para>
+          <para>
+            <emphasis role="bold">Warning:</emphasis>
+            please note that the installation process may take a while
+            (about 10 minutes on Qube2).
+            Do not interrupt it until it is finished.
+          </para>
+          </listitem>
+
+          <listitem>
+          <para>
+            Once all part of installation are complete, the cobalt box
+            will be rebooted automatically.
+<screen>
+Installed OK:
+  Rebooting...
+</screen>
+            Wait until the cobalt appliance boots up from the hard drive.
+<screen>
+NetBSD/cobalt
+Bootloader
+</screen>
+<screen>
+Loading:
+wd0a:netbsd
+</screen>
+<screen>
+NetBSD/cobalt
+Starting up...
+</screen>
+<screen>
+[Starting up]
+  &gt; dhclient
+</screen>
+            Finally, the box host name and IP address
+            (that are assigned by the i386 server running restorecd)
+            should appear on the LCD screen.
+<screen>
+q-160.netbsd.org&#160;
+  [10.0.0.160]
+</screen>
+            This indicates installation success.
+          </para>
+          </listitem>
+
+          <listitem>
+          <para>
+             <emphasis role="bold">
+             BE AWARE that a newly installed box is left
+             in a highly insecure state.
+             </emphasis>
+          </para>
+          <para>
+             All ttys are open by default and
+             allow root access over the network.
+             Also, telnet and rlogin ports are open.
+             This is done to allow you to login into the fresh box
+             in order to make necessary configuration changes.
+          </para>
+          <para>
+             <emphasis role="bold">
+             Please do not forget to bring your cobalt appliance
+             to a secure state before connecting it to an open network:
+             </emphasis>
+             <itemizedlist>
+               <listitem>set root password by &man.passwd.1;</listitem>
+               <listitem>remove all pseudo terminal (tty[pqrs]?) lines
+               from <filename>/etc/ttys</filename>, or remove
+               <quote><code>secure</code></quote> field from such pseudo
+               terminals</listitem>
+               <listitem>comment out <code>telnet</code> and
+               <code>rlogin</code> lines in <filename>/etc/inetd.conf</filename>
+               if you don't really want to enable those services by default
+               (it might be better to use &man.sshd.8;)</listitem>
+               <listitem>add new users with &man.user.8; etc.</listitem>
+               <listitem>put users who need root access via &man.su.1;
+               in the <quote>wheel</quote> group by editing the
+               <filename>/etc/group</filename> file</listitem>
+             </itemizedlist>
+             See the &man.afterboot.8; man page for more details.
+          </para>
+          </listitem>
+
+          <listitem>
+          <para>
+             Check &man.afterboot.8; for further settings.
+             Some of the information is not applicable to the cobalt,
+             but will give you some background information
+             on configuring NetBSD in general.
+             <ulink url="../../docs/guide/en/">The NetBSD
+             Guide</ulink> also provides helpful information.
+          </para>
+          <para>
+            <emphasis role="bold">Warning:</emphasis>
+             a freshly installed cobalt box is configured as a DHCP client,
+             i.e. it tries to obtain its IP address over the network
+             from a DHCP server, for initial setup with the i386 server
+             running restorecd.
+             To disable this after your own settings are complete,
+             change <filename>/etc/rc.conf</filename> to contain
+             <quote><code>dhclient=NO</code></quote> line.
+          </para>
+          </listitem>
+
+        </orderedlist>
+      </sect3>
+
+      <sect3 id="troubleshooting">
+        <title>Troubleshooting</title>
+        <para>If you have any trouble and your cobalt doesn't boot up to
+        the multi user, you can still use the restorecd for recovery.
+        As mentioned in the previous section, netboot environment with
+        the restorecd provides remote login capability without reinstalling,
+        so you can check and fix contents in your hard drive etc.
+        without serial console.</para>
+        <para>To debug any problems with the Restore CD operation itself
+        you will need a serial cable. Cobalt machines use standard DB9
+        male connector and <ulink
+        url="../../docs/Hardware/Misc/serial.html">NetBSD
+        Serial Port Primer page</ulink> might help to prepare it.
+        Attach this cable to your Qube's serial port and to your computer.
+        Now you can run a terminal program and monitor the installation
+        progress.</para>
+        <para>Qube2700 does not have serial port so there is not
+        much you can do. About the only thing is to extract hard
+        disk from Qube, attach it to a PC or a newer Qube2.
+        Examine the failed install and try to figure out what went wrong.
+        If you are brave enough, you could also try to build <ulink
+        url="faq.html#qube2700serial">optional serial interface</ulink>.</para>
+      </sect3>
+
+      <sect3 id="sysinst-install">
+        <title>Installation using sysinst based install kernel</title>
+        <para>
+        While Restore CD provides fully automated installation by default,
+        it also contains the sysinst based install <filename>RAMDISK</filename>
+        kernel which is the traditional installation method on NetBSD.
+        If you have a working serial console, you can also boot the sysinst
+        based install kernel without difficult netboot server settings.
+        </para>
+        <para>
+        To use the RAMDISK based install kernel, you need to specify
+        sysinst based kernel at the bootloader's prompt.</para>
+        <orderedlist>
+          <listitem>
+          <para>
+            Setup your i386 server and boot your Cobalt via network
+            with arrow buttons as mentioned in
+            <ulink url="#how-to-use">How to Use Your CD</ulink> section.
+          </para>
+          </listitem>
+          <listitem>
+          <para>
+            If bootloader is properly loaded via network, you can see
+            the following bootloader prompt on your serial console:
+<screen>
+&gt;&gt; NetBSD/cobalt 5.0.2 Bootloader, Revision 0.9 [@0x80f00000]
+&gt;&gt; (builds@b8.netbsd.org, Sat Feb  6 14:45:36 UTC 2010)
+&gt;&gt; Model:               Cobalt Qube 2
+&gt;&gt; Memory:              65536 k
+&gt;&gt; PROM boot string:    root=/dev/nfs nfsroot=/nfsroot nfsaddrs=bootp
+Boot [nfs:netbsd]:
+</screen>
+          </para>
+          </listitem>
+          <listitem>
+          <para>
+            Enter <command>netbsd.sysinst</command> to load
+            the sysinst based RAMDISK kernel on the prompt:
+            <screen>Boot [nfs:netbsd]: netbsd.sysinst</screen>
+          </para>
+          </listitem>
+          <listitem>
+          <para>
+            The RAMDISK kernel will be loaded as the following:
+<screen>
+Loading: nfs:netbsd.sysinst
+6606160+312228 [223168+213034]=0x703dec
+Starting at 0x80001000
+
+Copyright (c) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+    2006, 2007, 2008, 2009
+    The NetBSD Foundation, Inc.  All rights reserved.
+Copyright (c) 1982, 1986, 1989, 1991, 1993
+    The Regents of the University of California.  All rights reserved.
+
+NetBSD 5.0.2 (RAMDISK) #0: Sat Feb  6 14:56:23 UTC 2010
+ :
+</screen>
+          </para>
+          </listitem>
+          <listitem>
+          <para>
+            On "<code>Terminal type? [vt100]</code>" prompt, just hit Enter.
+            On the next
+            "<code>(I)nstall, (S)hell or (H)alt ?</code>" menu,
+            Select "<command>i</command>":
+<screen>
+ :
+erase ^H, werase ^W, kill ^U, intr ^C, status ^T
+Terminal type? [vt100] 
+Erase is backspace.
+(I)nstall, (S)hell or (H)alt ? i
+</screen>
+             then you see welcome message by sysinst.
+          </para>
+          </listitem>
+          <listitem>
+          <para>
+            For further sysinst installation, refer <ulink
+            url="../../docs/guide/en/chap-exinst.html">Example
+            installation</ulink> section in the <ulink
+            url="../../docs/guide/en/">NetBSD guide</ulink>.
+          </para>
+          <para>
+            Note there are several NetBSD/cobalt specific or Restore CD
+            specific settings:
+           <orderedlist>
+            <listitem>
+            <para>
+              NetBSD/cobalt sysinst supports only English messages,
+              so selecting language and keyboard menu are not applicable.
+            </para>
+            </listitem>
+            <listitem>
+            <para>
+              On <ulink
+              url="../../docs/guide/en/chap-exinst.html#exinst-partitions">MBR
+              partitions menu</ulink>, select
+              "<command>b: Use the entire disk</command>".
+              If you want to edit MBR partition manually, make sure to prepare
+              Linux Ext2fs boot partition required by the firmware.
+            </para>
+            </listitem>
+            <listitem>
+            <para>
+              On <ulink
+              url="../../docs/guide/en/chap-exinst.html#exinst-disklabel">Disklabel
+              partitions menu</ulink>, select
+              "<command>a: Set sizes of NetBSD partitions</command>" and
+              change partition or swap size if necessary.
+              Note Ext2fs boot partition is prepared automatically, but
+              please don't change it in the disklabel editor.
+            </para>
+            </listitem>
+            <listitem>
+            <para>
+              On <ulink
+              url="../../docs/guide/en/chap-exinst.html#exinst-choose-media">Choosing
+              the installation media</ulink>, you can only use <ulink
+              url="../../docs/guide/en/chap-exinst.html#exinst-install-via-nfs">Install
+              from NFS</ulink>, which is prepared on your i386 server
+              by the Restore CD.
+              Before setting Host and Base directory, you also need to
+              configure network as mentioned in <ulink
+              url="../../docs/guide/en/chap-exinst.html#exinst-install-via-ftp">Install
+              via FTP</ulink> section.
+              <itemizedlist>
+                <listitem>
+                Use the default "<command>tlp0</command>" for network interface
+                device.
+                </listitem>
+                <listitem>
+                Use the default "<command>autoselect</command>" for media type.
+                </listitem>
+                <listitem>
+                Select "<command>a: Yes</command>" on
+                "<code>Perform DHCP autoconfiguration?</code>" prompt
+                to use DHCP.
+                </listitem>
+                <listitem>
+                Don't try to setup IPv6 configuration because Restore CD doesn't
+                support it.
+                </listitem>
+              </itemizedlist>
+              On the NFS install screen, use the following settings:
+              <itemizedlist>
+                <listitem>
+                Use "<command>10.0.0.254</command>" for NFS host, which is the
+                default IP address used on the your i386 server running
+                Restore CD.
+                </listitem>
+                <listitem>
+                Use "<command>/nfsroot</command>" for base directory, where
+                the NFS root is stored on the Restore CD.
+                </listitem>
+                <listitem>
+                No need to change set directory from the default,
+                since Restore CD has set files in the default path.
+                </listitem>
+              </itemizedlist>
+            </para>
+            </listitem>
+           </orderedlist>
+          </para>
+          </listitem>
+        </orderedlist>
+      </sect3>
+      <sect3 id="upgrade-system">
+        <title>Upgrading installed system</title>
+        <para>Unfortunately Restore CD doesn't support automated upgrading
+        installed system, but you can still try to update your system
+        manually as described in the
+        <ulink url="../../docs/current/index.html#updating-from-snapshot">Updating an existing system from a
+        current snapshot</ulink> section in the Tracking NetBSD-current
+        document.</para>
+        <para>If you have a working serial console, you can also try to boot
+        &man.sysinst.8; based <filename>RAMDISK</filename> kernel in the
+        distribution for menu based upgrading.  To boot
+        <filename>RAMDISK</filename> kernel, you can just put
+        <filename>netbsd-RAMDISK.gz</filename> kernel in the root
+        directory on your working system and choose it on the bootloader
+        prompt.  For the actual procedure of upgrading by sysinst, see <ulink
+        url="../../docs/guide/en/chap-upgrading.html">Upgrading NetBSD</ulink>
+        section in the <ulink url="../../docs/guide/en/">NetBSD guide</ulink>
+        for details.</para>
+        <para>If you have any trouble on upgrading, you can still use
+        Restore CD as a rescue disk as mentioned in the <ulink
+        url="#troubleshooting">Troubleshooting</ulink> section.</para>
+      </sect3>
+    </sect2>
+
+    <sect2 id="create_restorecd">
+      <title>Steps to create a new Restore CD</title>
+
+      <sect3 id="prepare-command">
+        <title>Prepare fetch command</title>
+        <para>The restorecd script requires
+        <command>wget</command> or <command>rsync</command> to fetch
+        necessary NetBSD release files for restorecd.
+        If you are using a NetBSD host you can install them via <ulink
+        url="http://www.NetBSD.org/docs/software/packages.html">Packages
+        Collection</ulink> by the following commands:</para>
+<screen>
+# PKG_PATH=ftp://ftp.NetBSD.org/pub/pkgsrc/packages/NetBSD/i386/5.0/All	# use appropriate port and version for your build host
+# export PKG_PATH
+# pkg_add -v wget
+# pkg_add -v rsync
+</screen>
+      </sect3>
+
+      <sect3 id="download-script">
+        <title>Download restorecd script</title>
+        <para>Download the NetBSD Restore CD script and extract it.
+        It is located on the <ulink
+        url="ftp://ftp.NetBSD.org/pub/NetBSD/arch/cobalt/restore-cd/5.0.2/">
+        NetBSD ftp site</ulink>.</para>
+      </sect3>
+
+      <sect3 id="edit-makefile">
+        <title>Edit Makefile</title>
+        <para>The restorecd script includes a simple Makefile
+        to create a Restore CD, but there is no automated
+        <quote>configure</quote> mechanism so you might have to modify
+        the Makefile for your host system and environments.</para>
+        <itemizedlist>
+          <listitem>Modify <code>WGET=</code> or
+          <code>RSYNC=</code> lines per where these commands are installed
+          on your host:
+<programlisting>
+WGET?=		/usr/pkg/bin/wget
+#WGET=		/usr/bin/wget
+#WGET=		/usr/local/bin/wget
+
+RSYNC?= 	/usr/pkg/bin/rsync
+#RSYNC= 	/usr/bin/rsync
+#RSYNC= 	/usr/local/bin/rsync
+</programlisting>
+          </listitem>
+          <listitem>If you will use daily snapshot binaries to build
+          restorecd, check <ulink
+          url="http://releng.NetBSD.org/cgi-bin/builds.cgi">Summary of daily
+          snapshot builds page</ulink> and modify <code>DAILY_DIR?=</code>
+          line to point an appropriate daily directory:
+<programlisting>
+DAILY_DIR?=	201009180000Z
+</programlisting>
+          </listitem>
+          <listitem>If you use <ulink
+          url="http://www.NetBSD.org/mirrors/">mirror sites</ulink> rather
+          than <ulink url="ftp://ftp.NetBSD.org/pub/">ftp.NetBSD.org</ulink>
+          or rsync.NetBSD.org, set your mirror host to
+          <code>FTP_HOST=</code> line for <command>wget</command>:
+<programlisting>
+FTP_HOST?=	ftp.NetBSD.org
+#FTP_HOST=	ftp.jp.NetBSD.org
+#FTP_HOST=	ftp7.jp.NetBSD.org
+</programlisting>
+          or <code>RSYNC_HOST=</code> line for
+          <command>rsync</command>:
+<programlisting>
+RSYNC_HOST?=	rsync.NetBSD.org
+#RSYNC_HOST=	rsync.jp.NetBSD.org
+RSYNC_PREFIX?=
+
+#RSYNC_HOST=	rsync3.jp.NetBSD.org
+#RSYNC_PREFIX=	pub/
+</programlisting>
+          If your rsync mirror have different module names from <ulink
+          url="http://www.NetBSD.org/mirrors/#rsync">rsync.NetBSD.org</ulink>
+          (i.e. its rsync URL has trailing directory path after the hostname),
+          you also have to adjust <code>RSYNC_PREFIX=</code> line.
+          </listitem>
+          <listitem>If you use <command>rsync</command>, you have to
+          change the following lines:
+<programlisting>
+${DONE_FETCH}:
+	${MKDIR} -p ${DOWNLOADDIR}
+#	${MAKE} fetch_wget
+	${MAKE} fetch_rsync
+	${TOUCH} ${DONE_FETCH}
+</programlisting>
+          i.e. comment out <quote><code>${MAKE} fetch_wget</code></quote> line
+          and uncomment <quote><code>${MAKE} fetch_rsync</code></quote> line.
+          </listitem>
+        </itemizedlist>
+      </sect3>
+
+
+      <sect3 id="creating-the-cd">
+        <title>Creating your new Restore CD</title>
+        <para>Once your fetch command and Makefile are prepared,
+        just type <quote><code>make</code></quote>.</para>
+        <para>This will take some time to execute and after it is finished
+        you will have a file
+        <quote><filename>cd.tmp/restorecd.iso</filename></quote>
+        which is your new Restore CD image.</para>
+        <para>You can burn this image onto a CD using any software
+        that can record ISO images. On UNIX you can use
+        <command>cdrecord</command>, on Windows use Nero Burning Rom
+        or any other ISO image compatible software.</para>
+        <para>Congratulations! Enjoy your custom NetBSD Restore CD.</para>
+      </sect3>
+
+    </sect2>
+
+    <sect2 id="internals">
+      <title>Restore CD Internals</title>
+
+      <sect3 id="what-it-does">
+        <title>What restorecd script does?</title>
+
+        <para>Makefile in the restorecd script does the following ops:
+        <itemizedlist>
+          <listitem>fetch release binary sets (both for i386 and cobalt)
+          and source sets (necessary files are listed in
+          <filename>restorecd-fetch.lst</filename> file)</listitem>
+          <listitem>extract whole source sets</listitem>
+          <listitem>build toolchains for NetBSD/cobalt, to prepare
+          &man.makefs.8; command (required to create ISO image)
+          and to rebuild <command>paneld</command> binary and
+          its manual pages</listitem>
+          <listitem>extract cobalt binary sets and
+          build <command>paneld</command> binary and man pages</listitem>
+          <listitem>invoke <quote><command>restorecd</command></quote> script
+          to build the actual Restore CD ISO image</listitem>
+        </itemizedlist></para>
+
+        <para>The script of <quote><command>restorecd</command></quote>
+        performs the following ops:
+        <itemizedlist>
+          <listitem>check if the system has necessary commands</listitem>
+          <listitem>prepare files for i386 server (which will appear in root
+          of the ISO image) by extracting binary sets with misc local
+          modifications</listitem>
+          <listitem>prepare files for cobalt client (which will appear in
+          <filename>/nfsroot</filename> in the ISO image) from binary sets,
+          rebuilt <command>paneld</command> binary and some local
+          files for restorecd operations</listitem>
+          <listitem>copy binary set files for cobalt into
+          <filename>/nfsroot/cobalt</filename> and
+          <filename>/nfsroot/mipsel</filename> for installation</listitem>
+          <listitem>create a bootable ISO image by &man.makefs.8;
+          in the NetBSD toolchain</listitem>
+        </itemizedlist>
+        See the <filename>Makefile</filename> and
+        <command>restorecd</command> script for more details.</para>
+        <para>Note several settings used in the restorecd script depend on
+        the default behaviors and settings of each NetBSD command and kernel,
+        so they might have to be updated for the future <ulink
+        url="../../releases/current.html">NetBSD-current</ulink>.</para>
+      </sect3>
+
+      <sect3 id="how-does-it-work">
+        <title>How does the Restore CD work?</title>
+        <itemizedlist>
+          <listitem>
+          The i386 server uses ISO9660 file system for root file system.
+          The GENERIC kernel now recognizes CDROM drive as a booted device
+          so there is no special settings for it.
+          </listitem>
+          <listitem>
+          Of course ISO9660 file system on CDROM is read-only, so several
+          directories which require write permission are prepared using MFS.
+          <itemizedlist>
+            <listitem>
+            Device nodes in <filename>/dev</filename> is prepared by
+            &man.init.8; as well as RAMDISK kernels on installation media.
+            </listitem>
+            <listitem>
+            All files under the <filename>/var</filename> directory are stored
+            in <filename>/altvar</filename> in the CDROM, and they are copied
+            to MFS mounted <filename>/var</filename> directory once it's ready.
+            It's handled by the custom <filename>/etc/rc.d/mfsmount</filename>
+            &man.rc.d.8; script.
+            </listitem>
+            <listitem>
+            The <filename>/etc</filename> directory is a bit tricky.
+            Some files (like <filename>/etc/rc</filename>) are required right
+            after root file system is mounted so we can't use the same way with
+            the <filename>/var</filename> directory. Instead, restorecd uses
+            <quote><code>union</code></quote> option of &man.mount.8; command
+            to write some necessary files in <filename>/etc</filename> dir.
+            For &man.named.8;, chroot settings are used for some write ops.
+            Some more other &man.rc.d.8; scripts are modified to handle
+            this read-only quirk.</listitem>
+          </itemizedlist>
+          </listitem>
+          <listitem>
+          The cobalt client uses NFS for root file system during installation.
+          The NFS exported directory is <filename>/nfsroot</filename> on
+          the i386 server and of course it's also read-only,
+          so the similar mechanism with the i386 server mentioned above is
+          used on the cobalt client.
+          </listitem>
+          <listitem>
+          The i386 server searches available network interfaces from
+          output of &man.ifconfig.8; command with <code>-l</code> option.
+          If there are multiple interfaces the first one is used.
+          You have to use &man.userconf.4; at the boot to disable
+          unwanted interfaces, or modify the custom
+          <filename>data/i386/etc/rc.d/netconfig</filename> &man.rc.d.8; script
+          on building restorecd.
+          </listitem>
+          <listitem>
+          Actual installation operations are described in the
+          <command>install-core.sh</command> found in
+          <filename>/nfsroot/cobalt/install/script</filename> directory, or
+          <filename>data/cobalt/install/script</filename> directory in
+          the restorecd script tree. They are not same procedure with
+          the default &man.sysinst.8; installation.
+          </listitem>
+          <listitem>
+          The installer create the following partitions:
+            <itemizedlist>
+              <listitem>two times as physical memory for swap</listitem>
+              <listitem>20% (10% if disk size is smaller then 2Gbytes)
+              of the available disk space for
+              <filename>/var</filename></listitem>
+              <listitem>5% of the available disk space (or 500Mbytes if it's
+              larger than that) for <filename>/tmp</filename></listitem>
+              <listitem>10Mbytes for ext2fs partition to store
+              bootloader</listitem>
+              <listitem>rest for the NetBSD root partition</listitem>
+            </itemizedlist>
+          </listitem>
+          <listitem>
+          The installer also put custom files from
+          <filename>data/cobalt/install/files</filename> directory
+          in the restorecd script tree for the following operations:
+            <itemizedlist>
+              <listitem>&man.fstab.5; file for the above default
+              partitions</listitem>
+              <listitem><command>paneld(8)</command> binary and
+              its config files under <filename>/etc</filename></listitem>
+              <listitem>patched &man.ttys.5; and &man.inetd.conf.5; for
+              initial root login</listitem>
+              <listitem>patched &man.rc.8; and &man.rc.d.8; scripts to show
+              boot process to the LCD display</listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+      </sect3>
+
+    </sect2>
+
+    <sect2 id="credits">
+      <title>Credits</title>
+      <sect3 id="authors">
+        <title>Authors</title>
+        <para>This document was originally written and contributed to the
+        NetBSD Project by Alex Pelts <email>alexp@broadcom.com</email>.
+        The Create and Install sections are updated for 5.0_BETA restorecd
+        and the Internals section is added by Izumi Tsutsui
+        <email>tsutsui@NetBSD.org</email>.</para>
+      </sect3>
+      <sect3 id="other">
+        <title>Other credits</title>
+        <para>Thanks to Dennis Chernoivanov for creating the
+        original NetBSD Restore CD upon which this work is based
+        and the original <filename>instructions.txt</filename> document
+        which the Install section is based on,
+        and also thanks to Havard Eidnes for improving the
+        <filename>instructions.txt</filename> document.
+        Of course many thanks to numerous people from the port-cobalt mailing
+        list, who helped me to test this CD.</para>
+      </sect3>
+      <sect3 id="history">
+        <title>Document revision history</title>
+        <itemizedlist>
+          <listitem>
+          <emphasis>2005-03-11</emphasis>
+          -- original version announced on the
+          <ulink
+          url="http://mail-index.NetBSD.org/port-cobalt/2005/03/11/0001.html">
+          port-cobalt</ulink>
+          mailing list.</listitem>
+          <listitem>
+          <emphasis>2005-03-13</emphasis>
+          -- original import into NetBSD's htdocs CVS module with
+          minor english and grammar fixes.
+          </listitem>
+          <listitem>
+          <emphasis>2008-11-18</emphasis>
+          -- updated for newer 5.0_BETA restorecd script.
+          </listitem>
+          <listitem>
+          <emphasis>2009-04-20</emphasis>
+          -- Add some note about upgrading.
+          </listitem>
+          <listitem>
+          <emphasis>2009-04-30</emphasis>
+          -- updated for 5.0 release.
+          </listitem>
+          <listitem>
+          <emphasis>2009-08-29</emphasis>
+          -- Add a section about installation using sysinst kernel.
+          </listitem>
+          <listitem>
+          <emphasis>2010-02-19</emphasis>
+          -- updated for 5.0.2 release.
+          </listitem>
+          <listitem>
+          <emphasis>2010-09-18</emphasis>
+          -- reorder sections, add a link to YouTube video, update some examples.
+          </listitem>
+        </itemizedlist>
+        All other changes can be seen from the <ulink
+        url="http://cvsweb.NetBSD.org/bsdweb.cgi/htdocs/">cvsweb
+        interface</ulink>.
+      </sect3>
+    </sect2>
+  </sect1>
+</webpage>
+
