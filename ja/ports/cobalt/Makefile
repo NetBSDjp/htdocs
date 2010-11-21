@@ -4,6 +4,6 @@
 
 XMLDOCS+=	index
 # XMLDOCS+=	faq
-# XMLDOCS+=	restorecd-howto
+XMLDOCS+=	restorecd-howto
 
 .include "../../../share/mk/web.site.mk"
