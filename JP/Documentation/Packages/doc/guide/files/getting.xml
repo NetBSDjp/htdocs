@@ -1,6 +1,6 @@
-<!-- $NetBSD: getting.xml,v 1.26 2010/12/23 10:08:18 asau Exp $ -->
+<!-- $NetBSD: getting.xml,v 1.27 2010/12/23 10:42:16 asau Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: getting.xml,v 1.26 2010/12/23 10:08:18 asau Exp   -->
+<!-- NetBSD: getting.xml,v 1.27 2010/12/23 10:42:16 asau Exp   -->
 
 <chapter id="getting">
 <title>どこからpkgsrcを得て、どうやって最新に保つか</title>
@@ -78,20 +78,42 @@ pkgsrc を root ユーザーとして使う場合、pkgsrc は通常は
 <sect2 id="getting-via-cvs">
 <title>anonymous CVS 経由</title>
 
-	<para>pkgsrcを初めて(完全に)チェックアウトする際は、
-	まず環境変数を設定しておく必要があります。C シェルの場合は、
-	以下のようにします。</para>
+<para>pkgsrc の stable 枝名を指定して取得するためには、以下のコマンドを実行します。</para>
 
-<screen>&cprompt; <userinput>setenv CVSROOT anoncvs@anoncvs.NetBSD.org:/cvsroot</userinput>
-&cprompt; <userinput>setenv CVS_RSH ssh</userinput>
+<screen>&uprompt; <userinput>cd /usr &amp;&amp; cvs -q -z3 -d anoncvs@anoncvs.NetBSD.org:/cvsroot checkout -r <replaceable>pkgsrc-20xxQy</replaceable> -P pkgsrc</userinput>
 </screen>
 
-	<para>bourne シェルの場合は、以下のようにします。</para>
+	<para>ここで、<replaceable>pkgsrc-20xxQy</replaceable> は、
+	チェックアウトする stable 枝名にします。たとえば <quote>pkgsrc-2009Q1</quote> になります。</para>
 
-<screen>&uprompt; <userinput>export CVSROOT="anoncvs@anoncvs.NetBSD.org:/cvsroot"</userinput>
-&uprompt; <userinput>export CVS_RSH="ssh"</userinput>
+	<para>こうすると、<filename>/usr/</filename> ディレクトリーに
+	<filename>pkgsrc/</filename> ディレクトリーが作られ、
+	<filename>/usr/pkgsrc/</filename> 以下に全パッケージのソースが置かれます。</para>
+
+<para>pkgsrc current を取得するには、以下のコマンドを実行します。</para>
+
+<screen>&uprompt; <userinput>cd /usr &amp;&amp; cvs -q -z3 -d anoncvs@anoncvs.NetBSD.org:/cvsroot checkout -P pkgsrc</userinput>
 </screen>
 
+	<para><ulink url="http://NetBSD.org/FIXME">利用可能な CVS ミラーサイト一覧</ulink>から、もっとも速いものを選んで使ってください。</para>
+
+<!-- FIXME: All this CVS magic should move into appendix or so. -->
+	<para><literal>rsh</literal> のエラーメッセージが出た場合は、たとえば以下のようにして、環境変数 CVS_RSH を設定する必要があります。</para>
+
+<screen>&uprompt; <userinput>cd /usr &amp;&amp; env CVS_RSH=ssh cvs -q -z3 -d anoncvs@anoncvs.NetBSD.org:/cvsroot checkout -P pkgsrc</userinput>
+</screen>
+
+	<para>CVS_RSH=ssh の設定を今後も有効なままにする方法は、お使いのコマンドシェルのドキュメンテーションをご覧ください。
+	Bourne シェルの場合は、この設定を以下のとおりユーザーの <filename>.profile</filename> に、
+	またはより大域的に <filename>/etc/profile</filename> に書くことができます。</para>
+
+<programlisting>
+# set CVS remote shell command
+CVS_RSH=ssh
+export CVS_RSH
+</programlisting>
+
+<!-- FIXME: This should move into appendix or so. -->
 	<para>CVS は、標準状態では、多くの人の望む挙動をしてくれません。
 	しかし、
 	以下の内容の <filename>.cvsrc</filename>
@@ -104,31 +126,13 @@ pkgsrc を root ユーザーとして使う場合、pkgsrc は通常は
 
 <programlisting>
 # recommended CVS configuration file from the pkgsrc guide
+cvs -q -z3
 checkout -P
 update -dP
-release -d
 diff -upN
-cvs -q -z3
 rdiff -u
+release -d
 </programlisting>
-
-
-<para>何もないところに、pkgsrc の stable 枝名を指定して取得するためには、以下のコマンドを実行します。</para>
-
-<screen>&uprompt; <userinput>cd /usr</userinput>
-&uprompt; <userinput>cvs checkout -r <replaceable>pkgsrc-20xxQy</replaceable> -P pkgsrc</userinput></screen>
-
-	<para>ここで、<replaceable>pkgsrc-20xxQy</replaceable> は、
-	チェックアウトする stable 枝名にします。たとえば <quote>pkgsrc-2009Q1</quote> になります。</para>
-
-	<para>こうすると、<filename>/usr/</filename> ディレクトリーに
-	<filename>pkgsrc/</filename> ディレクトリーが作られ、
-	<filename>/usr/pkgsrc/</filename> 以下に全パッケージのソースが置かれます。</para>
-
-<para>pkgsrc current を取得するには、以下のコマンドを実行します。</para>
-
-<screen>&uprompt; <userinput>cd /usr</userinput>
-&uprompt; <userinput>cvs checkout -P pkgsrc</userinput></screen>
 
 </sect2>
 </sect1>
