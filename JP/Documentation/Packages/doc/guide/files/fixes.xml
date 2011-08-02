@@ -1,6 +1,6 @@
-<!-- $NetBSD: fixes.xml,v 1.103 2011/01/16 08:40:28 wiz Exp $ -->
+<!-- $NetBSD: fixes.xml,v 1.104 2011/05/21 16:39:03 wiz Exp $ -->
 <!-- Based on english version: -->
-<!-- NetBSD: fixes.xml,v 1.103 2011/01/16 08:40:28 wiz Exp   -->
+<!-- NetBSD: fixes.xml,v 1.104 2011/05/21 16:39:03 wiz Exp   -->
 
 <chapter id="fixes"> <?dbhtml filename="fixes.html"?>
 <title>パッケージを動くようにする</title>
@@ -336,33 +336,36 @@ ACCEPTABLE_LICENSES+=xv-license
       </listitem>
 
       <listitem>
-	<para>パッケージを構築するために他のパッケージが必要で、
-	そのパッケージに <filename>buildlink3.mk</filename> ファイルがない場合は、
-	<varname>BUILD_DEPENDS</varname>定義を使ってください。</para>
+	<para>パッケージを構築するために、他のパッケージのバイナリーが必要な場合は、
+	<varname>BUILD_DEPENDS</varname> 定義を使ってください。</para>
 
 	<programlisting>
-BUILD_DEPENDS+= autoconf-2.13:../../devel/autoconf
+BUILD_DEPENDS+= scons-[0-9]*:../../devel/scons
 	</programlisting>
       </listitem>
 
       <listitem>
-
 	<para>パッケージがリンクのためのライブラリーを必要とし、
 	そのパッケージにやはり <filename>buildlink3.mk</filename> ファイルがない場合は、
-	<varname>DEPENDS</varname> 定義を使ってください。
-	たとえば以下のようにします。</para>
+	<filename>buildlink3.mk</filename> ファイルを作ってください。
+	<varname>DEPENDS</varname> を使うと、
+	インクルードファイルやライブラリーをコンパイラーから隠してしまうので、このような場合には不適切です。</para>
+      </listitem>
+
+      <listitem>
+	<para>パッケージを実行するために、いくつかの実行可能ファイルが必要であり、かつ
+	<filename>buildlink3.mk</filename> ファイルが存在しない場合は、
+	<varname>DEPENDS</varname>変数を使ってください。<filename role="pkg">print/lyx</filename>パッケージを実行する時には、
+	teTeXパッケージ由来のlatex のバイナリーが実行可能でなければなりません。これ
+	は、以下のように指定します。</para>
 
 	<programlisting>
-DEPENDS+=       xpm-3.4j:../../graphics/xpm
+DEPENDS+=        teTeX-[0-9]*:../../print/teTeX
 	</programlisting>
-
-	<para>また、パッケージ依存関係にはワイルドカードを使うことができます。</para>
-
-	<programlisting>
-DEPENDS+=       xpm-[0-9]*:../../graphics/xpm
-	</programlisting>
-
-	<para>ワイルドカード依存関係は、バイナリーパッケージを作る時には保持されること
+      </listitem>
+      <listitem>
+	<para>パッケージ依存関係にはワイルドカードを使うことができます。
+	ワイルドカード依存関係は、バイナリーパッケージを作る時には保持されること
 	に注意してください。依存関係はバイナリーパッケージのインストール時にチェッ
 	クされ、パターンにマッチするパッケージが使われます。ワイルドカード依存関係
 	は、注意を払って使うよう気を付けてください。</para>
@@ -376,62 +379,20 @@ DEPENDS+=       xpm-[0-9]*:../../graphics/xpm
 	依存パッケージがあるバージョン以上でないと構築できないことを指定するのにも使えます。</para>
 
 	<programlisting>
-DEPENDS+=       tiff>=3.5.4:../../graphics/tiff
+DEPENDS+=       ImageMagick>=6.0:../../graphics/ImageMagick
 	</programlisting>
 
-	<para>以上のように書いた場合、このパッケージは tiff ライブラリーのバージョン 3.5.4
-	以降とともに構築されることを意味します。このような形式の依存関係は、たとえば、
-	tiff ライブラリーの API が 3.5.4 で変更されたため、それより前のバージョンの tiff
-	ではパッケージがコンパイルできないような場合に、構築できることを保証することができます。</para>
+	<para>以上のように書いた場合、このパッケージは ImageMagick のバージョン 6.0
+	以上を使って構築されることを意味します。このような形式の依存関係は、たとえば、
+	依存先のコマンドラインオプションが変更された場合にでも、構築できることを保証することができます。</para>
 
-	<para>なお、このような形式の依存関係は、新しい依存関係が必要となった場合のみに更新してください。
-	ABI の変更などであって、構築自体は正常におこなうことができる場合、
-	その推奨のために依存関係を更新したりしないでください。
-	後者の場合は <varname>ABI_DEPENDS</varname> を使って推奨を示すことができます。</para>
-
-	<programlisting>
-ABI_DEPENDS+=   tiff>=3.6.1:../../graphics/tiff
-	</programlisting>
-
-	<para>これを上述の <varname>DEPENDS</varname> 行に追加することで、
-	パッケージの構築は tiff&gt;=3.5.4 でおこなうことができるが、
-	少なくともバージョン 3.6.1 を推奨するということを意味します。
-	<varname>ABI_DEPENDS</varname> の内容は、(警告が表示された際に)
-	明示的に無視された場合を除き、依存関係に反映されます。</para>
-
-	<para>ABI の依存性に関するこの推奨を無視して、必須の
-	<varname>DEPENDS</varname> を使うだけにするには、
-	<varname>USE_ABI_DEPENDS=NO</varname> を設定します。
-	こうすると、互換性のある古い依存性をそのまま使うことができるので、
-	pkgsrc を使って構築されたパッケージの更新が簡単かつ速くできるようになります。
-	これは、パッケージの再構築を念入りに観察する人にとっては便利な方法ですが、
-	一般向けにはよろしくない方法です。
-	この方法を使う場合は、OS に由来するものも含めて、
-	起こりうる ABI の変更に十分注意する必要があります。</para>
-
-	<para>推奨を無視して構築されたパッケージは、開発者が ftp.NetBSD.org
-	へアップロードしてはいけません。また、そのようなパッケージを別のシステムで使うと、
-	別バージョンのバイナリーパッケージが複数インストールされる可能性があるので、
-	そのようなこともしないようにしてください。</para>
+	<para>あるバージョン以上のライブラリーに依存させる必要がある場合は、
+	the pkgsrc guide の buildlink の節をご覧ください。</para>
 
 	<para>セキュリティー上の修正があった場合は、
 	パッケージ脆弱性ファイルを更新してください。
 	さらなる情報は、<xref
 	linkend="security-handling"/>を参照してください。</para>
-      </listitem>
-
-      <listitem>
-	<para>パッケージを実行するために、いくつかの実行可能ファイルが必要であり、かつ
-	<filename>buildlink3.mk</filename> ファイルが存在しない場合は、
-	<varname>DEPENDS</varname>変数を使ってください。<filename role="pkg">print/lyx</filename>パッケージを実行する時には、
-	teTeXパッケージ由来のlatex のバイナリーが実行可能でなければなりません。これ
-	は、以下のように指定します。</para>
-
-	<programlisting>
-DEPENDS+=        teTeX-[0-9]*:../../print/teTeX
-	</programlisting>
-
-	<para>上述した、ワイルドカード依存関係に関する注意は、ここにも当てはまります。</para>
       </listitem>
     </orderedlist>
 
