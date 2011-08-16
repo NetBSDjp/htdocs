@@ -69,7 +69,7 @@ SUBDIR+=	xen
 SUBDIR+=	zaurus
 
 XMLDOCS+=	index
-# XMLDOCS+=	emulators
+XMLDOCS+=	emulators
 XMLDOCS+=	history
 
 .include "../../share/mk/web.site.mk"
