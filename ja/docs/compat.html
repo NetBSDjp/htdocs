@@ -1,0 +1,1178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+
+
+<title>NetBSD バイナリーエミュレーション</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-compat"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../ja/">
+	  ホーム</a> | 
+	<a href="../../ja/about/">
+	  概要</a> | 
+	<a href="../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../ja/support/">
+	  サポート</a> | 
+	<a href="../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD バイナリーエミュレーション</h1>
+<h3 class="title"><a name="binary-emulation">バイナリーエミュレーション</a></h3>
+<ul>
+<li><a href="#what">バイナリーエミュレーションとは何ですか? なぜ存在するのですか?</a></li>
+<li><a href="#compat">他にどのようなバイナリー互換性がありますか?</a></li>
+<li><a href="#how">どのように動作するのですか?</a></li>
+<li><a href="#which">どのシステムのバイナリーを動かす事ができますか?</a></li>
+<li><a href="#performance">性能はどうでしょうか?</a></li>
+<li><a href="#considerations">他に注意すべき事がありますか?</a></li>
+<li><a href="#ports">私のマシンでは、どの OS のエミュレーションが可能ですか?</a></li>
+<li><a href="#applications">どのようなアプリケーションが動作するのでしょうか?  </a></li>
+<li><a href="#problems">どのようなアプリケーションが動作しないのでしょうか?</a></li>
+</ul>
+<hr>
+<h3 class="title">バイナリーエミュレーション</h3>
+<h4 class="title">
+<a name="what"></a>バイナリーエミュレーションとは何ですか? なぜ存在するのですか? (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+多くの Unix ソフトウェアはソースコード形式で配布されます。これは、作者
+が C (あるいは他の言語)のプログラムコードを提供し、インストール時に、
+ローカルマシンで実行するための実行可能ファイルを生成するためにコンパイ
+ラーを使うことを意味します。ソースコードとインストレーションユーティリ
+ティーを注意深く書けば、さまざまな種類のオペレーティングシステム上で、同
+一のプログラムを構築することができます。
+</p>
+<p>ソースコードは企業秘密を含んでいることがあるため、商用ソフトウェア
+ベンダーはソースコードの配布をおこなわない傾向があります。商用ベンダー
+は、通常、直接実行可能なプログラムを配布します。ベンダー内部でコンパイ
+ルをおこない、機密が簡単に洩れないバイナリーファイルを配布します。
+</p>
+<p>この結果、ベンダーはサポートするオペレーティングシステムのためにマ
+ンパワーを費やさざるをえません。通常、保守のためのテストをおこない、そ
+して、コンパイルとテストのためにすくなくとも一人の人間が必要です。
+</p>
+<p>このことは、オペレーティングシステムと消費者が使いたいと思っている
+アプリケーションを結びつけます。ある消費者は、彼らが使っているオペレー
+ティングシステムがサポートされていないので、アプリケーションを使うのを
+あきらめるかもしれません。また、ある消費者は、いくつかの絶対に必要なア
+プリケーションのために、サポート済みのオペレーティングシステムを使わな
+ければならないかもしれません。
+</p>
+<p>バイナリーエミュレーションは、この強制的な結び付きを取り除きます。
+</p>
+
+<h4 class="title">
+<a name="compat"></a>他にどのようなバイナリー互換性がありますか? (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+知っておく価値のあるもうひとつの互換性の仕様があります。NetBSD は同じ 
+CPU を使用する NetBSD マシン間で、同一のバイナリーオブジェクトファイル
+フォーマットを使用します。もし、NetBSD sun3 上でバイナリーを作成した場
+合、そのバイナリーを NetBSD amiga、NetBSD mac68k、NetBSD mvme68k、
+NetBSD next68k 等の上で実行することができます。しかしながら、そのバイ
+ナリーを Intel プロセッサー系のマシン上で実行することはできません。
+</p>
+
+<h4 class="title">
+<a name="how"></a>どのように動作するのですか? (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+Unix と Unix 風のシステムは、二つの重要な部分、カーネルとそれ以外で構
+成されています。カーネルは、デバイスやセキュリティー、マシンのリソースを
+使うプログラムを管理します。通常、カーネルはカーネルシステムコールを 
+経由し、他のプログラムへサービスを提供します。例えば、ファイルをOPEN 
+するプログラムの場合、プログラムはカーネルの OPEN 関数をコールします。
+カーネルはその要求を許可あるいは拒否し、プログラムが処理を継続するのに
+必要な情報をかえします。
+</p>
+<p>すべての Unix と Unix 風のシステムは、よく似たシステムコールの集合
+を提供しています。(例えば、OPEN はすべてのシステムに存在します。)</p>
+<p>
+システム間でのシステムコールの一番の違いはシステムコールにわたされ
+るパラメーターのフォーマットでしょう。(NetBSD の OPEN は、ファイル名、
+フラグ、モードをわたします)&nbsp;システム間で、システムコールの名前
+が異なる場合もあります。NetBSD システム上で Linux の実行可能ファイルを
+実行する場合、プログラムがシステムコールを実行する度に、カーネルは適切
+な NetBSD のシステムコールへのマッピングや、必要なパラメーターの並べ変え、
+再フォーマットをおこないます。
+</p>
+<p>もう一つの重要な問題は、実行可能ファイルのフォーマットが異なる事で
+す。すべての他のオペレーティングシステムは、バイナリーを保存するのに異
+なるヘッダー、マジッククッキー、hunks、その他を使った異なるファイルフォー
+マットを使用しています。NetBSD が、ネイテイブにサポートしているのは 
+a.out か ELF (アーキテクチャーとバージョンに依存します。NetBSD は、ポー
+ト毎のスケジュールに従って ELF に移行中です)です。他に、b.out、COFF、
+ECOFF、ieee695、PE、SOM、XCOFF という実行可能フォーマットをサポートし
+ています。NetBSD のエミュレーションは、これらの実行可能フォーマットを
+エミュレーションされるシステム上でどのように扱えば良いかを知っています。
+</p>
+<p>異なるシステムでは、システムコールは異なった方法でアクセスされます
+し、パラメーターも異なる方法でわたされます。例えば、AmigaOS では、他の
+アドレスレジスターやデータレジスター内のデータによって指されている関数へ
+のポインターを含むテーブルのインデックスが使用されます。他のオペレーティ
+ングシステムは他の方法、トラップ、テーブル、レジスター、スタック等を使
+用しています。そして、これはバイナリーエミュレーションによって処理されます。
+</p>
+<p>最後になりますが、実行可能ファイルがコンパイルされた CPU と、実行す
+るシステムの CPU が一致していることは非常に重要です。システムコールと
+比較すると、実行可能ファイルは 低レベルの CPU インストラクションで構成
+されています。したがって、SCO Unix バイナリー(Intel 386 シリーズ CPU) 
+は、NetBSD i386 上で動作します。しかし、NetBSD Amiga (Motorola 680x0 CPU)
+上で動作させる事はできません。これをおこなうためには、もっと複雑な変換
+システムが必要です。そして、これはアプリケーションの性能に大きな影響を
+あたえます。
+</p>
+
+<h4 class="title">
+<a name="which"></a>どのシステムのバイナリーを動かす事ができますか? (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+一般的には、NetBSD と同じハードウェア上で動作する unix オペレーティン
+グシステム用のバイナリーを動かすことができます。それぞれのポートでサポー
+トされているバイナリーのフォーマットのリストと、成功例が、
+<a class="ulink" href="#ports" target="_top">このページの一番最後</a>から選択できるプラットフォーム
+固有のページにあります。
+</p>
+
+<h4 class="title">
+<a name="performance"></a>性能はどうでしょうか? (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+余計なオーバーヘッドは、エミュレートされるシステムコールから NetBSD の
+ネイテイブなシステムコールへのマッピングと、必要ならパラメーターの再フォー
+マットにかかる時間だけです。したがって、非常に、非常に高性能です。大雑
+把な見積もりでは、最大で 1-2% の性能への大きな影響があります。もし、あ
+なたが 2% を大きな影響と考えるならですが。これは、プログラムが使用して
+いるシステムコールに依存して変化します。ほとんどのマッピングは、実際に
+システムコールが実行される時間の 1% 未満でしょう。
+</p>
+
+<h4 class="title">
+<a name="considerations"></a>他に注意すべき事がありますか? (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+同じタイプの CPU、システムコールのマッピング以外にも考慮しなければな
+らない事があります。多くの Unix システムは共有ライブラリーをサポートし
+ています。これは、コンパイル済みのプログラムには、すべての関数が含まれ
+ていないという事を意味しています。(これはプログラムのサイズを小さくで
+きるという事でもあります)。しかし、このせいで、外部のライブラリーは、
+プログラムがコンパイルされた時に使っていたものと一致していなければなり
+ません(こまかな変更は関係ありません)。バイナリーエミュレーションでプロ
+グラムを実行したい場合、「file」コマンドを使用し、スタティックリンクか
+ダイナミックリンクかを調べる事ができます。
+</p>
+
+<pre class="programlisting">% file qwsv
+qwsv: BSD/OS i386 compact demand paged executable
+% file arp
+arp: NetBSD/i386 demand paged dynamically linked executable</pre>
+
+<p>「dynamically linked」と表示された場合、スタティックにリンクされて
+いないという事を意味しています。フリーに配布されている Unix システム
+用の共有オブジェクトのライブラリーは、NetBSD pkgsrc を使い /compat 
+ディレクトリーにインストールされます。スタティックにリンクされたバイナリー
+を実行する場合には、共有ライブラリーは必要ありません。
+</p>
+<p>商用のシステムの場合は、自分自身でライブラリーを用意する必要があり
+ます。一覧を得るためには <code class="code">man -k compat</code> を参照してください。イン
+ストールの手順については、 <code class="code">man compat_<span class="emphasis"><em>os</em></span></code> (<span class="emphasis"><em>os</em></span>
+の部分はターゲット OS) を参照してください:
+
+</p>
+<pre class="programlisting">% man -k compat
+compat_freebsd(8) - setup procedure for running FreeBSD binaries
+compat_ibcs2(8) - setup procedure for running binaries that conform to the Intel Binary Compatibility Standard 2, e.g. SCO Unix and others derived from AT&amp;T SVR3.
+compat_linux(8) - setup procedure for running Linux binaries
+compat_osf1(8) - setup procedure for running OSF/1 (AKA Digital Unix, AKA Tru64) binaries
+compat_pecoff(8) - setup procedure for running Win32 binaries
+compat_sunos(8) - setup procedure for m68k and sparc architectures
+compat_svr4(8) - setup procedure for running SVR4/iBCS2 binaries
+compat_ultrix(8) - setup procedure for Ultrix compatibility on mips and vax</pre>
+<p>
+</p>
+
+<h4 class="title">
+<a name="ports"></a>私のマシンでは、どの OS のエミュレーションが可能ですか? (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+NetBSD は、さまざまな CPU とハードウェア上で動作します。機種固有の
+情報については、以下のリストを参照してください。もし、これ以外の
+エミュレーションについての情報を知っていたら、どうか <a class="ulink" href="http://www.NetBSD.org/cgi-bin/feedback.cgi" target="_top">私達に教えてください</a>。
+</p>
+
+<div class="sect4" title="alpha">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-alpha"></a>alpha</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Linux(Alpha)</li>
+<li class="listitem">OSF/1</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="amiga">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-amiga"></a>amiga</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="arc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-arc"></a>arc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="arm26">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-arm26"></a>arm26</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="arm32">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-arm32"></a>arm32</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="atari">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-atari"></a>atari</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="bebox">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-bebox"></a>bebox</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="cobalt">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-cobalt"></a>cobalt</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="dreamcast">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-dreamcast"></a>dreamcast</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="hp300">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-hp300"></a>hp300</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="hpcmips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-hpcmips"></a>hpcmips</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="hpcsh">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-hpcsh"></a>hpcsh</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="i386">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-i386"></a>i386</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">BSDI (BSDI 3.x バイナリーまで)</li>
+<li class="listitem">FreeBSD(x86) (a.out と ELF バイナリー)</li>
+<li class="listitem">IBCS2 システム
+	<div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem">Interactive Unix</li>
+<li class="listitem">SCO Unix</li>
+<li class="listitem">SCO Xenix</li>
+</ul></div>
+</li>
+<li class="listitem">Linux(x86)</li>
+<li class="listitem">Solaris(x86)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="luna68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-luna68k"></a>luna68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mac68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-mac68k"></a>mac68k</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="macppc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-macppc"></a>macppc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mipsco">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-mipsco"></a>mipsco</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mvme68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-mvme68k"></a>mvme68k</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="news68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-news68k"></a>news68k</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="newsmips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-newsmips"></a>newsmips</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="next68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-next68k"></a>next68k</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="ofppc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-ofppc"></a>ofppc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="pmax">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-pmax"></a>pmax</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="prep">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-prep"></a>prep</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sandpoint">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-sandpoint"></a>sandpoint</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sgimips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-sgimips"></a>sgimips</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">IRIX(mips)</li>
+<li class="listitem">Linux(mips)</li>
+<li class="listitem">Ultrix(mips)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="sh3">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-sh3"></a>sh3</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sparc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-sparc"></a>sparc</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">SunOS(sparc)</li>
+<li class="listitem">Solaris(sparc)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="sparc64">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-sparc64"></a>sparc64</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">32 ビット NetBSD/sparc (ELF と a.out いずれも)</li>
+<li class="listitem">SunOS(sparc)</li>
+<li class="listitem">Solaris(sparc) (32 ビットと 64 ビットいずれも)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="sun3">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-sun3"></a>sun3</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="vax">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-vax"></a>vax</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="x68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="emulation-x68k"></a>x68k</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Amiga Unix (SVR4)</li>
+<li class="listitem">Linux(m68k)</li>
+<li class="listitem">SunOS(68k)</li>
+</ul></div>
+</div>
+
+<h4 class="title">
+<a name="applications"></a>どのようなアプリケーションが動作するのでしょうか?   (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+NetBSD は、さまざまな CPU とハードウェア上で動作します。機種固有の情報
+については、以下のリストを参照してください。もし、これ以外のアプリケー
+ションについての情報を知っていたら、どうか <a class="ulink" href="http://www.NetBSD.org/cgi-bin/feedback.cgi" target="_top">
+私達に教えてください</a>。
+</p>
+
+<div class="sect4" title="alpha">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-alpha"></a>alpha</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">Acroread - Digital Unix</li></ul></div>
+</div>
+
+<div class="sect4" title="amiga">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-amiga"></a>amiga</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="arc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-arc"></a>arc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="arm26">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-arm26"></a>arm26</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="arm32">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-arm32"></a>arm32</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="atari">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-atari"></a>atari</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="bebox">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-bebox"></a>bebox</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="cobalt">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-cobalt"></a>cobalt</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="dreamcast">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-dreamcast"></a>dreamcast</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="hp300">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-hp300"></a>hp300</h5></div></div></div>
+
+
+        <div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">Gnat (Gnu Ada Translator) - SunOS</li></ul></div>
+</div>
+
+<div class="sect4" title="hpcmips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-hpcmips"></a>hpcmips</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="hpcsh">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-hpcsh"></a>hpcsh</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="i386">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-i386"></a>i386</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Acroread - Linux(x86)</li>
+<li class="listitem">翻訳の王様 POWER+ - Linux(x86)</li>
+<li class="listitem">
+<a class="ulink" href="../../gallery/in-Action/jschauma-mathematica.png" target="_top">Mathematica 5.2 - Linux(x86)</a>
+	  <p>
+		Mathematica のインストール時には、以下のパッチを適用する必要があります:
+		</p>
+<pre class="programlisting">
+--- Unix/Installer/MathInstaller.orig	2005-07-18 14:23:57.000000000 -0400
++++ Unix/Installer/MathInstaller	2005-07-18 14:26:36.000000000 -0400
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++-o #!/bin/sh
+ # ----------------------------------------------------------------------------
+ #
+ #   Installer for Mathematica Applications
+@@ -11,6 +11,8 @@
+ LANG=C
+ export LANG
+ 
++UNAME=`uname -s`
++
+ # ----------------------------------------------------------------------------
+ # Function: CleanUp_()
+ 
+@@ -806,7 +808,7 @@
+          DefaultSystemID="HPUX-PA64";;
+       IRIX64)
+          DefaultSystemID="IRIX-MIPS64";;
+-      Linux)
++      Linux|NetBSD)
+          case `uname -m` in
+             alpha)
+                DefaultSystemID="Linux-AXP";;
+@@ -1229,7 +1231,8 @@
+          -o "${DefaultSystemID}" = "DEC-AXP" \
+          -o "${DefaultSystemID}" = "HPUX-PA64" \
+          -o "${DefaultSystemID}" = "IRIX-MIPS64" \
+-         -o "${DefaultSystemID}" = "MacOSX" ]; then
++         -o "${DefaultSystemID}" = "MacOSX" \
++	 -o "${UNAME}" = "NetBSD" ]; then
+          Spacing_=`expr ${TermWidth} - 3`
+          WhiteSpace_=`printf "%-${Spacing_}s"`
+          DotText_="[${WhiteSpace_}]"
+@@ -1993,14 +1996,14 @@
+ 
+    case "${CopyTextType_}" in
+    "Error")
+-      if [ "${DefaultSystemID}" = "MacOSX" ]; then
++      if [ "${DefaultSystemID}" = "MacOSX" -o "${UNAME}" = "NetBSD" ]; then
+          echo "${CopyText_}" | fmt ${TWmin} ${TermWidth}
+       else
+          echo "${CopyText_}" | fmt -${TermWidth}
+       fi
+       echo "";;
+    "Prompt")
+-      if [ "${DefaultSystemID}" = "MacOSX" ]; then
++      if [ "${DefaultSystemID}" = "MacOSX" -o "${UNAME}" = "NetBSD" ]; then
+          echo "${CopyText_}" | fmt ${TWmin} ${TermWidth}
+       else
+          echo "${CopyText_}" | fmt -${TermWidth}
+@@ -2008,7 +2011,7 @@
+       echo ${n} "&gt; ${c}";;
+    "Text")
+       if [ "${CopyText_}" != "" ]; then
+-         if [ "${DefaultSystemID}" = "MacOSX" ]; then
++        if [ "${DefaultSystemID}" = "MacOSX" -o "${UNAME}" = "NetBSD" ]; then
+             echo "${CopyText_}" | fmt ${TWmin} ${TermWidth}
+          else
+             echo "${CopyText_}" | fmt -${TermWidth}
+@@ -2022,7 +2025,7 @@
+       WhiteSpace_=`printf "%-${Spacing_}s"`
+       echo "${WhiteSpace_}${CopyText_}";;
+    "Verbose")
+-      if [ "${DefaultSystemID}" = "MacOSX" ]; then
++      if [ "${DefaultSystemID}" = "MacOSX" -o "${UNAME}" = "NetBSD" ]; then
+          echo "&lt;&lt; ${CopyText_} &gt;&gt;" | fmt ${TWmin} ${TermWidth}
+       else
+          echo "&lt;&lt; ${CopyText_} &gt;&gt;" | fmt -${TermWidth}</pre>
+<p>
+	  </p>
+	  <p>
+		The shell scripts that start the application after the
+		installation need the following patch:
+		</p>
+<pre class="programlisting">
+--- MathKernel.orig	2005-07-18 14:36:44.000000000 -0400
++++ MathKernel	2005-07-18 14:35:37.000000000 -0400
+@@ -16,7 +16,7 @@
+ 			SystemIDList="HPUX-PA64";;
+ 		IRIX64)
+ 			SystemIDList="IRIX-MIPS64";;
+-		Linux)
++		Linux|NetBSD)
+ 			case `uname -m` in
+ 				ia64)
+ 					SystemIDList="Linux-IA64";;
+--- Mathematica.orig	2005-07-18 14:36:47.000000000 -0400
++++ Mathematica	2005-07-18 14:35:47.000000000 -0400
+@@ -19,7 +19,7 @@
+ 			SystemIDList="HPUX-PA64 HP-RISC";;
+ 		IRIX64)
+ 			SystemIDList="IRIX-MIPS64";;
+-		Linux)
++		Linux|NetBSD)
+ 			case `uname -m` in
+ 				alpha)
+ 					SystemIDList="Linux-AXP";;
+--- math.orig	2005-07-18 14:35:18.000000000 -0400
++++ math	2005-07-18 14:36:03.000000000 -0400
+@@ -16,7 +16,7 @@
+ 			SystemIDList="HPUX-PA64";;
+ 		IRIX64)
+ 			SystemIDList="IRIX-MIPS64";;
+-		Linux)
++		Linux|NetBSD)
+ 			case `uname -m` in
+ 				ia64)
+ 					SystemIDList="Linux-IA64";;
+--- mathematica.orig	2005-07-18 14:36:52.000000000 -0400
++++ mathematica	2005-07-18 14:36:13.000000000 -0400
+@@ -19,7 +19,7 @@
+ 			SystemIDList="HPUX-PA64 HP-RISC";;
+ 		IRIX64)
+ 			SystemIDList="IRIX-MIPS64";;
+-		Linux)
++		Linux|NetBSD)
+ 			case `uname -m` in
+ 				alpha)
+ 					SystemIDList="Linux-AXP";;
+--- mcc.orig	2005-07-18 14:36:36.000000000 -0400
++++ mcc	2005-07-18 14:36:31.000000000 -0400
+@@ -15,7 +15,7 @@
+ 		SystemIDList="HPUX-PA64";;
+ 	IRIX64)
+ 		SystemIDList="IRIX-MIPS64";;
+-	Linux)
++	Linux|NetBSD)
+ 		case `uname -m` in
+ 			ia64)
+ 				SystemIDList="Linux-IA64";;</pre>
+<p>
+	  </p>
+	</li>
+<li class="listitem">
+<a class="ulink" href="../../gallery/in-Action/jschauma-matlab.png" target="_top">Matlab - Linux(x86)</a>
+	  <p>さらなる情報は <a class="ulink" href="http://www.spg.tu-darmstadt.de/~hf/notes/matlab-on-netbsd.html" target="_top">http://www.spg.tu-darmstadt.de/~hf/notes/matlab-on-netbsd.html</a>
+            および <a class="ulink" href="http://mail-index.NetBSD.org/port-i386/2005/10/07/0002.html" target="_top">http://mail-index.NetBSD.org/port-i386/2005/10/07/0002.html</a> にあります。</p>
+        </li>
+<li class="listitem">Maple 6.1, 7, 8, 9.5 および 10 - RedHat Linux(x86)<p>
+
+	    Maple には SuSE 用と RedHat Linux 用のバイナリーが附属しますが、
+	    たとえ SuSE 互換パッケージを使ったとしても、 RedHat 用しか
+	    動作しません。いずれにせよ、たいした問題ではありません。 NetBSD
+	    の情報をシステムに与えるため、小さなパッチが必要です:</p>
+	<pre class="programlisting">--- maple.system.type.orig      Mon Apr 30 17:26:11 2001
++++ maple.system.type   Mon Apr 30 17:40:49 2001
+@@ -84,6 +84,11 @@
+                MAPLE_BIN="bin.IBM_INTEL_LINUX"
+        fi
+         ;;
++    "NetBSD")
++       # NetBSD uses SuSE compat per default, but maple works
++       # (only) with the RedHat compat. 
++       MAPLE_BIN="bin.IBM_INTEL_LINUX"
++       ;;
+     *)
+         # currently do not support any other platforms
+         MAPLE_BIN="FAIL"</pre>
+    	<p>
+	    このパッチを <span class="emphasis"><em>mapledir</em></span>/bin/maple.system.type
+	    に適用すれば、 maple、 xmaple その他が使えるようになります。
+	</p>
+    	<p>
+	  新しいディレクトリーを作るようインストーラーに指示した場合、
+	  そのディレクトリーはエミュレートされたルートの下に作られることをお忘れなく
+	  (たとえば、
+	  <code class="filename">/usr/local/maple</code> 以下にインストールするよう指示した場合、
+	  実際には <code class="filename">/usr/pkg/emul/linux/usr/local/maple</code> が作られます)。
+	</p>
+	    </li>
+<li class="listitem">Mozilla - FreeBSD(x86)</li>
+<li class="listitem">Mozilla - Linux(x86)</li>
+<li class="listitem">Netscape - BSDI(x86)</li>
+<li class="listitem">Netscape - Linux(x86)</li>
+<li class="listitem">Netscape - Solaris(x86)</li>
+<li class="listitem">Neverwinternights dedicated server - Linux(x86)</li>
+<li class="listitem">Perforce - FreeBSD(x86)</li>
+<li class="listitem">Planmaker - Linux(x86)</li>
+<li class="listitem">Realplayer 5, 7 - Linux(x86)</li>
+<li class="listitem">sqlplus Oracle クライアント - Solaris(x86)</li>
+<li class="listitem">StarOffice 5.1a - Linux(x86) (NetBSD 1.5 以降が必要)</li>
+<li class="listitem">Textmaker - Linux(x86)</li>
+<li class="listitem">Quake 1, 2, 3 - Linux(x86)</li>
+<li class="listitem">VMWare ESX/GSX Server - Linux(x86)</li>
+<li class="listitem">WordPerfect 8, 8.1 - Linux(x86)</li>
+<li class="listitem">Oracle Oracle 9.2.0.4 - Linux(x86) - <a class="ulink" href="http://n0se.shacknet.nu/" target="_top">http://n0se.shacknet.nu/</a> の 'database' 参照</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="luna68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-luna68k"></a>luna68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mac68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-mac68k"></a>mac68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="macppc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-macppc"></a>macppc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mipsco">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-mipsco"></a>mipsco</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mvme68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-mvme68k"></a>mvme68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="news68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-news68k"></a>news68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="newsmips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-newsmips"></a>newsmips</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="next68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-next68k"></a>next68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="ofppc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-ofppc"></a>ofppc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="pmax">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-pmax"></a>pmax</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="prep">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-prep"></a>prep</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sandpoint">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-sandpoint"></a>sandpoint</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sgimips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-sgimips"></a>sgimips</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sh3">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-sh3"></a>sh3</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sparc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-sparc"></a>sparc</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Acroread3 - SunOS(sparc)</li>
+<li class="listitem">Netscape - Solaris(sparc)</li>
+<li class="listitem">Networker - SunOS(sparc)</li>
+<li class="listitem">「ほとんど」の SunOS(sparc) ユーザーランド。カーネル配下のものは普通は動作しません。</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="sparc64">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-sparc64"></a>sparc64</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">「ほとんど」の SunOS(sparc) ユーザーランド。カーネル配下のものは普通は動作しません。</li></ul></div>
+</div>
+
+<div class="sect4" title="sun3">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-sun3"></a>sun3</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="vax">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-vax"></a>vax</h5></div></div></div>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"> iBCS2 (そうです!) によって、DEC SVR3 附属のユーザーランド。</li></ul></div>
+</div>
+
+<div class="sect4" title="x68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="apps-x68k"></a>x68k</h5></div></div></div>
+
+</div>
+
+
+<h4 class="title">
+<a name="problems"></a>どのようなアプリケーションが動作<span class="bold"><strong>しない</strong></span>のでしょうか? (<a href="#binary-emulation">top</a>)
+  </h4>
+<p>
+NetBSD は、さまざまな CPU とハードウェア上で動作します。機種固有の情報
+については、以下のリストを参照してください。もし、これ以外のアプリケー
+ションについての情報を知っていたら、どうか <a class="ulink" href="http://www.NetBSD.org/cgi-bin/feedback.cgi" target="_top">
+私達に教えてください</a>。
+</p>
+<p>
+いくつかのケースでは、アプリケーションは、初期の NetBSD のリリースでサ
+ポートされていないエミュレーションレイヤーの機能を必要とします。通常こ
+れは、他の OS が新しいシステムコールを実装し、アプリケーションの作者が
+それを使うようにアプリケーションを変更した時におこります。以下のリスト
+で、「サポートされていないもっとも新しいバージョン」と書かれているアプ
+リケーションは、それ以降の NetBSD のリリースで動作します。
+</p>
+
+<div class="sect4" title="alpha">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="alpha"></a>alpha</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="amiga">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="amiga"></a>amiga</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="arc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="arc"></a>arc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="arm26">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="arm26"></a>arm26</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="arm32">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="arm32"></a>arm32</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="atari">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="atari"></a>atari</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="bebox">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="bebox"></a>bebox</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="cobalt">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="cobalt"></a>cobalt</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="dreamcast">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="dreamcast"></a>dreamcast</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="hp300">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="hp300"></a>hp300</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="hpcmips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="hpcmips"></a>hpcmips</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="hpcsh">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="hpcsh"></a>hpcsh</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="i386">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="i386"></a>i386</h5></div></div></div>
+
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">eWnn(日本語/英語 翻訳) - Linux(x86) (Mule 2.3 が必要、SEGV)</li>
+<li class="listitem">翻訳魂 (日本語/英語 翻訳) - Linux(x86)</li>
+<li class="listitem">一太郎 ARK for Java (日本語ワードプロセッサー) - Linux(x86) (JSDK1.2.2 が必要)</li>
+<li class="listitem">Objectivity - Linux(x86) (データベース作成時に coredump)</li>
+<li class="listitem">Oracle - Linux(x86) (インストール時に SEGV)</li>
+<li class="listitem">Shade Preview - Linux(x86) (たぶん RedHat の共有ライブラリーが必要)</li>
+<li class="listitem">StarOffice 5.1a - Linux(x86) (NetBSD 1.4.x では未対応)</li>
+<li class="listitem">Wnn6 Ver3 - Linux(x86) (必要な symlink がオープンできない)</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="luna68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="luna68k"></a>luna68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mac68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="mac68k"></a>mac68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="macppc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="macppc"></a>macppc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mipsco">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="mipsco"></a>mipsco</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="mvme68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="mvme68k"></a>mvme68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="news68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="news68k"></a>news68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="newsmips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="newsmips"></a>newsmips</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="next68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="next68k"></a>next68k</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="ofppc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="ofppc"></a>ofppc</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="pmax">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="pmax"></a>pmax</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="prep">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="prep"></a>prep</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sandpoint">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sandpoint"></a>sandpoint</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sgimips">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sgimips"></a>sgimips</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sh3">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sh3"></a>sh3</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sparc">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sparc"></a>sparc</h5></div></div></div>
+
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">Acroread4 - Solaris(sparc)</li></ul></div>
+</div>
+
+<div class="sect4" title="sparc64">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sparc64"></a>sparc64</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="sun3">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sun3"></a>sun3</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="vax">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="vax"></a>vax</h5></div></div></div>
+
+</div>
+
+<div class="sect4" title="x68k">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="x68k"></a>x68k</h5></div></div></div>
+
+</div>
+
+<hr>
+<em><a href=".">NetBSD ドキュメンテーション</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

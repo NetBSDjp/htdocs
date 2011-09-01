@@ -1,0 +1,1153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+
+
+    <title>NetBSD-currentの追跡</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-current-index"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD-currentの追跡</h1>
+<h3 class="title"><a name="faq">よくある質問</a></h3>
+<ul>
+<li><a href="#why-track">なぜ NetBSD-current を追跡するのか?</a></li>
+<li><a href="#updating-from-snapshot">current スナップショットを使って、既存システムを更新する</a></li>
+<li><a href="#downloading">current ソースのダウンロード</a></li>
+<li><a href="#building">ソースからリリースの構築</a></li>
+<li><a href="#updating">ソースを使って、既存システムを更新する</a></li>
+<li><a href="#what-to-do">覚えておくべきこと</a></li>
+<li><a href="#build-targets">Makefileのいろいろなターゲットは?</a></li>
+<li><a href="#using-anoncvs-pserver">anoncvs の使用</a></li>
+<li><a href="#using-anoncvs-over-ssh">anoncvs over ssh の利用</a></li>
+<li><a href="#using-anoncvs">anoncvs を用いた NetBSD-current の追跡</a></li>
+<li><a href="#using-sup-into-cvs">SUP と CVS の組合せによる NetBSD-current の追跡</a></li>
+<li><a href="#supping-sources">ソースのSUP</a></li>
+<li><a href="#import-merge">ソースのインポートとマージ</a></li>
+<li><a href="#tagging">構築に成功したものへのタグ付け</a></li>
+<li><a href="#getrepos">リポジトリー全体の入手</a></li>
+<li><a href="#error">エラーが出た場合は ?</a></li>
+<li><a href="#etcupdate">etcupdate を使った設定ファイルと起動ファイルの更新</a></li>
+</ul>
+<h3 class="title"><a name="specific-problems">特定の問題</a></h3>
+<ul>
+<li><a href="#wscons">wsconsにアップデートした後コンソールが使えない</a></li>
+<li><a href="#rebuild-nbmake">build.sh が常に nbmake を最初に再構築するのは、なぜか?</a></li>
+</ul>
+<hr>
+<h3 class="title">よくある質問</h3>
+<h4 class="title">
+<a name="why-track"></a>なぜ NetBSD-current を追跡するのか? (<a href="#faq">top</a>)
+  </h4>
+<p>
+NetBSDの開発者はそのときどきの開発中のソースをいくつかの理由から一般に
+公開してきました。まず、NetBSD-currentを用意することで、より安定した、
+利用しやすいシステムを作ることができます。
+</p>
+<p>
+これにより、NetBSDの開発に熱中するのが容易になります。最新の開発中ソー
+スを配布することで、システムが今どうなっているのかが多くの人に明らかに
+なりますし、新機能が実装されればすぐにそれを試してみることができます。
+</p>
+<p>
+また、利用者からの変更を統合するのも楽になります。もし利用者が最新の開
+発中ソースに対して変更を加えたならば、その変更をマスターソースツリーに
+取り込むための作業は事実上要らなくなります。
+</p>
+<p>
+また、そうすることでソフトウェアが開発されてすぐに広い範囲のテストをす
+ることができます。NetBSD-currentの利用者は最新のソースについての<a class="ulink" href="../../support/send-pr.html" target="_top">バグレポート</a>を出すことが奨励されます。
+これはバグを見つけたり修正したりする助けになります。ソフトウェアが書か
+れてからすぐに多くの人がそれをテストするために、より多くのバグを見つけ
+出して退治することができます。
+</p>
+
+<h4 class="title">
+<a name="updating-from-snapshot"></a>current スナップショットを使って、既存システムを更新する (<a href="#faq">top</a>)
+  </h4>
+<p>
+<span class="emphasis"><em><a class="ulink" href="http://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/UPDATING" target="_top">src/UPDATING</a>
+を見て、個々の変更点に関する問題などを確認するのを忘れないようにしてください。</em></span></p>
+<p>
+current を手っ取り早く使い始めるには、
+リリースエンジニアリングサーバーで作られるスナップショットから始めます。
+各プラットフォームの最新の構築状況は、
+<a class="ulink" href="http://releng.NetBSD.org/cgi-bin/builds.cgi" target="_top">
+NetBSD Autobuild
+</a>
+で見ることができ、実際に構築されたものは、日付およびプラットフォーム別に
+<a class="ulink" href="http://nyftp.NetBSD.org/pub/NetBSD-daily/HEAD/" target="_top">http://nyftp.NetBSD.org/pub/NetBSD-daily/HEAD/</a>
+以下に置かれています。
+</p>
+<p>
+</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"> 必要な <code class="code">binary/sets</code> ディレクトリーを探し、
+ファイルを <code class="code"><span class="bold"><strong>mget *.tgz</strong></span></code>
+して、ローカルの管理用ディレクトリー
+(たとえば <span class="emphasis"><em><code class="code">$HOME/current</code></em></span> ) に置きます。
+ディスクスペースや時間が足りない場合は、
+必要不可欠なのは kern-GENERIC, etc, base, comp (コンパイラーが必要な場合) だけです。</li>
+<li class="listitem"> 適切なカーネル (通常は <code class="code">GENERIC</code>) を展開して
+<code class="code">/</code> にコピーし、そのカーネルでマシンを再起動します。
+<pre class="programlisting">
+    $ su
+    # cd /root
+    # tar -zxpf ~/kern-GENERIC.tgz
+    # ln -fh /netbsd /netbsd.old
+    # cp netbsd /netbsd
+    # shutdown -r now
+</pre>
+<p>
+  <span class="bold"><strong>注意: 新しいカーネルでマシンを再起動するまでは、
+  ユーザーランドのバイナリーは一切展開してはいけません。</strong></span>
+  新しいバイナリーでは、新しいシステムコール (動作中の古いカーネルでは非対応)
+  を使っているかもしれないからです。
+</p>
+</li>
+<li class="listitem"> 新しいカーネルが、問題なく起動して動作することを確認します。
+新しいカーネルに問題がある場合は、名前を変えた古いカーネルをロードして、
+元に戻すことができます。
+</li>
+<li class="listitem"> <code class="code">base</code> ほか一連の必要なもの
+(<span class="bold"><strong><code class="code">etc</code> は除く</strong></span>) を展開し、
+配置します。
+<pre class="programlisting">
+    $ su
+    # cd /
+    # tar -zxpf ~/base.tgz
+    # tar -zxpf ~/comp.tgz
+    # ...
+</pre>
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?tar+1+NetBSD-5.1+i386">tar(1)</a> コマンドの <code class="code">"p"</code> オプション (許可属性の保持)
+を忘れずに指定してください。そうしないと、setuid されたコマンド (<a href="http://netbsd.gw.com/cgi-bin/man-cgi?su+1+NetBSD-5.1+i386">su(1)</a> など)
+が動作しません。
+<p>
+  <span class="bold"><strong>注意: 既存のシステムに対して <code class="code">etc.tgz</code>
+  を展開すると、独自におこなった設定が上書きされてしまいます。</strong></span>
+</p>
+</li>
+<li class="listitem"> 最後に、 <code class="code">/etc</code>
+を <a class="ulink" href="#etcupdate" target="_top">更新</a> します。
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?postinstall+8+NetBSD-5.1+i386">postinstall(8)</a> は、最初の検査をし、自動的に修正できることはほとんど修正してくれます。
+その次にある <a href="http://netbsd.gw.com/cgi-bin/man-cgi?etcupdate+8+NetBSD-5.1+i386">etcupdate(8)</a> は、どのようにマージするかたずねてきます。
+<pre class="programlisting">
+    # /usr/sbin/postinstall -s ~/etc.tgz check
+    # /usr/sbin/postinstall -s ~/etc.tgz fix
+    # /usr/sbin/etcupdate -s ~/etc.tgz
+    # shutdown -r now
+</pre>
+X 配布セット (xbase など) をインストールしている場合は、
+リブートする前に、postinstall と etcupdate の引数を xetc.tgz にして、
+同様の手順を繰り返します。
+</li>
+</ol></div>
+<p>
+</p>
+<p>
+以上で、
+current に近い状態になり、
+current のソースを構築する準備ができました。
+</p>
+
+<h4 class="title">
+<a name="downloading"></a>current ソースのダウンロード (<a href="#faq">top</a>)
+  </h4>
+<p>
+
+伝統的に、
+システムソースファイルは <code class="code">/usr/src</code> に置くものですが、
+これには一般的に root 権限が必要です。
+現在の <code class="code"><span class="bold"><strong>build.sh</strong></span></code> プロセスは、特権がまったくなくても実行可能です。
+ただし、インストールについては root 権限が必要です。
+このドキュメントの例示で <code class="code">/usr/src</code> としているところはすべて、
+(<span class="emphasis"><em><code class="code">$HOME/current</code></em></span> のような)
+別の場所に置き換えてもかまいません。
+</p>
+<p>
+</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"> ソースツリーの置き場を選びます。
+<pre class="programlisting">
+    $ cd /usr
+    $ su
+</pre>
+</li>
+<li class="listitem"> -current ソースを、最寄りの
+<a class="ulink" href="../../mirrors/" target="_top">NetBSD ミラーサイト</a>
+からダウンロードします。
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"> <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/" target="_top">
+/pub/NetBSD/NetBSD-current/tar_files/src/</a> から ftp で、
+または、</li>
+<li class="listitem"> <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/README.sup" target="_top">sup</a> を使って。
+</li>
+</ul></div>
+<p>
+ダウンロードしたファイルは、ソースツリーのスナップショットになっています。
+最新のファイルにするために、
+<a class="ulink" href="#using-anoncvs" target="_top">anoncvs</a> を使って以下のようにします。
+</p>
+<pre class="programlisting">
+    $ cd /usr/src
+    $ cvs -q -d $CVSROOT update -dP
+</pre>
+<p>
+</p>
+<p>
+<code class="code">-d $CVSROOT</code> は、あなたが選んだミラーサイトの CVS
+タグをつけるため、初めて update する場合のみ必要です。
+<code class="code">-P</code> フラグは必ず毎回指定するか、または .cvsrc ファイルに追加してください。
+</p>
+<p>
+もし、NetBSD のソースに対するローカルな変更を追跡したいならば、
+ローカルな CVS ツリーをセットアップし、<a class="ulink" href="#using-sup-into-cvs" target="_top">sup 
+で行なわれた変更を import</a> した方が良いでしょう。
+</p>
+</li>
+<li class="listitem">
+パーミッションを修正します。<br>
+ソースツリーを、 (伝統的な) wsrc グループに属する
+root 以外のユーザーが保守できるようにしたい場合は、
+(root になって) 以下のようにします。
+<pre class="programlisting">
+$ chown -R <span class="emphasis"><em>user</em></span>:wsrc /usr/src
+$ chmod -R u=rwX,g=rwX,o=rX /usr/src</pre>
+</li>
+</ol></div>
+<p>
+</p>
+
+<h4 class="title">
+<a name="building"></a>ソースからリリースの構築 (<a href="#faq">top</a>)
+  </h4>
+<p>
+
+<span class="emphasis"><em><a class="ulink" href="http://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/BUILDING" target="_top">src/BUILDING</a>
+と <a class="ulink" href="http://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/UPDATING" target="_top">src/UPDATING</a>
+を見て、
+最新の変更点を確認するのを忘れないようにしてください。</em></span>
+</p>
+<p>
+伝統的に、
+システムオブジェクトファイルは <code class="code">/usr/obj</code> に置くものですが、
+これには一般的に root 権限が必要です。
+そうするかわりに、オブジェクトファイルを別のファイルシステムに置くことで、
+コンパイルにおける速度をかなり向上させることができます。
+このドキュメントの例示で <code class="code">/usr/src</code> としているところはすべて、
+(<span class="emphasis"><em><code class="code">$HOME/current</code></em></span> のような)
+別の場所に置き換えてもかまいません。
+</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"> オブジェクトツリーの置き場を選ぶ。
+フルインストールに加えてリリース用の tarfile 一式を置けるだけの
+十分な容量が必要です。
+<pre class="programlisting">
+    $ cd /usr/src
+    $ su
+    # mkdir ../tools
+    # mkdir ../obj
+</pre>
+</li>
+<li class="listitem"> ソースツリーのルートに移動し、そこで実行する。
+<pre class="programlisting">
+    $ cd /usr/src
+    $ ./build.sh -O ../obj -T ../tools -u -U release
+</pre>
+</li>
+</ol></div>
+<p>
+</p>
+<p>
+この例において、
+<code class="code">-u</code> オプションは、構築開始前に <code class="code">make clean</code>
+を実行する必要がないことを表しています。これは、以前構築したものの更新や、
+新規の構築をおこなう場合に便利です。
+</p>
+<p>
+<code class="code">-U</code> オプションは、 root でないユーザーによる完全なビルドができるようにするものです。
+</p>
+<p>
+完了すると、
+インストールメディアとノートを含む、インストールに必要なものがすべて、
+<code class="code">build.sh</code> が指定 (表示されます) したディレクトリー
+以下に出来上がります。
+</p>
+<p>
+異なるアーキテクチャー用に
+<a class="ulink" href="../../../docs/guide/en/chap-build.html" target="_top">クロスコンパイル</a>
+をおこないたい場合は、 build.sh 実行時に
+'<code class="code">-m MACHINE -a ARCH</code>' オプションをつけます。
+</p>
+<p>
+より詳しくは、
+'<code class="code">./build.sh -h</code>' を実行するとともに、
+<a class="ulink" href="http://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/BUILDING" target="_top">
+src/BUILDING</a> を参照してください。
+</p>
+
+<h4 class="title">
+<a name="updating"></a>ソースを使って、既存システムを更新する (<a href="#faq">top</a>)
+  </h4>
+<p>
+
+<span class="emphasis"><em><a class="ulink" href="http://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/UPDATING" target="_top">src/UPDATING</a> を見て、
+最新の変更点を確認するのを忘れないようにしてください。</em></span>
+</p>
+<p>
+</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"> ソースツリーのルートに移動する。
+<pre class="programlisting">$ cd /usr/src</pre>
+</li>
+<li class="listitem">toolchain を構築する。
+<pre class="programlisting">$ ./build.sh -O ../obj -T ../tools -U -u tools</pre>
+</li>
+<li class="listitem">配布物を構築する。
+    <pre class="programlisting">$ ./build.sh  -O ../obj -T ../tools -U -u distribution</pre>
+</li>
+<li class="listitem">カーネルを構築する。
+    <pre class="programlisting">$ ./build.sh  -O ../obj -T ../tools -U -u kernel=GENERIC</pre>
+</li>
+<li class="listitem">カーネルをインストールする。
+<pre class="programlisting">
+    $ cd ../obj/sys/arch/&lt;ARCH&gt;/compile/GENERIC
+    $ su
+    # mv /netbsd /netbsd.old
+    # cp netbsd /netbsd
+</pre>
+</li>
+<li class="listitem">新しいカーネルでリブートする。
+    <pre class="programlisting"># shutdown -r now</pre>
+</li>
+<li class="listitem">新しいユーザーランドをインストールする。
+<pre class="programlisting">
+    $ cd /usr/src
+    $ su
+    # ./build.sh -O ../obj -T ../tools -U install=/
+</pre>
+</li>
+<li class="listitem">古くなったファイルの修正のため、出力される説明に従う。たとえば以下のように。
+<pre class="programlisting">
+    # /usr/src/usr.sbin/postinstall/postinstall -s /usr/src -d // fix defaults mtree obsolete
+</pre>
+</li>
+<li class="listitem">/etc の<a class="ulink" href="#etcupdate" target="_top">更新</a>
+<pre class="programlisting"># /usr/sbin/etcupdate -s /usr/src</pre>
+</li>
+<li class="listitem">動作中のサービス群がすべて新しいバイナリーを使うようにするため、リブートする。 (これはしなくてもよい)
+    <pre class="programlisting"># shutdown -r now</pre>
+</li>
+</ol></div>
+<p>
+</p>
+<p>
+この例において、
+<code class="code">-u</code> オプションは更新プロセスを表し、
+<code class="code">-U</code> オプションは、 root でないユーザーによる完全なビルドができるようにする
+(その後に root でインストールする) ものです。
+</p>
+<p>
+構築の順序 (tools, distribution, kernel) は、問題が起きた場合に、
+ソース更新にかかる時間を常に最適化するために選ばたものです。
+一貫性を保つため、
+エラーが起きた場合や cvs update した場合は、
+必ず上述の過程の最初からやり直してください。
+</p>
+<p>
+より詳しくは、
+<a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/UPDATING" target="_top">
+src/UPDATING</a> を参照してください。
+</p>
+
+<h4 class="title">
+<a name="what-to-do"></a>覚えておくべきこと (<a href="#faq">top</a>)
+  </h4>
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+  <p>
+  より新しいバージョンの-currentにアップグレードするときは、どれかの新しい
+  ライブラリー(<a class="ulink" href="#star" target="_top">*</a>)をインストールする前に<span class="emphasis"><em>必ず</em></span>
+  新しいカーネルをコンパイルし、それで起動していなければなりません。
+  一般的にもっともよいのは他のどれよりも先に新しいカーネルを試し、何か問
+  題にぶつかったら<a class="ulink" href="../kernel/#problems_compiling_a_current_kernel" target="_top">
+  カーネル FAQ</a>を参照することです。
+  </p>
+  <p>
+  カーネルが動き出したらソースツリーの一番上の
+  <a class="ulink" href="http://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/BUILDING" target="_top">src/BUILDING</a>
+
+  ファイルを一読し、 build.sh スクリプトを使って新しいユーザーランドを
+  作るといいでしょう。
+  </p>
+ </li>
+<li class="listitem">
+  -current のカーネルをコンパイルする際には、常に
+  COMPAT_&lt;最新のリリース&gt; オプション (例えば COMPAT_16)
+  を含めるのを忘れないでください。current が最新の安定版リリース
+  からかけはなれていくと互換性のコードが加えられますが、
+  このオプションが設定されている時だけ有効になります。
+  少なくとも、この互換性のためのコードは、新しいカーネルをブートして、
+  <code class="code">build.sh</code> による構築が終了するまでは必要です。
+ </li>
+<li class="listitem">
+  NetBSD-currentを使っている人は<span class="bold"><strong><a class="ulink" href="../../mailinglists/#current-users" target="_top">current-users</a></strong></span>
+  メーリングリストに参加することを強く薦めます。<span class="bold"><strong><a class="ulink" href="../../mailinglists/#source-changes" target="_top">source-changes</a></strong></span>
+  を読むのも興味深いでしょう。
+  </li>
+</ul></div>
+<p><a name="star"></a>
+
+*: もし新たなシステムコールが追加されていないことが
+確かでなければ、とりあえずこうしてください。それがより安全です。
+</p>
+
+<h4 class="title">
+<a name="build-targets"></a>Makefileのいろいろなターゲットは? (<a href="#faq">top</a>)
+  </h4>
+<p>
+
+'build.sh' スクリプト (ソースディレクトリーの最上層にあります)
+を使った新しい toolchain の使い方に関する詳しいドキュメンテーションについては、
+'<code class="code">./build.sh -h</code>' を実行するとともに、
+<a class="ulink" href="http://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/BUILDING" target="_top">
+src/BUILDING</a> を参照してください。
+</p>
+<p>
+<span class="bold"><strong>注意:</strong></span>
+<span class="emphasis"><em>
+toolchain が新しくなったことにより、 'make build' という使い方はもはや無用のものになりました。
+使ってはいけません。
+</em></span>
+</p>
+<p>
+<code class="code">build.sh</code> を使って初めてシステムの構築をする場合には、
+この先でコンパイルに使うツール一式も構築されます。
+その後に作られるものはすべて、すでに構築済のツールを再利用することになるので、
+所要時間は初回より短くなります。
+</p>
+<p>
+もちろん、 <code class="code">./build.sh build</code> が成功しない限り
+<code class="code">./build.sh install=/</code> を実行してはいけません。
+さもないと、動作しないシステムをもとに作業が進められてしまう可能性があります。
+</p>
+
+<h4 class="title">
+<a name="using-anoncvs-pserver"></a>anoncvs の使用 (<a href="#faq">top</a>)
+  </h4>
+<p>
+ 
+<span class="emphasis"><em>
+ここでは暗号化されていない anoncvs 接続について説明します。
+暗号化プロトコルを使いたい場合は、
+<a class="ulink" href="#using-anoncvs-over-ssh" target="_top">後述の項目</a>を参照してください。
+</em></span>
+</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/scmcvs/README.html" target="_top"><code class="filename">devel/scmcvs</code></a> をインストールします。
+<span class="emphasis"><em>もし NetBSD が 2000-09-04 以降の -current のソースから構築されていれば、
+cvs はすでにインストールされています。</em></span>
+</li>
+<li class="listitem">環境変数 CVSROOT を お好きな <a class="ulink" href="../../mirrors/#anoncvs" target="_top">anoncvs
+サーバー</a>を指すように設定します。
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?csh+1+NetBSD-5.1+i386">csh(1)</a> または <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/shells/tcsh/README.html" target="_top"><code class="filename">shells/tcsh</code></a> ユーザーの方:
+<pre class="programlisting"># setenv CVSROOT :pserver:anoncvs@anoncvs.NetBSD.org:/cvsroot</pre>
+</li>
+<li class="listitem">For <a href="http://netbsd.gw.com/cgi-bin/man-cgi?sh+1+NetBSD-5.1+i386">sh(1)</a>, <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ksh+1+NetBSD-5.1+i386">ksh(1)</a>, または <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/shells/bash2/README.html" target="_top"><code class="filename">shells/bash2</code></a> ユーザーの方:
+<pre class="programlisting">$ CVSROOT=:pserver:anoncvs@anoncvs.NetBSD.org:/cvsroot; export CVSROOT</pre>
+    </li>
+</ul></div>
+</li>
+<li class="listitem">
+<pre class="programlisting">$ cd /usr
+$ cvs login</pre>
+(パスワードとして "anoncvs" を使用してください)
+</li>
+</ol></div>
+<p>
+</p>
+<p>
+最初の checkout の際にはディレクトリーに対する書き込み権限が必要です。
+その後、ソースツリーの所有者を他のユーザーに変更できます。一つの方法は
+最初のチェックアウトは root で行ない、その後の使用のために
+ソースツリー全体を他のユーザーの所有に変更することです。
+</p>
+
+<h4 class="title">
+<a name="using-anoncvs-over-ssh"></a>anoncvs over ssh の利用 (<a href="#faq">top</a>)
+  </h4>
+<p>
+<a class="ulink" href="#using-anoncvs-pserver" target="_top">anoncvs の利用</a>で説明した方法は、取り寄せた
+ソースが正しいものであることを保証するため、 ssh 上でも使うことができます。
+ただし、
+そうすることで anoncvs サーバーにはかなりのオーバーヘッドがかかります。
+</p>
+<p>
+<a class="ulink" href="../../mirrors/#anoncvs" target="_top">ミラー一覧</a>に載っている
+ssh 接続に対応したサーバーでは、各項目ごとに、必要な情報を列挙しています。
+</p>
+<p>
+通常、 cvsroot の冒頭の ':pserver:' を削除し、
+お使いのシェルに応じた方法で、変数 CVS_RSH を
+'ssh' に設定します。
+</p>
+
+<h4 class="title">
+<a name="using-anoncvs"></a>anoncvs を用いた NetBSD-current の追跡 (<a href="#faq">top</a>)
+  </h4>
+
+<div class="sect4" title="セットアップ">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="setting-up"></a>セットアップ</h5></div></div></div>
+
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">カーネルのみをチェックアウトする
+<pre class="programlisting">$ cd /usr
+$ cvs checkout -P src/sys</pre>
+<p>
+これにより、カーネルのソースは <code class="code">/usr/src/sys</code> に用意されます。
+<a class="ulink" href="../kernel/#how_to_build_a_kernel" target="_top">カーネルの作り方</a>に
+関する情報は別のページで提供されています。
+</p>
+</li>
+<li class="listitem">
+<p>ソースツリー全体をチェックアウトする(カーネルも含みます)
+</p>
+<pre class="programlisting">$ cd /usr
+$ cvs checkout -P src</pre>
+<p>
+</p>
+<p>
+これにより、NetBSD ソースの全体が /usr/src に用意されます。
+</p>
+<div class="note" title="注意" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">注意</h3>
+
+<p>最初に「ソース全体」のチェックアウトをするときは、
+<a class="ulink" href="#downloading" target="_top">tarball を FTP で取得</a>してローカルで展開するほうが、
+たいてい速くなります。こちらのほうがネットワークリンクをもっともよく使うからです。
+そうした後に cvs checkout/update を使うと、変更部分のみを送ることになり、
+送られるバイト数が最小限になります。
+</p>
+</div>
+</li>
+<li class="listitem">パーミッションの修正<br>
+    もしソースツリーを root 以外のユーザーの所有にしたければ
+    (root で)次のようにして下さい。
+<pre class="programlisting"># chown -R <span class="emphasis"><em>user</em></span> /usr/src</pre>
+</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="ソースの更新">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="update-sources"></a>ソースの更新</h5></div></div></div>
+
+
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">カーネルソースのみを更新する
+<pre class="programlisting">$ cd /usr/src/sys
+$ cvs update -dP</pre>
+</li>
+<li class="listitem">ソースツリー全体を更新する
+<pre class="programlisting">$ cd /usr/src
+$ cvs update -dP</pre>
+</li>
+</ol></div>
+<p>
+<span class="bold"><strong>注意:</strong></span> <code class="code">cvs checkout -d dir src</code> (あるいは、他の src*
+モジュールに対する同様のコマンド) を実行しても動作しません。
+"existing repository ... does not match ...; ignoring module _gnusrc-cmp"
+等のエラーメッセージが出ます。回避するには、 <code class="code">-d</code> オプションを外して
+cvs がデフォルトのディレクトリーを作るようにします。
+</p>
+</div>
+
+<div class="sect4" title="特定の日付のソースをチェックアウトするには次のようにして下さい">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="checkout-by-date"></a>特定の日付のソースをチェックアウトするには次のようにして下さい</h5></div></div></div>
+
+<pre class="programlisting">$ cvs checkout -D 20020501-UTC src</pre>
+</div>
+
+<div class="sect4" title="特定の枝のソースをチェックアウトするには">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="checkout-by-branch"></a>特定の枝のソースをチェックアウトするには</h5></div></div></div>
+
+<pre class="programlisting">$ cvs checkout -rnetbsd-1-6 src</pre>
+CVS リポジトリーに含まれる各ブランチの説明については、
+<a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/doc/BRANCHES?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top">src/doc/BRANCHES</a>
+を参照してください。
+</div>
+
+<div class="sect4" title="有用なヒント">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="hints"></a>有用なヒント</h5></div></div></div>
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+cvs の '-z' フラグは使わないでください。使った場合、データストリームが同期せず、
+クライアント側でソースが壊れたり、クライアントが完全にハングアップしたりします。
+さらに、 cvs サーバーに余計な負荷がかかります。
+</li>
+<li class="listitem">ツリー内のあるブランチをチェックアウトしたい場合に、
+このブランチ用に新しいディレクトリーを作って、既存のディレクトリーが上書きされないように
+慎重を期したい方もいるでしょう:
+
+<pre class="programlisting">$ cd /parent/dir/to/checkout/into
+$ mkdir NewName-temp
+$ cd NewName-temp
+$ cvs checkout ... src
+$ mv src ../NewName
+$ cd ..
+$ rmdir NewName-temp</pre>
+</li>
+<li class="listitem">
+cvs による更新が正しく実行できるようにするためには objdirs を
+使用する必要があります。もし、cvs から
+<pre class="programlisting">   cvs [update aborted]: could not chdir to gnu/usr.bin/gdb/gdb: Not a directory</pre>
+のようなエラーメッセージを受けたならば、 <code class="code">make cleandir</code> を
+実行して、もう一度試して下さい。cvs による更新の後、
+<code class="code">make obj</code> を実行するのを忘れないように。
+</li>
+<li class="listitem">
+<p>
+
+特定のコマンドに対するスイッチはホームディレクトリーの .cvsrc に
+記述しておけば、自動的に使われます。.cvsrc ファイルの例を
+掲げておきます。
+</p>
+
+<pre class="programlisting"> update -dP
+   checkout -P
+   diff -u</pre>
+</li>
+</ul></div>
+</div>
+
+<div class="sect4" title="ソースからの NetBSD の構築">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="building-from-source"></a>ソースからの NetBSD の構築</h5></div></div></div>
+
+<p>
+<span class="emphasis"><em>(すでに、最新の NetBSD バイナリースナップショットと /usr/src に
+ソースがインストールされていると仮定します; また、 BSDOBJDIR は
+/usr/obj であると仮定します。):</em></span>
+</p>
+<p>
+はじめてユーザーランドを構築する場合:
+</p>
+<pre class="programlisting"># mkdir /usr/obj
+# cd /usr/src
+# ./build.sh -O /usr/obj -D /usr/NetBSD-new-build -T /usr/tools build
+# ./build.sh -O /usr/obj -D /usr/NetBSD-new-build -T /usr/tools install=/
+</pre>
+<p>
+</p>
+<p>
+build.sh を使って初めてシステムの構築をする場合には、
+この先でコンパイルに使うツール一式も構築されます。
+その後に作られるものはすべて、すでに構築済のツールを再利用することになるので、
+所要時間は初回より短くなります。
+</p>
+<p>
+もちろん、 <code class="code">./build.sh build</code> が成功しない限り
+<code class="code">./build.sh install=/</code> を実行してはいけません。
+さもないと、動作しないシステムをもとに作業が進められてしまう可能性があります。
+</p>
+<p>
+
+CVS update の後、ユーザーランドのバイナリーを更新する場合:
+
+</p>
+<pre class="programlisting"># cd /usr/src
+# ./build.sh -D /usr/NetBSD-new-build -O /usr/obj -T /usr/tools -u build
+# ./build.sh -D /usr/NetBSD-new-build -O /usr/obj -T /usr/tools -u install=/
+</pre>
+<p>
+
+これらによって、新しいバイナリーが実行されたシステムにインストールされます。
+新しいバイナリーが全て有効になるようにリブートしてください。
+</p>
+<p>
+
+あなたがシステムを頻繁に更新しており、動作中のシステムを直接更新したい場合は、
+<span class="emphasis"><em>熟練者</em></span>モードを使って DESTDIR=/ で構築することができます。
+たとえば次のようにします:
+
+</p>
+<pre class="programlisting"># ./build.sh -E -O /usr/obj -T /usr/tools -u build</pre>
+<p>
+
+これは<span class="bold"><strong>熟練</strong></span>ユーザー専用の方法であり、これを実行するだけで
+システムが何も構築できない状態になってしまう可能性があることに注意してください。
+構築が最後まで成功すると<span class="bold"><strong>確信できる</strong></span>
+場合にのみ、この方法を使ってください。
+</p>
+</div>
+
+<h4 class="title">
+<a name="using-sup-into-cvs"></a>SUP と CVS の組合せによる NetBSD-current の追跡 (<a href="#faq">top</a>)
+  </h4>
+
+    <div class="sect4" title="概要">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sup-overview"></a>概要</h5></div></div></div>
+
+
+    <p>currentは次の方法により追跡できます。基準となるソースのコピーを、
+       標準的にはほぼ週に一回SUPを使い最新の状態に維持します。そして、
+       この基準となるソースツリーを、ローカルのCVSリポジトリーにインポー
+       トします。そして、リポジトリーのコピーをチェックアウトし、それ
+       からcurrentを作成します。</p>
+
+    <p>このアプローチには3つの主要な理由があります。
+    </p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">いつどのようにcurrentが更新されたか追跡するため。</li>
+<li class="listitem">ローカルの変更をほとんど自動的に更新されたcurrentソースにマー
+        ジできるようにするため。</li>
+<li class="listitem">構築するときの問題に備えて、いつもまったく変更していない
+	NetBSD-currentのソースツリーがあることを保証するため。</li>
+</ol></div>
+<p>
+    </p>
+    
+    <p>このアプローチの短所は、3つの独立のソースツリーのために、実際の
+      currentの構築に必要な空きを含めないで、およそ150MBのディスクスペー 
+      スが必要なところです。
+    </p>
+    </div>
+
+    <div class="sect4" title="必要なもの">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sup-requirements"></a>必要なもの</h5></div></div></div>
+
+    <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">CVS 1.9かそれ以降(もし、あなたが 2000-09-04 以降の -current 
+	を使用していればすでにインストールされていますし、
+	そうでない場合は pkgsrcか、ソースから構築のどちらでも構いません)。
+	マージが上手なのでCVS 1.10かそれ以降が望ましいでしょう。</li>
+<li class="listitem">SUP</li>
+<li class="listitem">Perl 5(任意)附属スクリプトのため</li>
+</ul></div>
+    </div>
+    <div class="sect4" title="詳説">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="sup-details"></a>詳説</h5></div></div></div>
+
+    <p>currentの追跡と構築は、6つの段階からなります:
+    </p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">マスターソースツリーにSUPでソースを更新します。</li>
+<li class="listitem">SUPしたファイルをCVSにインポートし、ソースの作業用コピーを更
+        新します。</li>
+<li class="listitem">作業用ソースとSUPしたソースとをマージします。</li>
+<li class="listitem">currentを構築してインストールします。</li>
+<li class="listitem">構築に成功したソースにタグをつけます。</li>
+</ol></div>
+<p>
+    </p>
+    </div>
+    
+<h4 class="title">
+<a name="supping-sources"></a>ソースのSUP (<a href="#faq">top</a>)
+  </h4>
+    <p>ソースは、どのNetBSD SUPサーバーからもSUP可能です。またSUPの出
+      力は後の参照のためにファイルに保存するべきです。
+    </p>
+    
+<h4 class="title">
+<a name="import-merge"></a>ソースのインポートとマージ (<a href="#faq">top</a>)
+  </h4>
+    <p>ソースのインポートは次のように行ないます:</p>
+<pre class="programlisting">$ cvs -d /misc/cvsrep import -I ! -I CVS netbsd netbsd current-<span class="emphasis"><em>date</em></span></pre>
+
+    <p><span class="emphasis"><em>date</em></span>は追跡のためにSUP時の日付と置き換えます。
+      <code class="code">-I ! -I CVS</code> オプションは、
+      ソースツリー中の 'CVS' ディレクトリーを除く全てのファイルが
+      無視されないことを保証します。これはNetBSDのソースファイルに、通
+      常CVSにより無視される拡張子のものがいくつかあるからです。もしロー
+      カルのパッチと衝突がある場合、importコマンドはそれらを出力し、衝
+      突をマージするためのコマンドを次のように出力します:</p>
+<pre class="programlisting">$ cvs checkout -jnetbsd:yesterday -jnetbsd netbsd</pre>
+    <p>このマージコマンドは、インポートされたNetBSDソースを正確にマー
+      ジするためのものですが、SUPにより削除されたファイルは、ローカル
+      に反映されません。これを行なうためのマージコマンドはこうなるでしょ
+      う:</p>
+<pre class="programlisting">$ cvs update -j<span class="emphasis"><em>previous import tag</em></span> -j current-<span class="emphasis"><em>date</em></span></pre>
+    <p><span class="emphasis"><em>previous import tag</em></span>は前回のCVSインポートで使用したタグ名
+      と置き換えます。<span class="emphasis"><em>date</em></span>は、今マージしたばかりのcurrentのイン
+      ポートに使用したタグ名を利用できるようにするために、現在の日付と
+      置き換えます。</p>
+    <p>importコマンドにより表示される衝突は、衝突の可能性のあるもので
+      す。これらは、通常updateコマンドによりマージされますが、いくつか
+      の場合、実際に衝突を引き起こします。この場合、衝突行を手動でマー
+      ジすることが必要です。実際に衝突がある場合、cvs update時に、
+      <code class="code">C</code>に続きファイルネームが表示されます。</p>
+    <p>手作業による衝突のマージは単純作業ではありませんが、多くの場合、
+      ファイルへ行なったローカルの変更を削除し、元のNetBSDソースコード
+      に似せてやることで解決します。</p>
+    <p>CVSは衝突を次のように表します:</p>
+<pre class="programlisting">
+&lt;&lt;&lt;&lt;&lt;&lt;
+  <span class="emphasis"><em>ローカルファイルのコード</em></span>
+======
+  <span class="emphasis"><em>インポートしたファイルのコード</em></span>
+&gt;&gt;&gt;&gt;&gt;&gt; <span class="emphasis"><em>新たにインポートされるリビジョンのローカルリビジョン番号</em></span>
+</pre>
+
+    <p>もしimportコマンドが何の衝突を表示しない場合でも、チェックアウ
+      トしたツリーのコピーは衝突した場合と同じ方法で更新できます。</p>
+    <p>updateとcheckoutコマンドはすべて、チェックアウトしたソースのディ
+      レクトリーで行なってください。私のシステムでは、これは
+      <code class="code">/usr/src/netbsd</code>です。</p>
+    <p>もし、これが最初のインポートならば、チェックアウトしたソースは
+      ないでしょう。'<code class="code">/usr/src/netbsd</code>'にソースツリーを作り
+      たいと仮定すると、次のコマンドでソースをチェックアウトします。マー
+      ジ作業は必要ありません。</p>
+<pre class="programlisting">$ cd /usr/src
+$ cvs -d /misc/cvsrep checkout netbsd
+</pre>
+    
+<h4 class="title">
+<a name="tagging"></a>構築に成功したものへのタグ付け (<a href="#faq">top</a>)
+  </h4>
+    <p> もし、<a class="ulink" href="#building" target="_top">構築</a>がうまくいって
+      動作するバイナリーセットを作成できたのならば、
+      動作するソースにタグ付けすることで使いやすくできます。
+      これは、万一なにかの原因で構築できないcurrentツリーになっても、
+      ひとつのCVSコマンドで、構築できるツリーに巻き戻すことを可能にします。
+      タグ付けは次のコマンドで行えます:</p>
+<pre class="programlisting">$ cvs tag successful-build-<span class="emphasis"><em>build date</em></span></pre>
+
+    <div class="sect4" title="註">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="tag-notes"></a>註</h5></div></div></div>
+
+    <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">もし、ファイル中の<span class="bold"><strong>$Net</strong></span><span class="bold"><strong>BSD$</strong></span>マーカーを認識する
+        NetBSDカスタムバージョンのCVSを使用しない場
+        合、ファイルのNetBSDリビジョン番号を、構築時に問題が起きた場合
+        に参照の目的に使用することができます。</li>
+<li class="listitem">上記のSUP/インポート/マージの作業は、まったく簡単に自動化で
+        きます。以下のPerlスクリプトがこの作業を自動的に行ないます。
+<pre class="programlisting">#!/usr/pkg/bin/perl
+#
+# NetBSD-currentをSUPしてそれをCVSに取り込み、手元の変更とマージする
+# スクリプト
+#
+# 原註:
+# このスクリプトはエラー処理をしていないので、対話的でない用途には向い
+# ていない。
+#
+# このスクリプトはcvs-1.10.1とcvs-1.9.18でのみテストされている。
+#
+$SRCROOT="/usr/src/netbsd";
+$IMPORTROOT="/misc/import";
+$CVSROOT="/misc/cvsrep";
+# supを実行してその標準出力をperlに取り込む
+system "/usr/sbin/sup -zsv" ; # ここは最新のシステム以外では変更する
+                              # 必要がある
+
+# 新しいファイルをCVSに取り込む
+
+chdir $IMPORTROOT or die "Could not cd to $IMPORTROOT\n";
+
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;
+$date = localtime;
+$shortdate = sprintf "%02d%02d%04d",$mday,$mon+1,1900+$year;
+system "/usr/local/bin/cvs -d$CVSROOT import -I ! -m\"SUP Import $date\" netbsd netbsd current-$shortdate ";
+
+# 作業ディレクトリーを手元のNetBSDソースツリーにする
+chdir $SRCROOT or die "Could not change to $SRCROOT directory\n";
+
+# 取り込みを始める
+$lastimport = `cat /usr/src/netbsd/.tag`; # `はバッククォート
+$lastimport =~ s/\n//; # 文字列の終りの改行をすべて取り去る
+system "/usr/local/bin/cvs update -j $lastimport  -j
+current-$shortdate ";
+# tag保存ファイルに最新のファイルを書き込む
+open TAG,"&gt;$SRCROOT/.tag" or die "Could not open new tag file";
+ print TAG "current-$shortdate";
+close TAG;
+</pre>
+    <p>このスクリプトは作者がもっともよく使っているスクリプティングツー
+          ルであるという理由からPerlでかかれていますが、同じことをする
+          shellスクリプトを書くのはとても簡単でしょう。</p>
+</li>
+<li class="listitem">CVSを用いてcurrentを追跡するテクニックについてはNetBSDの
+        current-usersメーリングリストで何度か議論されています。他のテ 
+        クニックについてはNetBSDメーリングリストを検索してみてください。</li>
+</ul></div>
+    <p>
+    何かコメントや提案があれば、この部分を担当している
+    Mike Pumford <code class="email">&lt;<a class="email" href="mailto:mpumford@black-star.demon.co.uk">mpumford@black-star.demon.co.uk</a>&gt;</code> (訳註:英語で)、または
+    <code class="email">&lt;<a class="email" href="mailto:www@jp.NetBSD.org">www@jp.NetBSD.org</a>&gt;</code> までメールしてください。
+</p>
+</div>
+
+<h4 class="title">
+<a name="getrepos"></a>リポジトリー全体の入手 (<a href="#faq">top</a>)
+  </h4>
+<p>
+
+以上で説明した方法では、あなたが独自に行なった変更を自分用のリポジトリーに
+保存することができます。これは、あなたが NetBSD をもとにしたソフトウェアの
+開発をしている場合には便利でしょう。あなたが自分の CVS リポジトリーの
+保守をしているわけでなく、単に NetBSD の CVS リポジトリーをミラーしたい
+だけならば、それ用の方法が三つあります。
+</p>
+<p>
+
+以下に簡単に説明するいずれの方法でも、 NetBSD CVS リポジトリーのコピー
+(つまり、チェックアウトされたファイルでは*なく*、 RCS の ,v ファイル)
+を取得できます。その後は、自分の anoncvs サーバーをセットアップしたり、
+ローカルハードディスクにチェックアウトしたりできます。また、
+リポジトリーに記録されている履歴にすぐにアクセスするのにも便利です。
+</p>
+<p>
+
+リポジトリー全体を取得する方法は、次のとおりです:
+
+</p>
+<div class="variablelist"><dl>
+<dt><span class="term">sup</span></dt>
+<dd>
+<p>すでに sup を使って NetBSD のソースの一部をミラーしている場合は、
+     sup の設定ファイルに下記の行を追加します:</p>
+<pre class="programlisting">anoncvs release=all  host=sup.NetBSD.org hostbase=/ftp/pub \
+base=/usr prefix=/usr backup use-rel-suffix compress
+</pre>
+     <p>
+     それから、 "sup /path/to/supfile anoncvs" を実行してファイルを取得します。
+     </p>
+     <p>
+     sup ファイルの例が <code class="code">/usr/share/examples/supfiles</code> にいくつかあります。
+     また、 <a class="ulink" href="../../mirrors/#sup" target="_top">SUP ミラーのリスト</a> で、
+     あなたの近所のサーバーを探すようにしてください。
+     </p>
+</dd>
+<dt><span class="term">rsync</span></dt>
+<dd>
+<p>rsync は rsync サーバーに大きな負荷をかけることに注意してください。
+     このため、同時に利用できる rsync ユーザー数に制限があります。それでもなお
+     rsync したい場合、リポジトリー取得のコマンドは次のとおりです:</p>
+<pre class="programlisting">rsync -v -a rsync://anoncvs.NetBSD.org/cvsroot/src .</pre>
+     <p><a class="ulink" href="../../mirrors/#rsync" target="_top">rsync ミラーのリスト</a>をご覧ください !</p>
+</dd>
+<dt><span class="term">cvsup</span></dt>
+<dd>
+<p>M3 コンパイラーが移植されていないため、現在、 CVSup はすべての NetBSD
+     アーキテクチャーで使えるわけではありません。 i386 では、
+     <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/cvsup/README.html" target="_top"><code class="filename">devel/cvsup</code></a> パッケージと下記の設定ファイルを使って、
+     cvsup.de.NetBSD.org から
+     リポジトリーをミラーできます:
+</p>
+<pre class="programlisting">*default host=cvsup.de.NetBSD.org
+*default base=/usr
+*default prefix=/local/NetBSD-cvs
+*default release=cvs
+*default delete use-rel-suffix
+*default compress
+
+netbsd
+</pre>
+<p>
+     </p>
+     <p>
+     <a class="ulink" href="../../mirrors/#cvsup" target="_top">CVSup ミラーのリスト</a>をご覧ください!
+</p>
+</dd>
+</dl></div>
+<p>
+</p>
+
+<h4 class="title">
+<a name="error"></a>エラーが出た場合は ? (<a href="#faq">top</a>)
+  </h4>
+<p>
+
+スナップショットや以前の -current をもとに -current の構築をしようとして
+うまくいかなくても、慌てないでください。次の手順を踏んでみてください:
+</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">構築をしようとしているリリースの <a class="ulink" href="http://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/UPDATING" target="_top">src/UPDATING</a>
+    ファイルを読みます。
+</li>
+<li class="listitem">手がかりを得るために <a class="ulink" href="http://mail-index.NetBSD.org/current-users/" target="_top">current-users
+    アーカイブ</a>を読みます。
+</li>
+<li class="listitem">再度アップデートします。関連あるファイル群のコミットの合間に
+    リポジトリーを受け取っていた可能性もありますし、あるいは問題が修正
+    されているかもしれません。
+</li>
+<li class="listitem">どれも失敗した場合、 current-users にメールを送って、
+    問題を説明してください。これには、日付、時刻、 -current のソースの
+    入手方法と、あなたが加えた変更点をすべて含めてください。それから、
+    出たエラーメッセージを含む<span class="bold"><strong>短い</strong></span>スクリプトを入れてください。
+    おそらく、誰かがすぐに問題を解決してくれるでしょう。
+</li>
+</ol></div>
+<p>
+</p>
+
+<h4 class="title">
+<a name="etcupdate"></a>etcupdate を使った設定ファイルと起動ファイルの更新 (<a href="#faq">top</a>)
+  </h4>
+
+<div class="sect4" title="概観">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="etcupdate-overview"></a>概観</h5></div></div></div>
+
+
+etcupdate は、オペレーティングシステムのアップグレード後の、 /dev、 /etc、
+/root 以下の新しい設定ファイルや起動ファイル (etc.tgz
+配布セットに含まれるファイル) の比較・マージ・インストールを
+手伝ってくれるスクリプトです。オペレーティングシステムのアップグレードは、
+ソースからのコンパイル、バイナリー配布物の展開の、いずれの方法でも
+おこなうことができます。
+</div>
+
+<div class="sect4" title="ソースファイルに etcupdate を使う">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="using-etcupdate-source"></a>ソースファイルに etcupdate を使う</h5></div></div></div>
+
+<p>
+ソースが /usr/src 以下に置かれている場合は、
+下記のコマンドで十分なはずです:
+</p>
+<pre class="programlisting"># etcupdate</pre>
+<p>
+しかし、 NetBSD のソースがこれ以外の場所、たとえば /home/jdoe/netbsd/src
+にある場合はどうでしょうか? 案ずることはありません。ソースツリーの場所を
+-s srcdir を使って etcupdate に教えてやれば、うまくいきます:
+</p>
+<pre class="programlisting"># etcupdate -s /home/jdoe/netbsd/src</pre>
+</div>
+
+<div class="sect4" title="バイナリー配布セットに etcupdate を使う">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="using-etcupdate-binary"></a>バイナリー配布セットに etcupdate を使う</h5></div></div></div>
+
+<p>
+時には、ソースが用意されていないけれども設定ファイルや起動ファイルを
+更新したいときがあるでしょう。この場合の解決法は、必要な配布セット
+(少なくとも etc.tgz) を展開し、 -b srcdir を使って etcupdate に
+「ソースはなく公式配布セットがあるだけである」ことを伝えます。
+</p>
+<pre class="programlisting"># mkdir /tmp/temproot
+# cd /tmp/temproot
+# tar xpzf /some/where/etc.tgz
+# etcupdate -s /tmp/temproot</pre>
+</div>
+<hr>
+<h3 class="title">特定の問題</h3>
+<h4 class="title">
+<a name="wscons"></a>wsconsにアップデートした後コンソールが使えない (<a href="#specific-problems">top</a>)
+  </h4>
+<p>
+
+以下の手順が必要です。<a class="ulink" href="ftp://ftp.jp.NetBSD.org/pub/NetBSD/NetBSD-current/src/etc/" target="_top">src/etc</a>
+にある適切なetc.<span class="emphasis"><em>port</em></span>ディレクトリーから最新のMAKEDEVファイルを
+<code class="code">/dev</code>にコピーしてシングルユーザーで起動してください。そのあと
+以下をタイプします:
+</p>
+<pre class="programlisting"># fsck -p
+# mount -vt nonfs
+# cd /dev
+# ./MAKEDEV wscons
+</pre>
+<p>
+</p>
+
+<h4 class="title">
+<a name="rebuild-nbmake"></a>build.sh が常に nbmake を最初に再構築するのは、なぜか? (<a href="#specific-problems">top</a>)
+  </h4>
+<p>
+
+たとえ、 <code class="code">./build.sh tools</code> を実行しておき、その後に <code class="code">-u</code>
+フラグを使ったり <code class="code">/etc/mk.conf</code> で <span class="emphasis"><em>TOOLDIR</em></span> を指定していたとしても、
+<code class="code">nbmake</code> は常に <code class="code">build.sh</code> によって再構築されます。これは正常な挙動です。
+その理由は <code class="code">./build.sh</code> 自体の中の <code class="code">rebuildmake</code>
+関数に書いてあります:
+</p>
+<pre class="programlisting">        # なお、ここでは "mk.conf" に TOOLDIR が設定されていても、
+        # それに従おうとは *しません* 。なぜなら、ここに設定されている make
+        # 変数の展開その他のことは、 ${toolprefix}make を行なった *後に* のみ、
+        # パース可能となるからです。このため、このような TOOLDIR 指定が有効となるのは、
+        # ユーザーが環境変数 TOOLDIR をあらかじめ設定しているか、 build.sh に
+        # -T オプションが使われたときだけです。
+        #               
+</pre>
+<p>
+よって、 <code class="code">nbmake</code> を再構築したくない場合は、
+<code class="code">-T tooldir</code> を build.sh へ渡すか、環境変数 <span class="emphasis"><em>TOOLDIR</em></span>
+を設定しておく必要があります。
+</p>
+
+</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

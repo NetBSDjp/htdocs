@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+
+
+<title>開発者用 CVS 覚書</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-developers-cvs-repos-notes"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>開発者用 CVS 覚書</h1>
+<h3 class="title"><a name="misc"></a></h3>
+<ul>
+<li><a href="#head">'HEAD' が、期待したような使い方をできない理由</a></li>
+<li><a href="#cvsignore">.cvsignore ファイルは使用禁止!</a></li>
+<li><a href="#moving">リポジトリー内のファイルの移動や複製</a></li>
+<li><a href="#admin">リポジトリー上のログメッセージを変更する方法は?</a></li>
+</ul>
+<hr>
+<h3 class="title"></h3>
+<h4 class="title">
+<a name="head"></a>'HEAD' が、期待したような使い方をできない理由 (<a href="#misc">top</a>)
+  </h4>
+<p>
+
+HEAD は "main trunk 上の最新版" と同義ではなく、実は、
+もっと特別な意味を持っています。 'cat' を例に、見てみましょう。
+</p>
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">"<code class="code"><span class="bold"><strong>cvs update -A</strong></span></code>" (または "<code class="code"><span class="bold"><strong>cvs update -Dnow</strong></span></code>") すると、以下のリビジョンが得られます:
+<pre class="programlisting"><pre>	Makefile	1.9
+	cat.1		1.16
+	cat.c		1.21</pre></pre>
+</li>
+<li class="listitem">"<code class="code"><span class="bold"><strong>cvs update -r netbsd-1-4-base</strong></span></code>" すると、以下のリビジョンが得られます:
+<pre class="programlisting"><pre>	Makefile	1.8
+	cat.1		1.16
+	cat.c		1.19</pre></pre>
+</li>
+<li class="listitem">"<code class="code"><span class="bold"><strong>cvs update -r netbsd-1-4-PATCH001</strong></span></code>" または "<code class="code"><span class="bold"><strong>cvs
+update -r netbsd-1-4</strong></span></code>" すると、以下のリビジョンが得られます:
+<pre class="programlisting"><pre>	Makefile	1.8
+	cat.1		1.16
+	cat.c		1.19.2.1</pre></pre>
+</li>
+</ul></div>
+
+<p>
+どの場合でも、 "<code class="code"><span class="bold"><strong>cvs update -r HEAD</strong></span></code>" して得られるのは、
+"<code class="code"><span class="bold"><strong>cvs update -A</strong></span></code>" や "<code class="code"><span class="bold"><strong>cvs
+update -Dnow</strong></span></code>" した時と同じものです。
+</p>
+<p>
+一方、 "<code class="code"><span class="bold"><strong>cvs diff -r HEAD</strong></span></code>" した場合は以下のようになります:
+</p>
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">current の場合 (あらかじめ "<code class="code"><span class="bold"><strong>cvs update -A</strong></span></code>"
+    等としておいた場合) 、以下の diff が得られます:
+<pre class="programlisting"><pre>	file:		1st -r:	2nd -r:
+	-----		-------	-------
+	Makefile	1.9	1.9
+	cat.1		1.16	1.16
+	cat.c		1.21	1.21</pre></pre>
+
+(つまり、何も出てきません。)
+</li>
+<li class="listitem">
+<code class="code">-r netbsd-1-4-base</code> でアップデートしておいた場合は、以下の diff が得られます:
+<pre class="programlisting"><pre>	Makefile	1.9	1.8
+	cat.1		1.16	1.16
+	cat.c		1.21	1.19</pre></pre>
+(そう、逆向き (新しいものに対して古いものへの差分) になっています。
+"<code class="code"><span class="bold"><strong>cvs diff -r foo</strong></span></code>" による比較は、リビジョン foo
+のファイルが先に、チェックアウト済みのファイルが後になるからです。)
+</li>
+<li class="listitem">
+<code class="code">-r netbsd-1-4-PATCH001</code> または <code class="code">-r netbsd-1-4</code>
+    でアップデートしておいた場合は、以下の diff が得られます:
+<pre class="programlisting"><pre>	Makefile	1.9	1.8
+	cat.1		1.16	1.16
+	cat.c		1.19.2.1 1.19.2.1</pre></pre>
+</li>
+</ul></div>
+<p>
+いいかえれば、 "<code class="code"><span class="bold"><strong>cvs update -r HEAD</strong></span></code>" は、 (少なくとも、
+attic 送りになったファイルがない単純な場合に限れば) 
+"<code class="code"><span class="bold"><strong>cvs update -A</strong></span></code>" または "<code class="code"><span class="bold"><strong>cvs update -Dnow</strong></span></code>"
+と同義ということです。
+</p>
+<p>
+しかし、 "<code class="code"><span class="bold"><strong>cvs diff -r HEAD</strong></span></code>" は、各ファイルを、
+<span class="emphasis"><em>そのファイルの属する枝の最新版</em></span>と比較します。
+枝上の一部のファイル (分岐はしたが、その枝で変更されていない場合)
+は、差分は分岐元の枝の最新版と比較した結果になります
+(上述した例では、 <code class="code">cat/Makefile</code> が該当し、 trunk
+の最新版と比較されています) 。それ以外のファイル
+(分岐後に分岐先の枝で変更されたファイル) では、
+差分は現にチェックアウトされた枝の最新版と比較した結果になります。
+</p>
+<p>
+いいかえれば、 <span class="bold"><strong><code class="code">-r HEAD</code> に対する <code class="code">diff</code>
+は、ファイルが trunk の最新版と合致するかの確認用としては、
+使えない</strong></span>ということです。
+</p>
+<p>
+そういう用途には <code class="code">-Dnow</code> が使えます (ただし、削除済みファイルの存在に関しては、
+壊れ気味です……ですが、少なくとも冗長過ぎるということはありません
+</p>
+<p>
+枝へ commit した後、並列に更新して -kk を使いたい場合は、
+以下のように指定することもできます。
+</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+<code class="code"><span class="bold"><strong>cvs update -kk</strong></span></code><br>
+    (チェックアウトした枝の最新版を、 -kk を指定して取得します。
+    この枝に変更を加えて commit したばかりであれば、
+    各ファイルを単に -kk 化するだけです。)</li>
+<li class="listitem"><code class="code"><span class="bold"><strong>cvs update -A
+-kk</strong></span></code></li>
+</ol></div>
+<p>
+変更/追加/削除されたファイルがなければ、この二つはどちらも同じ結果になります。
+</p>
+<p>
+以上ですが、要するに、 HEAD は危険な面もあるので使わないように、ということです。 (cgd)
+</p>
+
+<h4 class="title">
+<a name="cvsignore"></a><code class="code">.cvsignore</code> ファイルは使用禁止! (<a href="#misc">top</a>)
+  </h4>
+
+<p><code class="code">.cvsignore</code> ファイルは、 NetBSD ソースコードリポジトリーの
+大半の部分では、使われていません。 (議論の結果、ソースツリーから
+追放されたのです。) <code class="code">pkgsrc</code> 以外の全モジュールは、
+今もこの禁制下にあります。
+</p>
+<p><code class="code">.cvsignore</code> ファイル追放の理由は、簡単に言えば、 NetBSD
+の開発上で問題を引き起こすからです。このファイルによる主な問題は
+二つあります: 掃除が不完全になることと、
+配布物にゴミファイルが残ることです。
+</p>
+
+<p>掃除が不完全になる問題についていうと、 NetBSD のソースは、
+構築してから掃除すると、元のソースファイルだけが残らないといけません。
+もし、 <code class="code">make cleandir</code> して完全に掃除したあとで、
+オブジェクトファイルや中間生成ファイル等のファイルといった、
+ソース以外のファイルが残ったら、それはバグです。 <code class="code">.cvsignore</code>
+ファイルは、このバグを隠してしまうので、使ってはいけないのです。
+</p>
+
+<p>ゴミファイルを含まない配布物を構築することに関する問題については、
+配布物にゴミファイルが含まれていないことを確認する一番簡単な方法は、
+"<code class="code">cvs update</code>" を "<code class="code">-I! -ICVS</code>" を付けて実行することです。
+しかし、 <code class="code">-I</code> を指定して作業をすると、 <code class="code">.cvsignore</code>
+で指定されている内容が、 CVS で無視されるファイルのリストに追加されます。
+このため、 <code class="code">.cvsignore</code> ファイルで指定されたファイルを CVS
+が将来にわたって無視するようになってしまうのです!
+この結果どういうことになるかは、明らかでしょう: <code class="code">.cvsignore</code>
+ファイルで指定されたようなファイルが何かの間違いでソーススナップショットに
+紛れ込んだ場合、それを除去できなくなります。
+</p>
+
+<p><code class="code">.cvsignore</code> ファイルを含んだパッケージをインポートする場合は、
+"<code class="code">cvs import</code>" コマンドに "<code class="code">-I .cvsignore</code>" オプションを付けて、
+CVS がこのファイルを無視するようにしてください。
+</p>
+
+<h4 class="title">
+<a name="moving"></a>リポジトリー内のファイルの移動や複製 (<a href="#misc">top</a>)
+  </h4>
+<p>
+時には、ファイルを CVS 履歴を保持したままで
+移動あるいは複製する必要な事態が起こります。
+そういったことは CVS ではサポートしていないので、 CVS の通常の
+クライアント-サーバーの仕組みで行うことはできません。
+</p>
+<p>
+
+かつては RCS ファイルそのものを移動するためのスクリプトがありましたが、
+今はそういうことはサポートされません。普通にファイルを削除して、
+新しい場所にファイルを追加してください。その際、将来追跡がしやすくなるよう、
+それぞれに移動先と移動元を書いておいてください。
+一度に沢山のファイルを扱う場合は、 cvs add するかわりに cvs import
+してもかまいません。
+</p>
+
+
+<h4 class="title">
+<a name="admin"></a>リポジトリー上のログメッセージを変更する方法は? (<a href="#misc">top</a>)
+  </h4>
+
+<p>
+cvs commit した後に、その commit メッセージを変更することが必要になった場合は、
+<code class="code">cvs admin</code> コマンドを使って変更することができます:
+</p>
+<pre class="programlisting"><pre>$ vi /tmp/newmsg
+$ cvs admin -m 1.1:"`cat /tmp/newmsg`" file</pre></pre>
+<p>
+複数のファイルを commit している場合は、対象のリビジョンとファイル名ごとに、
+このコマンドを繰り返す必要があります。
+ファイルとリビジョン番号の一覧は、
+source-changes メーリングリストに送られているメールから調べられます。
+また、対象のリビジョン番号が同じファイルがある場合、それらをすべて引数として与えれば、
+一回の <code class="code">cvs admin</code> コマンドで複数のファイル名を指定することができます。
+</p>
+<hr>
+<em><a href="./">CVS リポジトリー問題</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

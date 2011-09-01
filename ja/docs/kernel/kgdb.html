@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+  
+
+    <title>NetBSD ドキュメンテーション: GDB を使い NetBSD カーネルをデバッグする HOWTO</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-kernel-kgdb"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD ドキュメンテーション: GDB を使い NetBSD カーネルをデバッグする HOWTO</h1>
+<h3 class="title"><a name="using_kgdb">KGDB の使用方法</a></h3>
+<ul>
+<li><a href="#introduction">概要</a></li>
+<li><a href="#prerequisites">事前に準備しておくこと</a></li>
+<li><a href="#instructions">手順</a></li>
+<li><a href="#troubleshooting">トラブルシューティング</a></li>
+<li><a href="#general_caveats">一般的な注意</a></li>
+</ul>
+<hr>
+<h3 class="title">KGDB の使用方法</h3>
+        <h4 class="title">
+<a name="introduction"></a>概要 (<a href="#using_kgdb">top</a>)
+  </h4>
+
+	<p>
+	NetBSD カーネルに含まれている DDB デバッガーは、クラッシュ・トレースバック
+	を入手したり、変数の値の検査、その他のこまかいデバッグのために、役に立ちま
+	す。しかしながら、もし、真剣にカーネルをハックしているのであれば、DDB のか
+	わりに、リモートデバッガー KGDB が動作するように設定したいと思うでしょう。</p>
+
+	<p>
+	DDB に対する KGDB の利点は、ディスアセンブルされたマシンコードでなく
+	カーネルの <span class="emphasis"><em>ソースコード</em></span> を見ることができることです。実際のところ、
+	ほとんどすべての GDB の機能が使用可能で、gdb のいくつかのグラフィカル
+	インターフェースを使うこともできます(例えば <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/ddd/README.html" target="_top"><code class="filename">devel/ddd</code></a> など)。</p>
+      
+        <h4 class="title">
+<a name="prerequisites"></a>事前に準備しておくこと (<a href="#using_kgdb">top</a>)
+  </h4>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	    <p>同一アーキテクチャーで NetBSD の動作しているマシン二台(オブジェクトコード
+	      のフォーマットも同一であること):</p>
+	    <div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem">
+	        <p>TARGET - デバッグするカーネルを実行するマシン
+	          </p>
+	      </li>
+<li class="listitem">
+	        <p>REMOTE - gdb
+	          を実行、表示するマシン</p>
+	      </li>
+</ul></div>
+	    
+	    <p>あるアーキテクチャーのホストで、他のアーキテクチャーのターゲット用の gdb 
+	      を構築することも可能です。しかし、今のところこれについてはここでの対象範囲外です。
+	    </p>
+	  </li>
+<li class="listitem">
+	    <p>空きのシリアルポートが両方のマシンに存在すること。</p>
+	  </li>
+<li class="listitem">
+	    <p>null モデムケーブル (詳しくは <a class="ulink" href="../../docs/Hardware/Misc/serial.html" target="_top">NetBSD
+	      シリアルポート入門</a>参照)。</p>
+	    </li>
+<li class="listitem">
+	    <p>カーネルの構築とインストール、そして
+	      gdb の使用法についての知識</p>
+	  </li>
+</ul></div>
+      
+        <h4 class="title">
+<a name="instructions"></a>手順 (<a href="#using_kgdb">top</a>)
+  </h4>
+
+	<p>(以下の文中では、REMOTE マシン上(gdb が動作している)で
+	  <code class="filename">/dev/tty01</code> を、TARGET 
+	  マシン(デバッグされる)では <code class="filename">/dev/tty00</code>
+	  を使用していると仮定して説明します。
+	  お使いのマシンに合わせて、シリアルポートのデバイスを適切なもの─たとえば
+	  <code class="filename">/dev/dty00</code>
+	  ─に置き換える必要があるかもしれません。</p>
+
+	<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+	    <p>KGDB を有効にしたカーネルの構築</p>
+
+	    <p>(注意: たぶん、これが REMOTE マシン上でカーネルを構築する最良の方法
+	      でしょう。これで、デバッグする時には、すべての必要なソースファイルと
+	      シンボルファイルはすでに準備されています。)</p>
+
+	    <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	        <p>TARGET マシンのためにカーネルのコンフィグファイル内の以下の行を
+	         コメントアウトしてください。</p>
+	        <pre class="programlisting">
+  #options 	DDB			# in-kernel debugger
+  #options 	DDB_HISTORY_SIZE=100	# enable history editing</pre>
+                
+		<p>以下の三行をアンコメントアウト(あるいは追加)
+	          してください。</p>
+	        <pre class="programlisting">
+  options 	KGDB		# remote debugger
+  options 	"KGDB_DEVNAME=\"com\"",KGDB_DEVADDR=0x3f8,KGDB_DEVRATE=9600
+  makeoptions	DEBUG="-g"	# compile full symbol table</pre>
+		<p>TARGET マシン上で使用するシリアルポートの IO アドレス(0x3f8 は tty00、
+	          0x2f8 は tty01 用です)に一致するように、 KGDB_DEVADDR を変更してください。
+	          それから、 KGDB_DEVRATE を、使用するビットレートに一致させてください。</p>
+	      </li>
+<li class="listitem">
+	        <p>TARGET マシンのカーネルの設定と<a class="ulink" href="./#how_to_build_a_kernel" target="_top">
+	          構築</a>をおこなってください。</p>
+	      </li>
+</ul></div>
+	  </li>
+<li class="listitem">
+	    <p>TARGET マシンの準備</p>
+
+	    <p>ファイル <code class="filename">netbsd</code> を、カーネルを構築したディレクトリーから TARGET マシンの
+	      ルートディレクトリーにコピーしてください。<span class="bold"><strong>このカーネルを REMOTE マシンに
+	      インストールしてはいけません</strong></span>。(特に、両方のマシンで同じ tty を使っている
+	      時には注意してください!)</p>
+	  </li>
+<li class="listitem">
+	    <p>REMOTE マシンの準備</p>
+
+	    <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	        <p>TARGET マシンでカーネルを構築したのであれば、
+	          <code class="filename">/usr/src/sys</code> すべてを、
+	          REMOTE マシンにコピーしてください。(注意: TARGET
+	          マシンのディレクトリーを単に NFS マウントしてはいけません。
+	          gdb がブレークポイントで停止した時に、TARGET マシン上の
+	          <span class="application">nfsd</span>
+	          を含む<span class="emphasis"><em>すべてのプロセス</em></span>は停止します。)</p>
+	      </li>
+<li class="listitem">
+	        <p>REMOTE マシン上で使う予定の(そして
+	          REMOTE マシンで<span class="emphasis"><em>だけ</em></span>使う) tty の
+	          ために <code class="filename">/etc/ttys</code> を変更してください。
+	          例えば以下のように。</p>
+		  <pre class="programlisting">
+  tty01 "/usr/libexec/getty std.9600" unknown off local</pre>
+		<p>ここで重要なのは、<span class="quote">“<span class="quote">off</span>”</span>
+	          (これで、init がこのポートで getty を起動することはありません)と
+	          <span class="quote">“<span class="quote">local</span>”</span>です。なぜならば、
+	          <span class="application">ttyflags</span> は、
+	          <code class="filename">/etc/ttys</code> に従ってブート時にポートのデフォルトを設定します。
+	          そして、gdb を使うには、DTR を待たないようにするために
+	          <span class="quote">“<span class="quote">local</span>”</span>が設定されていなければなりません。</p>
+		<p><span class="quote">“<span class="quote">std.9600</span>”</span>を別のビットレートに変更したい場合もあるかもしれません。
+	          この場合、ビットレートは、gdb で設定する
+	          remotebaudrate (後で説明します)と同様に、
+	          TARGET 用のカーネルオプションで設定したレートと一致していなければなりません。
+	          <code class="filename">/etc/gettytab</code> の中に、
+	          あなたが使う名前と一致するエントリーがあることを確認してください。</p>
+	      </li>
+<li class="listitem">
+	        <p>REMOTE マシンをリブートするか、
+		  <span class="application">ttyflags</span> を起動し
+		  <code class="filename">/etc/ttys</code> を再読み込みさせてください。(<span class="command"><strong>kill -1
+		  1</strong></span> で十分かもしれません。しかし、
+		  <code class="filename">/etc/ttys</code> の項目の順番を変更したことにより、
+		  init が混乱する可能性があります)。</p>
+	      </li>
+</ul></div>
+	  </li>
+<li class="listitem">
+	      <p>null モデムケーブルを使い、
+	        シリアルポートに接続してください。</p> 
+	    </li>
+<li class="listitem">
+	      <p>TARGET マシンをリブートし、ブートローダーのメッセージが表示されたら
+	        すぐに、スペースキーを押してください。そして、次のコマンドを入力して
+	        ください。</p>
+		<pre class="programlisting">
+  boot -d</pre>
+	      <p>これによりカーネルがロードされます。
+		<span class="quote">“<span class="quote">waiting for kgdb</span>”</span>というメッセージが表示された後、
+		TARGET は停止します。</p>
+	    </li>
+<li class="listitem">
+	      <p>REMOTE マシン側で、
+	        カーネルを構築したディレクトリー (一般的には
+	        <code class="filename">/usr/src/sys/arch/<em class="replaceable"><code>something</code></em>/compile/<em class="replaceable"><code>config-name</code></em></code>)
+	        に移動し、<span class="command"><strong>gdb</strong></span> を起動します。</p>
+	      <pre class="programlisting"><code class="prompt">#</code> <strong class="userinput"><code>gdb netbsd.gdb</code></strong></pre>
+	      <p>数秒後、
+	        (gdb) プロンプトが表示されるはずです。</p>
+  	    </li>
+<li class="listitem">
+	      <p>gdb のいくつかのフラグを設定する</p>
+	      <pre class="programlisting">
+  # いつでも Ctrl-C により TARGET を停止させることができるようにする。
+  (gdb) set remotebreak 1
+  # gdb の使用するボーレートを設定する。(デフォルトは 9600、
+  # TARGET にインストールされたカーネルの設定と一致していること)
+  (gdb) set remotebaud 9600
+  # シリアル上でラインエラーが発生した場合の再送速度を速くする。
+  (gdb) set remotetimeout 3</pre>
+	    </li>
+<li class="listitem">
+	      <p>TARGET マシンに接続します(REMOTEマシン側で tty01 を使用していると
+	        仮定しています)</p>
+	      <pre class="programlisting">
+  target remote /dev/tty01</pre>
+	      <p>以下のようなメッセージが表示されます。</p>
+	      <pre class="programlisting">
+  Remote debugging using /dev/tty01
+  kgdb_connect (verbose=1) at 	../../../../arch/i386/i386/kgdb_machdep.c:244
+  244             if (verbose)
+  (gdb)</pre>
+	      <p>もし、これらのメッセージが表示されるかわりに、
+  	        GDB が<span class="quote">“<span class="quote">hang</span>”</span>しているようなら、
+  	        シリアルハードウェア、ケーブル、あるいは設定に何か間違いがあります。
+  	        トラブルシューティングのセクションを参照してください。</p>
+	    </li>
+<li class="listitem">
+	      <p>さて、プロンプトが表示されれば、ハックする準備はできています。
+	        ブレークポイントを設定したり、データを確認したり、一ステップ毎に実行する
+	        ことができます。ちょうど、ローカルマシン上で動作しているユーザーレベル
+	        アプリケーションを gdb でデバッグするのと同じです。カーネルのブートプロ
+	        セスを続行させるには、<span class="command"><strong>cont</strong></span>を使ってください。後でデバッガーにもどるため
+	        には、Ctrl-C を押してください。</p>
+	    </li>
+<li class="listitem">
+	      <p>5 から 7 の手順を自動化するためには、カーネルを構築するディレクトリーに
+	        以下の内容のファイル
+	        <code class="filename">.gdbinit</code> を作成してください。</p>
+	      <pre class="programlisting">
+  file netbsd.gdb
+  set remotebreak 1
+  set remotebaud 9600
+  target remote /dev/tty01</pre>
+	    <p>さて、これで<span class="command"><strong>gdb</strong></span>とタイプするだけで、
+	      デバッグを始めることができます。</p>
+          </li>
+</ol></div>
+      
+        <h4 class="title">
+<a name="troubleshooting"></a>トラブルシューティング (<a href="#using_kgdb">top</a>)
+  </h4>
+
+	<p>もし、うまく動作しない場合は、以下の事を試してみてください。</p>
+	
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	    <p><code class="option">-d</code> を指定せずに TARGET マシンをリブートしてください。
+	      デバイスのプローブ時に以下のようなメッセージが表示されるはずです。
+	      二行目が表示されていなければ、
+	      構築したカーネルでは KGDB が有効になっていないか、
+	      間違ったカーネルを使用しています。</p>
+	    <pre class="programlisting">
+  com0 at isa0 port 0x3f8-0x3ff irq4: ns16550a, working fifo
+  com0: kgdb</pre>
+          </li>
+<li class="listitem">
+	    <p>シリアルポートとケーブルが
+	      <span class="quote">“<span class="quote">normal</span>”</span>のアプリケーションで動作することを確認してください。
+	      KGDB を無効にしたカーネルで TARGET マシンをリブートし、二つのマシン間で
+	      <span class="application">tip</span> を実行してみてください。もし、
+	      <span class="application">tip</span> について知らないのであれば、
+	      以下の簡単な手順を参考にしてください。</p>
+	    <div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem">
+	        <p>以下の行を、TARGET と REMOTE 両マシンの
+		  <code class="filename">/etc/remote</code> に追加してください。</p>
+		<pre class="programlisting">
+	tty00-9600:dv=/dev/tty00:br#9600:pa=none:dc:
+	tty01-9600:dv=/dev/tty01:br#9600:pa=none:dc:</pre>
+	      </li>
+<li class="listitem">
+	        <p>TARGET マシン上で <span class="command"><strong>tip
+	          tty00-9600</strong></span> を、REMOTE マシン上で
+	          <span class="command"><strong>tip tty01-9600</strong></span> を実行してください。</p>
+	      </li>
+<li class="listitem">
+	        <p>両方のマシンのキーボードで適当な文字を入力してください。
+	          文字は<span class="emphasis"><em>他の</em></span>マシンのディスプレイに表示されるはずです。</p>
+	      </li>
+</ul></div>
+	  </li>
+<li class="listitem">
+	    <p><code class="filename">/etc/ttys</code> の中の、
+	      自分が使っている tty の行を再度確認し、
+	      それが有効かどうかを確認するためにリブートしてください。</p>
+	  </li>
+<li class="listitem">
+	    <p>今まで書いてた文章の中では、root で作業している事を仮定していました。
+	      一般ユーザーの場合、tip と gdb は動作しません。(<code class="filename">/dev/tty0*</code>
+	      のパーミッションに依存します)。もちろん、root での作業は、<span class="quote">“<span class="quote">一般的には</span>”</span>おすすめできません。
+	      かわりに、以下のようにしてください。</p>
+	    <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+	        <p><code class="filename">/dev/tty0*</code> のグループを
+	          <code class="literal">wheel</code> にしてください(そうなっていなければ)</p>
+	      </li>
+<li class="listitem">
+	        <p>あなたのユーザー名を、<code class="filename">/etc/group</code> の
+	          <code class="literal">wheel</code> 行に追加してください</p>
+	      </li>
+<li class="listitem">
+	        <p>あなたのユーザー名を、<code class="filename">/etc/group</code> の
+	          <code class="literal">dialer</code> 行に追加してください</p>
+	      </li>
+</ol></div>
+	    <p>(2) により、gdb のプロセスが(そして、
+	      あなたが起動している他のプロセスも)、tty をオープンできるようになる。(3) により、
+	      tip を起動することができるようになる。</p>
+	  </li>
+</ul></div>
+      
+        <h4 class="title">
+<a name="general_caveats"></a>一般的な注意 (<a href="#using_kgdb">top</a>)
+  </h4>
+
+	<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+	    <p>コマンドを入力してから反応が返ってくるまでに、時々長い時間がかかる
+	      ことがあります。これは、おそらくシリアルコネクション上の不正なデータの
+	      せいです。みじかい休止と再送の後、すべて正常にもどります。
+	      remotetimeout の値をデフォルトの 20 秒より短かく設定するとよいでしょう。
+	      (これはある人から報告がありました。(彼の場合は)カーネルの <code class="function">printf()</code> が
+	      コマンドの間に実行されたことが原因でした。これにより gdb のデータがこわれ
+	      たようです)。</p>
+	  </li>
+<li class="listitem">
+	    <p>カーネルが高優先度の割り込み(機種依存)ロック中は、Ctrl-C は動作しません。
+	      例えば、i386 では、<code class="function">splimp()</code> の中の永久ループを停止させることはできません。
+	      しかし、ブレークポイントを、そのループの前にセットすれば、そこを一ステップ
+	      ずつ実行することができます。</p>
+	  </li>
+</ol></div>
+      <hr>
+<em><a href="./">NetBSD ドキュメンテーション: カーネル</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

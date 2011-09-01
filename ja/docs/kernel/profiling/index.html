@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+    
+
+    <title>NetBSD ドキュメンテーション: カーネルプロファイリング HOWTO</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-kernel-profiling-index"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD ドキュメンテーション: カーネルプロファイリング HOWTO</h1>
+<p>この文章にはどのようにカーネルプロファイリングが動作し、
+    どう使うのかが書かれています。このドキュメントは Matthias Drochner
+    <code class="email">&lt;<a class="email" href="mailto:drochner@zel459.zel.kfa-juelich.de">drochner@zel459.zel.kfa-juelich.de</a>&gt;</code> の筆によります。</p>
+<h3 class="title"><a name="kern-prof">カーネルプロファイリング</a></h3>
+<ul>
+<li><a href="#how-does-it-work">どのように動作するのか</a></li>
+<li><a href="#call-graph-recording">呼び出しグラフの記録</a></li>
+<li><a href="#statistical-profiling">統計的なプロファイリング</a></li>
+<li><a href="#how-to-use-it">使い方</a></li>
+</ul>
+<hr>
+<h3 class="title">カーネルプロファイリング</h3>
+      <h4 class="title">
+<a name="how-does-it-work"></a>どのように動作するのか (<a href="#kern-prof">top</a>)
+  </h4>
+
+
+      <p>プロファイル済みのコードの振る舞いに関する、
+	2種類のデータが個別に記録されます:
+	全関数の呼び出し頻度 (呼び出しグラフプロファイリング)
+	と各関数の処理にかかった時間です。
+	これらは、適当にサンプルされた時に関数内にあるプログラムカウンターの確率によって概算され、
+	その確率は、調べている関数が実行中に起こる、
+	プロファイリングタイマーの割り込み率によって逆に概算されます。
+	<a href="http://netbsd.gw.com/cgi-bin/man-cgi?gprof+1+NetBSD-5.1+i386">gprof(1)</a> というユーティリティーを使って、データを解釈します。
+	しかし、二つのデータの相関性がないため、いくつか制限が出てきます。
+	これは、manページのBUGSの章に書かれています。</p>
+
+      <p>カーネルのプロファイリングとユーザープログラムのプロファイリングは、
+	よく似ています;
+	プロファイリングデータを処理する方法と、
+	コントロールする方法が若干違う程度です。</p>
+
+      <p>カーネルプロファイリングに関係するデータは、
+	グローバル構造体の <span class="bold"><strong><code class="code">_gmonparam</code></strong></span> 内にあります。
+	この構造体は、(
+	<span class="bold"><strong><code class="filename">kern/subr_prof.c</code></strong></span> 中の) <span class="bold"><strong><code class="code">kmstartup()</code></strong></span> により、
+	システムが初期化する際に初期化されます。
+	ユーザーレベルのコントロールプログラムである <span class="bold"><strong><a href="http://netbsd.gw.com/cgi-bin/man-cgi?kgmon+8+NetBSD-5.1+i386">kgmon(8)</a></strong></span> は、
+	コントロールとデータアクセスのために
+	<span class="bold"><strong><a href="http://netbsd.gw.com/cgi-bin/man-cgi?sysctl+3+NetBSD-5.1+i386">sysctl(3)</a></strong></span> を呼び出し、
+	一部 <span class="bold"><strong><a href="http://netbsd.gw.com/cgi-bin/man-cgi?kvm+3+NetBSD-5.1+i386">kvm(3)</a></strong></span> アクセスを呼び出しています
+	(動作しているカーネルがプロファイルされる標準的な場合もです!) 。</p>
+    
+	<h4 class="title">
+<a name="call-graph-recording"></a>呼び出しグラフの記録 (<a href="#kern-prof">top</a>)
+  </h4>
+
+	<p>プロファイリングのフラグ (<span class="bold"><strong><code class="code">-pg</code></strong></span>) により、
+	  コンパイラーは関数のエントリーごとに <span class="bold"><strong><code class="code">mcount()</code></strong></span>
+	  を呼び出します。
+	  これは、マシン独自の橋渡しによって、
+	  <span class="bold"><strong><code class="code">_mcount(frompc,selfpc)</code></strong></span> へ送られます。
+	  <span class="bold"><strong><code class="code">_mcount(frompc,selfpc)</code></strong></span> は
+	  <span class="bold"><strong><code class="filename">sys/lib/libkern/mcount.c</code></strong></span> で実装されます。
+	  <span class="bold"><strong><code class="code">frompc</code></strong></span>
+	  は関数を呼び出すアドレスで、 <span class="bold"><strong><code class="code">selfpc</code></strong></span>
+	  は呼ばれる関数自体のアドレスです。</p>
+
+	<p>プロファイル中に遭遇する全ての (<span class="bold"><strong><code class="code">frompc</code></strong></span>, <span class="bold"><strong><code class="code">selfpc</code></strong></span>)
+	  用に、 <span class="bold"><strong><code class="code">struct tostruct</code></strong></span>
+	  は <span class="bold"><strong><code class="code">_gmonparam.tos</code></strong></span> が示す配列から割り当てられます。
+	  エントリーは最初に使用する順番で、
+	  始めから終わりまで単純に割り当てられます。 <span class="bold"><strong><code class="code">kmstartup()</code></strong></span> 内のあるマジックによって、
+	  カーネルのテキストサイズから配列のサイズが決められます --
+	  一種の"経験則" のようです。</p>
+
+	<p><span class="bold"><strong><code class="code">struct tostruct</code></strong></span> 
+	  のエントリーは、ヒストグラムカウンターと一緒に、呼ばれた関数
+	  (<span class="bold"><strong><code class="code">selfpc</code></strong></span>)
+	  のアドレスを持っています。
+	  同じ呼び出しアドレスにあるエントリーは、リンクした一覧を形成します。
+	  一覧のヘッド (つまり、特定の呼び出しアドレスに属する
+	  <span class="bold"><strong><code class="code">_gmonparam.tos</code></strong></span>
+	  配列内の最初のエントリーの見出し) は、
+	  <span class="bold"><strong><code class="code">_gmonparam.froms</code></strong></span>
+	  という二つ目のデータ配列にあります。この
+	  <span class="bold"><strong><code class="code">_gmonparam.froms</code></strong></span> は、
+	  ある値によって分割された呼び出しアドレス
+	  (<span class="bold"><strong><code class="code">frompc</code></strong></span>)
+	  により、見出しを付けられます (ある値は、コード内の二つの呼び出しの最短距離
+	  より長くなることはありません - <span class="bold"><strong><code class="filename">sys/sys/gmon.h</code></strong></span> にあるコメントを見てください) 。</p>
+
+	<p>標準的な関数呼び出しには、それぞれの
+	  <span class="bold"><strong><code class="code">frompc</code></strong></span> に対して
+	  <span class="bold"><strong><code class="code">selfpc</code></strong></span> がひとつしかないことに注意してください。
+	  その結果、典型的な一覧が一つのメンバーのみで構成されるようになります。</p>
+      
+	<h4 class="title">
+<a name="statistical-profiling"></a>統計的なプロファイリング (<a href="#kern-prof">top</a>)
+  </h4>
+
+	<p>プロファイリングが始まると、プロファイリングタイマーの割り込みが
+	  セットされ、 <span class="bold"><strong><code class="code">statclock()</code></strong></span> を呼び出します (
+	  <span class="bold"><strong><code class="filename">sys/kern/kern_clock.c</code></strong></span> を参照してください) 。
+	  プロファイリングタイマーは、関数への干渉がシステムのクロックと
+	  同期して動かなくならないように、通常のシステムクロックから独立した
+	  タイマーであるべきです。 <span class="bold"><strong><code class="code">statclock()</code></strong></span> はユーザープログラムでも、
+	  カーネルプロファイリングでも使われます。</p>
+
+	<p>ある値で再分割されていれば、
+	  割り込み時にプログラムカウンターは見出しとして使われて、
+	  ヒストグラムの <span class="bold"><strong><code class="code">_gmonparam.kcount</code></strong></span>
+	  に記録され、該当するセルの値が増えます。</p>
+      
+	<h4 class="title">
+<a name="how-to-use-it"></a>使い方 (<a href="#kern-prof">top</a>)
+  </h4>
+
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">プロファイリングカーネルを構築し、ブートします。
+	    これには、 <span class="bold"><strong><code class="code">-p</code></strong></span> フラグを用いて
+	    <span class="bold"><strong><a href="http://netbsd.gw.com/cgi-bin/man-cgi?config+8+NetBSD-5.1+i386">config(8)</a></strong></span> します。
+	    用いなければ、特別なことはありません。プロファイリングカーネルは
+	    以下のようなメッセージを自動設定後、ルートファイルシステムが
+	    マウントされる前に出力します。
+	    <pre class="programlisting">Profiling kernel, textsize=1611256 [f0100000..f02895f8]</pre>
+	    </li>
+<li class="listitem">
+<span class="bold"><strong><code class="code">/netbsd</code></strong></span> が現在動作しているカーネルであるか
+	    確認してください。もし違えば、下の
+	    <span class="bold"><strong><a href="http://netbsd.gw.com/cgi-bin/man-cgi?kgmon+8+NetBSD-5.1+i386">kgmon(8)</a></strong></span> の呼び出しで、 <span class="bold"><strong><code class="code">-N</code></strong></span>
+	    オプションを使ってください。</li>
+<li class="listitem">
+<span class="bold"><strong><code class="code">kgmon -b</code></strong></span> でプロファイリングを開始します。</li>
+<li class="listitem">いくつかアプリケーションを起動して、システムの中でも調べたい部分に
+	    負担をかけます。</li>
+<li class="listitem">
+<span class="bold"><strong><code class="code">kgmon -h</code></strong></span> でプロファイリングを止めます。</li>
+<li class="listitem">
+<span class="bold"><strong><code class="code">kgmon -p</code></strong></span> を起動して、収集したデータを
+	    <span class="bold"><strong><code class="filename">gmon.out</code></strong></span> というファイルに書き込みます。</li>
+<li class="listitem">他のものを計測する前に、 <span class="bold"><strong><code class="code">kgmon -r</code></strong></span>
+	    でカーネル内のプロファイリングデータのバッファーをリセットします。</li>
+<li class="listitem">
+<span class="bold"><strong><code class="filename">gmon.out</code></strong></span>
+	    から人間が判読できる解釈を入手するため、
+	    以下のコマンドを実行します。
+	    <pre class="programlisting">% gprof /netbsd gmon.out &gt; gprof.txt</pre>
+</li>
+<li class="listitem">データの解釈をします。</li>
+</ul></div>
+      <hr>
+<em><a href="../">NetBSD ドキュメンテーション: カーネル</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

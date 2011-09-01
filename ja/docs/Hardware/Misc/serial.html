@@ -1,0 +1,519 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+  
+
+    <title>ハードウェアドキュメンテーション: NetBSD シリアルポート入門</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-Hardware-Misc-serial"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>ハードウェアドキュメンテーション: NetBSD シリアルポート入門</h1>
+<h3 class="title"><a name="serial_port">NetBSD シリアルポート入門</a></h3>
+<ul>
+<li><a href="#general_info">全般的な情報</a></li>
+<li><a href="#connectors">コネクターの種類とピン配置</a></li>
+<li><a href="#pinouts">さまざまなプラットフォーム用のシリアルポートピン配置</a></li>
+<li><a href="#null">モデム信号を通す通常のケーブル</a></li>
+<li><a href="#other">他の情報源</a></li>
+</ul>
+<hr>
+<h3 class="title">NetBSD シリアルポート入門</h3>
+        <h4 class="title">
+<a name="general_info"></a>全般的な情報 (<a href="#serial_port">top</a>)
+  </h4>
+
+	<p>このドキュメントは、お手持ちのハードウェア附属のドキュメンテーションを
+	  補足するものです。すなわち、一部の NetBSD 対応プラットフォームの
+	  シリアルポートへの接続に関する問題の概要を、いくつか説明します。
+	  多くのプラットフォームでは、シリアルコンソールを使うことが必須あるいは
+	  可能ですが、コネクター配線方法について混乱があるかもしれません。</p>
+
+	<p>簡単にいうと、ほとんどのコンピューターは DTE (Data Terminal Equipment 
+	  - データ端末装置) 、ほとんどのモデムやダム端末は DCE (Data Communication
+	  Equipment - データ通信装置) です。 (PC を PPP サーバーや端末として使うと
+	  いったように) DTE と DTE をつなぐためには、<span class="quote">“<span class="quote">ヌルモデム</span>”</span>
+	  ケーブルでつなぐことが必要です。このケーブルは、送出と受入のデータを入れ換え、
+	  またハンドシェーク線を持っています。</p>
+
+	<p>シリアルプロトコルの仕様上、さまざまなハンドシェークや、<span class="quote">“<span class="quote">モデム</span>”</span>
+	  線が存在します。これらにより、 DTE や DCE 装置は情報の流れを調節できます
+	  (受信側がこれ以上データを受けられない場合、受けられるようになるまで待つよう
+	  相手方に伝えるなど) 。より詳しく正確な説明については、
+	  上記の参考文献を参照するようおすすめします。</p>
+
+	<p>お使いのハードウェアでシリアルコンソールを使えるようにする方法は (対応して
+	  いる場合) 、そのポートの FAQ か、ハードウェアリファレンスを参照してください。
+	  多くのプラットフォームでは、キーボードとマウスを外すだけでよいです。
+	  このほかでは、フレームバッファーを外す必要があったり、また、シリアルコンソール
+	  を使うよう明示的に bootrom や PROM を設定する必要があるものもあります。
+	  もっとも一般的な設定は 9600 bps、 8 ビット、パリティーなし、ストップビット 1
+	  です。ハンドシェークの必要な条件はプラットフォームによって異なります。</p>
+
+	<p>覚えておいていただきたいのは、お使いのシステムの bootROM、ファームウェア
+	  などがシリアルコンソールをサポートしている場合、 NetBSD はそのことに気付く程度
+	  には賢いということです。つまり、たいていは <code class="filename">/etc/ttys</code> で別途 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ttys+5+NetBSD-5.1+i386">ttys(5)</a>
+	  を用意すべきでは<span class="emphasis"><em>ありません</em></span>。
+	  しかしながら、コンソールのエントリーに適切な端末型が書かれているようにするため、
+	  ここを書き換える (たとえば、 '<code class="code">sun</code>' を '<code class="code">vt100</code>' に変更するなど)
+	  必要はあるかもしれません。</p>
+
+	<p>いくつかのプラットフォームでは、恒常的に続くゼロは、シリアル
+	  <code class="code">BREAK</code> と等価です。たとえば sparc システムにおいては、
+	  これはシステムに bootrom プロンプトに落ちるよう促します。お使いのシステムで
+	  シリアルケーブルを外すとシステムが応答しなくなる場合は、このことを
+	  覚えておいてください。</p>
+      
+        <h4 class="title">
+<a name="connectors"></a>コネクターの種類とピン配置 (<a href="#serial_port">top</a>)
+  </h4>
+
+	<p>3 種類の主なコネクタータイプ─ DB25、 DB9、 MiniDIN8 ─があります。
+	  ピンの付番は、つぎのようにするならわしです
+	  (メスのコネクターでは逆になります):</p>
+
+	<p>MiniDIN8 (オス)</p>
+<pre class="programlisting">   8 7 6
+  5   4 3
+    2 1</pre>
+
+        <p>DB25 (オス)</p>
+<pre class="programlisting">  1                         13
+ _______________________________
+ \  . . . . . . . . . . . . .  /
+  \  . . . . . . . . . . . .  /
+   ---------------------------
+   14                       25</pre>
+
+
+        <p>DB9 (オス)</p>
+<pre class="programlisting">   1         5
+ _______________
+ \  . . . . .  /
+  \  . . . .  /
+   -----------
+    6       9</pre>
+
+
+        <p>RJ-11 (オス)</p>
+<pre class="programlisting"> _!=!_
+| | | |
+-------
+1 2 3 4</pre>
+
+      
+        <h4 class="title">
+<a name="pinouts"></a>さまざまなプラットフォーム用のシリアルポートピン配置 (<a href="#serial_port">top</a>)
+  </h4>
+
+	<p>残念ながら、すべてのベンダーがシリアル線のピン番号の標準に従っているわけでは
+	  ありません。特に、 MiniDIN8 コネクターを使っているベンダーは、すべて
+	  変えてしまっています。もし、ハンドシェーク線を使わないのであれば、
+	  すべての MiniDIN8 ケーブルは、どのシステムでも機能するはずです (すなわち、
+	  TxD、 RxD、 GND はすべて同じ位置にあります) 。一部のベンダーは、 (DTR、 DSR、
+	  DCD シグナリングを考慮して) これらを違った形で結線するので、 Macintosh
+	  <span class="quote">“<span class="quote">モデム</span>”</span>ケーブルには気を付けてください -- いかなる仮定もせずに、
+	  マルチメーターを使って結線をチェックすべきです。</p>
+
+	<table border="2" id="pinouts_table">
+	<tr>
+	  <th align="left">signal name</th>
+	  <th align="right">standard DB9</th>
+	  <th align="right">standard DB25</th>
+	  <th align="right">
+<a class="ulink" href="#mac" target="_top">mac</a> MiniDIN8</th>
+	  <th align="right">
+<a class="ulink" href="#next68k" target="_top">next68k</a> MiniDIN8</th>
+	  <th align="right">
+<a class="ulink" href="../../../ports/sgimips/" target="_top">sgi</a> MiniDIN8</th>
+	  <th align="right">
+<a class="ulink" href="#sparc" target="_top">sparc</a> MiniDIN8</th>
+	  <th align="right">
+<a class="ulink" href="#hp300" target="_top">hp300</a> DB9</th>
+	  <th align="right">dir</th>
+	  <th align="left">full name</th>
+	  <th align="left">comment</th>
+	</tr>
+	<tr>
+	  <td align="left">TxD</td>
+	  <td align="right">3</td>
+	  <td align="right">2</td>
+	  <td align="right">3</td>
+	  <td align="right">3</td>
+	  <td align="right">3</td>
+	  <td align="right">3</td>
+	  <td align="right">2</td>
+	  <td align="right">out</td>
+	  <td align="left">Transmit Data</td>
+	  <td align="left">data</td>
+	</tr>
+	<tr>
+	  <td align="left">RxD</td>
+	  <td align="right">2</td>
+	  <td align="right">3</td>
+	  <td align="right">5</td>
+	  <td align="right">5</td>
+	  <td align="right">5</td>
+	  <td align="right">5</td>
+	  <td align="right">3</td>
+	  <td align="right">in</td>
+	  <td align="left">Receive Data</td>
+	  <td align="left">data</td>
+	</tr>
+	<tr>
+	  <td align="left">RTS</td>
+	  <td align="right">7</td>
+	  <td align="right">4</td>
+	  <td align="right">-</td>
+	  <td align="right">6</td>
+	  <td align="right">6</td>
+	  <td align="right">6</td>
+	  <td align="right">4</td>
+	  <td align="right">out</td>
+	  <td align="left">Request To Send</td>
+	  <td align="left">handshake</td>
+	</tr>
+	<tr>
+	  <td align="left">CTS</td>
+	  <td align="right">8</td>
+	  <td align="right">5</td>
+	  <td align="right">-</td>
+	  <td align="right">8</td>
+	  <td align="right">2</td>
+	  <td align="right">2</td>
+	  <td align="right">5</td>
+	  <td align="right">in</td>
+	  <td align="left">Clear To Send</td>
+	  <td align="left">handshake</td>
+	</tr>
+	<tr>
+	  <td align="left">DTR</td>
+	  <td align="right">4</td>
+	  <td align="right">20</td>
+	  <td align="right">-</td>
+	  <td align="right">1</td>
+	  <td align="right">1</td>
+	  <td align="right">1</td>
+	  <td align="right">1</td>
+	  <td align="right">out</td>
+	  <td align="left">Data Terminal Ready</td>
+	  <td align="left">status</td>
+	</tr>
+	<tr>
+	  <td align="left">DSR</td>
+	  <td align="right">6</td>
+	  <td align="right">6</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">6</td>
+	  <td align="right">in</td>
+	  <td align="left">Data Set Ready</td>
+	  <td align="left">status</td>
+	</tr>
+	<tr>
+	  <td align="left">RI</td>
+	  <td align="right">9</td>
+	  <td align="right">22</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">9</td>
+	  <td align="right">in</td>
+	  <td align="left">Ring Indicator</td>
+	  <td align="left">status</td>
+	</tr>
+	<tr>
+	  <td align="left">DCD</td>
+	  <td align="right">1</td>
+	  <td align="right">8</td>
+	  <td align="right">-</td>
+	  <td align="right">2</td>
+	  <td align="right">7</td>
+	  <td align="right">7</td>
+	  <td align="right">8</td>
+	  <td align="right">in</td>
+	  <td align="left">Data Carrier Detect</td>
+	  <td align="left">status</td>
+	</tr>
+	<tr>
+	  <td align="left">RTxC</td>
+	  <td align="right">-</td>
+	  <td align="right">17</td>
+	  <td align="right">-</td>
+	  <td align="right">7</td>
+	  <td align="right">-</td>
+	  <td align="right">8</td>
+	  <td align="right">-</td>
+	  <td align="right">in</td>
+	  <td align="left">Receive Clock</td>
+	</tr>
+	<tr>
+	  <td align="left">HSKo</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">1</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">out</td>
+	  <td align="left">Output Handshake</td>
+	  <td align="left">mac-specific (usually RTS)</td>
+	</tr>
+	<tr>
+	  <td align="left">HSKi</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">2</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">in</td>
+	  <td align="left">Input Handshake</td>
+	  <td align="left">mac-specific (usually CTS)</td>
+	</tr>
+	<tr>
+	  <td align="left">TxD+</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">6</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">out</td>
+	  <td align="left">RS-422 Transmit Data (+)</td>
+	</tr>
+	<tr>
+	  <td align="left">RxD+</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">8</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">in</td>
+	  <td align="left">RS-422 Receive Data (+)</td>
+	</tr>
+	<tr>
+	  <td align="left">GPi</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">7</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">in</td>
+	  <td align="left">General Purpose Input may be used for RI or
+	    handshaking</td>
+	</tr> 
+	<tr>
+	  <td align="left">GND</td>
+	  <td align="right">5</td>
+	  <td align="right">7</td>
+	  <td align="right">4</td>
+	  <td align="right">4</td>
+	  <td align="right">4,8</td>
+	  <td align="right">4</td>
+	  <td align="right">7</td>
+	  <td align="right">n/a</td>
+	  <td align="left">Signal Ground</td>
+	  <td align="left"></td>
+	</tr>
+	<tr>
+	  <td align="left">-</td>
+	  <td align="right">-</td>
+	  <td align="right">1</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">-</td>
+	  <td align="right">n/a</td>
+	  <td align="left">Protective Ground</td>
+	  <td align="left">cable shield (do not use for Signal
+	    Ground)</td>
+	</tr>
+      </table>
+
+        <p><a name="mac"></a><span class="emphasis"><em>注意:</em></span> Macintosh (<a class="ulink" href="../../../ports/mac68k/" target="_top">mac68k</a> および <a class="ulink" href="../../../ports/macppc/" target="_top">macppc</a>) システムは、
+	  送信および受信用に平衡型の対 (正と負の線) を持つ RS-422 プロトコルを使います。
+	  平衡型の RS-422 線をシングルエンドの RS-232 線と繋ぐには、正の受信データ線
+	  (RxD+) を ground 信号に繋ぎ、負の送信データ線 (TxD+) はどこにも繋がないようにします。
+	  HSKo と HSKi の結線方法はアプリケーションに依存しますが、普通は HSKo は
+	  RTS として、 HSKi は CTS として使われます。また、一部のケーブルメーカーでは
+	  DCD、 DTR、 DSR シグナルを様々に MiniDIN8 線に割り当てています。
+	  詳細については、<a class="ulink" href="http://francis.courtois.free.fr/jc1/serial/main.html" target="_top">Interfacing
+	  a Mac Serial Port to RS-232 Lab Equipment</a> を参照してください。
+	  初代の Mac 128k や 512k の機種の DB9 コネクターのピン配置は標準と異なりますので、
+	  大昔の Apple のケーブルには注意してください。</p>
+
+	<p><a name="sparc"></a><span class="emphasis"><em>注意:</em></span> 通常の <a class="ulink" href="../../../ports/sparc/" target="_top">sparc</a> システムはシリアルに DB25 コネクター
+	  を使っていますが、一部の sparc システムは MiniDIN8 コネクターを使っています。
+	  この MiniDIN8 ピン配置は上記リストに掲げたとおりです。また、 DB25 ベースの
+	  システムの一部では、 2 個のシリアルポートをサポートするブレークアウトケーブル
+	  (A/B) を持っています。この<a class="ulink" href="../../../../ports/sparc/faq/sun_530-1677-01-rev50.txt" target="_top">ケーブル</a>のピン配置については <a class="ulink" href="../../../ports/sparc/faq.html#serial-port-splitter" target="_top">FAQ</a> を参照してください
+	  (1 個めのシリアル線は標準的な DB25 の配置となっています─つまり、
+	  アダプターは不要です) 。</p>
+
+	<p><a name="next68k"></a><span class="emphasis"><em>注意:</em></span> <a class="ulink" href="../../../ports/next68k/" target="_top">next68k</a> システムはすべて、 2 個の MiniDIN8
+	  シリアルポートを持っています。 NEXTSTEP システム管理者マニュアルには、 NeXT
+	  システム向けのシリアルケーブルの例がいくつか載っています。
+	  詳細は、<a class="ulink" href="http://channelu.com/NeXT/NeXTStep/3.3/nsa/ApB_Cabling.htmld/index.html" target="_top">
+	  オンライン</a>バージョンか、<a class="ulink" href="http://www.radical.com/TheHome/TheSolutions/RadicalSolution6.html" target="_top">
+	  Radical System Solutions: NeXT Serial / Modem Cables</a> を参照してください。</p>
+
+	<p><a name="hp300"></a><span class="emphasis"><em>注意:</em></span> <a class="ulink" href="../../../ports/hp300/" target="_top">hp300</a> システムのうち 98562
+	  システムインターフェースボードを使っているものはすべて、 DB9
+	  ピン配置が標準と異なります。この配置は、上のリストに掲げたとおりです。
+	  シリーズ 400 の機種はすべて、 3 個のシリアルポートをサポートする
+	  ブレークアウトケーブルを持っています。この<a class="ulink" href="../../../../ports/hp300/serial.splitter.html" target="_top">ケーブル</a>のピン配置については <a class="ulink" href="../../../../ports/hp300/faq.html#serialdefs" target="_top">FAQ</a> を参照してください
+	  (1 個めのシリアル線は標準的な DB25 の配置となっています─つまり、アダプターは不要です) 。
+	  さらに、 948642A カードは <a class="ulink" href="../../../../ports/hp300/dcmpinouts.html" target="_top">RJ-11
+	  ジャック</a>を使う 4 個のシリアルポートをサポートしています。
+	  これら以外のユーザーはすべて、標準的な DB9 か DB25 コネクターを使うことになります。</p>
+      
+        <h4 class="title">
+<a name="null"></a>モデム信号を通す通常のケーブル (<a href="#serial_port">top</a>)
+  </h4>
+
+	<p>ヌルモデム DB25 to DB25 ケーブル</p>
+<pre class="programlisting">DB25                   DB25
+----                   ----
+1 GND  --------------- 1 GND
+2 TxD  --------------- 3 RxD
+3 RxD  --------------- 2 TxD
+4 RTS  --------------- 5 CTS
+5 CTS  --------------- 4 RTS
+7 GND  --------------- 7 GND
+6 DSR  ---+
+          +----------- 20 DTR
+8 DCD  ---+
+                 +---- 6 DSR
+20 DTR ----------+
+                 +---- 8 DCD</pre>
+
+        <p>ヌルモデム DB25 to DB9</p>
+<pre class="programlisting">DB25        DB9
+----        ---
+1 GND  ---  1 GND
+2 TxD  ---  2 RxD
+3 RxD  ---  3 TxD
+4 RTS  ---  8 CTS
+5 CTS  ---  7 RTS
+7 GND  ---  5 GND
+6 DSR  ---  4 DTR
+20 DTR ---  6 DSR</pre>
+
+        <p>モデム MiniDIN8 to DB25 (Macintosh、
+          非ヌルモデム)</p>
+	<p>RxD+ は ground に短絡され、 TxD+ と GPi は宙に浮いていることに注意。
+	  RxD+ は、 MiniDIN8 側ではなく、できるかぎり DB25 の近くで短絡させるべきです。
+	  もし可能なら、 RxD+ と RxD- はツイストペアーにしてください。</p>
+
+<pre class="programlisting">MiniDIN8           DB25
+--------          ----
+1 HSKo ----------- 4 RTS
+2 HSKi ----------- 5 CTS
+3 TxD- ----------- 2 TxD
+5 RxD- ----------- 3 RxD
+4 GND  ---+
+          +------- 7 GND
+8 RxD+ ---+
+6 TxD+ ---x
+7 GPi  ---x</pre>
+
+        <p>ヌルモデム MiniDIN8 to MiniDIN8 (Macintosh "プリンター"
+	  ケーブル)</p> 
+<pre class="programlisting">MiniDIN8   MiniDIN8
+--------   --------
+1 HSKo --- 2 HSKi
+2 HSKi --- 1 HSKo
+3 TxD- --- 5 RxD-
+4 GND  --- 4 GND
+5 RxD- --- 3 TxD-
+6 TxD+ --- 8 RxD+
+7 GPi  --- 7 GPi
+8 RxD+ --- 6 TxD+</pre>
+      
+        <h4 class="title">
+<a name="other"></a>他の情報源 (<a href="#serial_port">top</a>)
+  </h4>
+	
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	    <a class="ulink" href="http://teryx.bobdbob.com/~protius/pinouts/" target="_top">
+	      Tommy's pinout collection</a>
+	  </li>
+<li class="listitem">
+	    <a class="ulink" href="http://www.sunhelp.org/unix-serial-port-resources/serial-pinouts/" target="_top">
+	      Sun Serial Port &amp; Cable Pinouts</a>
+	  </li>
+</ul></div>
+      <hr>
+<em><a href="./">ハードウェアドキュメンテーション</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

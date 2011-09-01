@@ -1,0 +1,1055 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+    
+    <title>NetBSD ドキュメンテーション: カーネル</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-kernel-index"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD ドキュメンテーション: カーネル</h1>
+<h3 class="title"><a name="">FAQ - よくあるカーネルに関する質問</a></h3>
+<ul>
+<li><a href="#downloading_kernel_source">どこでカーネルソースをダウンロードできますか</a></li>
+<li><a href="#how_to_build_a_kernel">カーネルの作り方</a></li>
+<li><a href="#generic_kernel">GENERIC カーネルっていったい何なんですか?</a></li>
+<li><a href="#mclpool-limit">mclpool limit reached: increase NMBCLUSTERS ってどういう意味ですか?</a></li>
+<li><a href="#spl_not_lowered">WARNING: SPL NOT LOWERED ON SYSCALL EXIT ってどういう意味ですか?</a></li>
+<li><a href="#stray-ir7">Stray interrupt on IRQ 7 ってどういう意味ですか?</a></li>
+<li><a href="#why_msoft_float">なぜカーネルを -msoft-float 付きでコンパイルするのですか</a></li>
+<li><a href="#kernel-compile-slow">メモリーの少ないマシンでカーネルをコンパイルするとすごい遅いのですが</a></li>
+<li><a href="#problems_compiling_a_current_kernel">-current カーネルのコンパイルに関する問題</a></li>
+<li><a href="#debugging_a_kernel_crash_dump">カーネルクラッシュダンプのデバッグの方法</a></li>
+<li><a href="#backtraces">カーネルクラッシュダンプをデバッグしているときにバックトレースを得る方法</a></li>
+<li><a href="#ddb">DDB ってなんですか、それを使うと何ができるんですか</a></li>
+<li><a href="#generating-a-crash-dump">カーネルのクラッシュダンプを作るには</a></li>
+<li><a href="#adding_a_kernel_to_a_boot_floppy">ブートフロッピーにカーネルを追加する方法</a></li>
+<li><a href="#scsi_device_numbers">新しく SCSI デバイスを増設したら、今までマウントできていたデバイスがマウントできなくなってしまいました。いったいどういう規則でデバイスに番号をつけてるんですか?</a></li>
+</ul>
+<h3 class="title"><a name="FAQ_hardware">よくあるハードウェアに関する質問</a></h3>
+<ul>
+<li><a href="#device-not-configured">device not configured ってどういう意味ですか?</a></li>
+<li><a href="#atapi_devices">ATAPI や ATA (IDE) デバイスのデバッグ</a></li>
+<li><a href="#usb-debugging">USB デバイスのデバッグ</a></li>
+<li><a href="#new_pnp_device">あたらしい PnP デバイスを認識させるには</a></li>
+<li><a href="#new_pcmcia_device">あたらしい PCMCIA デバイスを認識させるには</a></li>
+<li><a href="#plip_support">PLIP (Parallel Line IP) をサポートしていますか</a></li>
+<li><a href="#ubc">UBC ってなんですか?</a></li>
+</ul>
+<h3 class="title"><a name="further_reading">さらなる読み物</a></h3>
+<ul>
+<li><a href="#NetBSD_specific_documentation">NetBSD に特有のドキュメント</a></li>
+<li><a href="#other_online_documentation">その他のオンライン ドキュメント</a></li>
+</ul>
+<hr>
+<h3 class="title">FAQ - よくあるカーネルに関する質問</h3>
+      <h4 class="title">
+<a name="downloading_kernel_source"></a>どこでカーネルソースをダウンロードできますか (<a href="#">top</a>)
+  </h4>
+      
+      <div class="sect4" title="公式リリース">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="official_release_kernel_source"></a>公式リリース</h5></div></div></div>
+        
+
+        <p>
+          すでにインストールされているものと同じリリースのカスタマイズしたカーネルを
+  	コンパイルするには、カーネルの <code class="code">syssrc.tgz</code> ファイルだけあれば十分です。
+  	特定のリリースに対して、このファイルは、そのリリースのメインディレクトリーの中の
+  	gzip された tar ファイル 'source/sets/syssrc.tgz' にあります。
+  	たとえば、NetBSD 3.1 のカーネルソースは、ファイル <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.1/source/sets/syssrc.tgz" target="_top">/pub/NetBSD/NetBSD-3.1/source/sets/syssrc.tgz</a>
+  	にあります。
+        </p>
+        
+        <p>
+          もし <a class="ulink" href="../../sites/cdroms.html" target="_top">NetBSD
+  	CD-Rom</a>を持っていたら、 'source/syssrc.tgz'
+  	も含まれています。ソースはどこでも展開できますが、
+  	習慣的に /usr/src に置かれます。
+  	展開するには "<span class="bold"><strong><code class="code">cd / ; tar xvzpf
+  	&lt;ファイル名&gt;</code></strong></span>" と
+  	してください。
+        </p>
+      </div>
+  
+      <div class="sect4" title="'最前線' -current ソース、 冒険好きな人限定!">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="bleeding_edge"></a>'最前線' -current ソース、
+               冒険好きな人限定!</h5></div></div></div>
+        
+  
+        <p>
+          最新のカーネルソースは ftp.NetBSD.org かミラーサイトの <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/sys/" target="_top">/pub/NetBSD/NetBSD-current/src/sys/</a>
+  	ディレクトリーにあります。
+  	カーネルをコンパイルするには、以下のものを <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/" target="_top">
+  	/pub/NetBSD/NetBSD-current/tar_files/src</a> からダウンロードした方が
+  	いいでしょう:
+        </p>
+  
+        <p>
+  	</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+  	    <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz" target="_top">config.tar.gz</a>
+              (<a href="http://netbsd.gw.com/cgi-bin/man-cgi?config+8+NetBSD-5.1+i386">config(8)</a> プログラムのソース)
+            </li>
+<li class="listitem">
+  	    <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/sys.tar.gz" target="_top">sys.tar.gz</a>
+              (全てのアーキテクチャーの完全なカーネルソース)
+            </li>
+</ul></div>
+<p>
+        </p>
+  
+        <p>
+  	あなたが使っているバージョンから変更があった場合、最初に 'config'
+  	プログラムをビルドとインストールすべきです。
+  	-current は NetBSD 開発の最先端なので、<a class="ulink" href="#problems_compiling_a_current_kernel" target="_top">-current カーネルの
+  	コンパイルに関する問題</a> があるかもしれません。
+  	あなたがコンフィグの手順に慣れるまでは <a class="ulink" href="#official_release_kernel_source" target="_top">公式リリース</a> のソースを
+  	使うことをお勧めします。
+        </p>
+      </div>
+        
+      <div class="sect4" title="特定の日付のカーネルソースをダウンロードするには">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="downloading_kernel_source_by_date"></a>特定の日付のカーネルソースをダウンロードするには</h5></div></div></div>
+        
+  
+        <p>
+          スナップショットをあなたのマシンにインストールしていて、
+  	カーネルを作り直したい(でも -current カーネルは新しすぎる)場合に、
+  	このような事が必要かもしれません。
+  	<a class="ulink" href="../current/#using-anoncvs" target="_top">anoncvs
+  	を用いた NetBSD-current の追跡</a>の方法に従ってください。
+        </p>
+      </div>
+    
+      <h4 class="title">
+<a name="how_to_build_a_kernel"></a>カーネルの作り方 (<a href="#">top</a>)
+  </h4>
+      
+      <a name="building_a_kernel"></a>
+      
+
+      以下に示す手順は、インストールされている NetBSD
+      と同じバージョンのカーネルをコンパイルする場合専用のものです。
+      同じメジャーバージョンの、より新しいカーネルに更新する場合も、
+      以下の手順を使ってうまく更新できるはずです。しかし、-current
+      のカーネルに更新する場合や、より新しいメジャーリリースに更新したい場合には、
+      はじめに、新しいツールチェインをコンパイルする必要があります。
+      -current の追跡に関するドキュメンテーション内にある、<code class="code">build.sh</code>
+      スクリプトを使ってツールチェインと新しいカーネルを構築する方法の説明に従ってください。
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	  <a class="ulink" href="../current/" target="_top">既存システムのアップデート</a>
+	  (必要なのは、<code class="code">build.sh tools</code> と <code class="code">build.sh
+	  kernel</code> の段階だけです)
+	</li>
+<li class="listitem">
+	  <a class="ulink" href="../../../docs/guide/en/chap-build.html" target="_top">
+	    build.sh を使った NetBSD のクロスコンパイル</a>
+	</li>
+<li class="listitem">
+	  <a class="ulink" href="../../../docs/guide/en/chap-kernel.html#chap-kernel-build.sh" target="_top">
+	    build.sh を使ったカーネルの構築</a>
+	</li>
+</ul></div>
+      カーネルを構築する手順は、以下の通りです。
+      <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+	  あなたのベースシステムに付属していたコンパイラーセット(<code class="code">comp.tgz</code>)を
+  	  インストールしたことを確認してください。
+        </li>
+<li class="listitem">
+	  カーネルソースをダウンロードし展開します (
+  	  <a class="ulink" href="#downloading_kernel_source" target="_top">どこからカーネルソースを
+	  ダウンロードできますか</a>参照)。
+        </li>
+<li class="listitem">
+	  "<code class="code">cd /usr/src/sys/arch/&lt;ARCH&gt;/conf</code>", 
+  	  &lt;ARCH&gt; には 'i386', 'sparc', 'mac68k' のような
+	  あなたのマシンアーキテクチャーが入ります。
+        </li>
+<li class="listitem">
+	  "<code class="code">cp GENERIC &lt;MYCONF&gt;</code>",
+  	  &lt;MYCONF&gt; はこの設定にあなたが名づけた名前です。ホスト名や
+  	  マシンタイプ、あなたの名前を使ってもよいのです。英文字、数字、
+  	  そして _ 文字が使えます。
+        </li>
+<li class="listitem">
+	  <span class="bold"><strong>&lt;MYCONF&gt; の編集</strong></span>。
+	  最初はこのステップは飛ばしても構いません。
+	  i386 上で仮想コンソールを得るために
+	  'pc0' をコメントアウトして 'vt0' を有効にしたりするように、
+	  あなたが持っていなかったり使っていない CPU タイプやハードウェア、
+	  デバイスのドライバーを削除することができます。
+	  あなたがどのハードウェアドライバーを使い続けるかを決めるよい第一歩
+	  となるのは、"<span class="bold"><strong><code class="code">dmesg</code></strong></span>" か
+	  "<code class="code">dmesg | grep ' at '</code>" の出力を読むことです。
+	  '&lt;XXX&gt; at &lt;YYY&gt;' を含む全ての行について
+	  &lt;XXX&gt; と &lt;YYY&gt; の両方のエントリーを残す必要があります。
+	  他のカーネル設定のオプションの情報のために、 <span class="bold"><strong><a href="http://netbsd.gw.com/cgi-bin/man-cgi?options+4+NetBSD-5.1+i386">options(4)</a></strong></span>
+	  も読んでください。
+        </li>
+<li class="listitem">
+	  <span class="quote">“<span class="quote"><code class="code">config &lt;MYCONF&gt;</code></span>”</span> を実行します。こうすると、
+  	  &lt;MYCONF&gt; に対するカーネル構築用ディレクトリーが作成されます。
+        </li>
+<li class="listitem">
+	  "<code class="code">cd ../compile/&lt;MYCONF&gt;</code>" して、
+  	  カーネルをビルドするためのディレクトリーに移動します。
+        </li>
+<li class="listitem">
+	  "<code class="code">make depend</code>" して、
+  	  make プログラムがどのファイルをリビルドすればいいのか
+  	  わかるように(この時点では全て!)、'.depend' ファイルを生成します。
+        </li>
+<li class="listitem">
+	  "<code class="code">make</code>" して、
+  	  カーネルをコンパイルします。もし全てがうまくいけば、'netbsd'
+  	  カーネルができているでしょう。もしあなたが VAX を使っていれば
+  	  これは相当時間がかかり、大規模な Alpha マシンなら短い時間であり、
+  	  残りの人たちはこの中間の時間になります。
+        </li>
+<li class="listitem">
+	  "<code class="code">mv /netbsd /netbsd.old ; mv
+  	  /usr/src/sys/arch/&lt;ARCH&gt;/compile/&lt;MYCONF&gt;/netbsd
+  	  /</code>" して、
+  	  現在のカーネルを保存し、(<span class="emphasis"><em>とても</em></span>重要)、
+  	  新しいカーネルをブートできるよう移動します。
+        </li>
+<li class="listitem">
+	  "<code class="code">reboot</code>" して、あなたの新しいカーネルを使ってリブートします -
+  	  ブートメッセージには次の行が含まれているはずです:
+  	  'NetBSD &lt;VERSION&gt; (&lt;MYCONF&gt;) #0: &lt;COMPILE_DATE&gt;'
+        </li>
+<li class="listitem">
+	  <span class="bold"><strong>何か問題があったら:</strong></span>
+  	  シングルユーザーモードで 'netbsd.old' カーネルをブートしましょう。
+	  変更する手順はブート手順に依存していますが、
+	  i386 ではこうでしょう:
+	  
+	  <div class="orderedlist"><ol class="orderedlist" type="a">
+<li class="listitem"><span class="bold"><strong>最初の NetBSD のメッセージが表示されたら <code class="code">SPACE</code> を押す</strong></span></li>
+<li class="listitem">"<span class="bold"><strong><code class="code">boot netbsd.old -s</code></strong></span>"</li>
+</ol></div>
+	
+	  次にカーネルを元に戻す:
+	
+          <div class="orderedlist"><ol class="orderedlist" type="a">
+<li class="listitem">"<span class="bold"><strong><code class="code">fsck /</code></strong></span>"</li>
+<li class="listitem">"<span class="bold"><strong><code class="code">mount /</code></strong></span>"</li>
+<li class="listitem">"<span class="bold"><strong><code class="code">mv netbsd.old netbsd</code></strong></span>"</li>
+<li class="listitem">"<span class="bold"><strong><code class="code">exit</code></strong></span>"</li>
+</ol></div>
+        </li>
+</ol></div>
+    
+      <h4 class="title">
+<a name="generic_kernel"></a>GENERIC カーネルっていったい何なんですか? (<a href="#">top</a>)
+  </h4>
+      
+      <p>
+        GENERIC という言葉はマシンアーキテクチャーでサポートされている
+	全てのマシンで実行できるように設定されたカーネルを意味します。
+	この言葉はもともとカーネルの設定ファイル中に含まれていた、
+	設定オプションでもあるルートデバイスを"汎用(generic)"と
+	することを示す行に由来します。このオプションと設定行の書式は
+	すでに用いられていませんが、この名称はしばらく残ることでしょう。
+      </p>
+      
+      <p>
+        このため、GENERIC カーネルは、全てのデバイスドライバーとたくさんの
+	マシンモデルをサポートするコードを含んでいます。
+	多くはあなたにとって必要ないものなので、
+	<a class="ulink" href="#how_to_build_a_kernel" target="_top">あなた用のカスタム化したカーネルを
+	コンパイルする</a>事をお勧めします。
+      </p>
+    
+      <h4 class="title">
+<a name="mclpool-limit"></a><code class="code">mclpool limit reached: increase NMBCLUSTERS</code> ってどういう意味ですか? (<a href="#">top</a>)
+  </h4>
+      
+      <p>
+        これはカーネルが、mbuf クラスターにマップした空間を使い果たしたことを意味します。
+        mbuf クラスターはネットワークコードでパケットやその他の
+        ネットワーク関係のデータを格納するのに使用されています。
+      </p>
+      
+      <p>
+        デフォルトの NMBCLUSTERS の設定は 1024 (NetBSD 1.5 以前では 256) なので、
+        もしこの問題が起きたならば、エラーメッセージが出なくなるまで、
+        この値を倍に増やしていってください。現在の NMBCLUSTERS の値は、以下のように
+        <a href="http://netbsd.gw.com/cgi-bin/man-cgi?sysctl+8+NetBSD-5.1+i386">sysctl(8)</a> を使って表示できます:
+	
+</p>
+<pre class="programlisting">
+	# sysctl kern.mbuf.nmbclusters
+</pre>
+<p>
+
+        または、以下のようにすることもできます
+	
+</p>
+<pre class="programlisting">
+        # echo 'print nmbclusters' | gdb -q /netbsd
+</pre>
+<p>
+
+        カーネル設定に関するオプションについてのより詳しい情報は
+	<a href="http://netbsd.gw.com/cgi-bin/man-cgi?options+4+NetBSD-5.1+i386">options(4)</a> を参照して下さい。
+        この値を変更するには、
+	
+</p>
+<pre class="programlisting">
+	options NMBCLUSTERS=2048
+</pre>
+<p>
+
+        を<a class="ulink" href="#how_to_build_a_kernel" target="_top">カーネル設定ファイル</a>に加えるか、
+	カーネルを直接変更してください:
+	
+</p>
+<pre class="programlisting">
+        # <span class="bold"><strong>gdb --write /netbsd</strong></span>
+        (gdb) <span class="bold"><strong>set nmbclusters=2048</strong></span>
+        (gdb) <span class="bold"><strong>quit</strong></span>
+</pre>
+<p>
+
+        カーネルを直接変更した場合は、変更が有効になるようにするためにリブートが必要です。
+	もし、使用中のプラットフォームがサポートしていれば、次のコマンドを用いて
+	値を設定することもできます。
+	
+</p>
+<pre class="programlisting">
+	# <span class="bold"><strong>sysctl -w kern.mbuf.nmbclusters=2048</strong></span>
+</pre>
+<p>
+
+        この方法はすぐに有効になりますが、次回のリブート時には設定されません。
+	この方法とカーネルの変更を組み合わせれば、新しくカーネルを作る必要も
+	リブートする必要もありません。
+      </p>
+    
+      <h4 class="title">
+<a name="spl_not_lowered"></a><code class="code">WARNING: SPL NOT LOWERED ON SYSCALL EXIT</code> ってどういう意味ですか? (<a href="#">top</a>)
+  </h4>
+      
+      <p>
+        このカーネルメッセージはカーネル中に 
+	"<code class="code">int x = splfoo();</code>" したのに復帰する前に "<code class="code">splx(x);</code>" を実行しなかった syscall が
+	あるというバグがあることを意味します。
+	この例で <code class="code">splx(x);</code> 関数はシステムの優先度レベルを <code class="code">x</code> にエンコードされた状態、
+	つまり他の spl 関数(この場合は <code class="code">splfoo();</code> という関数)によって返された値に
+	レストアします。
+      </p>
+	
+      <p>
+        このカーネルメッセージが出力された場合、カーネル内デバッガーである <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ddb+4+NetBSD-5.1+i386">ddb(4)</a> に
+	入って下さい。ddb 内で 't' を押すことによりスタックトレースを得ることができ、
+	問題の syscall() を確認することができるかもしれません。
+	このカーネルメッセージは本来出力されるはずが
+	ないものですので、trace コマンドの出力(ほかの関連情報も含めて)を
+	<a href="http://netbsd.gw.com/cgi-bin/man-cgi?send-pr+1+NetBSD-5.1+i386">send-pr(1)</a> する方がいいでしょう。
+      </p>
+      
+      <p>
+        spl 関数についてのより詳しい情報は <a href="http://netbsd.gw.com/cgi-bin/man-cgi?spl+9+NetBSD-5.1+i386">spl(9)</a> を参照して下さい。
+      </p>
+    
+      <h4 class="title">
+<a name="stray-ir7"></a><code class="code">Stray interrupt on IRQ 7</code> ってどういう意味ですか? (<a href="#">top</a>)
+  </h4>
+      
+      <p>
+        このカーネルメッセージ "Stray interrupt on IRQ 7" は、割り込み
+        コントローラーが、 IRQ 7 上のマスク解除された割り込みを報告したが、
+        その IRQ で要求されたドライバーがないことを意味しています。
+      </p>
+      
+      <p>
+        これが起きうる原因は、ふたつあります:
+      </p>
+ 
+      <p>
+        </p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+	    <p>
+  	      PC 以外では、ほとんどの場合は、その IRQ にドライバーがアタッチされたが、
+	      そのドライバーが不適切だったことを
+	      (この場合のほかは、その IRQ がマスクされていたことを) 意味します。
+	    </p>
+          </li>
+<li class="listitem">
+	    <p>
+	      PC では、もっとやっかいな 'default IR7' の問題があります。
+	      これは、デバイスがある IRQ をアサートした時に、
+	      PIC が割り込みを検知した後に CPU がそれを知る前にその IRQ がデアサートされたため、
+	      その IRQ が何だったかについて PIC が公然と嘘をつくのです。
+	    </p>
+	    
+	    <p>
+	      'default IR7' を前提にするという方法もありますが、
+	      古いマシンの中にはかえって状況が悪化するものもありますし、
+	      一般論としても、まず第一にドライバーを改良してこれを出さないようにした方がよいです。
+	      とはいえ、エッジトリガーな割り込みを使っていると、
+	      完全な予防は困難な場合もありますが。
+	    </p>
+          </li>
+</ol></div>
+<p>
+      </p>
+      <p>
+        なお、このカーネルメッセージは、 DEBUG
+        オプション付きのカーネルを走らせているときにしか出ません。
+      </p>
+    
+      <h4 class="title">
+<a name="why_msoft_float"></a>なぜカーネルを <code class="code">-msoft-float</code> 付きでコンパイルするのですか (<a href="#">top</a>)
+  </h4>
+
+      <p>
+        プロセスがシステムコールを呼び出したとき、
+        後でそのプロセスに戻ってこられるように、
+        カーネルはプロセッサーの状態を保存する必要があります。
+        浮動小数点レジスターは比較的大きくなりがちなので、それらを保存したり
+        回復したりすることは高価な操作です。もし FPU がまだ処理を実行途中であっ
+        たなら、CPU はその処理が完了するまで待ってからでないと、レジスターのコピー
+        を行うことができません。
+      </p>
+      
+      <p>
+        カーネル内で浮動小数点レジスターを利用するのを避けることで、システムコール実行
+        の効率を、かなり向上させることができます。
+        また sparc など、いくつかのプロセッサーでは、浮動小数点コンテキストの切
+        り替えを lazy に行うことによって、プロセス切り替えの際の浮動小数点レジ
+        スターの保存/回復処理を、場合によっては省略することもできます。
+      </p>
+      
+      <p>
+        いくつかのアーキテクチャーではコンパイラーは主要な操作 (メモリーブロック転送など)
+        のスピードアップのために浮動小数点レジスターを使うことができ、
+        上記の動作を止めるためには '-msoft-float' が必要です。
+      </p>
+    
+      <h4 class="title">
+<a name="kernel-compile-slow"></a>メモリーの少ないマシンでカーネルをコンパイルするとすごい遅いのですが (<a href="#">top</a>)
+  </h4>
+
+      <p>
+        デフォルトでは NetBSD はサポートしているほとんど全てのハードウェアに対する
+        ドライバー、ネットワークプロトコル、ファイルシステムを含む GENERIC カーネルを
+        インストールします。これは、そのポートのいかなる計算機でもそのカーネルが
+        実行されることを保証しますが、結果として、特にメモリーが少ない計算機では、
+        必要以上の(メモリー)空間を占有します。また、カーネルのコンパイルの際には
+         -O2 最適化が行われています。コンパイラーが、この最適化を行うことにより
+        出来上がるカーネルは可能な限り速くなりますが、コンパイルの際には
+        通常より多くのメモリーと時間を必要とします。
+      </p>
+      
+      <p>
+        <a class="ulink" href="#how_to_build_a_kernel" target="_top">あなた専用のカーネルを構築する</a>
+        際のひとつの方法としては、コンパイラーに対して通常の使用にとって
+        十分である最適化のみを行うように指示するために "<code class="code"><span class="bold"><strong>make&nbsp;COPTS=-O</strong></span></code>" を使うことです。この結果として
+        できあがったカーネルはほんの少し遅くなりますが、コンパイルにかかる
+        時間は短くなります。
+      </p>
+	
+      <p>
+        もし、メモリーの少ないマシンを使用していて、カーネルをカスタマイズ
+        するために何度も 'コンパイル、新しいカーネルでリブート' を繰り返す
+        つもりがあるのならば、始めの何回かは "<code class="code">make&nbsp;COPTS=-O</code>"
+        を使い、最後に "<code class="code">make</code>" を使うのが良いかもしれません。
+      </p>
+      
+      <p>
+        もちろん、メモリーが少ししかないマシンでカーネルをコンパイルするのに、
+        一般的にもっとも速い方法は、別のマシンを使用すること、または一時的に
+        もっとメモリーを増設することです!
+      </p>
+    
+      <h4 class="title">
+<a name="problems_compiling_a_current_kernel"></a>-current カーネルのコンパイルに関する問題 (<a href="#">top</a>)
+  </h4>
+      
+      <p>
+        最初に注意すべき点は、
+        <a class="ulink" href="../../mailinglists/#current-users" target="_top">current-users</a>
+        メーリングリストに参加した方がよいということです。
+        current-users を読まずに -current を追うことはライトを灯けずに夜道を
+        ドライブしているようなものです。警告しましたよ :)
+      </p>
+      
+      <p>
+        最新の
+        <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/tar_files/src/config.tar.gz" target="_top">config.tar.gz</a>
+        をダウンロードし、コンパイル、インストールし、あなたの
+        コンフィグファイルに対して再度 config を実行してください。
+         (config コマンドはリリースごとにかなり頻繁に変更されますから)
+      </p>
+      
+      <p>
+        時々、あらかじめバイナリーやライブラリーをアップグレードしておかないと、
+        リリース版で -current の構築ができなくなることがあります。このような場合、
+        それらをバイナリースナップショットからインストールした上で
+        -current を構築したほうが簡単かもしれません。 i386 の -current
+        スナップショットは、 (たとえば) 
+        <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/arch/i386/snapshot/" target="_top">/pub/NetBSD/arch/i386/snapshot/</a> にあります。 <a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/UPDATING?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top">src/UPDATING</a>
+        ファイルには、このような、 -current や -current カーネルの構築に際して
+        知っておくべき重要な変更点に関する情報が載っています。
+      </p>
+    
+      <h4 class="title">
+<a name="debugging_a_kernel_crash_dump"></a>カーネルクラッシュダンプのデバッグの方法 (<a href="#">top</a>)
+  </h4>
+      
+      <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+	  同じソースを用いて設定ファイルの中で <code class="code">DEBUG</code> と '<code class="code">makeoptions
+          DEBUG="-g"</code>' を有効にして
+          <a class="ulink" href="#how_to_build_a_kernel" target="_top">カーネルの作成</a>をしたことを
+          確認してください。
+	</li>
+<li class="listitem">
+	  "<code class="code">gdb netbsd.gdb</code>" (カーネルをコンパイルしているディレクトリーで)
+	</li>
+<li class="listitem">
+	  gdb プロンプトで
+          "<code class="code">target kvm /var/crash/netbsd.0.core</code>" します。
+	  gdb6 ではなく gdb5 を使っているシステムでは、"<code class="code">target kcore ...</code>" を使います。
+	</li>
+</ol></div>
+
+      <p>
+        一般の <a href="http://netbsd.gw.com/cgi-bin/man-cgi?gdb+1+NetBSD-5.1+i386">gdb(1)</a> コマンドも使えます。例えばバックトレースを得るには '<span class="bold"><strong><code class="code">bt</code></strong></span>' とします。
+      </p>
+    
+      <h4 class="title">
+<a name="backtraces"></a>カーネルクラッシュダンプをデバッグしているときにバックトレースを得る方法 (<a href="#">top</a>)
+  </h4>
+
+      <p>
+        カーネルのクラッシュダンプをデバッグしている場合、
+        次の簡単な 2ステップで任意のプロセスのバックトレースを gdb から得ることができます。
+      </p>
+      
+      <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+	  LWP の lwp 構造体のアドレスを調べる
+	  : <code class="code">ps -ax -O laddr -M
+          netbsd.x.core</code>
+	  <p>
+	  (LWP すなわち軽量プロセスは、一つのプロセス、
+	  またはカーネル内で実行されているプロセスの一つのスレッドに対応します。
+	  非スレッドなプログラムではプロセスに対応するLWPはただ1つで、
+	  スレッドなプログラムでは複数のLWPとなっていることもあります。
+	  </p>
+        </li>
+<li class="listitem">
+	  このアドレスを使うよう、gdb に "<code class="code">kvm proc 0x&lt;addr&gt;</code>" と指示する
+        </li>
+</ol></div>
+    
+      <h4 class="title">
+<a name="ddb"></a>DDB ってなんですか、それを使うと何ができるんですか (<a href="#">top</a>)
+  </h4>
+      
+      <p>
+        DDB はオプションとして提供されるカーネル内部のデバッガーです。
+        次の 3通りの方法で起動することができます:
+      </p>
+      
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	  いつでも、ポート特有のキーの組合せで起動する(組合せについては
+          <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ddb+4+NetBSD-5.1+i386">ddb(4)</a> 参照)。
+        </li>
+<li class="listitem">
+	  カーネルがパニックした時に起動するように設定できます。
+        </li>
+<li class="listitem">
+	  '-d' をブートフラグに指定する (<code class="code">boot netbsd -d</code>)。
+        </li>
+</ul></div>
+      
+      <p>
+        いくつかの有用なコマンドは次の通りです:
+      </p>
+      
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	  <code class="code">trace</code> - スタックトレースを作ります。カーネルパニックの
+          <a class="ulink" href="../../support/send-pr.html#submitting" target="_top">問題報告を送る
+          </a>のにとても便利です。
+        </li>
+<li class="listitem">
+	  <code class="code">reboot</code> - システムをリブートします。
+        </li>
+<li class="listitem">
+	  <code class="code">sync</code> - クラッシュダンプを作った後、リブートします
+        </li>
+</ul></div>
+    
+      <h4 class="title">
+<a name="generating-a-crash-dump"></a>カーネルのクラッシュダンプを作るには (<a href="#">top</a>)
+  </h4>
+      
+      <p>
+        通常、カーネルはパニックした時に自動的にクラッシュダンプを生成し、
+        リブート時に <a href="http://netbsd.gw.com/cgi-bin/man-cgi?savecore+8+NetBSD-5.1+i386">savecore(8)</a> によって回収されます。
+        しかし、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ddb+4+NetBSD-5.1+i386">ddb(4)</a> で <code class="code">sync</code> (または <code class="code">reboot&nbsp;0x100</code>)
+        を用いると強制的にクラッシュダンプを作る事ができます。もし、
+        カーネルが buffer キャッシュをシンク(同期)しようとしている間に panic したり
+        ハングするならば、シンクを行わない
+        <code class="code">reboot&nbsp;0x104</code> を使うことができます。
+      </p>
+    
+      <h4 class="title">
+<a name="adding_a_kernel_to_a_boot_floppy"></a>ブートフロッピーにカーネルを追加する方法 (<a href="#">top</a>)
+  </h4>
+
+      <p>
+        いくつかのポートでは既に
+        "<code class="code">cd
+        /usr/src/distrib/<span class="emphasis"><em>&lt;ARCH&gt;</em></span>/floppies ;
+        make </code>" としてブートフロッピーを構築することができます。
+        (これを実行する前に INSTALL カーネルを手動で構築する必要があるかもしれません。)
+        既に <code class="filename">boot.fs</code>ファイルがあるのなら、次の手順でカーネルを置き換え
+        ることもできます:
+      </p>
+
+      <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><span class="bold"><strong><code class="code">vnconfig -c vnd0 boot.fs</code></strong></span></li>
+<li class="listitem"><span class="bold"><strong><code class="code">mount /dev/vnd0a /mnt</code></strong></span></li>
+<li class="listitem"><span class="bold"><strong><code class="code">gzip -c -9 &lt; netbsd &gt; /mnt/netbsd.gz</code></strong></span></li>
+<li class="listitem"><span class="bold"><strong><code class="code">umount /mnt</code></strong></span></li>
+<li class="listitem"><span class="bold"><strong><code class="code">vnconfig -u vnd0</code></strong></span></li>
+</ol></div>
+
+      <p>
+        この手順は、コンフィグファイルに "<code class="code">pseudo-device vnd</code>" を指定して
+        作成したカーネルを、現在利用していることを前提としています。
+      </p>
+    
+      <h4 class="title">
+<a name="scsi_device_numbers"></a>新しく SCSI デバイスを増設したら、今までマウントできていたデバイスがマウントできなくなってしまいました。いったいどういう規則でデバイスに番号をつけてるんですか? (<a href="#">top</a>)
+  </h4>
+
+      <p>
+        デフォルトでは、NetBSD での SCSI デバイスは SCSI ID 番号の順に 0 から
+        番号付けされます。いいかえると、一番小さな番号の SCSI デバイスが
+        <code class="code">/dev/sd0</code> となり、次のデバイスが <code class="code">/dev/sd1</code> という
+        ふうになります。これはブートプロセスの間に対応づけられる事に
+        注意してください。
+      </p>
+
+      <p>
+        もし、あなた専用のカーネルをコンパイルするならば、
+        お好きな SCSI ID 番号を示す SCSI デバイスをセットすることができます。
+        そのためのカーネル設定ファイルは次のようになります:
+      </p>
+	
+<pre class="programlisting">
+sd0             at scsibus0 target 4 lun 0
+sd*             at scsibus? target ? lun ?
+</pre>
+
+      <p>
+        上の 2行を用いると sd0 は SCSI ID 番号が 4 のディスクとなり、
+        残りのデバイスは上で述べられたルールで対応づけられます。
+        これは、しばしば、SCSI デバイスの "hardwiring" と呼ばれ、
+        RAIDframe や <code class="code">ccd</code> を使う場合には使用することをお勧めします。
+        こうしておくと、一つのデバイスの電源が入っていなかったり
+        故障した場合にデバイス ID が変わってしまうことを避けることができます。
+      </p>
+    <hr>
+<h3 class="title">よくあるハードウェアに関する質問</h3>
+      <h4 class="title">
+<a name="device-not-configured"></a><code class="code">device not configured</code> ってどういう意味ですか? (<a href="#FAQ_hardware">top</a>)
+  </h4>
+
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+          <p>
+            このメッセージがシステムブートの autoconfiguration の出力中に
+            現れたのならば、それはカーネルがシステム中に、あるハードウェアを
+            検出したがそれに対応するデバイスドライバーが無いことを意味します。
+            これにはデバイスドライバーは存在するがブートに使用したカーネルには
+            含まれていない場合と、デバイスドライバーが本当に存在しない場合の
+            両方の可能性があります。
+            (後者の場合、優しい開発者に連絡を取り、テスト用のハードウェアを
+            提供してデバイスドライバーを書いてもらいましょう)
+          </p>
+
+          <p>
+            GENERIC カーネルは基本インストールに用いられるので、
+            安定で動くことが保証されている事が重要です。そのため、
+            まだ安定ではないデバイスドライバーは GENERIC カーネルに含まれていません。
+            あなたのシステム用の GENERIC カーネルの設定ファイルを見てみると
+            「コメントアウト」されている実験的なデバイスドライバーが見つかるかも
+            しれません。もしあなた用のカーネル(それを GENERIC とは呼ばないでください)を
+            コンパイルするならば、実験的なデバイスドライバーを試すことができます。
+          </p>
+        </li>
+<li class="listitem">
+          <p>
+            もし、このメッセージが <code class="code">/dev</code>にあるデバイスノード
+            (例えば SCSI ディスク)へアクセスしようとしたときに出力されたならば、
+            それはアクセスしようとしたそのデバイスユニットを見つけられなかった
+            事を意味します。例えば、存在しない、またはドライバーがカーネルにコンパイルされていない
+            SCSI ディスクにアクセスしようとした場合です。
+          </p>
+
+          <p>
+            しばしば、これは <code class="code">/etc/fstab</code> に書かれたデバイスノードと
+            カーネルがブート時の autoconfiguration で見つけたものが一致しない状態で、
+            <code class="code">/etc/rc</code>中の "mount" コマンドが全てのファイルシステムを
+            マウントしようとした時に起ります。いま一度、使用しようとした
+            デバイスがブート時にカーネルによって検出されているかを確認してください。
+            確認には <code class="code">/var/run/dmesg.boot</code> (ブート時の autoconfiguration の
+            出力のコピーが保存されています) を用いることができます。
+          </p>
+
+	  <p>
+	    以上のほかに、このメッセージが出力されることがあるのは、
+	    疑似デバイスとして実装されているあるカーネルサブシステムが
+	    カーネルにコンパイルされておらず LKM としてもロードされていない場合で、
+	    コンフィギュレーションプログラムがその疑似デバイスを
+	    <code class="code">/dev</code> 以下のデバイスノードを使って設定しようとしたときです。
+	    たとえば、防火壁がカーネルにコンパイルされておらず
+	    LKM としてもロードされていない場合で、<a href="http://netbsd.gw.com/cgi-bin/man-cgi?pfctl+8+NetBSD-5.1+i386">pfctl(8)</a> または <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+8+NetBSD-5.1+i386">ipf(8)</a>
+	    ユーティリティーが防火壁のルールを読み込もうとしたときが相当します。
+	    これらのユーティリティーが、
+	    使おうとされたデバイスはどれかなどの有用なメッセージを表示しなかった場合、
+	    コマンド内部で何がおこなわれているかを調べて、
+	    このエラーメッセージの原因を突き止めるには、
+	    <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ktrace+1+NetBSD-5.1+i386">ktrace(1)</a> を使うと便利です。
+	  </p>
+
+	  <p>
+	    このほかの多くの場合、このメッセージが出力されることがあるのは、
+	    存在しないデバイスやドライバーのないデバイスにアクセスしたとき、
+	    たとえば、存在しないネットワークインターフェース名が <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ifconfig+8+NetBSD-5.1+i386">ifconfig(8)</a>
+	    に渡されたときなどです (この場合、適切なドライバーが存在するとわかっていればですが、
+	    そのインターフェースを <code class="code">ifconfig vlan0
+	    create</code> のようなコマンドで明示的に作成する必要があるかもしれません
+	    — このことは、<a href="http://netbsd.gw.com/cgi-bin/man-cgi?sl+4+NetBSD-5.1+i386">sl(4)</a>, <a href="http://netbsd.gw.com/cgi-bin/man-cgi?vlan+4+NetBSD-5.1+i386">vlan(4)</a>,
+	    <a href="http://netbsd.gw.com/cgi-bin/man-cgi?stf+4+NetBSD-5.1+i386">stf(4)</a> など、たいていのネットワーク疑似デバイスにあてはまります)。
+	  </p>
+        </li>
+</ul></div>
+    
+      <h4 class="title">
+<a name="atapi_devices"></a>ATAPI や ATA (IDE) デバイスのデバッグ (<a href="#FAQ_hardware">top</a>)
+  </h4>
+      
+      <p>
+        もしカーネルが <code class="code">WDCDEBUG</code> を有効にしてコンパイルされていれば、
+        gdb が <code class="code">wdcdebug_atapi_mask</code> と <code class="code">wdcdebug_mask</code> 
+        の値の変更に使用できます。
+        これらの変数中の適切なビットを設定することで、カーネルは ATAPI と ATA 操作に
+        ついての詳しい情報を出力するようになります。
+        (現在 NetBSD のデフォルトでは <code class="code">WDCDEBUG</code> は有効になっています。)
+      </p>
+      
+      <p>
+        最高レベルの出力を得るには次の手順に従ってください:
+      </p>
+      
+<pre class="programlisting">
+	# <span class="bold"><strong>gdb --write /netbsd</strong></span>
+	(gdb) <span class="bold"><strong>set wdcdebug_atapi_mask=0xff</strong></span>
+	(gdb) <span class="bold"><strong>set wdcdebug_mask=0xff</strong></span>
+	(gdb) <span class="bold"><strong>quit</strong></span>
+</pre>
+
+      <p>
+        註: この例の設定は<span class="emphasis"><em>非常に</em></span>大量の出力を行います。
+        個々のオプションを選択するためには、次に掲げる行のすぐ上に
+        ある、ビットフラグのリストを見てください:
+      </p>
+
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	  <a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/scsipi/atapi_wdc.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top">/usr/src/sys/dev/scsipi/atapi_wdc.c</a> 中の <code class="code">wdcdebug_atapi_mask</code>
+        </li>
+<li class="listitem">
+	  <a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/ic/wdc.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top">/usr/src/sys/dev/ic/wdc.c</a> 中の <code class="code">wdcdebug_mask</code>
+        </li>
+</ul></div>
+    
+      <h4 class="title">
+<a name="usb-debugging"></a>USB デバイスのデバッグ (<a href="#FAQ_hardware">top</a>)
+  </h4>
+
+      <p>
+        USB デバイスの問題が起きた場合、USB ドライバーのメッセージを冗長にすることが
+        できます。
+      </p>
+
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+	  <code class="code">USB_DEBUG</code> と <code class="code">DDB</code>
+          を含むカーネルをコンパイルする。
+	</li>
+<li class="listitem">
+	  <code class="code"><span class="bold"><strong>-d</strong></span></code> をつけてブートし、
+          <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ddb+4+NetBSD-5.1+i386">ddb(4)</a> に入る。
+	</li>
+<li class="listitem">
+	  ddb で変数 usbdebug と uhcidebug を 5 にセットする。
+          ("write usbdebug 5" と "write uhcidebug 5")
+	</li>
+<li class="listitem">
+	  デバイスを挿入して <code class="code">continue</code> と入力する。
+	</li>
+</ul></div>
+    
+      <h4 class="title">
+<a name="new_pnp_device"></a>あたらしい PnP デバイスを認識させるには (<a href="#FAQ_hardware">top</a>)
+  </h4>
+      
+      <p>
+        この手順は対応する汎用のデバイスがすでにサポートされており、
+        デバイス ID が認識されないだけである時のみ有効です。
+        動作の異なるデバイスを加えるにはソースコードを書く必要があります。
+      </p>
+
+      <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+          <p>
+	    デバイスは、ブートメッセージ中に '<code class="code">not configured</code>' として
+            表示されているはずです。出力中に含まれる
+            デバイス ID を記録して下さい(この例だと <code class="code"><span class="bold"><strong>USR3031</strong></span></code>です):
+          </p>
+	
+	  <pre class="programlisting">isapnp0: &lt;U.S. Robotics 56K FAX INT, <span class="bold"><strong>USR3031</strong></span>, , &gt; port 0x3e8/8 irq 5 not configured</pre>
+        </li>
+<li class="listitem">
+	  <p>
+	    適切なエントリーを <code class="filename">
+	    <a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/isapnp/isapnpdevs?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top">/usr/src/sys/dev/isapnp/isapnpdevs</a></code> に加えて下さい:
+          </p>
+
+	  <pre class="programlisting">devlogic       com     USR3031         USR 56k Faxmodem</pre>
+	</li>
+<li class="listitem">
+	  <code class="code">isapnpdevs.{c,h}</code> を
+	  '<code class="code">make -f Makefile.isapnpdevs</code>' として作り直します。
+	</li>
+<li class="listitem">
+	  <a class="ulink" href="#how_to_build_a_kernel" target="_top">カーネルの再構築</a>をしてください。
+	</li>
+<li class="listitem">
+	  変更点を <a href="http://netbsd.gw.com/cgi-bin/man-cgi?send-pr+1+NetBSD-5.1+i386">send-pr(1)</a> または
+          <a class="ulink" href="../../support/send-pr.html#submitting" target="_top">オンラインフォーム</a>を用いて
+          報告して下さい。
+	</li>
+</ol></div>
+    
+      <h4 class="title">
+<a name="new_pcmcia_device"></a>あたらしい PCMCIA デバイスを認識させるには (<a href="#FAQ_hardware">top</a>)
+  </h4>
+      
+      <p>
+        この手順は対応する汎用のデバイスがすでにサポートされており、
+        デバイス ID が認識されないだけである時のみ有効です。
+        動作の異なるデバイスを加えるにはソースコードを書く必要があります。
+      </p>
+	
+	<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+	    カーネルを <a href="http://netbsd.gw.com/cgi-bin/man-cgi?options+4+NetBSD-5.1+i386">options(4)</a>
+            <code class="code">PCMCIAVERBOSE</code> を有効にしてコンパイルします。
+	</li>
+<li class="listitem">
+	  ブートメッセージをチェックします - 該当のカードは
+          '<code class="code">not configured</code>' とレポートされているはずです。製造元
+          (Manufacturer) とプロダクトコード(例題では <code class="code"><span class="bold"><strong>0x143</strong></span></code> と <code class="code"><span class="bold"><strong>0x201</strong></span></code> です)を記録します:
+	
+<pre class="programlisting">pcmcia0: CIS version PCMCIA 2.0 or 2.1
+pcmcia0: CIS info: Grey Cell, GCS2000, Gold II, 1
+pcmcia0: Manufacturer code <span class="bold"><strong>0x143</strong></span>, product <span class="bold"><strong>0x201</strong></span>
+pcmcia0: function 0: network adapter, ccr addr 3f8 mask 1
+</pre>
+	</li>
+<li class="listitem">
+	  <code class="code">ベンダー(vendor)</code> と <code class="code">プロダクトコード(product)</code> を
+          <code class="code"> <a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/pcmcia/pcmciadevs?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top">/usr/src/sys/dev/pcmcia/pcmciadevs</a> </code> に加えます
+	</li>
+<li class="listitem">
+	  <code class="code">pcmciadevs.h</code> と
+          <code class="code">pcmciadevs_data.h</code> を '<code class="code">make -f
+          Makefile.pcmciadevs</code>' として作り直します。
+	</li>
+<li class="listitem">
+	  付け加えたエントリーを適切な <code class="code">/usr/src/sys/dev/pcmcia/</code> にある
+          bus attach ファイルの先頭部分にあるデバイステーブルに付け加えます。
+          例えば ne2000 互換カードの場合には <a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/pcmcia/if_ne_pcmcia.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top">/usr/src/sys/dev/pcmcia/if_ne_pcmcia.c</a> に加えます。
+	</li>
+<li class="listitem">
+	  <a class="ulink" href="#how_to_build_a_kernel" target="_top">カーネルの再構築</a>をします。
+	</li>
+<li class="listitem">
+	  変更点を <a href="http://netbsd.gw.com/cgi-bin/man-cgi?send-pr+1+NetBSD-5.1+i386">send-pr(1)</a> または
+          <a class="ulink" href="../../support/send-pr.html#submitting" target="_top">オンラインフォーム</a>を用いて
+          報告して下さい。 
+	</li>
+</ol></div>
+    
+      <h4 class="title">
+<a name="plip_support"></a>PLIP (Parallel Line IP) をサポートしていますか (<a href="#FAQ_hardware">top</a>)
+  </h4>
+
+      <p>
+        NetBSD/i386 で PLIP をサポートするための Martin Husemann のパッチが
+        <a class="ulink" href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=1278" target="_top">PR 1278</a>
+	として出ています。この PR の末尾にあるパッチは、NetBSD
+        1.3.3 ソースツリーに対して適用することができます。
+      </p>
+    
+      <h4 class="title">
+<a name="ubc"></a>UBC ってなんですか? (<a href="#FAQ_hardware">top</a>)
+  </h4>
+      
+      <p>
+        UBC とは統合されたバッファーキャッシュ(Unified Buffer Cache) プロジェクトを
+        意味します。これは Chuck Silvers によって書かれ、1.5L(2000年11月)以降の
+        NetBSD に統合されています。UBC でない状態からセットアップする際には
+        config(8) を再実行する必要がありますが、その前に "BUFCACHE", "NBUF" や
+        "BUFPAGES" の設定を消去して、バッファーキャッシュのサイズをデフォルトに
+        戻した方が良いかもしれません。UBC のもとでは、伝統的な
+        バッファーキャッシュは通常ファイルのデータの格納には用いられず、
+        metadata だけに用いられますので、物理メモリーのほとんどを
+        仮想記憶システムに任せてしまった方が良いでしょう。デフォルトの
+        バッファーキャッシュサイズはマシンのメモリー量に関わらず、
+        ほとんどの場合、最適となります。ブートメッセージ中の
+        メモリー量を示している "using X buffers containing Y memory" は
+        ファイルデータのキャッシュ用のメモリー量を示していませんので
+        数字が変わらなくても心配しないでください。
+      </p>
+
+      <p>
+        重要な変更点はより多くのメモリーを通常ファイルデータのキャッシュに
+        用いることができるということです。このためアクセスしようとした
+        ファイルのデータがすでにメモリー中に存在することが多くなり、結果として
+        ファイルシステムの入出力が速くなります。速くなる割合は何をするかにも
+        よりますが、多くの場合その違いに気付くことができるでしょう。
+      </p>
+
+      <p>
+        以下も参照してください:
+	Chuck Silvers の論文 <a class="ulink" href="http://www.usenix.org/publications/library/proceedings/usenix2000/freenix/full_papers/silvers/silvers_html/" target="_top">UBC:
+        An Efficient Unified I/O and Memory Caching Subsystem for
+        NetBSD</a>
+      </p>
+    <hr>
+<h3 class="title">さらなる読み物</h3>
+      <h4 class="title">
+<a name="NetBSD_specific_documentation"></a>NetBSD に特有のドキュメント (<a href="#further_reading">top</a>)
+  </h4>
+    
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><a class="ulink" href="programming.html" target="_top">カーネルプログラミング FAQ</a></li>
+<li class="listitem"><a class="ulink" href="pseudo/" target="_top">疑似(pseudo)デバイスドライバーを書くには</a></li>
+<li class="listitem"><a class="ulink" href="profiling/" target="_top">カーネルプロファイリング HOWTO</a></li>
+<li class="listitem"><a class="ulink" href="elf-notes.html" target="_top">ベンダー特有の ELF Note Element</a></li>
+<li class="listitem"><a class="ulink" href="uvm.html" target="_top">UVM、あたらしい仮想メモリーシステム</a></li>
+<li class="listitem"><a class="ulink" href="vfork.html" target="_top">なぜ伝統的な vfork() を実装したか</a></li>
+<li class="listitem"><a class="ulink" href="kgdb.html" target="_top">GDB を用いた NetBSD カーネルのデバッグ HOWTO</a></li>
+<li class="listitem"><a class="ulink" href="../../../docs/kernel/non-exec.html" target="_top">非実行マップ機能に関する情報</a></li>
+<li class="listitem"><a class="ulink" href="../../../docs/internals/en/" target="_top">NetBSD Internals</a></li>
+</ul></div>
+    
+      <h4 class="title">
+<a name="other_online_documentation"></a>その他のオンライン ドキュメント (<a href="#further_reading">top</a>)
+  </h4>
+    
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><a class="ulink" href="http://www.teamten.com/lawrence/291.paper/291.paper.html" target="_top">
+          Porting BSD UNIX to a New Platform</a></li>
+<li class="listitem"><a class="ulink" href="http://www.netapp.com/tech_library/nfsbook.html" target="_top">
+          4.4BSD のデザインと実装、第9章 (NFS)</a></li>
+<li class="listitem"><a class="ulink" href="../../../docs/kernel/config-torek.ps" target="_top">4.4BSD のデバイスコンフィギュレーション</a></li>
+<li class="listitem"><a class="ulink" href="http://www.mckusick.com/softdep/index.html" target="_top">Soft Updates に関する情報 (Soft Dependencies、softdep) とスナップショット</a></li>
+<li class="listitem"><a class="ulink" href="http://www.ccrc.wustl.edu/pub/chuck/" target="_top">ATM ネットワーキングの BSD への統合</a></li>
+<li class="listitem"><a class="ulink" href="http://www.pdl.cs.cmu.edu/RAID/index.html" target="_top">RAID と RAIDframe 関連の多くのドキュメント</a></li>
+<li class="listitem"><a class="ulink" href="http://dinsen.net/netbsd/kernel.html" target="_top">Anders Dinsen の
+          カーネルドキュメンテーションの概要</a></li>
+<li class="listitem">
+	  <p>
+	  Jochen Kunz による "NetBSD Device Driver Writing Guide": 
+	  </p>
+	  <p>
+          [<a class="ulink" href="http://www.unixag-kl.fh-kl.de/~jkunz/projekte/NetBSD-driver_writing-1.0.1e.pdf.gz" target="_top">gzip 圧縮された PDF</a> | <a class="ulink" href="http://www.unixag-kl.fh-kl.de/~jkunz/projekte/NetBSD-driver_writing-1.0.1e.ps.gz" target="_top">gzip 圧縮された PS</a>] (<font size="-1">英語</font>)
+	  </p>
+	  <p>
+          [<a class="ulink" href="http://www.unixag-kl.fh-kl.de/~jkunz/projekte/NetBSD-treiber_schreiben-1.0.1.pdf.gz" target="_top">gzip 圧縮された PDF</a> | <a class="ulink" href="http://www.unixag-kl.fh-kl.de/~jkunz/projekte/NetBSD-treiber_schreiben-1.0.1.ps.gz" target="_top">gzip 圧縮された PS</a>] (<font size="-1">ドイツ語</font>)
+	  </p>
+           </li>
+<li class="listitem"><a class="ulink" href="http://www.home.unix-ag.org/bmeurer/NetBSD/howto-lkm.html" target="_top">NetBSD ローダブルカーネルモジュール入門</a></li>
+<li class="listitem"><a class="ulink" href="http://www.mit.edu/people/nathanw/usenix/" target="_top">NetBSD 2.0 以降におけるスレッドの実装 (スケジューラーアクティベーション) の説明</a></li>
+</ul></div>
+    <hr>
+<em><a href="..">NetBSD ドキュメンテーション</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

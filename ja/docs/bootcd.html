@@ -1,0 +1,962 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+  
+    <title>NetBSD Bootable CD ROM HOWTO</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-bootcd"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../ja/">
+	  ホーム</a> | 
+	<a href="../../ja/about/">
+	  概要</a> | 
+	<a href="../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../ja/support/">
+	  サポート</a> | 
+	<a href="../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD Bootable CD ROM HOWTO</h1>
+<div class="sect1">
+<div class="titlepage"></div>
+    <p>
+      このドキュメントでは、ブート可能な NetBSD CD ROM
+      の作成方法を説明します。
+    </p>
+  </div>
+<h3 class="title"><a name="overview">Overview</a></h3>
+<ul><li><a href="#creating-the-image">CD イメージを作成する</a></li></ul>
+<h3 class="title"><a name="platforms">プラットフォーム固有の説明</a></h3>
+<ul>
+<li><a href="#alphaimage">NetBSD/alpha</a></li>
+<li><a href="#i386image">NetBSD/i386</a></li>
+<li><a href="#macppcimage">NetBSD/macppc</a></li>
+<li><a href="#pmaximage">NetBSD/pmax</a></li>
+<li><a href="#sgimips">NetBSD/sgimips</a></li>
+<li><a href="#sparcimage">NetBSD/sparc</a></li>
+<li><a href="#sparc64image">NetBSD/sparc64</a></li>
+<li><a href="#sun2image">NetBSD/sun2</a></li>
+<li><a href="#sun3image">NetBSD/sun3</a></li>
+<li><a href="#vaximage">NetBSD/vax</a></li>
+<li><a href="#multiimage">複数のマシン</a></li>
+</ul>
+<h3 class="title"><a name="examining-the-image">CD イメージの検査</a></h3>
+<ul>
+<li><a href="#netbsd_mountimage">NetBSD の場合</a></li>
+<li><a href="#linux_mountimage">Linux の場合</a></li>
+<li><a href="#solaris_mountimage">Solaris の場合</a></li>
+</ul>
+<h3 class="title"><a name="burning-the-cd">CD を焼く</a></h3>
+<ul>
+<li><a href="#cdrecord">cdrecord を使う場合(U*nix)</a></li>
+<li><a href="#winrecord">Windows を使う場合</a></li>
+<li><a href="#macrecord">Mac OS を使う場合</a></li>
+</ul>
+<hr>
+<h3 class="title">Overview</h3>
+        <h4 class="title">
+<a name="creating-the-image"></a>CD イメージを作成する (<a href="#overview">top</a>)
+  </h4>
+        <p>
+          CD ROM を作成するためには、まず CD のイメージを作成する必要があります。
+          このイメージを、最初にハードディスク上に(最大でも 650 MB 程度)
+          ファイルとして保存し、その後 CD に焼きます。
+        </p>
+        <p>
+          このセクションでは、<code class="code">mkisofs</code> が使用可能であることを前提としています。
+          もし、NetBSD マシン上で CD イメージを作るのなら、
+          <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/sysutils/cdrtools/README.html" target="_top"><code class="filename">sysutils/cdrtools</code></a>
+          パッケージを使い、
+          <code class="code">mkisofs</code> をインストールすることができます。
+        </p>
+        <p>
+          以下の例では、<code class="code">/cdsources</code> ディレクトリーがシステム上に存在し、
+          その中にCD ROM に焼く全てのファイルが含まれているものとします。
+          インストール CD を作成するためのお勧めのレイアウトは、<a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.0/" target="_top">ftp.NetBSD.org</a>
+          のディレクトリー構造です。例えば:
+          </p>
+<pre class="programlisting">
+/cdsources/i386/.....
+/cdsources/sparc/.....</pre>
+<p>
+        </p>
+      <hr>
+<h3 class="title">プラットフォーム固有の説明</h3>
+        <h4 class="title">
+<a name="alphaimage"></a>NetBSD/alpha (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD/alpha 用のブート可能な CD ROM を作成するためには、二つの手順が
+          必要です。最初に CD に焼くファイルの ISO 9660 イメージを作成します。
+          このイメージのルートディレクトリーには、二番目のブートプログラムとカーネル
+          が存在しなければなりません。蛇足ですが、一番目のブートプログラムは次の
+          手順で必要となります。ブートプログラムとカーネルを正しいディレクトリーに
+          置くために、以下の作業をおこなってください。
+        </p>
+
+        <pre class="programlisting">
+cd /cdsources/alpha/binary/sets
+tar -zxvf base.tgz ./usr/mdec/boot ./usr/mdec/bootxx_cd9660
+mv -f ./usr/mdec/boot /cdsources/boot
+mkdir /tmp/mdec.alpha
+mv -f ./usr/mdec/bootxx_cd9660 /tmp/mdec.alpha/bootxx_cd9660
+rm -rf ./usr
+cd /cdsources/alpha/installation/instkernel
+cp -f netbsd.gz /cdsources/netbsd.gz</pre>
+
+        <p>
+          さて、ISO 9660 イメージを作成しましょう。
+        </p>
+        <pre class="programlisting">mkisofs -o output.iso -l -J -R -allow-leading-dots /cdsources</pre>
+
+        <p>
+          次に、NetBSD/alpha のディスクと CD ROM のブートストラップソフトウェア
+          を、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?installboot+8+NetBSD-5.1+i386">installboot(8)</a> を使いインストールします。以下のコマンド
+          を実行してください:
+        </p>
+
+        <pre class="programlisting">installboot -m alpha -v output.iso /tmp/mdec.alpha/bootxx_cd9660</pre>
+
+      
+        <h4 class="title">
+<a name="i386image"></a>NetBSD/i386 (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          このセクションでは、NetBSD/i386 のブート可能な CD ROM を作成する方法
+          を説明します。ここでとりあげる例は、NetBSD-3.0/i386 インストール CD
+          を作成する方法です。 <code class="code">/cdsources</code> ディレクトリーがシステム上に存在
+          し、その中にすべてのファイルが含まれており、そのディレクトリー構造は
+          <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.0/i386/" target="_top">NetBSD-3.0/i386</a>
+          配布と同じものとします。CD に焼きたいファイルによって内容はかわりますが、
+          重要なのは、ブート可能なイメージとして使用される
+          <code class="code">/cdsources/i386/installation/floppy/boot-big.fs</code> が存在することです。
+        </p>
+        <p>
+          CD イメージを作るために以下のコマンドを実行します:
+        </p>
+
+        <pre class="programlisting">
+mkisofs -o output.iso -b i386/installation/floppy/boot-big.fs \ 
+  -c boot.catalog -l -J -R -allow-leading-dots /cdsources</pre>
+
+        <p>
+          これで、<code class="code">output.iso</code> ファイルが作成されます。このファイルが CD 
+          のイメージです。オプションは以下の通りです:
+          </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+              <p>
+                <code class="code">-b i386/installation/floppy/boot-big.fs</code>
+                -- ブートイメージを指定します
+              </p>
+            </li>
+<li class="listitem">
+              <p>
+                <code class="code">-c boot.catalog</code>
+                -- ブートカタログを作成します
+              </p>
+            </li>
+<li class="listitem">
+              <p>
+                <code class="code">-l</code> -- 長いファイル名(32 文字)を許可します
+              </p>
+            </li>
+<li class="listitem">
+              <p><code class="code">-J</code> -- Joliet 拡張を含みます</p>
+            </li>
+<li class="listitem">
+              <p><code class="code">-R</code> -- ファイルのパーミッション (setuid を含む) をセットします</p>
+            </li>
+<li class="listitem"> 
+              <p>
+                <code class="code">-allow-leading-dots</code> -- <span class="quote">“<span class="quote">.</span>”</span>
+                で始まるファイル名を許可します: 古いバージョンの mkisofs では
+		<code class="code">-L</code> でした。
+              </p>
+            </li>
+<li class="listitem">
+              <p>
+                <code class="code">/cdsources</code> -- ディレクトリー
+                <code class="code">/cdsources</code> が CD イメージのルートであることを指定します
+              </p>
+            </li>
+</ul></div>
+<p>
+        </p>
+      
+        <h4 class="title">
+<a name="macppcimage"></a>NetBSD/macppc (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD でサポートされている macppc 機種はすべて、 CD ROM の最初の
+          セッションからブートすることができます。ブート可能な CD の作り方は、
+          その機種の持つ Open Firmware のバージョンによって異なります。お使いのシステムの
+          Open Firmware バージョンとサポート状況については <a class="ulink" href="../ports/macppc/models.html" target="_top">NetBSD/macppc 機種対応ページ</a>
+          を参照してください。
+        </p>
+
+        <p>
+          ここでは、お使いのシステム上に <code class="code">/cdsources/</code>
+          ディレクトリーがあり、そこに <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.0/macppc/" target="_top">NetBSD-3.0/macppc</a>
+          配布物の全ファイルとディレクトリー構造が含まれているものとします。
+          本当に必要な内容は、その CD で何をしたいかによって異なります。
+        </p>
+
+        <p>
+          <code class="code">/cdsources/</code> には、 <code class="code">ofwboot.xcf</code> (macppc ブートローダー)
+          とカーネル (全機種に対応した ramdisk ベースのインストールカーネル
+          <code class="code">netbsd.GENERIC_MD</code> をおすすめします) を含めるようにしてください。
+        </p>
+
+        <pre class="programlisting">
+cd /cdsources
+cp macppc/binary/kernel/netbsd-GENERIC_MD.gz netbsd.macppc
+cp macppc/installation/ofwboot.xcf .</pre>
+
+        <p>
+          NetBSD/macppc 公式 ISO イメージは、特殊な技巧を使うことによって、
+          サポートされている全機種でブート可能になっています。この CD は、 mkisofs で
+          <code class="code">-hfs -part</code> オプションを使い、Apple Disk Partition Table を持った
+          HFS ハイブリッド CD になっています。さらに、このパーティションテーブルは
+          PPC Macintosh でこの CD をブート可能にするドライバーファイル
+          (またはそのポインター) をマップするように書き換えられており、
+          このドライバーファイルは iso イメージ終端の後に付け加えられています。
+        </p>
+
+        <p>
+          これだけでは、<span class="quote">“<span class="quote"><code class="code">C</code></span>”</span>キーを押し続けてブートさせることはできません。
+          この機能は下記のようにして追加できますが、 macppc 全機種には通用しないかも
+          しれません。 (これを追加しても OpenFirmware コマンドを使ったブートには
+          影響ありません) これを行うには、最上層にあるディレクトリー内に CHRP bootscript
+          を作り、この bootscript ファイルに適切な Mac OS のタイプとクリエーターを付け、
+          このファイルの置かれたディレクトリーを "bless" します。
+          <code class="code">/usr/src/distrib/cdrom/hfsmap.lst</code>
+          ファイルに以下の行を書いておけば、 mkisofs が ISO イメージファイルを作る際に
+          適切な Mac OS タイプとクリエーターを付けてくれます:
+        </p>
+
+        <pre class="programlisting">.chrp - 'chrp' 'tbxi'</pre>
+
+        <p>
+          次に、以下の内容を持つ <code class="code">bootscript</code> という名前のファイルを、
+          (最上層の) <code class="code">macppc</code> ディレクトリーに置きます:
+        </p>
+
+        <pre class="programlisting">
+&lt;CHRP-BOOT&gt;
+&lt;COMPATIBLE&gt;MacRISC&lt;/COMPATIBLE&gt;
+&lt;DESCRIPTION&gt;
+NetBSD/macppc bootable CD script
+&lt;/DESCRIPTION&gt;
+&lt;BOOT-SCRIPT&gt;
+boot cd:,ofwboot.xcf netbsd.macppc
+&lt;/BOOT-SCRIPT&gt;
+&lt;/CHRP-BOOT&gt;</pre>
+
+        <p>以下のコマンドを使って、 macppc 用のブート可能な CD イメージを作ります:</p>
+
+        <pre class="programlisting">
+cdrom_util="/usr/src/distrib/cdrom"
+snag_boot="-map ${cdrom_util}/hfsmap.lst -hfs-bless ./macppc"
+ofw_boot="-boot-hfs-file ${cdrom_util}/macppc_installboot/macppcboot.raw"
+mkisofs -o output.iso -hfs -part ${snag_boot} ${ofw_boot} -l -J -r -allow-leading-dots /cdsources
+blknum=`ls -l output.iso | awk '{print $5}'`
+blknum=`expr ${blknum} / 512`
+${cdrom_util}/macppc_installboot/macppc_installboot output.iso ${blknum} 756
+dd if=/usr/mdec/ofwboot bs=64k count=1 conv=sync &gt;&gt; output.iso</pre>
+
+        <p>
+          CD を焼いたら、 Open Firmware がその CD ROM からブートローダー
+          を見つけられることを確認してください (FAQ の
+          <a class="ulink" href="../ports/macppc/faq.html#ofw-dir-listing" target="_top">ディスク上のファイルのリストを
+          (Open Firmware で) 出す方法は?</a> を参照) 。 Open Firmware
+          はブートファイルの大文字小文字を区別して扱うため、これは重要です。
+          ほとんどの (すべてではないにせよ) Open Firmware 1.0.5、 1.1.22、 2.0.x システムは
+          ブートローダーが <code class="code">OFWBOOT.XCF</code> であることを想定しており、 Open Firmware 3
+          はこれを適切に <code class="code">ofwboot.xcf</code> の名前で探します。
+        </p>
+      
+        <h4 class="title">
+<a name="pmaximage"></a>NetBSD/pmax (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD/pmax は、FFS または ISO 9660 CD ROM からブートすることができます。
+          このセクションでは ISO 9660 CD ROM を作成します。注意してほしいのは、
+          bootxx_cd9660 プログラムは NetBSD-1.4.x <span class="emphasis"><em>以降</em></span> でないと追加
+          されないという事です。もし、NetBSD-1.4.x を使用するのであれば、-current 
+          スナップショットから <code class="code">boot.pmax</code>、<code class="code">installboot</code>、そして 
+          <code class="code">bootxx_cd9660</code> を持ってきてください。ソースから作成する場合は、
+          1999 年 11 月 <span class="emphasis"><em> 以降 </em></span> のものである事を確認してください。
+        </p>
+        <p>
+          NetBSD/pmax 用のブート可能な CD ROM を作成するためには二つの手順が
+          必要です。最初に、CD に焼くファイルの ISO 9660 イメージを作成します。
+          このイメージのルートディレクトリーには、二番目のブートプログラムとカーネル
+          が存在しなければなりません。蛇足ですが、一番目のブートプログラムは次の
+          手順で必要となります。ブートプログラムとカーネルを正しいディレクトリーに
+          置くために、以下の作業をおこなってください。
+        </p>
+
+        <pre class="programlisting">
+cd /cdsources/pmax/binary/sets
+tar -zxvf base.tgz ./usr/mdec/boot.pmax ./usr/mdec/bootxx_cd9660
+mv -f ./usr/mdec/boot.pmax /cdsources/boot.pmax
+mkdir /tmp/mdec.pmax
+mv -f ./usr/mdec/bootxx_cd9660 /tmp/mdec.pmax/bootxx_cd9660
+rmdir ./usr/mdec
+
+cd /cdsources/pmax/binary/kernel
+cp -f install.gz /cdsources/netbsd.pmax.gz
+gunzip /cdsources/netbsd.pmax.gz</pre>
+
+        <p>
+          さて、ISO 9660 イメージを作成しましょう。
+        </p>
+
+        <pre class="programlisting">mkisofs -o output.iso -l -J -r -allow-leading-dots /cdsources</pre>
+
+        <p>
+          次に、NetBSD/pmax のディスクと CD ROM のブートストラップソフトウェア
+          を、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?installboot+8+NetBSD-5.1+i386">installboot(8)</a> を使いインストールします。
+          <a href="http://netbsd.gw.com/cgi-bin/man-cgi?installboot+8+NetBSD-5.1+i386">installboot(8)</a> コマンドは以下のように使います:
+        </p>
+
+        <pre class="programlisting">installboot -m pmax -v output.iso /usr/mdec/bootxx_cd9660</pre>
+
+      
+        <h4 class="title">
+<a name="sgimips"></a>NetBSD/sgimips (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          ブート可能な CD ROM の作成方法については、
+          <a class="ulink" href="../mailinglists/#port-sgimips" target="_top">port-sgimips メーリングリスト</a>への
+          <a class="ulink" href="http://mail-index.NetBSD.org/port-sgimips/2003/06/29/0000.html" target="_top">この記事</a>
+          を見て下さい。
+          ただし、NetBSD 開発者側では(まだ)この方法の動作確認はしていません。
+        </p>
+      
+        <h4 class="title">
+<a name="sparcimage"></a>NetBSD/sparc (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD/sparc 用のブート可能な CD ROM を作成するためには、三つの手順が
+          必要です。最初に CD に焼くファイルの、ほぼ完全な ISO 9660 イメージを
+          作成します。例えば:
+        </p>
+
+        <pre class="programlisting">mkisofs -o output.iso -l -J -r -allow-leading-dots /cdsources</pre>
+
+        <p>
+          次にブート可能なフロッピーのイメージを入手します。NetBSD-3.0/sparc
+          用のイメージは
+          <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.0/sparc/installation/bootfs/boot.fs.gz" target="_top">ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.0/sparc/installation/bootfs/boot.fs.gz</a>
+          にあります。
+        </p>
+
+        <p>
+          最後に ISO イメージを、(a) sun disklabel が先頭になり、(b) オリジナルの
+          イメージが一番後になるように、(c)そして、ブートローダーのために disklabel 
+          中のオフセットとサイズを正しい値に書きかえます。<code class="code">mksunbootcd</code> 
+          プログラムを使い、この作業をおこないます。もし、<code class="code">mksunbootcd</code> 
+          がインストールされていなければ、
+          <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/sysutils/mksunbootcd/README.html" target="_top"><code class="filename">sysutils/mksunbootcd</code></a>
+          パッケージを使用し、インストールすることができます。もし、NetBSD 以外のシステム上にイメージを作っているのなら、
+          そのシステム上で <code class="code">mksunbootcd</code> をコンパイルすることもできます。
+          ソースは
+          <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/misc/mksunbootcd/" target="_top">ftp://ftp.NetBSD.org/pub/NetBSD/misc/mksunbootcd/</a> にあります。
+        </p>
+
+        <p>
+          <code class="code">mksunbootcd</code> は以下のように使います:
+        </p>
+
+        <pre class="programlisting">mksunbootcd output.iso boot.fs boot.fs boot.fs</pre>
+
+        <p>
+          この例では、sun4、sun4c、sun4m システムでブートするために、ブート
+          可能イメージとして同じものを 3回指定しています。もし、マシン毎に
+          異なるブート可能イメージを使う必要がある場合や、これらに加えて
+          sun2、 sun3、 sun3x 用のブート可能イメージもある場合は、以下のようにしてください。
+        </p>
+
+        <pre class="programlisting">mksunbootcd output.iso boot-sun4.fs boot-sun4c.fs boot-sun4m.fs boot-sun3.fs</pre>
+
+        <p>
+          <code class="code">mksunbootcd</code> は <code class="code">output.iso</code> ファイルを書きかえるので、
+          複数回実行しないでください。
+        </p>
+
+        <p>
+          なお、この手順は、NFS マウントされたディレクトリー上でも実行できます。
+          例えば、ISO イメージがリモートマシン上にある場合でも、それを NetBSD 
+          マシンにマウントし、ネットワークに負荷をかける事なく、<code class="code">mksunbootcd</code> 
+          を実行することができます。
+        </p>
+      
+        <h4 class="title">
+<a name="sparc64image"></a>NetBSD/sparc64 (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD/sparc64 用のブート可能な CD ROM を作成するためには、三つの手順が
+          必要です。最初に CD に焼くファイルの、ほぼ完全な ISO 9660 イメージを
+          作成します。例えば:
+        </p>
+
+        <pre class="programlisting">mkisofs -o output.iso -l -J -r -allow-leading-dots /cdsources</pre>
+
+        <p>
+          次にブート可能なフロッピーのイメージを入手します。NetBSD-3.0/sparc64
+          用のイメージは <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.0/sparc64/installation/misc/boot.fs.gz" target="_top">ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-3.0/sparc64/installation/misc/boot.fs.gz</a> にあります。
+        </p>
+
+        <p>
+          最後に ISO イメージを、(a) sun disklabel が先頭になり、(b) オリジナルの
+          イメージが一番後になるように、(c)そして、ブートローダーのために disklabel 
+          中のオフセットとサイズを正しい値に書きかえます。<code class="code">sunbootcd.sh</code> 
+          プログラムを使い、この作業をおこないます。もし、<code class="code">sunbootcd.sh</code> 
+          がインストールされていなければ、 <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/distrib/common/sunbootcd.sh" target="_top">ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-current/src/distrib/common/sunbootcd.sh</a> から入手できます。
+        </p>
+
+        <p>
+          <code class="code">sunbootcd.sh</code> の使い方は以下の通りです。
+        </p>
+
+        <pre class="programlisting">sunbootcd.sh output.iso - - - - boot.fs</pre>
+
+        <p>
+          output.iso の後の引数は、順に、 sun4、 sun4c、 sun4m、 sun4d および sun4u 用の
+          ブート可能なイメージです。ブートイメージのかわりにダッシュ ( - ) を指定すると、
+          作成した CD がそのプラットフォームではブートできなくなります。上の例では、
+          sun4u 用のブートイメージだけを使っています。
+        </p>
+
+        <p>
+          <code class="code">sunbootcd.sh</code> は <code class="code">output.iso</code> ファイルを書きかえるので、
+          複数回実行しないでください。
+        </p>
+
+        <p>
+          なお、この手順は、NFS マウントされたディレクトリー上でも実行できます。
+          例えば、ISO イメージがリモートマシン上にある場合でも、それを NetBSD 
+          マシンにマウントし、ネットワークに負荷をかける事なく、<code class="code">sunbootcd.sh</code> 
+          を実行することができます。
+        </p>
+
+        <p>
+          <code class="code">sunbootcd.sh</code> で作成した CD は、 Solaris 10 では
+          vold が認識しないことを知っておいてください。この NetBSD インストール CD を
+          Solaris でマウントしたい場合は、最初に vold を止める必要があります。
+        </p>
+
+        <pre class="programlisting">/etc/init.d/volmgt stop</pre>
+
+      
+        <h4 class="title">
+<a name="sun2image"></a>NetBSD/sun2 (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD/sun2 用のブート可能な CD ROM を作成するためには、この下の
+          NetBSD/sun3 用のブート可能な CD ROM の作成手順に従います。これで、
+          sun2 と sun3 システム両方でブートできる単一の CD ROM イメージができあがります。
+        </p>
+
+        <p>
+          <span class="emphasis"><em>オプション:</em></span> 下記の手順に従う際には、 ISO 9660 イメージ書き込み前に
+          sun2 miniroot
+          (<code class="code">/cdsources/sun2/installation/miniroot.fs.gz</code>) とバイナリーセット
+          (<code class="code">/cdsources/sun2/binary/sets/*.tgz</code>) 
+          を伸長しておいたほうがよいです。そうするかどうかはあなたの自由ですし、 ISO 9660
+          イメージの容量も大きくなりますが、 sun2 上での伸長は非常に遅いので、
+          インストールにかかる時間を節約することができます。
+        </p>
+      
+        <h4 class="title">
+<a name="sun3image"></a>NetBSD/sun3 (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD/sun3 用のブート可能な CD ROM を作成するためには、三つの手順が
+          必要です。こうすることで、 NetBSD/sun2 でもブート可能な CD ROM ができます。
+        </p>
+
+        <p>
+          最初に CD に焼くファイルの、ほぼ完全な ISO 9660 イメージを
+          作成します。例えば:
+        </p>
+
+        <pre class="programlisting">mkisofs -o output.iso -l -J -r -allow-leading-dots /cdsources</pre>
+
+        <p>
+          次にブート可能な ffs イメージを作ります。今のところ、このイメージは
+          リリースには含まれませんので、自分で用意する必要があります。
+        </p>
+
+        <pre class="programlisting">
+mkdir /tmp/boot-sun3
+cd /tmp/boot-sun3
+gzip -cd &lt; /cdsources/sun2/binary/kernel/netbsd.RAMDISK.gz &gt; netbsd.sun2
+ln netbsd.sun2 vmunix
+gzip -cd &lt; /cdsources/sun3/binary/kernel/netbsd.RAMDISK.gz &gt; netbsd.sun3
+gzip -cd &lt; /cdsources/sun3/binary/kernel/netbsd.RAMDISK3X.gz &gt; netbsd.sun3x
+tar xzvf /cdsources/sun3/binary/sets/base.tgz ./usr/mdec
+mv usr/mdec/ufsboot .
+mv usr/mdec/bootxx /tmp/bootxx.sun3
+rm -rf /tmp/boot-sun3/usr
+
+echo /set type=file uname=root gname=wheel mode=0755 &gt; /tmp/boot-sun3.spec
+echo . type=dir &gt;&gt; /tmp/boot-sun3.spec
+echo ufsboot mode=0644 &gt;&gt; /tmp/boot-sun3.spec
+/bin/ls netbsd* vmunix &gt;&gt; /tmp/boot-sun3.spec
+
+makefs -t ffs -B be -F /tmp/boot-sun3.spec /tmp/boot-sun3.fs /tmp/boot-sun3
+
+installboot -m sun3 -v /tmp/boot-sun3.fs /tmp/bootxx.sun3 ufsboot</pre>
+
+        <p>
+          最後に ISO イメージを、(a) sun disklabel が先頭になり、(b) オリジナルの
+          イメージが一番後になるように、(c)そして、ブートローダーのために disklabel 
+          中のオフセットとサイズを正しい値に書きかえます。<code class="code">mksunbootcd</code> 
+          プログラムを使い、この作業をおこないます。もし、<code class="code">mksunbootcd</code> 
+          がインストールされていなければ、
+          <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/sysutils/mksunbootcd/README.html" target="_top"><code class="filename">sysutils/mksunbootcd</code></a>
+          パッケージを使用し、インストールすることができます。もし、NetBSD 以外のシステム上にイメージを作っているのなら、
+          そのシステム上で <code class="code">mksunbootcd</code> をコンパイルすることもできます。
+          ソースは
+          <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/misc/mksunbootcd/" target="_top">ftp://ftp.NetBSD.org/pub/NetBSD/misc/mksunbootcd/</a> にあります。
+        </p>
+
+        <p>
+          <code class="code">mksunbootcd</code> は以下のように使います:
+        </p>
+
+        <pre class="programlisting">mksunbootcd output.iso /tmp/boot-sun3.fs </pre>
+
+        <p>
+          <code class="code">mksunbootcd</code> は sparc システム用のブート可能 CD ROM イメージの
+          作成にも使われます。以下のようにすることで、 sparc、 sun2、 sun3
+          および sun3x でブート可能な CD ROM を作ることができます:
+        </p>
+
+        <pre class="programlisting">mksunbootcd output.iso boot-sun4.fs boot-sun4c.fs boot-sun4m.fs boot-sun3.fs</pre>
+
+        <p>
+          このブート可能ファイルシステムの順序は、必要に応じて好きなように
+          変えることができます; これは、単に各ファイルシステムのパーティション番号を
+          変えるだけです。このため、パーティション番号を必要に応じて変えることで、
+          PROM の <code class="code">b</code> または <code class="code">boot</code> コマンドで、そのアーキテクチャー用の
+          適切なファイルシステムでブートするようになります。
+        </p>
+
+        <p>
+          <code class="code">mksunbootcd</code> は <code class="code">output.iso</code> ファイルを書きかえるので、
+          複数回実行しないでください。
+        </p>
+
+        <p>
+          なお、この手順は、NFS マウントされたディレクトリー上でも実行できます。
+          例えば、ISO イメージがリモートマシン上にある場合でも、それを NetBSD 
+          マシンにマウントし、ネットワークに負荷をかける事なく、<code class="code">mksunbootcd</code> 
+          を実行することができます。
+        </p>
+      
+        <h4 class="title">
+<a name="vaximage"></a>NetBSD/vax (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD/vax は、FFS または ISO 9660 CD ROM からブートすることができます。
+          このセクションでは、ISO 9660 CD ROM を作成します。この機能は NetBSD-1.5 
+          までは追加されない事に注意してください。
+        </p>
+
+        <p>
+          NetBSD/vax 用のブート可能な CD ROM を作成するためには二つの手順が
+          必要です。最初に、CD に焼くファイルの ISO 9660 イメージを作成します。
+          このイメージのルートディレクトリーには、二番目のブートプログラムとカーネル
+          が存在しなければなりません。蛇足ですが、一番目のブートプログラムは
+          二番目の手順で必要となります。ブートプログラムとカーネルを正しい
+          ディレクトリーに置くために、以下の作業をおこなってください。
+        </p>
+
+        <pre class="programlisting">
+cd /cdsources/vax/binary/sets
+tar -zxvf base.tgz ./usr/mdec/boot ./usr/mdec/xxboot
+mv -f ./usr/mdec/boot /cdsources/boot.vax
+mkdir /tmp/mdec.vax
+mv -f ./usr/mdec/xxboot /tmp/mdec.vax/xxboot
+rmdir ./usr/mdec
+
+cd /cdsources/vax/installation/netboot
+cp -f install.ram.gz /cdsources/netbsd.vax.gz
+gunzip -f /cdsources/netbsd.vax.gz</pre>
+
+        <p>
+          さて、ISO 9660 イメージを作成しましょう。
+        </p>
+
+        <pre class="programlisting">mkisofs -o output.iso -l -J -r -allow-leading-dots /cdsources</pre>
+
+        <p>
+          次に、NetBSD/vax のディスクと CD ROM のブートストラップソフトウェア
+          を、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?installboot+8+NetBSD-5.1+i386">installboot(8)</a> を使いインストールします。
+          <a href="http://netbsd.gw.com/cgi-bin/man-cgi?installboot+8+NetBSD-5.1+i386">installboot(8)</a> コマンドは以下のように使います:
+        </p>
+
+        <pre class="programlisting">installboot -m vax -v output.iso /usr/mdec/xxboot</pre>
+
+      
+        <h4 class="title">
+<a name="multiimage"></a>複数のマシン (<a href="#platforms">top</a>)
+  </h4>
+        <p>
+          NetBSD-current では、
+          <code class="code"><a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/distrib/cdrom?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top">src/distrib/cdrom</a></code>
+          以下に、複数のマシンでブート可能な CD 構築のための仕組みが用意されています。
+          これを使うと、 8 のプラットフォームで CD からブート可能な、
+          39 のプラットフォームを含む 4 枚組の CD を作ることができます。
+          これには <code class="code">mkisofs</code> バージョン 1.15a34 以降が必要です。
+        </p>
+
+        <p>
+          このほか、以下のようにして、複数プラットフォームでブート可能な CD
+          を手動で作ることもできます。
+          以下の手順で、alpha、i386、pmax、sparc でブート可能な一枚の CD を
+          作成しています。また、 macppc、 vax や
+          sun2、 sun3、 sun3x でブート可能な CD を作ることも可能です。
+          複数のアーキテクチャーでブート可能な CD を作成するためには、以下の
+          手順を順番に実行してください。この順番は重要なので注意してください。
+
+          </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+              <p>
+                それぞれのマシンのセクションに記述されている、カーネルやブート
+                プログラムなどを含む必要なファイルがすべてそろっていることを確認
+                してください。
+              </p>
+            </li>
+<li class="listitem">
+              <p>
+                <code class="code">cdsources</code> ディレクトリーの適当な場所に <code class="code">mdec.pmax</code>
+                ディレクトリーを作ってください。そして、pmax <code class="code">bootxx_cd9660</code> を
+                そこに置いてください。例えば、
+                <code class="code">/cdsources/usr/mdec.pmax/bootxx_cd9660</code>.
+               </p>
+             </li>
+<li class="listitem">
+               <p>
+                  <code class="code">cdsources</code> ディレクトリーの適当な場所に <code class="code">mdec.vax</code>
+                  ディレクトリーを作ってください。そして、vax <code class="code">xxboot</code> を
+                  そこに置いてください。例えば、
+                  <code class="code">/cdsources/usr/mdec.vax/xxboot</code>.
+               </p>
+             </li>
+<li class="listitem">
+               <p>
+                 macppc <code class="code">ofwboot.xcf</code> ブートローダーを <code class="code">/cdsources</code> に置いてください。
+               </p>
+             </li>
+<li class="listitem">
+               <p>
+                 i386 のブート可能なイメージを作成します。
+
+                 </p>
+<pre class="programlisting">
+sh
+mkisofs -v -v -o output.iso -b i386/installation/floppy/boot-big.fs \ 
+  -c boot.catalog -l -J -r -allow-leading-dots /cdsources 2&gt;&amp;1 | tee /tmp/mkisofs.log
+exit</pre>
+<p>
+
+                <code class="code">-v</code> フラグが二度必要な事に注意してください。 Open Firmware 3 macppc
+                モデル上でブート可能 CD を作る場合は、 <code class="code">mkisofs</code> の引数に
+                <code class="code">-hfs -part</code> を含めるようにしてください。
+               </p>
+             </li>
+<li class="listitem">
+               <p>
+                 sparc および sun2/sun3 の bootblock をインストールするために、
+                 <code class="code">mksunbootcd</code> を NetBSD/sparc マシン上で実行してください。あるいは、
+                 <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/sysutils/mksunbootcd/README.html" target="_top"><code class="filename">sysutils/mksunbootcd</code></a>
+                 パッケージを、別の NetBSD マシンにインストールしてください。
+
+                 </p>
+<pre class="programlisting">mksunbootcd output.iso boot-sun4.fs boot-sun4c.fs boot-sun4m.fs boot-sun3.fs</pre>
+<p>
+               </p>
+             </li>
+<li class="listitem">
+               <p>
+                 NetBSD/pmax 用に pmax ブートブロックをインストールするため、
+                 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?installboot+8+NetBSD-5.1+i386">installboot(8)</a> プログラムを実行します。
+                 他の NetBSD のブートブロックとの共存のため、 pmax ブートブロックは
+                 ISO ファイルシステムの後に追記されます。
+
+                 </p>
+<pre class="programlisting">installboot -m pmax -v -o append,sunsum output.iso /tmp/mdec.pmax/bootxx_cd9660</pre>
+<p>
+
+                 <code class="code">-o append,sunsum</code> オプションは、一段目のブートブロックを
+                 ISO ファイルシステムの後に追記したうえで、
+                 sun でのブート時に使われるチェックサムを再計算します。
+               </p>
+             </li>
+<li class="listitem">
+               <p>
+                 NetBSD/vax 用に vax ブートブロックをインストールするため、
+                 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?installboot+8+NetBSD-5.1+i386">installboot(8)</a> プログラムを実行します。
+                 他の NetBSD のブートブロックとの共存のため、 vax ブートブロックは
+                 ISO ファイルシステムの後に追記されます。
+
+                 </p>
+<pre class="programlisting">installboot -m vax -v -o append,sunsum output.iso /tmp/mdec.vax/xxboot</pre>
+<p>
+
+                 (これらのフラグの意味については、上記 pmax の項を参照してください) 。
+               </p>
+             </li>
+<li class="listitem">
+               <p>
+                 NetBSD/alpha 用に alpha ブートブロックをインストールするため、
+                 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?installboot+8+NetBSD-5.1+i386">installboot(8)</a>プログラムを実行します。
+
+                 </p>
+<pre class="programlisting">installboot -m alpha -v -o append,sunsum output.iso /tmp/mdec.alpha/bootxx_cd9660</pre>
+<p>
+
+                 この alpha 用の installboot の実行は、他のプラットフォーム用の操作の実行後で
+                 なければならないことに注意してください。今のところ、<code class="code">installboot(8)</code>
+                 の機種依存のバックエンドでしか alpha のチェックサムを計算できないからです。
+                 (これらのフラグの意味については、上記 pmax の項を参照してください) 。
+               </p>
+             </li>
+</ul></div>
+<p>
+        </p>
+      <hr>
+<h3 class="title">CD イメージの検査</h3>
+        <h4 class="title">
+<a name="netbsd_mountimage"></a>NetBSD の場合 (<a href="#examining-the-image">top</a>)
+  </h4>
+        <p>
+          以下のようにして、CD イメージをマウントします:
+        </p>
+
+        <pre class="programlisting">
+vnconfig -c vnd0 output.iso
+mount -t cd9660 /dev/vnd0c /mnt</pre>
+
+        <p>
+          i386 システム上では、<code class="code">/dev/vnd0c</code> でなく <code class="code">/dev/vnd0d</code> を
+          指定しないといけない事に注意してください。
+          これで /mnt へ cd し、新しく作った CD イメージを調べる事ができます。
+          イメージをアンマウントするためには、以下のようにしてください:
+        </p>
+
+        <pre class="programlisting">
+umount /mnt 
+vnconfig -u vnd0</pre>
+
+      
+        <h4 class="title">
+<a name="linux_mountimage"></a>Linux の場合 (<a href="#examining-the-image">top</a>)
+  </h4>
+        <p>
+          Linux も同様の機能をもっています。CD イメージをマウントするためには:
+        </p>
+
+        <pre class="programlisting">mount -t iso9660 -o ro,loop=/dev/loop0 output.iso /mnt</pre>
+
+        <p>
+          そして、CD イメージをアンマウントするためには:
+        </p>
+
+        <pre class="programlisting">umount /mnt</pre>
+
+      
+        <h4 class="title">
+<a name="solaris_mountimage"></a>Solaris の場合 (<a href="#examining-the-image">top</a>)
+  </h4>
+        <p>
+          Solaris 8 以降では、CD イメージをマウントできるそうです。詳細や
+          マウント方法は、Solaris の man page <code class="code">lofiadm</code> を参照して
+          ください。
+        </p>
+
+        <p>
+          古いバージョンの Solaris では、Joerg Schilling の書いた
+          <code class="code">fbk</code> ドライバーを使うとよいでしょう。<code class="code">fbk</code> ドライバーは
+          <a class="ulink" href="ftp://ftp.berlios.de/pub/schily/kernel/fbk/" target="_top">ftp://ftp.berlios.de/pub/schily/kernel/fbk/</a> にあります。
+          インストールの方法は、<code class="code">fbk</code> のドキュメントを参照してください。
+          <code class="code">fbk</code>がインストールされていれば、以下のコマンドで ISO 9660 イメージ
+          をマウントすることができます:
+        </p>
+
+        <pre class="programlisting">mount -F fbk -o ro,type=hsfs /dev/fbk0:output.iso  /mnt</pre>
+
+        <p>
+          そして、CD イメージをアンマウントする時は:
+        </p>
+
+        <pre class="programlisting">umount /mnt</pre>
+
+      <hr>
+<h3 class="title">CD を焼く</h3>
+        <h4 class="title">
+<a name="cdrecord"></a>cdrecord を使う場合(U*nix) (<a href="#burning-the-cd">top</a>)
+  </h4>
+        <p>
+          <code class="code">cdrecord</code> は、CD イメージを CD に焼くために使用されます。
+          <code class="code">cdrecord</code> は
+          <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/sysutils/cdrtools/README.html" target="_top"><code class="filename">sysutils/cdrtools</code></a>
+          パッケージに含まれます。
+        </p>
+
+        <p>
+          <code class="code">cdrecord</code> の使用方法の例は以下の通りです:
+        </p>
+
+        <pre class="programlisting">cdrecord -v speed=4 dev=/dev/cd1c output.iso</pre>
+
+        <p>
+          CD ライターの速度とデバイス名(i386 の場合、<code class="code">/dev/cd1d</code>でしょう)を、
+          適切なものに置き換えてください。
+        </p>
+      
+        <h4 class="title">
+<a name="winrecord"></a>Windows を使う場合 (<a href="#burning-the-cd">top</a>)
+  </h4>
+        <p>
+          ISO 9660 イメージを CD に書き込むための Windows 用のプログラムは
+          いくつか存在します。このセクションでは、特定のプログラムをお勧め
+          することはせずに、プログラムの紹介だけにとどめておきます。
+
+          </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+              <p>
+                <a class="ulink" href="http://www.goldenhawk.com/cdrwin.htm" target="_top">CDRWIN</a>.
+                商用ソフトウェア。(i386 で)ブート可能 ISO 9660 イメージを作成し、
+                CD に書き込む事が可能です。
+              </p>
+            </li>
+<li class="listitem">
+              <p>
+                <a class="ulink" href="http://www.goldenhawk.com/freeware.htm" target="_top">FILE2CD</a>.
+                ISO 9660 イメージを CD に書きこむことのできるフリーウェア。
+              </p>
+            </li>
+<li class="listitem">
+              <p>
+                <a class="ulink" href="http://www.roxio.com/en/products/ecdc/index.jhtml" target="_top">
+                Roxio Easy CD Creator</a>.  商用ソフトウェア。
+              </p>
+            </li>
+<li class="listitem">
+              <p>
+                <a class="ulink" href="http://www.ahead.de/en/index.html" target="_top">Ahead Nero
+                Burning ROM</a>.  商用ソフトウェア。
+              </p>
+            </li>
+<li class="listitem">
+               <p>
+                 <a class="ulink" href="ftp://ftp.berlios.de/pub/cdrecord/alpha/win32/" target="_top">CDRECORD</a>.
+                 ブート可能な ISO 9660 イメージの作成やイメージの CD への書き込みが可能なフリーソフトウェア。
+                 グラフィカルインターフェースを持たず、コマンドラインのみです。
+                 <a class="ulink" href="http://www.adaptec.com/worldwide/support/driverdetail.jsp?cat=%2fProduct%2fASPI-4.70&amp;filekey=aspi_v470.exe" target="_top">ここ</a>で入手できる
+                 ASPI ドライバーに依存しています。
+                 IDE ドライブで使うためには、以下のとおりレジストリーを書き換える必要があります:
+               </p>
+
+               <pre class="programlisting">
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ASPI32]  
+"ErrorControl"=dword:00000001  
+"Start"=dword:00000001  
+"Type"=dword:00000001  
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ASPI32\Parameters]  
+"ExcludeMiniports"=""</pre>
+
+            </li>
+</ul></div>
+<p>
+        </p>
+      
+        <h4 class="title">
+<a name="macrecord"></a>Mac OS を使う場合 (<a href="#burning-the-cd">top</a>)
+  </h4>
+        <p>
+          Mac OS X では、<span class="command"><strong>hdiutil</strong></span> プログラムを使って
+          ISO イメージを CD に焼くことができます。
+        </p>
+
+        <p>
+          <span class="command"><strong>hdiutil</strong></span> の使用例は以下のとおりです。
+        </p>
+
+        <pre class="programlisting">hdiutil burn output.iso -verbose -noverifyburn</pre>
+
+        <p>
+          hdiutil の<a class="ulink" href="http://developer.apple.com/documentation/Darwin/Reference/ManPages/man1/hdiutil.1.html" target="_top">ドキュメンテーション</a>
+          で説明されているオプションをさらに付け加える必要があるかもしれません。
+        </p>
+
+        <p>
+          これ以外にも、ISO 9660 イメージを CD に書き込むための Mac OS 用のプログラムは
+          いくつか存在します。このセクションでは、そのなかから特定のプログラムをお勧め
+          することはせずに、プログラムの紹介だけにとどめておきます。
+        </p>
+
+        <div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+            <p>
+              <a class="ulink" href="http://www.roxio.com/en/products/toast/index.jhtml" target="_top">Roxio
+              Toast</a>.  商用ソフトウェア。
+            </p>
+          </li></ul></div>
+      </div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

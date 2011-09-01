@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+
+
+<title>NetBSD/sun2: よくある質問</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-ports-sun2-faq"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD/sun2: よくある質問</h1>
+<h3 class="title"><a name="general">全般的な質問</a></h3>
+<ul>
+<li><a href="#ec-nfs">3Com 3c400 (ec) カードを持つ NFS クライアント</a></li>
+<li><a href="#sunos_compat">SunOS との互換性</a></li>
+<li><a href="#sun2-history">NetBSD/sun2 の歴史</a></li>
+</ul>
+<h3 class="title"><a name="other_info">他の情報源</a></h3>
+<ul>
+<li><a href="#other_info_offsite">他サイトのリソース</a></li>
+<li><a href="#other_info_nbsd">NetBSD.org の追加情報</a></li>
+</ul>
+<hr>
+<h3 class="title">全般的な質問</h3>
+<h4 class="title">
+<a name="ec-nfs"></a>3Com 3c400 (<code class="code">ec</code>) カードを持つ NFS クライアント (<a href="#general">top</a>)
+  </h4>
+
+<p>3Com 3c400 (<code class="code">ec</code>) Multibus イーサネットカードは、受け取った
+イーサネットパケットを、その長さにかかわらず二つしかバッファーできず、
+残りのパケットは取りこぼします。 NFS クライアントは、特に指定しなければ、
+1 回につき 8 キロバイトのリクエストを読みます。つまり、サーバーから
+6 個以上のパケットが送出され、これがただちにカードを飽和させ、
+3 個目以降のパケットは失われるということです。</p>
+
+<p>NFS は all-or-nothing な性質を持っていることから、クライアントは
+再送されただけのパケットはすべて捨てており、これが悪循環を生んでいます。
+回避策は、クライアント側で mount コマンドにオプションを追加して、
+NFS に一回につき 1 キロバイトのみのリクエストを要求することです:</p>
+
+<pre class="programlisting">
+<code class="prompt">#</code> mount -t nfs -o -r=1024 <span class="emphasis"><em>server</em></span>:<span class="emphasis"><em>directory</em></span> <span class="emphasis"><em>mountpoint</em></span></pre>
+
+<h4 class="title">
+<a name="sunos_compat"></a>SunOS との互換性 (<a href="#general">top</a>)
+  </h4>
+<p>
+いつの日か、 NetBSD/sun2 は SunOS 3 および SunOS 4 プログラムの実行バイナリー
+との互換機能を持つようになるかもしれませんが、この作業はまだ始まっていません。</p>
+
+<h4 class="title">
+<a name="sun2-history"></a>NetBSD/sun2 の歴史 (<a href="#general">top</a>)
+  </h4>
+<p>
+NetBSD の sun2 ポートは、 Matt Fredette によって 2001 年 1 月に始まりました。
+彼は <a class="ulink" href="../sun3/" target="_top">NetBSD/sun3</a> 1.5 リリースをもとに作業を開始し、
+数箇月後にはマルチユーザーでブートさせていました。 2001 年 4 月に、
+このポートの NetBSD ツリーへのマージを始めました。</p>
+
+<hr>
+<h3 class="title">他の情報源</h3>
+<h4 class="title">
+<a name="other_info_offsite"></a>他サイトのリソース (<a href="#other_info">top</a>)
+  </h4>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><a class="ulink" href="http://www.sunhelp.org/" target="_top">SunHELP</a> -
+多くの sun 関連情報</p></li>
+<li class="listitem"><p><a class="ulink" href="http://www.sunhelp.org/hardware/" target="_top">Sun
+    Hardware Reference FAQ</a> - 長年にわたる Sun ハードウェアの概観</p></li>
+</ul></div>
+
+<h4 class="title">
+<a name="other_info_nbsd"></a>NetBSD.org の追加情報 (<a href="#other_info">top</a>)
+  </h4>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><a class="ulink" href="../../docs/network/netboot/intro.sun2.html" target="_top">NetBSD/sun2
+    のネットワークからの起動</a>。</p></li>
+<li class="listitem"><p><a class="ulink" href="../../docs/" target="_top">NetBSD 全般のドキュメンテーション</a>
+    - NetBSD/sun2 固有でない質問向け。</p></li>
+</ul></div>
+<hr>
+<em><a href="./">NetBSD/sun2 ポートのページ</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

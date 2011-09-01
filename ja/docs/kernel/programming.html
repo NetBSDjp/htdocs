@@ -1,0 +1,415 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+    
+    
+    <title>NetBSD ドキュメンテーション: カーネルプログラミング FAQ</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-kernel-programming"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD ドキュメンテーション: カーネルプログラミング FAQ</h1>
+<h3 class="title"><a name="misc">Misc</a></h3>
+<ul>
+<li><a href="#knf">KNF とは何ですか</a></li>
+<li><a href="#packed-attribute">pack された属性を使用する</a></li>
+<li><a href="#printf">デバッグのための printf() の使い方</a></li>
+<li><a href="#forcing-ddb">強制的に DDB に落とす</a></li>
+<li><a href="#adding_a_new_driver">カーネルに新しいドライバーを追加する</a></li>
+<li><a href="#autoconf">この autoconf の素材は、どのように動作するのか?</a></li>
+<li><a href="#adding_a_system_call">システムコールを追加する</a></li>
+<li><a href="#adding_a_sysctl">sysctl を追加する</a></li>
+<li><a href="#mmap_in_pseudo-device">仮想デバイスに mmap(2) を実装する方法</a></li>
+<li><a href="#accessing_a_kernel_structure_from_userland">ユーザーランドからカーネルの構造体へアクセスする</a></li>
+<li><a href="#sample_driver">参考にできそうな簡単な PCI ドライバーはありませんか</a></li>
+<li><a href="#other-related-links">他の関連するリンク</a></li>
+</ul>
+<hr>
+<h3 class="title">Misc</h3>
+	<h4 class="title">
+<a name="knf"></a>KNF とは何ですか (<a href="#misc">top</a>)
+  </h4>
+
+	<p>KNF は Kernel Normal Form の略で、
+	  <code class="filename">/usr/share/misc/style</code> に記述されている
+	  C のコーディングスタイルです。ソースツリーに <a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/share/misc/style?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/share/misc/style</code></a>
+	  として含まれています。</p>
+      
+	<h4 class="title">
+<a name="packed-attribute"></a>pack された属性を使用する (<a href="#misc">top</a>)
+  </h4>
+	
+	<p>wire プロトコルデータフォーマットを記述する構造体の中では、いつも
+	  <code class="code">`pack'</code> された属性を使用しています。</p>
+      
+	<h4 class="title">
+<a name="printf"></a>デバッグのための <code class="code">printf()</code> の使い方 (<a href="#misc">top</a>)
+  </h4>
+
+	<p>カーネルドライバーのデバッグ用の情報を出力するもっとも簡単な方法は、
+	  <code class="code">printf()</code> を使うことでしょう。カーネルの printf は コンソールに出力
+	  されるので、多く出力しすぎ、システムが使いものにならないように注意
+	  しなければなりません。</p>
+      
+	<h4 class="title">
+<a name="forcing-ddb"></a>強制的に DDB に落とす (<a href="#misc">top</a>)
+  </h4>
+
+	<p>カーネルのコンフィグファイルが '<code class="code">options DDB</code>' を
+	  含んでいる事を確認してください。
+	  ファイルに '<code class="code">#include "opt_ddb.h"</code>' を記述し、
+	  '<code class="code">Debugger()</code>' を使ってください。</p>
+      
+	<h4 class="title">
+<a name="adding_a_new_driver"></a>カーネルに新しいドライバーを追加する (<a href="#misc">top</a>)
+  </h4>
+
+	<p>全てのドライバーは、すくなくとも以下の二つの関数を必要とします。
+	  </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<code class="code"><span class="emphasis"><em>xxx</em></span>probe()</code> (
+	      NetBSD
+	      がデバイスの存在を調べる時)</li>
+<li class="listitem">
+<code class="code"><span class="emphasis"><em>xxx</em></span>attach()</code>
+	      ルーチンはデバイスを設定、
+	      アタッチします。</li>
+</ul></div>
+<p>
+	</p>
+
+	<p>プローブとアタッチルーチンを書いたら、
+	  <code class="filename">/usr/src/sys/arch/&lt;your-arch&gt;/&lt;your-arch&gt;/conf.c</code>
+	  にエントリーを追加してください。そこには以下の二つのテーブルがあります。</p>
+	
+	<p>
+	  </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<code class="code">cdevsw</code> キャラクターデバイス用。</li>
+<li class="listitem">
+<code class="code">bdevsw</code> ブロックデバイス用
+	      (ブロックI/O
+	      とストラテジー・ルーチンとして使用する)。</li>
+</ul></div>
+
+	<p>ほとんどのエントリーは <code class="code">cdev_<span class="emphasis"><em>xxx</em></span>_init()</code> という形式と
+	  なります。これは標準的な Unix のデバイススイッチルーチンのプロトタイプ
+	  のためのマクロです。</p>
+
+	<p>プローブとアタッチルーチンはブート時によばれます。
+	  <code class="code">open()</code>、<code class="code">close()</code>、<code class="code">read()</code>、
+	  <code class="code">write()</code> ルーチンは、メジャー番号がテーブルのインデックス
+	  に一致するデバイススペシャルファイルがオープンされた時によばれます。
+	  例えば、メジャー番号18 のデバイスをオープンした場合、<code class="code">cdevsw[]/bdevsw</code>
+	  の中のデバイス番号18の "open" ルーチンがよばれます。</p>
+
+	<p>ほとんどのドライバーはバス固有のアタッチコードとマシン独立のコアに分割
+	  されています。例えば、PCI lance イーサネットドライバーは以下のファイルで
+	  構成されています。
+
+	  </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/pci/files.pci?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/sys/dev/pci/files.pci</code></a>
+	      - アタッチ情報 ('le at pci'を見てください)。</li>
+<li class="listitem">
+<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/pci/if_le_pci.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/sys/dev/pci/if_le_pci.c</code></a> 
+	      - ドライバーのためのPCI バスのアタッチのコード。</li>
+</ul></div>
+<p>
+	</p>
+	
+	<p>
+	  </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/conf/files?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/sys/conf/files</code></a>
+	      - MI コアのアタッチ情報('le:'を見てください)。</li>
+<li class="listitem">
+<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/ic/am7990.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/sys/dev/ic/am7990.c</code></a>
+	      - MI ドライバー、24ビットアクセスのコード。</li>
+<li class="listitem">
+<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/ic/am79900.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/sys/dev/ic/am79900.c</code></a>
+	      - MI ドライバー、32ビットアクセスのコード。</li>
+<li class="listitem">
+<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/dev/ic/lance.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/sys/dev/ic/lance.c</code></a>
+	      - MI コアのドライバーのコード。</li>
+</ul></div>
+<p>
+	</p>
+
+	<p><a class="ulink" href="#autoconf" target="_top">autoconf の説明</a>もご覧ください。</p>
+      
+	<h4 class="title">
+<a name="autoconf"></a>この autoconf の素材は、どのように動作するのか? (<a href="#misc">top</a>)
+  </h4>
+	
+	<p>autoconf の仕組みは、その動作方法を一度理解してしまえば非常に単純なものです。
+	  実行時にデバイスプローブツリーがどのように構築されて使われるのかについて、
+	  正確な詳細は無視したいのであれば、
+	  個々の<span class="quote">“<span class="quote">葉</span>”</span>のドライバーに関して必要なことは以下のとおりです。
+	  
+	  </p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">各ドライバーは、 3 個の構成要素からなる構造体を規定します -
+	      構成要素は、そのプライベート構造体のサイズ、プローブ関数、アタッチ関数です。
+	      これはコンパイルされて実行時に使われます - たとえば以下のようになります:
+	      <pre class="programlisting">
+struct cfattach foo_baz_ca = {
+    sizeof(struct foo_baz_softc), foo_baz_match, foo_baz_attach
+};</pre>
+</li>
+<li class="listitem">カーネル起動に際して、このデバイスをアタッチする時に、
+	      autoconf のコードはデバイスのプローブルーチンを呼んで、
+	      親へのポインター (<code class="code">struct device *parent</code>)・
+	      アタッチタグ構造体へのポインター (<code class="code">void *aux</code>)・
+	      適切な autoconf ノード (<code class="code">struct cfdata *cf</code>) を渡します。
+	      ドライバーは、呼ばれるべき場所かどうかを判断することになっています
+	      (通常、ロケーションおよびコンフィギュレーション情報がアタッチタグによって渡されます)。
+	      そこがしかるべき場所だった場合は、プローブルーチンは 1 を返すべきです。
+	      もしデバイスがそこになければ、プローブルーチンは 0 を返す必要があります。
+	      いずれの場合も、<span class="bold"><strong>いかなる状態も保持されてはいけません</strong></span>。</li>
+<li class="listitem">プローブが成功して戻ると、 autoconf は、デバイスの *_ca
+	      で指定されたサイズのメモリー塊を割り当て、そのデバイスのアタッチルーチンを呼んで、
+	      親へのポインター (<code class="code">struct device *parent</code>)・
+	      今割り当てたメモリーへのポインター(<code class="code">struct device *self</code>)・
+	      アタッチタグ構造体へのポインター (<code class="code">void *aux</code>) を渡します。
+	      ドライバーは、正確なポートとメモリーを見つけ出し、資源を割り当て、
+	      これに応じてドライバー内の構造体を初期化することになっています。
+	      ドライバーのインスタンスに固有な情報は、
+	      極力、ここで割り当てられたメモリーに保持すべきです。</li>
+</ol></div>
+<p>
+	</p>
+	
+	<p>例: PCI イーサネットドライバー 'baz' を考えましょう。
+	  カーネルコンフィグは以下のようになっています:
+	  </p>
+<pre class="programlisting">
+pci*    at mainbus?
+baz*    at pci? dev ? function ?</pre>
+<p>
+
+	  実行時、 autoconf はマシンの PCI バス上の物理デバイスすべてに対して
+	  繰り返し実行されます。各物理デバイスに対して、 autoconf は、
+	  pci バス上にあることがカーネルに設定されているすべてのデバイスの
+	  ドライバーのプローブルーチンを呼ぶことを繰り返します。
+	  いずれかのプローブルーチンがそのデバイスについて 1 を返すと、
+	  autoconf はこれを中止し、上述の 3) で説明した作業をおこないます。
+	  アタッチ関数が戻ると、 autoconf は次の物理デバイスの処理を続けます。</p>
+	
+	<p><a class="ulink" href="#adding_a_new_driver" target="_top">カーネルに新しいドライバーを追加する</a>もご覧ください。</p>
+      
+	<h4 class="title">
+<a name="adding_a_system_call"></a>システムコールを追加する (<a href="#misc">top</a>)
+  </h4>
+	
+	<p><code class="code">syscalls.master</code> にエントリーを追加し、syscall スタブを
+	  <code class="code"><a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/lib/libc/sys/Makefile.inc?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/lib/libc/sys/Makefile.inc</code></a></code>
+	  の適当な場所に追加してください。</p>
+	<p>さらなる情報は、<a class="ulink" href="../../../docs/internals/en/" target="_top">
+	    NetBSD Internals Guide</a> 内の <a class="ulink" href="../../../docs/internals/en/chap-processes.html#syscall_howto" target="_top">
+            HOWTO</a> および関連ドキュメンテーションをご覧ください。
+	</p>
+      
+	<h4 class="title">
+<a name="adding_a_sysctl"></a>sysctl を追加する (<a href="#misc">top</a>)
+  </h4>
+	
+	<p><a class="ulink" href="http://mail-index.NetBSD.org/tech-kern/" target="_top">tech-kern</a>
+	  メーリングリストに、この質問への答えが<a class="ulink" href="http://mail-index.NetBSD.org/tech-kern/2001/06/24/0000.html" target="_top">投稿</a>
+	  されているので、そちらを参照してください。</p>
+	
+	<p>なお、 NetBSD 1.6 とそれ以降では、ベンダー特有の項目用として、
+	  特別な <span class="quote">“<span class="quote">vendor</span>”</span> カテゴリーが予約されています。さらなる情報は
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?sysctl+8+NetBSD-5.1+i386">sysctl(8)</a> を参照してください。</p>
+      
+	<h4 class="title">
+<a name="mmap_in_pseudo-device"></a>仮想デバイスに <a href="http://netbsd.gw.com/cgi-bin/man-cgi?mmap+2+NetBSD-5.1+i386">mmap(2)</a> を実装する方法 (<a href="#misc">top</a>)
+  </h4>
+	
+	<p>あなたの作ったデバイスは、おそらくキャラクターデバイスでしょう。もし、
+	  そうであれば、デバイスページャーを使っているはずです。(VM システムは、
+	  これらすべてを隠蔽しているので、心配しないでください)。</p>
+	
+	<p>最初に、mmap インターフェースのために、適当なオフセットをいくつか選
+	  んでください。例えば「mmap オフセット 0-M は オブジェクトAをあたえる、
+	  N-O はオブジェクト B をあたえる」等のように。</p>
+	
+	<p>これが終ると、mmap ルーチンは以下のように実装できます。
+	  </p>
+<pre class="programlisting">
+int
+foommap(dev_t dev, int off, int prot)
+{
+
+        if (off &amp; PAGE_MASK)
+                panic("foommap");
+
+        if ((u_int)off &gt;= FOO_REGION1_MMAP_OFFSET &amp;&amp;
+            (u_int)off &lt; (FOO_REGION1_MMAP_OFFSET + FOO_REGION1_SIZE))
+                return (atop(FOO_REGION1_ADDR + ((u_int)off -
+                    FOO_REGION1_MMAP_OFFSET)));
+
+        if ((u_int)off &gt;= FOO_REGION2_MMAP_OFFSET &amp;&amp;
+            (u_int)off &lt; (FOO_REGION2_MMAP_OFFSET + FOO_REGION2_SIZE))
+                return (atop(FOO_REGION1_ADDR + ((u_int)off -
+                    FOO_REGION2_MMAP_OFFSET)));
+
+        /* Page not found. */
+        return (-1);
+}</pre>
+
+	  <p>さて、実際には単純なカーネルメモリーオブジェクトを mmap するので、
+	    コードはもうすこし複雑になります(結局は仮想デバイスですから)。</p>
+	  
+	  <p>これを動作させるためには、アロケートしたメモリーオブジェクトをページ調整
+	    された境界に確実に mmap しなければなりません。もし、アロケートしたメモリー
+	    のサイズ &gt;= <code class="code">PAGE_SIZE</code> なら、これは保証されます。そうでなければ、
+	    <code class="code">uvm_km_alloc()</code> を使い、アロケーションサイズをページサイズに切りあげてください。</p>
+	  
+	  <p>若干の修正を加えると以下のようになります。
+	    </p>
+<pre class="programlisting">
+int
+foommap(dev_t dev, int off, int prot)
+{
+        paddr_t pa;
+
+        if (off &amp; PAGE_MASK)
+                panic("foommap: offset not page aligned");
+
+        if ((u_int)off &gt;= FOO_REGION1_MMAP_OFFSET &amp;&amp;
+            (u_int)off &lt; (FOO_REGION1_MMAP_OFFSET + FOO_REGION1_SIZE)) {
+                if ((vaddr_t)foo_object1 &amp; PAGE_MASK)
+                        panic("foommap: foo_object1 not page aligned");
+                if (pmap_extract(pmap_kernel(), foo_object1 +
+                    (u_int)off - FOO_REGION1_MMAP_OFFSET, &amp;pa) == FALSE)
+                        panic("foommap: foo_object1 page not mapped");
+                return (atop(pa));
+        }
+
+        if ((u_int)off &gt;= FOO_REGION2_MMAP_OFFSET &amp;&amp;
+            (u_int)off &lt; (FOO_REGION2_MMAP_OFFSET + FOO_REGION2_SIZE)) {
+                if ((vaddr_t)foo_object2 &amp; PAGE_MASK)
+                        panic("foommap: foo_object2 not page aligned");
+                if (pmap_extract(pmap_kernel(), foo_object2 +
+                    (u_int)off - FOO_REGION2_MMAP_OFFSET, &amp;pa) == FALSE)
+                        panic("foommap: foo_object2 page not mapped");
+                return (atop(pa));
+        }
+
+        /* Page not found. */
+        return (-1);
+}</pre>
+      
+	<h4 class="title">
+<a name="accessing_a_kernel_structure_from_userland"></a>ユーザーランドからカーネルの構造体へアクセスする (<a href="#misc">top</a>)
+  </h4>
+	
+	<p>良い例が  <code class="code">
+	    <a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/usr.bin/vmstat/dkstats.c?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">src/usr.bin/vmstat/dkstats.c</code></a></code>
+	  にあります。ここではディスクの統計情報を読んでいます。</p>
+      
+	<h4 class="title">
+<a name="sample_driver"></a>参考にできそうな簡単な PCI ドライバーはありませんか (<a href="#misc">top</a>)
+  </h4>
+	<p><code class="filename">sys/dev/pci/puc.c</code> を参考にしてください。これは、最も簡単なドライバーの
+	  ひとつです。PUC は、ひとつ以上のシリアル、パラレルポートを持つデバイス
+	  で、通常、標準的なチップを使用しています(例えば、シリアルの 16550 UART)。
+	  ドライバーは、単に シリアル、あるいはパラレルコントローラーのレジスター
+	  の I/O アドレスをさがし、それをシリアル、またはパラレルドライバーへ渡す
+	  だけです。</p> 
+      
+	<h4 class="title">
+<a name="other-related-links"></a>他の関連するリンク (<a href="#misc">top</a>)
+  </h4>
+	
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?driver+9+NetBSD-5.1+i386">driver(9)</a> - デバイスドライバーが利用する
+	    NetBSD の自動コンフィギュレーションのインターフェース</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?autoconf+9+NetBSD-5.1+i386">autoconf(9)</a> - NetBSD の自動コンフィギュレーションフレームワークについての
+	    全般的な説明</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?config+9+NetBSD-5.1+i386">config(9)</a> - 自動コンフィギュレーションフレームワークの
+	    「デバイス定義」言語</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?bus_dma+9+NetBSD-5.1+i386">bus_dma(9)</a> - NetBSD のバスとマシン独立な DMA フレームワーク、
+	    これに関する<a class="ulink" href="../../../docs/kernel/bus_dma.pdf" target="_top">論文</a> (64k, PDF)</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?bus_space+9+NetBSD-5.1+i386">bus_space(9)</a> - NetBSD
+	    のバススペースの操作のためのインターフェース</li>
+<li class="listitem">
+<a class="ulink" href="../../../docs/kernel/scsidma.html" target="_top">SCSI DMA
+	      はどのように動作するか</a> - Tohru Nishimura による</li>
+<li class="listitem">
+<a class="ulink" href="lazyfpu.html" target="_top">lazy FPU
+	      コンテキストスイッチはどのように動作するか</a> - Tohru Nishimura による</li>
+<li class="listitem"><a class="ulink" href="../../../docs/kernel/converting-ethernet-drivers.html" target="_top">昔の BSD のイーサネットドライバーの NetBSD-1.2D 以降への移植</a></li>
+<li class="listitem"><a class="ulink" href="porting-freebsd-net.html" target="_top">FreeBSD のネットワークドライバーを NetBSD に移植するためのメモ</a></li>
+</ul></div>
+      <hr>
+<em><a href="./">NetBSD ドキュメンテーション: カーネル</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

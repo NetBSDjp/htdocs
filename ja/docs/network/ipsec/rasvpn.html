@@ -1,0 +1,659 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+  
+
+  <title>Racoon を使ったリモートユーザーアクセス VPN の構築方法</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-network-ipsec-rasvpn"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>Racoon を使ったリモートユーザーアクセス VPN の構築方法</h1>
+<h3 class="title"><a name="version">ソフトウェアリリース</a></h3>
+<ul>
+<li><a href="#kernel">カーネル</a></li>
+<li><a href="#userland">ユーザーランド</a></li>
+</ul>
+<h3 class="title"><a name="remote-user-vpn">リモートユーザーアクセス VPN</a></h3>
+<ul>
+<li><a href="#context">背景となる状況</a></li>
+<li><a href="#security">セキュリティー上の問題</a></li>
+<li><a href="#solutions">解決策</a></li>
+</ul>
+<h3 class="title"><a name="remote-user-ipsec">IPsec を使ったユーザーリモートアクセス</a></h3>
+<ul>
+<li><a href="#ph1auth">IPsec フェーズ 1 認証</a></li>
+<li><a href="#xauth">Xauth</a></li>
+<li><a href="#hybrid">Hybrid auth</a></li>
+<li><a href="#mode_cfg">ISAKMP モード設定</a></li>
+<li><a href="#nat_t">NAT Traversal</a></li>
+<li><a href="#ike_frag">IKE フラグメンテーションおよび ESP フラグメンテーション</a></li>
+<li><a href="#dpd">Dead Peer Detection</a></li>
+</ul>
+<h3 class="title"><a name="vpn-gateway">VPN ゲートウェイの設定</a></h3>
+<ul>
+<li><a href="#kernel">カーネルコンフィギュレーション</a></li>
+<li><a href="#forw">パケットフォワーディング</a></li>
+<li><a href="#cert">証明書の作成</a></li>
+<li><a href="#config">racoon(8) の設定</a></li>
+<li><a href="#more_frag">さらなるフラグメンテーション問題</a></li>
+<li><a href="#firewall">ファイアウォールとの関係</a></li>
+<li><a href="#radius">VPN ゲートウェイと RADIUS </a></li>
+</ul>
+<h3 class="title"><a name="vpn-client">VPN クライアント</a></h3>
+<ul>
+<li><a href="#client">Cisco VPN client</a></li>
+<li><a href="#client_conf">クライアントとしての racoon(8) : 設定例</a></li>
+<li><a href="#connection">VPN との接続と切断</a></li>
+<li><a href="#save_pwd">Xauth パスワードの保存</a></li>
+</ul>
+<hr>
+<h3 class="title">ソフトウェアリリース</h3>
+      <h4 class="title">
+<a name="kernel"></a>カーネル (<a href="#version">top</a>)
+  </h4>
+      <p>この文書の情報は、以下の
+	NetBSD カーネルを対象としています。
+	</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">2005 年 5 月以降の NetBSD-current</li>
+<li class="listitem">2005 年 5 月以降の NetBSD-3.0_BETA</li>
+</ul></div>
+<p>
+      </p>
+    
+      <h4 class="title">
+<a name="userland"></a>ユーザーランド (<a href="#version">top</a>)
+  </h4>
+      <p>この文書の情報は、以下のユーザーランド
+	(<a href="http://netbsd.gw.com/cgi-bin/man-cgi?setkey+8+NetBSD-5.1+i386">setkey(8)</a>, <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a>, <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoonctl+8+NetBSD-5.1+i386">racoonctl(8)</a> および
+	libipsec) を対象としています。
+	</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">2005 年 5 月以降の NetBSD-current</li>
+<li class="listitem">2005 年 5 月以降の NetBSD-3.0_BETA</li>
+<li class="listitem">これより前の NetBSD リリースに、NetBSD の pkgsrc を使って
+	    ipsec-tools 0.6.beta2 以上のパッケージを追加したもの</li>
+</ul></div>
+<p>
+      </p>
+    <hr>
+<h3 class="title">リモートユーザーアクセス VPN</h3>
+      <h4 class="title">
+<a name="context"></a>背景となる状況 (<a href="#remote-user-vpn">top</a>)
+  </h4>
+    
+      <p>多くの組織では、リモートアクセスサーバー (Remote Access Server, RAS)
+	を持っており、ユーザーが旧来の公衆電話回線 (Plain Old Telephone System, POTS)
+	とモデム接続を使ってリモートアクセスできるようにしています。</p>
+      
+      <p>デジタル加入者回線 (Digital Subscriber Line, DSL) やケーブル回線といった
+	高帯域接続の普及に伴い、POTS を使ったリモートアクセスは時代遅れとなり、
+	ユーザーは高帯域のリモートアクセスを求めるようになっています。
+	仮想プライベートネットワーク (Virtual Private Network, VPN) を使うことは、
+	この問題に対する解決策のひとつです。</p>
+
+      <p>VPN アクセス用のユーザー認証としては、いくつかの方法があります。
+	</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">グループパスワード (ユーザー全員が同じパスワードを使う)</li>
+<li class="listitem">ログイン名とパスワード</li>
+<li class="listitem">x509 証明書</li>
+</ul></div>
+<p>
+      </p>
+
+      <p>グループパスワードは劣った手法であり、使うべきではありません。
+	ユーザーを本当に認証しているわけではないからです。
+	x509 証明書は最高のセキュリティーをもたらしますが、ユーザー証明書の管理が面倒かもしれません。
+	それでも構わなければ、必要な情報は <a class="ulink" href="index.html" target="_top">IPsec FAQ</a>
+	にすべてあります。ログイン名とパスワードは、並のセキュリティーレベルです。
+	パスワードは推測されたり、別のプロトコルで公開されたり (例: SSL を使わない POP3)
+	するので、安全性は高くはありません。しかし、強いパスワードを使うようにし、
+	また、傍受されないようなプロトコルの使い方をしていれば、
+	経済的に安全を実現できます。</p>
+
+      <p>この HOW-TO では、リモートユーザー VPN アクセス用に
+	ログイン名とパスワードが使われている状況を対象とします。</p>
+    
+      <h4 class="title">
+<a name="security"></a>セキュリティー上の問題 (<a href="#remote-user-vpn">top</a>)
+  </h4>
+      
+      <p>安全な VPN を確立するために、リモートユーザーは VPN ゲートウェイを認証しなければならず、
+	また、VPN ゲートウェイはリモートユーザーを認証しなければなりません。
+	お互いの認証がおこなわれないと、中間者攻撃 (Man in the Middle (MiM) attack)
+	の抜け穴が開き、攻撃者が VPN ゲートウェイになりすまして
+	ユーザーパスワードを収集できてしまいます。</p>
+      
+      <p>リモートユーザーがログイン名とパスワードで認証すると説明しましたが、
+	VPN ゲートウェイはどうやって認証するのでしょうか? 事前共有鍵を使う場合、
+	その鍵を知っている人なら誰でも VPN ゲートウェイになりすますことができますし、
+	正当なユーザーは事前共有鍵を知っておかねばならなくなります。これは非常に弱いセキュリティーです。
+	代替策は、VPN ゲートウェイで x509 証明書を使うことです。これはサーバー証明書であり、
+	ユーザー証明書より管理しやすいものです。ここでは、
+	VPN ゲートウェイの認証に証明書を使うものとします。</p>
+    
+      <h4 class="title">
+<a name="solutions"></a>解決策 (<a href="#remote-user-vpn">top</a>)
+  </h4>
+
+      <p>ここでは、ユーザーの認証にはログイン名とパスワードを使い、
+	VPN ゲートウェイの認証には証明書を使うことが必要です。これを実現できる手法はあまりありません。
+	<a class="ulink" href="http://www.openvpn.org" target="_top">OpenVPN</a> は、これが実現可能な、
+	Secure Socket Layer (SSL) を使った解決策です。別の解決策として、 IPsec を使う方法もあり、
+	この HOW-TO ではこちらの方法を取り扱います。</p>
+    <hr>
+<h3 class="title">IPsec を使ったユーザーリモートアクセス</h3>
+      <h4 class="title">
+<a name="ph1auth"></a>IPsec フェーズ 1 認証 (<a href="#remote-user-ipsec">top</a>)
+  </h4>
+      
+      <p>IPsec フェーズ 1 は、NetBSD では <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> としても知られる IKE デーモンによって行なわれる、
+	IPsec 鍵交換 (IPsec Key Exchange, IKE) 操作の一部です。IPsec フェーズ 1 の目的は、
+	通信相手を認証したうえで、 IPsec フェーズ 2 を安全に行なうためのマスター鍵の設定をすることです。
+	フェーズ 2 の目的は、IPsec トラフィック交換に使われる鍵を得ることです。
+	IPsec トラフィック交換がおこなわれている間、フェーズ 2 の鍵は定期的に再生成されます。</p>
+
+      <p>IPsec フェーズ 1 は、二つの認証方法を提供します。事前共有鍵と、証明書です。
+	以下の理由により、IPsec フェーズ 1 はわれわれが求めているものではありません。
+	</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">事前共有鍵は、ログイン名に縛られません。グループパスワードとした場合だけは管理可能ですが、
+	    それを除けば、事前共有鍵を適切に扱うための管理ツールがありません。</li>
+<li class="listitem">IPsec フェーズ 1 認証は、対称的であることが前提です。
+	    つまり、両端ともに事前共有鍵認証を、または両端ともに証明書認証を使う、というものです。
+	    これは、われわれが探しているものではありません。</li>
+</ul></div>
+<p>
+      </p>
+    
+      <h4 class="title">
+<a name="xauth"></a>Xauth (<a href="#remote-user-ipsec">top</a>)
+  </h4>
+
+      <p>Xauth は、フェーズ 1 の後に使われ、ログイン名/パスワード認証を追加する IKE 拡張です。
+	これは、認証にまつわる問題の半分を解決します。Xauth はフェーズ 1 の直後に使われるので、
+	フェーズ 1 認証により安全なものとなります。問題の半分は解決しましたが、まだ
+	フェーズ 1 では事前共有鍵か証明書が必要です。事前共有鍵の使用は安全ではありませんし、
+	証明書を使うことは、ユーザー証明書を使うことを意味します。
+	ユーザー証明書の使用はわれわれが避けたかったことです。</p>
+    
+      <h4 class="title">
+<a name="hybrid"></a>Hybrid auth (<a href="#remote-user-ipsec">top</a>)
+  </h4>
+
+      <p>Hybrid auth はもうひとつの IKE 拡張で、フェーズ 1 を非対称にするものです。
+        フェーズ 1 の行なわれている間、VPN ゲートウェイは、リモートユーザーが認証をする必要がなくても、
+        証明書を使うことができます。フェーズ 1 が行なわれた後の状況は、以下のとおりです。
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">リモートユーザーは、通信相手が VPN ゲートウェイであることがわかっています</li>
+<li class="listitem">リモートユーザーと VPN ゲートウェイとの間のやりとりは安全です</li>
+<li class="listitem">VPN ゲートウェイは、話している相手が誰かわかっていません</li>
+</ul></div>
+<p>
+      </p>
+
+      <p>このフェーズ 1 の後、リモートユーザーのセキュリティー認証のために Xauth 交換をすることができます。
+        その後、フェーズ 2 がおこなわれます。</p>
+
+      <p>IPsec + Xauth + Hybrid auth のセキュリティーの度合は、
+        パスワード認証を使った SSH とだいたい同じぐらいです。</p>
+    
+      <h4 class="title">
+<a name="mode_cfg"></a>ISAKMP モード設定 (<a href="#remote-user-ipsec">top</a>)
+  </h4>
+
+      <p>以上のとおり、認証の問題は IPsec + Xauth + Hybrid auth を使うことで解決されました。
+	リモートアクセスをユーザーフレンドリーなものにするために、
+	リモートユーザーのマシン設定を自動化する必要があります。ISAKMP モード設定は、
+	VPN ゲートウェイがリモートユーザーのマシンにネットワーク設定 (内部 IP アドレス、
+	DNS アドレス、ドメイン名など) を提供できるようにする IKE 拡張です。</p>
+    
+      <h4 class="title">
+<a name="nat_t"></a>NAT Traversal (<a href="#remote-user-ipsec">top</a>)
+  </h4>
+
+      <p>リモートユーザーは、IPsec 暗号化ストリームを使った場合には機能しない、
+	ネットワークアドレス変換器 (Network Address Translator, NAT) の向こうにいるかもしれません。
+	トラフィックを暗号化する必要があるときは、IPsec は、暗号ペイロード (Encapsulated Security Payload, ESP)
+	というレイヤー 4 のプロトコルを使用します。TCP や UDP とは異なり、ESP
+	はポート番号を持たず、 NAT デバイスが簡単に扱うことはできません。</p>
+
+      <p>RFC 3947 および 3948 では、ESP を UDP でカプセル化する方法と、
+	IPsec ストリームの両端の間にある NAT を管理するための IKE 拡張について解説しています。
+	このカプセル化の方法と IKE 拡張の組み合わせは、NAT Traversal (NAT-T)
+	として知られています。</p>
+
+      <p>NAT-T は、合衆国特許の<a class="ulink" href="https://datatracker.ietf.org/public/ipr_detail_show.cgi?&amp;ipr_id=78" target="_top">制約を受けることになるかもしれません</a>。</p>
+    
+      <h4 class="title">
+<a name="ike_frag"></a>IKE フラグメンテーションおよび ESP フラグメンテーション (<a href="#remote-user-ipsec">top</a>)
+  </h4>
+
+      <p>リモートユーザーが DSL モデムルーター機器を介して接続してくるのは、よくあることでしょう。
+	これらのデバイスのほとんどは、大きな UDP パケットの扱いに関して、まったく用をなしません。
+	UDP が DNS リクエストでしか使われないという想定で作られており、それより大きな
+	UDP パケットやフラグメントされた UDP パケットはこぼしてしまいます。
+	IKE トランザクションや ESP オーバー UDP は大きくなりがちなので、
+	ブロックされてしまいます。</p>
+
+      <p>この問題を処理するため、IKE パケットを小さな断片に分割 IKE 拡張である、
+	IKE フラグメンテーションを使います。
+	ESP フラグメンテーションは、大きな ESP オーバー UDP パケットの問題を、
+	ESP のカプセル化の前に IP フラグメンテーションをすることによって、処理します。
+	すなわち、ネットワークに frag(IP/UDP/ESP/IP) を送るのではなく IP/UDP/ESP/frag(IP) を送るのです。
+	このため、IPsec 両端点の間にはさまれたデバイスは、
+	いかなるフラグメントされたパケットも認識しません。</p>
+    
+      <h4 class="title">
+<a name="dpd"></a>Dead Peer Detection (<a href="#remote-user-ipsec">top</a>)
+  </h4>
+
+      <p>最後の問題です。リモートユーザーのインターネット接続が不安定で、
+	あたかも接続が切れたかのようになることがあります。これに対して、
+	IPsec に内蔵されている仕組みは、しばらく後に IKE phase 2 鍵再生成を強制的に行なうことだけです。
+	その時に通信相手がオンラインでなかったら、これは失敗し、その結果 VPN トンネルは破棄されます。</p>
+
+      <p>この仕組みは、リモートユーザーがオフラインになったことを確認するため頻繁に鍵再生成を強制されるので、
+	あまり便利ではありません。Dead Peer Detection (DPD) は、リモートの IPsec 端点が生きていることを
+	定期的に確認するのに使われる IKE 拡張です。
+	DPD は、リモートホストが数秒間オフラインになったことを確認するのに使うことができます。</p>
+    <hr>
+<h3 class="title">VPN ゲートウェイの設定</h3>
+      <h4 class="title">
+<a name="kernel"></a>カーネルコンフィギュレーション (<a href="#vpn-gateway">top</a>)
+  </h4>
+
+      <p>最初に、少なくとも以下のオプションを含めた<a class="ulink" href="../../kernel/#how_to_build_a_kernel" target="_top">カーネルを
+	  構築してインストール</a>する必要があります。</p>
+      <pre class="programlisting">options INET
+options GATEWAY
+options PFIL_HOOKS
+options IPSEC
+options IPSEC_ESP
+options IPSEC_NAT_T
+
+pseudo-device   ipfilter</pre>
+    
+      <h4 class="title">
+<a name="forw"></a>パケットフォワーディング (<a href="#vpn-gateway">top</a>)
+  </h4>
+
+      <p>以下のコマンドを使って、IPv4 パケットフォワーディングを有効化する必要があります。
+	</p>
+<pre class="programlisting"># sysctl -w net.inet.ip.forwarding=1</pre>
+<p>
+	<code class="filename">/etc/sysctl.conf</code> に以下の行を追加して、
+	リブート時に自動的に実行することができます。
+	</p>
+<pre class="programlisting">net.inet.ip.forwarding=1</pre>
+    
+      <h4 class="title">
+<a name="cert"></a>証明書の作成 (<a href="#vpn-gateway">top</a>)
+  </h4>
+
+      <p>OpenSSL の設定をまだ行なっていない場合は、設定ファイルのサンプルのインストールから始めてください。
+	</p>
+<pre class="programlisting"># cp /usr/share/examples/openssl/openssl.cnf /etc/openssl/</pre>
+<p>
+	設定ファイルの用意ができたら、秘密鍵を作り、その鍵を使って証明書署名要求 (Certificate Signing 
+	Request, CSR) を作ります。
+	</p>
+<pre class="programlisting"># cd /etc/openssl
+# umask 077
+# openssl genrsa &gt; certs/vpngw.key
+# umask 022
+# openssl req -new -key certs/vpngw.key -out certs/vpngw.csr</pre>
+<p>
+	この CSR (<code class="filename">vpngw.csr</code>) を認証局へ送って、署名をしてもらいます。
+	これで x509 証明書が交付されます。この証明書を <code class="filename">vpngw.crt</code>
+	という名前にすることにします。</p>
+
+      <p>自分自身が認証局となりたい場合は、以下の手順で
+	CA 秘密鍵の生成と署名をおこないます。
+	</p>
+<pre class="programlisting"># cd /etc/openssl
+# mkdir -p demoCA/newcerts
+# touch demoCA/index.txt
+# echo "00" &gt; demoCA/serial
+# umask 077
+# openssl genrsa &gt; certs/ca.key
+# umask 022
+# openssl req -days 3650 -x509 -key certs/ca.key -new &gt; certs/ca.crt
+# openssl ca -in certs/vpngw.csr -keyfile certs/ca.key -cert certs/ca.crt -out certs/vpngw.crt</pre>
+
+      <p>秘密鍵が漏れると、 VPN はもう安全ではなくなってしまうので、
+	秘密鍵は秘密にするようにしてください。CA 証明書 <code class="filename">ca.crt</code>
+	をリモートユーザーに渡して、次の手順に進んでください。</p>
+    
+      <h4 class="title">
+<a name="config"></a><a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> の設定 (<a href="#vpn-gateway">top</a>)
+  </h4>
+
+      <p>以下に <code class="filename">/etc/racoon/racoon.conf</code> ファイルの例を示します。
+	</p>
+<pre class="programlisting">path certificate "/etc/openssl/certs";
+
+listen {
+        adminsock disabled;
+}
+
+remote anonymous {
+        exchange_mode aggressive;
+        certificate_type x509 "vpngw.crt" "vpngw.key";
+        my_identifier asn1dn;
+        proposal_check claim;
+        generate_policy on;		# IPsec ポリシーを自動生成する
+	dpd_delay 20;			# 20 秒毎に、 DPD ポーリングする
+        nat_traversal force;		# NAT-T を常に使う
+        ike_frag on;			# IKE フラグメンテーションを使う
+        esp_frag 552;			# ESP フラグメンテーションを使う
+        proposal {
+                encryption_algorithm aes;
+                hash_algorithm sha1;
+                authentication_method hybrid_rsa_server;
+                dh_group 2;
+        }
+}
+mode_cfg {
+        network4 10.99.99.1;		# VPN 用 IPv4 アドレス在庫の先頭のアドレス
+        pool_size 253;			# VPN 用 IP アドレス在庫のサイズ: 253 アドレス
+        auth_source system;		# /etc/passwd をもとにログインを検証する
+        dns4 10.0.12.1;			# IPv4 DNS サーバー
+        wins4 10.0.12.1;		# IPv4 WINS サーバー
+        banner "/etc/racoon/motd";	# クライアントに対するバナーメッセージ
+	pfs_group 2;
+}
+
+sainfo anonymous {
+	pfs_group 2;
+        lifetime time 1 hour;
+        encryption_algorithm aes;
+        authentication_algorithm hmac_sha1;
+        compression_algorithm deflate;
+}</pre>
+
+      <p><code class="code">mode_cfg</code> セクションで、ISAKMP モード設定を使って
+	VPN ゲートウェイからクライアントへ送られる設定を定義しています。
+	現在のところ、IPv4 の設定だけに対応しています。
+	このセクションで、払い出す VPN アドレスの在庫を、先頭のアドレス (<code class="code">network4</code>)
+	と在庫のサイズ (<code class="code">pool_size</code>) により定義しています。<code class="code">auth_source</code>
+	は、ログイン名とパスワードをどうやって検証するかを表します。ここで指定できる値は、
+	システムユーザーデータベースをもとに検証する <code class="code">system</code>、Pluggable Authentication Module (PAM)
+	システム (<code class="filename">/etc/pam.d/racoon</code> が使われます) を使う <code class="code">pam</code>、
+	RADIUS をもとにログインを検証する <code class="code">radius</code> です。</p>
+
+      <p><code class="filename">/etc/racoon/racoon.conf</code> ファイルの準備ができれば、
+	<a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> を実行することができます。
+	</p>
+<pre class="programlisting"># racoon</pre>
+
+      <p>ブート時に <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> を起動するためには、
+	<code class="filename">/etc/rc.conf</code> に以下のように書きます。
+	</p>
+<pre class="programlisting">racoon=YES</pre>
+    
+      <h4 class="title">
+<a name="more_frag"></a>さらなるフラグメンテーション問題 (<a href="#vpn-gateway">top</a>)
+  </h4>
+
+      <p>この設定例では、ESP フラグメンテーションを使って、送出するパケットが
+	552 バイトより大きくならないような <code class="code">esp_frag</code> の指定をしています。
+	552 バイトは非常に小さいですが、これなら最もひどい DSL モデムルーター機器でも使えるはずです。
+	<code class="code">esp_frag</code> を大きくすれば、性能が向上します。</p>
+
+      <p>ESP フラグメンテーションを使えば、どんなサイズの IP パケットでもトンネル経由で交換可能です。
+	しかし、TCP には特別な場合があり、Path Maximum Transmission Unit (PMTU)
+	探索にまつわる問題が起きるかもしれません。これに対する解決策は、
+	最大セグメント長 (Maximum Segment Size, MSS)
+	の調節を使うことです。払い出し用の VPN 内部アドレスの範囲が 10.99.99.0/24 であるとすると、
+	<code class="filename">/etc/ipnat.conf</code> に以下のように書けばよいです。
+	</p>
+<pre class="programlisting">map ex0 10.99.99.0/24 -&gt; 0/0 mssclamp 512</pre>
+<p>
+	この設定を有効にするために、以下のようにタイプします。
+	</p>
+<pre class="programlisting"># ipf -E; ipnat -f /etc/ipnat.conf</pre>
+<p>
+	起動時にこのコマンドを実行するには、
+	<code class="filename">/etc/rc.conf</code> に以下のように書きます。
+	</p>
+<pre class="programlisting">ipfilter=YES
+ipnat=YES</pre>
+<p>
+	
+	注意: <code class="filename">/etc/ipf.conf</code> ファイルがない場合は、<code class="code">ipfilter=YES</code>
+	とするとシステムが起動しません。 IP フィルタリングが一切必要ない場合は、
+	空のファイルを作っておけばよいです。</p>
+    
+      <h4 class="title">
+<a name="firewall"></a>ファイアウォールとの関係 (<a href="#vpn-gateway">top</a>)
+  </h4>
+
+      <p>この VPN の手法では、クライアントは VPN ゲートウェイの 500 番ポートと 4500 番ポートへ
+	UDP パケットを送る必要があります。最初のパケットは 500 番ポートで交換され、
+	それから NAT-T 交渉で 4500 番ポートにトランザクションが移ります。</p>
+
+      <p>VPN ゲートウェイの前に立つファイアウォールは、
+	VPN ゲートウェイ宛の udp/500 と udp/4500 を通すように設定する必要があります。</p>
+    
+      <h4 class="title">
+<a name="radius"></a>VPN ゲートウェイと RADIUS  (<a href="#vpn-gateway">top</a>)
+  </h4>
+
+      <p>RADIUS は、ログインの検証、IP アドレスの割り当てと、
+	アカウンティングに使うことができます。以下に示すのは、
+	<code class="filename">/etc/racoon/racoon.conf</code> ファイルの <code class="code">mode_cfg</code> セクションで、
+	RADIUS を使うようにするための例です。
+	</p>
+<pre class="programlisting">mode_cfg {
+	pool_size 253;			# IPv4 アドレス在庫のサイズ
+	auth_source radius;		# RADIUS をもとにログインを検証する
+	conf_source radius;		# RADIUS で IPv4 アドレスを割り当てる
+	accounting radius;		# RADIUS アカウンティング
+        dns4 10.0.12.1;			# IPv4 DNS サーバー
+        wins4 10.0.12.1;		# IPv4 WINS サーバー
+        banner "/etc/racoon/motd";	# クライアントに対するバナーメッセージ
+	pfs_group 2;
+}</pre>
+
+      <p>この設定のほか、RADIUS サーバーのアドレスと RADIUS サーバーとの共有鍵を含んだ
+	<code class="filename">/etc/radius.conf</code> ファイルを作る必要があります。
+	このファイルは、共有鍵を安全に保つために、
+	root の所有としてパーミッションを 0600 にしなければなりません。
+	以下に例を示します。詳細は <a href="http://netbsd.gw.com/cgi-bin/man-cgi?radius.conf+5+NetBSD-5.1+i386">radius.conf(5)</a> をご覧ください。
+	</p>
+<pre class="programlisting">auth radius.example.net MyDirtySecret
+acct radius.example.net MyDirtySecret</pre>
+    <hr>
+<h3 class="title">VPN クライアント</h3>
+      <h4 class="title">
+<a name="client"></a>Cisco VPN client (<a href="#vpn-client">top</a>)
+  </h4>
+
+      <p>前章で説明したような設定をした VPN ゲートウェイは、相互グループ認証 (mutual group authentication;
+	Hybrid authentication と同義) の設定をした Cisco VPN Client と相互運用することができます。
+	Cisco VPN クライアントが要求するグループおよびグループパスワードを、
+	<a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> は無視しますが、これによってユーザー認証が安全でなくなることはありません。</p>
+
+      <p>NAT-T が有効になるよう、クライアントに
+	IPsec オーバー UDP トランスポートの設定をすることを忘れないでください。</p>
+    
+      <h4 class="title">
+<a name="client_conf"></a>クライアントとしての <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> : 設定例 (<a href="#vpn-client">top</a>)
+  </h4>
+
+      <p><a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> はクライアントとして使うことができます。
+	CA 証明書を <code class="filename">/etc/openssl/certs/ca.crt</code> にインストールし、
+	<code class="filename">/etc/racoon/racoon.conf</code> を以下のように設定する必要があります。
+	</p>
+<pre class="programlisting">path certificate "/etc/openssl/certs";
+path pre_shared_key "/etc/racoon/psk.txt";
+
+listen {
+	# racoon と racoonctl との間で使うソケット
+        adminsock "/var/racoon/racoon.sock" "root" "operator" 0660;
+}
+
+# Here is the address of the VPN gateway
+remote 192.0.2.50 {
+        exchange_mode aggressive;
+        ca_type x509 "ca.crt";
+        proposal_check obey;
+        mode_cfg on;		# ISAKMP モード設定による設定を受け入れる
+	dpd_delay 20;
+        nat_traversal force;
+        ike_frag on;
+        esp_frag 552;
+        script "/etc/racoon/phase1-up.sh" phase1_up;
+        script "/etc/racoon/phase1-down.sh" phase1_down;
+        passive off;
+        proposal {
+                encryption_algorithm aes;
+                hash_algorithm sha1;
+                authentication_method hybrid_rsa_client;
+                dh_group 2;
+       }
+}
+
+
+sainfo anonymous {
+        lifetime time 1 hour;
+        encryption_algorithm aes;
+        authentication_algorithm hmac_sha1;
+        compression_algorithm deflate ;
+}</pre>
+
+      <p>二つのスクリプト <code class="filename">phase1-up.sh</code> と <code class="filename">phase1-down.sh</code> は、
+	それぞれ IKE phase 1 の確立時と終了時、つまり VPN 接続時と切断時に呼ばれます。
+	このスクリプトは IPsec Security Policies (SP), VPN IP アドレス、
+	ルーティングエントリーの設定と消去を受け持っています。
+	サンプルスクリプトのままでも必要なことはできるはずですが、
+	各自の必要に応じてカスタマイズすることもできます。
+	</p>
+<pre class="programlisting"># cp /usr/share/examples/racoon/roadwarrior/client/*.sh /etc/racoon/</pre>
+
+      <p>この準備ができれば、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> を起動できます。
+	</p>
+<pre class="programlisting"># racoon</pre>
+<p>
+	ブート時に <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> を起動するには、<code class="filename">/etc/rc.conf</code> に
+	<code class="code">racoon=YES</code> を書き加えます。</p>
+    
+      <h4 class="title">
+<a name="connection"></a>VPN との接続と切断 (<a href="#vpn-client">top</a>)
+  </h4>
+
+      <p>racoonctl(8) は、VPN への接続や VPN からの切断に使うことができます。
+	ログイン名を <code class="code">-u</code> オプションで指定します。
+	パスワードは端末上で入力を促されます。
+	</p>
+<pre class="programlisting">$ racoonctl vc -u username 192.0.2.50
+Password: password
+Bound to address 10.99.99.3
+==========================================================
+                     Flying pigs LTD
+
+ Welcome to our internal network, remote user.
+==========================================================
+$ racoonctl vd 192.0.2.50
+VPN connection terminated</pre>
+<p>
+	この例では IP アドレスを使っていますが、DNS アドレスを使うこともできます。
+	注意: 何らかの理由で、ルーティングエントリーかセキュリティーポリシーデータベース
+	(Security Policy Database, SPD) にねじれが起きると、
+	VPN の切断時に DNS 名前解決ができなくなります。
+	この場合は、root で以下のコマンドを使って復旧できます。
+	</p>
+<pre class="programlisting"># setkey -F
+# setkey -FP
+# route flush
+# route add default your_default_gateway</pre>
+
+      <p><a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> ソケット <code class="filename">/var/racoon/racoon.sock</code> への読み書き権限がある人なら、
+	誰でも VPN の起動や停止をすることができます。
+	このソケットの所有者とアクセス権限は、<code class="filename">/etc/racoon/racoon.conf</code> の
+	<code class="code">listen</code> セクションで、<code class="code">adminsock</code> ステートメントを使って設定できます。</p>
+    
+      <h4 class="title">
+<a name="save_pwd"></a>Xauth パスワードの保存 (<a href="#vpn-client">top</a>)
+  </h4>
+
+      <p>Xauth パスワードの入力を省略したい場合、このパスワードを racoon の事前共有鍵 (PSK)
+	ファイルに保持することができます。<code class="filename">/etc/racoon/racoon.conf</code> の
+	<code class="code">remote</code> セクションに、以下の記述を追加します。
+	</p>
+<pre class="programlisting">xauth_login "username";</pre>
+
+      <p>そして、 <code class="filename">/etc/racoon/psk.txt</code> に、
+	ログイン名とパスワードを一行で書き足します。
+	</p>
+<pre class="programlisting">username	password</pre>
+
+      <p>以上の設定をしておけば、以下のコマンドは、パスワードの入力を求めることなく、
+	<code class="code">toto</code> ログインを使って VPN 接続を確立します。
+	</p>
+<pre class="programlisting">$ racoonctl vc 192.0.2.50</pre>
+    <hr>
+<em><a href="./">NetBSD ドキュメンテーション: NetBSD IPSec</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

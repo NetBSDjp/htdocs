@@ -1,0 +1,421 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+
+
+<title>NetBSD CVS HOWTO</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-developers-cvs-repos-cvs_intro"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD CVS HOWTO</h1>
+<h3 class="title"><a name="">導入と目的</a></h3>
+<ul><li><a href="#intro">CVSとは何か?</a></li></ul>
+<h3 class="title"><a name="getting-started">始めよう</a></h3>
+<ul>
+<li><a href="#install-cvs">CVSのインストール</a></li>
+<li><a href="#configure-environment">CVS用の環境設定</a></li>
+<li><a href="#sourcedir">CVSの作業用ディレクトリーを作る</a></li>
+</ul>
+<h3 class="title"><a name="using">CVSを使う</a></h3>
+<ul>
+<li><a href="#example">例</a></li>
+<li><a href="#modules">CVS モジュール</a></li>
+<li><a href="#importing">新しいパッケージのインポート</a></li>
+</ul>
+<h3 class="title"><a name="other-ops">その他役に立つCVSの操作</a></h3>
+<ul><li><a href="#output">CVS 出力</a></li></ul>
+<h3 class="title"><a name="references">他の情報源</a></h3>
+<ul>
+<li><a href="#ref-netbsd">NetBSD 特有</a></li>
+<li><a href="#ref-cvs">CVS 特有</a></li>
+</ul>
+<hr>
+<h3 class="title">導入と目的</h3>
+      <h4 class="title">
+<a name="intro"></a>CVSとは何か? (<a href="#">top</a>)
+  </h4>
+      
+      <p>
+	<acronym class="acronym">CVS</acronym> とは<em class="firstterm">Concurrent Versions System</em> (協調バージョンシステム) の略です。
+	CVSは同一ファイルで作業する複数の開発者によるソースの変更を追跡しつづける
+	ように設計されている<em class="firstterm">ソースコントロール</em>あるいは<em class="firstterm">リビジョンコントロール</em>
+	ツールです。開発者が選択したように同期をとりつづけることが
+	できます。特に、CVSは<a class="ulink" href="../../index.html" target="_top">NetBSDプロジェクト</a>では
+	ソースツリーを維持するツールとして使われています。
+      </p>
+      <p>
+	重要なのは、CVSの<span class="emphasis"><em>協調</em></span>機能のおかげで複数の人々が同時に作業できる
+	ことに注目することです。RCSとは違いファイルのロックはありません。
+      </p>
+    <hr>
+<h3 class="title">始めよう</h3>
+      <h4 class="title">
+<a name="install-cvs"></a>CVSのインストール (<a href="#getting-started">top</a>)
+  </h4>
+      <p>
+	ローカルマシンにCVSをインストールする必要があります。
+	全ての作業を行うマシンであって、CVSのサーバーではありません。
+	マシンにCVSがすでにインストールされていなければ、
+	<a class="ulink" href="../../docs/software/packages.html" target="_top">パッケージコレクション</a>
+	から
+	<a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/devel/scmcvs/README.html" target="_top">CVS</a>
+	をインストールして下さい。
+      </p>
+    
+      <h4 class="title">
+<a name="configure-environment"></a>CVS用の環境設定 (<a href="#getting-started">top</a>)
+  </h4>
+      <p>
+	CVSを使う予定であるローカルマシンで、シェルに<span class="command"><strong>csh</strong></span> か
+	<span class="command"><strong>tcsh</strong></span>を使っていれば、<code class="filename">.cshrc</code>ファイルに
+	以下の行を付け加えて下さい。
+      </p>
+
+<pre class="programlisting">
+setenv CVSEDITOR vi
+setenv CVSROOT yourusername@cvs.NetBSD.org:/cvsroot
+setenv CVS_RSH ssh
+</pre>
+
+      <p>
+	もし<span class="command"><strong>sh</strong></span> か <span class="command"><strong>bash</strong></span>をお使いでしたら、
+	<code class="filename">.profile</code>ファイルに以下の行を付け加えて下さい。
+      </p>
+
+<pre class="programlisting">
+CVSEDITOR=vi
+CVSROOT=yourusername@cvs.NetBSD.org:/cvsroot
+CVS_RSH=ssh
+export CVSEDITOR
+export CVSROOT
+export CVS_RSH
+</pre>
+    
+      <h4 class="title">
+<a name="sourcedir"></a>CVSの作業用ディレクトリーを作る (<a href="#getting-started">top</a>)
+  </h4>
+      <p>
+	私は自分のマシン上に<code class="filename">/usr/cvs</code> にCVS関連のものを
+	全て置いていますが、これは人の好みによります。
+	このドキュメントの残りではマシンに<code class="filename">/usr/cvs</code> ディレクトリーを
+	作ったものとします。もう一度繰り返しますが、これはローカルマシンであって、
+	CVSサーバーではありません。
+      </p>
+    <hr>
+<h3 class="title">CVSを使う</h3>
+      <h4 class="title">
+<a name="example"></a>例 (<a href="#using">top</a>)
+  </h4>
+      <p>
+	この章では空の<code class="filename">/usr/cvs</code> ディレクトリーから始め、
+	<code class="filename">htdocs/people/</code> モジュールを追加し、変更を加えてコミットする方法を示します。
+	基本的なステップは以下の通り:
+      </p>
+
+<pre class="programlisting">
+cd /usr/cvs
+cvs checkout htdocs/people
+cd htdocs/people
+vi developers.xml
+make
+cvs ci developers.xml developers.html
+</pre>
+
+      <p>
+	これらのステップを以下により詳しく説明します。
+      </p>
+
+<pre class="programlisting">
+cvs checkout htdocs/people
+</pre>
+
+      <p>
+	このコマンドで、CVSが
+	<code class="filename">htdocs/people</code>
+	というディレクトリーをローカルマシンにチェックアウトします。
+	これは <code class="filename">htdocs/people</code> 以下にある各ファイルの最新バージョンが
+	CVSサーバーからローカルマシンへコピーされることを意味します。
+	加えて、
+	<code class="filename">CVS</code> ディレクトリーが
+	<code class="filename">/usr/cvs</code>,
+	<code class="filename">/usr/cvs/htdocs</code>,
+	<code class="filename">/usr/cvs/htdocs/people</code>
+	の中に作られます。重要なので覚えておいて欲しいのは、CVSのチェックアウトは
+	RCSにあるチェックアウトとは違い、ファイルをロックしません。
+	つまり、他の開発者がチェックアウトされたファイルにもアクセスできるのです。
+      </p>
+      <p>
+	一度ディレクトリーをローカルマシンにチェックアウトしたら、
+	このディレクトリー用に再び<span class="command"><strong>cvs co</strong></span>、つまり
+	<span class="command"><strong>cvs checkout</strong></span>
+	をする必要はありません。もし以前チェックアウトしたディレクトリーを最新のバージョンへ
+	アップデートしたければ、例えば単純に
+	<strong class="userinput"><code>cvs update htdocs/people</code></strong>
+	とすればよいです。
+      </p>
+      <p>
+	ディレクトリーをチェックアウト (以前に目的のモジュールをチェックアウト
+	していれば、アップデート) したら、次はファイルを編集します。
+	編集が全て完了したら、以下のようにします:
+      </p>
+
+<pre class="programlisting">
+  make
+</pre>
+
+      <p>
+	こうすると、 <code class="filename">developers.xml</code> ファイルをもとに
+	<code class="filename">developers.html</code> ファイルが作り直されます。それから以下のようにします:
+      </p>
+<pre class="programlisting">
+cvs ci developers.xml developers.html
+</pre>
+      <p>
+	このコマンドは新しいバージョンを反映するため、
+	CVSサーバーに変更部分をアップロードし、各ファイルのRCSヘッダーをアップデートします。
+	変更をチェックイン (コミット) したら、変更に関して短く書き記すように促されるでしょう。
+      </p>
+      <p>
+	ただし、ソースツリー内での新しい項目の追加とファイル再生成は、
+	普通はそれぞれ別に commit します。
+      </p>
+    
+      <h4 class="title">
+<a name="modules"></a>CVS モジュール (<a href="#using">top</a>)
+  </h4>
+      <p>
+	CVSでは、モジュールとは一つのファイルや複数のファイルがあるディレクトリーを
+	指すこともありますし、ディレクトリーツリーの全体を指すこともあります。
+	<a class="ulink" href="modules.html" target="_top">NetBSD
+	のトップレベルCVSモジュール</a>
+	のリストでは、NetBSDツリーのトップレベルCVSモジュールを列挙しています。
+	特に注目すべき他のトップレベルモジュールは以下の通りです:
+
+	</p>
+<div class="variablelist"><dl>
+<dt><span class="term"><span class="bold"><strong>htdocs</strong></span></span></dt>
+<dd>NetBSD のWWW ページ。</dd>
+<dt><span class="term"><span class="bold"><strong>othersrc</strong></span></span></dt>
+<dd>NetBSD に関連があるが NetBSD そのものではないコード。</dd>
+</dl></div>
+<p>
+      </p>
+      <p>
+	トップレベルモジュールはそれぞれ、トップレベルを全てチェックアウト
+	(し、アップデート) することも、低いレベルのモジュールをチェックアウト
+	(し、アップデート) することも可能です。
+	例えば、<code class="filename">htdocs</code> モジュール全体をチェックアウトするには、
+	こうします:
+      </p>
+<pre class="programlisting">
+cd /usr/cvs
+cvs checkout htdocs
+</pre>
+      <p>
+	<code class="filename">htdocs/people</code>
+	サブディレクトリーを入手するだけならこうします
+</p>
+<pre class="programlisting">
+cd /usr/cvs
+cvs checkout htdocs/people
+</pre>
+<p>
+      </p>
+      <p>
+	これらの例のように、一度モジュールをチェックアウトする必要があることを
+	忘れないでください。例えば、すでに
+	<code class="filename">htdocs</code> モジュールを
+	チェックアウトして、最新のものにしたい場合は、こうします:
+</p>
+<pre class="programlisting">
+cd /usr/cvs
+cvs update htdocs
+</pre>
+<p>
+      </p>
+    
+      <h4 class="title">
+<a name="importing"></a>新しいパッケージのインポート (<a href="#using">top</a>)
+  </h4>
+      <p>
+	この章では
+	<a class="ulink" href="http://www.NetBSD.org/developers/pkgsrc/#import" target="_top">新しいパッケージのインポート
+	</a> の説明をいくつか補足します。
+      </p>
+      <p>
+	新しく作ったパッケージを追加する例をとりあげましょう。
+	この例ではCVSの材料が
+	<code class="filename">/usr/cvs</code> にあり、
+	<code class="filename">pkgsrc</code> が
+	そのサブディレクトリーにあると仮定します。
+	新しいパッケージを<code class="filename">foo/bar</code> として、
+	<code class="filename">/usr/cvs/pkgsrc/foo/bar.work</code> ディレクトリーの中にあるとします。
+	このパッケージをソースツリーへインポートする段階は以下の通りになります:
+      </p>
+<pre class="programlisting">
+
+cd /usr/cvs/pkgsrc/foo/bar.work
+	
+# 通常のテスト、つまりpkglintなどをします。
+# files/patch-sum ファイルを生成するために、'make makepatchsum' するのを
+# 忘れないでください。
+
+grep TNF /usr/pkgsrc/doc/pkgsrc.txt
+
+# このコマンドで"cvs import" を行うにあたり文法的に正しいかがわかります。
+# (/usr/pkgsrc は/usr/cvs/pkgsrc へのシンボリックリンクです) 。
+
+cvs import pkgsrc/foo/bar TNF pkgsrc-base 
+
+# "bar.work" ではなく、"bar" であることに注意して下さい。
+
+cd ../../..
+cvs checkout pkgsrc/foo/bar 
+
+# 全てが正常に行われたか確認するため、新しくインポートされたパッケージを
+# チェックアウトします。
+
+cd pkgsrc/foo
+cvs update Makefile
+vi Makefile 
+
+# pkgsrc/foo/Makefile にbarを追加します。
+
+cvs ci -m 'add &amp; enable bar' Makefile
+
+# pkgsrc/foo/Makefile へ変更をチェックインします。
+
+cd /usr/cvs/pkgsrc/doc
+cvs update CHANGES-YYYY
+
+# これにより、最新のCHANGES-YYYYを確実に取得します。
+
+vi CHANGES-YYYY
+
+# foo/bar パッケージへの変更を書いたメモを作ります。
+
+cvs ci -m 'Added foo/bar version 17.42' CHANGES-YYYY
+
+# CHANGES-YYYY をチェックインします。
+
+</pre>
+
+    <hr>
+<h3 class="title">その他役に立つCVSの操作</h3>
+      <h4 class="title">
+<a name="output"></a>CVS 出力 (<a href="#other-ops">top</a>)
+  </h4>
+      <p>
+	さまざまなCVSのタスクを実行すると、関係するファイルのリストをみることが
+	あるでしょう。ファイル名は一文字のコードで表されます。
+	コードの概要は以下の通りです:
+      </p>
+
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<span class="bold"><strong>U</strong></span>pdated (更新)</li>
+<li class="listitem">
+<span class="bold"><strong>P</strong></span>atched (パッチ)</li>
+<li class="listitem">
+<span class="bold"><strong>C</strong></span>onflict (コンフリクト)</li>
+<li class="listitem">
+<span class="bold"><strong>M</strong></span>odified  (ローカルで) (変更済み)</li>
+<li class="listitem">
+<span class="bold"><strong>A</strong></span>dded (追加済み)</li>
+<li class="listitem">
+<span class="bold"><strong>R</strong></span>emoved (削除済み)</li>
+<li class="listitem">
+<span class="bold"><strong>?</strong></span> (CVSの管理外)</li>
+</ul></div>
+
+    <hr>
+<h3 class="title">他の情報源</h3>
+      <h4 class="title">
+<a name="ref-netbsd"></a>NetBSD 特有 (<a href="#references">top</a>)
+  </h4>
+
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">pkgsrc <a class="ulink" href="../../docs/software/packages.html" target="_top">ホーム
+	ページ</a>。</li>
+<li class="listitem">
+<a class="ulink" href="../" target="_top">役に立つ NetBSD の開発者情報</a>。</li>
+<li class="listitem">完全な 
+	<a class="ulink" href="http://www.NetBSD.org/docs/pkgsrc/" target="_top">pkgsrc ドキュメント</a>。</li>
+</ul></div>
+
+    
+      <h4 class="title">
+<a name="ref-cvs"></a>CVS 特有 (<a href="#references">top</a>)
+  </h4>
+
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><a class="ulink" href="http://ximbiot.com/cvs/manual/" target="_top">CVS のマニュアル</a></li>
+<li class="listitem"><a class="ulink" href="http://www.NetBSD.org/developers/cvs-repos/cvs-faq.txt" target="_top">CVS のFAQ</a></li>
+<li class="listitem">
+<a class="ulink" href="http://www.cyclic.com/" target="_top">Cyclic Software</a> という
+	CVSをメンテナンスしている会社</li>
+<li class="listitem">
+<a class="ulink" href="http://cvsbook.red-bean.com/" target="_top">Open Source Development with CVS, 3rd edition</a>,
+	web 上で公開されている書籍 (訳註: <a class="ulink" href="http://kahori.com/j-cvsbook/" target="_top">日本語訳</a>)。</li>
+</ul></div>
+    </div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

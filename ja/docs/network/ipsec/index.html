@@ -1,0 +1,941 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+    
+
+    <title>NetBSD IPsec FAQ</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-network-ipsec-index"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD IPsec FAQ</h1>
+<p>このページは作成中ですので、
+    <a class="ulink" href="http://www.NetBSD.org/cgi-bin/feedback.cgi" target="_top">コメントや提案</a>を歓迎します。</p>
+<h3 class="title"><a name="IPsecFAQ">IPsec FAQ</a></h3>
+<ul>
+<li><a href="#getting_started">はじめましょう</a></li>
+<li><a href="#ipsec_breakdown">IPsec = AH + ESP + IPcomp + IKE</a></li>
+<li><a href="#trans_tunnel">トランスポートモードとトンネルモード</a></li>
+<li><a href="#policy">IPsecポリシー管理</a></li>
+<li><a href="#config_kernel">IPsecカーネルの設定</a></li>
+<li><a href="#sample_esp">設定例: ホスト間の暗号化</a></li>
+<li><a href="#sample_ah">設定例: ホスト間の認証</a></li>
+<li><a href="#sample_both">設定例: ホスト間の暗号化+認証</a></li>
+<li><a href="#sample_vpn">設定例: IPsec VPN</a></li>
+<li><a href="#sample_leaftunnel">設定例: 葉ノードトンネル</a></li>
+<li><a href="#config_ike">IKEによるAH/ESP鍵の設定</a></li>
+<li><a href="#configboot">ブート過程で IPsec 手動鍵とポリシーを設定する</a></li>
+<li><a href="#ipf-interaction">ipfilter との相互の影響</a></li>
+<li><a href="#procorder">処理順序</a></li>
+<li><a href="#pitfalls">ありがちな落とし穴と、デバッグの技巧</a></li>
+<li><a href="#issues">既知の問題</a></li>
+<li><a href="#conformance">標準化、互換性への適合</a></li>
+<li><a href="#compatibility">他のIPsecスタックとのAPI互換性</a></li>
+<li><a href="#readings">書籍その他の読みものは ?</a></li>
+</ul>
+<h3 class="title"><a name="Other_links">他のリンク</a></h3>
+<ul><li><a href="#linklist">雑多なリンク</a></li></ul>
+<hr>
+<h3 class="title">IPsec FAQ</h3>
+	<h4 class="title">
+<a name="getting_started"></a>はじめましょう (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>IPsec (IP security protocol) は、 NetBSD 配布物の一部として含まれており、
+	  IPsecが提供するパケット毎の認証/機密性は、IPsecを使用して通信するpeer間通信を保護します。
+	  IPsecは IPv6とIPv4で利用可能です。</p>
+
+	<p>しかしIPsecを使用するには、カーネルの再構成が必要であることに注意して下さい。
+	  それはGENERICカーネルでは有効にはなっていません。</p>
+
+	<p>ユーザーランドにはIPsecサポートコードが含まれていますが、
+	  IPsecをサポートするカーネルからサポートしていない
+	  カーネルに切り替えても、ユーザーランドの再コンパイルは必要ありません。</p>
+
+	<div class="note" title="注意" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">注意</h3>
+	  
+	  <p>私たちは、 <span class="quote">“<span class="quote">IP security</span>”</span> という用語は、 IP ファイアウォール、
+	    パケットフィルタリングなどの、より広い概念で用います。</p>
+	</div>
+      
+	<h4 class="title">
+<a name="ipsec_breakdown"></a>IPsec = AH + ESP + IPcomp + IKE (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>IPsecは以下に挙げられる別々のプロトコルで成り立っています。</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">Authentication Header (AH): 強い暗号チェックサムをパケットに付加することによってパケットの信頼性を保証します。
+	    AHのついたパケットを受け取りチェックサムが正常なら、
+	    <span class="emphasis"><em>あなたとpeerが鍵を共有し他の誰もが鍵を知らないなら、</em></span>
+	    2つのことについて確信できるでしょう。
+	    <div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem">パケットはpeerによって作成され、パケットは偽造されていません。
+	      </li>
+<li class="listitem">パケットは転送中に変更されませんでした。
+	      </li>
+</ul></div>
+	    他のプロトコルと異なり、AHは、IPヘッダーからパケットの終わりまで
+	    パケット全体をカバーします。
+	  </li>
+<li class="listitem">Encapsulating Security Payload (ESP): 暗号化アルゴリズムで暗号化されたパケットの機密性を保証します。
+	    ESPでパケットを受け取って、解読に成功したなら
+	    パケットが途中で盗聴されていないと確信できるでしょう。
+	    <span class="emphasis"><em>あなたとpeerが鍵を共有し、他の誰もが鍵を知らないなら。</em></span>
+	  </li>
+<li class="listitem">IP payload compression (IPcomp): ESPがパケットに暗号化サービスを提供します。
+	    しかし、暗号化は(ppp compressionのように)伝走路上の圧縮に打撃的な影響を与える傾向があります。
+	    IPcompはESP(IPcompだけを使うことができる)によって暗号化を行う前にパケットを圧縮する方法を提供します。
+	  </li>
+<li class="listitem">Internet Key Exchange (IKE): これまで書いたように、AHとESPはpeerと鍵を共有することが必要となります。
+	    遠い場所との通信のために、秘密裡に鍵を交渉する方法を提供する必要があります。
+	    IKEはそれを可能にします。
+	  </li>
+</ul></div>
+
+	<p>AH、ESP、IPcompはカーネルに実装されています。
+	  IKEはユーザーランドでデーモンプロセスとして実装されています。
+	  カーネルとユーザーランドは、鍵管理テーブルを通して協調しています。</p>
+
+	<p>IKEはオプションです。AH/ESPのために手作業で鍵を構成することができます。
+	  しかし、同じ鍵をずっと使い続けることはできないことを理解して下さい。
+	  もし長い間同じ鍵を使うなら、トラフィックが危険にさらされる可能性がますます高くなります。</p>
+
+	<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+	  <p><span class="bold"><strong>IPsecプロトコルのセキュリティーは鍵の機密性如何です。
+	    </strong></span>
+	    もし鍵が危険にさらされるなら、IPsecプロトコルは安全であり得ません。
+	    設定ファイル、鍵データベースファイルのパーミッションあるいは情報漏洩につながるかも知れないさまざまなことに注意して下さい。</p>
+	</div>
+
+	<p>ふたつの RFC が出ています: RFC1825 による古い IPsec と、
+	  RFC2401 による新しい IPsec です。
+	  NetBSD ではいずれも実装していますが、新しい IPsec を使うよう推奨します。</p>
+
+	<pre class="programlisting">
+
+        userland programs               IKE daemon
+          ^ | AF_INET{,6} socket          ^ | PF_KEY socket
+========= | | =========================== | | ======== Kernel/user boundary
+          | v                             | v
+        transport layer, TCP/UDP        key management table
+          ^ |                             ^ | key information
+          | |                             | |
+          | v                             | v
+        IP input/output logic &lt;-------&gt; AH/ESP/IPcomp logic
+          ^ |
+          | v
+        Network drivers (ethernet)
+</pre>
+      
+	<h4 class="title">
+<a name="trans_tunnel"></a>トランスポートモードとトンネルモード (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>AH, ESP そして IPcompにはトランスポートモードとトンネルモードの2つの操作モードがあります。
+	  トランスポートモードは、通常のピア間の通信を暗号化します。
+	  トンネルモードは、パケットを新しいIPv4/6ヘッダーの中にカプセル化します。
+	  トンネルモードは、VPNゲートウェイで使用できるように設計されています。</p>
+
+	<pre class="programlisting">
+[[トランスポートモード]]
+my host ======== peer's host
+        transport
+        mode
+
+packets: [IP: me-&gt;peer] ESP payload
+                        &lt;---------&gt; encrypted
+
+
+[[トンネルモード]]
+        (a)                  (b)                        (c)
+my host ---- my VPN gateway ======== peer's VPN gateway ---- peer's host
+                            tunnel mode
+
+packets on (a): [IP: me-&gt;peer] payload
+packets on (b): [IP: mygw-&gt;peergw] ESP [IP: me-&gt;peer] payload
+                                   &lt;------------------------&gt; encrypted
+packets on (c): [IP: me-&gt;peer] payload
+</pre>
+      
+	<h4 class="title">
+<a name="policy"></a>IPsec<span class="quote">“<span class="quote">ポリシー</span>”</span>管理 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>カーネルはパケットをセキュアーにする方法を知っていますが
+	  <span class="emphasis"><em>どのパケット</em></span>がセキュリティーを必要とするか知りません。
+	  我々はどのパケットをセキュアーにするかをカーネルに示す必要があります。
+	  IPsec<span class="quote">“<span class="quote">ポリシー</span>”</span>設定によりそれらを指定します。</p>
+
+	<p>IPsecポリシーは、パケット毎またはソケット型毎に設定できます。</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">パケット毎: パケットフィルターと同じようにカーネルに設定できます。
+	    <span class="quote">“<span class="quote">10.1.1.0/24にメッセージを送っているなら、外向なパケットを暗号化してください</span>”</span>
+	    というように指定することができます。
+	    これは、IPsecルーターを走らせている時、うまく働きます。
+	  </li>
+<li class="listitem">ソケット毎: 特定のソケットに <a href="http://netbsd.gw.com/cgi-bin/man-cgi?setsockopt+2+NetBSD-5.1+i386">setsockopt(2)</a> を使って設定します。
+	    <span class="quote">“<span class="quote">このソケットから外向なパケットを暗号化してください</span>”</span>のように指定することができます。
+	    これは、IPsec-awareサーバープログラムを走らせたい時、うまく働きます。
+	  </li>
+</ul></div>
+
+	<p>IPsecポリシーはパケットに対して使われるプロトコル(AH、ESPまたはIPcomp)を決定します。
+	  パケットに対してAH、ESP、IPcompのどの組み合わせを使用するカーネルなのかを構成することができます。
+	  ひとつのパケットに対して、多数のESPオペレーションのような、
+	  同じプロトコルを複数回にわたって適用することができます。
+	  多数のESPオペレーションが役に立つかどうかはわかりません。しかしテスト/デバッグには興味深いのですが。</p>
+      
+	<h4 class="title">
+<a name="config_kernel"></a>IPsecカーネルの設定 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>作成手順の詳細は<a class="ulink" href="../../current/" target="_top"><span class="emphasis"><em>NetBSD-currentの追跡</em></span></a>を参照して下さい。</p>
+
+	<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">カーネル設定ファイルで次の部分を有効にして、新しいカーネルを構築してください。
+	    <pre class="programlisting">
+options IPSEC
+options IPSEC_ESP
+</pre>
+	  </li>
+<li class="listitem">新しいカーネルを構築します。
+	  </li>
+<li class="listitem">カーネルを置き換えて、そしてリブートしてください。
+	  </li>
+</ol></div>
+
+	<p>ユーザーランドのツールはデフォルトで IPsec サポートを含んでおり、
+	  また、ユーザーランドの再構築は不要です。</p>
+
+	<p>さらに、 NetBSD 附属の <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> を使ったり、
+	  <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/security/isakmpd/README.html" target="_top"><code class="filename">security/isakmpd</code></a> をインストールしたりするのもよいかもしれません。</p>
+      
+	<h4 class="title">
+<a name="sample_esp"></a>設定例: ホスト間の暗号化 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>もしマニュアルで設定した鍵でホスト間の暗号化(トランスポートモード)を行うなら、
+	  下記の構成で充分です。マニュアルで鍵を設定するために <a href="http://netbsd.gw.com/cgi-bin/man-cgi?setkey+8+NetBSD-5.1+i386">setkey(8)</a> を
+	  使用します。</p>
+
+	<pre class="programlisting">
+#! /bin/sh
+#
+# packet will look like this: IPv4 ESP payload
+# the node is on 10.1.1.1, peer is on 20.1.1.1
+setkey -c &lt;&lt;EOF
+add 10.1.1.1 20.1.1.1 esp 9876 -E 3des-cbc "hogehogehogehogehogehoge";
+add 20.1.1.1 10.1.1.1 esp 10000 -E 3des-cbc 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+spdadd 10.1.1.1 20.1.1.1 any -P out ipsec esp/transport//use;
+EOF
+</pre>
+
+	<p>最初の2つの行は、ESPで使用する鍵を設定しています。
+	  4番目の数字は SPI(セキュリティー・パラメーター・インデックス)と呼ばれています。
+	  この値はESPパケットに付加され、受信した側でパケットから鍵を見つけるために送られます。
+	  この値はノード上でユニークである必要があります。</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">10.1.1.1から20.1.1.1に、鍵<code class="code">hogehogehogehogehogehoge</code>で、
+	    3DES-CBCアルゴリズムを使います。
+	    トラフィックは SPI値9876によって識別されます。
+	  </li>
+<li class="listitem">20.1.1.1から10.1.1.1に、鍵<code class="code">0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef</code>で、
+	    3DES-CBCアルゴリズムを使います。
+	  </li>
+</ul></div>
+
+	<p>最終行はノードのパケット毎のIPsecポリシーを設定しています。
+	  この設定で、node(10.1.1.1)からpeer(20.1.1.1)に送られるパケットは暗号化されます。鍵はカーネル内部
+	  で構成されます。
+	  この設定は、20.1.1.1から10.1.1.1に届く暗号化されていないパケットを禁止していません。
+	  もし暗号化されていないパケットを拒否したい場合、次の行を追加して下さい。</p>
+
+	<pre class="programlisting">
+spdadd 20.1.1.1 10.1.1.1 any -P in ipsec esp/transport//require;
+</pre>
+
+	<p>もう一方の (20.1.1.1) では、次のように設定します。
+	  <span class="quote">“<span class="quote">spdadd</span>”</span> 行のアドレスを入れ換える必要がある一方、
+	  <span class="quote">“<span class="quote">add</span>”</span> 行は入れ換えないことに注意してください。</p>
+
+	<pre class="programlisting">
+#! /bin/sh
+#
+# packet will look like this: IPv4 ESP payload
+# the node is on 20.1.1.1, peer is on 10.1.1.1
+setkey -c &lt;&lt;EOF
+add 10.1.1.1 20.1.1.1 esp 9876 -E 3des-cbc "hogehogehogehogehogehoge";
+add 20.1.1.1 10.1.1.1 esp 10000 -E 3des-cbc 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+spdadd 20.1.1.1 10.1.1.1 any -P out ipsec esp/transport//use;
+EOF
+</pre>
+
+	<p>ポリシー設定の構文は <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipsec_set_policy+3+NetBSD-5.1+i386">ipsec_set_policy(3)</a> で述べられています。</p>
+
+	<p>回線上の暗号化されたパケットを見るために
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?tcpdump+8+NetBSD-5.1+i386">tcpdump(8)</a> を実行して下さい。
+	  パケットは暗号化されます。それらのパケットを盗聴することはできません。</p>
+
+	<p>上記の例は人間が読むことができる鍵を使います。
+	  しかしながら、人間が読むことができる鍵の使用がバイナリー鍵より危険であることから、
+	  実際のオペレーションでは、バイナリー鍵を使用する方がいいでしょう。</p>
+
+	<p>鍵の長さはアルゴリズムによって決定されます。
+	  3des-cbcでは、鍵は 192 ビット(=24バイト)でなければなりません。
+	  もしそれより短いまたは長い鍵を指定するなら、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?setkey+8+NetBSD-5.1+i386">setkey(8)</a> はエラーになるでしょう。</p>
+
+	<p>他のアルゴリズムを使う場合、設定はほとんど同じです。
+	  rijndael-cbc (AES としても知られる) を使う場合の例を示します。
+	  rijndael-cbc の秘密鍵は、 128、 192、または 256 ビットとなります。
+	  ここでは、 128 ビットの鍵を使うことにします。</p>
+
+	<pre class="programlisting">
+#! /bin/sh
+#
+# packet will look like this: IPv4 ESP payload
+# the node is on 10.1.1.1, peer is on 20.1.1.1
+# rijndael-cbc with 128bit key
+setkey -c &lt;&lt;EOF
+add 10.1.1.1 20.1.1.1 esp 9876 -E rijndael-cbc "hogehogehogehoge";
+add 20.1.1.1 10.1.1.1 esp 10000 -E rijndael-cbc 0xdeadbeefdeadbeefdeadbeefdeadbeef;
+spdadd 10.1.1.1 20.1.1.1 any -P out ipsec esp/transport//use;
+EOF
+</pre>
+      
+	<h4 class="title">
+<a name="sample_ah"></a>設定例: ホスト間の認証 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>ESPと同じように、AHを設定することができます。</p>
+
+	<pre class="programlisting">
+#! /bin/sh
+#
+# packet will look like this: IPv4 AH payload
+# the node is on 10.1.1.1, peer is on 20.1.1.1
+setkey -c &lt;&lt;EOF
+add 10.1.1.1 20.1.1.1 ah 9877 -A hmac-md5 "hogehogehogehoge";
+add 20.1.1.1 10.1.1.1 ah 10001 -A hmac-md5 "mogamogamogamoga";
+spdadd 10.1.1.1 20.1.1.1 any -P out ipsec ah/transport//use;
+EOF
+</pre>
+      
+	<h4 class="title">
+<a name="sample_both"></a>設定例: ホスト間の暗号化+認証 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>もしAHとESP双方で鍵を設定した場合、双方とも使うことができます。
+	  IPsecのドキュメントでは、AHの後にESPを適用することを推奨しています 。</p>
+
+	<pre class="programlisting">
+#! /bin/sh
+#
+# packet will look like this: IPv4 AH ESP payload
+# the node is on 10.1.1.1, peer is on 20.1.1.1
+setkey -c &lt;&lt;EOF
+add 10.1.1.1 20.1.1.1 esp 9876 -E 3des-cbc "hogehogehogehogehogehoge";
+add 20.1.1.1 10.1.1.1 esp 10000 -E 3des-cbc 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+add 10.1.1.1 20.1.1.1 ah 9877 -A hmac-md5 "hogehogehogehoge";
+add 20.1.1.1 10.1.1.1 ah 10001 -A hmac-md5 "mogamogamogamoga";
+spdadd 10.1.1.1 20.1.1.1 any -P out ipsec esp/transport//use ah/transport//use;
+EOF
+</pre>
+      
+	<h4 class="title">
+<a name="sample_vpn"></a>設定例: IPsec VPN (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>まず最初に、いくつかのIPsec VPN設定に関しての注意点があります。</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">ルーティングの設定は的確に行われていなければなりません。
+	  </li>
+<li class="listitem">IPsecトンネルデバイスを、同時にNATボックスやフィルタリング防火壁として
+	    振る舞うように使おうとしたりしないでください。
+	    IPsecとNATは本質的に互換性のないプロトコルです。
+	    また、1.5での実装と仕様の制限により、
+	    これはうまく動きません。
+	    我々はこの状況を改善しようとしているところです。詳細については、
+	    <a class="ulink" href="#ipf-interaction" target="_top">"ipfilter との相互の影響"</a>
+	    を参照してください。
+	  </li>
+<li class="listitem">VPNの設定は、それぞれの導入によって異なります。
+	    実際、<span class="quote">“<span class="quote">VPN</span>”</span>の意味するものについての明確な定義はありません。
+	    もしもメイリングリストに質問するとしたら、あなたの現在の状況と
+	    ネットワークの設定をすべて明らかにする必要があります。
+	  </li>
+</ul></div>
+
+	<p>以下の例は以下のようなネットワークの設定を仮定しています。
+	  この例の最終目的は:</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">どうにかして二つのプライベートアドレス空間(10.0.1.0/24および10.0.2.0/24、
+	    あなたの会社の東京支社とニューヨーク本社のようなものと考えてください)
+	    の中のマシンを接続すること。
+	  </li>
+<li class="listitem">二つの空間の間のトラフィックは、
+	    ゲートウェイ同士の間で安全にやりとりされる必要がある。
+	  </li>
+<li class="listitem">太平洋を横断する専用線の料金を払いたくないため、地元のISP
+	    (東京とニューヨーク)と契約し、トラフィックはゲートウェイ間をトンネルする。
+	  </li>
+</ul></div>
+
+	<pre class="programlisting">
+((( 10.0.1.0/24 )))     東京支店オフィスのVPNネットワーク
+  |10.0.1.1
+gateway 1
+  |20.0.0.1
+  |IPsec tunnel
+  |20.0.0.2
+gateway 2
+  |10.0.2.1
+((( 10.0.2.0/24 )))     ニューヨーク本社のVPNネットワーク
+</pre>
+
+	<p>以下のテキストはgateway 1の設定を示します。</p>
+
+	<pre class="programlisting">
+#! /bin/sh
+#
+# Note that routing should be set up in advance, i.e. for this example:
+#       route -n add -net 10.0.2.0 10.0.2.1
+#       route -n add 10.0.2.1 10.0.1.1
+# packet will look like this: IPv4 ESP IPv4 payload
+# the node is on 10.0.1.1/20.0.0.1, peer is on 10.0.2.1/20.0.0.2
+setkey -c &lt;&lt;EOF
+add 20.0.0.1 20.0.0.2 esp 13245 -E blowfish-cbc "blowfishtest.001" ;
+add 20.0.0.2 20.0.0.1 esp 13246 -E blowfish-cbc 0xdeadbeefdeadbeefdeadbeefdeadbeef;
+spdadd 10.0.1.0/24 10.0.2.0/24 any -P out ipsec esp/tunnel/20.0.0.1-20.0.0.2/require ;
+spdadd 10.0.2.0/24 10.0.1.0/24 any -P in ipsec esp/tunnel/20.0.0.2-20.0.0.1/require ;
+EOF
+</pre>
+
+	<p>(この項は Per Harald Myrvang の寄贈によるものです)</p>
+      
+	<h4 class="title">
+<a name="sample_leaftunnel"></a>設定例: 葉ノードトンネル (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>トンネルモードは、ある葉ノードからの全トラフィックを次ホップのルーターまで
+	  暗号化し、逆にルーターからのトラフィックは平文化する、
+	  という状況で使うことができます (たとえば、 802.11 WEP では不十分なので、
+	  ワイヤレスノードからルーターまでの間で使うなど) 。</p>
+
+	<p>葉ノードでは、以下のように使います:</p>
+
+	<pre class="programlisting">
+#! /bin/sh
+#
+# the node is on 10.0.1.5, router is on 10.0.1.1
+setkey -c &lt;&lt;EOF
+add 10.0.1.1 10.0.1.5 esp 1011 -E rijndael-cbc "rijndaeltest.001" ;
+add 10.0.1.5 10.0.1.1 esp 1012 -E rijndael-cbc 0xdeadbeefdeadbeefdeadbeefdeadbeef;
+spdadd 10.0.1.5/32 0.0.0.0/0 any -P out ipsec esp/tunnel/10.0.1.5-10.0.1.1/require;
+spdadd 0.0.0.0/0 10.0.1.5/32 any -P in ipsec esp/tunnel/10.0.1.1-10.0.1.5/require;
+EOF
+</pre>
+
+	<p>ルーターでは、 spdadd コマンドの <span class="quote">“<span class="quote">out</span>”</span> と <span class="quote">“<span class="quote">in</span>”</span>
+	  を逆にします。</p>
+      
+	<h4 class="title">
+<a name="config_ike"></a>IKEによるAH/ESP鍵の設定 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>まずは下記の設定について説明します:</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">ノード A と B はトランスポートモード ESP を使う。
+	  </li>
+<li class="listitem">両端では、すべてのプロトコルについてパケット交換に ESP
+	    を使う必要がある。
+	  </li>
+<li class="listitem">IKE による間は、ノード A と B は、共有された秘密鍵の交換によって、
+	    お互いに認証し合う。
+	  </li>
+</ul></div>
+
+	<p>どうか慎重に下記の手順をふんでください。
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?tcpdump+8+NetBSD-5.1+i386">tcpdump(8)</a> を使い、 2 ノード間でどのようにパケットが交換されているか調べます。
+	  <span class="quote">“<span class="quote"><code class="code">netstat -sn</code></span>”</span> による統計情報も、
+	  カーネルの IPsec 部がどのように動作しているか知るために有用です。</p>
+
+	<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+<code class="code">/usr/share/examples/racoon/racoon.conf.sample</code> を
+	    <code class="code">/etc/racoon/racoon.conf</code> にコピーします。
+	    必要に応じて <code class="code">racoon.conf</code> 中のパラメーターを修正します。
+	    両端で同一の設定を使うことが、 *非常に* 重要です -
+	    両者の racoon.conf の差異がないようにしなければいけません。
+	  </li>
+<li class="listitem"> racoon は、 IPsec 鍵の交渉をする際、カーネルの
+	    IPsec ポリシーの設定に従います。
+	    したがって、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?setkey+8+NetBSD-5.1+i386">setkey(8)</a> を使い、カーネルの IPsec ポリシーを
+	    設定しなければなりません。
+	    ノード A での IPsec ポリシーの設定は次のようになります。
+	    この例において、 <span class="quote">“<span class="quote">A</span>”</span> と <span class="quote">“<span class="quote">B</span>”</span> は IPv4/v6 の数字アドレスです。
+	    <pre class="programlisting">
+A# setkey -c
+spdadd A B any -P out ipsec esp/transport//require;
+spdadd B A any -P in ipsec esp/transport//require;
+^D
+</pre>
+	  </li>
+<li class="listitem">ノード B での <a href="http://netbsd.gw.com/cgi-bin/man-cgi?setkey+8+NetBSD-5.1+i386">setkey(8)</a> を使った IPsec ポリシーの設定は次のようになります:
+	    <pre class="programlisting">
+B# setkey -c
+spdadd B A any -P out ipsec esp/transport//require;
+spdadd A B any -P in ipsec esp/transport//require;
+^D
+</pre>
+	  </li>
+<li class="listitem">両ノードにおいて、あらかじめ共有された鍵ファイルを用意します。
+	    ファイルのパーミッションを適切に設定することが <span class="bold"><strong>非常に</strong></span>
+	    重要です。さもなければ IPsec を使う意味がありません - CPU 時間を
+	    無駄に使うだけになってしまいます
+	    (<a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> は、不適切なパーミッションを持つファイルは
+	    読み込みません) 。
+	    繰り返しますが、 <span class="quote">“<span class="quote">A</span>”</span> と <span class="quote">“<span class="quote">B</span>”</span> は IPv4/v6 の数字アドレスです。
+	    <pre class="programlisting">
+A# cat &gt;/etc/racoon/psk.txt
+B       spamspamspam
+^D
+A# chmod 600 /etc/racoon/psk.txt
+
+B# cat &gt;/etc/racoon/psk.txt
+A       spamspamspam
+^D
+B# chmod 600 /etc/racoon/psk.txt
+</pre>
+	  </li>
+<li class="listitem">
+<code class="code">racoon</code> を実行します。
+	    デバッグトレースを見たい場合は、下記のような引数を取ります:
+	    <pre class="programlisting">
+# racoon -f /etc/racoon/racoon.conf -dddddd
+</pre>
+	  </li>
+<li class="listitem">A と B の間でパケットを交換してみてください。
+	    racoon のメッセージがコンソールに出て、
+	    鍵が確立されます。
+	    <pre class="programlisting">
+A# ping -n B
+(しばらくしてから、応答が見られるでしょう)
+^C
+A# setkey -D
+(racoon で交換された鍵が見られるでしょう)
+</pre>
+	  </li>
+</ol></div>
+
+	<p>racoon は、ポリシー定義に基づいて鍵を交渉します。
+	  ポリシー定義を変更することで、これ以外のケースに対しても容易に設定できます。
+	  次の例は、下記の状況向けに鍵を設定するものです:</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">A はメールサーバー。
+	    A は、 A に POP プロトコル (TCP ポート 110) で接触する
+	    すべてのクライアントに、トランスポートモード AH を使わせたい。
+	    B は、 A と接触したいクライアント。
+	    <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">A でのポリシー設定は、ローカルトラフィックに対しては AH を使いません
+	        (racoon は自分自身とは鍵の交渉をできないことに注意)。
+	        ポリシーの順序はたいへん重要です。
+	        この順序を変えると、この設定は機能しなくなるでしょう。
+	        <pre class="programlisting">
+A# setkey -c
+spdadd A[110] A tcp -P out none;
+spdadd A A[110] tcp -P in none;
+spdadd A[110] 0.0.0.0/0 tcp -P out ipsec ah/transport//require;
+spdadd 0.0.0.0/0 A[110] tcp -P in ipsec ah/transport//require;
+^D
+
+B# setkey -c
+spdadd B A[110] tcp -P out ipsec ah/transport//require;
+spdadd A[110] B tcp -P in ipsec ah/transport//require;
+^D
+</pre>
+	      </li>
+<li class="listitem">ポリシー設定以外の部分は、前の例と同様に設定します。
+	      </li>
+</ol></div>
+	  </li></ul></div>
+
+	<p>設定するうえでなにか問題があったら、フルデバッグログ (racoon -dddddd)
+	  をしっかり見て、どこが原因か調べてください。
+	  いかなる設定の違いも、交渉の失敗につながります。</p>
+      
+	<h4 class="title">
+<a name="configboot"></a>ブート過程で IPsec 手動鍵とポリシーを設定する (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p><a href="http://netbsd.gw.com/cgi-bin/man-cgi?rc.conf+5+NetBSD-5.1+i386">rc.conf(5)</a> には、 <span class="quote">“<span class="quote"><code class="code">ipsec</code></span>”</span> という IPsec 用のエントリーがあります。
+	  <code class="code">ipsec=YES</code> とすると、ブート時に、すべてのネットワークが有効になってから
+	  次のコマンドを実行します:</p>
+
+	<pre class="programlisting">
+/sbin/setkey -f /etc/ipsec.conf
+</pre>
+
+	<p>たとえば、 /usr を暗号化して NFS マウントすることができます。
+
+	  <code class="code">/etc/ipsec.conf</code> の内容は、正当な <a href="http://netbsd.gw.com/cgi-bin/man-cgi?setkey+8+NetBSD-5.1+i386">setkey(8)</a> コマンドでなければ
+	  なりません; 上記の設定例から、 <code class="code">setkey -c &lt;&lt;EOF</code> と <code class="code">EOF</code>
+	  の部分を除いた部分のようにします。</p>
+      
+	<h4 class="title">
+<a name="ipf-interaction"></a>ipfilter との相互の影響 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>NetBSD は、 Darren Reed による ipfilter、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a> を実装しています。
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a> はパケットをふるいにかけ、また、 IPsec ポリシーの作用は本質的に
+	  パケットフィルターと同じものです。
+	  したがって、これらの実装は機能的に衝突します。
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a>/IPsec 相互の影響は、以下のとおりとなっています:
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a> は、ネイティブのワイヤーフォーマットのパケットのみを監視します。
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a> は、入ってくるパケットは IPsec の処理前のものを、
+	  出てゆくパケットは IPsec の処理後のものを監視します。</p>
+
+	<p>この処理順序のもとでも、以下のことを知っておいてください:</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">IPsec パケットに <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a> を通過させたくても、これを <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a> ルールから
+	    外すべきではありません。
+	    IP パケットに適切な通過プロトコル番号 (ESP は 50、 AH は 51)
+	    を振る必要があります。
+
+	    <div class="note" title="注意" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">注意</h3>
+	      
+	      <p>プロトコル番号は、 TCP/UDP ポート番号とはまったくの別物です。</p>
+	    </div>
+	  </li>
+<li class="listitem">トンネルデバイス (<a href="http://netbsd.gw.com/cgi-bin/man-cgi?gif+4+NetBSD-5.1+i386">gif(4)</a> および <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipip+4+NetBSD-5.1+i386">ipip(4)</a>) から来るパケットは、依然として
+	    <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a> を通過します。
+	    これらのパケットには、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf.conf+5+NetBSD-5.1+i386">ipf.conf(5)</a> でインターフェース名ディレクティブを
+	    使って見分けるようにする必要があるかもしれません。
+	  </li>
+</ul></div>
+      
+	<h4 class="title">
+<a name="procorder"></a>処理順序 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>下記の図は、受信側の新しい処理順序をまとめたものです。</p>
+
+	<pre class="programlisting">
+入ってくる場合の処理:
+        userland programs               IKE daemon
+          ^ AF_INET{,6} socket            ^ | PF_KEY socket
+========= | ============================= | | ======== Kernel/user boundary
+          |                               | v
+        transport layer, TCP/UDP        key management table
+          ^                               ^ | key information
+          |                               | |
+          |                               | v
+  +-----IP input/output logic &lt;-------&gt; AH/ESP/IPcomp logic
+  v       ^          ^                      |
+tunnel    |          +----------------------+ decapsulated IPsec packets
+devices   |
+  |     ipfilter rule
+  |       ^
+  +------&gt;|
+          |
+        Network drivers (ethernet)
+</pre>
+
+	<p>下記の図は、送信側の新しい処理順序をまとめたものです。</p>
+
+	<pre class="programlisting">
+出てゆく場合の処理:
+        userland programs               IKE daemon
+            | AF_INET{,6} socket          ^ | PF_KEY socket
+=========== | =========================== | | ======== Kernel/user boundary
+            v                             | v
+        transport layer, TCP/UDP        key management table
+            |                             ^ | key information
+            |                             | |
+            v                             | v
+  +----&gt;IP input/output logic &lt;-------&gt; AH/ESP/IPcomp logic
+  |         |                           (incl. IPsec tunnel encapsulation)
+tunnel      |
+devices     |
+  |     ipfilter rules
+  |         |
+  +---------+
+            v
+        Network drivers (ethernet)
+</pre>
+      
+	<h4 class="title">
+<a name="pitfalls"></a>ありがちな落とし穴と、デバッグの技巧 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">下記の三つのものを混同している人たちがいます。
+	    他の実装との相互運用をしようとする場合には、これらを混同しないよう注意してください。
+	    もしこれらを混同していたら、相互運用の設定など永遠に
+	    できないでしょう。
+	    ドキュメンテーションでも、これらを間違った用語で使っていることがあります (はあ…) 。
+	    <div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem">
+<span class="bold"><strong>IPsec with manual key (手動鍵による IPsec)</strong></span><br>
+	        NetBSD の場合、この方法は、 IPsec 秘密鍵の設定に
+	        <a href="http://netbsd.gw.com/cgi-bin/man-cgi?setkey+8+NetBSD-5.1+i386">setkey(8)</a> を使います。
+	        IPsec 秘密鍵は時間が経っても変更されません。
+	      </li>
+<li class="listitem">
+<span class="bold"><strong>IPsec with IKE, with pre-shared secret (あらかじめ決めた文字列を使った IKE による IPsec)</strong></span><br>
+	        NetBSD の場合、これは <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> を使います。
+	        あらかじめ決めた文字列によって通信相手との認証をします。
+	        <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> は IPsec 鍵を動的に交渉して、
+	        それをカーネルインストールします。
+	        IPsec 秘密鍵は定期的に変更されます。
+	      </li>
+<li class="listitem">
+<span class="bold"><strong>IPsec with IKE, with certificates (証明書を使った IKE による IPsec)</strong></span><br>
+	        NetBSD の場合、これは <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> を使います。
+	        証明書ファイルによって通信相手との認証をします。
+	        <a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> は IPsec 鍵を動的に交渉して、
+	        それをカーネルインストールします。
+	        IPsec 秘密鍵は定期的に変更されます。
+	      </li>
+</ul></div>
+	  </li>
+<li class="listitem">IPsec の設定は、 *容易なものではありません* 。
+	    うまく使うためには多くの障害がありますし、 IPsec のもつ盗聴への
+	    対抗性ゆえにデバッグは非常に難しいものです。パケットトレースをもとに
+	    何が起きているか推測することは、基本的にできません。
+	    設定しようとする前に、本や標準文書/RFC を読むなり、コンサルタントを
+	    雇うなり何なりするようにしてください。
+	  </li>
+<li class="listitem">ネットワークのデバッグには、常に tcpdump を走らせます。
+	    たとえトラフィックが暗号化されていても、パケットが実際に経路上に
+	    あるかどうかの情報は得られるでしょう。
+	  </li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?netstat+1+NetBSD-5.1+i386">netstat(1)</a> はあなたの味方です。
+	    <code class="code">netstat -sn</code> を実行して IPsec パケットの数を確認します。
+	  </li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> の実行で問題があったら、最大限の
+	    デバッグ出力をするようにして実行し、その出力を見てください。
+	    (コマンドライン引数 <code class="code">-dddddd</code>)
+	  </li>
+<li class="listitem">あなたの NetBSD デバイスは、通信相手のデバイスとの相互運用のため、
+	    間違いなく本当に<span class="bold"><strong>厳密に同一</strong></span>に設定する必要があります。
+	    パケットは、相手方が期待しているものと厳密に同一のプロトコルと
+	    暗号化アルゴリズムによって生成されなければなりません。
+	    これができていないと、追跡することが非常に難しいエラーに見舞われます。
+	    IPsec においては、暗号化/認証の失敗はパケットの欠落として現れます。
+	    このため、設定を失敗すると、パケットがエラー表示を伴わずに
+	    消えてなくなることになります。
+	    このパケットの内容は、すでに解読不能になっているので、
+	    <a href="http://netbsd.gw.com/cgi-bin/man-cgi?tcpdump+8+NetBSD-5.1+i386">tcpdump(8)</a> はたいして役に立ちません。
+	    他の相手方を伴う設定は、くれぐれも慎重にするようにしてください。
+	  </li>
+<li class="listitem">IKE 交渉は net.key.larval_lifetime sysctl MIB (デフォルトでは 30 秒)
+	    の範囲内で完了しなければならないため、
+	    遅いマシンでは鍵の交渉ができないかもしれません。
+	    本当に遅いマシンをお使いなら、この変数値を増やしてみてください。
+	  </li>
+</ul></div>
+      
+	<h4 class="title">
+<a name="issues"></a>既知の問題 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">カーネル IPsec ポリシーエンジンの制限のため、トンネルモード AH
+	    は、期待通りには動作しません。
+	    トンネルモード AH は使わないようにしてください。
+	  </li>
+<li class="listitem">IPsec と <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipf+4+NetBSD-5.1+i386">ipf(4)</a> のコードは、うまく協調しません。
+	    詳細は <a class="ulink" href="#ipf-interaction" target="_top">"ipfilter との相互の影響"</a>
+	    を参照してください。
+	  </li>
+<li class="listitem">IPsec ポリシールールは、 tcp/udp 以外のプロトコル仕様に対しては
+	    十分テストされていません。安全側を取る場合にはプロトコル
+	    <span class="quote">“<span class="quote">any</span>”</span> (= アドレスマッチのみ) を使ってください。この問題は、すべての
+	    パケットフィルター一般についていえるものです - 通常のパケットフィルター
+	    記述は、ヘッダーチェインに関してうまくふるまいません。
+	  </li>
+</ul></div>
+      
+	<h4 class="title">
+<a name="conformance"></a>標準化、互換性への適合 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>KAMEのIPsecの実装(NetBSDツリーに含められる)が、最新のIPsec標準に適合しています。
+	  <a class="ulink" href="http://orange.kame.net/dev/cvsweb.cgi/kame/netbsd/sys/netinet6/IMPLEMENTATION" target="_top">KAME の
+	    NetBSD 実装ノート</a>
+	  には、実装するための包括的な標準化文書があります。</p>
+
+	<p>他の実装との互換性が、さまざまな場所で確認されました。
+	  <a class="ulink" href="http://orange.kame.net/dev/cvsweb.cgi/kame/netbsd/sys/netinet6/IMPLEMENTATION" target="_top">KAME の
+	    NetBSD 実装ノート</a>
+	  に含まれる実装は、過去に互換性は確認されたものです。
+	  しかし、互換性のテスト後にコードは変更される可能性がありますので、互換性がなくなっている可能性もありますので注意して下さい。
+	  NetBSDデバイスとpeerデバイスがある特定の構成のみで互換性をとることも可能です。</p>
+
+	<p>もし他の実装でNetBSDデバイスを設定する場合、そのIPsecの仕様/実装には多くの難点があることに注意してください。
+	  互換性を取るためにはpeerのデバイスと同じデバイスでNetBSDデバイスの構成を設定する必要があります。</p>
+      
+	<h4 class="title">
+<a name="compatibility"></a>他のIPsecスタックとのAPI互換性 (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>IPsecの知識がありユーザーランドのコードを書きたいなら、あなたはIPsecプラットフォーム間のAPI互換性について知りたくなるでしょう。</p>
+
+	<p>我々はカーネル内に鍵データベースを操作するために RFC2367 PF_KEY APIを持っています。
+	  このAPIの基本的な部分は他のUNIXベースのIPsecスタック上で利用可能であり、そしてある程度(例えば、OpenBSDが同様にPF_KEY APIを実行する)の互換性があるかも知れません。
+	  かめIPsecスタックが、他のグループがそうするのと同じように、ある特定の方法でこれを拡張します。
+	  拡張された部分は他の(非かめ)IPsecスタックと両立できません。</p>
+
+	<p>IPsecポリシー管理APIの仕様書ドキュメントはありません。
+	  それ故に、IPsecポリシー管理APIで(非かめ)IPsecスタックとの互換性を想定することができません。</p>
+
+	<p>設定ファイルの書式の標準がありません。
+	  NetBSD 以外の IPsec デバイスとの間で設定をコピーしたい場合は、設定ファイルの書式を変換する必要があるでしょう。</p>
+
+	<p>NetBSDとFreeBSDは同じ原点(かめ)からIPsecコードベースを共有するため、API互換性があります。
+	  しかしながら、異なった日付のかめコードをマージした時点で、NetBSDとFreeBSDのIPsecコードには違いが生じます。
+	  標準的なユーザーランドアプリケーションがその違いを認識する必要はありません。
+	  ただし、 IPsec key management daemons の実装をするのであれば、
+	  PF_KEY API の差異を考慮する必要があるでしょう。</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">NetBSD 1.5 は2000年6月初旬にかめIPsecスタックを取り込んでいます。
+	  </li>
+<li class="listitem">FreeBSD 4.0-RELEASE は1999年12月初旬にかめIPsecスタックを取り込んでいます。
+	  </li>
+<li class="listitem">マニュアルでのipsec鍵設定、 AH/ESPオペレーションまたは
+	    <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ipsec_set_policy+3+NetBSD-5.1+i386">ipsec_set_policy(3)</a> APIはカーネルにおける相違はありません。
+	  </li>
+<li class="listitem">PF_KEYソケット、libipsec API、PF_KEYラッパー関数などには違いがあります。
+	    直接PF_KEYソケットを操作する
+	    (<a href="http://netbsd.gw.com/cgi-bin/man-cgi?racoon+8+NetBSD-5.1+i386">racoon(8)</a> のようなIKEデーモンや
+	    <a href="http://netbsd.gw.com/cgi-bin/man-cgi?setkey+8+NetBSD-5.1+i386">setkey(8)</a>のような鍵設定プログラム)
+	    アプリケーションを実装する際に、その違いは辛いかもしれません。
+	  </li>
+</ul></div>
+
+	<p>NetBSD 1.4 から 1.5 までの NetBSD-current の開発において、
+	  KAME の IPsec 部分を 3 度にわたって導入しました。
+	  この導入には、後方非互換な API の変更を含んでいます。
+	  1.4 から 1.5 までの NetBSD-current を使う場合は、
+	  それが最新のコードを使っているか確認してください。
+	  NetBSD 1.5 では、 NetBSD 1.5 で提供される API について、
+	  完全なバイナリー互換または API バージョンチェックを実現する予定です。</p>
+      
+	<h4 class="title">
+<a name="readings"></a>書籍その他の読みものは ? (<a href="#IPsecFAQ">top</a>)
+  </h4>
+
+	<p>文字どおり、山ほどの書籍が出ています。</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+<a class="ulink" href="http://search.barnesandnoble.com/booksearch/results.asp?WRD=ipsec" target="_top">
+	      Barnes &amp; Noble for books を <span class="quote">“<span class="quote">IPsec</span>”</span> で検索</a>
+	    (注意: 私たちは書店について、何らの推奨もしていません)
+	  </li></ul></div>
+      <hr>
+<h3 class="title">他のリンク</h3>
+	<h4 class="title">
+<a name="linklist"></a>雑多なリンク (<a href="#Other_links">top</a>)
+  </h4>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<a class="ulink" href="rasvpn.html" target="_top">Racoon を使ったリモートユーザーアクセス VPN の構築方法</a>
+	  </li>
+<li class="listitem">
+<a class="ulink" href="http://asherah.dyndns.org/~josh/ipsec-howto.txt" target="_top">FreeBSD IPsec mini-HOWTO</a>, Windows 2000 との相互運用を含みます
+	  </li>
+<li class="listitem">
+<a class="ulink" href="http://www.kame.net/" target="_top">かめプロジェクト</a>,
+	    現在マージされている IPv6 および IPsec 実装のでもと
+	  </li>
+<li class="listitem">
+<a class="ulink" href="http://orange.kame.net/dev/cvsweb.cgi/kame/netbsd/sys/netinet6/IMPLEMENTATION" target="_top">KAME の
+	      NetBSD 実装ノート</a>
+	  </li>
+<li class="listitem">
+<a class="ulink" href="http://orange.kame.net/dev/cvsweb.cgi/kame/IMPLEMENTATION" target="_top">KAME の
+	      実装ノート</a> - 内容は NetBSD と関係ないものも含まれます
+	  </li>
+<li class="listitem">
+<a class="ulink" href="http://orange.kame.net/dev/cvsweb.cgi/kame/COVERAGE" target="_top">
+	      KAME プラットフォーム間での実装の差分</a>
+	  </li>
+<li class="listitem">
+<a class="ulink" href="../../../about/crypto-export.html" target="_top">
+	      NetBSD 暗号コードの輸出に関して</a>
+	  </li>
+</ul></div>
+      <hr>
+<em><a href="../">NetBSD ドキュメンテーション: ネットワーク</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

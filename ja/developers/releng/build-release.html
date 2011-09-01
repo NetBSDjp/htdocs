@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+
+<title>NetBSD 開発者ドキュメンテーション: 
+リリースおよびスナップショットの構築とパッケージング</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-developers-releng-build-release"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD 開発者ドキュメンテーション: 
+リリースおよびスナップショットの構築とパッケージング</h1>
+<p>
+  ここからの説明は、NetBSD バージョン 1.5 およびそれ以降のリリースおよび
+  スナップショットの構築に関するものです。ソースツリーからリリースを含む.tgz
+  ファイルのセットを作成するまでに踏む段階をカバーしています。
+  もちろんスナップショットであることを明確に記すべきですが、この方法でスナップショットも作成できます。</p>
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3> スナップショットをアップロードするとき、
+    <a class="ulink" href="../features/" target="_top">機能一覧
+    </a>をアップデートし忘れないでください。</div>
+<p>
+  NetBSD のリリース方式は
+  <code class="code"><a href="http://netbsd.gw.com/cgi-bin/man-cgi?release+7+NetBSD-5.1+i386">release(7)</a></code> マニュアルページで説明されています。
+  また、 <code class="filename">/usr/share/mk/bsd.README</code>
+  ファイルも有用な資料です。</p>
+<p>
+  .tgzファイルは二つの段階を踏んで構築されます。まず初めに、
+  基本配布物を構築します。次の段階で X Window System の配布ファイルを構築します。
+  アーキテクチャーによっては、さらに段階を踏んで、インストール用のもの
+  (ブートローダーやブートフロッピーイメージなど)構築する必要があります。
+  次に挙げる段階は全て、NetBSDソースツリーのルートへたどり着くためには、
+  `src'に移動するものと仮定しています。</p>
+<p>
+  昔のバージョンでは、NetBSD には (合衆国) 国内専用の部分がありました。
+  これは、合衆国とカナダ以外へは合法的に持ち出すことができなかった DES
+  に基づくコードを含んだ部分です。詳細は
+  <a class="ulink" href="../../about/crypto-export.html" target="_top">NetBSD
+  の暗号コードの輸出について</a>のページをご覧ください。</p>
+<p>
+リリースを構築し、パッケージ化するステップは以下の通りです。</p>
+<h3 class="title"><a name=""></a></h3>
+<ul>
+<li><a href="#"> I. 基本システムの構築 </a></li>
+<li><a href="#"> II. X の構築 </a></li>
+<li><a href="#"> III. インストール用のものの構築 </a></li>
+</ul>
+<hr>
+<h3 class="title"></h3>
+<h4 class="title">
+<a name=""></a> I. 基本システムの構築  (<a href="#">top</a>)
+  </h4>
+
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"> 構築に必要な変数を設定します。以下に挙げる変数を、
+  環境変数 (優先度最低)、
+  <code class="filename">/etc/mk.conf</code>、または make のコマンドライン
+  (優先度最高) で設定可能です。
+  以下は、<code class="filename">/etc/mk.conf</code> ファイルの例です。
+  <pre class="programlisting">
+  # ソースツリーの場所。
+  BSDSRCDIR=/home/cjs/netbsd/src
+  # 構築で作られるオブジェクトファイルの場所。
+  BSDOBJDIR=/home/cjs/netbsd/obj
+  # これら二つは実際には必要ありません; あとで再構築する際に
+  # 楽になります。厳密な定義については /usr/share/mk/bsd.README
+  # を参照してください。 src 最上層の Makefile もあわせて参照してください。
+  BUILD=1
+  UPDATE=1
+  # バイナリーのインストール先
+  DESTDIR=/usr/home/cjs/netbsd/destdir
+  # 実際のリリースファイルが置かれる場所
+  RELEASEDIR=/usr/home/cjs/netbsd/release
+  </pre>
+
+  <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>src ディレクトリー内のスクリプトのなかには、
+  <code class="varname">DESTDIR</code> を環境変数で設定しておかなければならないものがあります (たとえば <code class="filename">checkflist</code>、後述)
+  また、<code class="varname">DESTDIR</code> を
+  <code class="filename">/etc/mk.conf</code> で設定すると、pkgsrc
+  のパッケージ構築で問題が起きる可能性もあります。
+  <code class="varname">DESTDIR</code> と <code class="varname">RELEASEDIR</code> は、環境変数か make
+  のコマンドラインで設定するのが簡単かつ安全でしょう。</div>
+  </li>
+<li class="listitem"> ソースのあるディレクトリーに移動して、リリースを構築します。
+  <pre class="programlisting">
+  cd src
+  make obj
+  make release
+  </pre>
+  ここで、いくつかの変数を make のコマンドラインで指定するのもよいかもしれません。
+  たとえば以下のようにします。
+  <pre class="programlisting">
+make DESTDIR=/home/destdir RELEASEDIR=/home/releasedir release
+  </pre>
+</li>
+</ol></div>
+
+<h4 class="title">
+<a name=""></a> II. X の構築  (<a href="#">top</a>)
+  </h4>
+
+<p> Xのセットを構築しパッケージングする情報は、
+  上記主要セットと同じです。
+  X のソースがあるディレクトリーに移動して、以下のようにします。
+  </p>
+<pre class="programlisting">
+    make release
+  </pre>
+<p>
+  または、make のコマンドラインで変数を指定する場合は以下のようにします。
+  </p>
+<pre class="programlisting">
+  make DESTDIR=/home/destdir RELEASEDIR=/home/release
+</pre>
+
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+  I および II では、セットリストが最新のものであると仮定することに注意して下さい。
+  セットリストが最新であるかチェックしたいかもしれません。それぞれ、
+  `make release' するかわりに以下のようにします。
+  <pre class="programlisting">
+  cd src
+  make obj
+  # オブジェクトコードを構築し、インストールする。
+  make build
+  # 配布物のうち最後のものをインストールします。
+  cd src/etc &amp;&amp; make distribution
+  # xsrc のオブジェクトコードを構築し、インストールする。
+  cd xsrc &amp;&amp; make build
+</pre>
+</div>
+
+  <p> セットリストが正確であるかチェックし、適切にアップデートして、
+  セット用のtarファイルを作るために、以下のようにします。
+  </p>
+<pre class="programlisting">
+  cd src/distrib/sets
+  sh ./checkflist -both
+  </pre>
+<p>
+  必要ならば、ここで src/distrib/sets/lists/*/* ファイルを編集します。
+  </p>
+<pre class="programlisting">
+  cd src/etc
+  make INSTALL_DONE=1 release
+  cd xsrc
+  make INSTALL_DONE=1 release
+</pre>
+
+
+<h4 class="title">
+<a name=""></a> III. インストール用のものの構築  (<a href="#">top</a>)
+  </h4>
+
+  <p>
+  ほとんどのアーキテクチャーでは、インストール用の基本的なものは
+  上述の I において `make release' で処理されます。ただし、これらの一部には、
+  <code class="filename">src/distrib/<em class="replaceable"><code>arch</code></em></code> 以下でアーキテクチャー依存の手順が必要なものがあります。
+  そのような手順のなかには、この説明でまだ記してないものもあります。
+  ここでできた成果物は、 (<code class="code"><a href="http://netbsd.gw.com/cgi-bin/man-cgi?release+7+NetBSD-5.1+i386">release(7)</a></code>
+  マニュアルページに列挙されている慣習に従って)
+<code class="filename">$RELEASEDIR</code> 
+  以下に手動で置く必要があります。</p>
+
+<p>
+  CD-ROM 作成用に、リリースの ISO9660 イメージを作るには、
+  上述の I と II の手順を踏み、また、<span class="command"><strong>mkisofs</strong></span> (
+  <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/sysutils/cdrtools/README.html" target="_top"><code class="filename">sysutils/cdrtools</code></a>
+  パッケージにあります) をパスの通ったところにインストールしておきます。
+  それから、
+  </p>
+<pre class="programlisting">
+  cd src/etc
+  make iso-image
+  </pre>
+<p>
+とすると、ISO9660 イメージが作られ、
+<code class="filename">$RELEASEDIR/installation/cdrom</code> に保存されます。</p>
+
+
+
+  <p>
+  このページには、手を入れる余地がまだ大いにありえます。
+  このページへのコメントやアップデートは、
+  <code class="email">&lt;<a class="email" href="mailto:cjs@NetBSD.org">cjs@NetBSD.org</a>&gt;</code> へ送ってください。</p>
+
+</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

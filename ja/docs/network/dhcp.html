@@ -1,0 +1,283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+    
+    <title>NetBSD DHCP HOWTO</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-network-dhcp"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD DHCP HOWTO</h1>
+<h3 class="title"><a name="overview">DHCP について</a></h3>
+<ul>
+<li><a href="#introduction">紹介と目的</a></li>
+<li><a href="#what-is-dhcp">DHCPとは何か</a></li>
+<li><a href="#who-needs-dhcp">DHCPはどのような人にとって有用か</a></li>
+<li><a href="#more-info-sources">より詳細な情報の所在</a></li>
+</ul>
+<h3 class="title"><a name="dhcp-setup">DHCP クライアントの設定</a></h3>
+<ul>
+<li><a href="#configure-dhcp">DHCP のコンフィギュレーション</a></li>
+<li><a href="#enable-dhcp">DHCP を有効にする。</a></li>
+<li><a href="#keep-resolv-conf">dhclient が /etc/resolv.conf を攻撃するのを抑止する方法</a></li>
+</ul>
+<h3 class="title"><a name="dhcp-setup">DHCP サーバーの設定</a></h3>
+<ul>
+<li><a href="#dhcp-setup-intro">序</a></li>
+<li><a href="#configure-dhcpd">DHCPD のコンフィギュレーション</a></li>
+<li><a href="#enable_dhcpd">DHCPD を有効にする</a></li>
+<li><a href="#touch">dhcpd.leases ファイルの作成</a></li>
+</ul>
+<hr>
+<h3 class="title">DHCP について</h3>
+	<h4 class="title">
+<a name="introduction"></a>紹介と目的 (<a href="#overview">top</a>)
+  </h4>
+
+	<p>このドキュメントの目的は、DHCPのクライアントとサーバーを NetBSDオペ
+	  レーティングシステムにおいて設定する方法を説明することです。</p>
+      
+	<h4 class="title">
+<a name="what-is-dhcp"></a>DHCPとは何か (<a href="#overview">top</a>)
+  </h4>
+
+	<p>DHCPはDynamic Host Configuration Protocolの略です。
+	  それによって、ホストコンピューターの
+	  ネットワーク設定を動的に行うことがで
+	  きます。
+	  基本的なアイディアは以下の通り:</p>
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">DHCPクライアントが起動された時、そのコンピューターには最初はIPアドレスが割当てられていない。</li>
+<li class="listitem">クライアントはそのネットワーク上の任意のDHCPサーバーに対してブロードキャストメッセージを発行する。</li>
+<li class="listitem">やりとりが行われ、DHCPサーバーはクライアントにIPアドレスを割当てる。
+	    サーバーはまた、その他の重要なネットワーク設定パラメーター(例えば、ネームサーバーのアドレスなど)も通知する。</li>
+</ul></div>
+      
+	<h4 class="title">
+<a name="who-needs-dhcp"></a>DHCPはどのような人にとって有用か (<a href="#overview">top</a>)
+  </h4>
+
+	<p>多くのインターネット・サービス・プロバイダー (ISP) は ISP が
+	  動的に IP アドレスを割り振り、またその他の情報を通知できるようにする
+	  ために、顧客に対して DHCP クライアントを使用するように要求します。
+	  別の使い道は、一つ以上のネットワークに接続する可能性のあるラップトップコンピューターです。
+	  例えば、ラップトップはオフィスと自宅の両方でネットワークに接続されることがあります。
+	  この場合、異なる2つのネットワークに接続するために手動で設定を変更し直す必要がないので、
+	  DHCPを使うのがぴったりと言えます。この場合は、オフィスと自宅の両方に DHCP サーバーが
+	  存在し、ラップトップは DHCP のクライアントである事が必要です。</p>
+      
+	<h4 class="title">
+<a name="more-info-sources"></a>より詳細な情報の所在 (<a href="#overview">top</a>)
+  </h4>
+
+	<p>一般的な DHCP に関するより詳細な情報は、
+	  <a class="ulink" href="http://www.cis.ohio-state.edu/cgi-bin/rfc/rfc1541.html" target="_top"><span class="bold"><strong>RFC 1541</strong></span></a>, 
+	  Request for Comments document for the Dynamic Host
+	  Configuration Protocol (DHCP) を参照して下さい。
+	  また、包括的な
+	  <a class="ulink" href="http://www.dhcp-handbook.com/dhcp_faq.html" target="_top">DHCP FAQ</a> もあります。</p>
+	<hr>
+<h3 class="title">DHCP クライアントの設定</h3>
+	<h4 class="title">
+<a name="configure-dhcp"></a>DHCP のコンフィギュレーション (<a href="#dhcp-setup">top</a>)
+  </h4>
+
+	<p>DHCP のクライアントの設定は <code class="filename">/etc/dhclient.conf</code>
+	  ファイルを使っておこないますが、このファイルがなくても DHCP
+	  はちゃんと動作します。詳細は <a href="http://netbsd.gw.com/cgi-bin/man-cgi?dhclient.conf+5+NetBSD-5.1+i386">dhclient.conf(5)</a> と
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?dhcp-options+5+NetBSD-5.1+i386">dhcp-options(5)</a> を参照してください。典型的な
+	  <code class="filename">/etc/dhclient.conf</code> を以下に示します。</p>
+	<pre class="programlisting">
+send host-name "myname.my.domain";                 &lt;=== ここに
+                                                        ホスト名を書く
+send dhcp-client-identifier "myident";             &lt;=== ここにホスト
+                                                        識別子を書く
+							(これは myname と同じ
+							 であることが多い).
+request subnet-mask, broadcast-address, routers,
+    domain-name-servers;
+
+timeout 30;
+retry 60;
+select-timeout 5;
+
+script "/sbin/dhclient-script";
+
+lease {
+  interface "sn0";                               &lt;=== ここにインターフェース
+                                                      デバイスを書く
+  option host-name "myname.my.domain";           &lt;=== ここに
+                                                      ホスト名を書く
+  option subnet-mask 255.255.255.0;
+  option domain-name "my.domain";                &lt;=== ここに
+                                                      ドメイン名を書く
+  option domain-name-servers 127.0.0.1;
+  renew 2 2000/1/12 00:00:01;
+  rebind 2 2000/1/12 00:00:01;
+  expire 2 2000/1/12 00:00:01;
+}
+</pre>
+      
+	<h4 class="title">
+<a name="enable-dhcp"></a>DHCP を有効にする。 (<a href="#dhcp-setup">top</a>)
+  </h4>
+
+	<p><code class="filename">/etc/rc.conf</code> を編集し、'<code class="code">dhclient</code>' 行を
+	  '<code class="code">dhclient=YES</code>' となるように変更します。デフォルトでは、
+	  DHCP の要求は、繋がっている全ネットワークインターフェースに送られます。
+	  1 枚の、あるいは一部のネットワークカードで DHCP を使いたいだけの場合は、
+	  '<code class="code">dhclient_flags</code>' 行に DHCP 設定をおこなう
+	  ネットワークインターフェースのリストを追加します。例えば
+	  '<code class="code">dhclient_flags="ae1"</code>'
+	  とします。</p>
+
+	<p>次回のリブート時にマシンは自動的に DHCP クライアントとして設定されます。
+	  リブートせずに DHCP を有効にするには、コマンド
+	  '<code class="code">sh /etc/rc.d/dhclient start</code>' を実行して下さい。</p>
+      
+	<h4 class="title">
+<a name="keep-resolv-conf"></a>dhclient が /etc/resolv.conf を攻撃するのを抑止する方法 (<a href="#dhcp-setup">top</a>)
+  </h4>
+
+	<p>通常、 dhclient は DHCP サーバーからの情報を
+	  <code class="filename">/etc/resolv.conf</code>
+	  に上書きします。そうしたくない稀な状況では、
+	  <code class="filename">/etc/dhclient-enter-hooks</code>
+	  に適切にフックを書いておくことで、
+	  これを抑止できます:</p>
+
+	  <pre class="programlisting">
+<code class="prompt">#</code> <strong class="userinput"><code>cat /etc/dhclient-enter-hooks</code></strong>
+make_resolv_conf() {
+        echo "doing nothing to resolv.conf"
+}</pre>
+	  <p>さらなる情報は
+	    <a href="http://netbsd.gw.com/cgi-bin/man-cgi?dhclient-script+8+NetBSD-5.1+i386">dhclient-script(8)</a> マニュアルページを参照してください。</p>
+      <hr>
+<h3 class="title">DHCP サーバーの設定</h3>
+	<h4 class="title">
+<a name="dhcp-setup-intro"></a>序 (<a href="#dhcp-setup">top</a>)
+  </h4>
+
+	<p>この節では DHCP サーバーの設定方法について説明します。
+	  あなたの LAN で動的にアドレスを割り当てたい場合にのみ
+	  DHCP サーバーが必要であることに注意して下さい。
+	  詳細は <a href="http://netbsd.gw.com/cgi-bin/man-cgi?dhcpd+8+NetBSD-5.1+i386">dhcpd(8)</a>, <a href="http://netbsd.gw.com/cgi-bin/man-cgi?dhcpd.conf+5+NetBSD-5.1+i386">dhcpd.conf(5)</a>, 
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?dhcp-options+5+NetBSD-5.1+i386">dhcp-options(5)</a> を参照して下さい。</p>
+      
+	<h4 class="title">
+<a name="configure-dhcpd"></a>DHCPD のコンフィギュレーション (<a href="#dhcp-setup">top</a>)
+  </h4>
+
+	<p>DHCP サーバーの設定は
+	  <code class="filename">/etc/dhcpd.conf</code> ファイルに記述します。
+	  もし、このファイルがなければ作成して下さい。
+	  このファイルはカスタマイズすることが必要です。
+	  特に、ホスト名やイーサネットインターフェースを変更することを忘れないようにしてください。
+	  典型的な <code class="filename">/etc/dhcpd.conf</code>
+	  を以下に示します。 この例では、7つの
+	  アドレスが、DHCP クライアント用に確保されます。確保されるアドレスは 192.168.0.2 から
+	  192.168.0.8 です。DHCP サーバーはクライアントに対して、使用すべき IP アドレス、ネットマスク、
+	  ルーター、ネームサーバー とドメイン名を通知します。</p>
+
+	<pre class="programlisting">
+# Setting DHCPD global parameters
+allow unknown-clients;
+
+ddns-update-style ad-hoc;
+
+# Set parameters for the 192.168.0.0/24 subnet.
+subnet 192.168.0.0 netmask 255.255.255.0 {
+range 192.168.0.2 192.168.0.8;                &lt;=== ここに割り当て可能な
+                                                   IP アドレスの範囲を書く
+default-lease-time 604800;                    &lt;=== デフォルトの貸与時間(単位は秒)。
+                                                   クライアントが明示的に要求してこない
+                                                   場合に用いられます。
+max-lease-time 604800;                        &lt;=== 最大貸与時間
+option subnet-mask 255.255.255.0;             &lt;=== クライアントに通知するネットマスク
+option domain-name-servers 1.2.3.4, 1.2.3.5;  &lt;=== ネームサーバーの IP アドレスの
+                                                   リストをここに書く
+option domain-name "your.domain.name";
+option routers 192.168.0.1;                   &lt;=== クライアントが使用すべきルーターの
+                                                   リスト
+}</pre>
+	
+	<h4 class="title">
+<a name="enable_dhcpd"></a>DHCPD を有効にする (<a href="#dhcp-setup">top</a>)
+  </h4>
+
+	<p><code class="filename">/etc/rc.conf</code> を編集し、'<code class="code">dhcpd</code>' 行を
+	  '<code class="code">dhcpd=YES</code>' となるように変更します。全ネットワークインターフェースで
+	  DHCP 要求へのサービスをしたいわけでない場合には、
+	  '<code class="code">dhcpd_flags</code>'行に DHCPD が動作する
+	  ネットワークインターフェースのリストを追加します。例えば
+	  '<code class="code">dhcpd_flags="-q ae1"</code>'
+	  とします。</p>
+	
+	<h4 class="title">
+<a name="touch"></a>dhcpd.leases ファイルの作成 (<a href="#dhcp-setup">top</a>)
+  </h4>
+
+	<p>dhcpd は <code class="filename">/var/db/dhcpd.leases</code>
+	  ファイルを必要とします。
+	  '<code class="code">touch /var/db/dhcpd.leases</code>' してファイルを作ります。</p>
+      <hr>
+<em><a href="./">ネットワーキングドキュメンテーション</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

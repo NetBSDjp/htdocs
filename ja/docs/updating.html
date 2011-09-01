@@ -1,0 +1,266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+    
+    <title>安定版 NetBSD リリースの更新</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-updating"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../ja/">
+	  ホーム</a> | 
+	<a href="../../ja/about/">
+	  概要</a> | 
+	<a href="../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../ja/support/">
+	  サポート</a> | 
+	<a href="../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>安定版 NetBSD リリースの更新</h1>
+<h3 class="title"><a name="top"></a></h3>
+<ul>
+<li><a href="#current">-current を追跡する</a></li>
+<li><a href="#update-src">ソースを更新する</a></li>
+<li><a href="#tools">必要なツールを構築する</a></li>
+<li><a href="#kernel">新しいカーネルを構築する</a></li>
+<li><a href="#userland">ユーザーランドをあらたに構築する</a></li>
+<li><a href="#installing">構築したカーネルとユーザーランドをインストールする</a></li>
+<li><a href="#parts">ソースツリーの一部だけを更新する</a></li>
+<li><a href="#summary">更新手順の簡潔なまとめ</a></li>
+</ul>
+<hr>
+<h3 class="title"></h3>
+        <h4 class="title">
+<a name="current"></a>-current を追跡する (<a href="#top">top</a>)
+  </h4>
+        <p>
+          NetBSD-current
+          の追跡方法についての資料は、
+          <a class="ulink" href="current/" target="_top">この文書</a>をご覧ください。
+        </p>
+      
+        <h4 class="title">
+<a name="update-src"></a>ソースを更新する (<a href="#top">top</a>)
+  </h4>
+        <p>
+          安定版 (
+          <a class="ulink" href="../releases/formal-3/" target="_top">NetBSD 3.1</a>
+          など) の NetBSD リリースを、本番環境として使っている場合、
+          そのリリース向けのセキュリティー上の修正を取り込むために、
+          時々ソースを更新のうえシステムまたはカーネルを再構築すべきです。
+       </p>
+
+       <p>以下に示す各手順のほとんどは、一般ユーザーの権限でおこなうことができます。
+       新しいカーネルとユーザーランドのインストールのみ、
+       root 権限が必要です。
+       以下の例示では、作業ディレクトリーとして <code class="filename">/usr</code>
+       を使っていますが、ユーザーのホームディレクトリー以下で作業をおこなうことができます。
+       通常、一般ユーザーは <code class="filename">/usr</code> 以下への書き込み権限を持っていませんが、
+       これは root が変更することができます。 </p>
+
+     <p> 
+         リリース版のソースの再現や更新は、適切な枝タグを指定して、
+         <a class="ulink" href="current/#using-anoncvs-over-ssh" target="_top">anoncvs オーバー
+          ssh</a>
+          を使っておこなうことができます。
+          たとえば、
+          NetBSD 3.1 リリースのソースをチェックアウトするためには、
+          以下のようにします:
+        </p>
+        <pre class="programlisting">
+$ cd /usr
+$ export CVS_RSH=ssh 
+$ cvs -d anoncvs@anoncvs.NetBSD.org:/cvsroot co -r netbsd-3-1 -P src</pre>
+
+  <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+  間違ってソースツリーを<span class="emphasis"><em>ダウングレード</em></span>することのないよう、
+  適切な意図通りの枝タグを選ぶように気を付けてください。
+  </div>
+
+  <p>既存のソースツリーを更新するには以下のようにします:</p>
+
+<pre class="programlisting">
+$ cd /usr/src
+$ export CVS_RSH=ssh 
+$ cvs update -dP</pre>
+
+
+  <h4 class="title">
+<a name="tools"></a>必要なツールを構築する (<a href="#top">top</a>)
+  </h4>
+
+  <p>次にすることは、toolchain の構築です。
+  あらかじめ <code class="filename">obj/</code> および <code class="filename">tools/</code>
+  ディレクトリーを作成してから、<span class="command"><strong>build.sh</strong></span> を実行する必要があります。</p>
+
+  <pre class="programlisting">
+$ mkdir /usr/obj /usr/tools
+$ cd /usr/src
+$ ./build.sh -O /usr/obj -T /usr/tools -U -u tools</pre>
+
+
+        <h4 class="title">
+<a name="kernel"></a>新しいカーネルを構築する (<a href="#top">top</a>)
+  </h4>
+        <p>
+          新しいカーネルを構築する方法は、
+          <a class="ulink" href="kernel/#how_to_build_a_kernel" target="_top">この文書
+          </a>
+          で説明している方法とほぼ同じです。
+        </p>
+
+<p>カーネルを構築する手順は、以下の通りです。</p>
+<pre class="programlisting">
+$ cd /usr/src
+$ ./build.sh -O ../obj -T ../tools kernel=&lt;KERNEL&gt;
+</pre>
+
+
+      
+        <h4 class="title">
+<a name="userland"></a>ユーザーランドをあらたに構築する (<a href="#top">top</a>)
+  </h4>
+        <p>
+          かならず
+          <code class="code">build.sh -h</code>
+          の説明を見て、詳細は
+          <span class="emphasis"><em>UPDATING</em></span>
+          と
+          <span class="emphasis"><em>BUILDING</em></span>
+          ファイルで確認するようにしてください─コマンドラインや
+          <code class="filename">/etc/mk.conf</code>
+          で指定できるオプションが<span class="emphasis"><em>たくさん</em></span>あるので、
+          これは重要なことです。
+        </p>
+
+<p>ユーザーランドを構築するには、以下のようにします。</p>
+<pre class="programlisting">
+$ ./build.sh -O ../obj -T ../tools -U distribution</pre>
+
+      
+  <h4 class="title">
+<a name="installing"></a>構築したカーネルとユーザーランドをインストールする (<a href="#top">top</a>)
+  </h4>
+
+<p>構築した新しいカーネルをインストールし、(新しいカーネルが動作することを確認するため)
+リブートし、新しいユーザーランドをインストールすることが、
+安定版 NetBSD の更新手順の最後の作業です。以下のようにします。</p>
+<pre class="programlisting">
+$ cd /usr/src
+$ su
+# mv /netbsd /netbsd.old
+# mv /usr/obj/sys/arch/&lt;ARCH&gt;/compile/&lt;KERNEL&gt;/netbsd /
+# shutdown -r now
+...
+$ cd /usr/src
+$ su
+# ./build.sh -O ../obj -T ../tools -U install=/ </pre>
+
+<p>新しいカーネル <code class="filename">netbsd</code> がうまくブートしなかった場合は、
+<code class="filename">netbsd.old</code> カーネルをブートして、
+以前の状態に戻すことができます。</p>
+
+
+        <h4 class="title">
+<a name="parts"></a>ソースツリーの一部だけを更新する (<a href="#top">top</a>)
+  </h4>
+
+        <p>
+          セキュリティー勧告が発行され、
+          再構築が必要となったライブラリーやアプリケーションだけを構築したい場合、
+          最善の選択は、勧告に書かれた説明どおりにすることです。
+          一例としては以下のようになります:
+        </p>
+
+<pre class="programlisting">
+$ cd src
+$ export CVS_RSH=ssh cvs update -d -P -r netbsd-3-1 gnu/dist/sendmail/sendmail
+$ cd gnu/usr.sbin/sendmail
+$ make USETOOLS=no cleandir dependall
+$ su
+# make USETOOLS=no install</pre>
+
+
+  <h4 class="title">
+<a name="summary"></a>更新手順の簡潔なまとめ (<a href="#top">top</a>)
+  </h4>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+            <p>ソースの更新:</p>
+            <pre class="programlisting">
+$ cd /usr/src
+$ export CVS_RSH=ssh 
+$ cvs update -dP</pre>
+          </li>
+<li class="listitem">
+  <p>カーネルとユーザーランドの再構築:</p>
+  <pre class="programlisting">
+$ cd /usr/src
+$ ./build.sh -O ../obj -T ../tools tools
+$ ./build.sh -O ../obj -T ../tools kernel=&lt;KERNEL&gt;
+$ ./build.sh -O ../obj -T ../tools -U distribution</pre>
+  </li>
+<li class="listitem">
+  <p>Installing the new kernel and userland:</p>
+  <pre class="programlisting">
+$ su
+# mv /netbsd /netbsd.old
+# mv /usr/obj/sys/arch/&lt;ARCH&gt;/compile/&lt;KERNEL&gt;/netbsd /
+# shutdown -r now
+...
+$ cd /usr/src
+$ su
+# ./build.sh -O ../obj -T ../tools -U install=/ </pre>
+  </li>
+</ul></div>
+</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

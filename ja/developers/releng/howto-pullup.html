@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+
+<title>CVS pullup を実際に行う方法</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-developers-releng-howto-pullup"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>CVS pullup を実際に行う方法</h1>
+<div class="sect1">
+<div class="titlepage"></div>
+
+
+
+<p>リリースサイクルの期間中、普通はその初期段階に、開発者は
+リリースエンジニアの承認を受け、
+その後に自分で pullup を行うようになっています。</p>
+
+<p><code class="filename">foo.c</code>
+1.19から1.21
+への変更を pullup する場合を例にしてみましょう。</p>
+
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+ "1.21へ pullup する" という考え方は意味がありません --
+常に二つのバージョン間のdiffをあてることになります。
+どちらか一方が基本になるタグであるかもしれませんが、とにかくdiffを pullup するので、
+変更が起こった二つのバージョンをいつも知っている必要があります。</div>
+
+<p>まず初めに、完全な
+  <code class="filename">foo.c</code>から始めることを確認します。
+  </p>
+<pre class="programlisting">
+  cvs update -rnetbsd-1-4 foo.c
+  </pre>
+<p>
+  </p>
+
+<p>(このコマンドの効果については、最後にある注意を参照してください。)</p>
+
+
+<p>そして、 pullup したい変更を加えるため、<code class="filename">foo.c</code>にパッチを当てる必要があります。
+これには二つ方法があります。
+パッチファイルを作成してあてるか、それを避けるためにcvsコマンドのupdateにある
+<code class="option">-j</code> フラグを使う事ができます。</p>
+
+<p>まじない:
+  </p>
+<pre class="programlisting">
+   cvs diff -kk -c -r1.19 -r1.21 foo.c &gt;/tmp/patch
+  </pre>
+<p>
+  で、以下のコマンドであてることができるパッチファイルを作成できます。
+  </p>
+<pre class="programlisting">
+  patch &lt;/tmp/patch
+  </pre>
+<p>
+  こうするかわりに、パイプを介してパッチを直接あてることもできます。コマンド
+  </p>
+<pre class="programlisting">
+  cvs update -kk -j1.19 -j1.21 foo.c
+  </pre>
+<p>
+  は、基本的に上にかいてある二つの段階と同等で、
+  同じようにファイルにパッチをあてます。</p>
+
+<p>さあ、あなたが望んだ結果になっているか確認するため、
+  ファイルを手動で調べてみましょう。
+  <code class="filename">foo.c</code>が穂先と一致しているか調べたいならば
+  (多分1.21が穂先で、1.19が枝の分岐点か似たようなものでしょう) 、
+  こうします
+  </p>
+<pre class="programlisting">
+  cvs diff -kk -r1.21 foo.c
+  </pre>
+<p>
+  すると、差分はまったくないはずです (<code class="option">-kk</code> は RCS ID の展開を抑止します)。
+  もし<code class="filename">foo.c</code>が穂先と一致していないと思われるならば、
+  手動で大丈夫であることを調べるか、望んだ通りになることを確かめるため
+  cvsの創造的なセットを使用するかしなければいけません。</p>
+
+
+<p>とにかく、一度diffがあてられたら、こうします:
+  </p>
+<pre class="programlisting">
+  cvs commit foo.c
+  </pre>
+<p>
+  リリース枝のコミットメッセージの形式は、これまでの歴史のなかで、
+  追跡や保守を容易にするために標準化されてきました。
+  コミットメッセージの一行目は、以下の形式のいずれか、または明らかで軽微な亜種でなければなりません。
+  </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><code class="code">Pull up revision 1.45 (requested by
+  <span class="emphasis"><em>user</em></span>):</code></li>
+<li class="listitem"><code class="code">Pull up revision 1.45 (via patch, requested by
+  <span class="emphasis"><em>user</em></span>):</code></li>
+<li class="listitem"><code class="code">Pull up revisions 1.1-1.5 (new, requested by
+  <span class="emphasis"><em>user</em></span>):</code></li>
+<li class="listitem"><code class="code">Apply patch (requested by
+  <span class="emphasis"><em>user</em></span>):</code></li>
+</ul></div>
+<p>
+ コミットメッセージの二行目以降には、 pullup をした理由の説明を、
+自由な形式で記してかまいません。このメッセージでは、なるべく、
+修正方法の詳細を厳密に書くのではなく、<span class="bold"><strong>何を</strong></span>修正したのかを
+"対外的にわかるように" 説明するようにしてください。
+この説明は、スペース 2 個で字下げするようにし、
+また、パッチリリースに対しては、適切な
+<code class="filename">CHANGES</code> ファイルにこの説明の項目を加えてください。</p>
+
+<p>この pullup によって、公式に報告されている問題が修正された場合は、
+  コミットメッセージの説明の最後に <span class="bold"><strong>Fixes PR#nnnn</strong></span>
+  のように記してください。</p>
+
+<p>さて、コミットメッセージにリビジョン番号を正確に記録するよう求めましたが、
+  これは、同じディレクトリーに対する pullup をまとめてコミットして、"sync
+ with trunk," ですませたりしては<span class="emphasis"><em>いけない</em></span>ということです。これでは
+  どのバージョンを pullup したかがわからないからです。</p>
+
+
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+  コマンド
+  <pre class="programlisting">
+  cvs update -rnetbsd-1-4 foo.c
+  </pre>
+ は<code class="filename">foo.c</code>を"netbsd-1-4" へ貼り付け
+ (<code class="filename">CVS/Entries</code>に何が起こっているか見てください) 、
+  その後のCVSコマンドはこの"接着剤" を以下のコマンドで取らないかぎり、
+  このリリースに適応されることになります。
+  <pre class="programlisting">
+  cvs update -A foo.c
+  </pre>
+</div>
+
+
+</div>
+</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

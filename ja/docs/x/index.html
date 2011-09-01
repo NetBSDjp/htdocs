@@ -1,0 +1,670 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+    
+
+    <title>NetBSD ドキュメンテーション: X Window System</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-x-index"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD ドキュメンテーション: X Window System</h1>
+<h3 class="title"><a name="running-x">X の実行</a></h3>
+<ul>
+<li><a href="#wsmouse">XFree でマウスを動作させる方法は ?</a></li>
+<li><a href="#x-keyboard-maps">X でのキーボード配列を 'US' から変更する</a></li>
+<li><a href="#x-keyboard-nocaps">Caps キーをもうひとつの Control キーにする方法は</a></li>
+<li><a href="#xf86_corrupts_on_rage_128">Rage 128 でアクセラレートしていると XF86_SVGA でのグリフが乱れる</a></li>
+<li><a href="#slow_when_compiling">NetBSD 1.3.x でコンパイルすると X が非常に遅い</a></li>
+<li><a href="#bypassing_xdm">xdm をバイパスする方法</a></li>
+<li><a href="#startx_not_found">'startx' すると startx: Command not found. と文句を言われる。なぜ ?</a></li>
+<li><a href="#xinit_not_found">X が動かない - 'xinit: not found'</a></li>
+<li><a href="#startx_fails">startx が失敗する -'X connection to: 0.0 broken'</a></li>
+<li><a href="#xconsole">コンソール表示 ('su'などの) が X の表示をこわす</a></li>
+<li><a href="#wheel-mouse">マウスのホイールを使えるようにする方法は?</a></li>
+<li><a href="#xfree86-docs">XFree86 Documentation</a></li>
+<li><a href="#which_version">私が使っている XFree86 のバージョンは何?</a></li>
+<li><a href="#anti_aliased">NetBSD 上での X11 用アンチエイリアスフォントの設定方法</a></li>
+<li><a href="#fc-cache">Xft を使うアプリケーションが CPU を食っていますが、
+	何もしていないように見えます!</a></li>
+<li><a href="#font-error">'No fonts found' - どういう意味?</a></li>
+<li><a href="#x_wm">デフォルトのウィンドウマネージャーを変更する方法は?</a></li>
+</ul>
+<h3 class="title"><a name="compiling-programs">プログラムのコンパイル</a></h3>
+<ul>
+<li><a href="#compile_fails_xm">コンパイルに失敗する - 'unable to locate libXm'</a></li>
+<li><a href="#compile_fails_xpm">コンパイルに失敗する - 'unable to locate xpm.h' または '-lXpm: no match'</a></li>
+<li><a href="#compile_basic">コンパイルでリンクに失敗する: Undefined symbol '_XOpenDisplay'</a></li>
+</ul>
+<hr>
+<h3 class="title">X の実行</h3>
+	<h4 class="title">
+<a name="wsmouse"></a>XFree でマウスを動作させる方法は ? (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>デフォルトの wscons コンソールドライバーを使っていると仮定しますが、
+	  XF86Config ファイルの "Pointer" セクションで、マウスのプロトコルとデバイスが
+	  正しく設定されているか確認してください:</p>
+
+	  <pre class="programlisting">Section "Pointer"
+   ###Protocol       "PS/2"                    # Linux
+   ###Device         "/dev/mouse"              # Linux
+   ##Protocol        "busmouse"                # NetBSD 1.4.x
+   ##Device          "/dev/pms0"               # NetBSD 1.4.x
+   Protocol          "wsmouse"                 # NetBSD 1.5 or later
+   Device            "/dev/wsmouse"            # NetBSD 1.5 or later
+EndSection</pre>
+
+	<p>wscons を使わない場合 (1.4.x ではこれがデフォルト) 、
+	  PS/2 マウスでは <code class="filename">/dev/pms0</code>
+	  と "busmouse" プロトコルを使います</p>
+
+	<p>古いカーネル用に "PS/2" プロトコルもまだサポートされていますが、
+	  この場合、そのカーネルの opms マウスドライバーと "<code class="filename">/dev/pms0</code>"
+	  デバイスを使う必要があります。
+	  これは wscons プロトコルをサポートしない
+	  (XFree V4 や、 Linux/FreeBSD の X サーバーのバイナリーのような)
+	  X サーバー用に使えます。</p>
+      
+	<h4 class="title">
+<a name="x-keyboard-maps"></a>X でのキーボード配列を 'US' から変更する (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>XFree 3.x は、デフォルトでは英語キーボード配列を使います。これを、
+	  たとえばドイツ語に変えるには、 XF86Config ファイルに次のように
+	  書きます:</p>
+
+	<pre class="programlisting">#       XkbDisable
+#       XkbKeymap   "xfree86(us)"
+
+        XkbModel        "pc102"
+        XkbLayout       "de" XkbVariant      "nodeadkeys"</pre>
+
+	<p>XFree 4.x で、たとえばドイツ語キーボードにするためには、 XF86Config
+	  の "InputDevices" セクションに下記のように書きます:</p>
+
+	<pre class="programlisting">Options		"XkbLayout"	"de"</pre>
+
+	<p>wscons 下でのコンソールにおけるキーボードの設定は、<a class="ulink" href="../../../docs/guide/en/chap-cons.html#chap-cons-wscons-wskbd-keymaps" target="_top">別ページで</a>説明しています。</p>
+      
+	<h4 class="title">
+<a name="x-keyboard-nocaps"></a>Caps キーをもうひとつの Control キーにする方法は (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>(NetBSD 1.l5 に附属している) XFree 3.x では、
+	  caps-lock キーを 2 個目の control キーとして使いたい場合は
+	  <span class="quote">“<span class="quote"><code class="code">XkbOptions "ctrl:nocaps"</code></span>”</span> を追加します。
+	  キーボードの "Windows" キーを使いたければ、
+	  <span class="quote">“<span class="quote"><code class="code">XkbModel "pc105"</code></span>”</span>
+	  に差し替えて、使えるようにすることができます。</p>
+
+	<p>XFree 4.x では設定ファイルの書式が異なります。こちらでは、
+	  </p>
+<pre class="programlisting">Option "XkbOptions" "ctrl:nocaps"</pre>
+<p>
+	  を XF86Config ファイルの "InputDevice" セクションに書きます。</p>
+      
+	<h4 class="title">
+<a name="xf86_corrupts_on_rage_128"></a>Rage 128 でアクセラレートしていると XF86_SVGA でのグリフが乱れる (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>これを修正するため、 2000-01-13 以降の xsrc を用意してください (このほか、PR
+	  <a href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=9171" class="gnatspr">misc/9171</a>
+	  のパッチを適用する必要があります) 。
+	  そして、 <code class="filename">XF86Config</code> の Device セクションで
+	  </p>
+<pre class="programlisting">Option "xaa_no_color_exp"</pre>
+<p> を使います。</p>
+      
+	<h4 class="title">
+<a name="slow_when_compiling"></a>NetBSD 1.3.x でコンパイルすると X が非常に遅い (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>NetBSD 1.3 シリーズ用の
+	  <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/misc/patches/1.3schedpatch" target="_top">パッチ</a>
+	  があり、これは、コンパイルや他のタスクの実行中の
+	  X 下でのパフォーマンスの相互の影響を大幅に改善します。</p>
+      
+	<h4 class="title">
+<a name="bypassing_xdm"></a>xdm をバイパスする方法 (<a href="#running-x">top</a>)
+  </h4>
+
+	<p><a href="http://netbsd.gw.com/cgi-bin/man-cgi?xdm+1+NetBSD-5.1+i386">xdm(1)</a> を有効にしているが、 root パスワードがなく、
+	  利用可能な仮想コンソールがない (あるいはお使いのポートでは未サポートである)
+	  など、何らかの理由でログインできない場合は、ブートメッセージ後の xdm
+	  スタートの兆しが見えた直後に ^C を押すか、または以下のようにすることができます:</p>
+
+	  <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">シングルユーザーモードでブート - 普通は、
+	      ブートコマンドの最後に '-s' を追加すればよいです。</li>
+<li class="listitem">シェルの起動 - シェルを尋ねられたら
+	      <code class="code">ENTER</code> を押します。</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?fsck+8+NetBSD-5.1+i386">fsck(8)</a> と <a href="http://netbsd.gw.com/cgi-bin/man-cgi?mount+8+NetBSD-5.1+i386">mount(8)</a>
+	      を使ってディスクのチェックとマウント - <code class="code">fsck -p ; mount -vat ffs</code>
+</li>
+<li class="listitem">変数に端末の種類を設定 -
+	      <code class="code">TERM=<span class="emphasis"><em>vt100</em></span> ; export TERM</code>
+	      注意: 'pc3' や 'sun' など、
+	      別の端末の種類にする必要があるかもしれません。</li>
+<li class="listitem">問題の修正 - 
+	      <code class="filename">/etc/rc.conf</code> を編集して xdm を使わないようにし、
+	      <a href="http://netbsd.gw.com/cgi-bin/man-cgi?passwd+1+NetBSD-5.1+i386">passwd(1)</a> で
+	      root のパスワードの設定をするなど、必要な修正をします。</li>
+</ul></div>
+      
+	<h4 class="title">
+<a name="startx_not_found"></a>'<span class="bold"><strong><code class="code">startx</code></strong></span>' すると <code class="code">startx: Command not found.</code> と文句を言われる。なぜ ? (<a href="#running-x">top</a>)
+  </h4>
+	<p>X のバイナリーの場所をシェルの
+	  <code class="code">path</code> 変数に加える必要があります。
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?csh+1+NetBSD-5.1+i386">csh(1)</a> 系のシェルでは、 <code class="filename">.cshrc</code> ファイルの
+	  <code class="code">path</code> を設定する行に
+	  <code class="filename">/usr/X11R6/bin</code> を加えます。
+	  <code class="code">sh</code> 系のシェルでは、
+	  <code class="filename">.profile</code> を編集する必要があります。</p>
+      
+	<h4 class="title">
+<a name="xinit_not_found"></a>X が動かない - '<span class="bold"><strong>xinit: not found</strong></span>' (<a href="#running-x">top</a>)
+  </h4>
+
+	<p><code class="filename">/usr/X11R6/bin</code> を path に入れてください。
+	  root で '<span class="bold"><strong><code class="code">set path = ( $path /usr/X11R6/bin )</code></strong></span>' を
+	  <code class="filename">/etc/csh.cshrc</code> に追加し、新たなシェルを起動してください。</p>
+      
+	<h4 class="title">
+<a name="startx_fails"></a>startx が失敗する -'<span class="bold"><strong>X connection to: 0.0 broken</strong></span>' (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>この場合、エラーメッセージを見るために、次のようにして起動してください:
+
+	  </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">使用しているシェルが <a href="http://netbsd.gw.com/cgi-bin/man-cgi?csh+1+NetBSD-5.1+i386">csh(1)</a> または
+	      <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/shells/tcsh/README.html" target="_top"><code class="filename">shells/tcsh</code></a> の場合:
+	      <pre class="programlisting">startx &gt;&amp; ~/x.log</pre>
+</li>
+<li class="listitem">使用しているシェルが <a href="http://netbsd.gw.com/cgi-bin/man-cgi?sh+1+NetBSD-5.1+i386">sh(1)</a>, <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ksh+1+NetBSD-5.1+i386">ksh(1)</a> 等の場合:
+	      <pre class="programlisting">startx &gt; ~/x.log 2&gt;&amp;1</pre>
+</li>
+</ul></div>
+<p>
+	  そして、<code class="filename">~/x.log</code> を見てください</p>
+      
+	<h4 class="title">
+<a name="xconsole"></a>コンソール表示 ('su'などの) が X の表示をこわす (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>システムは何かが起こったこと ('su'など)
+	  を示すためコンソールに出力を行います。
+	  このコンソール出力を表示させるための、<a href="http://netbsd.gw.com/cgi-bin/man-cgi?xconsole+1+NetBSD-5.1+i386">xconsole(1)</a> あるいは 'xterm -C'
+	  プログラムを起動するようにしてください。</p>
+
+	<p>以下を有効にしてカーネルをコンパイルする必要があるかもしれません:
+	  </p>
+<pre class="programlisting">options  UCONSOLE  # allow anyone to steal the virtual console</pre>
+<p>
+	  詳しくは <a class="ulink" href="../kernel/#how_to_build_a_kernel" target="_top">カーネルの作り方</a>
+	  を参照してください。</p>
+
+	<p>もしあなたが root でログインしていて、
+	  うっとうしい <code class="code">portmap</code> の注意を受けているのであれば、
+	  このメッセージを出さないようにする方法の
+	  <a class="ulink" href="../misc/#portmap-messup" target="_top">FAQ 項目</a>を見るのがいいかもしれません。</p>
+      
+	<h4 class="title">
+<a name="wheel-mouse"></a>マウスのホイールを使えるようにする方法は? (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>Microsoft IntelliMouse、 Logitech Wheel Mouse (cordless our not) 、
+	  またはこれらに似たスクロールホイールのあるマウスを使っていて、
+	  NetBSD でそのホイールを使いたい場合、
+	  まず "pmsi" ドライバーを含むカーネルを作り、
+	  "wsmouse" がこれを使うようにします。次のようなものが
+	  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?dmesg+8+NetBSD-5.1+i386">dmesg(8)</a> の出力中に含まれるはずです:
+
+	  </p>
+<pre class="programlisting">pmsi0 at pckbc0 (aux slot)
+wsmouse0 at pmsi0</pre>
+<p>
+	  (NetBSD 1.5.2 以前に附属している) XFree86 3.x を使っている場合は、
+	  <code class="filename">/etc/XF86Config</code>
+	  の内容に下記を含めるようにしてください:
+	  </p>
+<pre class="programlisting">Section "Pointer"
+    Protocol    "wsmouse"
+    Device      "/dev/wsmouse"
+    ZAxisMapping 4 5
+EndSection</pre>
+<p>
+	  XFree86 4.x を使っている場合は、 <code class="filename">/etc/X11/XF86Config</code>
+	  の内容に下記を含めるようにしてください:
+	  </p>
+<pre class="programlisting">Section "InputDevice"
+    Identifier  "Mouse0"
+    Driver      "mouse"
+    Option      "Protocol"      "wsmouse"
+    Option      "Device"        "/dev/wsmouse"
+    Option      "Buttons"       "5"
+    Option      "ZAxisMapping"  "4 5"
+EndSection</pre>
+<p>
+	  xterm をスクロールさせるならこれだけで十分です。他のアプリケーションでは、
+	  <code class="filename">~/.Xdefaults</code> を編集する必要があります。利用可能な多くのアプリケーション
+	  について、詳しくは
+	  <a class="ulink" href="http://koala.ilog.fr/colas/mouse-wheel-scroll/" target="_top">Colas Nahaboo の X マウスでホイールスクロールなページ</a>
+	  を見てください。</p>
+
+      
+	<h4 class="title">
+<a name="xfree86-docs"></a><a class="ulink" href="http://www.xfree86.org/sos/resources.html" target="_top">XFree86 Documentation</a> (<a href="#running-x">top</a>)
+  </h4>
+      
+	<h4 class="title">
+<a name="which_version"></a>私が使っている XFree86 のバージョンは何? (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>実行中の X サーバーのバージョンを簡単に調べるには、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?xdpyinfo+1+NetBSD-5.1+i386">xdpyinfo(1)</a>
+	  が使えます。たとえば次のようにします:
+	  </p>
+<pre class="programlisting">$ xdpyinfo | grep release
+vendor release number:    335</pre>
+<p>
+
+	  XFree86 の場合、これはサーバーのバージョンが
+	  3.3.5 であることを表します。</p>
+      
+<h4 class="title">
+<a name="anti_aliased"></a>NetBSD 上での X11 用アンチエイリアスフォントの設定方法 (<a href="#running-x">top</a>)
+  </h4>
+
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>
+<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/xpkgwedge/README.html" target="_top"><code class="filename">pkgtools/xpkgwedge</code></a> を使っている場合は、
+以下の説明中のパスを適宜読み替えてください
+</p>
+</div>
+
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+<p>
+pkgsrc から、
+<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/fonts/ms-ttf/README.html" target="_top"><code class="filename">fonts/ms-ttf</code></a> パッケージをインストールします。
+pkgsrc 版の X を使っている場合は、
+<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/fonts/mkfontscale/README.html" target="_top"><code class="filename">fonts/mkfontscale</code></a> および
+<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/fonts/fontconfig/README.html" target="_top"><code class="filename">fonts/fontconfig</code></a> パッケージもインストールします。
+</p>
+</li>
+<li class="listitem">
+
+<p>
+NetBSD 附属の XFree86 を使っている場合、
+pkgsrc の <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/fonts/fontconfig/README.html" target="_top"><code class="filename">fonts/fontconfig</code></a> は、もっと複雑なオプションを使えるので、
+そちらを使うことを考えてもよいでしょう。附属 (あるいは標準) のバージョンを使わずに
+pkgsrc 版を使うようにするため、<code class="filename">/etc/mk.conf
+</code> ファイルで pkgsrc 用の変数 <code class="varname">
+ PREFER.fontconfig</code> を以下のように設定します。
+  </p>
+<pre class="programlisting">
+  PREFER.fontconfig=pkgsrc
+  </pre>
+<p>
+</p>
+
+<p>
+  さらに、fontconfig
+  が<span class="emphasis"><em>ビットマップフォント</em></span>を今後一切使わないように指示するとよいでしょう。
+  </p>
+<pre class="programlisting">
+  # cd /usr/pkg/etc/fontconfig/conf.d
+  # ln -s ../../../share/examples/fontconfig/conf.avail/70-no-bitmaps.conf .
+  </pre>
+<p>
+</p>
+
+<p>
+標準の fontconfig ライブラリーを完全に pkgsrc 版に置き換えるとよいかもしれません。
+これまでにコンパイルしたバイナリーが標準のライブラリーを使っている場合、
+こうすると便利です。
+  </p>
+<pre class="programlisting">
+  # cd /usr/X11R6/lib
+  # mv libfontconfig.so.1.0 libfontconfig.so.1.0.old
+  # rm libfontconfig.so.1
+  # ln -s ../../pkg/lib/libfontconfig.so.1 .
+  # cd /usr/X11R6/bin
+  # mv fc-cache fc-cache.old
+  # mv fc-list fc-list.old
+  </pre>
+<p>
+</p>
+
+</li>
+<li class="listitem">
+<p>
+fontconfig を設定するため、以下の行を local.conf
+に追加します。このファイルは、ふつうは
+<code class="filename">/etc/fonts/local.conf</code> にあります。
+fonts/fontconfig パッケージをインストールしている場合は、
+<code class="filename">/usr/pkg/etc/fonts/local.conf</code>
+に<span class="bold"><strong>も</strong></span>同様に追加する
+(あるいは、どちらか一方のファイルを、もう一方へのシンボリックリンクにする)
+必要があります。
+  </p>
+<pre class="programlisting">
+  &lt;dir&gt;/usr/pkg/lib/X11/fonts/TTF&lt;/dir&gt;
+  </pre>
+<p>
+</p>
+
+<p>
+<code class="filename">local.conf</code> ファイルの内容は、以下のようになるでしょう。
+  </p>
+<pre class="programlisting">
+  &lt;?xml version="1.0"?&gt;
+  &lt;!DOCTYPE fontconfig SYSTEM "fonts.dtd"&gt;
+  &lt;fontconfig&gt;
+  &lt;dir&gt;/usr/pkg/lib/X11/fonts/TTF&lt;/dir&gt;
+  &lt;/fontconfig&gt;
+  </pre>
+<p>
+</p>
+
+<p>
+これ以外の、フォントが置いてあるディレクトリーも、
+<code class="filename">local.conf</code> ファイルに追加することができます。
+以下に示すのは、teTeX-3.0 と ghostscript のフォントを使うための設定です。
+  </p>
+<pre class="programlisting">
+  &lt;dir&gt;/usr/pkg/share/texmf-dist/fonts/&lt;/dir&gt;
+  &lt;dir&gt;/usr/pkg/share/ghostscript/fonts&lt;/dir&gt;
+  </pre>
+<p>  
+ </p>
+
+</li>
+<li class="listitem">
+<p>
+  fontconfig を利用するアプリケーション用のフォントキャッシュを再構築します。
+  </p>
+<pre class="programlisting">
+  # fc-cache -v
+  </pre>
+<p>
+これは、ハードウェアによっては長時間かかります。
+</p>
+</li>
+<li class="listitem">
+<p>
+以下の各コマンドを実行します。
+  </p>
+<pre class="programlisting">
+  # mkfontscale /usr/pkg/lib/X11/fonts/TTF
+  # mkfontdir /usr/pkg/lib/X11/fonts/TTF
+  </pre>
+<p>
+これで、TTF フォントディレクトリーに、<code class="filename">fonts.dir</code> と
+ <code class="filename">fonts.scale</code> ファイルができたはずです。
+</p>
+</li>
+<li class="listitem">
+<p>X サーバーの構成
+  </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+  <p> <span class="quote">“<span class="quote">Module</span>”</span> セクション内に、以下の記述があることを確認します:
+  </p>
+<pre class="programlisting">
+  Load "type1"
+  Load "freetype"
+  </pre>
+<p>
+  </p>
+  </li>
+<li class="listitem">
+  <p>
+  <span class="quote">“<span class="quote">Files</span>”</span> セクション内の、フォントパスの順序を確認します。
+  TTF と Type1 用のフォントパスが、
+  それ以外のものより先にあることを確認します:
+    </p>
+<pre class="programlisting">
+    FontPath   "/usr/X11R6/lib/X11/fonts/local/"
+    FontPath   "/usr/pkg/lib/X11/fonts/TTF"
+    FontPath   "/usr/X11R6/lib/X11/fonts/Type1/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/misc/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"
+    FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"
+    FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/"</pre>
+<p>
+  </p>
+
+  <p>
+  以上の変更を現在の X のセッションに反映するには、
+  X を再起動するのではなく、以下のコマンドを実行します。
+    </p>
+<pre class="programlisting">
+    # xset fp rehash
+    </pre>
+<p>
+    このコマンドは、あらたに追加されたフォントパスを調べます。
+  </p>
+
+  <p>
+  X の設定ファイルに <span class="quote">“<span class="quote">FontPath</span>”</span> ディレクティブを追加するかわりに、
+  <code class="filename">~/.xinitrc</code>
+  (または <code class="filename">~/.xsession</code>)
+  ファイルで以下のコマンドを実行するという方法もあります。
+    </p>
+<pre class="programlisting">
+    xset +fp /usr/X11R6/lib/X11/fonts/Type1
+    xset +fp /usr/pkg/lib/X11/fonts/TTF
+    xset +fp /usr/X11R6/lib/X11/fonts/local
+    </pre>
+<p>
+  </p>
+
+  </li>
+</ul></div>
+<p>
+</p>
+</li>
+<li class="listitem">
+<p>これで完了です。以下のコマンドを実行して、設定できているか確認します。
+  </p>
+<pre class="programlisting">
+  $ xterm -ls -fg gray -bg black -ls -fa 'Courier New:bold' -fs 10
+  </pre>
+<p>
+</p>
+
+<p>
+<strong class="userinput"><code>fc-list</code></strong> コマンドを実行すると、
+利用可能なフォントを一覧表示するはずです。そして、core は吐かないはずです。
+</p>
+
+<p>
+上で示した xterm コマンドは、fontconfig に関するテストをするだけです。
+一方、以下のコマンドは、XLFD 形式でのアクセスをテストします。
+  </p>
+<pre class="programlisting">
+  $ xterm -fn '-monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-1'
+</pre>
+<p>
+</p>
+
+<p>
+さらに別のテストですが、以下のようにすると複数のフォントが出力されるはずです。
+  </p>
+<pre class="programlisting">
+  $ xlsfonts | grep -i 'courier new'
+  </pre>
+<p>
+</p>
+
+</li>
+<li class="listitem">
+<p>
+  pkgsrc/fonts 以下には、別の TTF フォントパッケージもあります。
+  たとえば <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/fonts/vera-ttf/README.html" target="_top"><code class="filename">fonts/vera-ttf</code></a> などです。
+</p>
+</li>
+</ol></div>
+
+
+	<h4 class="title">
+<a name="fc-cache"></a>Xft を使うアプリケーションが CPU を食っていますが、
+	何もしていないように見えます! (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>おそらくそのアプリケーションは、 fc-cache によって準備されているべき
+	  フォント情報の計算をしています─キャッシュの情報を最新のものにするために、
+	  '<code class="code">fc-cache -v</code>' を実行しなおしてください。</p>
+      
+	<h4 class="title">
+<a name="font-error"></a>'No fonts found' - どういう意味? (<a href="#running-x">top</a>)
+  </h4>
+
+	<pre class="programlisting">No fonts found; this probably means that the fontconfig
+library is not correctly configured. You may need to
+edit the fonts.conf configuration file. More information
+about fontconfig can be found in the <a href="http://netbsd.gw.com/cgi-bin/man-cgi?fontconfig+3+NetBSD-5.1+i386">fontconfig(3)</a> manual
+page and on <a class="ulink" href="http://fontconfig.org" target="_top">http://fontconfig.org</a></pre>
+
+	<p>(訳: フォントが見つかりません; これはおそらく、fontconfig ライブラリーが正しく設定されていないためです。
+fonts.conf 設定ファイルを編集する必要があるかもしれません。
+fontconfig に関するさらなる情報は、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?fontconfig+3+NetBSD-5.1+i386">fontconfig(3)</a> マニュアルページと
+<a class="ulink" href="http://fontconfig.org" target="_top">http://fontconfig.org</a> にあります)</p>
+
+	<p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/fonts/fontconfig/README.html" target="_top"><code class="filename">fonts/fontconfig</code></a> のインストール時に
+	  <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/fonts/fontconfig/MESSAGE" target="_top">MESSAGE</a>
+	  が示した説明どおりに '<code class="code">fc-cache -v</code>' を実行していないのです。
+	  詳細は、 '<code class="code">pkg_info -D fontconfig</code>' するか、<a class="ulink" href="#anti_aliased" target="_top">前の項目</a>を参照してください。</p>
+      
+	<h4 class="title">
+<a name="x_wm"></a>デフォルトのウィンドウマネージャーを変更する方法は? (<a href="#running-x">top</a>)
+  </h4>
+
+	<p>最初にすることは、使いたいウィンドウマネージャーをインストールすることです。
+	  pkgsrc の <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/wm/README.html" target="_top"><code class="filename">wm</code></a> カテゴリー以下に、
+	  数多くのマネージャーがインストールできるように用意されています。
+	  インストールしたら、そのバイナリーの名前を調べておいてください。
+	  たいていは、バイナリー名はパッケージ名と同じです。</p>
+
+	<p>ウィンドウマネージャーの実行方法を把握した上で、そのウィンドウマネージャーが起動するように
+	  X セッションの設定をする必要があります。ここでは例として twm (X に標準で附属しています)
+	  を使います。バイナリー名は <code class="code">twm</code> です:</p>
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?startx+1+NetBSD-5.1+i386">startx(1)</a> を使っている場合は、
+	    <code class="filename">~/.xinitrc</code> ファイルに、
+	    以下の行を書き加えます:
+	    <code class="code">exec twm</code>
+</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?xdm+1+NetBSD-5.1+i386">xdm(1)</a> を使っている場合は、
+	    <code class="filename">~/.xsession</code> ファイルに、
+	    以下の行を書き加えます:
+	    <code class="code">exec twm</code>
+</li>
+</ul></div>
+
+	<p>いずれの設定ファイルも内容は同じであることにお気付きでしょう。
+	  よって、これらはリンクさせてもいいかもしれません。</p>
+      <hr>
+<h3 class="title">プログラムのコンパイル</h3>
+	<h4 class="title">
+<a name="compile_fails_xm"></a>コンパイルに失敗する - 'unable to locate libXm' (<a href="#compiling-programs">top</a>)
+  </h4>
+
+	<p>Xm は標準の X11 環境に入っていません。これは商用の GUI である
+	  <a class="ulink" href="http://www.opengroup.org/desktop/motif/" target="_top">Motif</a>
+	  の一部です。</p>
+
+	<p>Motif のフリーな実装である <a class="ulink" href="http://www.lesstif.org/" target="_top">Lesstif</a> も利用できます。
+	  これは <a class="ulink" href="../software/packages.html" target="_top">NetBSD パッケージ</a>の中に
+	  <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/x11/lesstif/README.html" target="_top"><code class="filename">x11/lesstif</code></a> として含まれています。</p>
+      
+	<h4 class="title">
+<a name="compile_fails_xpm"></a>コンパイルに失敗する - 'unable to locate xpm.h' または '-lXpm: no match' (<a href="#compiling-programs">top</a>)
+  </h4>
+
+	<p><code class="filename">xpm.h</code> は X の PixMap
+	  ライブラリーの一部で、
+	  カラーアイコンを作るために多くのプログラムで使われています。
+	  これは <a class="ulink" href="../software/packages.html" target="_top">NetBSD パッケージ</a>の中に
+	  <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/graphics/xpm/README.html" target="_top"><code class="filename">graphics/xpm</code></a> として含まれています。</p>
+      
+	<h4 class="title">
+<a name="compile_basic"></a>コンパイルでリンクに失敗する: Undefined symbol '_XOpenDisplay' (<a href="#compiling-programs">top</a>)
+  </h4>
+
+	<p>サードパーティー製のソフトウェアの場合、
+	  <a class="ulink" href="../software/packages.html" target="_top">NetBSD
+	  パッケージコレクション</a>で利用可能なバージョンを確認すべきです。
+	  あなたが書いたコードの場合、
+	  必要な X ライブラリーをリンクするようにしなければなりません。
+	  この場合は、リンク行の末尾に <code class="code">-L/usr/X11R6 -lX11</code>
+	  を追加してください。</p>
+      <hr>
+<em><a href="../">NetBSD ドキュメンテーション</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

@@ -1,0 +1,1103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+    <title>NetBSD/cobalt Restore CD HOWTO</title>
+  </head>
+<body class="website"><div class="webpage">
+<a name="ja-ports-cobalt-restorecd-howto"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD/cobalt Restore CD HOWTO</h1>
+<div class="sect1">
+<div class="titlepage"></div>
+    <table border="0" id="top-table">
+      <tr>
+        <td align="left">
+          <p>この文書では、Cobalt Qube/Raq マシン用の NetBSD Restore CD
+          の作り方と使い方を説明します。この文書は、当初
+          Alex Pelts <code class="email">&lt;<a class="email" href="mailto:alexp@broadcom.com">alexp@broadcom.com</a>&gt;</code>
+          が執筆して
+          <a class="ulink" href="../../mailinglists/#port-cobalt" target="_top">port-cobalt
+          メーリングリスト</a>に投稿したもので、それを筒井泉
+          <code class="email">&lt;<a class="email" href="mailto:tsutsui@NetBSD.org">tsutsui@NetBSD.org</a>&gt;</code>
+          が 5.0 restorecd スクリプト用に更新したものです。</p>
+        </td>
+        <td align="right" valign="bottom">
+          <a class="ulink" href="../../about/disclaimer.html#bsd-daemon" target="_top">
+            <img align="middle" src="../../images/BSD-daemon.jpg" border="0" width="146" height="129" alt="BSD daemon">
+          </a>
+        </td>
+      </tr>
+    </table>
+  </div>
+<h3 class="title"><a name="introduction">はじめに</a></h3>
+<ul>
+<li><a href="#disclaimer">免責</a></li>
+<li><a href="#copyright">著作権について</a></li>
+</ul>
+<h3 class="title"><a name="what-is-a-restore-cd">Cobalt Qube/Raq とか Restore
+      CD って何?</a></h3>
+<ul>
+<li><a href="#what-is-qube">Cobalt Qube/Raq って何?</a></li>
+<li><a href="#what-is-cd">Restore CD って何?</a></li>
+</ul>
+<h3 class="title"><a name="requirements">必要なハードウェアおよびソフトウェア</a></h3>
+<ul>
+<li><a href="#hardware-requirements">Restore CD を使うために必要なハードウェア</a></li>
+<li><a href="#software-requirements">Restore CD を作るために必要なソフトウェア</a></li>
+</ul>
+<h3 class="title"><a name="installation">Restore CD を使ったインストール</a></h3>
+<ul>
+<li><a href="#install-overview">インストールの概要</a></li>
+<li><a href="#how-to-use">CD の使い方</a></li>
+<li><a href="#troubleshooting">トラブルシューティング</a></li>
+<li><a href="#sysinst-install">sysinst ベースのインストールカーネルを使ったインストール</a></li>
+<li><a href="#upgrade-system">インストール済システムのアップグレード</a></li>
+</ul>
+<h3 class="title"><a name="create_restorecd">Restore CD 新規作成の手順</a></h3>
+<ul>
+<li><a href="#prepare-command">ファイル取得コマンドの準備</a></li>
+<li><a href="#download-script">restorecd スクリプトのダウンロード</a></li>
+<li><a href="#edit-makefile">Makefile の編集</a></li>
+<li><a href="#creating-the-cd">Restore CD の作成</a></li>
+</ul>
+<h3 class="title"><a name="internals">Restore CD の内部</a></h3>
+<ul>
+<li><a href="#what-it-does">restorecd スクリプトは何をするのか?</a></li>
+<li><a href="#how-does-it-work">Restore CD はどのように動作するのか?</a></li>
+</ul>
+<h3 class="title"><a name="credits">クレジット</a></h3>
+<ul>
+<li><a href="#authors">著者</a></li>
+<li><a href="#other">その他のクレジット</a></li>
+<li><a href="#history">変更履歴</a></li>
+</ul>
+<hr>
+<h3 class="title">はじめに</h3>
+        <h4 class="title">
+<a name="disclaimer"></a>免責 (<a href="#introduction">top</a>)
+  </h4>
+        <p>著者は、この文書を使ったことについて、いかなる責任も負いません。
+        この文書を使った結果、コンピューターが使えなくなったり、
+        ハードウェア・ソフトウェアに損害を与えたり、
+        窓ガラスが割れたり、好きな人との関係を損ねることになったりするかもしれません。
+        この文書に書いてあることは、自己責任のもとで使ってください。
+        この文書は、ハードウェアとソフトウェアの使い方に関する著者の考えでしかありません。</p>
+        <p>警告しておきましたからね。</p>
+      
+        <h4 class="title">
+<a name="copyright"></a>著作権について (<a href="#introduction">top</a>)
+  </h4>
+        <p>This document is copyrighted (c) 2005 Alex Pelts and
+        also copyrighted (c) 2008, 2009, 2010 Izumi Tsutsui,
+	and distributed under the terms of the OpenContent License
+        (OPL). The full text of the license can be found at 
+        <a class="ulink" href="http://www.opencontent.org/opl.shtml" target="_top">http://www.opencontent.org/opl.shtml</a>
+        .</p>
+        <p>(参考訳) この文書は、
+        copyright (c) 2005 Alex Pelts および
+        copyright (c) 2008, 2009, 2010 Izumi Tsutsui
+	に著作権があり、OpenContent License
+        (OPL) の下で配布されています。
+        ライセンスの全文は
+        <a class="ulink" href="http://www.opencontent.org/opl.shtml" target="_top">http://www.opencontent.org/opl.shtml</a>
+        にあります。</p>
+      <hr>
+<h3 class="title">Cobalt Qube/Raq とか Restore
+      CD って何?</h3>
+        <h4 class="title">
+<a name="what-is-qube"></a>Cobalt Qube/Raq って何? (<a href="#what-is-a-restore-cd">top</a>)
+  </h4>
+        <p>Cobalt Qube/Raq は、サーバーアプライアンスです。
+        簡単にいえば、キーボードとモニターがなく、これらを接続することもできないコンピューターです。
+        複数の種類の Qube と Raq があり、古いものは MIPS ベース、新しいものは AMD-K6 ベースです。
+        この文書では、MIPS ベースのサーバーアプライアンスのみを対象としています。
+        Qube と Raq との間の差異はこの文書では問題になりませんので、
+        以降はどちらも "Qube" と呼ぶことにします。</p>
+      
+        <h4 class="title">
+<a name="what-is-cd"></a>Restore CD って何? (<a href="#what-is-a-restore-cd">top</a>)
+  </h4>
+        <p>Qube には、モニター、キーボード、
+        そして最も重要なことですが CDROM ドライブを簡単に接続する方法がないため、
+        オペレーティングシステムを新たにインストールする簡単な方法がありません。
+        そこで、この Restore CD の出番です。
+        Qube は、オペレーティングシステムをネットワーク経由でブートすることができます。
+        Restore CD は、Qube がオペレーティングシステムをブートして、
+        そのオペレーティングシステムをハードディスクに全自動でインストールするための環境を作ってくれます。
+
+        オリジナルの Linux 版 Restore CD は、Qube デバイスに附属していました。
+        この CD のイメージは Sun の web サイトからダウンロードすることもできます。</p>
+        <p>この Cobalt オリジナルの Restore CD をもとに、Dennis
+        Chernoivanov が NetBSD 版 Restore CD (1.6 および 1.6.1 用) を作成しました。
+        さらに、<a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/misc/cdi/cobalt/" target="_top">この CD 作成に使ったスクリプト
+	</a>を公開し、
+	3.0 リリースおよび 3.99.xx -current 用への更新もおこないました。
+	その後、筒井泉が restorecd スクリプトの 4.0 および
+	5.0_BETA 用への更新と改良をおこなってきました。</p>
+        <p>この文書では、Restore CD を使ったインストール方法と、
+        5.0 (以降) 用 Restore CD をゼロから作る方法を説明します。</p>
+      <hr>
+<h3 class="title">必要なハードウェアおよびソフトウェア</h3>
+        <h4 class="title">
+<a name="hardware-requirements"></a>Restore CD を使うために必要なハードウェア (<a href="#requirements">top</a>)
+  </h4>
+        <p>Restore CD を作ったり使ったりするためには、
+        以下のハードウェアが必要となります。</p>
+        <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">MIPS ベースの Qube または RaQ で、
+          最低 1GB のハードディスクドライブを持つもの。</li>
+<li class="listitem">x86 ベースの PC で、NetBSD が対応しているイーサネットアダプターと、
+          ブート可能な CDROM ドライブを持つもの。</li>
+<li class="listitem">イーサネットのクロスケーブル、
+          または、ハブと 2 本のストレートケーブル。</li>
+<li class="listitem">RS232 シリアルケーブルもあると、
+          問題を診断するために非常に役立ちます。</li>
+<li class="listitem">最終的に CD を焼くための CD-R ドライブ。</li>
+</ul></div>
+      
+        <h4 class="title">
+<a name="software-requirements"></a>Restore CD を作るために必要なソフトウェア (<a href="#requirements">top</a>)
+  </h4>
+        <p>Restore CD を作るためには、
+        以下のソフトウェアが必要です。</p>
+        <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">NetBSD をソースから構築することができる、
+          POSIX 準拠のシステム。
+          NetBSD, FreeBSD, Linux, <a class="ulink" href="http://mail-index.NetBSD.org/netbsd-docs/2008/11/16/msg000070.html" target="_top">Cygwin</a>
+          などが使えるはずです。</li>
+<li class="listitem">インストールバイナリーおよびソースセット一式を取得するための
+          <span class="command"><strong>wget</strong></span> または <span class="command"><strong>rsync</strong></span>。</li>
+<li class="listitem">以下をはじめとする、通常の unix ツール。
+          <span class="command"><strong>awk</strong></span>,
+          <span class="command"><strong>basename</strong></span>,
+          <span class="command"><strong>cat</strong></span>,
+          <span class="command"><strong>chmod</strong></span>,
+          <span class="command"><strong>cp</strong></span>,
+          <span class="command"><strong>dirname</strong></span>,
+          <span class="command"><strong>echo</strong></span>,
+          <span class="command"><strong>gzip</strong></span>,
+          <span class="command"><strong>ln</strong></span>,
+          <span class="command"><strong>mkdir</strong></span>,
+          <span class="command"><strong>mv</strong></span>,
+          <span class="command"><strong>patch</strong></span>,
+          <span class="command"><strong>pwd</strong></span>,
+          <span class="command"><strong>rm</strong></span>,
+          <span class="command"><strong>sed</strong></span>,
+          <span class="command"><strong>sh</strong></span>,
+          <span class="command"><strong>tar</strong></span>,
+          <span class="command"><strong>touch</strong></span>
+          など。普通は OS に標準で附属しています。</li>
+<li class="listitem">以下をはじめとする、NetBSD の toolchain を構築するためのコマンド。
+          <span class="command"><strong>make</strong></span>,
+          <span class="command"><strong>cc</strong></span> (または <span class="command"><strong>gcc</strong></span>),
+          <span class="command"><strong>as</strong></span>,
+          <span class="command"><strong>ld</strong></span>,
+          <span class="command"><strong>cmp</strong></span> (configure スクリプトで必要)
+          など。これらも普通は OS に標準で附属しています。</li>
+</ul></div>
+      <hr>
+<h3 class="title">Restore CD を使ったインストール</h3>
+        <h4 class="title">
+<a name="install-overview"></a>インストールの概要 (<a href="#installation">top</a>)
+  </h4>
+        <p>
+        本文書のインストールの説明では、
+        以下の手順を順番におこないます。
+        </p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">作業用 PC を Restore CD からブートします。
+          これで、この PC 上で dhcp サーバーなど、
+          サーバーアプライアンスへインストールする際に必要なサービスが有効になります。</li>
+<li class="listitem">ネットワーク経由で restore CD の内容を取得する準備ができている状態にして、
+          Cobalt サーバーを (再) 起動します。</li>
+<li class="listitem">Cobalt サーバーアプライアンスを、
+          作業用 PC の restore CD を使って再初期化します。</li>
+</ol></div>
+<p>
+        </p>
+        <p>
+        実例を目で見ることができるよう、YouTube 動画 <a class="ulink" href="http://www.youtube.com/watch?v=jTSrbkACU8k" target="_top"><span class="quote">“<span class="quote">Install
+        NetBSD/cobalt 5.1_RC2 using restorecd</span>”</span></a>
+        も用意してあります。</p>
+      
+        <h4 class="title">
+<a name="how-to-use"></a>CD の使い方 (<a href="#installation">top</a>)
+  </h4>
+        <p>
+          <span class="bold"><strong>警告:
+          このインストール手順を実行すると、
+          cobalt のハードディスクドライブの既存の内容は破壊されます。</strong></span>
+          バックアップの必要がある場合は、インストール開始前に、
+          バックアップが確実にとれていることを確認してください。
+        </p>
+        <p>
+          <span class="bold"><strong>註:</strong></span>
+          ちなみに、restorecd は i386 サーバー側のハードディスクはまったく使いません
+          (サーバーにハードディスクドライブがついていなくても、動作します)。
+        </p>
+        <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+          <p>
+            i386 サーバーを、イーサネットのクロスケーブル、
+            またはハブ/スイッチを介して cobalt に接続します。
+          </p>
+          <p>
+            <span class="bold"><strong>註:</strong></span>
+            セキュリティー上の理由から、
+            i386 サーバーと cobalt アプライアンス以外のマシンは、
+            同じネットワークに接続しないことをおすすめします。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            i386 サーバーのマニュアルで CDROM ドライブからブートする方法を確認し、
+            Restore CD を使ってブートします。
+            ブート過程の途中で、説明文が
+            <span class="command"><strong>less</strong></span> コマンドを使って表示されますので、
+            スペースキーとリターンキーを使って読んで、<span class="quote">“<span class="quote">q</span>”</span> で終了します。
+            <span class="quote">“<span class="quote"><code class="code">login:</code></span>”</span> プロンプトが出れば、
+            i386 サーバー側ではインストールの準備ができているので、
+            サーバー側でこれ以上設定をする必要はありません。
+          </p>
+          <p>
+            <span class="bold"><strong>註:</strong></span>
+            ブート過程において、ACPI 関連の問題がある場合は、
+            ブートメニューで表示されるカーネル設定を別のものに変えてみてください。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            cobalt をネットワーク経由でブートするために、
+            cobalt アプライアンスの電源を入れると同時に、LCD コンソールの
+            左矢印 (&lt;) と右矢印 (&gt;) ボタンを押したままにします。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            LCD ディスプレイに <span class="quote">“<span class="quote"><code class="code">Net booting</code></span>”</span>
+            と表示されるまで、
+            左矢印 (&lt;) と右矢印 (&gt;) ボタンを押し続けます。
+</p>
+<pre class="programlisting">
+Net booting
+
+</pre>
+<p>
+          表示されたら、ボタンを放します。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            ブートが完了するまで待ちます。
+            なお、以下のように、ブート過程のほとんどは LCD ディスプレイに表示されます。
+</p>
+<pre class="programlisting">
+NetBSD/cobalt
+Bootloader
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+Loading:
+nfs:netbsd
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+NetBSD/cobalt
+Starting up...
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+[Starting up]
+  Create /dev/*
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+[Starting up]
+  &gt; network
+</pre>
+<p>
+            準備ができたら、<span class="quote">“<span class="quote"><code class="code">restorecd ready</code></span>”</span>
+            というメッセージと i386 サーバーから割り当てられた IP アドレスが
+            LCD 画面に表示されます。
+</p>
+<pre class="programlisting">
+restorecd ready
+[10.0.0.160]
+</pre>
+<p>
+            <span class="bold"><strong>註:</strong></span>
+            インストールはせずに復旧作業のためにリモートログインする必要がある場合は、
+            この段階で、
+            i386 サーバーからネットワーク経由で cobalt にログインすることができるようになっています。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            restorecd の操作を開始するには、
+            <span class="quote">“<span class="quote">Select</span>”</span> ボタンを 2 秒間押し続けて 
+            <span class="command"><strong>paneld</strong></span> メニューを出します。
+            このメニューが LCD ディスプレイに表示されたら、
+            Select ボタンで <span class="quote">“<span class="quote">Restore</span>”</span> メニューを選びます。
+</p>
+<pre class="programlisting">
+select:
+  Restore
+</pre>
+<p>
+            確認メニューで、矢印ボタンを使って
+            <span class="quote">“<span class="quote">Y</span>”</span> (標準状態でこちらが選ばれています) を選びます。
+</p>
+<pre class="programlisting">
+Start restore?
+  [Y]es / [N]o
+</pre>
+<p>
+            これで <span class="quote">“<span class="quote">Enter</span>”</span> ボタンを押すと、
+            インストールが始まります。
+          </p>
+          <p>
+          <span class="bold"><strong>警告:
+          もう一度書きますが、インストールが始まると、
+          cobalt アプライアンスのディスクの内容は破壊されます。</strong></span>
+          </p>
+          <p>
+            インストールの経過はすべて、
+            LCD ディスプレイとシリアルコンソールに表示されます。
+</p>
+<pre class="programlisting">
+Disk Setup:
+  Reset disk
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+Disk Setup:
+  Format root
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+System install:
+  base.tgz
+</pre>
+<p>
+          </p>
+          <p>
+            <span class="bold"><strong>警告:</strong></span>
+            インストール過程には時間がかかることがあります
+            (Qube2 で約 10 分)。
+            インストールが終わる前に中断しないでください。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            インストールの各手順が完了すると、
+            cobalt マシンは自動的に再起動します。
+</p>
+<pre class="programlisting">
+Installed OK:
+  Rebooting...
+</pre>
+<p>
+            cobalt アプライアンスがハードディスクドライブからブートするのを待ちます。
+</p>
+<pre class="programlisting">
+NetBSD/cobalt
+Bootloader
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+Loading:
+wd0a:netbsd
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+NetBSD/cobalt
+Starting up...
+</pre>
+<p>
+</p>
+<pre class="programlisting">
+[Starting up]
+  &gt; dhclient
+</pre>
+<p>
+            最後に、マシンのホスト名と IP アドレス
+            (restorecd で動いている i386 サーバーから割り当てられたもの)
+            が LCD 画面に表示されます。
+</p>
+<pre class="programlisting">
+q-160.netbsd.org 
+  [10.0.0.160]
+</pre>
+<p>
+            これが表示されれば、インストールは成功したということです。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+             <span class="bold"><strong>
+             インストールしたばかりのマシンは、
+             非常に危険な状態なので注意してください。
+             </strong></span>
+          </p>
+          <p>
+             標準状態で、すべての tty は、
+             ネットワーク経由の root アクセスを許容しています。
+             また、 telnet と rlogin ポートも開いています。
+             これは、インストール直後のマシンにログインして、
+             必要な構成変更ができるようにするためのものです。
+          </p>
+          <p>
+             <span class="bold"><strong>
+             cobalt アプライアンスを開かれたネットワークに接続するのは、
+             必ず、安全な状態にした後にしてください。
+             </strong></span>
+             </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?passwd+1+NetBSD-5.1+i386">passwd(1)</a> を使って root パスワードを設定します</li>
+<li class="listitem">
+<code class="filename">/etc/ttys</code> から擬似端末(tty[pqrs]?)
+               の行をすべて削除するか、
+               または各擬似端末の <span class="quote">“<span class="quote"><code class="code">secure</code></span>”</span>
+               フィールドを削除します</li>
+<li class="listitem">
+<code class="code">telnet</code> や <code class="code">rlogin</code>
+               を標準状態で有効にしたい場合以外は、
+               <code class="filename">/etc/inetd.conf</code> からこれらの行をコメントアウトします。
+               (<a href="http://netbsd.gw.com/cgi-bin/man-cgi?sshd+8+NetBSD-5.1+i386">sshd(8)</a> を使うほうがよいでしょう)</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?user+8+NetBSD-5.1+i386">user(8)</a> などを使ってユーザーを新たに追加します。</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?su+1+NetBSD-5.1+i386">su(1)</a> を使って root アクセスする必要があるユーザーを、
+               <code class="filename">/etc/group</code> ファイルを編集して
+               <span class="quote">“<span class="quote">wheel</span>”</span> グループに所属させます。</li>
+</ul></div>
+<p>
+             詳細は <a href="http://netbsd.gw.com/cgi-bin/man-cgi?afterboot+8+NetBSD-5.1+i386">afterboot(8)</a> マニュアルページをご覧ください。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+             さらなる設定については <a href="http://netbsd.gw.com/cgi-bin/man-cgi?afterboot+8+NetBSD-5.1+i386">afterboot(8)</a> をご確認ください。
+             なかには cobalt には当てはまらない情報もありますが、
+             一般的に NetBSD を設定するうえでの背景情報が得られるでしょう。
+             また、<a class="ulink" href="../../../docs/guide/en/" target="_top">NetBSD
+             ガイド</a> にも有用な情報があります。
+          </p>
+          <p>
+            <span class="bold"><strong>警告:</strong></span>
+             インストールしたままの cobalt マシンは、
+             DHCP クライアントとなるよう設定されています。
+             つまり、restorecd が動いている i386 サーバーを使って初期設定をおこなうために、
+             ネットワーク経由で DHCP サーバーから IP アドレスを取得しようとします。
+             必要な設定をした後に DHCP クライアントの設定を無効化するには、
+             <code class="filename">/etc/rc.conf</code> を編集して
+             <span class="quote">“<span class="quote"><code class="code">dhclient=NO</code></span>”</span> 行を書き加えます。
+          </p>
+          </li>
+</ol></div>
+      
+        <h4 class="title">
+<a name="troubleshooting"></a>トラブルシューティング (<a href="#installation">top</a>)
+  </h4>
+        <p>何か問題があって cobalt がマルチユーザーまでブートしない場合、
+        restorecd を使って問題を修復することもできます。
+        前述のとおり、restorecd によるネットブート環境では、
+        インストールせずにリモートログインすることができますので、
+        シリアルコンソールを使わなくてもハードディスクドライブの内容の確認や修正などをすることができます。</p>
+        <p>Restore CD 操作そのものの問題をデバッグするには、
+        シリアルコンソールが必要です。cobalt マシンは通常の DB9 オスコネクターを使いますので、
+        準備の際には <a class="ulink" href="../../docs/Hardware/Misc/serial.html" target="_top">NetBSD
+        シリアルポート入門のページ</a>が参考になるでしょう。
+        シリアルケーブルを使って、
+        Qube のシリアルポートとシリアル端末にするコンピューターとを接続します。
+        これで、端末プログラムを動かしてインストールの進捗を監視することができます。</p>
+        <p>Qube2700 にはシリアルポートがありませんので、こういった方法は取れません。
+        できることといえば、
+        Qube のハードディスクを取り外して PC か新しい Qube2 に取り付けるぐらいでしょう。
+        インストールに失敗している箇所を調査して、原因究明してみてください。
+        チャレンジ精神旺盛な方は、自作の<a class="ulink" href="../../../ports/cobalt/faq.html#qube2700serial" target="_top">シリアルインターフェースを追加する</a>という手もあります。</p>
+      
+        <h4 class="title">
+<a name="sysinst-install"></a>sysinst ベースのインストールカーネルを使ったインストール (<a href="#installation">top</a>)
+  </h4>
+        <p>
+        Restore CD では、インストールを完全に自動でおこなうことができますが、
+        旧来からの NetBSD インストール方法である
+        sysinst ベースの <code class="filename">RAMDISK</code> カーネルも附属しています。
+        シリアルコンソールが使える場合、面倒な netboot サーバーの設定をすることなく、
+        sysinst ベースのインストールカーネルを起動することもできます。
+        </p>
+        <p>
+        RAMDISK ベースのインストールカーネルを使うには、
+        ブートローダーのプロンプトで、sysinst ベースのカーネルを指定する必要があります。</p>
+        <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+          <p>
+            i386 サーバーを設定してから、
+            <a class="ulink" href="#how-to-use" target="_top">CD の使い方</a>
+            節で説明したように矢印ボタンを押しながら
+            Cobalt をネットワーク経由でブートします。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            ブートローダーがネットワークから適切に読み込まれると、
+            シリアルコンソールに以下のようなブートローダーのプロンプトが表示されます。
+</p>
+<pre class="programlisting">
+&gt;&gt; NetBSD/cobalt 5.1 Bootloader, Revision 0.9 [@0x80f00000]
+&gt;&gt; (builds@b8.netbsd.org, Sat Nov  6 14:35:01 UTC 2010)
+&gt;&gt; Model:               Cobalt Qube 2
+&gt;&gt; Memory:              65536 k
+&gt;&gt; PROM boot string:    root=/dev/nfs nfsroot=/nfsroot nfsaddrs=bootp
+Boot [nfs:netbsd]:
+</pre>
+<p>
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            このプロンプトで <span class="command"><strong>netbsd.sysinst</strong></span> と入力して、
+            sysinst ベースのRAMDISK カーネルを読み込みます。
+            </p>
+<pre class="programlisting">Boot [nfs:netbsd]: netbsd.sysinst</pre>
+<p>
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            以下のように、RAMDISK カーネルが読み込まれます。
+</p>
+<pre class="programlisting">
+Loading: nfs:netbsd.sysinst
+6606160+312228 [223168+213034]=0x703dec
+Starting at 0x80001000
+
+Copyright (c) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+    2006, 2007, 2008, 2009
+    The NetBSD Foundation, Inc.  All rights reserved.
+Copyright (c) 1982, 1986, 1989, 1991, 1993
+    The Regents of the University of California.  All rights reserved.
+
+NetBSD 5.1 (RAMDISK) #0: Sat Nov  6 14:46:10 UTC 2010
+ :
+</pre>
+<p>
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            "<code class="code">Terminal type? [vt100]</code>" プロンプトで Enterだけを入力し、
+            次に現れる
+            "<code class="code">(I)nstall, (S)hell or (H)alt ?</code>" メニューで
+            "<span class="command"><strong>i</strong></span>" を選びます。
+</p>
+<pre class="programlisting">
+ :
+erase ^H, werase ^W, kill ^U, intr ^C, status ^T
+Terminal type? [vt100] 
+Erase is backspace.
+(I)nstall, (S)hell or (H)alt ? i
+</pre>
+<p>
+             すると、sysinst のウェルカムメッセージが表示されます。
+          </p>
+          </li>
+<li class="listitem">
+          <p>
+            sysinst によるインストールのさらなる情報は、<a class="ulink" href="../../../docs/guide/en/" target="_top">NetBSD ガイド</a>の <a class="ulink" href="../../../docs/guide/en/chap-exinst.html" target="_top">
+            インストールの実例</a>の節をご覧ください。
+          </p>
+          <p>
+            なお、NetBSD/cobalt やRestore CD
+            に特有の設定がいくつかあります。
+           </p>
+<div class="orderedlist"><ol class="orderedlist" type="a">
+<li class="listitem">
+            <p>
+              NetBSD/cobalt sysinst は英語メッセージのみに対応しているので、
+              言語やキーボードの選択メニューは使えません
+            </p>
+            </li>
+<li class="listitem">
+            <p>
+              <a class="ulink" href="../../../docs/guide/en/chap-exinst.html#exinst-partitions" target="_top">MBR
+              パーティションのメニュー</a>では、
+              "<span class="command"><strong>b: Use the entire disk</strong></span>" を選んでください。
+              MBR パーティションを手動で編集したい場合は、
+              ファームウェアが Linux Ext2fs ブートパーティションを必要とするので、必ず準備してください。
+            </p>
+            </li>
+<li class="listitem">
+            <p>
+              パーティションやスワップの容量を変更する必要がある場合は、<a class="ulink" href="../../../docs/guide/en/chap-exinst.html#exinst-disklabel" target="_top">disklabel
+              パーティションのメニュー</a>で
+              "<span class="command"><strong>a: Set sizes of NetBSD partitions</strong></span>" を選んで変更してください。
+              なお、Ext2fs ブートパーティションは自動的に用意されますが、
+              このパーティションを disklabel エディターで変更しないでください。
+            </p>
+            </li>
+<li class="listitem">
+            <p>
+              <a class="ulink" href="../../../docs/guide/en/chap-exinst.html#exinst-choose-media" target="_top">インストールメディアの選択
+              </a>で使える選択肢は、
+              Restore CD によって i386 サーバー上に準備されている <a class="ulink" href="../../../docs/guide/en/chap-exinst.html#exinst-install-via-nfs" target="_top">NFS
+              を使ったインストール</a>だけです。
+              ホストおよび基準ディレクトリーを選択する前に、
+              <a class="ulink" href="../../../docs/guide/en/chap-exinst.html#exinst-install-via-ftp" target="_top">FTP
+              を使ったインストール</a>節の説明どおりにネットワークの設定をしておく必要があります。
+              </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+                ネットワークインターフェースデバイスは、標準で使われる "<span class="command"><strong>tlp0</strong></span>"
+                を使います。
+                </li>
+<li class="listitem">
+                メディア種別は標準で使われる "<span class="command"><strong>autoselect</strong></span>" を使います。
+                </li>
+<li class="listitem">
+                DHCP を使うため、
+                "<code class="code">Perform DHCP autoconfiguration?</code>" プロンプトでは
+                "<span class="command"><strong>a: Yes</strong></span>" を選びます。
+                </li>
+<li class="listitem">
+                Restore CD は IPv6 に対応していないので、
+                IPv6 の設定はしないでください。
+                </li>
+</ul></div>
+<p>
+              NFS インストール画面では、以下の各設定を使います。
+              </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+                NFS ホストの IP アドレスには "<span class="command"><strong>10.0.0.254</strong></span>" を使います。
+                これは、Restore CD で動いている
+                i386 サーバーで標準で使われるアドレスです。
+                </li>
+<li class="listitem">
+                基準ディレクトリーは "<span class="command"><strong>/nfsroot</strong></span>" を使います。
+                これは、Restore CD で NFS ルートが置かれている場所です。
+                </li>
+<li class="listitem">
+                Restore CD は標準で使われるパスにファイルを置いているので、
+                ディレクトリーを標準の設定から変更する必要はありません。
+                </li>
+</ul></div>
+<p>
+            </p>
+            </li>
+</ol></div>
+<p>
+          </p>
+          </li>
+</ol></div>
+      
+        <h4 class="title">
+<a name="upgrade-system"></a>インストール済システムのアップグレード (<a href="#installation">top</a>)
+  </h4>
+        <p>残念ながら、Restore CD はインストール済システムのアップグレードには対応していませんが、
+        それでも、「NetBSD-current の追跡」の
+        <a class="ulink" href="../../docs/current/index.html#updating-from-snapshot" target="_top">current
+        スナップショットを使って、既存システムを更新する</a>の節で説明されているように、
+        システムを手動で更新することができます。</p>
+        <p>シリアルコンソールが使える場合は、
+        <a href="http://netbsd.gw.com/cgi-bin/man-cgi?sysinst+8+NetBSD-5.1+i386">sysinst(8)</a> ベースの <code class="filename">RAMDISK</code> カーネルをブートして、
+        メニューをもとにアップグレードすることもできます。
+        <code class="filename">RAMDISK</code> カーネルをブートするには、
+        <code class="filename">netbsd-RAMDISK.gz</code> カーネルを、
+        対象となるシステムのルートディレクトリーに置いておき、
+        ブートローダーのプロンプトで選択するだけです。
+        sysinst を使ったアップグレードそのものの手順の詳細は、
+        <a class="ulink" href="../../../docs/guide/en/" target="_top">NetBSD ガイド</a>の<a class="ulink" href="../../../docs/guide/en/chap-upgrading.html" target="_top">NetBSD をアップグレードする</a>
+        の節をご覧ください。</p>
+        <p>アップグレードに関して何か問題があれば、<a class="ulink" href="#troubleshooting" target="_top">トラブルシューティング</a>の節で説明しているように
+        Restore CD をレスキューディスクとして使うこともできます。</p>
+      <hr>
+<h3 class="title">Restore CD 新規作成の手順</h3>
+        <h4 class="title">
+<a name="prepare-command"></a>ファイル取得コマンドの準備 (<a href="#create_restorecd">top</a>)
+  </h4>
+        <p>restorecd スクリプトは、
+        restorecd 用に必要な NetBSD リリースファイルを取得するために、
+        <span class="command"><strong>wget</strong></span> または <span class="command"><strong>rsync</strong></span> を必要とします。
+        NetBSD ホストを使っている場合は、これらは以下のコマンドを使って<a class="ulink" href="http://www.NetBSD.org/docs/software/packages.html" target="_top">
+        パッケージコレクション</a>からインストールできます。</p>
+<pre class="programlisting">
+# PKG_PATH=ftp://ftp.NetBSD.org/pub/pkgsrc/packages/NetBSD/i386/5.0/All	# ポートとバージョンは、構築ホストに合わせて適宜読み替えてください
+# export PKG_PATH
+# pkg_add -v wget
+# pkg_add -v rsync
+</pre>
+      
+        <h4 class="title">
+<a name="download-script"></a>restorecd スクリプトのダウンロード (<a href="#create_restorecd">top</a>)
+  </h4>
+        <p>NetBSD Restore CD スクリプトをダウンロードして展開します。
+        このスクリプトは <a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/arch/cobalt/restore-cd/5.1/" target="_top">
+        NetBSD の ftp サイト</a>にあります。</p>
+      
+        <h4 class="title">
+<a name="edit-makefile"></a>Makefile の編集 (<a href="#create_restorecd">top</a>)
+  </h4>
+        <p>restorecd スクリプトには、
+        Restore CD 作成用の簡単な
+        Makefile が附属していますが、
+        これには <span class="quote">“<span class="quote">configure</span>”</span> を自動でおこなう仕組みがありませんので、
+        お使いのホストのシステムと環境によっては Makefile を修正する必要があるかもしれません。</p>
+        <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<code class="code">WGET=</code> または
+          <code class="code">RSYNC=</code> 行を、
+          これらのコマンドがホスト上でインストールされている場所に合わせて修正します。
+<pre class="programlisting">
+WGET?=		/usr/pkg/bin/wget
+#WGET=		/usr/bin/wget
+#WGET=		/usr/local/bin/wget
+
+RSYNC?= 	/usr/pkg/bin/rsync
+#RSYNC= 	/usr/bin/rsync
+#RSYNC= 	/usr/local/bin/rsync
+</pre>
+          </li>
+<li class="listitem">日々構築されるスナップショットバイナリーを使って
+          restorecd を構築する場合は、 <a class="ulink" href="http://releng.NetBSD.org/cgi-bin/builds.cgi" target="_top">
+          日々のスナップショット構築の要約ページ</a>を確認して、
+          <code class="code">DAILY_DIR?=</code>
+          行を適切な日のディレクトリーを指すよう修正します。
+<pre class="programlisting">
+DAILY_DIR?=	201009180000Z
+</pre>
+          </li>
+<li class="listitem">
+<a class="ulink" href="ftp://ftp.NetBSD.org/pub/" target="_top">ftp.NetBSD.org</a>
+          や rsync.NetBSD.org でなく<a class="ulink" href="http://www.NetBSD.org/mirrors/" target="_top">ミラーサイト</a>を使う場合は、
+          <span class="command"><strong>wget</strong></span> 用の <code class="code">FTP_HOST=</code> 行
+<pre class="programlisting">
+FTP_HOST?=	ftp.NetBSD.org
+#FTP_HOST=	ftp.jp.NetBSD.org
+#FTP_HOST=	ftp7.jp.NetBSD.org
+</pre>
+          または <span class="command"><strong>rsync</strong></span> 用の <code class="code">RSYNC_HOST=</code> 行を
+          そのミラーサイトに設定します。
+<pre class="programlisting">
+RSYNC_HOST?=	rsync.NetBSD.org
+#RSYNC_HOST=	rsync.jp.NetBSD.org
+RSYNC_PREFIX?=
+
+#RSYNC_HOST=	rsync3.jp.NetBSD.org
+#RSYNC_PREFIX=	pub/
+</pre>
+          使用する rsync ミラーサイトが、<a class="ulink" href="http://www.NetBSD.org/mirrors/#rsync" target="_top">rsync.NetBSD.org</a>
+          とは異なるモジュール名を使っている場合 (つまり、
+          rsync URL のホスト名の後にディレクトリーのパスがついている場合)、
+          <code class="code">RSYNC_PREFIX=</code> 行も調整する必要があります。
+          </li>
+<li class="listitem">
+<span class="command"><strong>rsync</strong></span> を使う場合は、
+          以下の行を書き換える必要があります。
+<pre class="programlisting">
+${DONE_FETCH}:
+	${MKDIR} -p ${DOWNLOADDIR}
+#	${MAKE} fetch_wget
+	${MAKE} fetch_rsync
+	${TOUCH} ${DONE_FETCH}
+</pre>
+          つまり、<span class="quote">“<span class="quote"><code class="code">${MAKE} fetch_wget</code></span>”</span> 行をコメントアウトし、
+          <span class="quote">“<span class="quote"><code class="code">${MAKE} fetch_rsync</code></span>”</span> 行のコメントを解除します。
+          </li>
+</ul></div>
+      
+        <h4 class="title">
+<a name="creating-the-cd"></a>Restore CD の作成 (<a href="#create_restorecd">top</a>)
+  </h4>
+        <p>取得コマンドと Makefile の準備ができたら、
+        <span class="quote">“<span class="quote"><code class="code">make</code></span>”</span> とだけタイプします。</p>
+        <p>若干時間がかかって実行されたのち、
+        <span class="quote">“<span class="quote"><code class="filename">cd.tmp/restorecd.iso</code></span>”</span>
+        というファイルができあがります。
+        これが今回新規作成した Restore CD のイメージです。</p>
+        <p>このイメージは、ISO イメージの書き込みができるソフトウェア
+        を使って CD に焼くことができます。UNIX では
+        <span class="command"><strong>cdrecord</strong></span> が、Windows では Nero Burning Rom
+        その他お好きな ISO イメージ対応ソフトウェアが使えます。</p>
+        <p>おめでとうございます。自作の NetBSD Restore CD でお楽しみください。</p>
+      <hr>
+<h3 class="title">Restore CD の内部</h3>
+        <h4 class="title">
+<a name="what-it-does"></a>restorecd スクリプトは何をするのか? (<a href="#internals">top</a>)
+  </h4>
+
+        <p>restorecd スクリプト附属の Makefile は、以下の操作をします。
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">リリースバイナリーファイル (i386 および cobalt) と
+          ソースセット (必要なファイルは、
+          <code class="filename">restorecd-fetch.lst</code> ファイルに列挙されています) を取得する</li>
+<li class="listitem">ソースセットを展開する</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?makefs+8+NetBSD-5.1+i386">makefs(8)</a> コマンド (ISO イメージ作成に必要)
+          および <span class="command"><strong>paneld</strong></span> のバイナリーとマニュアルページの再構築するための準備として、
+          NetBSD/cobalt 用の toolchain を構築する</li>
+<li class="listitem">cobalt バイナリーセットを展開して、
+          <span class="command"><strong>paneld</strong></span> のバイナリーとマニュアルページを構築する</li>
+<li class="listitem">Restore CD ISO イメージ本体を構築するために、
+          <span class="quote">“<span class="quote"><span class="command"><strong>restorecd</strong></span></span>”</span> スクリプトを実行する</li>
+</ul></div>
+
+        <p><span class="quote">“<span class="quote"><span class="command"><strong>restorecd</strong></span></span>”</span>
+        のスクリプトは、以下の操作をします。
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">必要なコマンドがシステムにあるかどうか確認する</li>
+<li class="listitem">i386 サーバー用のファイル (ISO イメージのルートに置かれます)
+          を用意して、このサーバー向けの変更を加える</li>
+<li class="listitem">バイナリーセットからクライアント用のファイル (ISO イメージの
+          <code class="filename">/nfsroot</code> に置かれます) を用意して、
+          <span class="command"><strong>paneld</strong></span> バイナリーほかいくつかの restorecd 操作用ファイルを再構築する</li>
+<li class="listitem">インストールに使う cobalt 用バイナリーセットファイルを
+          <code class="filename">/nfsroot/cobalt</code> および
+          <code class="filename">/nfsroot/mipsel</code> 以下にコピーする</li>
+<li class="listitem">NetBSD の toolchain に含まれる <a href="http://netbsd.gw.com/cgi-bin/man-cgi?makefs+8+NetBSD-5.1+i386">makefs(8)</a> を使って、
+          ブート可能な ISO イメージを作る</li>
+</ul></div>
+<p>
+        詳細は、<code class="filename">Makefile</code> および
+        <span class="command"><strong>restorecd</strong></span> スクリプトをご覧ください。</p>
+        <p>なお、restorecd スクリプトで使われる設定には、
+        NetBSD コマンドやカーネルの標準状態の挙動や設定に依存しているものが複数あるので、
+        これらは将来の <a class="ulink" href="../../releases/current.html" target="_top">NetBSD-current</a> に合わせて更新する必要があるかもしれません。</p>
+      
+        <h4 class="title">
+<a name="how-does-it-work"></a>Restore CD はどのように動作するのか? (<a href="#internals">top</a>)
+  </h4>
+        <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+          i386 サーバーは、ISO9660 ファイルシステムをルートファイルシステムとして使います。
+          これで、GENERIC カーネルは CDROM ドライブを booted_device として認識しますので、
+          CDROM 用の特別な設定は必要ありません。
+          </li>
+<li class="listitem">
+          もちろん、CDROM 上の ISO9660 ファイルシステムは読み取り専用ですので、
+          書き込み権限が必要ないくつかのディレクトリーは MFS を使って用意されます。
+          <div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem">
+            <code class="filename">/dev</code> のデバイスノードは、
+            インストールメディアに含まれる RAMDISK カーネルおよび <a href="http://netbsd.gw.com/cgi-bin/man-cgi?init+8+NetBSD-5.1+i386">init(8)</a> により用意されます。
+            </li>
+<li class="listitem">
+            <code class="filename">/var</code> ディレクトリー以下のファイルはすべて、
+            CDROM の <code class="filename">/altvar</code> 以下にあり、MFS マウントされた
+            <code class="filename">/var</code> ディレクトリーの用意ができてからここにコピーされます。
+            これは、専用の <a href="http://netbsd.gw.com/cgi-bin/man-cgi?rc.d+8+NetBSD-5.1+i386">rc.d(8)</a> スクリプトである <code class="filename">/etc/rc.d/mfsmount</code>
+            がおこないます。
+            </li>
+<li class="listitem">
+            <code class="filename">/etc</code> ディレクトリーの扱いはやや面倒です。
+            いくつかのファイル (<code class="filename">/etc/rc</code> など) は、
+            ルートファイルシステムがマウントされた直後に必要となりますので、
+            <code class="filename">/var</code> ディレクトリーと同様の方法はとれません。
+            そこで、restorecd では、
+            <code class="filename">/etc</code> ディレクトリー以下で必要となるいくつかのファイルに対しては、
+            <a href="http://netbsd.gw.com/cgi-bin/man-cgi?mount+8+NetBSD-5.1+i386">mount(8)</a> コマンドの <span class="quote">“<span class="quote"><code class="code">union</code></span>”</span>
+            オプションを使って書き込みできるようにしています。
+            <a href="http://netbsd.gw.com/cgi-bin/man-cgi?named+8+NetBSD-5.1+i386">named(8)</a> では、書き込み操作のために chroot 設定を使っています。
+            このほかにも、いくつかの <a href="http://netbsd.gw.com/cgi-bin/man-cgi?rc.d+8+NetBSD-5.1+i386">rc.d(8)</a> スクリプトに、
+            読み取り専用となることに対処するための修正を加えています。</li>
+</ul></div>
+          </li>
+<li class="listitem">
+          cobalt クライアントは、インストールの最中、ルートファイルシステムで NFS を使います。
+          i386 サーバーでエクスポートされるディレクトリーは <code class="filename">/nfsroot</code>
+          で、もちろんこれも読み取り専用ですので、
+          前述の i386 サーバーと似たような仕組みを
+          cobalt クライアントでも使っています。
+          </li>
+<li class="listitem">
+          i386 サーバーは、利用可能なネットワークインターフェースを、
+          <code class="code">-l</code> オプションつきの <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ifconfig+8+NetBSD-5.1+i386">ifconfig(8)</a> の出力から探します。
+          インターフェースが複数ある場合は最初のものを使います。
+          使いたくないインターフェースを無効化するには、
+          ブート時に <a href="http://netbsd.gw.com/cgi-bin/man-cgi?userconf+4+NetBSD-5.1+i386">userconf(4)</a> を使うか、
+          restorecd を作る時に、
+          <code class="filename">data/i386/etc/rc.d/netconfig</code> <a href="http://netbsd.gw.com/cgi-bin/man-cgi?rc.d+8+NetBSD-5.1+i386">rc.d(8)</a>
+          スクリプトを独自に修正する必要があります。
+          </li>
+<li class="listitem">
+          インストール操作自体は、
+          <code class="filename">/nfsroot/cobalt/install/script</code> ディレクトリー (または
+          restorecd スクリプトツリーの
+          <code class="filename">data/cobalt/install/script</code> ディレクトリー) にある
+          <span class="command"><strong>install-core.sh</strong></span> に記述されています。
+          この手順は、<a href="http://netbsd.gw.com/cgi-bin/man-cgi?sysinst+8+NetBSD-5.1+i386">sysinst(8)</a> の標準的なインストールの手順とは異なります。
+          </li>
+<li class="listitem">
+          インストーラーは、以下のパーティションを作成します。
+            <div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem">物理メモリーの 2 倍のスワップ</li>
+<li class="listitem">利用可能なディスク容量の 20% (ディスク容量が 2G バイトに満たない場合は 10%)
+              の
+              <code class="filename">/var</code>
+</li>
+<li class="listitem">利用可能なディスク容量の 5% (ただし上限 500M バイト)
+              の <code class="filename">/tmp</code>
+</li>
+<li class="listitem">ブートローダーを置くための 
+              10M バイトの ext2fs パーティション</li>
+<li class="listitem">残りからなる NetBSD ルートパーティション</li>
+</ul></div>
+          </li>
+<li class="listitem">
+          インストーラーは、restorecd スクリプトツリーの
+          <code class="filename">data/cobalt/install/files</code> ディレクトリーにある専用ファイルを、
+          以下の操作のために配置します。
+            <div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem">標準で作られる上述のパーティション用の <a href="http://netbsd.gw.com/cgi-bin/man-cgi?fstab+5+NetBSD-5.1+i386">fstab(5)</a>
+              ファイル</li>
+<li class="listitem">
+<span class="command"><strong>paneld(8)</strong></span> バイナリーおよび
+              設定ファイルを、<code class="filename">/etc</code> 以下に</li>
+<li class="listitem">初回の root ログインができるようパッチを当てられた
+              <a href="http://netbsd.gw.com/cgi-bin/man-cgi?ttys+5+NetBSD-5.1+i386">ttys(5)</a> および <a href="http://netbsd.gw.com/cgi-bin/man-cgi?inetd.conf+5+NetBSD-5.1+i386">inetd.conf(5)</a>
+</li>
+<li class="listitem">LCD ディスプレイにブート過程を表示するためにパッチ
+              <a href="http://netbsd.gw.com/cgi-bin/man-cgi?rc+8+NetBSD-5.1+i386">rc(8)</a> および <a href="http://netbsd.gw.com/cgi-bin/man-cgi?rc.d+8+NetBSD-5.1+i386">rc.d(8)</a> スクリプト</li>
+</ul></div>
+          </li>
+</ul></div>
+      <hr>
+<h3 class="title">クレジット</h3>
+        <h4 class="title">
+<a name="authors"></a>著者 (<a href="#credits">top</a>)
+  </h4>
+        <p>この文書は、当初、<code class="email">&lt;<a class="email" href="mailto:alexp@broadcom.com">alexp@broadcom.com</a>&gt;</code> が執筆して
+        NetBSD プロジェクトに寄贈しました。
+        筒井泉 <code class="email">&lt;<a class="email" href="mailto:tsutsui@NetBSD.org">tsutsui@NetBSD.org</a>&gt;</code> が、
+        作成およびインストールの節を 5.0_BETA restorecd 用に更新し、
+        内部に関する節を追加しました。</p>
+      
+        <h4 class="title">
+<a name="other"></a>その他のクレジット (<a href="#credits">top</a>)
+  </h4>
+        <p>この restorecd のもととなった NetBSD Restore CD の原作者であり、また、
+        この文書のインストールに関する節のもととなった文書である
+        <code class="filename">instructions.txt</code> の原著者である
+        Dennis Chernoivanov に感謝します。
+        また、<code class="filename">instructions.txt</code> の改良をした
+        Havard Eidnes にも感謝します。
+        もちろん、この CD のテストに協力してくださった
+        port-cobalt メーリングリストの大勢の皆さんにも、大いに感謝します。</p>
+      
+        <h4 class="title">
+<a name="history"></a>変更履歴 (<a href="#credits">top</a>)
+  </h4>
+        <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+          <span class="emphasis"><em>2005-03-11</em></span>
+          -- 最初の版を
+          <a class="ulink" href="http://mail-index.NetBSD.org/port-cobalt/2005/03/11/0001.html" target="_top">
+          port-cobalt</a>
+          メーリングリストで発表。</li>
+<li class="listitem">
+          <span class="emphasis"><em>2005-03-13</em></span>
+          -- 初版に若干の文章と文法の修正を加え、
+          NetBSD の htdocs CVS モジュールに commit
+          </li>
+<li class="listitem">
+          <span class="emphasis"><em>2008-11-18</em></span>
+          -- 新しくなった 5.0_BETA restorecd スクリプト用に更新
+          </li>
+<li class="listitem">
+          <span class="emphasis"><em>2009-04-20</em></span>
+          -- アップグレードに関して若干の注記を追加
+          </li>
+<li class="listitem">
+          <span class="emphasis"><em>2009-04-30</em></span>
+          -- 5.0 リリース用に更新
+          </li>
+<li class="listitem">
+          <span class="emphasis"><em>2009-08-29</em></span>
+          -- sysinst カーネルを使ったインストールに関する節を追加
+          </li>
+<li class="listitem">
+          <span class="emphasis"><em>2010-02-19</em></span>
+          -- 5.0.2 リリース用に更新
+          </li>
+<li class="listitem">
+          <span class="emphasis"><em>2010-09-18</em></span>
+          -- 節の順序変更、YouTube 動画へのリンクを追加、例示の一部更新
+          </li>
+<li class="listitem">
+          <span class="emphasis"><em>2010-11-19</em></span>
+          -- 5.1 リリース用に更新
+          </li>
+</ul></div>
+        このほか、すべての変更は、<a class="ulink" href="http://cvsweb.NetBSD.org/bsdweb.cgi/htdocs/" target="_top">cvsweb
+        インターフェース</a>で見ることができます。
+      </div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

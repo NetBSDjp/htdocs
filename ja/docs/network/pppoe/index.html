@@ -1,0 +1,682 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+<title>NetBSD ドキュメンテーション: PPPoE (DSL) 経由の接続手順</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-docs-network-pppoe-index"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD ドキュメンテーション: PPPoE (DSL) 経由の接続手順</h1>
+<h3 class="title"><a name="">PPPoE (DSL) 経由の接続手順</a></h3>
+<ul>
+<li><a href="#intro">はじめに</a></li>
+<li><a href="#check-kernel">カーネルの確認</a></li>
+<li><a href="#manual-test">手動で接続テストする</a></li>
+<li><a href="#permanent-setup">永続的な接続の設定</a></li>
+<li><a href="#stay-connected">常時接続回線の設定</a></li>
+<li><a href="#connect-on-demand">オンデマンド接続回線の設定</a></li>
+<li><a href="#clamping">MSS の調節を伴う NAT の設定</a></li>
+</ul>
+<h3 class="title"><a name="">さまざまな覚書</a></h3>
+<ul>
+<li><a href="#t-online">T-Online のアカウント名に関する一般的な情報</a></li>
+<li><a href="#t-online-isdn-vs-dsl">ISDN や DSL 用の T-Online アカウント名</a></li>
+<li><a href="#pppoe-server">PPPoE サーバーのセットアップ</a></li>
+</ul>
+<hr>
+<h3 class="title">PPPoE (DSL) 経由の接続手順</h3>
+<h4 class="title">
+<a name="intro"></a>はじめに (<a href="#">top</a>)
+  </h4>
+<p>
+この文書は、 PPPoE (DSL プロバイダーでよく使われています) 経由で
+インターネットに接続するための簡単なセットアップについて説明します。
+</p>
+
+<p>
+この文書が対象としているのは NetBSD 1.6 以降です。これより前のリリースには
+カーネル PPPoE サポートが含まれません。古い NetBSD リリース版を使っている場合は、
+pkgsrc から net/rp-pppoe パッケージをインストールするようおすすめします。
+これにはすべてを設定してくれる <code class="code">adsl-setup</code>
+というコマンドが含まれています。
+</p>
+
+<p>
+PPPoE は <span class="bold"><strong>P</strong></span>oint-to-<span class="bold"><strong>P</strong></span>oint <span class="bold"><strong>P</strong></span>rotocol <span class="bold"><strong>o</strong></span>ver
+<span class="bold"><strong>E</strong></span>thernet の略です。典型的な設定は、 DSL モデム (これは DSL 線経由で
+<span class="emphasis"><em>Access Concentrator</em></span> と呼ばれるプロバイダーのルーターと喋ります)
+とあなたのマシンを通常のイーサネットでつなぐことです。このため、対 DSL
+モデム専用のイーサネットインターフェースが必要です。このイーサネット
+インターフェース上に PPP 接続が構築されます。
+</p>
+
+<p>
+よく見るとこれは妙なことのように見えます。イーサネットで接続しているのです - 
+プロバイダーはなぜその上層で IP を使わないのでしょう? いくつかのプロバイダーは、
+(ケーブルモデム接続のように) DHCP で IP アドレスを割り振って、 IP を使っています。
+ほとんどのプロバイダーは、そのようにはしていません。 PPPoE を使ったほうが、
+プロバイダーにとっては若干楽になるからです。 PPPoE では妙に小さい MTU
+を使っており、そのせいで、インターネット上の不適切に設定された防火壁の
+向こうにいるシステムの多くとの通信ができなくなるため、ユーザーにとっては若干面倒になります。
+回避策は<a class="ulink" href="#clamping" target="_top">あとで</a>説明します。
+</p>
+
+<p>
+以下の例では、対 DSL モデム用のイーサネットインターフェースとして
+<span class="emphasis"><em>ne0</em></span> を使います。もちろん、これ以外のインターフェースでも
+使えます。
+</p>
+
+<h4 class="title">
+<a name="check-kernel"></a>カーネルの確認 (<a href="#">top</a>)
+  </h4>
+<p>
+PPPoE を使うためには、カーネルが PPPoE をサポートしている必要があります。
+そのことを確認するため、
+</p>
+<pre class="programlisting"> ifconfig -C </pre>
+<p>
+を実行し、出力から "pppoe" を探します。もしなければ、カーネルコンフィグファイルに
+</p>
+<pre class="programlisting">
+  pseudo-device pppoe
+</pre>
+<p>
+を追加する必要があります。
+</p>
+
+<h4 class="title">
+<a name="manual-test"></a>手動で接続テストする (<a href="#">top</a>)
+  </h4>
+<p>
+マシンを自動接続するよう設定する前に、手動でテスト接続をすることを
+おすすめします。うまくいかない場合、このテストは設定のデバッグのための
+簡単な方法になります。
+</p>
+<p>
+まず最初に、 pppoe インターフェース自体を作り、ダミーの IP アドレス (これは PPP
+ネゴシエーションによって置き換えられます) を割り振ります。このインターフェース
+はまだ準備できていないので、ここでは down させておきます。
+</p>
+<pre class="programlisting">
+  ifconfig pppoe0 create
+  ifconfig pppoe0 inet 0.0.0.0 0.0.0.1 down
+</pre>
+
+<p>
+次に、この pppoe インターフェースを、 DSL モデムへの接続に使っている
+イーサネットインターフェースに割り付けます。このインターフェースは UP
+されている必要がありますが、 IP アドレスが振られている必要はありません。
+</p>
+
+<pre class="programlisting">
+  ifconfig ne0 up
+  pppoectl -e ne0 pppoe0
+</pre>
+
+<p>
+ここで、認証データが必要になります。 windows のソフトウェアはよく悪さをしたり
+プロバイダーが個別に対応する必要があったりするため、ほとんどのプロバイダーは、
+Linux ユーザー向けにデータのフォーマット方法の資料を提供しています。
+t-online を使っている場合は <a class="ulink" href="#t-online-isdn-vs-dsl" target="_top">この傍注</a>
+をご覧ください。以下のようなコマンドで認証データを入力します (特殊な文字は、
+シェルが解釈しないように単引用符を使って保護する必要があることに注意) :
+</p>
+
+
+<pre class="programlisting">
+  pppoectl pppoe0 myauthproto=pap 'myauthname=XXX' 'myauthsecret=YYY' hisauthproto=none
+</pre>
+
+<p>
+ここで <code class="code">XXX</code> はユーザー名、 <code class="code">YYY</code> はパスワードです。
+<code class="code">hisauthproto=none</code> は、 PPP が通信相手に認証を要求すること
+-多くのプロバイダーはこれを拒否します-を防ぎます。お使いのプロバイダーが CHAP
+プロトコルに対応している場合は <code class="code">myauthproto=chap</code> にすることもできます。
+</p>
+
+<p>
+これで、最初の接続を試す準備ができました。設定が誤っている可能性があるため、
+ここでは再試行を制限しておきます:
+</p>
+
+<pre class="programlisting">
+  pppoectl pppoe0 max-auth-failure=1
+</pre>
+
+<p>
+そしてインターフェースをアクティブにします:
+</p>
+
+<pre class="programlisting">
+  ifconfig pppoe0 up
+</pre>
+
+<p>
+何事も起こりません (詳細なデバッグメッセージを有効にはしていないので) 。すべて
+順調であれば PPPoE セッションが接続され、そのことは以下のようにして
+確認できます:
+</p>
+
+<pre class="programlisting">
+  # pppoectl -d pppoe0
+  pppoe0: state = session
+          Session ID: 0x254f
+          PADI retries: 0
+          PADR retries: 0
+</pre>
+
+<p>
+この出力例は動作している設定のものです。 PPPoE セッションが確立して、
+それを使用中 (state = session) です。もし出力中に session state がなければ、
+認証データが間違っている (上記参照) か、アクセスコンセントレーターが
+応答しないかセッションを確立していないかで、この場合は PADI または PADR
+再試行が起きるでしょう。これは、 DSL のセットアップがうまくできていないか、
+サービス名を指定する (pppoectl で <code class="code">-s</code> オプションを使う) 必要があるか、
+または、アクセスコンセントレーター名を指定する (pppoectl で <code class="code">-a</code>
+オプションを使う) 必要があるということです。プロバイダーでは必要な事項を
+文書化しているはずです。詳細は <a href="http://netbsd.gw.com/cgi-bin/man-cgi?pppoectl+8+NetBSD-5.1+i386">pppoectl(8)</a> を参照してください。
+</p>
+
+<p>
+PPPoE セッションが張れると、 PPP の IP ネゴシエーションを確認することが
+できるようになります:
+</p>
+
+<pre class="programlisting">
+  # ifconfig pppoe0
+  pppoe0: flags=8851&lt;UP,POINTOPOINT,RUNNING,SIMPLEX,MULTICAST&gt; mtu 1492
+          inet 117.80.111.85 -&gt; 118.5.113.169 netmask 0xff000000
+</pre>
+
+<p>
+これは、ローカル (117.80.111.85) とリモート (118.5.113.169) の IP アドレスが
+割り振られていて (もちろん、実際にはこの例とは異なる IP アドレスになります) 、
+動作する接続です。この例のような表示にならない場合、 PPP 認証データが
+間違っています。再確認のうえ、 pppoectl の設定を再度おこなうところから
+やり直してください。
+</p>
+
+<h4 class="title">
+<a name="permanent-setup"></a>永続的な接続の設定 (<a href="#">top</a>)
+  </h4>
+<p>
+動作確認は済んだので、マシンが自動で接続を行なうように
+設定したくなるでしょう。
+</p>
+<p>
+マシンのブート時に自動で接続するためには、
+先ほどの手動設定で行なった手順をコード化して、スクリプトや設定ファイル内に
+書いておく必要があります。
+</p>
+<p>
+プロバイダーとの契約が<a class="ulink" href="#stay-connected" target="_top">均一</a>料金体系ならば、
+常時接続にすることになるでしょう。
+</p>
+<p>
+接続時間に応じて料金を払うのであれば、<a class="ulink" href="#connect-on-demand" target="_top">
+オンデマンド</a>接続がよいでしょう。
+</p>
+<p>
+ISP がネームサーバーの IP アドレスを提供するはずですが、
+自分で <code class="code">/etc/resolv.conf</code> に書いておくべきです。
+詳細は <a href="http://netbsd.gw.com/cgi-bin/man-cgi?resolv.conf+5+NetBSD-5.1+i386">resolv.conf(5)</a> および <a class="ulink" href="../index.html#configuration_files" target="_top">Networking
+FAQ</a> を参照してください。
+</p>
+
+<h4 class="title">
+<a name="stay-connected"></a>常時接続回線の設定 (<a href="#">top</a>)
+  </h4>
+<p>
+この設定の目標は、できるかぎりの間、回線を確保しておくことと、
+(なんらかの理由で) 切断された場合はすみやかに再接続することです。
+これはデフォルトの操作モードです。
+上記の手動のテストで使った認証データを用意して、ファイルに書きます:
+</p>
+<p>
+以下の内容を <code class="code">/etc/ifconfig.pppoe0</code> ファイルに書きます:
+</p>
+
+<pre class="programlisting">
+create
+# PPPoE インターフェースとして使われる物理インターフェースを up する
+! /sbin/ifconfig ne0 up
+# $int が ne0 をイーサネットインターフェースとして使うようにする
+! /sbin/pppoectl -e ne0 $int
+# 認証の設定
+! /sbin/pppoectl $int myauthproto=pap 'myauthname=XXX' 'myauthsecret=YYY' hisauthproto=none
+# PPPoE インターフェース自身の設定。ここで使うアドレスはいずれも、
+# 私たちは面倒を見ず、リモート ppp で選ばれたものを意味する
+# 特殊なもの。
+0.0.0.0 0.0.0.1 up
+</pre>
+
+<p>
+このファイルが root にしか読めないことを確認してください。
+</p>
+<p>
+<code class="code">/etc/ppp/ip-up</code> に以下の内容を書きます:
+</p>
+
+<pre class="programlisting">
+#! /bin/sh
+/sbin/route add default $5
+</pre>
+
+<p>
+このファイルは root が実行可能にしておきます。
+</p>
+<p>
+<code class="code">/etc/ppp/ip-down</code> に以下の内容を書きます:
+</p>
+
+<pre class="programlisting">
+#! /bin/sh
+/sbin/route delete default $5
+</pre>
+
+<p>
+このファイルも root が実行可能にしておきます。
+</p>
+<p>
+最後に、次の一行を <code class="code">/etc/rc.conf</code> に追加します:
+</p>
+
+<pre class="programlisting">
+ifwatchd=YES
+</pre>
+
+<p>
+これで完了です。 pppoe0 インターフェースに <code class="code">link1</code> フラグがないので
+可能な限り接続が確立されたままになり、また、接続が失われた場合は
+すみやかに再構築されます。接続できた時はいつも
+<code class="code">/etc/ppp/ip-up</code> スクリプトが実行され、切れたときはいつも
+<code class="code">/etc/ppp/ip-down</code> が実行されます。さらに、これらのスクリプトは、
+クリーンアップ (例えば、接続が切れたときに古い NAT コネクションを捨て、
+再接続時に動的に新しい IP が振られる) や、
+再接続したときの情報を必要とするサーバーへの通知
+(たとえば、 named のフォワードやキャッシュ) に使うことができます。
+</p>
+<p>
+システムが ifwatchd デーモン (これは ip-up と ip-down スクリプトを実行します)
+をブートするのは、おそらくかなり遅い時期になることに注意してください。
+PPPoE 接続は、ネットワーク起動の初期の、 ifconfig.pppoe0 ファイルが実行される
+ころに確立されます。接続はすみやかにされますが、 <code class="code">/etc/ppp/ip-up</code>
+スクリプトはまだ実行されていません。
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?ifwatchd+8+NetBSD-5.1+i386">ifwatchd(8)</a> 起動時に、常時接続の場合は ip-up スクリプトが実行されます。
+多くのネットワークデーモンはこの間に起動されますが、
+デフォルトルートがないために外部への接続ができません。
+これらのデーモンを ip-up スクリプトでキックするのはよい考えです
+(そして、動的 IP アドレスを使った場合にこれらのデーモンの引き起こす問題の
+ほとんどにも注意を払ってください) 。典型的な例としては、すべての NAT
+コネクションを捨て、 named と ntpd を再起動するものです:
+</p>
+
+<pre class="programlisting">
+#! /bin/sh
+/sbin/route add default $5
+/etc/rc.d/ntpd restart
+/etc/rc.d/named restart
+</pre>
+
+<h4 class="title">
+<a name="connect-on-demand"></a>オンデマンド接続回線の設定 (<a href="#">top</a>)
+  </h4>
+<p>
+この接続設定では、トラフィックが生じたときのみ PPPoE 接続を確立します。
+あらかじめ設定したアイドル時間が経過すると自動的に接続を切ります。
+</p>
+<p>
+常時接続との主な違いは以下のとおりです
+</p>
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<p>pppoe0 インターフェースに <code class="code">link1</code> フラグがある</p>
+</li>
+<li class="listitem">
+<p>idle timeout (以下の例では 60 秒) により、トラフィックがないまま
+一定時間経過すると接続を切断する</p>
+</li>
+<li class="listitem">
+<p>ルーティングの設定。たとえ接続が確立されていない間であっても、
+ルートパケットを pppoe0 インターフェースに向けておく必要があります。</p>
+</li>
+</ul></div>
+
+<p>
+以下の内容を <code class="code">/etc/ifconfig.pppoe0</code> に書きます:
+</p>
+
+<pre class="programlisting">
+create
+# PPPoE インターフェースとして使われる物理インターフェースを up する
+! /sbin/ifconfig ne0 up
+# $int が ne0 をイーサネットインターフェースとして使うようにする
+! /sbin/pppoectl -e ne0 $int
+# 認証の設定
+! /sbin/pppoectl $int idle-timeout=60 myauthproto=pap 'myauthname=XXX' 'myauthsecret=YYY' hisauthproto=none
+# PPPoE インターフェース自身の設定。ここで使うアドレスはいずれも、
+# 私たちは面倒を見ず、リモート ppp で選ばれたものを意味する
+# 特殊なもの。
+0.0.0.0 0.0.0.1 link1 up
+! /sbin/route add default -iface 0.0.0.1
+</pre>
+
+<p>
+この設定では、デフォルトルートは上記設定ファイルによるものが常に使われるので
+ifwatchd を使う必要はありません。 IP アドレスの変更や接続の切断や再構築を
+知る必要がある場合は、 ifwatchd を設定して <code class="code">/etc/ppp/ip-up</code> と
+<code class="code">/etc/ppp/ip-down</code> を使うようにすることもできます。
+例は、<a class="ulink" href="#stay-connected" target="_top">常時接続</a>の場合を
+参照してください (ただし、デフォルトルートを変えてはいけません) 。
+</p>
+
+<h4 class="title">
+<a name="clamping"></a>MSS の調節を伴う NAT の設定 (<a href="#">top</a>)
+  </h4>
+<p>
+誤設定された防火壁の向こうにあるシステムは Path-MTU-Discovery を使おうと
+しますが、その防火壁があらゆる ICMP メッセージをブロックしてしまいます。
+これは不正な設定ですが、珍しいことではありません。通常、このような
+(遠隔で、あなたの管理下にない) 状況をあなたが修正することはできません。
+しかも、時にはこういったリモートシステムを利用 (そこからデータをダウンロード
+したり、オンラインバンキングするなど) する必要があります。
+</p>
+<p>
+上記の説明のように特に配慮されたシステム群以外では、大きなデータ塊を PPPoE
+経由で接続しているシステムに送ることはできないでしょう。しかし、回避策
+(いんちきとも言うかも) があります: 最初の TCP ハンドシェークにおいて、
+小さいサイズの MSS (maximum segment size) オプションを送って、
+大きなパケットを扱えないように見せかけるのです。
+</p>
+<p>
+PPPoE 接続されたあなたのマシン側からのコネクションについては、 sysctl 変数
+net.inet.tcp.mss_ifmtu を 1 に設定します。
+つまり、
+</p>
+
+<pre class="programlisting">
+# Obey interface MTUs when calculating MSS
+net.inet.tcp.mss_ifmtu=1
+</pre>
+
+<p>
+を <code class="code">/etc/sysctl.conf</code> に追加します。 PPPoE ルーターの向こうのシステム側
+からのコネクションについては、以下の <code class="code">/etc/ipnat.conf</code> の例のようにして、
+NAT ルールに mssclamp オプションを設定する必要があります:
+</p>
+
+<pre class="programlisting">
+map pppoe0 192.168.1.0/24 -&gt; 0/32 portmap tcp/udp 44000:49999 mssclamp 1440
+map pppoe0 192.168.1.0/24 -&gt; 0/32 mssclamp 1440
+</pre>
+
+<p>
+NAT の設定に関してより詳しいことは、
+<a class="ulink" href="../#simplenat" target="_top">NetBSD ネットワーキング FAQ</a> を参照してください。
+</p>
+
+<p>
+NAT を使わないのであれば、単に MSS 調節をするために 1:1 の NAT ルールの
+設定が必要です:
+</p>
+
+<pre class="programlisting">
+map pppoe0 x.x.x.x/24 -&gt; 0/0 mssclamp 1440
+</pre>
+
+<p>
+上の例では MTU が 1492 バイトであると仮定しています。お使いになっている PPPoE
+接続で MTU がもっと小さい値の場合は、 MTU から 52 バイトを引いた値を使ってください。
+例えば MTU が 1460 バイトなら 1408 バイトにします。
+</p>
+
+<p>
+<span class="bold"><strong>注意:</strong></span>
+理論的には、上の例での適切な値は 1452 バイト (これは、小さめの PPPoE MTU
+、TCP ヘッダーと、最大 0x40バイトの TCP オプションからなります)
+になるはずなのですが、これでも場合によっては大きすぎるようです。
+多くの人達が試した結果によれば、上で例示した MSS 値 (1440 バイト)
+に調節すると一番うまくいっています。
+</p>
+<hr>
+<h3 class="title">さまざまな覚書</h3>
+<h4 class="title">
+<a name="t-online"></a>T-Online のアカウント名に関する一般的な情報 (<a href="#">top</a>)
+  </h4>
+<p>
+ ドイツの ISP T-Online へダイアルインで入る場合、
+ 正しいユーザー名と、独自のチャットスクリプトについての 2 点について、
+ 大変トリッキーな事柄があります。一般的な ppp の設定方法の説明は
+ <a class="ulink" href="../#ppp" target="_top">NetBSD Network FAQ</a> を参照してください。
+</p>
+
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+    <p>
+      T-Online のログイン名は、三つの部分を
+      つなぎ合わせたものになっています:
+    </p>
+
+    <div class="orderedlist"><ol class="orderedlist" type="a">
+<li class="listitem">
+      <p>
+        Anschlußkennung: 12 桁の数字
+        (<span class="emphasis"><em>AAAAAAAAAAAA</em></span>)、
+        たとえば 000120123456
+      </p>
+    </li>
+<li class="listitem">
+      <p>
+        T-Online Nr: 12 桁の数字 (<span class="emphasis"><em>TTTTTTTTTTTT</em></span>)、
+        たとえば 3200123456。 しばしば
+        "32" で始まります; 12 桁より少ない場合は、
+        '#' を加えます)
+      </p>
+    </li>
+<li class="listitem">
+      <p>
+        Mitbenutzer-Nummer, 大抵は "0001" (<span class="emphasis"><em>MMMM</em></span>)、
+        たとえば 0001
+      </p>
+    </li>
+</ol></div>
+    
+    <p>
+      すると、ログイン名は、この三つの部分を何も挟まずに
+      一行に並べたもの ("<span class="emphasis"><em>AAAAAAAAAAAATTTTTTTTTTTTMMMM</em></span>") 、
+      たとえば 0001201234563200123456#0001 になります。
+      これを PPP オプションファイルの "<code class="code">user</code>" 行に書きます。
+    </p>
+  </li>
+<li class="listitem">
+    <p>
+      チャットスクリプトでは、モデムが
+      <code class="code">CONNECT</code> を知らせてきてから、
+      "<code class="code">.</code>" を送るように注意する必要があります:
+    </p>
+
+<pre class="programlisting">
+ABORT BUSY    '' AT
+              OK ATZ
+              OK ATL1
+              OK ATD0191011
+              CONNECT <span class="emphasis"><em>'.'</em></span>
+</pre>
+
+    <p>
+      この最後のドットがないと、最初の LCP ConfReq frame を送出後、
+      T-Online ダイアルインサーバーからの返答なしに、
+      すぐに接続が切られることがあります。
+    </p>
+  </li>
+<li class="listitem">
+    <p>
+      T-Online を T-DSL 経由で使う場合は、ログイン名に
+      "<code class="code">@t-online.de</code>" を追加してください。
+      たとえば "<code class="code">0001201234563200123456#0001@t-online.de</code>" のように。
+    </p>
+  </li>
+</ol></div>
+
+<p>
+  さらなる情報について、 (ドイツ語の) リンクをいくつか示します
+  (これらのほとんどは NetBSD 向けではありませんが、
+  心配は無用です─他の Unix-like オペレーティングシステムで
+  うまく使える手法は、普通は NetBSD でもうまくいきます):
+</p>
+
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<p> <a class="ulink" href="http://www.linux-user.de/ausgabe/2001/08/018-rp-pppoe/rp-pppoe.html" target="_top">Gut gebrüllt - Roaring Penguin Software's DSL-Software</a></p>
+  </li>
+<li class="listitem">
+<p> <a class="ulink" href="http://www.albert-rommel.de/ppp.htm" target="_top">PPP-Zugang
+            zu <font color="#FF00FF">T</font>-Online</a></p>
+  </li>
+<li class="listitem">
+<p> <a class="ulink" href="http://home.t-online.de/home/Diedrich.Ehlerding/besonderheiten.html" target="_top">Netzzugang bei <font color="#FF00FF">T</font>-Online: Besonderheiten und Einschränkungen</a></p>
+  </li>
+<li class="listitem">
+<p> <a class="ulink" href="http://sdb.suse.de/sdb/de/html/toppp.html" target="_top">SuSE:
+       T-Online Zugang mit PPP</a></p>
+  </li>
+<li class="listitem"> <p><a class="ulink" href="http://sdb.suse.de/sdb/de/html/t_online3.html" target="_top">SuSE:
+       T-Online: Verbindung wird nicht aufgebaut</a></p>
+  </li>
+<li class="listitem"> <p><a class="ulink" href="http://sdb.suse.de/sdb/de/html/toppp_files.html" target="_top">SuSE: PPP-Files für T-Online</a></p>
+  </li>
+</ul></div>
+
+<h4 class="title">
+<a name="t-online-isdn-vs-dsl"></a>ISDN や DSL 用の T-Online アカウント名 (<a href="#">top</a>)
+  </h4>
+<p>
+従来 ISDN で T-Online に接続していたユーザーは、 T-DSL でのユーザー名が
+ISDN でのものとは異なることに注意してください。 DSL でのユーザー名は
+末尾に <code class="code">@t-online.de</code> を追加したものになるため、
+<a class="ulink" href="#t-online" target="_top">T-Online のアカウント名に関する一般的な情報</a>
+の節を参照してください。
+</p>
+
+<h4 class="title">
+<a name="pppoe-server"></a>PPPoE サーバーのセットアップ (<a href="#">top</a>)
+  </h4>
+<p>
+  PPPoE のテストをしたいが DSL 回線がない場合は、どうすればいいでしょうか?
+  もちろん、その場合は自分で PPPoE サーバーをセットアップするのです。
+  <a href="http://netbsd.gw.com/cgi-bin/man-cgi?pppoe+4+NetBSD-5.1+i386">pppoe(4)</a> マニュアルページに、必要な情報はほぼすべて載っています。
+
+</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"> <p>
+    カーネルに "options PPPOE_SERVER" が含まれていることを確認します。
+  </p> </li>
+<li class="listitem"> <p>
+    サーバーの pppoe0 インターフェースに link0 フラグをセットします。
+  </p> </li>
+<li class="listitem"> <p>
+    ローカルおよびリモートの IP アドレスとして、それぞれで使いたいアドレスを設定します。
+    たとえば、サーバーで 10.3.3.1 を使い、
+    クライアントで 10.3.3.2 を使いたい場合は、
+    /etc/ifconfig.pppoe0 ファイルの最後の行を、"0.0.0.0 0.0.0.1 up" ではなく
+    "10.3.3.1 10.3.3.2 up" にします。
+  </p> </li>
+<li class="listitem"> <p>
+    認証のために、クライアントで "my" になっている部分は
+    サーバーでは "his" に置き換えてください。たとえば、クライアントで "myauthproto"
+    となっている部分はサーバーでは "hisauthprot" となります。
+  </p> </li>
+</ul></div>
+<p>
+</p>
+
+<p>
+  サーバーの /etc/ifconfig.pppoe0 ファイルの全文は、以下のとおりです。
+  </p>
+<pre class="programlisting">
+create
+# Server:
+link0
+#
+! /sbin/ifconfig re1 up
+! /sbin/pppoectl -e re1 $int
+! /sbin/pppoectl $int hisauthproto=pap hisauthname='foobar@baz.com' hisauthsecret='oink' myauthproto=none
+10.3.3.1 10.3.3.3 up
+  </pre>
+<p>
+</p>
+
+<p>
+  これに対応するクライアントの /etc/ifconfig.pppoe0 ファイルは、以下のとおりです。
+  </p>
+<pre class="programlisting">
+create
+! /sbin/ifconfig re1 up
+! /sbin/pppoectl -e re1 $int
+! /sbin/pppoectl $int myauthproto=pap 'myauthname=foobar@baz.com' 'myauthsecret=oink' hisauthproto=none
+0.0.0.0 0.0.0.1 up
+  </pre>
+<p>
+</p>
+</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>

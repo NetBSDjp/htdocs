@@ -1,0 +1,776 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="stylesheet" href="global.css" type="text/css">
+
+
+
+<title>NetBSD/i386  FAQ (よくある質問と回答集)</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-ports-i386-faq"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch"><form method="get" action="http://www.google.com/custom">
+<input class="whiteOnBlack" type="text" name="q" onfocus="if(this.value==this.defaultValue ) this.value='';" size="12" maxlength="255" value="Search"><input type="hidden" name="cof" value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"><input type="hidden" name="domains" value="NetBSD.org"><input type="hidden" name="sitesearch" value="www.NetBSD.org"><input type="submit" value="検索">
+</form></div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD/i386  FAQ (よくある質問と回答集)</h1>
+<h3 class="title"><a name="dualbooting">他のオペレーティングシステムとの共存</a></h3>
+<ul>
+<li><a href="#ms_partition">マイクロソフトパーティションへのアクセス</a></li>
+<li><a href="#dual_boot">NetBSD や DOS/Windows/その他の OS のメニューからの起動</a></li>
+<li><a href="#nt_boot">Windows NT/2000/2003/XP のブートメニューに NetBSD を加える方法</a></li>
+<li><a href="#fips">全体が DOS/Windows で使用されているディスクに NetBSD をインストールする</a></li>
+<li><a href="#dosboot">dosboot.com がカーネルのロード後にマシンをリセットしてしまいます</a></li>
+<li><a href="#dosprompt">WinME マシンでブートフロッピーがなく Win98 CD しかない場合の、 DOS プロンプトへの入り方</a></li>
+</ul>
+<h3 class="title"><a name="specific-hardware">特定のハードウェアの問題</a></h3>
+<ul>
+<li><a href="#irq2or9">IRQ 2 と IRQ 9</a></li>
+<li><a href="#ne200-device-timeout">'ne1: device time out' という問題</a></li>
+<li><a href="#usb-interrupt">USB の問題 'uhci0: couldn't map interrupt'</a></li>
+<li><a href="#vid_mem_conflict">"setting tty flags" の直後にモニターが DPMS modeに落ちてしまうのですが</a></li>
+<li><a href="#pcmcia_modem_flow_control">PCMCIA モデムが動かない</a></li>
+<li><a href="#via_epia_bootloader">VIA EPIA ハードウェアへのインストール</a></li>
+</ul>
+<h3 class="title"><a name="partitioning">古いマシンのディスクの問題</a></h3>
+<ul>
+<li><a href="#540mb-bios-limit">540MB BIOS limit があるマシンで大きなドライブを使用するには</a></li>
+<li><a href="#determining_geometry">"正しい" ディスクジオメトリーの決定法</a></li>
+</ul>
+<hr>
+<h3 class="title">他のオペレーティングシステムとの共存</h3>
+       <h4 class="title">
+<a name="ms_partition"></a>マイクロソフトパーティションへのアクセス (<a href="#dualbooting">top</a>)
+  </h4>
+       <p>
+         NetBSD は Microsoft の FAT, FAT32, NTFS4, NTFS5 を含む様々な異なる
+         ファイルシステムをサポートしています(完全なリストは 
+         <a href="http://netbsd.gw.com/cgi-bin/man-cgi?fstab+5+NetBSD-5.1+i386">fstab(5)</a> を参照して下さい)。
+         現在のところ、 NTFS ファイルシステムのサポートは、読み出し動作のみ信頼性のあるものです。
+         Long filename は FAT と NTFS の両方でサポートされています。
+       </p>
+       <p>
+         他のファイルシステムにアクセスするためには、<code class="code">disklabel</code> を
+         セットアップする必要があります。<code class="code">disklabel</code> はシステムに対して
+         どこにディスク上のデータを探しにいけば良いか教えます。
+         正しい <code class="code">disklabel</code> を用いれば、NetBSD で使用するために
+         <code class="code">mount</code> することができます。
+       </p>
+       <p>
+         <span class="bold"><strong>ディスクラベルの設定</strong></span>
+       </p>
+         <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">ファイルシステムが含まれているディスクを決定する<br>
+             もし、一つのディスクしか持っていないのならば、
+             それが IDE か SCSI かによって、それぞれ <span class="emphasis"><em>wd0</em></span>
+             または <span class="emphasis"><em>sd0</em></span> となります。複数のディスクを
+             お持ちならば、<code class="code">dmesg | more</code> の出力から設定の対象となるディスク名を
+             決定して下さい。</li>
+<li class="listitem">パーティションのサイズとオフセットの決定<br>
+             <code class="code">fdisk</code> と入力すると、各パーティションのサイズとオフセットを
+             見ることができます。出力は次のようになるでしょう:
+             <pre class="programlisting">
+NetBSD disklabel disk geometry:
+cylinders: 16938 heads: 15 sectors/track: 63 (945 sectors/cylinder)
+
+BIOS disk geometry:
+cylinders: 1023 heads: 240 sectors/track: 63 (15120 sectors/cylinder)
+
+Partition table:
+0: sysid 7 (OS/2 HPFS or NTFS or QNX2 or Advanced UNIX)
+    start 63, size 3190257 (1557 MB), flag 0x80
+        beg: cylinder    0, head   1, sector  1
+        end: cylinder  210, head 239, sector 63
+1: sysid 169 (NetBSD)
+    start 3193155, size 4096575 (2000 MB), flag 0x0
+        beg: cylinder  211, head  45, sector  1
+        end: cylinder  482, head  29, sector 63
+2: sysid 6 (Primary 'big' DOS, 16-bit FAT (&gt; 32MB))
+    start 7302960, size 4596480 (2244 MB), flag 0x0
+        beg: cylinder  483, head   0, sector  1
+        end: cylinder  786, head 239, sector 63
+3: sysid 15 (Ext. partition - LBA)
+    start 11899440, size 4097520 (2000 MB), flag 0x0
+        beg: cylinder  787, head   0, sector  1
+        end: cylinder 1023, head 239, sector 63
+</pre>
+           <p>
+             この例ではディスクは次の4つのパーティションからなります:<br>
+             0. Windows NT 4.0 NTFS4 パーティション<br>
+             1. NetBSD ffs パーティション<br>
+             2. MS-DOS FAT パーティション<br>
+             3. "extended" パーティション中の Windows 2000 NTFS5
+           </p>
+         </li>
+<li class="listitem">
+<code class="code">disklabel &lt;DISKNAME&gt;</code> と入力する<br>
+           もしディスクが MS-DOS パーティションしか含んでいない場合、
+           NetBSD は自動的に先頭の MS-DOS パーティションを含む '仮想'ディスクラベルを
+           生成します。<br>
+           出力は次のようになるでしょう:
+<pre class="programlisting">
+# disklabel wd0
+</pre>
+
+           <span class="emphasis"><em>physical disk information</em></span>
+
+<pre class="programlisting">
+8 partitions:
+#        size   offset     fstype   [fsize bsize   cpg]
+  a:   410130  3193155     4.2BSD     1024  8192    16   # (Cyl. 3379 - 3812)
+  b:   409185  3603285       swap                        # (Cyl. 3813 - 4245)
+  c:  4096575  3193155     unused        0     0         # (Cyl. 3379 - 7713)
+  d: 16006410        0     unused        0     0         # (Cyl.    0 - 16937)
+  e:  3274425  4012470     4.2BSD     2048 16384    32   # (Cyl. 4246 - 7710)
+</pre>
+
+           <p>
+             もし、必要な fstype がすでに定義されていれば(すなわち MSDOS)、
+             <a class="ulink" href="#ms_partition_mounting" target="_top">パーティションのマウント</a>
+             まで進んで下さい。
+           </p>
+           <p>
+             もし、NetBSD のインストールが完了していないのならば、 <a href="http://netbsd.gw.com/cgi-bin/man-cgi?mbrlabel+8+NetBSD-5.1+i386">mbrlabel(8)</a>コマンドを
+             用いて、ディスクの<span class="emphasis"><em>fdisk</em></span>パーティション情報とコア中の disklabel を
+             同期させることができます。そうすれば、この情報を使うことにより BSD と
+             他の OS のパーティション情報を含んだ新しい disklabel を生成することができます。
+           </p>
+         </li>
+<li class="listitem">ディスクラベル編集の準備<br>
+           <span class="emphasis"><em>vi</em></span>以外のエディターを用いたい場合は、
+           <code class="code">setenv EDITOR &lt;YOUR_EDITOR&gt;</code> 例えば <code class="code">setenv EDITOR
+           pico</code>
+           と入力します。
+         </li>
+<li class="listitem">
+<code class="code">disklabel -e &lt;DISKNAME&gt;</code> と入力して disklabel を編集します<br>
+           disklabel の最下部まで進めば label の編集準備は完了です。
+           <p>
+             必要なのは次の2点です:
+           </p>
+           <div class="orderedlist"><ol class="orderedlist" type="a">
+<li class="listitem">使用されていない最初のアルファベット (この例では 'f')。</li>
+<li class="listitem">fdisk で得られた 'start/size' の値 (例えば '63')。</li>
+</ol></div>
+           <p>
+             一番下に NTFS のために次の行を加えます:
+           </p>
+<pre class="programlisting">
+  &lt;PARTITION&gt;:   &lt;SIZE&gt;  &lt;OFFSET&gt;   NTFS
+</pre>
+           <p>
+             上の例題の場合、適切な入力は次のようになります(fsize, bsize と cpg は
+             ブランクのままです):
+           </p>
+<pre class="programlisting">
+  f:  3190257       63       NTFS
+</pre>
+           <p>
+             MSDOS のためには次のような行を加えます:
+           </p>
+<pre class="programlisting">
+  &lt;PARTITION&gt;:   &lt;SIZE&gt;  &lt;OFFSET&gt;   MSDOS
+</pre>
+           <p>
+             例題では次のようになります:
+           </p>
+<pre class="programlisting">
+  g:  4596480  7302960      MSDOS
+</pre>
+           <p>
+             パーティションについての注意: NetBSD/i386 は現在のところ、一つのディスク当たり
+             8個のパーティション('a' - 'h') しかサポートしていません。また、パーティション
+             テーブルの直前にある 'number of partitions' 行には、存在するパーティションの
+             数以上の数字を指定する必要があります。
+           </p>
+         </li>
+<li class="listitem">変更を保存し、ディスクラベルをチェックする<br>
+            エディターを終了し、 <code class="code">disklabel &lt;DISKNAME&gt;</code> と入力して、
+            新しいパーティションが存在するか確認して下さい。
+         </li>
+</ol></div>
+       <p>
+         <span class="bold"><strong><a name="ms_partition_mounting"></a>ファイルシステムのマウント</strong></span>
+       </p>
+       <p>
+         各々のディスクパーティションは <code class="filename">/dev</code> にデバイスエントリーを持っています。
+         デバイスエントリーの形式は <code class="filename">/dev</code>、ディスク名、パーティション文字 となっています。
+         上記の例題では NTFS と MSDOS パーティションに対するデバイスエントリーはそれぞれ
+         <code class="filename">/dev/wd0f</code> と <code class="filename">/dev/wd0g</code> となります。
+       </p>
+
+       <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">それぞれのパーティションに対してマウントポイントを作成する<br>
+           <code class="code">mkdir &lt;MOUNTPOINT&gt;</code>, 例えば <code class="code">mkdir /msdos</code> と
+           <code class="code">mkdir /nt4</code>
+</li>
+<li class="listitem">ファイルシステムをマウントする<br>
+           <code class="code">mount -t &lt;TYPE&gt; &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;</code>,
+           例えば <code class="code">mount -t msdos /dev/wd0g /msdos</code> と <code class="code">mount -t ntfs
+           /dev/wd0f /nt4</code>
+</li>
+<li class="listitem">うまくいっていることを確認する<br>
+           <code class="code">ls &lt;MOUNTPOINT&gt;</code>, 例えば <code class="code">ls /msdos</code> と <code class="code">ls
+           /nt4</code>
+</li>
+<li class="listitem">ブート時に自動的にファイルシステムがマウントされるようにする<br>
+           もし、NetBSD の起動時に自動的にマウントされるようにしたいならば、
+           <code class="filename">/etc/fstab</code> を編集し、次の形式の行を加えて下さい。
+<pre class="programlisting">
+    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  msdos   rw
+    &lt;DEVICE&gt; &lt;MOUNTPOINT&gt;  ntfs    ro
+</pre>
+           <p>
+             上の例題の場合は
+           </p>
+<pre class="programlisting">
+    /dev/wd0g /msdos  msdos   rw
+    /dev/wd0f /nt4    ntfs    ro
+</pre>
+           <p>
+             となります。
+           </p>
+         </li>
+</ol></div>
+     
+       <h4 class="title">
+<a name="dual_boot"></a>NetBSD や DOS/Windows/その他の OS のメニューからの起動 (<a href="#dualbooting">top</a>)
+  </h4>
+       <p>
+         この部分は、すでにディスクのパーティションを切っていて、NetBSD と
+         その他のあなたが使用するつもりの OS をインストールし終っていることを仮定しています。
+       </p>
+       <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">ブートメニューをインストールするために 'fdisk -i -c /usr/mdec/mbr_bootsel' を実行します。</li>
+<li class="listitem">その後、対話的にブートメニューを設定するために 'fdisk -B' を実行します。
+           (これはオプションではありません。)</li>
+</ol></div>
+       <p>
+         <a href="http://netbsd.gw.com/cgi-bin/man-cgi?fdisk+8+NetBSD-5.1+i386">fdisk(8)</a> のマニュアルも参照して下さい。
+       </p>
+     
+       <h4 class="title">
+<a name="nt_boot"></a>Windows NT/2000/2003/XP のブートメニューに NetBSD を加える方法 (<a href="#dualbooting">top</a>)
+  </h4>
+       <p>
+         <span class="bold"><strong>方法その 1) NetBSD の mbr コードを使う</strong></span>
+       </p>
+       <p>
+         NetBSD の mbr コードは、必要に応じてブート時にオプションを変えられます。
+         この方法を使う場合、動作してブート可能な状態にインストールした NetBSD が必要です。
+         NetBSD の mbr コードは、NetBSD の fdisk コマンドを使って、
+         空のファイルにインストールできます。
+       </p>
+       <p>
+         以下の例では、Windows Server 2003 が disk 0 に、NetBSD 4.0
+         が disk 1 にインストールされているものとします。
+       </p>
+<pre class="programlisting">
+devel# rm -f nbmbr
+devel# touch nbmbr
+devel# fdisk -BF -c mbr_ext ./nbmbr
+fdisk: primary partition table invalid, no magic in sector 0
+fdisk: Cannot determine the number of heads
+Update the bootcode from /usr/mdec/mbr_ext? [n] y
+
+Boot selector configuration:
+Timeout value (0 to 3600 seconds, -1 =&gt; never): [-1..3600 default: 10] 
+Select the default boot option. Options are:
+
+0: The first active partition
+1: Harddisk 0
+2: Harddisk 1
+3: Harddisk 2
+4: Harddisk 3
+5: Harddisk 4
+6: Harddisk 5
+7: Harddisk 6
+8: Harddisk 7
+Default boot option: [0..8 default: 0] 2
+
+We haven't written the MBR back to disk yet.  This is your last chance.
+Should we write new partition table? [n] y
+</pre>
+       <p>
+         nbmbr を C: ドライブにコピーし、以下の行を C:\boot.ini の最後に追加します。
+       </p>
+<pre class="programlisting">
+c:\nbmbr="NetBSD disk 1"
+</pre>
+       <p>
+         標準状態では、boot.ini は不可視になっています。boot.ini を編集するには、
+         My Computer から C: ドライブを開き、Tools メニューから "Folder Options..." を選びます。
+         しかるのちに、View タブをクリックし、"Hide protected
+         operating system files (Recommended)" のチェックボックスのチェックを外します。
+         最後に OK をクリックします。これで、boot.ini が見えるようになり、
+         ダブルクリックすれば編集できるようになります。
+       </p>
+       <p>
+         <span class="bold"><strong>方法その 2) bootpart を使って、
+         既存のコードをブートブロックにコピーする</strong></span>
+       </p>
+       <p>
+         Windows を使って、bootpart を
+         <a class="ulink" href="http://www.winimage.com/bootpart.htm" target="_top">http://www.winimage.com/bootpart.htm</a>
+         から入手し、zip アーカイブからファイルをハードディスクに展開します。
+         コマンドプロンプトを使い、bootpart.exe のあるディレクトリーに移動します。
+         一連の操作手順を以下に示します。
+         以下の例では、Windows Server 2003 が disk 0 に、NetBSD 4.0
+         が disk 1 にインストールされているものとします。
+       </p>
+       <p>
+         最初に、bootpart を実行して、パーティション番号
+         (ディスク番号をまたがった通し番号になります) を決めます。
+         NetBSD のパーティションタイプは (十六進数で) a9
+         であることにご注意ください。
+       </p>
+<pre class="programlisting">
+C:\bootpa26&gt;bootpart
+Boot Partition 2.60 for WinNT/2K/XP (c)1995-2005 G. Vollant (info@winimage.com)
+WEB : http://www.winimage.com and http://www.winimage.com/bootpart.htm
+Add partition in the Windows NT/2000/XP Multi-boot loader
+Run "bootpart /?" for more information
+
+Physical number of disk 0 : b4dab4da
+ 0 : C:* type=7  (HPFS/NTFS), size= 19580368 KB, Lba Pos=63
+Physical number of disk 1 : 7f4c256b
+ 1 : D:* type=a9 , size= 39121456 KB, Lba Pos=63
+</pre>
+       <p>
+         ここではパーティション 1 をブートしたいので、以下のようにします。
+       </p>
+<pre class="programlisting">
+C:\bootpa26&gt;bootpart 1 \nbboot "NetBSD disk 1"
+Boot Partition 2.60 for WinNT/2K/XP (c)1995-2005 G. Vollant (info@winimage.com)
+WEB : http://www.winimage.com and http://www.winimage.com/bootpart.htm
+Add partition in the Windows NT/2000/XP Multi-boot loader
+Run "bootpart /?" for more information
+          
+Physical number of disk 0 : b4dab4da
+ 0 : C:* type=7  (HPFS/NTFS), size= 19580368 KB, Lba Pos=63
+Physical number of disk 1 : 7f4c256b
+ 1 : D:* type=a9 , size= 39121456 KB, Lba Pos=63
+C:\nbboot written
+C:\BOOT.INI updated
+</pre>
+       <p>            
+         これで、nbboot というブートブロックが C: ドライブのルートディレクトリーに作成され、
+         boot.ini に "NetBSD disk 1" という項目が追加されました。
+       </p>  
+       <p>
+         <span class="bold"><strong>方法その 3) grub4dos を使う</strong></span>
+       </p>
+       <p>
+         この方法の利点は、広範囲にわたる grub のオプションが使えることです。
+         さらに、カーネルを NTFS からロードできるという利点もあります
+         (必要があればですが。通常は、インストールされた
+         NetBSD のルートディレクトリーからロードするだけでしょう)。
+         たとえば、問題解決のために、
+         NetBSD がインストールされていないマシンであっても、
+         便利に使えるリカバリー用あるいはインストール用の
+         NetBSD カーネルを使いたいということがあるかもしれません。
+       </p>
+       <p>
+         最新版の grub4dos を
+         <a class="ulink" href="http://sourceforge.net/projects/grub4dos" target="_top">http://sourceforge.net/projects/grub4dos</a>
+         からダウンロードし、zip アーカイブからファイルを展開します。
+         grldr を Windows の C:\ にコピーし、以下のようにして
+         c:\menu.lst を作成します (Windows と NetBSD のどちらで作成してもかまいません
+         - 改行はどちらの流儀であっても OK です)。
+       </p>
+<pre class="programlisting">
+timeout=5
+console terminal
+Title NetBSD on disk 1 (chainloader)
+    root(hd1,0)
+    chainloader +1
+Title NetBSD install kernel
+    kernel --type=netbsd /NETBSD_INSTALL_LARGE.gz
+</pre>       			
+       <p>
+         MULTIBOOT 以外のカーネル (インストールカーネルなど) では、--type=netbsd が必要です。
+         MULTIBOOT カーネルでは、このオプションはつけてはいけません。
+       </p>
+       <p>
+         最後に、方法その 1) の説明と同様に、
+         たとえば以下のような NetBSD 用の行を C:\boot.ini に追加します。
+       </p>
+<pre class="programlisting">
+C:\grldr="NetBSD GRUB"
+</pre>                                
+    
+      <h4 class="title">
+<a name="fips"></a>全体が DOS/Windows で使用されているディスクに NetBSD をインストールする (<a href="#dualbooting">top</a>)
+  </h4>
+      <p>註: この方法は、FAT ファイルシステムにのみ適用できます。</p>
+      <p>
+        DOS/Windows によって全てのディスク領域が占有されているハードディスクでも、
+        ディスクに空き容量がある場合ならば、DOS/Windows のパーティションを
+        小さくし、2番目のパーティションを作成することで NetBSD をインストールすることが
+        できます。
+      </p>
+      <p>
+        これを行なうためには
+      </p>
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">DOS パーティションの全てのデータを <span class="emphasis"><em>defrag</em></span> を用いて
+          パーティションの先頭に移動する。</li>
+<li class="listitem">DOS パーティションの大きさを <span class="emphasis"><em>FIPS</em></span> を用いて変更する。
+          FIPS は 次の場所から手に入れることができます。<a class="ulink" href="http://bmrc.berkeley.edu/people/chaffee/fips/fips.html" target="_top">FIPS
+          web サイト</a>.
+          全ての付属ドキュメントを読む事を忘れないで下さい。</li>
+<li class="listitem">
+<a class="ulink" href="#dual_boot" target="_top">上</a>で述べられている方法でブートローダーをインストールします。</li>
+<li class="listitem">NetBSD をインストールします。</li>
+</ul></div>
+    
+      <h4 class="title">
+<a name="dosboot"></a>dosboot.com がカーネルのロード後にマシンをリセットしてしまいます (<a href="#dualbooting">top</a>)
+  </h4>
+      <p>
+        dosboot.com がカーネルのロード直後にマシンをリセットしている場合は、
+        "himem.sys" がロードされていないことを確認してください。 "config.sys"
+        をよく確かめてください!
+      </p>
+    
+      <h4 class="title">
+<a name="dosprompt"></a>WinME マシンでブートフロッピーがなく Win98 CD しかない場合の、 DOS プロンプトへの入り方 (<a href="#dualbooting">top</a>)
+  </h4>
+      <p>
+        Windows Millennium Edition (Windows ME) がインストールされたマシンで、
+        最近のラップトップにありがちなようにフロッピーブートができない場合、
+        Windows 98 CD は (*本物の*) MS-DOS プロンプトに入るための立派な手段です。
+        
+        起動して CD-ROM サポートの要否を尋ねられたときに、 shift+F5 を押して、
+        "highmem.sys" (上記参照) などのドライバーを一切ロードしないように
+        することができます。
+        これで、あらかじめ "<a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/installation/misc/dosboot.com" target="_top">dosboot.com</a>" (<a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/installation/misc/dosboot.com" target="_top">ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/installation/misc/dosboot.com</a> から入手可能) などのツールやカーネルを置いておいた
+        C: ドライブにアクセスすることができます。
+      </p>
+    <hr>
+<h3 class="title">特定のハードウェアの問題</h3>
+      <h4 class="title">
+<a name="irq2or9"></a>IRQ 2 と IRQ 9 (<a href="#specific-hardware">top</a>)
+  </h4>
+      <p>
+        IBM AT とその後継機 (全ての NetBSD が作動する PC を含みます) では
+        さまざまなハードウェア上の理由のために IRQ 2 は IRQ 9 にマップされています。
+        そのため、"IRQ 2" と設定されているカードを使うためには
+        NetBSD のカーネルコンフィギュレーションファイルでは IRQ 9 を
+        選択する必要があります。
+      </p>
+    
+      <h4 class="title">
+<a name="ne200-device-timeout"></a>'<code class="code">ne1: device time out</code>' という問題 (<a href="#specific-hardware">top</a>)
+  </h4>
+      <p>
+        古いタイプの ISA カードは特定のアドレスと IRQ に設定されます。
+        NetBSD は自動的にアドレスを検出することができますが、IRQ を決定する
+        方法は不確実であり、自動設定テーブル(autoconfiguration table)には
+        広く使われている値が決め打ちされています。もし、アドレスは正しく、
+        IRQ が違っていた場合、デバイスは使用されたときに timeout を起こします。
+        これは他の PCI, EISA や ISA-PnP バスに対しては影響しません。
+      </p>
+      <p>
+        もし、この問題に遭遇した場合の解決方法は次の 3つです。
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">カーネルの設定 (<a href="http://cvsweb.NetBSD.org/bsdweb.cgi/src/sys/arch/i386/conf/GENERIC?rev=HEAD&amp;content-type=text/x-cvsweb-markup">src/sys/arch/i386/conf/GENERIC</a>) と
+	    一致するようにカードの設定を変更する。変更には、ジャンパー
+	    スイッチや、DOS プログラムを使用します。通常 DOS プログラムは
+	    カード購入時に付属しています。</li>
+<li class="listitem">カード設定に合わせた新しいカーネルをコンパイルする。</li>
+<li class="listitem">別のカードを購入する - 最新の PCI ベースの PC において、
+	    ISA ネットワークカードは他のデバイスのパフォーマンスに
+	    かなりの影響を与えます。- <a href="http://netbsd.gw.com/cgi-bin/man-cgi?fxp+4+NetBSD-5.1+i386">fxp(4)</a> (インテル社の EtherExpress Pro) や
+	    <a href="http://netbsd.gw.com/cgi-bin/man-cgi?tlp+4+NetBSD-5.1+i386">tlp(4)</a> (Tulip やその互換カード)などの PCI カードがおすすめです。</li>
+<li class="listitem">
+<a href="http://netbsd.gw.com/cgi-bin/man-cgi?ddb+4+NetBSD-5.1+i386">ddb(4)</a>を用いたカーネル設定の手動変更
+            <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">カーネルを '<code class="code"><span class="bold"><strong>-d</strong></span></code>' オプションをつけてブートします。
+	        (カウントダウンが 0 になる前に、スペースバーを押し、
+	        '<code class="code"><span class="bold"><strong>boot netbsd -d</strong></span></code>' と入力します。)</li>
+<li class="listitem">
+<code class="code"><span class="bold"><strong>x/xla loc,100</strong></span></code> と入力します。
+	        出力の中の <code class="code">0x280</code> を含む欄の offset を記録します。
+	        GENERIC カーネルにはこのアドレスを持つ 3種類の ISA ネットワーク
+	        カードが存在します。</li>
+<li class="listitem">使用するカードの正しいアドレスを設定する
+	        <code class="code"><span class="bold"><strong>w/l loc+&lt;offset&gt; &lt;address&gt;</strong></span></code>.</li>
+<li class="listitem">使用するカードに合うように IRQ を設定する
+	        <code class="code"><span class="bold"><strong>w/l loc+&lt;offset&gt;+0x10 &lt;irq&gt;</strong></span></code>.</li>
+<li class="listitem">ブートを続行する。</li>
+</ol></div>
+          </li>
+</ul></div>
+<p>
+      </p>
+    
+      <h4 class="title">
+<a name="usb-interrupt"></a>USB の問題 '<code class="code">uhci0: couldn't map interrupt</code>' (<a href="#specific-hardware">top</a>)
+  </h4>
+      <p>
+        この問題は BIOS で (おそらく "PNP &amp; PCI Setup" というメニュー中の)
+        "Allocate interrupt for USB" オプションが無効になっている場合に
+        起こり得ます。有効にすると、多くの場合 NetBSD が起動する直前に
+        BIOS は、IRQ の設定を含んだ 'Serial Controller'リストを表示します。
+      </p>
+    
+      <h4 class="title">
+<a name="vid_mem_conflict"></a>"setting tty flags" の直後にモニターが DPMS modeに落ちてしまうのですが (<a href="#specific-hardware">top</a>)
+  </h4>
+      <p>
+        少なくとも一人の人が、カーネルによってビデオカードが正しくプローブされないと
+        報告しています。具体的には "setting tty flags" が表示された後、スクリーンが
+        暗くなり、モニターがパワーセーブモードになってしまうという現象です。
+        報告された原因はいくつかのビデオカードが DOS でいうところの COM4 と
+        同じ I/O メモリーを使用していることでした。この理由により、
+        NetBSD の com3 (これは DOS の COM4 にあたります) は GENERIC カーネルで
+        有効になっていません。
+      </p>
+    
+      <h4 class="title">
+<a name="pcmcia_modem_flow_control"></a>PCMCIA モデムが動かない (<a href="#specific-hardware">top</a>)
+  </h4>
+      <p>
+        もし、あなたのお持ちの PCMCIA モデムが動かないようでしたら、
+        <a href="http://netbsd.gw.com/cgi-bin/man-cgi?com+4+NetBSD-5.1+i386">com(4)</a> デバイスをハードウェアフローコントロールモードで使用しているか
+        どうかを確認して下さい。
+        多くの PCMCIA モデムはハードウェアフローコントロールを用いている時だけ動きます。
+      </p>
+    
+      <h4 class="title">
+<a name="via_epia_bootloader"></a>VIA EPIA ハードウェアへのインストール (<a href="#specific-hardware">top</a>)
+  </h4>
+      <p>
+        NetBSD のブートローダーは、現在、VIA C3 CPU を使ったある種のシステム、
+        特に VIA EPIA シリーズの ITX ボードに対しては、壊れています。
+        ブートの初期段階において、画面の同期が外れて、システムが固まります。
+        この問題は、 1.6.2 より新しい NetBSD システムで発生します。
+        このことは、<a class="ulink" href="http://www.NetBSD.org/cgi-bin/query-pr-single.pl?number=26007" target="_top">PR/26007</a> に記録されています。
+      </p>
+      <p>
+        回避策は、PR/26007 が解決するまでは
+        1.6.2 のブートローダーを使うことです。
+      </p>
+      <p>
+        これには二通りの方法があります。
+      </p>
+      <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+          <p> 予備のシステムがある場合:
+            </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+                <p>ハードディスクドライブを、別のマザーボードにつなぎ変えます</p>
+              </li>
+<li class="listitem"><p>NetBSD 3.x をインストールします</p></li>
+<li class="listitem"><p>リブートします</p></li>
+<li class="listitem">
+<p>1.6.2 版の installboot を実行します。
+                ide ドライブの場合は
+                </p>
+<pre class="programlisting">installboot &gt; /usr/mdec1.6/biosboot.sym /dev/rwd0a</pre>
+<p>
+                でよいはずです。</p>
+</li>
+<li class="listitem">
+<p>ハードディスクドライブを Epia
+                マザーボードに戻します</p>
+              </li>
+</ul></div>
+<p>
+          </p>
+        </li>
+<li class="listitem">
+          <p>予備のシステムがない場合は、
+            まず 1.6.2 をインストールする必要があります:
+            </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p>最小限の 1.6.2 (Kernel + Base +
+                etc) をインストールします</p></li>
+<li class="listitem">
+<p>root でログインして、3.0.1 の CD を挿入します
+                </p>
+<pre class="programlisting"># mkdir /cdrom
+# mount /dev/cd0a /cdrom
+# mv /netbsd /netbsd.1.6.2
+# cp /cdrom/i386/binary/kernel/netbsd-INSTALL.gz /netbsd
+# shutdown -r now</pre>
+</li>
+<li class="listitem"><p>これで、3.0.1 のインストールカーネルが、
+                 ハードディスクから (CD からブートし直したのではないことを確認してください)
+                 ブートしたはずです</p></li>
+<li class="listitem"><p>インストーラーが <span class="quote">“<span class="quote">Do you want
+                 to update the bootcode in the Master Boot Record to the latest
+                 version of the NetBSD bootcode?</span>”</span> と質問したら、
+                 <span class="quote">“<span class="quote">NO</span>”</span> と答えます</p></li>
+<li class="listitem"><p>インストーラーが
+                  <span class="quote">“<span class="quote">Would you like to install the normal set of
+                   bootblocks or serial bootblock?</span>”</span>  と質問したら、<span class="quote">“<span class="quote">g:
+                   Use existing bootblocks</span>”</span> と答えます</p></li>
+</ul></div>
+<p>
+          </p>
+        </li>
+</ol></div>
+      <p>年代ものの 1.6.2 は、<a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD-archive/NetBSD-1.6.2/i386/" target="_top">ftp://ftp.NetBSD.org/pub/NetBSD-archive/NetBSD-1.6.2/i386/</a> にあります。</p>
+    <hr>
+<h3 class="title">古いマシンのディスクの問題</h3>
+      <h4 class="title">
+<a name="540mb-bios-limit"></a>540MB BIOS limit があるマシンで大きなドライブを使用するには (<a href="#partitioning">top</a>)
+  </h4>
+      <p>
+        BIOS でジオメトリーとして 1024/16/63 を入力し、ブートパーティションが
+        先頭の 540M に含まれていることを確認して下さい (これは、カーネルが
+        BIOS から読み込まれるために必要です)。 そうすれば、NetBSD から
+        ディスク全体を使用することが可能です。
+      </p>
+    
+      <h4 class="title">
+<a name="determining_geometry"></a>"正しい" ディスクジオメトリーの決定法 (<a href="#partitioning">top</a>)
+  </h4>
+      <p>NetBSD はブートプログラムをロードするのに PC BIOS を用いています。
+      これが正しく働くためには NetBSD と BIOS の両方でディスクジオメトリーが
+      共通である(少なくともブートパーティションを含んでいる部分に関しては)ことが必要です。
+      </p>
+      <p>PCに搭載されている BIOS が扱えるディスクのシリンダー数、ヘッド数、セクター数には
+      上限があります(<a class="ulink" href="#bios_disk_limits" target="_top">表参照</a>)。(これは SCSIカード上の
+      BIOS も含みます)。
+      </p>
+      <p>現代のディスクの本当のジオメトリーはこれらの制限値におさまらなくなってきたので、
+      新しい BIOS はジオメトリーを制限内におさまり、かつ、全体の大きさが
+      同じ(か少し小さく)なるように解釈しなおします。
+      </p>
+      <p>もし、ディスクに(DOS, Windows, pfdisk 等によって作成された)有効な DOS MBR 
+      パーティションがあれば、それは "正しい" BIOS ジオメトリー を含んでいます。
+      NetBSD は sysinst 中でこれを BIOS ジオメトリーとして用います。
+      しかしながら、新しいディスクや MBR のセットアップが正しく行なわれていない
+      ディスクでは、NetBSD は間違った BIOS ジオメトリーを使用してしまいます。
+      理想としては、この情報はブートプログラムから渡されるべきでしょう。しかしながら
+      BIOS ディスクを NetBSD ディスクにマッピングする確実な方法がありません。
+      </p>
+      <p>"正しい"解釈され直したジオメトリーを決定する方法の一つは 'pfdisk' を
+      用いることです。
+      </p>
+      <p>
+        </p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">pfdisk を ftp.NetBSD.org (またはそのミラーサイト)からダウンロードします。<a class="ulink" href="ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe" target="_top">/pub/NetBSD/NetBSD-5.0/i386/installation/misc/pfdisk.exe</a>.</li>
+<li class="listitem">'<code class="code">pfdisk <span class="emphasis"><em>0</em></span></code>' を実行します。 (0 は最初のディスクを 1 は二番目のディスクを意味します)。</li>
+<li class="listitem">'<code class="code">list</code>' と入力し、</li>
+<li class="listitem">ジオメトリーを記録した後、リブートをかけ、 NetBSD に用います。</li>
+</ol></div>
+<p>
+       </p>
+       <p>
+         <span class="bold"><strong><a name="bios_disk_limits"></a>BIOS disk parameter limits</strong></span>
+       </p>
+       <p>
+         </p>
+<table border="2" id="bios_disk_limits_table">
+           <tr>
+<th>パラメーター</th>
+<th>ビット数</th>
+<th>最大値</th>
+</tr>
+           <tr>
+<td align="right">シリンダー数</td>
+	       <td align="right">10</td>
+<td align="right">1023</td>
+</tr>
+           <tr>
+<td align="right">ヘッド数</td>
+	       <td align="right">8</td>
+<td align="right">255</td>
+</tr>
+           <tr>
+<td align="right">1トラック当りのセクター数</td>
+	       <td align="right">6</td>
+<td align="right">63</td>
+</tr>
+         </table>
+<p>
+       </p>
+       <p>
+         (これにより、少なくとも BIOS が扱える最大の容量は 8Gbytes に制限されます。)
+       </p>
+     <div class="sect2" title="その他の情報">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="other"></a>その他の情報</h3></div></div></div>
+  
+
+  <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<a class="ulink" href="../../docs/guide/en/chap-cons.html#chap-cons-wscons" target="_top">
+    wscons ドキュメンテーション</a>. NetBSD
+    の機種非依存のワークステーションコンソールドライバー。</li>
+<li class="listitem"><a class="ulink" href="../../mailinglists/#port-i386" target="_top">port-i386
+    メーリングリスト</a></li>
+<li class="listitem">
+<a class="ulink" href="../../docs/network/netboot/intro.i386.html" target="_top">Netbooting
+    NetBSD/i386</a> - フロッピーまたは DOS パーティションからのブート。</li>
+<li class="listitem"><a class="ulink" href="../../docs/power-mgmt/" target="_top">ラップトップの
+    パワーマネジメント</a></li>
+<li class="listitem">
+<a class="ulink" href="../../docs/" target="_top">General NetBSD Documentation</a>
+    - NetBSD/i386 に限らない質問</li>
+<li class="listitem">Reed Media による、 <a class="ulink" href="http://www.reedmedia.net/misc/netbsd/laptops-and-netbsd.html" target="_top">ラップトップと NetBSD</a> のリスト</li>
+</ul></div>
+
+</div>
+</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2011 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>
