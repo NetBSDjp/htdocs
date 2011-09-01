@@ -6,74 +6,74 @@
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@jp.NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-<title>Diskless NetBSD HOW-TO, $B=x@b(B (next68k $B8GM-$JItJ,(B)</title>
+<title>Diskless NetBSD HOW-TO, 序説 (next68k 固有な部分)</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="intro.html">$BLa$k(B</a> |
-<a href="bootpd.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="intro.html">戻る</a> |
+<a href="bootpd.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO, $B=x@b(B (next68k $B8GM-$JItJ,(B)</h1>
+<h1>Diskless NetBSD HOW-TO, 序説 (next68k 固有な部分)</h1>
 
-<h2>NeXT Firmware $B<j=g(B</h2>
+<h2>NeXT Firmware 手順</h2>
 <dl><dt><dd>
-<big><b>$B$I$N(B NeXT $B$N%^%7%s$,(B netboot $B2DG=$+(B</b></big>
+<big><b>どの NeXT のマシンが netboot 可能か</b></big>
 <p>
 
-$B$9$Y$F$N(B NeXT $B%o!<%/%9%F!<%7%g%s$O!"FbB"%M%C%H%o!<%/%$%s%?!<%U%'!<%97PM3(B
-$B$G$N%V!<%H$,2DG=$G$9!#%M%C%H%o!<%/%V!<%H%9%H%i%C%W<j=g$O!"E,@Z$J(B ROM
-$B%b%K%?!<%3%^%s%I$rF~NO$9$k;v$K$h$j3+;O$5$l$^$9!#(B
+すべての NeXT ワークステーションは、内蔵ネットワークインターフェース経由
+でのブートが可能です。ネットワークブートストラップ手順は、適切な ROM
+モニターコマンドを入力する事により開始されます。
 <p>
 
-<big><b>IP $B%"%I%l%9$N<hF@$H!"%V!<%H%m!<%@!<$N%@%&%s%m!<%I(B</b></big>
+<big><b>IP アドレスの取得と、ブートローダーのダウンロード</b></big>
 <p>
 
-NeXT $B%o!<%/%9%F!<%7%g%s$O:G=i$K!"(B Internet Bootstrap Protocol (BOOTP)
-$B$^$?$O(B BOOTP $B8_49%b!<%I$N(B Dynamic Host Configuration Protocol (DHCP)
-$B$r;H$C$F!"(B IP $B%"%I%l%9$r<hF@$7$h$&$H$7$^$9!#(B
-BOOTP $B$r;H$&$H!"(B bootpd $B%5!<%P!<$O!"%/%i%$%"%s%H%^%7%s$N%$!<%5%M%C%H%"%I%l%9(B
-$B$r$b$H$K!"%/%i%$%"%s%H$N(B IP $B%"%I%l%9$H%V!<%H%m!<%@!<$N%U%!%$%kL>$r7h$a$^$9!#(B
-BOOTP $BMW5a$,@.8y$9$k$H!"(B NeXT $B$N%U%!!<%`%&%'%"$O!"(B <a
-href="tftpd.html">TFTP $B%W%m%H%3%k(B</a>$B$r;H$C$FFsCJ3,L\$N%V!<%H%W%m%0%i%`$r(B
-$B%@%&%s%m!<%I$9$kMQ0U$,$G$-$?$b$N$H2r$7$^$9!#%/%i%$%"%s%H$O(B BOOTP $BMW5a$K1~Ez$7$?(B
-$B%5!<%P!<$KBP$7$F(B TFTP $B%3%M%/%7%g%s$rD%$j!"(B BOOTP $B1~Ez$GJV$5$l$?%U%!%$%k$r(B
-$BMW5a$7$F!"%@%&%s%m!<%I$7$^$9!#$=$7$F!"$3$NFsCJ3,L\$N%V!<%H%W%m%0%i%`$O(B NFS
-$B$r;H$C$F%+!<%M%k$r%m!<%I$7$^$9!#(B
+NeXT ワークステーションは最初に、 Internet Bootstrap Protocol (BOOTP)
+または BOOTP 互換モードの Dynamic Host Configuration Protocol (DHCP)
+を使って、 IP アドレスを取得しようとします。
+BOOTP を使うと、 bootpd サーバーは、クライアントマシンのイーサネットアドレス
+をもとに、クライアントの IP アドレスとブートローダーのファイル名を決めます。
+BOOTP 要求が成功すると、 NeXT のファームウェアは、 <a
+href="tftpd.html">TFTP プロトコル</a>を使って二段階目のブートプログラムを
+ダウンロードする用意ができたものと解します。クライアントは BOOTP 要求に応答した
+サーバーに対して TFTP コネクションを張り、 BOOTP 応答で返されたファイルを
+要求して、ダウンロードします。そして、この二段階目のブートプログラムは NFS
+を使ってカーネルをロードします。
 <p>
 
-$B$3$NFsCJ3,L\$N%V!<%H%W%m%0%i%`$O!"(B NetBSD/next68k $BG[I[J*Cf$N(B
-<tt>installation/boot</tt> $B0J2<$K$"$j$^$9!#$3$N%V!<%H%W%m%0%i%`$,(B
-<tt>netbsd</tt> $B%+!<%M%k$r%m!<%I$9$k$o$1$G$9!#(B
+この二段階目のブートプログラムは、 NetBSD/next68k 配布物中の
+<tt>installation/boot</tt> 以下にあります。このブートプログラムが
+<tt>netbsd</tt> カーネルをロードするわけです。
 </dd></dl>
 
-<h2>$B%U%!!<%`%&%'%"$N%3%^%s%I(B</h2>
+<h2>ファームウェアのコマンド</h2>
 <dl><dt><dd>
-ROM $B%b%K%?!<$KF~$k$K$O!"EE8;EjF~;~$N<+8J?GCG8e!"(B
-$B%*%Z%l!<%F%#%s%0%7%9%F%`$r5/F0$9$kA0$K!"(B <tt>command</tt>
-$B%-!<$H%-!<%Q%C%I>e$N5U0zMQId(B (<tt>`</tt>) $B%-!<$r2!$7$^$9!#(B
+ROM モニターに入るには、電源投入時の自己診断後、
+オペレーティングシステムを起動する前に、 <tt>command</tt>
+キーとキーパッド上の逆引用符 (<tt>`</tt>) キーを押します。
 <p>
-$B%M%C%H%o!<%/7PM3$N%m!<%I$N$?$a$N%U%!!<%`%&%'%"%3%^%s%I$O(B <tt><b>ben</b></tt> $B$G$9!#(B
-NetBSD $B$r%V!<%H$9$k$K$O!"0J2<$N$h$&$J=q<0$G;H$$$^$9(B:
+ネットワーク経由のロードのためのファームウェアコマンドは <tt><b>ben</b></tt> です。
+NetBSD をブートするには、以下のような書式で使います:
 <p>
 
 <ul>
-<li>`<tt><b>ben()<em>kern_name</em></b></tt>'$B!"$3$3$G(B
-<tt><b><em>kern_name</em></b></tt> $B$O%V!<%H$9$k%+!<%M%k$NL>A0$G$9!#(B
-$BDL>o$O(B `<tt><b>netbsd</b></tt>' $B$G$9!#(B
+<li>`<tt><b>ben()<em>kern_name</em></b></tt>'、ここで
+<tt><b><em>kern_name</em></b></tt> はブートするカーネルの名前です。
+通常は `<tt><b>netbsd</b></tt>' です。
 </ul>
 <p>
 
-$B$3$N8e$K$5$i$K0z?t$r;XDj$9$k$3$H$G!"(B
-$B$=$N0z?t$r%V!<%H%m!<%@!<$KEO$9$3$H$,$G$-$^$9!#(B
+この後にさらに引数を指定することで、
+その引数をブートローダーに渡すことができます。
 <p>
 
-$B%G%U%)%k%H$G%M%C%H%o!<%/7PM3$G%V!<%H$9$k$h$&$K$9$k$K$O!"(B <tt><b>p</b></tt>
-$B%3%^%s%I$r;H$$$^$9!#$=$N8e!":G=i$N%W%m%s%W%H$G!"%V!<%H%3%^%s%I$H$7$F(B
-`<tt><b>en()netbsd</b></tt>' $B$HF~NO$7$^$9!#(B "verbose test mode" $B$K(B yes $B$HEz$(!"(B
-$B%b%K%?!<$,%V!<%H2aDx$rI=<($9$k$h$&$K$9$k$N$bM-MQ$G$9!#0J2<$KNc$r<($7$^$9(B:
+デフォルトでネットワーク経由でブートするようにするには、 <tt><b>p</b></tt>
+コマンドを使います。その後、最初のプロンプトで、ブートコマンドとして
+`<tt><b>en()netbsd</b></tt>' と入力します。 "verbose test mode" に yes と答え、
+モニターがブート過程を表示するようにするのも有用です。以下に例を示します:
 <pre>NeXT&gt;<b>p</b>
 boot command: sd()? <b>en()netbsd</b>
 DRAM tests:  yes? <b>yes</b>
@@ -91,33 +91,33 @@ enable parity checking if parity memory is present:  no?  <b>no</b>
 </pre>
 </dd></dl>
 
-<h2>BOOTP $B$K4X$9$k3P=q(B</h2>
+<h2>BOOTP に関する覚書</h2>
 <dl><dt><dd>
-NeXT $B%^%7%s$O!"(B BOOTP $B$^$?$O(B DHCP $B$r;H$C$F!"(B IP $B%"%I%l%9$=$NB>%V!<%H;~$N(B
-$B>pJs$rF@$k$3$H$,$G$-$^$9!#(B BOOTP $B$r;H$&>l9g$O!"(B <tt><b>bootpd</b></tt>
-$B%5!<%P!<$N(B <tt><b>/etc/bootptab</b></tt> $B%U%!%$%kCf$N(B <em>vendor magic</em>
-$B%U%#!<%k%I$r(B  <em>auto</em> $B$K$9$k$h$&$K$7$F$/$@$5$$!#$=$&$7$F$*$+$J$$$H!"(B
-NeXT $B$O%5!<%P!<$+$i$N(B BOOTP $B1~Ez$rL5;k$7$^$9!#$3$l$HEy2A$J(B DHCPD
-$B%U%#!<%k%I$N@_Dj$O(B <tt>always-reply-rfc1048 false;</tt> $B$K$9$k$3$H$G$9!#(B
+NeXT マシンは、 BOOTP または DHCP を使って、 IP アドレスその他ブート時の
+情報を得ることができます。 BOOTP を使う場合は、 <tt><b>bootpd</b></tt>
+サーバーの <tt><b>/etc/bootptab</b></tt> ファイル中の <em>vendor magic</em>
+フィールドを  <em>auto</em> にするようにしてください。そうしておかないと、
+NeXT はサーバーからの BOOTP 応答を無視します。これと等価な DHCPD
+フィールドの設定は <tt>always-reply-rfc1048 false;</tt> にすることです。
 </dd></dl>
 
-<h2>$B@_Dj$r;O$a$k(B ($B<!$N=gHV$KFI$`$N$,NI$$$G$7$g$&(B):</h2>
+<h2>設定を始める (次の順番に読むのが良いでしょう):</h2>
 <dl><dt><dd>
 <ol>
-<li><a href="bootpd.html"><tt>bootpd</tt></a> $B$^$?$O(B
+<li><a href="bootpd.html"><tt>bootpd</tt></a> または
     <a href="dhcpd.html"><tt>dhcpd</tt></a>
 <li><a href="tftpd.html"><tt>tftpd</tt></a>
 <li><a href="nfs.html"><tt>nfs</tt></a>
-<li><a href="files.html">$B%/%i%$%"%s%H$N%U%!%$%k%7%9%F%`(B</a>
-<li><a href="finish.html">$B=*N;(B</a>
+<li><a href="files.html">クライアントのファイルシステム</a>
+<li><a href="finish.html">終了</a>
 </ol>
 </dd></dl>
 
 <hr>
 
-<a href="intro.html">$BLa$k(B</a> |
-<a href="bootpd.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="intro.html">戻る</a> |
+<a href="bootpd.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -129,7 +129,7 @@ NeXT $B$O%5!<%P!<$+$i$N(B BOOTP $B1~Ez$rL5;k$7$^$9!#$3$l$HEy2A$J(B DHCPD
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -146,8 +146,8 @@ NeXT $B$O%5!<%P!<$+$i$N(B BOOTP $B1~Ez$rL5;k$7$^$9!#$3$l$HEy2A$J(B DHCPD
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: intro.next68k.html,v 1.3 2007/08/01 15:36:02 kano Exp $<br>
   <!-- Based on english version: -->

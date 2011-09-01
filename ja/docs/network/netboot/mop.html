@@ -5,57 +5,57 @@
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@jp.NetBSD.org">
-<title>Diskless NetBSD HOW-TO, mop $B%5!<%P!<$N@_Dj(B</title>
+<title>Diskless NetBSD HOW-TO, mop サーバーの設定</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="../../../../docs/network/netboot/intro.vax.html">$BLa$k(B</a> |
-<a href="bootpd.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="../../../../docs/network/netboot/intro.vax.html">戻る</a> |
+<a href="bootpd.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO, <tt>mop</tt> $B%5!<%P!<$N@_Dj(B</h1>
+<h1>Diskless NetBSD HOW-TO, <tt>mop</tt> サーバーの設定</h1>
 
-DEC $B$NFH@jE*$J(B MOP (Maintenance Operations Protocol) 
-$B$O!"$5$^$6$^$J%M%C%H%o!<%/%?%9%/$r07$&$N$K;H$o$l$^$9!#(B
- MOP $B$O(B $BB?$/$N(B VAX $B%o!<%/%9%F!<%7%g%s$N(B
-$B%V!<%H(B ROM $B$KF~$C$F$$$F!"%G%#%9%/%l%9%5!<%P!<$+$i%+!<%M%k$r%m!<%I$9$k$N$K;H$&$3$H$,$G$-$^$9!#(B
- MOP $B$O(B TCP/IP $B$G$O$J$$$N$G!"(B
-$B%k!<%?!<$rD6$($k$3$H$,$G$-$^$;$s(B
-($B$h$C$F!"%/%i%$%"%s%H$H%5!<%P!<$OF10l%5%V%M%C%H>e$KM-$kI,MW$,$"$j$^$9(B)$B!#(B
-$B$3$l$O%5!<%P!<$,L$5,Dj$N%G!<%?$r%$!<%5%M%C%H$KAw?.$G$-$k(B
-$B%G%P%$%9%I%i%$%P!<$r;}$C$F$$$kI,MW$,$"$k$H8@$&$3$H$r0UL#$7$^$9!#(B
+DEC の独占的な MOP (Maintenance Operations Protocol) 
+は、さまざまなネットワークタスクを扱うのに使われます。
+ MOP は 多くの VAX ワークステーションの
+ブート ROM に入っていて、ディスクレスサーバーからカーネルをロードするのに使うことができます。
+ MOP は TCP/IP ではないので、
+ルーターを超えることができません
+(よって、クライアントとサーバーは同一サブネット上に有る必要があります)。
+これはサーバーが未規定のデータをイーサネットに送信できる
+デバイスドライバーを持っている必要があると言うことを意味します。
 <p>
 
-$B:G=i$K!"%V!<%H%m!<%@!<$N%3%T!<$r<j$KF~$l$kI,MW$,$"$j$^$9!#(B
-$B$3$l$O(B NetBSD $BG[I[J*Cf$K4^$^$l$F$$$^$9(B:
+最初に、ブートローダーのコピーを手に入れる必要があります。
+これは NetBSD 配布物中に含まれています:
 <tt><b>installation/netboot/boot</b></tt>
 <p>
 
-$B$9$Y$F$N(B mop $B$N<BAu$OAw?.$9$k%V!<%H%m!<%@!<$,(B <tt>/tftpboot/mop/</tt> $B%G%#%l%/%H%j!<$K(B
-$BM-$k$3$H$rA[Dj$7$F$$$^$9!#(B
+すべての mop の実装は送信するブートローダーが <tt>/tftpboot/mop/</tt> ディレクトリーに
+有ることを想定しています。
 
 <pre># <b>mkdir -p /tftpboot/mop</b>
 # <b>gunzip boot.mop.gz</b>
 # <b>cp boot.mop /tftpboot/mop/MOPBOOT.SYS</b></pre>
 
-<a href="#netbsd">NetBSD</a> $B$G$N(B mopd $B$N@_Dj(B<br>
-<a href="#openbsd">OpenBSD</a> $B$G$N(B mopd $B$N@_Dj(B<br>
-<a href="#freebsd">FreeBSD</a> $B$G$N(B mopd $B$N@_Dj(B<br>
-<a href="#linux">Linux</a> $B$G$N(B mopd $B$N@_Dj(B<br>
+<a href="#netbsd">NetBSD</a> での mopd の設定<br>
+<a href="#openbsd">OpenBSD</a> での mopd の設定<br>
+<a href="#freebsd">FreeBSD</a> での mopd の設定<br>
+<a href="#linux">Linux</a> での mopd の設定<br>
 <p>
 
-[<em>$BB>$N%W%i%C%H%U%)!<%`$K4X$9$k>\$7$$>pJs$r(B <a
-href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B65$($F$/$@$5$$(B</a></em>]
+[<em>他のプラットフォームに関する詳しい情報を <a
+href="http://www.NetBSD.org/cgi-bin/feedback.cgi">教えてください</a></em>]
 <p>
 
 <hr>
 
-<h3><a name="netbsd">NetBSD</a> $B$*$h$S(B <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="netbsd">NetBSD</a> および <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
-NetBSD $B$*$h$S(B OpenBSD $B$G$O!"%5%]!<%H$5$l$F$$$k$9$Y$F$N%W%i%C%H%U%)!<%`$K(B
- mop $B%5!<%P!<$,Ek:\$5$l$F$$$^$9!#(B
+NetBSD および OpenBSD では、サポートされているすべてのプラットフォームに
+ mop サーバーが搭載されています。
 <p>
 
 <ol>
@@ -63,29 +63,29 @@ NetBSD $B$*$h$S(B OpenBSD $B$G$O!"%5%]!<%H$5$l$F$$$k$9$Y$F$N%W%i%C%H%U%)!<%`$
 </ol>
 <p>
 
- <tt>mopd</tt> $B$,%G%P%C%0%b!<%I$G<B9T$5$l$^$9!#(B
-<tt>mopd</tt> $B%5!<%P!<$K%j%/%(%9%H$,$"$k$H!"(B
-$B<B9T$7$?C<Kv$K?GCG>pJs$,I=<($5$l$^$9!#(B
+ <tt>mopd</tt> がデバッグモードで実行されます。
+<tt>mopd</tt> サーバーにリクエストがあると、
+実行した端末に診断情報が表示されます。
 <p>
 
-<tt>mopd</tt> $B$,$-$A$s$HF0$1$P!"(B
-$B%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+<tt>mopd</tt> がきちんと動けば、
+クライアントにこのように表示されます:
 <pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
 : /netbsd</pre>
 <p>
 
-<tt>MOPBOOT.SYS</tt> $B%U%!%$%k$r2?$+$K%j%s%/$9$k$3$H$G(B vax $B%/%i%$%"%s%H$,(B
-$B%W%m%s%W%H$r=P$5$:$K8+$D$1=P$9$3$H$,$G$-$k$h$&$K$J$j$^$9(B:
+<tt>MOPBOOT.SYS</tt> ファイルを何かにリンクすることで vax クライアントが
+プロンプトを出さずに見つけ出すことができるようになります:
 <pre># <b>cd /tftpboot/mop</b>
 # <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
 
-$B$3$3$G(B <tt>cccccccccccc</tt> $B$O(B vax $B%/%i%$%"%s%H$N(B hex $B%$!<%5%M%C%H%"%I%l%9(B $B$G$9!#(B
- <tt>SYS</tt> $B$OBgJ8;z$G=q$-!"%$!<%5%M%C%H%"%I%l%9$N==O;?J?t$O(B
-$B%"%i%S%"?t;z$H1Q>.J8;z$K$7$F$/$@$5$$!#$=$&$G$J$1$l$P!"(B
- vax $B%/%i%$%"%s%H$O@5$7$$%U%!%$%k$r$_$D$1(B <i>$B$i$l$J$$(B</i> $B$G$7$g$&!#(B
+ここで <tt>cccccccccccc</tt> は vax クライアントの hex イーサネットアドレス です。
+ <tt>SYS</tt> は大文字で書き、イーサネットアドレスの十六進数は
+アラビア数字と英小文字にしてください。そうでなければ、
+ vax クライアントは正しいファイルをみつけ <i>られない</i> でしょう。
 <p>
 
-<a href="bootpd.html">bootpd</a> $B$N@_Dj$KB3$/(B
+<a href="bootpd.html">bootpd</a> の設定に続く
 </dd></dl>
 
 <hr>
@@ -93,38 +93,38 @@ NetBSD $B$*$h$S(B OpenBSD $B$G$O!"%5%]!<%H$5$l$F$$$k$9$Y$F$N%W%i%C%H%U%)!<%`$
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
 
-FreeBSD $B$K$O!"8=:_(B <tt>mopd</tt> $B%Q%C%1!<%8$,$"$j$^$9!#$G$9$,;d$O(B
-$B$=$l$N%$%s%9%H!<%k$d@_Dj$K$D$$$F$N$h$j>\$7$$>pJs$r;}$C$F$$$^$;$s!#(B
+FreeBSD には、現在 <tt>mopd</tt> パッケージがあります。ですが私は
+それのインストールや設定についてのより詳しい情報を持っていません。
 
 <a href="http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr">
 http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr</a>
-$B$O!"$4<+M3$K$*;n$7$/$@$5$$!#(B
+は、ご自由にお試しください。
 
-$B<!$K<($9<h$j07$$@bL@=q$O8E$$%P!<%8%g%sMQ$GF0:n3NG'$5$l$F$$$k$b$N$G$9!#(B
+次に示す取り扱い説明書は古いバージョン用で動作確認されているものです。
 <p>
 <ol>
-<li>$B$D$.$N%5%$%H$+$i(B mopd $B$N%=!<%9%3!<%I$r<hF@$7$^$9(B:<br>
+<li>つぎのサイトから mopd のソースコードを取得します:<br>
  <a href="ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-2.5.3.tar.gz">
  ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-2.5.3.tar.gz</a>
 <p>
 
-<li>$B%=!<%9%3!<%I$r(B Untar $B$7$^$9!#(B
+<li>ソースコードを Untar します。
 <p>
 
-<li> FreeBSD 2.2 $B$+$=$l0J9_$N4D6-$G$O%3%s%Q%$%kA0$K%=!<%9%U%!%$%k$N(B
-1$B$D$rJT=8$9$kI,MW$,$"$j$^$9!#(B
+<li> FreeBSD 2.2 かそれ以降の環境ではコンパイル前にソースファイルの
+1つを編集する必要があります。
 
-<tt>mopd-2.5.3/common/put.c</tt> $B$rJT=8$7$F(B
-$B%U%!%$%k$N@hF,$N(B <tt>#includes</tt> $B%;%/%7%g%s(B $B$K<!$N(B3$B9T(B
-$B$r2C$($F$/$@$5$$(B:
+<tt>mopd-2.5.3/common/put.c</tt> を編集して
+ファイルの先頭の <tt>#includes</tt> セクション に次の3行
+を加えてください:
 <pre>#ifdef __FreeBSD__
 #include &lt;osreldate.h&gt;
 #endif</pre>
 <p>
-$B%U%!%$%kCf$N(B2$B8D=j$N%7%s%\%k(B
-<tt>__FreeBSD__</tt> $B$r%A%'%C%/$7!"A48D=j$r<!$N$h$&$KCV$-49$($^$9(B:
+ファイル中の2個所のシンボル
+<tt>__FreeBSD__</tt> をチェックし、全個所を次のように置き換えます:
 <pre>#if !defined(__FreeBSD__)</pre>
-$B$r<!$N$h$&$K(B
+を次のように
 <pre>#if !defined(__FreeBSD__) || __FreeBSD_version &gt;= 220000</pre>
 <p>
 
@@ -132,7 +132,7 @@ http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr</a>
 <tt># <b>make</b></tt>
 <p>
 
-<li>$B%P%$%J%j!<$r%$%s%9%H!<%k$7$^$9(B:<br>
+<li>バイナリーをインストールします:<br>
 <tt># <b>cp mopd /usr/local/sbin/</b></tt>
 <p>
 
@@ -140,27 +140,27 @@ http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr</a>
 </ol>
 <p>
 
-$B$3$l$G!"(B <tt>mopd</tt> $B$,%G%P%C%0%b!<%I$G<B9T$5$l$^$9!#(B
-<tt>mopd</tt> $B%5!<%P!<$K%j%/%(%9%H$,$"$k$H!"(B
-$B<B9T$7$?C<Kv$K?GCG>pJs$,I=<($5$l$^$9!#(B
+これで、 <tt>mopd</tt> がデバッグモードで実行されます。
+<tt>mopd</tt> サーバーにリクエストがあると、
+実行した端末に診断情報が表示されます。
 <p>
 
-<tt>mopd</tt> $B$,$-$A$s$HF0$1$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+<tt>mopd</tt> がきちんと動けば、クライアントにこのように表示されます:
 <pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
 : /netbsd</pre>
 <p>
 
-<tt>MOPBOOT.SYS</tt> $B%U%!%$%k$r2?$+$K%j%s%/$9$k$3$H$G(B vax $B%/%i%$%"%s%H$,(B
-$B%W%m%s%W%H$r=P$5$:$K8+$D$1=P$9$3$H$,$G$-$k$h$&$K$J$j$^$9(B:
+<tt>MOPBOOT.SYS</tt> ファイルを何かにリンクすることで vax クライアントが
+プロンプトを出さずに見つけ出すことができるようになります:
 <pre># <b>cd /tftpboot/mop</b>
 # <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
-$B$3$3$G(B <tt>cccccccccccc</tt> $B$O(B vax $B%/%i%$%"%s%H$N(B hex $B%$!<%5%M%C%H%"%I%l%9(B $B$G$9!#(B
- <tt>SYS</tt> $B$OBgJ8;z$G=q$-!"%$!<%5%M%C%H%"%I%l%9$N==O;?J?t$O(B
-$B%"%i%S%"?t;z$H1Q>.J8;z$K$7$F$/$@$5$$!#$=$&$G$J$1$l$P!"(B
- vax $B%/%i%$%"%s%H$O@5$7$$%U%!%$%k$r$_$D$1(B <i>$B$i$l$J$$(B</i> $B$G$7$g$&!#(B
+ここで <tt>cccccccccccc</tt> は vax クライアントの hex イーサネットアドレス です。
+ <tt>SYS</tt> は大文字で書き、イーサネットアドレスの十六進数は
+アラビア数字と英小文字にしてください。そうでなければ、
+ vax クライアントは正しいファイルをみつけ <i>られない</i> でしょう。
 <p>
 
-<a href="bootpd.html">bootpd</a> $B$N@_Dj$KB3$/(B
+<a href="bootpd.html">bootpd</a> の設定に続く
 </dd></dl>
 
 <hr>
@@ -168,25 +168,25 @@ http://www.freebsd.org/cgi/url.cgi?ports/net/mopd/pkg-descr</a>
 <h3><a name="linux">Linux</a></h3>
 <dl><dt><dd>
 
-$B%$!<%5%M%C%H$K(B promiscuous $B%b!<%I(B $B@_Dj$rG'$a$k$h$&$K(B(mop $B$,$-$A$s$HF0$/$N$KI,MW(B)$B!"(B
-$B%+!<%M%k$K(B MULTICAST $B$rF~$l$F%3%s%Q%$%k$9$kI,MW$,$"$k$G$7$g$&!#(B
-$B$+$o$j$K!"(B ifconfig $B$K(B <tt>allmulti</tt> flag $B$rIU$1$F(B
- promiscuous $B%b!<%I(B $B$rM-8z$K$9$k$3$H$,$G$-$^$9(B ($BNc(B <tt><b>ifconfig eth0
-allmulti</b></tt>)$B!#(B
+イーサネットに promiscuous モード 設定を認めるように(mop がきちんと動くのに必要)、
+カーネルに MULTICAST を入れてコンパイルする必要があるでしょう。
+かわりに、 ifconfig に <tt>allmulti</tt> flag を付けて
+ promiscuous モード を有効にすることができます (例 <tt><b>ifconfig eth0
+allmulti</b></tt>)。
 <p>
 
 <ol>
-<li>$B$D$.$N%5%$%H$+$i(B mopd $B$N%=!<%9%3!<%I$r<hF@$7$^$9(B:<br>
+<li>つぎのサイトから mopd のソースコードを取得します:<br>
 <a href="ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-linux-2.5.3.tar.gz">
  ftp://ftp.stacken.kth.se/pub/OS/NetBSD/mopd/mopd-linux-2.5.3.tar.gz</a>
 <p>
 
-<li>$B$3$l$r(B Untar $B$7(B mopd $B$r(B make $B$7$^$9(B:<br>
+<li>これを Untar し mopd を make します:<br>
 <tt># <b>cd /mopd-linux/mopd</b></tt><br>
 <tt># <b>make</b></tt>
 <p>
 
-<li>$B%P%$%J%j!<$r%$%s%9%H!<%k$7$^$9(B:<br>
+<li>バイナリーをインストールします:<br>
 <tt># <b>cp mopd /usr/local/sbin/</b></tt>
 <p>
 
@@ -194,34 +194,34 @@ allmulti</b></tt>)$B!#(B
 </ol>
 <p>
 
-$B$3$l$G!"(B <tt>mopd</tt> $B$,%G%P%C%0%b!<%I$G<B9T$5$l$^$9!#(B
-<tt>mopd</tt> $B%5!<%P!<$K%j%/%(%9%H$,$"$k$H!"(B
-$B<B9T$7$?C<Kv$K?GCG>pJs$,I=<($5$l$^$9!#(B
+これで、 <tt>mopd</tt> がデバッグモードで実行されます。
+<tt>mopd</tt> サーバーにリクエストがあると、
+実行した端末に診断情報が表示されます。
 <p>
 
-<tt>mopd</tt> $B$,$-$A$s$HF0$1$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+<tt>mopd</tt> がきちんと動けば、クライアントにこのように表示されます:
 <pre>&gt;&gt; NetBSD/vax boot [980110 22:29] &lt;&lt;
 : /netbsd</pre>
 <p>
 
-<tt>MOPBOOT.SYS</tt> $B%U%!%$%k$r2?$+$K%j%s%/$9$k$3$H$G(B vax $B%/%i%$%"%s%H$,(B
-$B%W%m%s%W%H$r=P$5$:$K8+$D$1=P$9$3$H$,$G$-$k$h$&$K$J$j$^$9(B:
+<tt>MOPBOOT.SYS</tt> ファイルを何かにリンクすることで vax クライアントが
+プロンプトを出さずに見つけ出すことができるようになります:
 <pre># <b>cd /tftpboot/mop</b>
 # <b>ln -s MOPBOOT.SYS cccccccccccc.SYS</b></pre>
-$B$3$3$G(B <tt>cccccccccccc</tt> $B$O(B vax $B%/%i%$%"%s%H$N(B hex $B%$!<%5%M%C%H%"%I%l%9(B $B$G$9!#(B
- <tt>SYS</tt> $B$OBgJ8;z$G=q$-!"%$!<%5%M%C%H%"%I%l%9$N==O;?J?t$O(B
-$B%"%i%S%"?t;z$H1Q>.J8;z$K$7$F$/$@$5$$!#$=$&$G$J$1$l$P!"(B
- vax $B%/%i%$%"%s%H$O@5$7$$%U%!%$%k$r$_$D$1(B <i>$B$i$l$J$$(B</i> $B$G$7$g$&!#(B
+ここで <tt>cccccccccccc</tt> は vax クライアントの hex イーサネットアドレス です。
+ <tt>SYS</tt> は大文字で書き、イーサネットアドレスの十六進数は
+アラビア数字と英小文字にしてください。そうでなければ、
+ vax クライアントは正しいファイルをみつけ <i>られない</i> でしょう。
 <p>
 
-<a href="bootpd.html">bootpd</a> $B$N@_Dj$KB3$/(B
+<a href="bootpd.html">bootpd</a> の設定に続く
 </dd></dl>
 
 <hr>
 
-<a href="../../../../docs/network/netboot/intro.vax.html">$BLa$k(B</a> |
-<a href="bootpd.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="../../../../docs/network/netboot/intro.vax.html">戻る</a> |
+<a href="bootpd.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -233,7 +233,7 @@ allmulti</b></tt>)$B!#(B
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -243,15 +243,15 @@ allmulti</b></tt>)$B!#(B
   </td><td>
     <a href="../../../docs/"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%I%-%e%a%s%H$N%H%C%W%l%Y%k(B</a>
+        width="1" height="1" alt="NetBSD ">ドキュメントのトップレベル</a>
   </td></tr></table>
 </td></tr></table>
 
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: mop.html,v 1.3 2007/08/01 15:36:02 kano Exp $<br>
   <!-- Based on english version: -->

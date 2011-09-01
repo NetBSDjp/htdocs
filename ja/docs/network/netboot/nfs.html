@@ -9,49 +9,49 @@
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="../../../../docs/network/netboot/bootparams.html">$BLa$k(B</a> |
-<a href="files.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="../../../../docs/network/netboot/bootparams.html">戻る</a> |
+<a href="files.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>NFS $B%5!<%P!<$N@_Dj!"(B $B%G%#%9%/%l%9(B NetBSD HOW-TO</h1>
+<h1>NFS サーバーの設定、 ディスクレス NetBSD HOW-TO</h1>
 
-NFS $B$O(B UNIX $B$GI8=`E*$J!"%M%C%H%o!<%/2=$5$l$?%U%!%$%k%7%9%F%`$G$9!#(B
-$B%V!<%H%m!<%@!<$O!"%+!<%M%k$,(B NFS $B%5!<%P!<>e$K8+$D$+$k$3$H$r4|BT$7!"(B
-$B%a%b%j!<>e$K%m!<%I$7!"E>Aw@)8f$7$^$9!#(B
-$B$b$7!"%m!<%+%k$N%O!<%I%G%#%9%/$K(B NetBSD $B$r%$%s%9%H!<%k$9$k$?$a$@$1$K(B
-$B%M%C%H%V!<%H$r$9$k$J$i!"(B
- <a href="../../../../docs/network/netboot/local.install.html">$B$3$N%Z!<%8(B</a> $B$rFI$s$G$/$@$5$$!#(B
-$B%/%i%$%"%s%H$O!"(B NFS $B%5!<%P!<>e$N%U%!%$%k$r(B root $B8"8B$GFI$_=q$-$G$-$k(B<b>$BI,MW(B</b>$B$,$"$j$^$9!#(B
-$B%;%-%e%j%F%#!<LdBj$r9MN8$9$k>l9g$O!"%/%i%$%"%s%H$,$I$3$r%"%/%;%9$9$k$N$+(B
-$B?5=E$K7hDj$9$kI,MW$,$"$j$^$9!#(B<br>
+NFS は UNIX で標準的な、ネットワーク化されたファイルシステムです。
+ブートローダーは、カーネルが NFS サーバー上に見つかることを期待し、
+メモリー上にロードし、転送制御します。
+もし、ローカルのハードディスクに NetBSD をインストールするためだけに
+ネットブートをするなら、
+ <a href="../../../../docs/network/netboot/local.install.html">このページ</a> を読んでください。
+クライアントは、 NFS サーバー上のファイルを root 権限で読み書きできる<b>必要</b>があります。
+セキュリティー問題を考慮する場合は、クライアントがどこをアクセスするのか
+慎重に決定する必要があります。<br>
 <p>
 
-<strong>$BCm0U(B</strong>: $B$?$H$(%U%!%$%k%7%9%F%`$N%5%V%G%#%l%/%H%j!<$@$1$r%(%/%9%]!<%H$7$F$$$F$b!"(B
-(NetBSD $B$r4^$`(B) $BB?$/$N%*%Z%l!<%F%#%s%0%7%9%F%`>e$N(BNFS $B%5!<%P!<$G$O(B
-$B%"%/%;%9MW5a$r<B:]$K%(%/%9%]!<%H$5$l$?%5%V%G%#%l%/%H%j!<$K@)8B$7$F$$$J$$$N$G!"(B
-$B0-0U$"$k%/%i%$%"%s%H$O%U%!%$%k%7%9%F%`A4BN$X%"%/%;%9$7F@$k2DG=@-$,$"$j$^$9!#(B
+<strong>注意</strong>: たとえファイルシステムのサブディレクトリーだけをエクスポートしていても、
+(NetBSD を含む) 多くのオペレーティングシステム上のNFS サーバーでは
+アクセス要求を実際にエクスポートされたサブディレクトリーに制限していないので、
+悪意あるクライアントはファイルシステム全体へアクセスし得る可能性があります。
 <p>
 
-$B<!$N%G%#%l%/%H%j!<$O(B root $B$,FI$_=q$-$G$-$k$3$H$,(B<b>$BI,MW(B</b>$B$G$9(B:<br>
+次のディレクトリーは root が読み書きできることが<b>必要</b>です:<br>
 <pre>/
 /var
 /etc
 /dev</pre>
-$B$=$N7k2L!"0lHV4JC1$J$N$O!"(B <tt>/home</tt> $B$*$h$S(B 
-<tt>/usr</tt> $B$r(B <tt>/export/client/root</tt> $B$+$iJ,N%$7$F!"(B
-root $B$NFI$_=q$-8"8B$r$O$:$7$F%(%/%9%]!<%H$9$k$3$H$G$9!#(B
-$B$3$N(B HOW-TO $BFb$rDL$8$F!"(B <tt>/usr</tt> $B$H(B <tt>/home</tt>
-$B$rL@<(E*$KJ,$1$F$$$k$N$O!"$3$N$?$a$G$9!#(B
-$B$3$NDL$j$K$9$k$H!"%G%#%l%/%H%j!<9=B$$O$3$N$h$&$K$J$j$^$9(B:
+その結果、一番簡単なのは、 <tt>/home</tt> および 
+<tt>/usr</tt> を <tt>/export/client/root</tt> から分離して、
+root の読み書き権限をはずしてエクスポートすることです。
+この HOW-TO 内を通じて、 <tt>/usr</tt> と <tt>/home</tt>
+を明示的に分けているのは、このためです。
+この通りにすると、ディレクトリー構造はこのようになります:
 <p>
 
 <table border="1" cellspacing="1" cellpadding="5">
 <tr><td><i>
-$B%5!<%P!<(B ($B%(%/%9%]!<%H%G%#%l%/%H%j!<(B)
+サーバー (エクスポートディレクトリー)
 </i></td><td><i>
-$B%/%i%$%"%s%H(B
+クライアント
 </i></td></tr>
 
 <tr><td><tt>
@@ -61,9 +61,9 @@ root $B$NFI$_=q$-8"8B$r$O$:$7$F%(%/%9%]!<%H$9$k$3$H$G$9!#(B
 </tt></td></tr>
 
 <tr><td><tt>
-/export/client/swap </tt><i>($B%U%!%$%k(B)</i>
+/export/client/swap </tt><i>(ファイル)</i>
 </td><td><tt>
-/swap </tt><i>($B%U%!%$%k(B)</i>
+/swap </tt><i>(ファイル)</i>
 </td></tr>
 
 <tr><td><tt>
@@ -80,59 +80,59 @@ root $B$NFI$_=q$-8"8B$r$O$:$7$F%(%/%9%]!<%H$9$k$3$H$G$9!#(B
 </table>
 <p>
 
-$BCm$H$7$F$O!"(B <tt>/swap</tt> $B$O%U%!%$%k$H$7$F%^%&%s%H$5$l$k$G$7$g$&!#(B
+注としては、 <tt>/swap</tt> はファイルとしてマウントされるでしょう。
 <p>
 
-$B$^$?!"%5!<%P!<$,F10l%"!<%-%F%/%A%c!<(B ($BNc$($P!"(B NetBSD/hp300 $B$*$h$S(B sun3 $B$N(B
- Motorola 680X0 $B%^%$%/%m%W%m%;%C%5!<!"(B NetBSD/sparc $B$N(B Sparc $B%^%$%/%m%W%m%;%C%5!<!"(B
-$B$*$h$S(B NetBSD/vax $B$N(B Vax $B%^%$%/%m%W%m%;%C%5!<(B)$B$G!"(B
- NetBSD $B$,F0:n$7$F$$$k>l9g$O!"%/%i%$%"%s%H$O!"(B
-$B%5!<%P!<$N%G%#%l%/%H%j!<9=B$$N(B <tt>/usr</tt> $B$r;H$&$3$H$,$G$-!"(B
-$B%G%#%9%/;HMQNL$rBg$-$/@aLs$9$k$3$H$,$G$-$^$9!#(B
- $B$3$N>l9g!"(B $B%5!<%P!<$O(B <tt>/export/client/usr</tt> $B$NBe$o$j$K(B
-<tt>/usr</tt> $B$r%(%/%9%]!<%H$9$kI,MW$,$"$j$^$9!#(B
+また、サーバーが同一アーキテクチャー (例えば、 NetBSD/hp300 および sun3 の
+ Motorola 680X0 マイクロプロセッサー、 NetBSD/sparc の Sparc マイクロプロセッサー、
+および NetBSD/vax の Vax マイクロプロセッサー)で、
+ NetBSD が動作している場合は、クライアントは、
+サーバーのディレクトリー構造の <tt>/usr</tt> を使うことができ、
+ディスク使用量を大きく節約することができます。
+ この場合、 サーバーは <tt>/export/client/usr</tt> の代わりに
+<tt>/usr</tt> をエクスポートする必要があります。
 <p>
 
-$B$$$+$J$k%[%9%H$b(B TCP wrapper $B7PM3$N%"%/%;%9$r5qH]$7$J$$$3$H$r(B
-$B3NG'$9$kI,MW$,$"$j$^$9!#(B
- <tt>/etc/hosts.deny</tt> $B$*$h$S(B <tt>/etc/hosts.allow</tt> $BCf$N(B
- nfsd, mountd, rpcbind $B$*$h$S(B portmap $B%(%s%H%j!<$r8+$F$/$@$5$$!#(B
+いかなるホストも TCP wrapper 経由のアクセスを拒否しないことを
+確認する必要があります。
+ <tt>/etc/hosts.deny</tt> および <tt>/etc/hosts.allow</tt> 中の
+ nfsd, mountd, rpcbind および portmap エントリーを見てください。
 
-$B$3$l$i$N%U%!%$%k$r(B nfs $B%"%/%;%9$r@)8B$9$k$N$K;H$&$J$i!"(B <tt>hosts.deny</tt> $BCf$N(B
- nfsd, mountd, rpcbind, $B$*$h$S(B/$B$^$?$O(B portmap $B%(%s%H%j!<$r%3%a%s%H%"%&%H$9$k$+!"(B
-$B$^$?$O!"(B <tt>hosts.allow</tt> $B$K%/%i%$%"%s%H$N%(%s%H%j!<$rDI2C$9$kI,MW$,$"$j$^$9!#(B
-$BB?J,!"$3$l$i$N%G!<%b%s$r(B <tt>kill -HUP</tt> $B$9$kI,MW$,$"$k$G$7$g$&!#(B
-  $BCm$H$7$F$O!"(B portmap $B$O<j$N9~$s$@$3$H$r$7$F$$$F!"$^$?!"$$$/$D$+$N%W%i%C%H%U%)!<%`$G$O!"(B <tt>kill
--HUP</tt> $B$,<B:]$K$=$l$r(B kill $B$9$k$3$H$,$"$k$3$H$G$9!#(B
-$B%[%9%H$,%"%/%;%9$9$k%U%!%$%k$rJQ99$7$?8e!"(B nfs $B%5!<%P!<$r%j%V!<%H$9$k$N$,0lHV4JC1$G$9!#(B
+これらのファイルを nfs アクセスを制限するのに使うなら、 <tt>hosts.deny</tt> 中の
+ nfsd, mountd, rpcbind, および/または portmap エントリーをコメントアウトするか、
+または、 <tt>hosts.allow</tt> にクライアントのエントリーを追加する必要があります。
+多分、これらのデーモンを <tt>kill -HUP</tt> する必要があるでしょう。
+  注としては、 portmap は手の込んだことをしていて、また、いくつかのプラットフォームでは、 <tt>kill
+-HUP</tt> が実際にそれを kill することがあることです。
+ホストがアクセスするファイルを変更した後、 nfs サーバーをリブートするのが一番簡単です。
 <p>
 
-$B$3$l$i$$$/$D$+$N%W%i%C%H%U%)!<%`$N(B nfs $B%5!<%P!<$OLdBj$rJz$($F$$$^$9$,!"(B
-$B$?$$$F$$!">.$5$JEXNO$G<!A1:v$H$J$l$^$9!#(B
-$B$3$l$O!"$3$N(B HOW-TO $B$N<!$N9`$G?($l$^$9!#(B
+これらいくつかのプラットフォームの nfs サーバーは問題を抱えていますが、
+たいてい、小さな努力で次善策となれます。
+これは、この HOW-TO の次の項で触れます。
 <p>
 
-<a href="#netbsd">NetBSD</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#openbsd">OpenBSD</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#freebsd">FreeBSD</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#macosx">Mac OS X $B$H(B Darwin</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#linux">Linux</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#sunos">SunOS</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#solaris">Solaris</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#news">NEWS-OS</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#next">NEXTSTEP</a> $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#hpux7">HP-UX</a> 7 $B$G$N(B nfs $B$N@_Dj(B ($BF0$+$;$^$;$s(B) <br>
-<a href="#hpux9">HP-UX</a> 9 $B$G$N(B nfs $B$N@_Dj(B<br>
-<a href="#hpux10">HP-UX</a> 10 $B0J9_$G$N(B nfs $B$N@_Dj(B<br>
+<a href="#netbsd">NetBSD</a> での nfs の設定<br>
+<a href="#openbsd">OpenBSD</a> での nfs の設定<br>
+<a href="#freebsd">FreeBSD</a> での nfs の設定<br>
+<a href="#macosx">Mac OS X と Darwin</a> での nfs の設定<br>
+<a href="#linux">Linux</a> での nfs の設定<br>
+<a href="#sunos">SunOS</a> での nfs の設定<br>
+<a href="#solaris">Solaris</a> での nfs の設定<br>
+<a href="#news">NEWS-OS</a> での nfs の設定<br>
+<a href="#next">NEXTSTEP</a> での nfs の設定<br>
+<a href="#hpux7">HP-UX</a> 7 での nfs の設定 (動かせません) <br>
+<a href="#hpux9">HP-UX</a> 9 での nfs の設定<br>
+<a href="#hpux10">HP-UX</a> 10 以降での nfs の設定<br>
 <p>
 
 <hr>
 
-<h3><a name="netbsd">NetBSD</a> $B$*$h$S(B <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="netbsd">NetBSD</a> および <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
-$B$b$7!"FH<+$K%+!<%M%k$r9=C[$9$k$J$i!"%3%s%U%#%0%U%!%$%k$K<!$N5-=R$,I,MW$G$9(B:
+もし、独自にカーネルを構築するなら、コンフィグファイルに次の記述が必要です:
 <pre>options         NFSSERVER</pre>
-NetBSD $B$GG[I[$5$l$F$$$k(B <tt>GENERIC</tt> $B%+!<%M%k$K$O!"$3$l$r4^$s$G%3%s%Q%$%k$5$l$F$$$^$9!#(B
+NetBSD で配布されている <tt>GENERIC</tt> カーネルには、これを含んでコンパイルされています。
 <p>
 
 <ol>
@@ -157,7 +157,7 @@ NetBSD $B$GG[I[$5$l$F$$$k(B <tt>GENERIC</tt> $B%+!<%M%k$K$O!"$3$l$r4^$s$G%3%s
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li> <tt>/etc/exports</tt> $B$K<!$N3F9T$rDI2C$7$^$9(B:
+<li> <tt>/etc/exports</tt> に次の各行を追加します:
 <pre><b>#/etc/exports
 /export/client/root -maproot=root:wheel    client.test.net
 /export/client/swap -maproot=root:wheel    client.test.net
@@ -166,39 +166,39 @@ NetBSD $B$GG[I[$5$l$F$$$k(B <tt>GENERIC</tt> $B%+!<%M%k$K$O!"$3$l$r4^$s$G%3%s
 <p>
 
 <li><tt># <b>ps -aux | grep mountd</b></tt><br>
-   $B$b$7(B <tt>mountd</tt> $B$,Av$C$F$$$k$J$i!"(B <tt>kill -HUP</tt> $B$7$F%W%m%;%9$K6/@)E*$K(B
-   <tt>/etc/exports</tt> $B$r:FFI9~$5$;$F$/$@$5$$!#Av$C$F$$$J$+$C$?$J$i!"(B
-   $B<!$N$h$&$K3+;O$7$F$/$@$5$$(B:<br>
+   もし <tt>mountd</tt> が走っているなら、 <tt>kill -HUP</tt> してプロセスに強制的に
+   <tt>/etc/exports</tt> を再読込させてください。走っていなかったなら、
+   次のように開始してください:<br>
    <tt># <b>/usr/sbin/mountd</b></tt><br>
 <p>
 
 <li><tt># <b>ps -aux | grep nfsd</b></tt><br>
-   $B$b$7(B NFS $B%G!<%b%s(B <tt>nfsd</tt> $B$,F0:n$7$F$$$J$1$l$P!"$3$N$h$&$K3+;O$7$F$/$@$5$$(B:<br>
+   もし NFS デーモン <tt>nfsd</tt> が動作していなければ、このように開始してください:<br>
    <tt># <b>/usr/sbin/nfsd -tun 4</b></tt>
 </ol>
 <p>
 
-$B$b$7!"%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS デーモンが動作してなければ、クライアントにこのように表示されます:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B$b$7!"%5!<%P!<$G(B NFS $B$,F0:n$7$F$$$F$b!"%k!<%H%G%#%l%/%H%j!<$,%/%i%$%"%s%H$K(B
-$B%(%/%9%]!<%H$5$l$F$$$J$1$l$P!"$3$N$h$&$K%/%i%$%"%s%H$KI=<($5$l$^$9(B:
+もし、サーバーで NFS が動作していても、ルートディレクトリーがクライアントに
+エクスポートされていなければ、このようにクライアントに表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
-FreeBSD 4.x $B$N%;%C%H%"%C%WJ}K!$O(B NetBSD $B$HF1MM$G$9$,!"(B
-mountd $B$K0[$J$k%*%W%7%g%s$,I,MW$J$3$H$H!"(B <tt>/etc/exports</tt> $B$N=q<0$,0[$J$j$^$9!#(B
+FreeBSD 4.x のセットアップ方法は NetBSD と同様ですが、
+mountd に異なるオプションが必要なことと、 <tt>/etc/exports</tt> の書式が異なります。
 
 <ol>
 <li><tt># <b>mkdir -p /export/client/root/dev</b></tt>
@@ -222,61 +222,61 @@ mountd $B$K0[$J$k%*%W%7%g%s$,I,MW$J$3$H$H!"(B <tt>/etc/exports</tt> $B$N=q<0$
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li><tt>/etc/exports</tt> $B$K<!$N9T$rDI2C$7$^$9(B (
-<a href="http://www.freebsd.org/doc/handbook/network-nfs.html">FreeBSD $B%O%s%I%V%C%/(B
-Section 17.4</a> NFS (<a href="http://www.jp.FreeBSD.org/www.FreeBSD.org/doc/ja_JP.eucJP/books/handbook/nfs.html">$BF|K\8lLu(B</a>) $B$r;2>H$7$F$/$@$5$$(B):
+<li><tt>/etc/exports</tt> に次の行を追加します (
+<a href="http://www.freebsd.org/doc/handbook/network-nfs.html">FreeBSD ハンドブック
+Section 17.4</a> NFS (<a href="http://www.jp.FreeBSD.org/www.FreeBSD.org/doc/ja_JP.eucJP/books/handbook/nfs.html">日本語訳</a>) を参照してください):
 <pre><b>#/etc/exports
 /export/client/root /export/client/swap -maproot=root:wheel    client.test.net 
 </b></pre>
-FreeBSD $B$G$O!"0l$D$N%U%!%$%k%7%9%F%`(B (<tt>/export</tt> $B$N$h$&$J(B) $BCf$K4^$^$l$k(B
-$BJ#?t$N%G%#%l%/%H%j!<$r%/%i%$%"%s%H$K8x3+$9$k$3$H$O!"$=$N3F%G%#%l%/%H%j!<$r(B
-<tt>/etc/exports</tt> $B$G0l9T$K$^$H$a$F=q$+$J$$8B$j!"$G$-$^$;$s!#(B
+FreeBSD では、一つのファイルシステム (<tt>/export</tt> のような) 中に含まれる
+複数のディレクトリーをクライアントに公開することは、その各ディレクトリーを
+<tt>/etc/exports</tt> で一行にまとめて書かない限り、できません。
 <p>
-$B$^$?!"%/%i%$%"%s%H$N(B <tt>/home</tt> $B$H(B <tt>/usr</tt> $B$O(B
-<tt>/export/client/root</tt> $B0J2<$KCV$/$h$&$K$9$kI,MW$,$"$j$^$9!#(B FreeBSD
-$B$G$O!"8x3+$9$k3F%G%#%l%/%H%j!<$rJL%G%#%l%/%H%j!<$KJ,$1$F(B ($B$5$i$K(B
-<tt>-maproot=root:wheel</tt> $B$r30$7$F(B)$B!"(B
-$B$=$l$>$l$,0[$J$kFC@-$r;}$D$h$&$K$9$k$3$H$O$G$-$^$;$s!#(B
+また、クライアントの <tt>/home</tt> と <tt>/usr</tt> は
+<tt>/export/client/root</tt> 以下に置くようにする必要があります。 FreeBSD
+では、公開する各ディレクトリーを別ディレクトリーに分けて (さらに
+<tt>-maproot=root:wheel</tt> を外して)、
+それぞれが異なる特性を持つようにすることはできません。
 <p>
 
 <li><tt># <b>ps -aux | grep mountd</b></tt><br>
-   $B$b$7(B <tt>mountd</tt> $B$,F0:n$7$F$$$l$P!"$=$N%W%m%;%9$r(B <tt>kill</tt> $B$7$F$/$@$5$$!#(B
-   $B%9%o%C%W%U%!%$%k$,%^%&%s%H$G$-$k$h$&$K(B <tt>-r</tt> $B%*%W%7%g%s$r$D$1$F<B9T$9$k(B
-   $BI,MW$,!"$^$?!"(B $B6/@)E*$K(B NFS V2 $B$r;H$&$?$a$K(B <tt>-2</tt> $B%*%W%7%g%s$r$D$1$kI,MW$,$"$j$^$9(B:<br>
+   もし <tt>mountd</tt> が動作していれば、そのプロセスを <tt>kill</tt> してください。
+   スワップファイルがマウントできるように <tt>-r</tt> オプションをつけて実行する
+   必要が、また、 強制的に NFS V2 を使うために <tt>-2</tt> オプションをつける必要があります:<br>
    <tt># <b>/sbin/mountd -2r</b></tt><br>
 
 <p>
 
 <li><tt># <b>ps -aux | grep nfsd</b></tt><br>
-   $B$b$7(B <tt>nfsd</tt>$B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"<B9T$9$kI,MW$,$"$j$^$9(B:<br>
+   もし <tt>nfsd</tt>デーモンが動作していなければ、実行する必要があります:<br>
    <tt># <b>/sbin/nfsd -tun 4</b></tt>
 </ol>
 <p>
 
-$B%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K<!$N$h$&$KI=<($5$l$^$9(B:
+サーバーで NFS デーモンが動作していなければ、クライアントに次のように表示されます:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B%5!<%P!<$G(B NFS $B$,Av$C$F$$$F$b!"%/%i%$%"%s%H$K%k!<%H%G%#%l%/%H%j!<$r(B
-$B%(%/%9%]!<%H$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K<!$N$h$&$KI=<($5$l$^$9(B:
+サーバーで NFS が走っていても、クライアントにルートディレクトリーを
+エクスポートしていなければ、クライアントに次のように表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
 
-<h3><a name="macosx">Mac OS X $B$H(B Darwin</a></h3>
+<h3><a name="macosx">Mac OS X と Darwin</a></h3>
 <dl><dt><dd>
-Mac OS X $B$H(B Darwin $B$O!"(B nfs $B$N@_Dj$K(B NetInfo $B%7%9%F%`$r;H$$$^$9!#DL>o$N(B BSD $B%9%?%$%k$N(B
-$B9=@.%U%!%$%k$r;H$&J}K!$b$"$j$^$9$,!"$[$H$s$I$N%7%9%F%`$O%G%U%)%k%H$G(B NetInfo
-$B$r;H$&$h$&$K$J$C$F$$$^$9!#$3$3$G$O!"(B Mac OS X/Darwin $B$N%G%U%)%k%H%$%s%9%H!<%k$K$h$k$b$N(B
-($B$D$^$j!"$=$N%m!<%+%k(B NetInfo $B%I%a%$%s$K$*$1$k(B) $B$N@_DjJ}K!$r@bL@$7$^$9!#(B
-$B$h$j>\$7$/$O(B <tt>netinfo(5)</tt> $B%^%K%e%"%k%Z!<%8$rFI$s$G$/$@$5$$!#(B
+Mac OS X と Darwin は、 nfs の設定に NetInfo システムを使います。通常の BSD スタイルの
+構成ファイルを使う方法もありますが、ほとんどのシステムはデフォルトで NetInfo
+を使うようになっています。ここでは、 Mac OS X/Darwin のデフォルトインストールによるもの
+(つまり、そのローカル NetInfo ドメインにおける) の設定方法を説明します。
+より詳しくは <tt>netinfo(5)</tt> マニュアルページを読んでください。
 <p>
 
 <ol>
@@ -301,11 +301,11 @@ Mac OS X $B$H(B Darwin $B$O!"(B nfs $B$N@_Dj$K(B NetInfo $B%7%9%F%`$r;H$$
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li>$B6&M-$9$k$b$N$r8x3+$9$k$?$a!"(B NetInfo $B%G!<%?%Y!<%9$r=q$-49$($^$9!#(B
-$B8x3+%G%#%l%/%H%j!<$X$N%Q%9$O!"%9%i%C%7%e$r(B<i>$BFs=E$K(B</i>$B%(%9%1!<%W$7$J$1$l$P$J$j$^$;$s!#(B
-$B%7%'%k$H(B NetInfo $B9=J82r@O(B ($B%9%i%C%7%e$O(B NetInfo $B%W%m%Q%F%#$N6h@Z$jJ8;z$H$7$F;H$o$l$F$$$^$9(B)
-$B$G(B 2 $B2s2r<a$5$l$k$+$i$G$9!#$5$i$KJ6$i$o$7$$$3$H$G$9$,!"$3$3$GDI2C$7$F$$$k(B
-NetInfo $B%W%m%Q%F%#$NL>A0$O(B <tt>/exports</tt> $B$G$9!#(B
+<li>共有するものを公開するため、 NetInfo データベースを書き換えます。
+公開ディレクトリーへのパスは、スラッシュを<i>二重に</i>エスケープしなければなりません。
+シェルと NetInfo 構文解析 (スラッシュは NetInfo プロパティの区切り文字として使われています)
+で 2 回解釈されるからです。さらに紛らわしいことですが、ここで追加している
+NetInfo プロパティの名前は <tt>/exports</tt> です。
 <pre># <b>nicl . -create /exports/\\/export\\/client\\/root opts maproot=root:wheel</b>
 # <b>nicl . -create /exports/\\/export\\/client\\/root clients 192.168.0.10</b>
 # <b>nicl . -create /exports/\\/export\\/client\\/swap opts maproot=root:wheel</b>
@@ -315,51 +315,51 @@ NetInfo $B%W%m%Q%F%#$NL>A0$O(B <tt>/exports</tt> $B$G$9!#(B
 # <b>nicl . -create /exports/\\/export\\/client\\/home opts maproot=nobody:nobody</b>
 # <b>nicl . -create /exports/\\/export\\/client\\/home clients 192.168.0.10</b>
 </pre>
-$B8e$+$iJL$N%/%i%$%"%s%H$rF1$86&M-$K2C$($k>l9g$O!"$=$N%W%m%Q%F%#(B
-($B:G=i$K(B <tt>create</tt> $B$7$?$b$N(B) $B$KBP$7$F(B <tt>append</tt> $B$7$^$9(B:
+後から別のクライアントを同じ共有に加える場合は、そのプロパティ
+(最初に <tt>create</tt> したもの) に対して <tt>append</tt> します:
 <pre>#<b> nicl . -append /exports/\\/export\\/client\\/root clients 192.168.0.12</b>
 </pre>
 <p>
-$B$9$Y$F$&$^$/$$$C$F$$$k$+3NG'$9$k$?$a$K$O!"FI$_JV$7$F$/$@$5$$(B:
+すべてうまくいっているか確認するためには、読み返してください:
 <pre># <b>nicl . -read /exports/\\/export\\/client\\/root</b>
 name: /export/client/root
 opts: maproot=root:wheel
 clients: 192.168.0.10 192.168.0.12</pre>
 
 <p><li><tt># <b>ps -aux | grep portmap</b></tt><br>
-   <tt>portmap</tt> $B$,F0$$$F$$$J$1$l$P!"5/F0$9$kI,MW$,$"$j$^$9(B:<br>
+   <tt>portmap</tt> が動いていなければ、起動する必要があります:<br>
    <tt># <b>/usr/sbin/portmap</b></tt>
 
 <p><li><tt># <b>ps -aux | grep nfsd</b></tt><br>
-   <tt>nfsd</tt>aemon $B$,F0$$$F$$$J$1$l$P!"5/F0$9$kI,MW$,$"$j$^$9(B:<br>
+   <tt>nfsd</tt>aemon が動いていなければ、起動する必要があります:<br>
    <tt># <b>/sbin/nfsd -t -u -n 6</b></tt>
 
 <p><li><tt># <b>ps -aux | grep mountd</b></tt><br>
-   <tt>mountd</tt> $B$,F0$$$F$$$l$P!"(B <tt>kill -HUP</tt> $B$7$F%W%m%;%9$K(B
-   NetInfo $B%G!<%?%Y!<%9$r6/@)E*$K:FFI$_9~$_$5$;$^$9!#(B <tt>mountd</tt> $B$,F0$$$F$$$J$$>l9g$O!"(B
-   $B0J2<$N$h$&$K$7$F5/F0$9$kI,MW$,$"$j$^$9(B:<br>
+   <tt>mountd</tt> が動いていれば、 <tt>kill -HUP</tt> してプロセスに
+   NetInfo データベースを強制的に再読み込みさせます。 <tt>mountd</tt> が動いていない場合は、
+   以下のようにして起動する必要があります:<br>
    <tt># <b>/usr/sbin/mountd</b></tt>
 
-<p><li>NetInfo $B$N(B <tt>/exports</tt> $B%W%m%Q%F%#$,$"$k8B$j!"%7%9%F%`$O(B
-   $B:F5/F0$9$k$?$S$K(B NFS $B%G!<%b%s72$r5/F0$9$k$h$&$K$J$j$^$9!#6&M-$r$9$Y$F$H$j$d$a!"(B
-   $B%7%9%F%`$,:#8e$O(B NFS $B$r5/F0$7$J$$$h$&$K$9$k$K$O!"0J2<$N$h$&$K<B9T$7$^$9(B<br>
+<p><li>NetInfo の <tt>/exports</tt> プロパティがある限り、システムは
+   再起動するたびに NFS デーモン群を起動するようになります。共有をすべてとりやめ、
+   システムが今後は NFS を起動しないようにするには、以下のように実行します<br>
    <tt># <b>nicl . -delete /exports</b></tt>
 </ol>
 <p>
 
-$B%5!<%P!<$G(B NFS $B%G!<%b%s$,F0$$$F$$$J$$>l9g$O!"%/%i%$%"%s%H$O0J2<$N$h$&$KI=<($7$^$9(B:
+サーバーで NFS デーモンが動いていない場合は、クライアントは以下のように表示します:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B%5!<%P!<$G(B NFS $B$OF0$$$F$$$k$,%k!<%H%G%#%l%/%H%j!<$r%/%i%$%"%s%H$K8x3+$7$F$$$J$$>l9g$O!"(B
-$B%/%i%$%"%s%H$O0J2<$N$h$&$KI=<($7$^$9(B:
+サーバーで NFS は動いているがルートディレクトリーをクライアントに公開していない場合は、
+クライアントは以下のように表示します:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
@@ -388,7 +388,7 @@ panic $B$7$^$9!#(B
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li> <tt>/etc/exports</tt> $B$K<!$N3F9T$rDI2C$7$^$9(B:
+<li> <tt>/etc/exports</tt> に次の各行を追加します:
 <pre><b>#/etc/exports
 /export/client/root client.test.net(rw,no_root_squash)
 /export/client/swap client.test.net(rw,no_root_squash)
@@ -397,50 +397,50 @@ panic $B$7$^$9!#(B
 <p>
 
 <li><tt># <b>ps aux | grep mountd</b></tt><br>
-   $B$b$7(B <tt>mountd</tt> $B$,F0:n$7$F$$$l$P!"$=$N%W%m%;%9$r(B <tt>kill -HUP</tt> $B$7$F$/$@$5$$!#(B
-   $B$3$l$G!"(B <tt>/etc/exports</tt> $B%U%!%$%k$r6/@)E*$K:FFI$_9~$_$5$;$^$9!#(B
-   $B$b$7!"$^$@F0$$$F$$$J$1$l$P!"<!$N$h$&$K$7$^$9(B:<br>
+   もし <tt>mountd</tt> が動作していれば、そのプロセスを <tt>kill -HUP</tt> してください。
+   これで、 <tt>/etc/exports</tt> ファイルを強制的に再読み込みさせます。
+   もし、まだ動いていなければ、次のようにします:<br>
    <tt># <b>/sbin/rpc.mountd [--no-nfs-version 3]</b></tt><br>
-   $B$b$7!"LdBj$,$"$k>l9g$O!"(B <tt>--no-nfs-version 3</tt> $B$r2C$($kI,MW$,$"$j$^$9!#(B
-   $B2<$r8+$F$/$@$5$$!#(B
+   もし、問題がある場合は、 <tt>--no-nfs-version 3</tt> を加える必要があります。
+   下を見てください。
 <p>
 
 <li><tt># <b>ps aux | grep nfsd</b></tt><br>
-   $B$b$7!"(B NFS $B%G!<%b%s(B <tt>nfsd</tt> $B$,F0:n$7$F$$$k$J$i!"$=$l$r:F5/F0$7$F!"(B
-   <tt>/etc/exports</tt> $B%U%!%$%k$r:FFI$_9~$_$5$;$F$/$@$5$$!#(B
-   $B$^$@F0$$$F$$$J$1$l$P!"<!$N$h$&$K$7$^$9(B:<br>
+   もし、 NFS デーモン <tt>nfsd</tt> が動作しているなら、それを再起動して、
+   <tt>/etc/exports</tt> ファイルを再読み込みさせてください。
+   まだ動いていなければ、次のようにします:<br>
    <tt># <b>/sbin/rpc.nfsd</b></tt>
 </ol>
 <p>
 
-$B%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K<!$N$h$&$KI=<($5$l$k$G$7$g$&(B:
+サーバーで NFS デーモンが動作していなければ、クライアントに次のように表示されるでしょう:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B%5!<%P!<$G(B NFS $B$,Av$C$F$$$F!"$G$b%/%i%$%"%s%H$K(B root $B%G%#%l%/%H%j!<$r(B
-$B%(%/%9%]!<%H$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K<!$N$h$&$KI=<($5$l$k$G$7$g$&(B:
+サーバーで NFS が走っていて、でもクライアントに root ディレクトリーを
+エクスポートしていなければ、クライアントに次のように表示されるでしょう:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-<b>$B%+!<%M%k(B NFS $BLdBj(B:</b>
+<b>カーネル NFS 問題:</b>
 <blockquote>
 
- linux $B$N$[$H$s$I$N%P!<%8%g%s$G<BAu$5$l$F$$$k$N$O(B
- NFS2 $B$@$1$G!"$3$N>l9g!"(B NetBSD $B$O(B NFS3 $B$G;n9T$7!"<+F0E*$K(B fall back $B$7$^$9!#(B
-$B$$$/$D$+$N%P!<%8%g%s(B ($BFC$K(B RedHat 6.0) $B$G$O!"(B
- NFS2 $B$*$h$S(B NFS3 $B$NN>J}$N%^%&%s%HMW5a$KBP$7$F!"IT@53N$J1~Ez$r$7!"(B
-$B$=$l$G!"(B NFS3 $B$K$h$k(B $B%U%!%$%k%7%9%F%`$N%"%/%;%9$r$9$Y$FL5;k$7$^$9!#(B
-$B$3$N860x$O!"8@$&$K8@$o$l$L6lDK$*$h$S!":.Mp$G$9!#(B
+ linux のほとんどのバージョンで実装されているのは
+ NFS2 だけで、この場合、 NetBSD は NFS3 で試行し、自動的に fall back します。
+いくつかのバージョン (特に RedHat 6.0) では、
+ NFS2 および NFS3 の両方のマウント要求に対して、不正確な応答をし、
+それで、 NFS3 による ファイルシステムのアクセスをすべて無視します。
+この原因は、言うに言われぬ苦痛および、混乱です。
 <br>
-$B<!A1:v$O!"(B mountd $B$r(B kill $B$7$F!"(B NFS3 $BLdBj$rKI$0%*%W%7%g%s$r$D$1$F<B9T$9$k$3$H(B
-($B$9$J$o$A(B <tt><b>rpc.mountd&nbsp;--no-nfs-version&nbsp;3</b></tt>) $B$G$9!#(B
+次善策は、 mountd を kill して、 NFS3 問題を防ぐオプションをつけて実行すること
+(すなわち <tt><b>rpc.mountd&nbsp;--no-nfs-version&nbsp;3</b></tt>) です。
 </blockquote>
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
@@ -469,7 +469,7 @@ panic $B$7$^$9!#(B
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li> <tt>/etc/exports</tt> $B%U%!%$%k$r:n$j$^$9(B($B$9$G$K$"$l$P$=$l$KDI2C$7$^$9(B):<br>
+<li> <tt>/etc/exports</tt> ファイルを作ります(すでにあればそれに追加します):<br>
 <pre><b>#/etc/exports
 /export/client/root -root=client
 /export/client/swap -root=client
@@ -484,29 +484,29 @@ panic $B$7$^$9!#(B
 <p>
 
 <li><tt># <b>ps aux | grep nfsd</b></tt><br>
-   $B$^$@(B nfsd $B$,F0:n$7$F$$$J$1$l$P!"<B9T$7$^$9(B:<br>
+   まだ nfsd が動作していなければ、実行します:<br>
    <tt># <b>nfsd 8 &</b></tt>
 <p>
 
 <li><tt># <b>ps aux | grep mountd</b></tt><br>
-   $B$^$@(B mountd $B$,F0:n$7$F$$$J$1$l$P!"<B9T$7$^$9(B:<br>
+   まだ mountd が動作していなければ、実行します:<br>
    <tt># <b>rpc.mountd -n &</b></tt>
 </ol>
 <p>
 
-$B$b$7!"%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS デーモンが動作していなければ、クライアントにこのように表示されます:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B$b$7!"%5!<%P!<$G(B NFS $B$,F0:n$7$F$$$F$b!"%/%i%$%"%s%H$K%k!<%H%G%#%l%/%H%j!<$,(B
-$B%(%/%9%]!<%H$5$l$F$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS が動作していても、クライアントにルートディレクトリーが
+エクスポートされてなければ、クライアントにこのように表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
@@ -535,39 +535,39 @@ panic $B$7$^$9!#(B
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li><tt>/etc/dfs/dfstab</tt> $B$K<!$N3F9T$rDI2C$7$^$9(B:
+<li><tt>/etc/dfs/dfstab</tt> に次の各行を追加します:
 <pre><b>share -F nfs -o root=client /export/client/root
 share -F nfs -o root=client /export/client/swap
 share -F nfs -o rw=client   /export/client/usr
 share -F nfs -o rw=client   /export/client/home</b></pre>
-<p>$B?tCM(B IP $B%"%I%l%9$r;H$o$:!"L>A0$r$D$+$C$F$/$@$5$$!#?tCM(B IP $B%"%I%l%9$r;H$&$H!"(B
-Solaris $B$O2?$N%(%i!<%a%C%;!<%8$b=P$5$:$K%"%/%;%9$r5qH]$7$^$9!#(B
+<p>数値 IP アドレスを使わず、名前をつかってください。数値 IP アドレスを使うと、
+Solaris は何のエラーメッセージも出さずにアクセスを拒否します。
 <p>
 
 <li><tt># <b>/usr/bin/ps -ef | grep nfs</b></tt><br>
-    nfs $B%G!<%b%s$,F0:n$7$F$$$k>l9g$O!"(B $B<!$N%3%^%s%I$r<B9T$9$kI,MW$,$"$j$^$9(B:<br>
+    nfs デーモンが動作している場合は、 次のコマンドを実行する必要があります:<br>
    <tt># <b>shareall</b></tt><br>
-   $BDL>o!"(B <tt><b>unshareall;shareall</b></tt> $B$r<B9T$9$kI,MW$,$"$j$^$9$,!"(B
-   $B%(%s%H%j!<$rDI2C$7$?$@$1$G2?$b:o=|$7$F$$$J$$$N$G!"$3$l$@$1$G==J,$G$9!#(B
+   通常、 <tt><b>unshareall;shareall</b></tt> を実行する必要がありますが、
+   エントリーを追加しただけで何も削除していないので、これだけで十分です。
    <p>
-   nfs $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"<B9T$9$kI,MW$,$"$j$^$9(B:<br>
+   nfs デーモンが動作していなければ、実行する必要があります:<br>
    <tt># <b>/etc/init.d/nfs.server start</b></tt>
 </ol>
 <p>
 
-$B%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$&I=<($5$l$k$G$7$g$&(B:
+サーバーで NFS デーモンが動作していなければ、クライアントにこう表示されるでしょう:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B$b$7!"%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$F$b!"%/%i%$%"%s%H$K%k!<%H%G%#%l%/%H%j!<$,(B
-$B%(%/%9%]!<%H$5$l$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS デーモンが動作していても、クライアントにルートディレクトリーが
+エクスポートされていなければ、クライアントにこのように表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
@@ -596,7 +596,7 @@ panic $B$7$^$9!#(B
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li> <tt>/etc/exports</tt> $B%U%!%$%k$r:n$j$^$9(B ($B$9$G$K$"$l$P$=$l$KDI2C$7$^$9(B):<br>
+<li> <tt>/etc/exports</tt> ファイルを作ります (すでにあればそれに追加します):<br>
 <pre><b>#/etc/exports
 /export/client/root -root=client
 /export/client/swap -root=client
@@ -611,24 +611,24 @@ panic $B$7$^$9!#(B
 <p>
 
 <li><tt># <b>ps -aux | grep nfsd</b></tt><br>
-   $B$b$7!"$^$@(B nfsd $B$,Av$C$F$$$J$1$l$P!"<B9T$7$^$9(B:<br>
+   もし、まだ nfsd が走っていなければ、実行します:<br>
    <tt># <b>/etc/nfsd 4 &</b></tt>
 </ol>
 <p>
 
-$B$b$7!"%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS デーモンが動作していなければ、クライアントにこのように表示されます:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B$b$7!"%5!<%P!<$G(B NFS $B$,F0:n$7$F$$$F$b!"%/%i%$%"%s%H$K%k!<%H%G%#%l%/%H%j!<$,(B
-$B%(%/%9%]!<%H$5$l$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS が動作していても、クライアントにルートディレクトリーが
+エクスポートされていなければ、クライアントにこのように表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
@@ -636,14 +636,14 @@ panic $B$7$^$9!#(B
 <h3><a name="next">NEXTSTEP</a></h3>
 <dl><dt><dd>
 
-$BCm!"(B NEXTSTEP $B$O!"%U%!%$%k$N%(%/%9%]!<%H$r%5%]!<%H$7$^$;$s!#(B
-$B$3$N0UL#$O!"(B swap $B$O!"%k!<%H(B (nfs) $B%U%!%$%k%7%9%F%`>e$K%U%!%$%k$rI,MW$H$7!"(B
-$B$=$l$O!"(B nfs $B%^%&%s%H$5$l$?%U%!%$%k$G$O$"$j$^$;$s!#8e$N%9%F%C%W$G!"%9%o%C%W$,I,MW$H$J$k$3$H$r3P$($F$*$$$F$/$@$5$$!#(B
+注、 NEXTSTEP は、ファイルのエクスポートをサポートしません。
+この意味は、 swap は、ルート (nfs) ファイルシステム上にファイルを必要とし、
+それは、 nfs マウントされたファイルではありません。後のステップで、スワップが必要となることを覚えておいてください。
 <p>
 
-$B$^$?!"(B NEXTSTEP $B$N47=,$r<i$C$F!"(B
-<tt>/export/client</tt> $B$NBe$o$j$K(B <tt>/private/export/client</tt> $B$K(B
-$B%/%i%$%"%s%H$N%U%!%$%k$NA4$F$rCV$-$?$$$+$b$7$l$^$;$s!#(B
+また、 NEXTSTEP の慣習を守って、
+<tt>/export/client</tt> の代わりに <tt>/private/export/client</tt> に
+クライアントのファイルの全てを置きたいかもしれません。
 <p>
 
 <ol>
@@ -668,63 +668,63 @@ panic $B$7$^$9!#(B
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li> <tt>/NextAdmin/NFSManager.app</tt> $B$r<B9T$7$^$9(B
+<li> <tt>/NextAdmin/NFSManager.app</tt> を実行します
 <p>
 
-<li>$B%a%K%e!<$N(B "Export From ..." $B$r%/%j%C%/$7$^$9(B
+<li>メニューの "Export From ..." をクリックします
 <p>
 
-<li>NetInfo Domain ($B$*$=$i$/(B <tt>/</tt>) $B$rA*Br$7!"(B
- OK $B$r%/%j%C%/$7$^$9(B
+<li>NetInfo Domain (おそらく <tt>/</tt>) を選択し、
+ OK をクリックします
 <p>
 
-<li>Directory Name $B$rA*$V$?$a$K!"0lHV>e$N(B Add $B%\%?%s$r%/%j%C%/$7$^$9(B
+<li>Directory Name を選ぶために、一番上の Add ボタンをクリックします
 <br>
 <p>
 
-<li>$B%/%i%$%"%s%HL>$r(B "Root Access" $B$N2<$KF~NO$7!"(B
-$B$=$7$F(B "Add" $B%\%?%s$r%/%j%C%/$7$^$9(B
+<li>クライアント名を "Root Access" の下に入力し、
+そして "Add" ボタンをクリックします
 <p>
 
-<li>OK $B$r%/%j%C%/$7$^$9!#(B $B%/%i%$%"%s%H$,(B 
- DNS $B$b(B <tt>/etc/hosts</tt> $B%(%s%H%j!<$b;}$C$F$$$J$1$l$P!"(B
- NEXTSTEP $B$O@5$7$/%5!<%S%9$r$G$-$J$$$G$7$g$&(B
+<li>OK をクリックします。 クライアントが 
+ DNS も <tt>/etc/hosts</tt> エントリーも持っていなければ、
+ NEXTSTEP は正しくサービスをできないでしょう
 <p>
 
-<li>$B%a%K%e!<$N(B "Quit" $B$r%/%j%C%/$7$^$9(B
+<li>メニューの "Quit" をクリックします
 </ol>
 <p>
 
-$B;29M$N0Y$K!"(B NFSManager Exported Directories $B%&%$%s%I%&$,$3$N$h$&$K$J$k$Y$-$G$"$k$H$$$&(B
- <a href="../../../../docs/network/netboot/next.nfs.gif">$B%9%J%C%W%7%g%C%H(B</a> $B$,$"$j$^$9!#(B
+参考の為に、 NFSManager Exported Directories ウインドウがこのようになるべきであるという
+ <a href="../../../../docs/network/netboot/next.nfs.gif">スナップショット</a> があります。
 <p>
 
-$B%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"(B $B%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+サーバーで NFS デーモンが動作していなければ、 クライアントにこのように表示されます:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B$b$7!"%5!<%P!<$G(B NFS $B$,Av$C$F$$$F$b!"%/%i%$%"%s%H$K%k!<%H%G%#%l%/%H%j!<$,(B
-$B%(%/%9%]!<%H$5$l$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS が走っていても、クライアントにルートディレクトリーが
+エクスポートされていなければ、クライアントにこのように表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="hpux7">HP-UX 7</a></h3>
 <dl><dt><dd>
-$B;d$O(B HP-UX 7 $B$N(B <tt>rpc.mountd</tt> $B$r%9%?!<%H$G$-$k$K;j$C$F$$$^$;$s!#(B
-$B$3$3$K$O!"$"$J$?$,2r7h$G$-$k$+$b$7$l$J$$$N$G!"(B
-$B;d$,;n$7$F$_$?FbMF$rCV$-$^$9!#2?$,0-$$$N$+65$($F$/$@$5$$!#(B
+私は HP-UX 7 の <tt>rpc.mountd</tt> をスタートできるに至っていません。
+ここには、あなたが解決できるかもしれないので、
+私が試してみた内容を置きます。何が悪いのか教えてください。
 <p>
 
-$B;d$O!"(B HP-UX 7 $B$N(B NFS $B%5!<%P!<$O!"(B  root $B$NFI$_=q$-$r@)8B$G$-$k$H$O(B
-$B9M$($F$$$^$;$s!#(B
+私は、 HP-UX 7 の NFS サーバーは、  root の読み書きを制限できるとは
+考えていません。
 <p>
 
 <ol>
@@ -749,7 +749,7 @@ panic $B$7$^$9!#(B
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li><tt>/etc/exports</tt> $B$K<!$N3F9T$rDI2C$7$^$9(B:
+<li><tt>/etc/exports</tt> に次の各行を追加します:
 <pre><b>#/etc/exports
 /export/client/root client.test.net
 /export/client/swap client.test.net
@@ -758,28 +758,28 @@ panic $B$7$^$9!#(B
 <p>
 
 <li><tt># <b>ps -ef | grep nfsd</b></tt><br>
-   $B$b$7!"F0:n$7$F$$$J$1$l$P!"<B9T$7$^$9(B:<br>
+   もし、動作していなければ、実行します:<br>
    <tt># <b>/etc/nfsd 4</b></tt>
 <p>
 
-<li> <tt>/etc/inetd.conf</tt> $B$N(B
- <tt>rpc.mountd</tt> $B$,!"%3%a%s%H$K$J$C$F$$$J$$$3$H$r3NG'$7$F$/$@$5$$(B
+<li> <tt>/etc/inetd.conf</tt> の
+ <tt>rpc.mountd</tt> が、コメントになっていないことを確認してください
 </ol>
 <p>
 
-$B$b$7%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もしサーバーで NFS デーモンが動作していなければ、クライアントにこのように表示されます:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B$b$7!"%5!<%P!<$G(B NFS $B$,F0:n$7$F$$$F$b!"%/%i%$%"%s%H$K%k!<%H%G%#%l%/%H%j!<$,(B
-$B%(%/%9%]!<%H$5$l$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS が動作していても、クライアントにルートディレクトリーが
+エクスポートされていなければ、クライアントにこのように表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
@@ -808,12 +808,12 @@ panic $B$7$^$9!#(B
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li> sam $B$r3+$-!"%+!<%M%k$,(B NFS $B%5%]!<%H$5$l$k$h$&%3%s%Q%$%k$5$l$F$$$k$3$H$r3NG'$7$F$/$@$5$$!#(B<br>
+<li> sam を開き、カーネルが NFS サポートされるようコンパイルされていることを確認してください。<br>
    <tt>Kernel Configuration -&gt; Subsystems, NFS/9000</tt><br>
-   $B$=$&$G$J$1$l$P!"%j%V!<%H$9$kI,MW$,$"$j$^$9!#(B
+   そうでなければ、リブートする必要があります。
 <p>
 
-<li> <tt>/etc/exports</tt> $B$K<!$N3F9T$rDI2C$7$^$9(B:
+<li> <tt>/etc/exports</tt> に次の各行を追加します:
 <pre><b>#/etc/exports
 /export/client/root   -root=client.test.net
 /export/client/swap   -root=client.test.net
@@ -822,12 +822,12 @@ panic $B$7$^$9!#(B
 <p>
 
 <li><tt># <b>ps -ef | grep mountd</b></tt><br>
-   $B$b$7(B mountd $B$,$9$G$KF0:n$7$F$$$J$+$C$?$i!"<B9T$7$^$9(B:<br>
+   もし mountd がすでに動作していなかったら、実行します:<br>
    <tt># <b>/usr/etc/rpc.mountd</b></tt>
 <p>
 
 <li><tt># <b>ps -ef | grep nfsd</b></tt><br>
-   $B$b$7(B nfsd $B$,$9$G$KF0:n$7$F$$$J$+$C$?$i!"<B9T$7$^$9(B:<br>
+   もし nfsd がすでに動作していなかったら、実行します:<br>
    <tt># <b>/etc/nfsd 4</b></tt>
 <p>
 
@@ -835,20 +835,20 @@ panic $B$7$^$9!#(B
 </ol>
 <p>
 
-$B$b$7!"%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K(B
-$B<!$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS デーモンが動作していなければ、クライアントに
+次のように表示されます:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B$b$7!"(B NFS $B$,F0:n$7$F$$$F$b!"%/%i%$%"%s%H$K%k!<%H%G%#%l%/%H%j!<$,%(%/%9%]!<%H(B
-$B$5$l$F$$$J$1$l$P!"%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$^$9(B:
+もし、 NFS が動作していても、クライアントにルートディレクトリーがエクスポート
+されていなければ、クライアントにこのように表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
@@ -877,14 +877,14 @@ panic $B$7$^$9!#(B
 <li><tt>#&nbsp;<b>mknod&nbsp;/export/client/root/dev/console&nbsp;c&nbsp;0&nbsp;0</b></tt>
 <p>
 
-<li><tt>/etc/rc.config.d/nfsconf</tt> $B$rJT=8$7$F<!$N$h$&$K$7$F$/$@$5$$(B:<br>
+<li><tt>/etc/rc.config.d/nfsconf</tt> を編集して次のようにしてください:<br>
    <tt>NFS_SERVER=<b>1</b></tt><br>
    <tt>START_MOUNTD=<b>1</b></tt><br>
-   $B$b$7!"$3$l$i$,@_Dj$5$l$F$$$J$1$l$P!"<!$N$b$N$r<B9T$7$^$9(B:<br>
+   もし、これらが設定されていなければ、次のものを実行します:<br>
    <tt># <b>/sbin/init.d/nfs.server start</b></tt>
 <p>
 
-<li> <tt>/etc/exports</tt> $B$K<!$N3F9T$rDI2C$7$^$9(B:
+<li> <tt>/etc/exports</tt> に次の各行を追加します:
 <pre><b>#/etc/exports
 /export/client/root   -root=client.test.net
 /export/client/swap   -root=client.test.net
@@ -896,27 +896,27 @@ panic $B$7$^$9!#(B
 </ol>
 <p>
 
-$B%5!<%P!<$G(B NFS $B%G!<%b%s$,F0:n$7$F$$$J$1$l$P!"(B
-$B%/%i%$%"%s%H$K$3$N$h$&$KI=<($5$l$k$G$7$g$&(B:
+サーバーで NFS デーモンが動作していなければ、
+クライアントにこのように表示されるでしょう:
 <pre>le(0,0,0,0): Unknown error: code -1
 boot: Unknown error: code -1</pre>
-$B$b$7!"%5!<%P!<$G(B NFS $B$,F0:n$7$F$$$F$b!"%/%i%$%"%s%H$K%k!<%H%G%#%l%/%H%j!<$r(B
-$B%(%/%9%]!<%H$7$F$$$J$1$l$P!"%/%i%$%"%s%H$K$O$3$N$h$&$KI=<($5$l$^$9(B:
+もし、サーバーで NFS が動作していても、クライアントにルートディレクトリーを
+エクスポートしていなければ、クライアントにはこのように表示されます:
 <pre>boot: no such file or directory</pre>
-$B$9$Y$F=gD4$K$$$1$P!"%/%i%$%"%s%H$G$$$/$D$+$N?t;z$H!"2sE>$9$k%+!<%=%k$,(B
-$BI=<($5$l$^$9!#$3$l$G@.8y$7$^$7$?(B! $B$3$NCJ3,$G$O!"%/%i%$%"%s%H$O(B
-$B%V!<%H$9$k$3$H$O$G$-$^$;$s!#$3$N$^$^B3$1$k$H!"(B <tt>init</tt> $B$,5/F0$5$l$k$H$3$m$G(B
-panic $B$7$^$9!#(B
+すべて順調にいけば、クライアントでいくつかの数字と、回転するカーソルが
+表示されます。これで成功しました! この段階では、クライアントは
+ブートすることはできません。このまま続けると、 <tt>init</tt> が起動されるところで
+panic します。
 <p>
 
-$B%/%i%$%"%s%H$N(B<a href="files.html">$B%U%!%$%k%7%9%F%`(B</a>$B$N@_Dj$K?J$`!#(B
+クライアントの<a href="files.html">ファイルシステム</a>の設定に進む。
 </dd></dl>
 
 <hr>
 
-<a href="../../../../docs/network/netboot/bootparams.html">$BLa$k(B</a> |
-<a href="files.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="../../../../docs/network/netboot/bootparams.html">戻る</a> |
+<a href="files.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -928,7 +928,7 @@ panic $B$7$^$9!#(B
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -938,15 +938,15 @@ panic $B$7$^$9!#(B
   </td><td>
     <a href="../../../docs/"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%I%-%e%a%s%H$N%H%C%W%l%Y%k(B</a>
+        width="1" height="1" alt="NetBSD ">ドキュメントのトップレベル</a>
   </td></tr></table>
 </td></tr></table>
 
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: nfs.html,v 1.3 2007/08/01 15:36:02 kano Exp $<br>
   <!-- Based on english version: -->

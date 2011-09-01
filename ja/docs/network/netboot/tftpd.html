@@ -6,98 +6,98 @@
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@jp.NetBSD.org">
 <title>
-Diskless NetBSD HOW-TO, tftpd $B%5!<%P!<$N@_Dj(B
+Diskless NetBSD HOW-TO, tftpd サーバーの設定
 </title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-$BLa$k(B |
-<a href="nfs.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+戻る |
+<a href="nfs.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO, <tt>tftpd</tt> $B%5!<%P!<$N@_Dj(B</h1>
+<h1>Diskless NetBSD HOW-TO, <tt>tftpd</tt> サーバーの設定</h1>
 
-TFTP (Trivial File Transfer Protocol) $B$O!"$$$/$D$+$N%Y%s%@!<$N%^%7%s$N(B
-$B%V!<%H(B rom $B$,%V!<%H%m!<%@!<$d%+!<%M%k$r%@%&%s%m!<%I$9$k$?$a$K;H$$$^$9!#(B
-$B$3$N%5!<%S%9$O(B TCP/IP $B>e$GF0$/$N$G!"%/%i%$%"%s%H$O$^$:(B IP $B%"%I%l%9$r!"(B
-$BBgDq$O(B <a href="rarp.html"><tt>rarp</tt></a> $B!"(B
-<a href="bootpd.html"><tt>bootp</tt></a> $B$^$?$O(B
-<a href="../dhcp.html"><tt>dhcp</tt></a> $B$+$iF@$J$1$l$P$J$j$^$;$s!#(B
+TFTP (Trivial File Transfer Protocol) は、いくつかのベンダーのマシンの
+ブート rom がブートローダーやカーネルをダウンロードするために使います。
+このサービスは TCP/IP 上で動くので、クライアントはまず IP アドレスを、
+大抵は <a href="rarp.html"><tt>rarp</tt></a> 、
+<a href="bootpd.html"><tt>bootp</tt></a> または
+<a href="../dhcp.html"><tt>dhcp</tt></a> から得なければなりません。
 <p>
 
-$B$O$8$a$K!"$"$J$?$,$I$N%[%9%H$+$i$b(B TCP wrapper $B7PM3$N%"%/%;%9$r(B
-$B5qH]$5$l$F$$$J$$$3$H$r3NG'$9$kI,MW$,$"$j$^$9!#(B
-<tt>/etc/hosts.deny</tt> $B$H(B <tt>/etc/hosts.allow</tt> $B$N(B tftp $B$N%(%s%H%j!<$rD4$Y$F$/$@$5$$!#$3$l$i$N%U%!(B
-$B%$%k$G(B tftp $B$N%"%/%;%9$r@)8B$7$F$$$k>l9g!"(B
-<tt>hosts.deny</tt> $B$N(B tftp $B$N%(%s%H%j!<$r%3%a%s%H%"%&%H$9$k$+!"(B
-<tt>hosts.allow</tt> $B$K%/%i%$%"%s%H$N%(%s%H%j!<$rDI2C$9$kI,MW$,$"$j$^$9!#(B
+はじめに、あなたがどのホストからも TCP wrapper 経由のアクセスを
+拒否されていないことを確認する必要があります。
+<tt>/etc/hosts.deny</tt> と <tt>/etc/hosts.allow</tt> の tftp のエントリーを調べてください。これらのファ
+イルで tftp のアクセスを制限している場合、
+<tt>hosts.deny</tt> の tftp のエントリーをコメントアウトするか、
+<tt>hosts.allow</tt> にクライアントのエントリーを追加する必要があります。
 <p>
 
-$B<!$K!"%/%i%$%"%s%H$N%"!<%-%F%/%A%c!<JL$N=x@b$K$"$k$H$*$j!"(B
-$B$=$N%"!<%-%F%/%A%c!<$KI,MW$J%U%!%$%k$r$9$Y$F(B <tt>/tftpboot</tt> $B$K%3%T!<$7$^$9!#(B
-$B$?$H$($P!"%/%i%$%"%s%H$,(B <a href="intro.sun.html">sparc</a> $B$G(B
-IP $B%"%I%l%9$,(B 192.168.1.10 $B$N>l9g!"<!$N$h$&$K$7$^$9(B:
+次に、クライアントのアーキテクチャー別の序説にあるとおり、
+そのアーキテクチャーに必要なファイルをすべて <tt>/tftpboot</tt> にコピーします。
+たとえば、クライアントが <a href="intro.sun.html">sparc</a> で
+IP アドレスが 192.168.1.10 の場合、次のようにします:
 <pre># <b>mkdir -p /tftpboot</b>
 # <b>cp /export/client/root/usr/mdec/boot /tftpboot/C0A8010A.SUN4C</b></pre>
 <p>
 
-$BCm0U(B: $B$$$/$D$+$N(B tftp $B%G!<%b%s$O(B
-<tt>/tftpboot</tt> $B$X$N(B chroot $B$r%5%]!<%H$7$^$;$s$N$G!"(B
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a>$B!"(B <a href="bootpd.html">bootpd</a>$B!"(B
-$B$^$?$O(B <a href="dhcpd.html">dhcpd</a> $B$K(B
-$B%V!<%H%m!<%@!<$N40A4$J%Q%9$rM?$($kI,MW$,$"$j$^$9!#(B
-$B%M%C%H%o!<%/$+$i$&$^$/%V!<%H$G$-$J$$$3$H$GG:$^$J$$$h$&!"$"$i$+$8$a(B
-<tt>tftp(1)</tt> $B%/%i%$%"%s%H$r%F%9%H$K;H$&$3$H$r$*$9$9$a$7$^$9!#(B
+注意: いくつかの tftp デーモンは
+<tt>/tftpboot</tt> への chroot をサポートしませんので、
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a>、 <a href="bootpd.html">bootpd</a>、
+または <a href="dhcpd.html">dhcpd</a> に
+ブートローダーの完全なパスを与える必要があります。
+ネットワークからうまくブートできないことで悩まないよう、あらかじめ
+<tt>tftp(1)</tt> クライアントをテストに使うことをおすすめします。
 <p>
-$B$b$7!"$I$&$7$F$b<:GT$9$k>l9g$O!"(B <tt>/tftpboot/C0A8010A.SUN4C</tt>
-$B$X$N%j%/%(%9%H$,(B chroot $B$5$l$?(B <tt>tftpd</tt> $B>e$G$&$^$/$$$/$h$&$K(B
-$B%G%#%l%/%H%j!<$r@_Dj$9$k$H$h$$$+$b$7$l$^$;$s!#(B
+もし、どうしても失敗する場合は、 <tt>/tftpboot/C0A8010A.SUN4C</tt>
+へのリクエストが chroot された <tt>tftpd</tt> 上でうまくいくように
+ディレクトリーを設定するとよいかもしれません。
 <pre># <b>cd /tftpboot</b>
 # <b>ln -s . tftpboot</b></pre>
 <p>
-<a href="#netbsd">NetBSD</a> $B$G$N(B tftpd $B$N@_Dj(B<br>
-<a href="#openbsd">OpenBSD</a> $B$G$N(B tftpd $B$N@_Dj(B<br>
-<a href="#freebsd">FreeBSD</a> $B$G$N(B tftpd $B$N@_Dj(B<br>
-<a href="#macosx">Mac OS X $B$H(B Darwin</a> $B$G$N(B tftpd $B$N@_Dj(B<br>
-<a href="#linux.inetd">Linux</a> $B$G$N(B tftpd $B$N@_Dj(B (<tt>inetd.conf</tt> $B$r;HMQ(B)<br>
-<a href="#linux.xinetd">Linux</a> $B$G$N(B tftpd $B$N@_Dj(B (<tt>xinetd.conf</tt> $B$r;HMQ(B)<br>
-<a href="#next">NEXTSTEP</a> $B$G$N(B tftpd $B$N@_Dj(B<br>
-<a href="#hpux">HP-UX</a> $B$G$N(B tftpd $B$N@_Dj(B<br>
+<a href="#netbsd">NetBSD</a> での tftpd の設定<br>
+<a href="#openbsd">OpenBSD</a> での tftpd の設定<br>
+<a href="#freebsd">FreeBSD</a> での tftpd の設定<br>
+<a href="#macosx">Mac OS X と Darwin</a> での tftpd の設定<br>
+<a href="#linux.inetd">Linux</a> での tftpd の設定 (<tt>inetd.conf</tt> を使用)<br>
+<a href="#linux.xinetd">Linux</a> での tftpd の設定 (<tt>xinetd.conf</tt> を使用)<br>
+<a href="#next">NEXTSTEP</a> での tftpd の設定<br>
+<a href="#hpux">HP-UX</a> での tftpd の設定<br>
 <p>
 
-[<em>$B$b$7!"$3$l$i0J30$N%W%i%C%H%U%)!<%`$K$D$$$F>\$7$/$4B8$8$J$i!"(B <a
-href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B$<$R$*CN$i$;$/$@$5$$(B</a></em>]
+[<em>もし、これら以外のプラットフォームについて詳しくご存じなら、 <a
+href="http://www.NetBSD.org/cgi-bin/feedback.cgi">ぜひお知らせください</a></em>]
 <p>
 
 <hr>
 
-<h3><a name="netbsd">NetBSD</a> $B$H(B <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="netbsd">NetBSD</a> と <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/inetd.conf</tt> $B$+$i2<5-$N9T$N(B <tt>#</tt> $B$r:o=|$7$^$9(B:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp            dgram   udp     wait    root    /usr/libexec/tftpd      tftpd -s /tftpboot</pre> 
 <p>
 
-<li>$B$3$N9T$O:G8e$,(B <tt>/tftpboot</tt> $B$G=*$o$C$F$$$J$1$l$P$J$j$^$;$s!#(B
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> $B$G%W%m%;%9$K(B <tt>/etc/inetd.conf</tt> $B$rFI$_D>$5$;$^$9!#(B
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-$B$3$N(B <tt>tftpd</tt> $B$O!"G$0U$N(B unix $B%^%7%s$r;H$C$F<!$N$h$&$K%F%9%H$G$-$^$9(B:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-$B$3$3$G$O!"(Bsparc $B$N%+!<%M%kL>(B <tt>C0A8010A.SUN4C</tt> $B$r;H$C$F(B
-$B%U%!%$%k$r%2%C%H$9$k%F%9%H$r$7$F$$$^$9!#(B
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="nfs.html">nfs</a> $B$N@_Dj$K?J$`!#(B
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
@@ -105,131 +105,131 @@ tftp&gt; <b>quit</b></pre>
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/inetd.conf</tt> $B$+$i2<5-$N9T$N(B <tt>#</tt> $B$r:o=|$7$^$9(B:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp   dgram   udp     wait    nobody  /usr/libexec/tftpd      tftpd /tftpboot</pre> 
 <p>
 
-<li>$B$3$N9T$O:G8e$,(B <tt>/tftpboot</tt> $B$G=*$o$C$F$$$J$1$l$P$J$j$^$;$s!#(B
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> $B$G%W%m%;%9$K(B <tt>/etc/inetd.conf</tt> $B$rFI$_D>$5$;$^$9!#(B
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-$B$3$N(B <tt>tftpd</tt> $B$O!"G$0U$N(B unix $B%^%7%s$r;H$C$F<!$N$h$&$K%F%9%H$G$-$^$9(B:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-$B$3$3$G$O!"(Bsparc $B$N%+!<%M%kL>(B <tt>C0A8010A.SUN4C</tt> $B$r;H$C$F(B
-$B%U%!%$%k$r%2%C%H$9$k%F%9%H$r$7$F$$$^$9!#(B
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="nfs.html">nfs</a> $B$N@_Dj$K?J$`!#(B
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-<h3><a name="macosx">Mac OS X $B$H(B Darwin</a></h3>
+<h3><a name="macosx">Mac OS X と Darwin</a></h3>
 <dl><dt><dd>
-$B$3$N%7%9%F%`$G$O!"$=$NK\<AE*$K%/%i%9%?!<2=$5$l$?@-<A$+$i!"(B <tt>tftpd</tt>
-$B%U%!%$%k72$r(B <tt>/private/tftpboot</tt> $B$KCV$/$3$H$,?d>)$5$l$^$9!#(B
-$B?7$7$$%P!<%8%g%s$N(B OS $B$G$O!"(B <tt>tftpd</tt> $B%5!<%S%9MQ$K(B
-<tt>inetd</tt> $B$G$O$J$/(B <tt>xinetd</tt> $B$r;H$C$F$$$^$9!#(B
-Mac OS X 10.2.X $B0JA0$d(B Darwin 6.X $B0JA0$r;H$C$F$$$k>l9g$O!"(B
-<tt>inetd</tt> $BMQ$N@bL@$K=>$C$F$/$@$5$$!#(B
+このシステムでは、その本質的にクラスター化された性質から、 <tt>tftpd</tt>
+ファイル群を <tt>/private/tftpboot</tt> に置くことが推奨されます。
+新しいバージョンの OS では、 <tt>tftpd</tt> サービス用に
+<tt>inetd</tt> ではなく <tt>xinetd</tt> を使っています。
+Mac OS X 10.2.X 以前や Darwin 6.X 以前を使っている場合は、
+<tt>inetd</tt> 用の説明に従ってください。
 <p>
 <ol>
 <li><tt># <b>mkdir -p /private/tftpboot</b></tt><br>
 <p><li> (<tt>xinetd</tt>) <tt># <b>/sbin/service tftp start</b></tt>
 
-<p><li> (<tt>inetd</tt>) <li><tt>/etc/inetd.conf</tt> $B$rJT=8$7!"(B
-   $B2<5-$N9T$N(B <tt>#</tt> $B$r:o=|$7$^$9(B:<br>
+<p><li> (<tt>inetd</tt>) <li><tt>/etc/inetd.conf</tt> を編集し、
+   下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp    dgram   udp     wait    nobody  /usr/libexec/tcpd               tftpd /private/tftpboot</pre>
 
-<p><li> (<tt>inetd</tt>)$B$3$N9T$O:G8e$,(B <tt>/private/tftpboot</tt>
-$B$G=*$o$C$F$$$J$1$l$P$J$j$^$;$s!#(B<br>
-  <tt>tftpd(8)</tt> $B%^%K%e%"%k%Z!<%8$G$O(B <tt>-s</tt> $B$G(B <tt>chroot(2)</tt>
-  $B%U%i%0$r%5%]!<%H$7$F$$$k$H$"$j$^$9$,!"$=$l$G$b(B permission $B$NLdBj$,$"$j$^$9!#(B
+<p><li> (<tt>inetd</tt>)この行は最後が <tt>/private/tftpboot</tt>
+で終わっていなければなりません。<br>
+  <tt>tftpd(8)</tt> マニュアルページでは <tt>-s</tt> で <tt>chroot(2)</tt>
+  フラグをサポートしているとありますが、それでも permission の問題があります。
 <p>
 
 <li><tt># <b>ps aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> $B$G%W%m%;%9$K(B <tt>/etc/inetd.conf</tt> $B$rFI$_D>$5$;$^$9!#(B
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-$B$3$N(B <tt>tftpd</tt> $B$O!"G$0U$N(B unix $B%^%7%s$r;H$C$F<!$N$h$&$K%F%9%H$G$-$^$9(B:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-$B$3$3$G$O!"(Bsparc $B$N%+!<%M%kL>(B <tt>C0A8010A.SUN4C</tt> $B$r;H$C$F(B
-$B%U%!%$%k$r%2%C%H$9$k%F%9%H$r$7$F$$$^$9!#(B
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="nfs.html">nfs</a> $B$N@_Dj$K?J$`!#(B
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
 
-<h3><a name="linux.inetd">Linux (<tt>inetd.conf</tt> $B$r;HMQ(B)</a></h3>
+<h3><a name="linux.inetd">Linux (<tt>inetd.conf</tt> を使用)</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/inetd.conf</tt> $B$+$i2<5-$N9T$N(B <tt>#</tt> $B$r:o=|$7$^$9(B:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp  dgram   udp     wait    nobody  /usr/sbin/tcpd  in.tftpd /tftpboot</pre> 
 <p>
 
-<li>$B$3$N9T$O:G8e$,(B <tt>/tftpboot</tt> $B$G=*$o$C$F$$$J$1$l$P$J$j$^$;$s!#(B
+<li>この行は最後が <tt>/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> $B$G%W%m%;%9$K(B <tt>/etc/inetd.conf</tt> $B$rFI$_D>$5$;$^$9!#(B
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-$B$3$N(B <tt>tftpd</tt> $B$O!"G$0U$N(B unix $B%^%7%s$r;H$C$F<!$N$h$&$K%F%9%H$G$-$^$9(B:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-$B$3$3$G$O!"(Bsparc $B$N%+!<%M%kL>(B <tt>C0A8010A.SUN4C</tt> $B$r;H$C$F(B
-$B%U%!%$%k$r%2%C%H$9$k%F%9%H$r$7$F$$$^$9!#(B
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-$B>u67$K$h$C$F$O!"(B tftp $B%5!<%P!<$K@EE*$J(B
-ARP $B%(%s%H%j!<$r;XDj$9$kI,MW$,$"$j$^$9!#%/%i%$%"%s%H$,(B
-tftp $B$G%V!<%H%m!<%@!<$r<hF@$7$h$&$H$7$F!"(B
-$B<hF@$,$^$C$?$/$G$-$J$$>l9g$O!"$3$l$,I,MW$+$b$7$l$^$;$s!#(B
-$B$3$N8=>]$,5/$-$k$N$O!"(B tftpd $B$,(B Linux $B%5!<%P!<$GF0$$$F$$$k>l9g$N$h$&$G$9!#(B
-Linux $B$G$O!"0J2<$N$h$&$K$7$F(B ARP $B%(%s%H%j!<$rDI2C$7$^$9!#(B
+状況によっては、 tftp サーバーに静的な
+ARP エントリーを指定する必要があります。クライアントが
+tftp でブートローダーを取得しようとして、
+取得がまったくできない場合は、これが必要かもしれません。
+この現象が起きるのは、 tftpd が Linux サーバーで動いている場合のようです。
+Linux では、以下のようにして ARP エントリーを追加します。
 <p><pre>
 # <b>arp -s 192.168.1.10 aa:bb:cc:dd:ee:ff</b>
 </pre>
 
-$B0z?t$N(B IP $B%"%I%l%9$H(B MAC $B%"%I%l%9$O!"$$$:$l$b%/%i%$%"%s%H$N%"%I%l%9$G$9!#(B
+引数の IP アドレスと MAC アドレスは、いずれもクライアントのアドレスです。
 <p>
 
-<a href="nfs.html">nfs</a> $B$N@_Dj$K?J$`!#(B
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-<h3><a name="linux.xinetd">Linux (<tt>xinetd.conf</tt> $B$r;HMQ(B)</a></h3>
+<h3><a name="linux.xinetd">Linux (<tt>xinetd.conf</tt> を使用)</a></h3>
 <dl><dt><dd>
-xinetd $B$O%G%U%)%k%H$G$O;H$o$l$J$$$3$H$KCm0U$7$F$/$@$5$$!#(B
-$B$3$l$O(B Debian 2.1 $B8~$1$N@bL@$G$9!#(B
+xinetd はデフォルトでは使われないことに注意してください。
+これは Debian 2.1 向けの説明です。
 <p>
 
 <ol>
 <li><tt># <b>adduser tftp</b></tt>
 <p>
 
-<li><tt># <b>vi /etc/shadow</b></tt> $B$7$F!"%f!<%6!<(B tftp $B$N%Q%9%o!<%I$r(B * $B$K$7$^$9!#(B
+<li><tt># <b>vi /etc/shadow</b></tt> して、ユーザー tftp のパスワードを * にします。
 <p>
 
-<li><tt>/etc/xinetd.conf</tt> $B$K2<5-$N%(%s%H%j!<$rDI2C$7$^$9(B:
+<li><tt>/etc/xinetd.conf</tt> に下記のエントリーを追加します:
 <pre>service tftp
 {
         socket_type = dgram
@@ -243,69 +243,69 @@ xinetd $B$O%G%U%)%k%H$G$O;H$o$l$J$$$3$H$KCm0U$7$F$/$@$5$$!#(B
 <p>
 
 <li><tt># <b>ps aux | grep xinetd</b></tt><br>
-   <tt>kill -HUP</tt> $B$G%W%m%;%9$K(B <tt>/etc/xinetd.conf</tt> $B$rFI$_D>$5$;$^$9!#(B
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/xinetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-$B$3$N(B <tt>tftpd</tt> $B$O!"G$0U$N(B unix $B%^%7%s(B (<tt>only_from</tt>
-$B9T$K=q$+$l$F$$$k$b$N$H$7$^$9(B)$B$r;H$C$F<!$N$h$&$K%F%9%H$G$-$^$9(B:
+この <tt>tftpd</tt> は、任意の unix マシン (<tt>only_from</tt>
+行に書かれているものとします)を使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-$B$3$3$G$O!"(Bsparc $B$N%+!<%M%kL>(B <tt>C0A8010A.SUN4C</tt> $B$r;H$C$F(B
-$B%U%!%$%k$r%2%C%H$9$k%F%9%H$r$7$F$$$^$9!#(B
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-$B>u67$K$h$C$F$O!"(B tftp $B%5!<%P!<$K@EE*$J(B
-ARP $B%(%s%H%j!<$r;XDj$9$kI,MW$,$"$j$^$9!#%/%i%$%"%s%H$,(B
-tftp $B$G%V!<%H%m!<%@!<$r<hF@$7$h$&$H$7$F!"(B
-$B<hF@$,$^$C$?$/$G$-$J$$>l9g$O!"$3$l$,I,MW$+$b$7$l$^$;$s!#(B
-$B$3$N8=>]$,5/$-$k$N$O!"(B tftpd $B$,(B Linux $B%5!<%P!<$GF0$$$F$$$k>l9g$N$h$&$G$9!#(B
-Linux $B$G$O!"0J2<$N$h$&$K$7$F(B ARP $B%(%s%H%j!<$rDI2C$7$^$9!#(B
+状況によっては、 tftp サーバーに静的な
+ARP エントリーを指定する必要があります。クライアントが
+tftp でブートローダーを取得しようとして、
+取得がまったくできない場合は、これが必要かもしれません。
+この現象が起きるのは、 tftpd が Linux サーバーで動いている場合のようです。
+Linux では、以下のようにして ARP エントリーを追加します。
 <p><pre>
 # <b>arp -s 192.168.1.10 aa:bb:cc:dd:ee:ff</b>
 </pre>
 
-$B0z?t$N(B IP $B%"%I%l%9$H(B MAC $B%"%I%l%9$O!"$$$:$l$b%/%i%$%"%s%H$N%"%I%l%9$G$9!#(B
+引数の IP アドレスと MAC アドレスは、いずれもクライアントのアドレスです。
 <p>
 
-<a href="nfs.html">nfs</a> $B$N@_Dj$K?J$`!#(B
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
 <h3><a name="next">NEXTSTEP</a></h3>
 <dl><dt><dd>
-$BCm0U(B: NEXTSTEP $B$G$O!"(B tftp $B$G%5!<%S%9$5$l$k%U%!%$%k$NCV$->l$H$7$F(B
-<tt>/private/tftpboot</tt> $B$r;H$$$^$9!#(B
-$B%V!<%H%m!<%@!<$r$3$N%G%#%l%/%H%j!<$KCV$/$h$&Cm0U$7$F$/$@$5$$!#(B
+注意: NEXTSTEP では、 tftp でサービスされるファイルの置き場として
+<tt>/private/tftpboot</tt> を使います。
+ブートローダーをこのディレクトリーに置くよう注意してください。
 <p>
 
 <ol>
-<li><tt>/etc/inetd.conf</tt> $B$+$i2<5-$N9T$N(B <tt>#</tt> $B$r:o=|$7$^$9(B:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp    dgram   udp     wait    root    /usr/etc/tftpd          tftpd -s /private/tftpboot
 </pre>
 <p>
 
-<li>$B$3$N9T$O:G8e$,(B <tt>/private/tftpboot</tt> $B$G=*$o$C$F$$$J$1$l$P$J$j$^$;$s!#(B
+<li>この行は最後が <tt>/private/tftpboot</tt> で終わっていなければなりません。
 <p>
 
 <li><tt># <b>ps -aux | grep inetd</b></tt><br>
-   <tt>kill -HUP</tt> $B$G%W%m%;%9$K(B <tt>/etc/inetd.conf</tt> $B$rFI$_D>$5$;$^$9!#(B
+   <tt>kill -HUP</tt> でプロセスに <tt>/etc/inetd.conf</tt> を読み直させます。
 </ol>
 <p>
 
-$B$3$N(B <tt>tftpd</tt> $B$O!"G$0U$N(B unix $B%^%7%s$r;H$C$F<!$N$h$&$K%F%9%H$G$-$^$9(B:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-$B$3$3$G$O!"(Bsparc $B$N%+!<%M%kL>(B <tt>C0A8010A.SUN4C</tt> $B$r;H$C$F(B
-$B%U%!%$%k$r%2%C%H$9$k%F%9%H$r$7$F$$$^$9!#(B
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="nfs.html">nfs</a> $B$N@_Dj$K?J$`!#(B
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
@@ -313,37 +313,37 @@ tftp&gt; <b>quit</b></pre>
 <h3><a name="hpux">HP-UX</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/passwd</tt> $B$rJT=8$7$F!"(B tftpd $B%"%+%&%s%HMQ$N?7$7$$%f!<%6!<$r:n$j$^$9(B:
+<li><tt>/etc/passwd</tt> を編集して、 tftpd アカウント用の新しいユーザーを作ります:
 <pre>tftp:*:9999:9999:tftp server:/tftpboot:/bin/false</pre>
 <p>
 
-<li><tt>/etc/inetd.conf</tt> $B$+$i2<5-$N9T$N(B <tt>#</tt> $B$r:o=|$7$^$9(B:<br>
+<li><tt>/etc/inetd.conf</tt> から下記の行の <tt>#</tt> を削除します:<br>
    <pre>tftp         dgram  udp wait   root /etc/tftpd    tftpd</pre>
-   HP-UX 10 $B$G$O!"(B <tt>/etc/tftpd</tt> $B$O(B <tt>/usr/lbin/tftpd</tt> $B$K$7$^$9!#(B
+   HP-UX 10 では、 <tt>/etc/tftpd</tt> は <tt>/usr/lbin/tftpd</tt> にします。
 <p>
 
 <li><tt># <b>inetd -c</b></tt><br>
-   $B$3$l$G!"(B inetd $B%W%m%;%9$,@_Dj%U%!%$%k$rFI$_D>$7$^$9!#(B
+   これで、 inetd プロセスが設定ファイルを読み直します。
 </ol>
 <p>
 
-$B$3$N(B <tt>tftpd</tt> $B$O!"G$0U$N(B unix $B%^%7%s$r;H$C$F<!$N$h$&$K%F%9%H$G$-$^$9(B:
+この <tt>tftpd</tt> は、任意の unix マシンを使って次のようにテストできます:
 <pre># <b>tftp tftpserver.test.net</b>
 tftp&gt; <b>get C0A8010A.SUN4C</b>
 Received 683 bytes in 0.3 seconds
 tftp&gt; <b>quit</b></pre>
-$B$3$3$G$O!"(Bsparc $B$N%+!<%M%kL>(B <tt>C0A8010A.SUN4C</tt> $B$r;H$C$F(B
-$B%U%!%$%k$r%2%C%H$9$k%F%9%H$r$7$F$$$^$9!#(B
+ここでは、sparc のカーネル名 <tt>C0A8010A.SUN4C</tt> を使って
+ファイルをゲットするテストをしています。
 <p>
 
-<a href="nfs.html">nfs</a> $B$N@_Dj$K?J$`!#(B
+<a href="nfs.html">nfs</a> の設定に進む。
 </dd></dl>
 
 <hr>
 
-$BLa$k(B |
-<a href="nfs.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+戻る |
+<a href="nfs.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -355,7 +355,7 @@ tftp&gt; <b>quit</b></pre>
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -372,8 +372,8 @@ tftp&gt; <b>quit</b></pre>
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: tftpd.html,v 1.3 2007/08/01 15:36:03 kano Exp $<br>
   <!-- Based on english version: -->

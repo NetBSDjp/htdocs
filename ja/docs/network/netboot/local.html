@@ -2,96 +2,96 @@
 
 <html lang="ja">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@jp.NetBSD.org">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-<title>Diskless NetBSD HOW-TO, $B%m!<%+%k%V!<%H%m!<%@!<(B</title>
+<title>Diskless NetBSD HOW-TO, ローカルブートローダー</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="intro.html">$BLa$k(B</a> |
-<a href="rarp.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="intro.html">戻る</a> |
+<a href="rarp.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO, $B%m!<%+%k%V!<%H%m!<%@!<(B</h1>
+<h1>Diskless NetBSD HOW-TO, ローカルブートローダー</h1>
 
-<h3>$B%m!<%+%k%V!<%H%m!<%@!<(B</h3>
+<h3>ローカルブートローダー</h3>
 
-$B$3$N%V!<%HJ}K!$O!"H472$K=@Fp$G1~MQ$N$-$/J}K!$G$9!#$3$l$O$J$K$h$j$G$9!#(B
-$B7gE@$O!"2?$i$+$N%V!<%H2DG=$J%a%G%#%"(B ($B%O!<%I%G%#%9%/%I%i%$%V!"(BZip $B%I%i%$%V!"(B
-$B%U%m%C%T!<%I%i%$%V!"$^$?$O%F!<%W%I%i%$%V(B) $B$,%m!<%+%k$GI,MW$J$3$H$G$9!#(B
-$B$I$s$J%V!<%H2DG=$J%a%G%#%"$,;H$($k$+$O!"%W%i%C%H%U%)!<%`$K$h$C$F0[$J$j$^$9!#(B
+このブート方法は、抜群に柔軟で応用のきく方法です。これはなによりです。
+欠点は、何らかのブート可能なメディア (ハードディスクドライブ、Zip ドライブ、
+フロッピードライブ、またはテープドライブ) がローカルで必要なことです。
+どんなブート可能なメディアが使えるかは、プラットフォームによって異なります。
 <p>
 
-$B%V!<%H%m!<%@!<$@$1$r%$%s%9%H!<%k$7$F$*$-!"%+!<%M%k$O%G%#%9%/%l%9%5!<%P!<$+$i<hF@$9$kJ}K!(B
-($B%m!<%+%k%a%G%#%"$K%+!<%M%k$rCV$/$@$1$NMFNL$,$J$$>l9g(B) $B$H!"(B
-$B%V!<%H%m!<%@!<$H%+!<%M%k$rN>J}%m!<%+%k%a%G%#%"$KCV$/J}K!$N!"$I$A$i$b2DG=$G$9!#(B
+ブートローダーだけをインストールしておき、カーネルはディスクレスサーバーから取得する方法
+(ローカルメディアにカーネルを置くだけの容量がない場合) と、
+ブートローダーとカーネルを両方ローカルメディアに置く方法の、どちらも可能です。
 <p>
 
 <ul>
-<li><big><b>$B%V!<%H%m!<%@!<$@$1$r%m!<%+%k$KCV$/>l9g(B:</b></big>
+<li><big><b>ブートローダーだけをローカルに置く場合:</b></big>
 <p>
 
-$BCm0U(B: $B$3$NJ}K!$O!"%^%7%s$r%j%;%C%H$^$?$OEE8;:FEjF~$7$?8e!"(B
-$B:G=i$K%V!<%H$9$k:]$K!"A02s$HF1$8%a%G%#%"$+$i%V!<%H$9$k(B
-($B%V!<%H%m!<%@!<$N%G%U%)%k%H$N5sF0(B) $B$3$H$,$J$$$h$&$K$9$k$?$a!"%f!<%6!<$NA`:n$,I,MW$G$9!#(B
-$B0J2<$NNc$O(B hp300 $B$N$b$N$G$9$,!"%W%i%C%H%U%)!<%`$K$h$C$F$O5sF0$,0[$J$k$G$7$g$&!#(B
+注意: この方法は、マシンをリセットまたは電源再投入した後、
+最初にブートする際に、前回と同じメディアからブートする
+(ブートローダーのデフォルトの挙動) ことがないようにするため、ユーザーの操作が必要です。
+以下の例は hp300 のものですが、プラットフォームによっては挙動が異なるでしょう。
 <p>
 
 <ol>
-<li>$B%V!<%H%V%m%C%/$r%m!<%+%k%G%P%$%9(B ($B%O!<%I%G%#%9%/%I%i%$%V!"%U%m%C%T!<%I%i%$%V!"(B
-   $B$^$?$O%F!<%W%I%i%$%V(B) $B$K%$%s%9%H!<%k$7$^$9(B
+<li>ブートブロックをローカルデバイス (ハードディスクドライブ、フロッピードライブ、
+   またはテープドライブ) にインストールします
 <p>
 
-<li>$B%V!<%H%m!<%@!<$N%m!<%I$,40N;$7$?$H$3$m$G!"0J2<$N%3%^%s%I$rBG$A$^$9(B
+<li>ブートローダーのロードが完了したところで、以下のコマンドを打ちます
 <pre>&gt;&gt; NetBSD/hp300 Primary Boot, Revision 1.9
 &gt;&gt; (scottr@polka, Fri Mar 13 18:11:29 CST 1998)
 &gt;&gt; HP 9000/340 SPU
 &gt;&gt; Enter "reset" to reset system.
 Boot: [[[rd0a:]netbsd][-s][-a][-d]] :- <b>le0a:/netbsd [-s]</b></pre>
 
-$B$3$3$G(B <tt>le0</tt> $B$O!"%V!<%H$K;HMQ$9$k%$!<%5%M%C%H%+!<%I$N(B NetBSD $B$G$N%G%P%$%9L>$G$9!#(B
+ここで <tt>le0</tt> は、ブートに使用するイーサネットカードの NetBSD でのデバイス名です。
 </ol>
 <p>
 
-$B$3$l$G!"%V!<%H%m!<%@!<$O=x@b$G35@b$7$?<j=g$rF'$`$h$&$K$J$j$^$9!#(B
-$B%V!<%H%m!<%@!<$,(B rarp&amp;bootparams $B$r;H$&$+(B bootp|dhcp&amp;tftp
-$B$r;H$&$+$O!"%W%i%C%H%U%)!<%`$K$h$j0[$J$j$^$9!#$3$l$K$D$$$F$O!"(B
-<a href="intro.html#platdaemon">$B%W%i%C%H%U%)!<%`$H%G!<%b%s$NBP1~0lMwI=(B</a>
-$B$K:\$C$F$$$^$9!#(B
+これで、ブートローダーは序説で概説した手順を踏むようになります。
+ブートローダーが rarp&amp;bootparams を使うか bootp|dhcp&amp;tftp
+を使うかは、プラットフォームにより異なります。これについては、
+<a href="intro.html#platdaemon">プラットフォームとデーモンの対応一覧表</a>
+に載っています。
 <p>
 
-<a href="rarp.html"><tt>rarp</tt></a> $B$N@_Dj$K?J$`(B<br>
-<a href="bootpd.html"><tt>bootpd</tt></a> $B$N@_Dj$K?J$`(B<br>
-<a href="dhcpd.html"><tt>dhcpd</tt></a> $B$N@_Dj$K?J$`(B
+<a href="rarp.html"><tt>rarp</tt></a> の設定に進む<br>
+<a href="bootpd.html"><tt>bootpd</tt></a> の設定に進む<br>
+<a href="dhcpd.html"><tt>dhcpd</tt></a> の設定に進む
 <p>
 
-<li><big><b>$B%V!<%H%m!<%@!<$H%+!<%M%k$r%m!<%+%k%a%G%#%"$KCV$/>l9g(B:</b></big>
+<li><big><b>ブートローダーとカーネルをローカルメディアに置く場合:</b></big>
 <p>
 
 <ol>
-<li>$B%V!<%H%V%m%C%/$H%U%!%$%k%7%9%F%`$r%m!<%+%k%a%G%#%"$K%$%s%9%H!<%k$7$^$9(B
-<li>$B>o$K%G%#%9%/%l%9%k!<%H$r;H$&$h$&$K$7$?(B
-<a href="../../kernel/#how_to_build_a_kernel">$B%+!<%M%k$r:n$j$^$9(B</a>:<br>
+<li>ブートブロックとファイルシステムをローカルメディアにインストールします
+<li>常にディスクレスルートを使うようにした
+<a href="../../kernel/#how_to_build_a_kernel">カーネルを作ります</a>:<br>
 <pre>config root on (network-device, e.g. ln0) swap on (etc.)</pre>
-<li>$B$3$N%+!<%M%k$r%m!<%+%k%a%G%#%"$KCV$-$^$9(B
+<li>このカーネルをローカルメディアに置きます
 </ol>
 <p>
 
-<a href="bootpd.html"><tt>bootpd</tt></a> $B$N@_Dj$K?J$`(B<br>
-<a href="dhcpd.html"><tt>dhcpd</tt></a> $B$N@_Dj$K?J$`(B
+<a href="bootpd.html"><tt>bootpd</tt></a> の設定に進む<br>
+<a href="dhcpd.html"><tt>dhcpd</tt></a> の設定に進む
 </ul>
 <p>
 
 <hr>
 
-<a href="intro.html">$BLa$k(B</a> |
-<a href="rarp.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="intro.html">戻る</a> |
+<a href="rarp.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -103,7 +103,7 @@ Boot: [[[rd0a:]netbsd][-s][-a][-d]] :- <b>le0a:/netbsd [-s]</b></pre>
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -120,8 +120,8 @@ Boot: [[[rd0a:]netbsd][-s][-a][-d]] :- <b>le0a:/netbsd [-s]</b></pre>
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: local.html,v 1.3 2007/08/01 15:36:02 kano Exp $<br>
   <!-- Based on english version: -->

@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
 <webpage id="ja-docs-kernel-elf-notes">
-<config param="desc" value="$B%Y%s%@!<FCM-$N(B ELF $B5-9f(B"/>
+<config param="desc" value="ベンダー特有の ELF 記号"/>
 <config param="cvstag" value="$NetBSD: elf-notes.xml,v 1.2 2007/11/19 00:14:19 martin Exp $"/>
 <!-- Based on english version: -->
 <!-- NetBSD: elf-notes.xml,v 1.2 2007/11/19 00:14:19 martin Exp   -->
@@ -14,107 +14,107 @@
 <!-- Copyright (c) 1994-2007
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-<title>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B%Y%s%@!<FCM-$N(B ELF $B5-9fMWAG(B(Note Elements)</title>
+<title>NetBSD ドキュメンテーション: ベンダー特有の ELF 記号要素(Note Elements)</title>
 </head>
 
 <sect1 role="toc">
   <sect2 id="introduction">
     <sect3 id="introduction-sub">
-    <title>$B=x(B</title>
+    <title>序</title>
       <para>
-	$B$5$^$6$^$J%*%Z%l!<%F%#%s%0%7%9%F%`%Y%s%@!<$,(B
-	$B0[$J$k%7%9%F%`%3!<%k%$%s%?!<%U%'!<%9$rMW5a$9$k(B ELF $B%P%$%J%j!<(B
-	$B$r=P2Y$7$F$$$^$9!#(B
-	$B%*%Z%l!<%F%#%s%0%7%9%F%`$,(B ELF $B%W%m%0%i%`$,<B9T$G$-$k$+$I$&$+!"(B
-	$B$I$&$d$C$F<B9T$9$k$+(B($BNc$($P(B $B$I$N(B OS $B%(%_%e%l!<%7%g%s$r;H$&$N$+(B)$B$r(B
-	$B@5$7$/7hDj$9$k<j=u$1$N$?$a$K!"(B
-	$B$$$/$D$+$N%*%Z%l!<%F%#%s%0%7%9%F%`$N%Y%s%@!<$O(B
-	ELF $B%P%$%J%j!<$N(B <constant>PT_NOTE</constant> $B%;%/%7%g%s$K%Y%s%@!<FCM-$N5-9fMWAG(B (note elements) 
-	$B$rIU$1;O$a$^$7$?!#(B
+	さまざまなオペレーティングシステムベンダーが
+	異なるシステムコールインターフェースを要求する ELF バイナリー
+	を出荷しています。
+	オペレーティングシステムが ELF プログラムが実行できるかどうか、
+	どうやって実行するか(例えば どの OS エミュレーションを使うのか)を
+	正しく決定する手助けのために、
+	いくつかのオペレーティングシステムのベンダーは
+	ELF バイナリーの <constant>PT_NOTE</constant> セクションにベンダー特有の記号要素 (note elements) 
+	を付け始めました。
       </para>
       <para>
-	$B$3$N%Z!<%8$O!"%P%$%J%j!<$N(B <constant>PT_NOTE</constant> $B%;%/%7%g%s$G(B
-	$B%*%Z%l!<%F%#%s%0%7%9%F%`$N<1JL$N$?$a$K;H$o$l$F$$$k%Y%s%@!<FCM-$N5-9fMWAG(B
-	$B$K$D$$$F$NCN<1$NJu8K$K$7$h$&$H;W$$$^$9!#(B
+	このページは、バイナリーの <constant>PT_NOTE</constant> セクションで
+	オペレーティングシステムの識別のために使われているベンダー特有の記号要素
+	についての知識の宝庫にしようと思います。
       </para>
 
       <para>
-	$B$b$7!"$"$J$?$N%*%Z%l!<%F%#%s%0%7%9%F%`$,(B
-	$B%Y%s%@!<FCM-5-9fMWAG(B
-	$B$r%P%$%J%j!<$N%^!<%/$K;H$C$F$$$F!"$3$3$N0lMw$K:\$C$F$$$J$$$J$i!"(B
+	もし、あなたのオペレーティングシステムが
+	ベンダー特有記号要素
+	をバイナリーのマークに使っていて、ここの一覧に載っていないなら、
 	<ulink url="mailto:cgd@NetBSD.org">Chris Demetriou</ulink>
-	$B$^$G!"$=$N5-9f$N>pJs$r%a!<%k$7$F$/$@$5$$!#(B($BLuCm(B:$B$?$V$s1QJ8$G(B)
+	まで、その記号の情報をメールしてください。(訳注:たぶん英文で)
       </para>
     </sect3>
     <sect3 id="note-format">
-      <title>ELF Note Element $B$N%U%)!<%^%C%H(B</title>
+      <title>ELF Note Element のフォーマット</title>
 
       <para>
-	$BA4$F$N(B ELF Note Element $B$OF1$84pK\9=B$$r;}$C$F$$$F(B:
+	全ての ELF Note Element は同じ基本構造を持っていて:
 	<variablelist class="elf-note">
 	  <varlistentry>
 	    <term><varname>Name Size</varname></term>
-	    <listitem>4 bytes ($B@0?t(B)</listitem>
+	    <listitem>4 bytes (整数)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Desc Size</varname></term>
-	    <listitem>4 bytes ($B@0?t(B)</listitem>
+	    <listitem>4 bytes (整数)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Type</varname></term>
-	    <listitem>4 bytes ($B$?$$$F$$@0?t$H$7$F2r<a$5$l$^$9(B)</listitem>
+	    <listitem>4 bytes (たいてい整数として解釈されます)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Name</varname></term>
-	    <listitem>$B2DJQD9(B, 4 byte $B6-3&$G5M$aJ*$r$5$l$?(B</listitem>
+	    <listitem>可変長, 4 byte 境界で詰め物をされた</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Desc</varname></term>
-	    <listitem>$B2DJQD9(B, 4 byte $B6-3&$G5M$aJ*$r$5$l$?(B</listitem>
+	    <listitem>可変長, 4 byte 境界で詰め物をされた</listitem>
 	  </varlistentry>
 	</variablelist>
       </para>
       
       <para>
-	"Name" , "Desc" $B3F%U%#!<%k%I$N(B($B5M$aJ*$r=|$$$?(B)$B%5%$%:$N7hDj$r$9$k(B 
-	"Name Size" , "Desc Size" $B3F%U%#!<%k%I$O(B
-	$B@0?t7?(B ($B%P%$%H%*!<%@!<$O%P%$%J%j!<$N(B ELF $B%X%C%@!<$K;XDj$5$l$F$$$^$9(B)$B$G$9!#(B
+	"Name" , "Desc" 各フィールドの(詰め物を除いた)サイズの決定をする 
+	"Name Size" , "Desc Size" 各フィールドは
+	整数型 (バイトオーダーはバイナリーの ELF ヘッダーに指定されています)です。
       </para>
     
       <para>
-	Name field $B$O(B $B%Y%s%@!<(B $B$,5-9f$N%U%)!<%^%C%H$K4p$E$$$F;XDj$7$^$9!#(B
-	$B0lHLE*$K!"(B $B%Y%s%@!<$O%W%m%8%'%/%H$d2q<RL>$K4XO"$7$?L>A0$r;H$$$^$9!#(B
-	$BNc$($P!"(B GNU project $B$O$=$NL>A0$K(B "GNU" $B$r;H$$$^$9!#(B
-	ELF Note Name $B$O!"(Bnote $B$N0UL#$r2r<a$7$h$&$H$$$&;~:.Mp$9$k$H$$$1$J$$$N$G!"(B
-	$B$I$N(B 2$B$D$N(B $B%Y%s%@!<$bF1$8J*$r;H$o$J$$$h$&$K$9$k$Y$-$G$9!#(B
+	Name field は ベンダー が記号のフォーマットに基づいて指定します。
+	一般的に、 ベンダーはプロジェクトや会社名に関連した名前を使います。
+	例えば、 GNU project はその名前に "GNU" を使います。
+	ELF Note Name は、note の意味を解釈しようという時混乱するといけないので、
+	どの 2つの ベンダーも同じ物を使わないようにするべきです。
       </para>
       
       <para>
-	"Type" $B%U%#!<%k%I$O%Y%s%@!<FCM-$G$9$,!"5-9f$NFCDj$K$*$$$F!"(B
-	$B$?$$$F$$@0?t7?$H$7$F07$o$l$^$9!#(B
+	"Type" フィールドはベンダー特有ですが、記号の特定において、
+	たいてい整数型として扱われます。
       </para>
       
       <para>
-	"Desc" $B%U%#!<%k%I$O%Y%s%@!<FCM-$G!"(B
-	$B$?$$$F$$5-9f$N7?$K0MB8$9$k%G!<%?$,4^$^$l$F$$$^$9!#(B
+	"Desc" フィールドはベンダー特有で、
+	たいてい記号の型に依存するデータが含まれています。
       </para>
     </sect3>
     
     <sect3 id="note-names">
-      <title>$BCN$i$l$F$$$k(B ELF $B5-9fL>(B</title>
+      <title>知られている ELF 記号名</title>
 
       <para>
-	$B2<5-$O(B ELF $B5-9fL>$H$7$F;H$o$l$F$$$k;v$,CN$i$l$F$$$kJ8;zNs$H(B
-	$B$=$l$r;H$C$F$$$kAH?%$G$9!#(B
-	$B5-9fL>$N8lD9$,(B 4 $B$NG\?t$GL5$$$b$N$O(B $B5M$aJ*$GKd$a$i$l$^$9$,!"(B
-	$BM?$($i$l$?D9$5$@$1$rD4$Y$k$h$&$K$9$k$Y$-$G$9!#(B
+	下記は ELF 記号名として使われている事が知られている文字列と
+	それを使っている組織です。
+	記号名の語長が 4 の倍数で無いものは 詰め物で埋められますが、
+	与えられた長さだけを調べるようにするべきです。
       </para>
       
       <segmentedlist>
-	<segtitle>Note Name $BJ8;zNs(B</segtitle>
-	<segtitle>$BJ8;zNs$N%P%$%HKh$N%(%s%3!<%G%#%s%0(B</segtitle>
-	<segtitle>$B8lD9(B</segtitle>
-	<segtitle>$BAH?%(B</segtitle>
+	<segtitle>Note Name 文字列</segtitle>
+	<segtitle>文字列のバイト毎のエンコーディング</segtitle>
+	<segtitle>語長</segtitle>
+	<segtitle>組織</segtitle>
 	<?dbhtml list-presentation="table"?>
 	<seglistitem>
 	  <seg><code>"NetBSD\0"</code></seg>
@@ -131,26 +131,26 @@
       </segmentedlist>
     </sect3>
   <sect3 id="note-contents">
-    <title>$B%Y%s%@!<FCM-(B ELF $B5-9f(B</title>
+    <title>ベンダー特有 ELF 記号</title>
       
     <para>
-      $B$3$N@a$K$O%Y%s%@!<$,(B <constant>PT_NOTE</constant> $B%;%/%7%g%s$G;H$C$F$$$F!"(B 
-      $B%Y%s%@!<JL$K0[$J$C$F$$$k(B ELF $B5-9f$N%U%)!<%^%C%H$K4X$9$k>pJs$,4^$^$l$F$$$^$9!#(B
+      この節にはベンダーが <constant>PT_NOTE</constant> セクションで使っていて、 
+      ベンダー別に異なっている ELF 記号のフォーマットに関する情報が含まれています。
     </para>
 
     <sect4 id="note-contents-netbsd" xreflabel="The NetBSD Project">
       <title>The NetBSD Project</title>
       
       <para>
-	NetBSD $B$K$O(B2$B$D$N(B $B%Y%s%@!<FCM-$N(B ELF $B5-9f$,$"$C$F!"(B
-	OS $B%P!<%8%g%s5-9f$H%(%_%e%l!<%7%g%s(B Name $B5-9f$G$9!#(B
-	$BA0<T$O!"$I$N(B OS $B%P!<%8%g%s$N(B native $B%P%$%J%j!<$+$r<($9$N$K;H$o$l!"(B
-	native $B%P%$%J%j!<$r<1JL$9$k$N$K$b;H$($^$9!#(B
-	$B8e<T$O!"<B9T;~$K$I$N%(%_%e%l!<%7%g%s%3!<%I%;%C%H$r;H$($PNI$$$+$r<($9L>A0$H6&$K!"(B
-	$B%P%$%J%j!<$r(B (native $B$H(B $BHs(B-native $B$N(B)$B%^!<%/$9$k$N$K;H$o$l$^$9!#(B
+	NetBSD には2つの ベンダー特有の ELF 記号があって、
+	OS バージョン記号とエミュレーション Name 記号です。
+	前者は、どの OS バージョンの native バイナリーかを示すのに使われ、
+	native バイナリーを識別するのにも使えます。
+	後者は、実行時にどのエミュレーションコードセットを使えば良いかを示す名前と共に、
+	バイナリーを (native と 非-native の)マークするのに使われます。
       </para>
       <para>
-	NetBSD OS $B%P!<%8%g%s(B $B5-9f(B $B$N%U%)!<%^%C%H$O(B:
+	NetBSD OS バージョン 記号 のフォーマットは:
 	
 	<variablelist class="elf-note">
 	  <varlistentry>
@@ -163,21 +163,21 @@
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Type</varname></term>
-	    <listitem>4-byte $B@0?t(B <code>0x01</code> $B$H$$$&CM$,F~$C$F$$$k(B</listitem>
+	    <listitem>4-byte 整数 <code>0x01</code> という値が入っている</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Name</varname></term>
-	    <listitem><code>"NetBSD\0"</code> (8 byte $B$K9g$o$;$F5M$aJ*$,$5$l$F$$$^$9(B)</listitem>
+	    <listitem><code>"NetBSD\0"</code> (8 byte に合わせて詰め物がされています)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Desc</varname></term>
-	    <listitem>4-byte $B@0?t(B NetBSD OS $B%P!<%8%g%sDj?t$,F~$C$F$$$k(B</listitem>
+	    <listitem>4-byte 整数 NetBSD OS バージョン定数が入っている</listitem>
 	  </varlistentry>
 	</variablelist>
       </para>
 
       <para>
-	NetBSD $B%(%_%e%l!<%7%g%s(B Name $B5-9f(B $B$N%U%)!<%^%C%H$O(B:
+	NetBSD エミュレーション Name 記号 のフォーマットは:
 	<variablelist class="elf-note">
 	  <varlistentry>
 	    <term><varname>Name Size</varname></term>
@@ -189,17 +189,17 @@
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Type</varname></term>
-	    <listitem>4-byte $B@0?t(B <code>0x02</code> $B$H$$$&CM$,F~$C$F$$$k(B</listitem>
+	    <listitem>4-byte 整数 <code>0x02</code> という値が入っている</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Name</varname></term>
-	    <listitem><code>"NetBSD\0"</code> (8 byte $B$K9g$o$;$F5M$aJ*$,$5$l$F$$$^$9(B)</listitem>
+	    <listitem><code>"NetBSD\0"</code> (8 byte に合わせて詰め物がされています)</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Desc</varname></term>
-	    <listitem>$B%P%$%J%j!<$r<B9T$9$k$N$K;H$&%(%_%e%l!<%7%g%s$rI=$9!"(B
-	    $B%J%k(B (<code>NUL</code>) $BJ8;z$G=*$o$kJ8;zNs(B
-	    ($B<!$N(B4$B%P%$%H6-3&$^$G5M$aJ*$5$l$?(B)</listitem>
+	    <listitem>バイナリーを実行するのに使うエミュレーションを表す、
+	    ナル (<code>NUL</code>) 文字で終わる文字列
+	    (次の4バイト境界まで詰め物された)</listitem>
 	  </varlistentry>
 	</variablelist>
       </para>
@@ -209,10 +209,10 @@
       <title>The GNU Project</title>
 
       <para>
-	glibc 2.1 $B0J9_$G$O!"(B GNU project $B$O(B 
-	GNU $B%*%Z%l!<%F%#%s%0%7%9%F%`(B $B$H$I$N%P!<%8%g%s$N%7%9%F%`$G9=C[$5$l$?%P%$%J%j!<$+(B
-	$B$r<($9$N$K!"C10l$N(B ELF Note $B$r;H$$!"(B
-	$B$=$N%U%)!<%^%C%H$O(B:
+	glibc 2.1 以降では、 GNU project は 
+	GNU オペレーティングシステム とどのバージョンのシステムで構築されたバイナリーか
+	を示すのに、単一の ELF Note を使い、
+	そのフォーマットは:
 	<variablelist>
 	  <varlistentry>
 	    <term><varname>Name Size</varname></term>
@@ -224,7 +224,7 @@
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Type</varname></term>
-	    <listitem>4-byte $B@0?t(B <code>0x01</code> $B$H$$$&CM$,F~$C$F$$$k(B</listitem>
+	    <listitem>4-byte 整数 <code>0x01</code> という値が入っている</listitem>
 	  </varlistentry>
 	  <varlistentry>
 	    <term><varname>Name</varname></term>
@@ -233,55 +233,55 @@
 	  <varlistentry>
 	    <term><varname>Desc</varname></term>
 	    <listitem>
-	      4 $B8D$N(B 4-byte $B@0?t!#=g=x$O0J2<$N$H$*$j(B:
+	      4 個の 4-byte 整数。順序は以下のとおり:
 	      <orderedlist>
 		<listitem>OS (0 = Linux, 1 = Hurd, 2 = Solaris)</listitem>
 		<listitem>Major</listitem>
 		<listitem>Minor</listitem>
 		<listitem>Teeny</listitem>
 	      </orderedlist>
-	      major, minor, teeny $B$O!"$3$N(B ABI $B$r%5%]!<%H$9$k(B OS $B%P!<%8%g%s$G:G$b8E$$$b$N$N%P!<%8%g%s!#(B
+	      major, minor, teeny は、この ABI をサポートする OS バージョンで最も古いもののバージョン。
 	    </listitem>
 	  </varlistentry>
 	</variablelist>
       </para>
 
       <para>
-	GNU C $B%i%$%V%i%j!<$G$N(B ELF notes $B$N;H$$J}$K$D$$$F!"$5$i$J$k%I%-%e%a%s%F!<%7%g%s$O!"(B
+	GNU C ライブラリーでの ELF notes の使い方について、さらなるドキュメンテーションは、
 	<ulink url="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/abi-tags?cvsroot=glibc">abi-tags</ulink>
-	$B$*$h$S(B
+	および
 	<ulink url="http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/csu/abi-note.S?cvsroot=glibc">csu/abi-note.S</ulink>
-	$B$N%=!<%9$rD4$Y$F$/$@$5$$!#(B
+	のソースを調べてください。
       </para>
     </sect4>
   </sect3>
   
     <sect3 id="note-creation">
-      <title>ELF <constant>PT_NOTE</constant> $B%;%/%7%g%s$N:n@.(B</title>
+      <title>ELF <constant>PT_NOTE</constant> セクションの作成</title>
 
       <para>
-	$B%P%$%J%j!<$r:n$k$?$a$K!"(B GNU binutils 2.8 $B$+$=$l0J9_$r;H$C$F$$$l$P!"(B
-	$B:G=*HG$N%*%V%8%'%/%H%U%!%$%k$K(B <constant>PT_NOTE</constant> $B%;%/%7%g%s$r@8@.$9$k$3$H$,$G$-$^$9!#(B
-	<constant>PT_NOTE</constant> $B%;%/%7%g%s$r:n$k$K$O!"(B
-	$B%*%V%8%'%/%H%U%!%$%k$N0l$D(B
-	($B%G%U%)%k%H$G(B <constant>PT_NOTE</constant> $B%(%s%H%j!<$r@8@.$9$k%7%9%F%`$G$O!"(B
-	$B$3$l$O0lHLE*$K%i%s%?%$%`$N%9%?!<%H%"%C%W%3!<%I$G$9(B) $B$K(B
-	$BL>A0$,(B ".note" $B$G;O$^$j(B "allocate" $BB0@-%;%C%H$r;}$D%;%/%7%g%s$r$D$/$j$^$9!#(B
-	$B$3$N%;%/%7%g%s$K!"(B ELF Note $B%(%s%H%j!<$rE,@Z$J7A$G=q$-$^$9!#(B
-	$B:G=*E*$J%j%s%/$,=*$o$C$?$H$-!"(B ".note" $B$G;O$^$kL>A0$r$b$A!"$+$D(B
-	"allocate" $B$H%^!<%/$5$l$?A4%;%/%7%g%s$O!"(B
-	$B:G=*%*%V%8%'%/%H%U%!%$%k$K$*$$$F!"(B
-	<constant>PT_NOTE</constant> $B%;%/%7%g%sFb$KG[CV$5$l$k$G$7$g$&!#(B
+	バイナリーを作るために、 GNU binutils 2.8 かそれ以降を使っていれば、
+	最終版のオブジェクトファイルに <constant>PT_NOTE</constant> セクションを生成することができます。
+	<constant>PT_NOTE</constant> セクションを作るには、
+	オブジェクトファイルの一つ
+	(デフォルトで <constant>PT_NOTE</constant> エントリーを生成するシステムでは、
+	これは一般的にランタイムのスタートアップコードです) に
+	名前が ".note" で始まり "allocate" 属性セットを持つセクションをつくります。
+	このセクションに、 ELF Note エントリーを適切な形で書きます。
+	最終的なリンクが終わったとき、 ".note" で始まる名前をもち、かつ
+	"allocate" とマークされた全セクションは、
+	最終オブジェクトファイルにおいて、
+	<constant>PT_NOTE</constant> セクション内に配置されるでしょう。
       </para>
       <para>
-	GNU $B%"%;%s%V%i!<$NNc$G$O!"(B
-	$B:G=*%j%s%/;~$K(B <constant>PT_NOTE</constant> $B%;%/%7%g%s$r:n$kF~NOJ*$O(B:
+	GNU アセンブラーの例では、
+	最終リンク時に <constant>PT_NOTE</constant> セクションを作る入力物は:
       </para>
 <programlisting language="assembler">
     .section ".note.ident", "a"
     .p2align 2
-    .long 1f - 0f           # name $B%5%$%:(B ($B5M$aJ*4^$^$:(B)
-    .long 3f - 2f           # desc $B%5%$%:(B ($B5M$aJ*4^$^$:(B)
+    .long 1f - 0f           # name サイズ (詰め物含まず)
+    .long 3f - 2f           # desc サイズ (詰め物含まず)
     .long 0x01234567        # type
 0:  .asciz "NaMe"	    # name
 1:  .p2align 2
@@ -291,28 +291,28 @@
 </programlisting>
 
 <para>
-  $B$3$NNc$G$O(B ".note.ident" $B$H8F$P$l!"(B "allocate" $B$H%^!<%/$5$l$?!"(B
-  ($B:G=*%j%s%/;~$K(B <constant>PT_NOTE</constant> $B%;%/%7%g%s$HJQ$o$k(B)
-  1$B$D$N(B note $B$r4^$`%;%/%7%g%s$r:n$k$G$7$g$&!#(B
-  $B$3$N(B note $B$O(B <varname>type</varname> $B$,(B
-  <code>0x012345678</code> ($BLuCm(B9$B7e(B???)$B!"(B <varname>name</varname> $B$,(B
-  <code>"NaMe\0"</code> $B$G!"(B
-  <varname>desc</varname> $BCM$O!"(B2$B$D$N(B 4-byte $B@0?t!"(B<code>0x76543210</code> $B$H(B
-  <code>0x89abcdef</code> $B$G$9!#(B
+  この例では ".note.ident" と呼ばれ、 "allocate" とマークされた、
+  (最終リンク時に <constant>PT_NOTE</constant> セクションと変わる)
+  1つの note を含むセクションを作るでしょう。
+  この note は <varname>type</varname> が
+  <code>0x012345678</code> (訳注9桁???)、 <varname>name</varname> が
+  <code>"NaMe\0"</code> で、
+  <varname>desc</varname> 値は、2つの 4-byte 整数、<code>0x76543210</code> と
+  <code>0x89abcdef</code> です。
 </para>
     </sect3>
     
     <sect3 id="netbsd-note">
-      <title>NetBSD ELF <constant>PT_NOTE</constant> $B%;%/%7%g%s$N:n@.(B</title>
+      <title>NetBSD ELF <constant>PT_NOTE</constant> セクションの作成</title>
       
       <para>
-	NetBSD $B%+!<%M%k$O!"(B ELF $B%P%$%J%j!<Cf$K(B <constant>PT_NOTE</constant> $B%;%/%7%g%s$,8+$D$+$i$J$$>l9g$K(B
-	ENOEXEC $B$rJV$7$^$9!#DL>o!"%M%$%F%#%V(B NetBSD $B%"%W%j%1!<%7%g%sMQ$N(B
-	PT_NOTE $B%;%/%7%g%s$O(B <filename>crtbegin.c</filename>
-	$B$K4^$^$l$F$$$^$9!#0J2<$K<($9Nc$O!"(B  NetBSD/sparc $B$G$3$N%;%/%7%g%s$r:n@.$9$k$b$N$G$9!#(B
-	($BB>$N%]!<%H!"$?$H$($P(B arm $B$G$O(B @ $B$O%3%a%s%H$N3+;O$r0UL#$9$k$?$a$K(B %note $B$r;H$&$J$I!"(B
-	$B%"%;%s%V%i!<$NJ8K!$,<c430[$J$k$3$H$,$"$j$^$9$,!"(B
-	$B%(%s%G%#%"%s$N0c$$$r=|$1$P!"8D!9$NCGJR$O$9$Y$FF1$8$G$9(B)
+	NetBSD カーネルは、 ELF バイナリー中に <constant>PT_NOTE</constant> セクションが見つからない場合に
+	ENOEXEC を返します。通常、ネイティブ NetBSD アプリケーション用の
+	PT_NOTE セクションは <filename>crtbegin.c</filename>
+	に含まれています。以下に示す例は、  NetBSD/sparc でこのセクションを作成するものです。
+	(他のポート、たとえば arm では @ はコメントの開始を意味するために %note を使うなど、
+	アセンブラーの文法が若干異なることがありますが、
+	エンディアンの違いを除けば、個々の断片はすべて同じです)
       </para>
 <programlisting language="assembler">
         .section ".note.netbsd.ident", "", @note

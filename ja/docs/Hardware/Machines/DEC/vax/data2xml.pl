@@ -99,28 +99,28 @@ sub output_all
     my($section, $loop, $elapsed);
 
     $_ = $head;
-    $_ =~ s/\$title/екб╝еыбжедеєбжеяеєбже┌б╝е╕/g;
+    $_ =~ s/\$title/уВкуГ╝уГлуГ╗уВдуГ│уГ╗уГпуГ│уГ╗уГЪуГ╝уВ╕/g;
     $file{'full'} = $_;
 
     $_ = $head;
-    $_ =~ s/\$title/е╗епе╖ечеєбжедеєе╟е├епе╣/g;
+    $_ =~ s/\$title/уВ╗уВпуВ╖уГзуГ│уГ╗уВдуГ│уГЗуГГуВпуВ╣/g;
     $file{'sections'} = $_;
 
     $_ = $head;
-    $_ =~ s/\$title/едеєе╚еэе└епе╖ечеє/g;
+    $_ =~ s/\$title/уВдуГ│уГИуГнуГАуВпуВ╖уГзуГ│/g;
     $file{'index'} = $_;
 
     $file{'index'} .= qq#
 <sect2 id="available-formats">
-<title>д│д╬╛Ё╩єд╧╗░д─д╬е╒ейб╝е▐е├е╚д╟─є╢бд╡дьд╞ддд▐д╣</title>
+<title>уБУуБоцГЕха▒уБпф╕ЙуБдуБоуГХуВйуГ╝уГЮуГГуГИуБзцПРф╛ЫуБХуВМуБжуБДуБ╛уБЩ</title>
 <itemizedlist>
-  <listitem><para><ulink url="sections.html">едеєе╟е├епе╣бже┌б╝е╕бве╗епе╖ечеє╦шд╦дядлдьд┐е┌б╝е╕</ulink></para>
-  	<para>╞├─ъд╬╛Ё╩єд└д▒дм╔м═╫д╟бвд╣д┘д╞д╬╛Ё╩єдЄе└ежеєеэб╝е╔д╖д┐дпд╩дд╛ь╣чд╦
-      ╩╪═°д╟д╣бг</para></listitem>
-  <listitem><para><ulink url="full.html">екб╝еыбжедеєбжеяеєбже┌б╝е╕</ulink></para>
-      <para>│╞е╗епе╖ечеєд╪░▄╞░д╣дыд┐дсд╬едеєещедеєбжеъеєепдЄ╗╚ддд┐дд╛ь╣чд╦╩╪═°д╟д╣бг</para></listitem>
-  <listitem><para><ulink url="$datafile">е╫еьедеєбже╞ене╣е╚д╬е╞б╝е╓еы</ulink></para>
-      <para>╛х╡нд╬╞єд─д╬е╒ейб╝е▐е├е╚дЄ└╕└од╣дыд┐дсд╦╗╚дядьдые╞ене╣е╚е╟б╝е┐е┘б╝е╣бг</para></listitem>
+  <listitem><para><ulink url="sections.html">уВдуГ│уГЗуГГуВпуВ╣уГ╗уГЪуГ╝уВ╕уАБуВ╗уВпуВ╖уГзуГ│цпОуБлуВПуБЛуВМуБЯуГЪуГ╝уВ╕</ulink></para>
+  	<para>чЙ╣хоЪуБоцГЕха▒уБауБСуБМх┐ЕшжБуБзуАБуБЩуБ╣уБжуБоцГЕха▒уВТуГАуВжуГ│уГнуГ╝уГЙуБЧуБЯуБПуБкуБДха┤хРИуБл
+      ф╛┐хИйуБзуБЩуАВ</para></listitem>
+  <listitem><para><ulink url="full.html">уВкуГ╝уГлуГ╗уВдуГ│уГ╗уГпуГ│уГ╗уГЪуГ╝уВ╕</ulink></para>
+      <para>хРДуВ╗уВпуВ╖уГзуГ│уБ╕чз╗хЛХуБЩуВЛуБЯуВБуБоуВдуГ│уГйуВдуГ│уГ╗уГкуГ│уВпуВТф╜┐уБДуБЯуБДха┤хРИуБлф╛┐хИйуБзуБЩуАВ</para></listitem>
+  <listitem><para><ulink url="$datafile">уГЧуГмуВдуГ│уГ╗уГЖуВнуВ╣уГИуБоуГЖуГ╝уГЦуГл</ulink></para>
+      <para>ф╕КшиШуБоф║МуБдуБоуГХуВйуГ╝уГЮуГГуГИуВТчФЯцИРуБЩуВЛуБЯуВБуБлф╜┐уВПуВМуВЛуГЖуВнуВ╣уГИуГЗуГ╝уВ┐уГЩуГ╝уВ╣уАВ</para></listitem>
 </itemizedlist>
 </sect2>
 #;
@@ -186,7 +186,7 @@ sub output_all
 		next;
 		}
 	    }
-	open(FILE, "| iconv -f euc-jp -t iso-2022-jp >$file.xml") || &fail("Cannot write $file.xml: $!");
+	open(FILE, "| cat >$file.xml") || &fail("Cannot write $file.xml: $!");
 	print FILE $file{$file};
 	close(FILE);
 	print "Written\n";
@@ -206,11 +206,11 @@ sub output_main_index
 
     if ($section eq 'full' || $section eq 'sections' )
 	{
-	$data = qq{<sect2 id="main_index">\n<title>еседеєбжедеєе╟е├епе╣</title>\n};
+	$data = qq{<sect2 id="main_index">\n<title>уГбуВдуГ│уГ╗уВдуГ│уГЗуГГуВпуВ╣</title>\n};
 	}
     else
-	{ $data = qq{<sect2 id="main_index">\n<title>едеєе╟е├епе╣</title>\n}; }
-    $data .= qq{<itemizedlist>\n  <listitem><ulink url=".">едеєе╚еэе└епе╖ечеєбже┌б╝е╕</ulink></listitem>\n};
+	{ $data = qq{<sect2 id="main_index">\n<title>уВдуГ│уГЗуГГуВпуВ╣</title>\n}; }
+    $data .= qq{<itemizedlist>\n  <listitem><ulink url=".">уВдуГ│уГИуГнуГАуВпуВ╖уГзуГ│уГ╗уГЪуГ╝уВ╕</ulink></listitem>\n};
     foreach $secloop ( @sections )
 	{
 	if ($section eq 'full')
@@ -235,7 +235,7 @@ sub output_section_entries
 	$all = "\n\n<sect3 id=\"$section:$name\">\n".
      		"<title>$name2title{$name}&nbsp;<small>".
 	     "<ulink url=\"#section:$section\">".
-	     "($secdata{$section}{'title'} едеєе╟е├епе╣)</ulink></small></title>\n<table id=\"$section:$name:table\" border=\"1\">\n";
+	     "($secdata{$section}{'title'} уВдуГ│уГЗуГГуВпуВ╣)</ulink></small></title>\n<table id=\"$section:$name:table\" border=\"1\">\n";
 	$file{'full'} .= $all;
 	$file{$section} .= $all;
 	$all='';
@@ -324,25 +324,25 @@ sub output_section_index
 	    {
 	    $file{$secloop} .= "    <td valign=\"top\"><small><ulink url=\"".
 		    &section_url($prev_section, $secloop).
-		    "\">(┴░ - $secdata{$prev_section}{'title'})</ulink>".
+		    "\">(хЙН - $secdata{$prev_section}{'title'})</ulink>".
 		    "</small></td>\n";
 	    }
 	if ($next_section)
 	    {
 	    $file{$secloop} .= "    <td valign=\"top\"><small><ulink url=\"".
 		    &section_url($next_section, $secloop).
-		    "\">(╝б - $secdata{$next_section}{'title'})</ulink>".
+		    "\">(цмб - $secdata{$next_section}{'title'})</ulink>".
 		    "</small></td>\n";
 	    }
 	$file{$secloop} .= "    <td valign=\"top\"><small>".
-		    "<ulink url=\"#main_index\">(еседеєбжедеєе╟е├епе╣)".
+		    "<ulink url=\"#main_index\">(уГбуВдуГ│уГ╗уВдуГ│уГЗуГГуВпуВ╣)".
 		    "</ulink></small></td>\n";
 	if ($secloop ne 'full' && $secloop ne 'sections' )
 	    {
 	    $file{$secloop} .= 
 		"    <td valign=\"top\"><small>".
 		"<ulink url=\"sections.html#main_index\">".
-			"(д╣д┘д╞д╬едеєе╟е├епе╣)</ulink></small></td>\n";
+			"(уБЩуБ╣уБжуБоуВдуГ│уГЗуГГуВпуВ╣)</ulink></small></td>\n";
 	    }
 	$file{$secloop} .= "    </tr></table>\n\n".
 		"  </td></tr>\n".
@@ -362,7 +362,7 @@ sub read_datafile
     my($key,$value,$name,$last_key);
     my(%sectioncount);
 
-    open(DATA,"iconv -f iso-2022-jp -t euc-jp $file|") || &fail("Unable to open '$file': $!");
+    open(DATA,"cat $file|") || &fail("Unable to open '$file': $!");
     while( <DATA> )
 	{
 	s/#.*//;
@@ -425,7 +425,7 @@ sub read_file
     my($data);
 
     $data='';
-    open(FILE,"iconv -f iso-2022-jp -t euc-jp $file|") || &fail("Unable to read '$file': $!");
+    open(FILE,"cat $file|") || &fail("Unable to read '$file': $!");
     read(FILE,$data,-s $file);
     close(FILE);
     $data =~ s/\$NetBSD[^\$]+\$/\$NetBSD\$/g;

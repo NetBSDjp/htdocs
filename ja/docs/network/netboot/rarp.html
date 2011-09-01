@@ -4,88 +4,88 @@
 <head>
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rev="made" href="mailto:www@jp.NetBSD.org">
-<title>Diskless NetBSD HOW-TO, rarpd $B%5!<%P!<$N@_Dj(B</title>
+<title>Diskless NetBSD HOW-TO, rarpd サーバーの設定</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-$BLa$k(B |
-<a href="../../../../docs/network/netboot/bootparams.html">$B?J$`(B(bootparams)</a> |
-<a href="tftpd.html">$B?J$`(B (tftpd)</a> |
-<a href="./">$BL\<!(B</a>
+戻る |
+<a href="../../../../docs/network/netboot/bootparams.html">進む(bootparams)</a> |
+<a href="tftpd.html">進む (tftpd)</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO, <tt>rarpd</tt> $B%5!<%P!<$N@_Dj(B</h1>
+<h1>Diskless NetBSD HOW-TO, <tt>rarpd</tt> サーバーの設定</h1>
 
-$B%G%#%9%/%l%9%V!<%H$N2aDx$G!"<!$K9T$&$3$H$O!"%V!<%H%m!<%@!<$K%/%i%$%"%s%H$N(B
-IP $B%"%I%l%9$r7h$a$5$;$k$3$H$G$9!#$3$N$?$a$K$O!"(B <tt>rarp</tt>$B!"$9$J$o$A(B
-Reverse ARP (Address Resolution Protocol) $B$r;H$$$^$9!#(B
-rarpd $B%5!<%P!<$O!"%/%i%$%"%s%H$N%$!<%5%M%C%H%O!<%I%&%'%"%"%I%l%9$KBP$7$F!"(B
-IP $B%"%I%l%9$r3d$jEv$F!"$=$N>pJs$r%/%i%$%"%s%H$KJV$7$^$9!#(B
+ディスクレスブートの過程で、次に行うことは、ブートローダーにクライアントの
+IP アドレスを決めさせることです。このためには、 <tt>rarp</tt>、すなわち
+Reverse ARP (Address Resolution Protocol) を使います。
+rarpd サーバーは、クライアントのイーサネットハードウェアアドレスに対して、
+IP アドレスを割り当て、その情報をクライアントに返します。
 <p>
 
-rarp $B$O(B TCP/IP $B$G$O$J$$$N$G!"%k!<%?!<$r1[$($k$3$H$O$G$-$^$;$s(B ($B$h$C$F!"(B
-$B%/%i%$%"%s%H$H%5!<%P!<$OF1$8%5%V%M%C%H$K$J$1$l$P$J$j$^$;$s(B) $B!#(B
-$B$5$i$K!"%5!<%P!<$O5,Dj30$N%G!<%?$r%$!<%5%M%C%H$KAw=P$9$k$3$H$,(B
-$B2DG=$G$J$1$l$P$J$j$^$;$s!#(B
+rarp は TCP/IP ではないので、ルーターを越えることはできません (よって、
+クライアントとサーバーは同じサブネットになければなりません) 。
+さらに、サーバーは規定外のデータをイーサネットに送出することが
+可能でなければなりません。
 <p>
 
-<a href="#netbsd">NetBSD</a> $B$G$N(B rarp $B$N@_Dj(B<br>
-<a href="#openbsd">OpenBSD</a> $B$G$N(B rarp $B$N@_Dj(B<br>
-<a href="#freebsd">FreeBSD</a> $B$G$N(B rarp $B$N@_Dj(B<br>
-<a href="#macosx">Mac OS X $B$H(B Darwin</a> $B$G$N(B rarp $B$N@_Dj(B<br>
-<a href="#linux">Linux</a> $B$G$N(B rarp $B$N@_Dj(B<br>
-<a href="#sunos">SunOS</a> $B$G$N(B rarp $B$N@_Dj(B<br>
-<a href="#solaris">Solaris</a> $B$G$N(B rarp $B$N@_Dj(B<br>
-<a href="#news">NEWS-OS</a> $B$G$N(B rarp $B$N@_Dj(B<br>
-<a href="#next">NEXTSTEP</a> $B$G$N(B rarp $B$N@_Dj(B ($BF0:n$5$;$i$l$^$;$s$G$7$?(B)<br>
-<a href="#hpux9">HP-UX</a> 9 $B$*$h$S$=$l0JA0$K$O(B <tt>rarpd</tt> $B$O$"$j$^$;$s(B<br>
-<a href="#hpux10">HP-UX</a> 10 $B0J9_$G$N(B rarp $B$N@_Dj(B
+<a href="#netbsd">NetBSD</a> での rarp の設定<br>
+<a href="#openbsd">OpenBSD</a> での rarp の設定<br>
+<a href="#freebsd">FreeBSD</a> での rarp の設定<br>
+<a href="#macosx">Mac OS X と Darwin</a> での rarp の設定<br>
+<a href="#linux">Linux</a> での rarp の設定<br>
+<a href="#sunos">SunOS</a> での rarp の設定<br>
+<a href="#solaris">Solaris</a> での rarp の設定<br>
+<a href="#news">NEWS-OS</a> での rarp の設定<br>
+<a href="#next">NEXTSTEP</a> での rarp の設定 (動作させられませんでした)<br>
+<a href="#hpux9">HP-UX</a> 9 およびそれ以前には <tt>rarpd</tt> はありません<br>
+<a href="#hpux10">HP-UX</a> 10 以降での rarp の設定
 <p>
 
 <hr>
 
-<h3><a name="netbsd">NetBSD</a> $B$H(B <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="netbsd">NetBSD</a> と <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
-$B%+!<%M%k$r:F9=C[$7$F$$$k>l9g!"(B
-$B%3%s%U%#%0%U%!%$%k$K0J2<$N5-=R$,$"$k$3$H$r3NG'$7$F$/$@$5$$(B: 
+カーネルを再構築している場合、
+コンフィグファイルに以下の記述があることを確認してください: 
 <pre>pseudo-device   bpfilter        16</pre>
-NetBSD $B$NG[I[$K4^$^$l$k(B <tt>GENERIC</tt> $B%+!<%M%k$O!"$3$l$r4^$s$G$$$^$9!#(B 
+NetBSD の配布に含まれる <tt>GENERIC</tt> カーネルは、これを含んでいます。 
 <p>
 
 <ol>
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$r:n$j!"%/%i%$%"%s%H$rNs5s$7$F$*$-$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルを作り、クライアントを列挙しておきます:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
 
-<li><tt>/etc/hosts</tt> $B%U%!%$%k$K%/%i%$%"%s%H$N>pJs$r=q$$$F$*$-$^$9(B:<br>
+<li><tt>/etc/hosts</tt> ファイルにクライアントの情報を書いておきます:<br>
     <b><tt>192.168.1.10           client</tt></b>
 <p>
 
 <li><tt># <b>ps -aux | grep rarp</b></tt><br>
-   rarpd $B$,F0$$$F$$$J$1$l$P!"<B9T$7$^$9(B:<br>
+   rarpd が動いていなければ、実行します:<br>
    <tt># <b>/usr/sbin/rarpd -a -d</b></tt>
 </ol>
 <p>
 
-$B$3$l$G(B rarpd $B$,%G%P%C%0%b!<%I$GF0$-$^$9!#(B rarpd $B%5!<%P!<$,MW5a$r<u$1$k$H!"(B
-$B0J2<$N$h$&$J%a%C%;!<%8$,I=<($5$l$^$9(B:
+これで rarpd がデバッグモードで動きます。 rarpd サーバーが要求を受けると、
+以下のようなメッセージが表示されます:
 <pre>got a packet</pre>
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 </dd></dl>
 
 <hr>
@@ -93,49 +93,49 @@ RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
 <h3><a name="freebsd">FreeBSD</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$r:n$j!"%/%i%$%"%s%H$rNs5s$7$F$*$-$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルを作り、クライアントを列挙しておきます:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
 
-<li><tt>/etc/hosts</tt> $B%U%!%$%k$K%/%i%$%"%s%H$N>pJs$r=q$$$F$*$-$^$9(B:<br>
+<li><tt>/etc/hosts</tt> ファイルにクライアントの情報を書いておきます:<br>
     <b><tt>192.168.1.10           client</tt></b>
 <p>
 
 <li><tt># <b>ps -aux | grep rarp</b></tt><br>
-   rarpd $B$,F0$$$F$$$J$1$l$P!"<B9T$7$^$9(B:<br>
+   rarpd が動いていなければ、実行します:<br>
    <tt># <b>/usr/sbin/rarpd -a -s -v -f</b></tt>
 </ol>
 <p>
 
-$B$3$l$G(B rarpd $B$,%U%)%"%0%i%&%s%I$GF0$-$^$9(B (<tt>^C</tt> $B$G;_$a$i$l$^$9(B) $B!#(B
-$B%G%P%C%0MQ$N%3%^%s%I%i%$%s%*%W%7%g%s$O$"$j$^$;$s!#(B RARP $B$KLdBj$,$"$k>l9g$O!"(B
-<tt>/etc/syslog.conf</tt> $B$K0J2<$N$h$&$KDI2C$9$kI,MW$,$"$k$+$b$7$l$^$;$s(B:<br>
+これで rarpd がフォアグラウンドで動きます (<tt>^C</tt> で止められます) 。
+デバッグ用のコマンドラインオプションはありません。 RARP に問題がある場合は、
+<tt>/etc/syslog.conf</tt> に以下のように追加する必要があるかもしれません:<br>
 <pre><b>!rarpd
 *.*                                             /var/log/bootlog</b></pre>
-$B$3$N>l9g$O(B <tt>syslog</tt> $B$N%W%m%;%9$KBP$7$F(B <tt><b>kill -HUP </b></tt> $B$9$kI,MW$,$"$j$^$9!#$3$l$G!"0J2<$N$h$&$J%a%C%;!<%8$,(B <tt>/var/log/bootlog</tt> $B$K;D$k$h$&$K$J$j$^$9(B:
+この場合は <tt>syslog</tt> のプロセスに対して <tt><b>kill -HUP </b></tt> する必要があります。これで、以下のようなメッセージが <tt>/var/log/bootlog</tt> に残るようになります:
 <pre>Jul 25 23:10:42 rarpserver rarpd[562]: fxp0 CC:CC:CC:CC:CC:CC at 192.168.1.10 REPLIED</pre>
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 </dd></dl>
 
 <hr>
 
-<h3><a name="macosx">Mac OS X $B$H(B Darwin</a></h3>
+<h3><a name="macosx">Mac OS X と Darwin</a></h3>
 <dl><dt><dd>
-Mac OS X $B$H(B Darwin $B$K$O(B rarpd $B$,$"$j!"(B NetBSD $B$d(B OpenBSD $B$N$b$N$H$h$/;w$F$$$^$9!#(B
-$B$G$9$,!"A0Ds$H$7$F$$$k(B TFTP $B%5!<%P!<MQ%G%#%l%/%H%j!<$,ITE,@Z$J$?$a!"(B
-<tt>/private/tftpboot</tt> $B$K>.:Y9)$9$kI,MW$,$"$j$^$9(B
+Mac OS X と Darwin には rarpd があり、 NetBSD や OpenBSD のものとよく似ています。
+ですが、前提としている TFTP サーバー用ディレクトリーが不適切なため、
+<tt>/private/tftpboot</tt> に小細工する必要があります
 <p>
 
 <ol>
@@ -143,211 +143,211 @@ Mac OS X $B$H(B Darwin $B$K$O(B rarpd $B$,$"$j!"(B NetBSD $B$d(B OpenBSD
 # <b>ln -s /private/tftpboot /tftpboot</b></tt>
 <p>
 
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$r:n$j!"%/%i%$%"%s%H$rNs5s$7$F$*$-$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルを作り、クライアントを列挙しておきます:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
 
-<li>NetInfo $B%G!<%?%Y!<%9$K%/%i%$%"%s%H$rDI2C$7$^$9(B:<br>
+<li>NetInfo データベースにクライアントを追加します:<br>
     <tt># <b>nicl . -create /machines/client ip_address 
       192.168.0.10</b></tt><br>
 <p>
 
 <li><tt># <b>ps -aux | grep rarp</b></tt><br>
-   rarpd $B$,F0$$$F$$$J$1$l$P!"<B9T$7$^$9(B:<br>
+   rarpd が動いていなければ、実行します:<br>
    <tt># <b>/usr/sbin/rarpd -a -d</b></tt>
 </ol>
 <p>
 
-$B$3$l$G(B rarpd $B$,%G%P%C%0%b!<%I$GF0$-$^$9!#(B rarpd $B%5!<%P!<$,MW5a$r<u$1$k$H!"(B
-$B0J2<$N$h$&$J%a%C%;!<%8$,I=<($5$l$^$9(B:
+これで rarpd がデバッグモードで動きます。 rarpd サーバーが要求を受けると、
+以下のようなメッセージが表示されます:
 <pre>got a packet</pre>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 </dd></dl>
 
 <hr>
 
 <h3><a name="linux">Linux</a></h3>
 <dl><dt><dd>
-Linux $B$G(B rarp $B$r<B9T$9$k$K$O!"$U$?$D$NJ}K!$,$"$j$^$9!#(B
-<a href="#linux.user">$B%f!<%6!<%i%s%I(B rarpd</a> $B$H!"(B
-<a href="#linux.kernel">$B%+!<%M%k(B </a> (&lt;2.3) $B$X$NAH$_9~$_$G$9!#(B
+Linux で rarp を実行するには、ふたつの方法があります。
+<a href="#linux.user">ユーザーランド rarpd</a> と、
+<a href="#linux.kernel">カーネル </a> (&lt;2.3) への組み込みです。
 <p>
-<b><a name="linux.user">Linux $B%f!<%6!<%i%s%I(B rarpd ($B$I$N%+!<%M%k$G$b;H$($k$O$:$G$9(B)</a></b>
+<b><a name="linux.user">Linux ユーザーランド rarpd (どのカーネルでも使えるはずです)</a></b>
 <p>
-$B%f!<%6!<%i%s%I(B rarp $B$K$O!">/$J$/$H$b$U$?$D$N<BAu$,$"$j$^$9!#(B
+ユーザーランド rarp には、少なくともふたつの実装があります。
 <tt><a href="ftp://ftp.dementia.org/pub/net-tools">
-ftp://ftp.dementia.org/pub/net-tools</a></tt> ($B%=!<%9$N$_(B)
-$B$K$"$k8E$$<BAu(B (D.Brashear & J.Hutzelman $B$K$h$k$b$N(B) $B$H!"(B
-$B:G6a$NA4(B (?) $B%G%#%9%H%j%S%e!<%7%g%s$K4^$^$l$F$$$k?7$7$$<BAu(B
-(A. Kuznetsov & J.Jelinek $B$K$h$k$b$N(B) $B$G$9!#(B
+ftp://ftp.dementia.org/pub/net-tools</a></tt> (ソースのみ)
+にある古い実装 (D.Brashear & J.Hutzelman によるもの) と、
+最近の全 (?) ディストリビューションに含まれている新しい実装
+(A. Kuznetsov & J.Jelinek によるもの) です。
 
 <p>
 <ol>
   <li><a href="ftp://rawhide.redhat.com">ftp://rawhide.redhat.com</a>
-    $B$K$"$k(B RPM $B$+!"(B Debian woody $B$G(B <tt>apt-get rarpd</tt> $B$7$F(B
-    $B%Q%C%1!<%8$rF~<j$7$^$9!#(B<br>
-    $B>/$J$/$H$b(B local debian mirror $B$G$O!"(B
-    <tt>/pool/main/r/rarpd/</tt> $B0J2<$K%=!<%9$,$"$j$^$9!#(B
-  <p><li><tt>/etc/ethers</tt> $B%U%!%$%k$r:n$j!"%/%i%$%"%s%H$rNs5s$7$F$*$-$^$9(B:<br>
+    にある RPM か、 Debian woody で <tt>apt-get rarpd</tt> して
+    パッケージを入手します。<br>
+    少なくとも local debian mirror では、
+    <tt>/pool/main/r/rarpd/</tt> 以下にソースがあります。
+  <p><li><tt>/etc/ethers</tt> ファイルを作り、クライアントを列挙しておきます:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
-  <p><li><tt>/etc/hosts</tt> $B%U%!%$%k$K%/%i%$%"%s%H$N>pJs$r=q$$$F$*$-$^$9(B:<br>
+  <p><li><tt>/etc/hosts</tt> ファイルにクライアントの情報を書いておきます:<br>
     <b><tt>192.168.1.10           client</tt></b>
     <p>
   <li><tt># <b>/path/to/rarpd -A</b></tt><br>
-    $B>\:Y$O(B <tt>rarp(8)</tt> $B$r;2>H$7$F$/$@$5$$!#(B
+    詳細は <tt>rarp(8)</tt> を参照してください。
 </ol>
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 <p>
 
-<b><a name="linux.kernel">Linux $B%+!<%M%k(B rarp ( kernel&lt;2.3 )</a></b>
+<b><a name="linux.kernel">Linux カーネル rarp ( kernel&lt;2.3 )</a></b>
 <p>
 
-$B%f!<%6!<%i%s%I(B rarpd $B$r;H$$$?$/$J$$(B ($B$"$k$$$O;H$($J$$(B) $B>l9g$O!"(B
-rarp $BBP1~$rAH$_9~$s$@%+!<%M%k$r9=C[$9$k$+!"(B ($B%+!<%M%k$,BP1~$7$F$$$l$P(B)
-$B%m!<%@%V%k%b%8%e!<%k$H$7$FDI2C$9$kI,MW$,$"$j$^$9!#(B
+ユーザーランド rarpd を使いたくない (あるいは使えない) 場合は、
+rarp 対応を組み込んだカーネルを構築するか、 (カーネルが対応していれば)
+ローダブルモジュールとして追加する必要があります。
 <p>
 <ol>
-  <li>RARP $BBP1~IU$-$N%+!<%M%k$r9=C[$7$^$9!#0J2<$N$$$:$l$+$r<B9T$7$^$9(B:<br>
+  <li>RARP 対応付きのカーネルを構築します。以下のいずれかを実行します:<br>
     <tt># <b>make config</b></tt><br>
     <tt># <b>make menuconfig</b></tt><br>
     <tt># <b>make xconfig</b></tt>
     <p>
-  <li>$B$^$?$O!"(B RARP $B%+!<%M%k%b%8%e!<%k$rDI2C$7$^$9(B:<br>
+  <li>または、 RARP カーネルモジュールを追加します:<br>
     <tt># <b>modprobe rarp</b></tt><br>
-    $B$3$N>l9g!"%j%V!<%H$OITMW$G$9$,!"(B RARP $B$rM-8z$K$9$k$?$a$K!"%j%V!<%H$NETEY!"$3$N%3%^%s%I$r<B9T$9$kI,MW$,$"$j$^$9!#(B
+    この場合、リブートは不要ですが、 RARP を有効にするために、リブートの都度、このコマンドを実行する必要があります。
     <p>
-  <li><tt>/etc/hosts</tt> $B%U%!%$%k$K%/%i%$%"%s%H$N>pJs$r=q$$$F$*$-$^$9(B:<br>
+  <li><tt>/etc/hosts</tt> ファイルにクライアントの情報を書いておきます:<br>
     <b><tt>192.168.1.10           client</tt></b>
     <p>
   <li><tt># <b>/sbin/arp -s client CC:CC:CC:CC:CC:CC</b></tt>
     <p>
   <li><tt># <b>/sbin/arp -a</b></tt><br>
-    arp $B$N%-%c%C%7%e$,I=<($5$l$^$9!#%/%i%$%"%s%H$N>pJs$,4^$^$l$F$$$k$3$H$r3NG'$7$^$9(B:
+    arp のキャッシュが表示されます。クライアントの情報が含まれていることを確認します:
 <pre>Address                HWtype  HWaddress           Flags Mask      Iface
 client.test.net        ether   CC:CC:CC:CC:CC:CC   CM    *         eth0</pre>
   <p>
   <li><tt># <b>/sbin/rarp -s client CC:CC:CC:CC:CC:CC</b></tt><br>
-    $B%+!<%M%kFb$K(B RARP $B$,%3%s%Q%$%k$5$l$F$$$J$$>l9g!"0J2<$N$h$&$J(B
-    2 $B9T$N%(%i!<%a%C%;!<%8$,I=<($5$l$^$9(B:
+    カーネル内に RARP がコンパイルされていない場合、以下のような
+    2 行のエラーメッセージが表示されます:
 <pre>SIOCSRARP: Invalid argument
 This kernel does not support RARP.</pre>
     <p>
 
   <li><tt># <b>/sbin/rarp -a</b></tt><br>
-    rarp $B$N%-%c%C%7%e$,I=<($5$l$^$9!#%/%i%$%"%s%H$N>pJs$,4^$^$l$F$$$k$3$H$r3NG'$7$^$9(B:
+    rarp のキャッシュが表示されます。クライアントの情報が含まれていることを確認します:
 <pre>IP address       HW type             HW address
 192.168.1.10     10Mbps Ethernet     CC:CC:CC:CC:CC:CC</pre>
 </ol>
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 </dd></dl>
 
 <hr>
 
 <h3><a name="sunos">SunOS</a></h3>
 <dl><dt><dd>
-SunOS $B%^%7%s$r(B NFS $B%5!<%P!<$H$7$F@_Dj:Q$_$G$"$j!"$+$D(B <tt>/tftpboot</tt>
-$B$,B8:_$9$l$P!"(B RARP $B%G!<%b%s$O$9$G$KF0$$$F$$$k$G$7$g$&!#(B
+SunOS マシンを NFS サーバーとして設定済みであり、かつ <tt>/tftpboot</tt>
+が存在すれば、 RARP デーモンはすでに動いているでしょう。
 <p>
 
 <ol>
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$,$^$@B8:_$7$J$1$l$P!":n@.$7$^$9!#(B
-   $B$3$N%U%!%$%k$O!"(B <a href="../../../../docs/network/netboot/rbootd/#sunos">rbootd</a> $B$^$?$O(B tftp
-   $B$NF3F~2aDx$G:n@.:Q$_$N$O$:$G$9!#(B <tt>/etc/ethers</tt>
-   $B%U%!%$%k$K$O%/%i%$%"%s%H$rNs5s$7$F$*$/I,MW$,$"$j$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルがまだ存在しなければ、作成します。
+   このファイルは、 <a href="../../../../docs/network/netboot/rbootd/#sunos">rbootd</a> または tftp
+   の導入過程で作成済みのはずです。 <tt>/etc/ethers</tt>
+   ファイルにはクライアントを列挙しておく必要があります:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
 
 <li><tt># <b>ps aux | grep rarpd</b></tt><br>
-   $B$b$7$U$?$D$N(B rarp $B%W%m%;%9$,F0$$$F$$$J$1$l$P!"0J2<$N$h$&$K$9$kI,MW$,$"$j$^$9(B:<br>
+   もしふたつの rarp プロセスが動いていなければ、以下のようにする必要があります:<br>
    <tt># <b>/usr/etc/rarpd -a -d</b></tt>
 </ol>
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 </dd></dl>
 
 <hr>
 
 <h3><a name="solaris">Solaris</a></h3>
 <dl><dt><dd>
-Solaris $B%^%7%s$r(B NFS $B%5!<%P!<$H$7$F@_Dj:Q$_$G$"$j!"$+$D(B <tt>/tftpboot</tt>
-$B$,B8:_$9$l$P!"(B RARP $B%G!<%b%s$O$9$G$KF0$$$F$$$k$G$7$g$&!#(B
+Solaris マシンを NFS サーバーとして設定済みであり、かつ <tt>/tftpboot</tt>
+が存在すれば、 RARP デーモンはすでに動いているでしょう。
 <p>
 
 <ol>
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$,$^$@B8:_$7$J$1$l$P!":n@.$7$^$9!#(B
-   $B$3$N%U%!%$%k$O!"(B <a href="../../../../docs/network/netboot/rbootd/#solaris">rbootd</a> $B$^$?$O(B tftp
-   $B$NF3F~2aDx$G:n@.:Q$_$N$O$:$G$9!#(B <tt>/etc/ethers</tt>
-   $B%U%!%$%k$K$O%/%i%$%"%s%H$rNs5s$7$F$*$/I,MW$,$"$j$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルがまだ存在しなければ、作成します。
+   このファイルは、 <a href="../../../../docs/network/netboot/rbootd/#solaris">rbootd</a> または tftp
+   の導入過程で作成済みのはずです。 <tt>/etc/ethers</tt>
+   ファイルにはクライアントを列挙しておく必要があります:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
 
 <li><tt># <b>/usr/bin/ps -ef | grep rarpd</b></tt><br>
-   rarpd $B$,F0$$$F$$$J$1$l$P!"<B9T$9$kI,MW$,$"$j$^$9(B:<br>
+   rarpd が動いていなければ、実行する必要があります:<br>
    <tt># <b>/usr/sbin/in.rarpd -d -a</b></tt>
 </ol>
 <p>
 
-$B$3$l$G(B rarpd $B$,%G%P%C%0%b!<%I$GF0$-$^$9!#(B Solaris $B$G$O!"(B rarpd
-$B$OB?$/$N=PNO$r$7$^$9!#(B Solaris rarpd $B$,%/%i%$%"%s%H$NMW5a$r=hM}Cf$N(B
-<a href="../../../../docs/network/netboot/rarp.solaris.txt">$B=PNONc(B</a>$B$r<($7$^$9!#(B
+これで rarpd がデバッグモードで動きます。 Solaris では、 rarpd
+は多くの出力をします。 Solaris rarpd がクライアントの要求を処理中の
+<a href="../../../../docs/network/netboot/rarp.solaris.txt">出力例</a>を示します。
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 </dd></dl>
 
 <hr>
@@ -355,10 +355,10 @@ RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
 <h3><a name="news">NEWS-OS</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$,$^$@B8:_$7$J$1$l$P!":n@.$7$^$9!#(B
-   $B$3$N%U%!%$%k$O!"(B <a href="../../../../docs/network/netboot/rbootd/#news">rbootd</a> $B$^$?$O(B tftp
-   $B$NF3F~2aDx$G:n@.:Q$_$N$O$:$G$9!#(B <tt>/etc/ethers</tt>
-   $B%U%!%$%k$K$O%/%i%$%"%s%H$rNs5s$7$F$*$/I,MW$,$"$j$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルがまだ存在しなければ、作成します。
+   このファイルは、 <a href="../../../../docs/network/netboot/rbootd/#news">rbootd</a> または tftp
+   の導入過程で作成済みのはずです。 <tt>/etc/ethers</tt>
+   ファイルにはクライアントを列挙しておく必要があります:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
@@ -367,31 +367,31 @@ CC:CC:CC:CC:CC:CC     client</b></pre>
 </ol>
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 </dd></dl>
 
 <hr>
 
 <h3><a name="next">NEXTSTEP</a></h3>
 <dl><dt><dd>
-NEXTSTEP $B$O(B sparc $B%O!<%I%&%'%"$r%M%C%H%V!<%H$5$;$i$l$k$N$G!"(B rarp $B5!G=$r;}$C$F$$$^$9!#(B
-$B;d$?$A$O4JC1$K;n$7$F$_$^$7$?$,!"F0:n$5$;$i$l$^$;$s$G$7$?!#(B
-$BE,@Z$J@_DjJ}K!$r$4B8CN$NJ}$O!"$I$&$+$*CN$i$;$/$@$5$$!#(B
-$B0J2<$N@bL@$O!";d$?$A$N:GNI$N?dB,$G$9!#(B
+NEXTSTEP は sparc ハードウェアをネットブートさせられるので、 rarp 機能を持っています。
+私たちは簡単に試してみましたが、動作させられませんでした。
+適切な設定方法をご存知の方は、どうかお知らせください。
+以下の説明は、私たちの最良の推測です。
 <p>
 
 <ol>
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$,$^$@B8:_$7$J$1$l$P!":n@.$7$^$9!#(B
-   $B%U%!%$%k$K$O%/%i%$%"%s%H$rNs5s$7$F$*$/I,MW$,$"$j$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルがまだ存在しなければ、作成します。
+   ファイルにはクライアントを列挙しておく必要があります:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
@@ -400,29 +400,29 @@ CC:CC:CC:CC:CC:CC     client</b></pre>
 </ol>
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-$B$3$N%Z!<%8$N(B<a href="rarp.html">$B@hF,(B</a>$B$XLa$k(B
+このページの<a href="rarp.html">先頭</a>へ戻る
 </dd></dl>
 
 <hr>
 
-<h3><a name="hpux9">HP-UX 9 $B$*$h$S$=$l0JA0(B</a></h3>
+<h3><a name="hpux9">HP-UX 9 およびそれ以前</a></h3>
 <dl><dt><dd>
-$B;DG0$J$,$i!"(B HP-UX 9 $B$K$O(B rarp $B%5!<%S%9$,$"$j$^$;$s!#(B
-$B%=!<%9%3!<%I$r8+$D$1$F%G!<%b%s$r%3%s%Q%$%k$9$k$3$H$,$G$-$k$N$+$b$7$l$^$;$s$,!"I.<T$O8+$D$1$i$l$^$;$s$G$7$?!#(B
+残念ながら、 HP-UX 9 には rarp サービスがありません。
+ソースコードを見つけてデーモンをコンパイルすることができるのかもしれませんが、筆者は見つけられませんでした。
 <p>
 
-$B$b$78+$D$1$i$l$?$i!"$*CN$i$;$/$@$5$$!#(B
+もし見つけられたら、お知らせください。
 <p>
 
-$B$3$N%Z!<%8$N(B<a href="rarp.html">$B@hF,(B</a>$B$XLa$k(B
+このページの<a href="rarp.html">先頭</a>へ戻る
 </dd></dl>
 
 <hr>
@@ -430,44 +430,44 @@ RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
 <h3><a name="hpux10">HP-UX 10</a></h3>
 <dl><dt><dd>
 <ol>
-<li><tt>/etc/rarpd.conf</tt> $B%U%!%$%k$r:n@.$7!"%/%i%$%"%s%H$N%"%I%l%9(B
-    ($B%$!<%5%M%C%H$*$h$S(B IP) $B$r=q$$$F$*$-$^$9(B:<br>
+<li><tt>/etc/rarpd.conf</tt> ファイルを作成し、クライアントのアドレス
+    (イーサネットおよび IP) を書いておきます:<br>
     <tt><b>CC:CC:CC:CC:CC:CC 192.168.1.10</b></tt>
 <p>
 
 <li><tt># <B>ps -ef | grep rar</b></tt><br>
-   rarpd $B$,F0$$$F$$$J$1$l$P!"<B9T$9$kI,MW$,$"$j$^$9(B:<br>
+   rarpd が動いていなければ、実行する必要があります:<br>
    <tt># <b>/usr/sbin/rarpd -d</b></tt>
 </ol>
 <p>
 
-$B$3$l$G(B rarpd $B$,%G%P%C%0%b!<%I$GF0$-$^$9!#(B HP-UX 10 $B$G$O!"(B rarpd
-$B$OB?$/$N=PNO$r$7$^$9!#(B HP-UX 10 rarpd $B$,%/%i%$%"%s%H$NMW5a$r=hM}Cf$N(B
-<a href="../../../../docs/network/netboot/rarp.hpux10.txt">$B=PNONc(B</a>$B$r<($7$^$9!#(B
+これで rarpd がデバッグモードで動きます。 HP-UX 10 では、 rarpd
+は多くの出力をします。 HP-UX 10 rarpd がクライアントの要求を処理中の
+<a href="../../../../docs/network/netboot/rarp.hpux10.txt">出力例</a>を示します。
 <p>
 
-$B$J$<$+(B <tt>^C</tt> $B$G$OCfCG$G$-$:!"JL$N%7%'%k$+$i$3$N(B rarpd
-$B%W%m%;%9$r(B kill $B$7$J$1$l$P$J$j$^$;$s$G$7$?!#(B
+なぜか <tt>^C</tt> では中断できず、別のシェルからこの rarpd
+プロセスを kill しなければなりませんでした。
 <p>
 
-RARP $B$,<:GT$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が失敗すると、クライアントは以下のようなメッセージを表示します:
 <pre>No response for RARP request
 le(0,0,0,0): Unknown error: code 60
 boot: Unknown error: code 60</pre>
-RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
+RARP が成功すると、クライアントは以下のようなメッセージを表示します:
 <pre>boot: client IP address: 192.168.1.10</pre>
 <p>
 
-<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> $B$^$?$O(B
-<a href="tftpd.html">tftpd</a> $B$N@_Dj$K?J$`(B
+<a href="../../../../docs/network/netboot/bootparams.html">bootparams</a> または
+<a href="tftpd.html">tftpd</a> の設定に進む
 </dd></dl>
 
 <hr>
 
-$BLa$k(B |
-<a href="../../../../docs/network/netboot/bootparams.html">$B?J$`(B(bootparams)</a> |
-<a href="tftpd.html">$B?J$`(B (tftpd)</a> |
-<a href="./">$BL\<!(B</a>
+戻る |
+<a href="../../../../docs/network/netboot/bootparams.html">進む(bootparams)</a> |
+<a href="tftpd.html">進む (tftpd)</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -479,7 +479,7 @@ RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -496,8 +496,8 @@ RARP $B$,@.8y$9$k$H!"%/%i%$%"%s%H$O0J2<$N$h$&$J%a%C%;!<%8$rI=<($7$^$9(B:
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: rarp.html,v 1.3 2007/08/01 15:36:02 kano Exp $<br>
   <!-- Based on english version: -->

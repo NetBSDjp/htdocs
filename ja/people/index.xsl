@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xsl:stylesheet [<!ENTITY nbsp "&#160;">]>
 
 <!-- $NetBSD: index.xsl,v 1.4 2010/02/20 17:28:15 hubertf Exp $ -->
@@ -71,7 +71,7 @@
             <xsl:value-of select="email"/>
             <xsl:text>%40NetBSD.org%3E&amp;op=index&amp;exact=on</xsl:text>
           </xsl:attribute>
-          <xsl:text>PGP $B80(B</xsl:text>
+          <xsl:text>PGP 鍵</xsl:text>
         </a>
         </xsl:if>
       </td>

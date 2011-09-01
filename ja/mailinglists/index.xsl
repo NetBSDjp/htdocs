@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?> <!-- -*- html -*- -->
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- html -*- -->
 <!DOCTYPE xsl:stylesheet
   PUBLIC "-//NetBSD/DTD NetBSD XSLT 1.0 DTD//EN"
 	 "http://www.NetBSD.org/XML/htdocs/share/xml/xslt10-netbsd.dtd">

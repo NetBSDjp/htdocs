@@ -5,73 +5,73 @@
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@jp.NetBSD.org">
-<title>Diskless NetBSD HOW-TO $B%U%!%$%k%7%9%F%`$N@_Dj(B</title>
+<title>Diskless NetBSD HOW-TO ファイルシステムの設定</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="nfs.html">$BLa$k(B</a> |
-<a href="finish.html">$B?J$`(B</a> | 
-<a href="./">$BL\<!(B</a>
+<a href="nfs.html">戻る</a> |
+<a href="finish.html">進む</a> | 
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO $B%U%!%$%k%7%9%F%`$N@_Dj(B</h1>
+<h1>Diskless NetBSD HOW-TO ファイルシステムの設定</h1>
 
-$B$3$3$G$O!"%5!<%P!<$N%*%Z%l!<%F%#%s%0%7%9%F%`$K0MB8$7$J$$<j=g$r@bL@$7$^$9!#(B
-$B2<5-$O(B nfs $B%5!<%P!<>e$GE83+$d=$@5$r9T$J$&%U%!%$%k72$G$9(B:
+ここでは、サーバーのオペレーティングシステムに依存しない手順を説明します。
+下記は nfs サーバー上で展開や修正を行なうファイル群です:
 <p>
 
 <ol>
 <li><tt># <b>cd /export/client/root</b></tt>
 <p>
 
-<li>nfs $B%5!<%P!<$,(B NetBSD $B$+(B OpenBSD $B0J30$N>l9g!"(B
-    GNU tar $B$N(B 1.12 $B0J9_$,%$%s%9%H!<%k$5$l$F$$$k$+3NG'$7$F$/$@$5$$(B
-    ($B$$$/$D$+$N(B Linux $B%G%#%9%H%j%S%e!<%7%g%s$K$O!"(B
-    $BI,MW$J5!G=$,$J$$8E$$(B GNU tar $B$,ImB0$7$F$$$^$9(B):
+<li>nfs サーバーが NetBSD か OpenBSD 以外の場合、
+    GNU tar の 1.12 以降がインストールされているか確認してください
+    (いくつかの Linux ディストリビューションには、
+    必要な機能がない古い GNU tar が附属しています):
    <p><tt># <b>tar --version</b></tt><br>
    <tt>tar (GNU tar) 1.12</tt><br>
-   <p>$B$b$70c$&>l9g$K$O!"(B uid $B$H(B gid $B$rJ]$D%*%W%7%g%s$N$"$k(B GNU
+   <p>もし違う場合には、 uid と gid を保つオプションのある GNU
    <tt><a href="ftp://ftp.gnu.org/pub/gnu/tar/tar-1.12.tar.gz">tar</a></tt>
-   $B$r<j$KF~$l$F$/$@$5$$!#(B
-   $B$5$b$J$$$H!"%"!<%+%$%V$NE83+;~$K!"%U%!%$%k$N%*!<%J!<>pJs$,(B
-   $BITE,@Z$K@_Dj$5$l!"LdBj$,5/$3$j$^$9!#(B
-   <p>Net/OpenBSD $B0J30$G(B GNU tar $B$r;H$&>l9g!"(B
-   <tt>[--numeric-owner]</tt> $B%*%W%7%g%s$r;H$$$^$9!#(B
+   を手に入れてください。
+   さもないと、アーカイブの展開時に、ファイルのオーナー情報が
+   不適切に設定され、問題が起こります。
+   <p>Net/OpenBSD 以外で GNU tar を使う場合、
+   <tt>[--numeric-owner]</tt> オプションを使います。
 <p>
 
-<li>$BI,?\$NG[I[J*$rE83+$7$^$9(B:<br>
+<li>必須の配布物を展開します:<br>
 <tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-release/binary/sets/base.tgz</b></tt><br>
 <tt>#&nbsp;<b>tar&nbsp;[--numeric-owner]&nbsp;-xvpzf&nbsp;/export/client/NetBSD-release/binary/sets/etc.tgz</b></tt><br>
 <p>
 
-<li>$BB>$NG[I[J*$b!"F1MM$K$7$FE83+$7$^$9!#(B
+<li>他の配布物も、同様にして展開します。
 <p>
 
 <li><tt># <b>mkdir /export/client/root/kern</b></tt>
 <p>
 
-<li>$B%9%o%C%W$r@_Dj$7$^$9(B:<br>
+<li>スワップを設定します:<br>
    <tt># <b>mkdir /export/client/root/swap</b></tt><br>
    <tt>#&nbsp;<b>dd&nbsp;if=/dev/zero&nbsp;of=/export/client/swap&nbsp;bs=4k&nbsp;count=4k</b></tt>
-   <p>$B$3$l$G(B 16 MB $B$N%9%o%C%W%U%!%$%k$,$G$-$^$9!#(B
-   <tt>/dev/zero</tt> $B$N$J$$%*%Z%l!<%F%#%s%0%7%9%F%`(B (HP-UX $B$J$I(B) $B$N>l9g$O!"(B
-   $B$3$N(B 16 MB $B$N(B <a href="../../../../docs/network/netboot/swap.tar.gz">swap</a> $B%U%!%$%k(B (16 KB gzipped)
-   $B$r%@%&%s%m!<%I$7$F$/$@$5$$!#(B
-   <p>SunOS $B$G$O!"<!$N$h$&$K$7$F(B 16 MB $B$N%9%o%C%W%U%!%$%k$r:n$j$^$9(B:<br>
+   <p>これで 16 MB のスワップファイルができます。
+   <tt>/dev/zero</tt> のないオペレーティングシステム (HP-UX など) の場合は、
+   この 16 MB の <a href="../../../../docs/network/netboot/swap.tar.gz">swap</a> ファイル (16 KB gzipped)
+   をダウンロードしてください。
+   <p>SunOS では、次のようにして 16 MB のスワップファイルを作ります:<br>
    <tt># <b>mkfile 16m /export/client/swap</b></tt>
 <p>
 
-<li><tt>/etc/ifconfig.le0</tt>$B$N@_Dj(B ($B%U%!%$%kL>$N(B <tt>le0</tt> $B$O!"(B
-$B%/%i%$%"%s%H$N%$!<%5%M%C%H%+!<%I$N(B NetBSD $B$G$N%G%P%$%9L>(B)$B!#2<5-$N9T$rFbMF$K;}$D!"(B
-   <tt>/export/client/root/etc/ifconfig.le0</tt> $B$H$$$&%U%!%$%k$r:n$j$^$9(B:
+<li><tt>/etc/ifconfig.le0</tt>の設定 (ファイル名の <tt>le0</tt> は、
+クライアントのイーサネットカードの NetBSD でのデバイス名)。下記の行を内容に持つ、
+   <tt>/export/client/root/etc/ifconfig.le0</tt> というファイルを作ります:
 <pre><b>inet client netmask 255.255.255.0 broadcast 192.168.1.255</b></pre>
-   $B$3$3$G(B <tt>255.255.255.0</tt> $B$O%M%C%H%o!<%/4IM}<T$,;XDj$9$k%5%V%M%C%H%^%9%/!"(B
-   <tt>192.168.1.255</tt> $B$O%M%C%H%o!<%/4IM}<T$,;XDj$9$k%V%m!<%I%-%c%9%H%"%I%l%9$G$9!#(B
+   ここで <tt>255.255.255.0</tt> はネットワーク管理者が指定するサブネットマスク、
+   <tt>192.168.1.255</tt> はネットワーク管理者が指定するブロードキャストアドレスです。
 <p>
 
-<li><tt>/etc/fstab</tt> $B$N@_Dj!#2<5-$N9T$rFbMF$K;}$D!"(B
-   <tt>/export/client/root/etc/fstab</tt> $B$H$$$&%U%!%$%k$r:n$j$^$9(B:<br>
+<li><tt>/etc/fstab</tt> の設定。下記の行を内容に持つ、
+   <tt>/export/client/root/etc/fstab</tt> というファイルを作ります:<br>
 <pre><b>#/etc/fstab
 nfsserver:/export/client/swap   none  swap  sw,nfsmntpt=/swap
 nfsserver:/export/client/root   /     nfs   rw 0 0
@@ -79,22 +79,22 @@ nfsserver:/export/client/usr    /usr  nfs   rw 0 0
 nfsserver:/export/client/home   /home nfs   rw 0 0</b></pre>
 <p>
 
-<li><tt>/etc/rc.conf</tt> $B$N:n@.!#%(%G%#%?!<$G(B
-   <tt>/export/client/root/etc/rc.conf</tt> $B$H$$$&%U%!%$%k$r3+$-$^$9!#(B
-   $B=EMW$J@_Dj9`L\(B (<tt>192.168.1.1</tt>
-   $B$O%M%C%H%o!<%/4IM}<T$,;XDj$9$k%k!<%?!<$KCV$-49$($^$9(B):
+<li><tt>/etc/rc.conf</tt> の作成。エディターで
+   <tt>/export/client/root/etc/rc.conf</tt> というファイルを開きます。
+   重要な設定項目 (<tt>192.168.1.1</tt>
+   はネットワーク管理者が指定するルーターに置き換えます):
 <pre>hostname="<b>client</b>"
 defaultroute="<b>192.168.1.1</b>"
 nfs_client=<b>YES</b>
 auto_ifconfig=<b>NO</b>
 net_interfaces=""</pre>
 <p>
-rc $B$K%M%C%H%o!<%/%G%P%$%9$N:F@_Dj$r$5$;$F$O(B<i>$B$$$1$^$;$s(B</i>$B!#(B
-$B%k!<%H%U%!%$%k%7%9%F%`$,CV$+$l$F$$$k(B NFS $B%5!<%P!<$X$N@\B3$,<:$o$l$k$+$i$G$9!#(B
+rc にネットワークデバイスの再設定をさせては<i>いけません</i>。
+ルートファイルシステムが置かれている NFS サーバーへの接続が失われるからです。
 <p>
 
-<li><tt>/etc/hosts</tt> $B$K$"$J$?$N%^%7%s$r2C$($^$9!#2<5-$N9T$r(B
-   <tt>/export/client/root/etc/hosts</tt> $B$KDI2C$7$^$9(B:<br>
+<li><tt>/etc/hosts</tt> にあなたのマシンを加えます。下記の行を
+   <tt>/export/client/root/etc/hosts</tt> に追加します:<br>
 <pre><b>#/etc/hosts
 192.168.1.10 client.test.net client
 192.168.1.5  nfsserver.test.net nfsserver</b></pre>
@@ -104,63 +104,63 @@ rc $B$K%M%C%H%o!<%/%G%P%$%9$N:F@_Dj$r$5$;$F$O(B<i>$B$$$1$^$;$s(B</i>$B!#(B
 </ol>
 <p>
 
-<h2>$BMFNL@aLs$N$?$a$N5;9*(B</h2>
-<a href="mailto:SALEM@statoil.com">Lazaro Daniel Salem</a> $B$O!"(B
-$B5?;wE*$J%/%i%9%?!<4D6-(B
-($B$9$Y$F$N%/%i%$%"%s%H$H%5!<%P!<$,@_Dj%U%!%$%k$r$9$Y$F6&M-$9$k(B)
-$B$r:n$k$?$a$N$$$/$D$+$NDs0F$r4s$;$F$/$l$^$7$?!#(B
-$B$3$l$O!"$9$Y$F$N%/%i%$%"%s%H$H%5!<%P!<$,F10l$N(B NetBSD $B%]!<%H(B
-($BC1$KF1$8%"!<%-%F%/%A%c!<(B ($B%^%$%/%m%W%m%;%C%5!<(B) $B$J$i$P$h$$(B
-$B$H$$$&$o$1$G$O$"$j$^$;$s(B) $B$r;H$&>l9g$N$_M-8z$G$9!#(B
+<h2>容量節約のための技巧</h2>
+<a href="mailto:SALEM@statoil.com">Lazaro Daniel Salem</a> は、
+疑似的なクラスター環境
+(すべてのクライアントとサーバーが設定ファイルをすべて共有する)
+を作るためのいくつかの提案を寄せてくれました。
+これは、すべてのクライアントとサーバーが同一の NetBSD ポート
+(単に同じアーキテクチャー (マイクロプロセッサー) ならばよい
+というわけではありません) を使う場合のみ有効です。
 <p>
-$B$b$76=L#$,$"$l$P!"(B<a href="../../../../docs/network/netboot/cluster.txt">$B$3$NDs0F$rFI$s$G$/$@$5$$(B</a>$B!#(B
+もし興味があれば、<a href="../../../../docs/network/netboot/cluster.txt">この提案を読んでください</a>。
 <p>
 
-<h2>$B$3$l$G%G%#%9%/%l%9%^%7%s$r%V!<%H$G$-$^$9(B !</h2>
+<h2>これでディスクレスマシンをブートできます !</h2>
 <ol>
-<li>NetBSD/hp300 $B%^%7%s$G$N%G%#%9%/%l%9%V!<%H%a%C%;!<%8$N(B
-   <a href="../../../../docs/network/netboot/diskless.txt">$BNc(B</a>$B$,$"$j$^$9!#(B<br>
-   <i>$B$b$72hLL$,??$C0E$K$J$C$?$j8G$^$C$?$j$7$?$i!"(B NetBSD $B$,$=$N%^%7%s$N(B
-   $B%m!<%+%k%3%s%=!<%k$KBP1~$7$F$$$k$+3N$+$a$F$/$@$5$$!#(B
-   $B%7%j%"%kC<Kv$r;H$&I,MW$,$"$k$+$b$7$l$^$;$s!#(B
+<li>NetBSD/hp300 マシンでのディスクレスブートメッセージの
+   <a href="../../../../docs/network/netboot/diskless.txt">例</a>があります。<br>
+   <i>もし画面が真っ暗になったり固まったりしたら、 NetBSD がそのマシンの
+   ローカルコンソールに対応しているか確かめてください。
+   シリアル端末を使う必要があるかもしれません。
    </i>
    <p>
-   <i>$B$b$7%7%j%"%kC<Kv$K2?$bI=<($5$l$J$$(B ($B$"$k$$$O%^%7%s$K%7%j%"%k%]!<%H$,(B
-   $B$J$$(B) $B>l9g!"$5$i$K!"%3%s%=!<%k$J$7$G$N(B
-   <a href="files.nocons.html">$B%j%b!<%H%"%/%;%9$N@_Dj(B</a>
-   $B$rFI$`I,MW$,$"$j$^$9!#(B
+   <i>もしシリアル端末に何も表示されない (あるいはマシンにシリアルポートが
+   ない) 場合、さらに、コンソールなしでの
+   <a href="files.nocons.html">リモートアクセスの設定</a>
+   を読む必要があります。
    </i>
 <p>
 
-<li>$B%/%i%$%"%s%H%^%7%s$,%V!<%H$7$F%7%s%0%k%f!<%6!<%b!<%I$KF~$j!"(B
-   $B2<5-$N%W%m%s%W%H$,=P$^$9(B:<br>
+<li>クライアントマシンがブートしてシングルユーザーモードに入り、
+   下記のプロンプトが出ます:<br>
    <tt>Enter pathname of shell or RETURN for sh:</tt><br>
-   $B%j%?!<%s%-!<$r2!$7$^$9!#(B
+   リターンキーを押します。
 <p>
 
-<li>$BC<Kv$N<oN`$r?R$M$i$l$^$9!#(B<br>
-   NetBSD/hp300 $B%^%7%s$N%m!<%+%k%3%s%=!<%k$G$O(B <tt>hp300h</tt> $B$G$9!#(B
-   $B%7%j%"%k%3%s%=!<%k$G$O$*$=$i$/(B <tt>vt100</tt> $B$H$9$Y$-$G$7$g$&!#(B
+<li>端末の種類を尋ねられます。<br>
+   NetBSD/hp300 マシンのローカルコンソールでは <tt>hp300h</tt> です。
+   シリアルコンソールではおそらく <tt>vt100</tt> とすべきでしょう。
 <p>
 
 <li><tt># <b>mount /usr</b></tt>
 <p>
 
-<li><tt>/dev</tt> $B%U%!%$%k$N:n@.!#(B<br>
+<li><tt>/dev</tt> ファイルの作成。<br>
    <tt># <b>cd /dev<br>
        # /bin/sh MAKEDEV all</b></tt><br>
-   $B$3$l$K$O$7$P$i$/(B ($B>/$J$/$H$b(B 2 $BJ,(B) $B$+$+$j$^$9$N$G!"5$D9$KBT$C$F$/$@$5$$!#(B
+   これにはしばらく (少なくとも 2 分) かかりますので、気長に待ってください。
    <p>
-   $BCm0U(B: HP-UX 9 $B0JA0$N(B NFS $B%5!<%P!<$O!"%/%i%$%"%s%H$,%G%P%$%9%U%!%$%k$r(B
-   $B:n$k$3$H$r6X;_$7$F$$$k$?$a!"$3$l$,$G$-$^$;$s!#(B nfs $B%5!<%P!<>e$G(B
-   NetBSD/hp300 $BMQ$N(B<a href="../../../../docs/network/netboot/hp300.dev.tar.gz">$B%G%P%$%9%U(B
-$B%!%$%k(B</a>
-   (5 KB) $B$r%@%&%s%m!<%I$7$FE83+$9$kI,MW$,$"$j$^$9(B:<br>
+   注意: HP-UX 9 以前の NFS サーバーは、クライアントがデバイスファイルを
+   作ることを禁止しているため、これができません。 nfs サーバー上で
+   NetBSD/hp300 用の<a href="../../../../docs/network/netboot/hp300.dev.tar.gz">デバイスフ
+ァイル</a>
+   (5 KB) をダウンロードして展開する必要があります:<br>
    <tt># <b>cd /export/client/root</b></tt><br>
    <tt># <b>tar [--numeric-owner] -xpvzf dev.tar.gz</b></tt>
 <p>
 
-<li>$B$&$^$/%9%o%C%W$,F/$$$F$$$k$+!"3N$+$a$^$9(B:
+<li>うまくスワップが働いているか、確かめます:
 <pre># <b>swapctl -A</b>
 swapctl: adding nfsserver:/export/client/swap as swap device at priority 0
 # <b>swapctl -l</b>
@@ -168,31 +168,31 @@ Device      512-blocks     Used    Avail Capacity  Priority
 /dev/??          32768        0    32768     0%    0</pre>
 <p>
 
-<li>$B%^%k%A%f!<%6!<%b!<%I$X0\$j$^$9!#(B
-   nfs $B%5!<%P!<(B (in <tt>/export/client/root/etc/rc.conf</tt>) $B$+(B
-   $B%/%i%$%"%s%H>e$G(B <tt>/etc/rc.conf</tt> $B$rJT=8$7!"(B
-   $B%U%!%$%k$,FI$^$l$k$h$&!"<!$N$h$&$KJQ99$7$^$9(B:<br>
+<li>マルチユーザーモードへ移ります。
+   nfs サーバー (in <tt>/export/client/root/etc/rc.conf</tt>) か
+   クライアント上で <tt>/etc/rc.conf</tt> を編集し、
+   ファイルが読まれるよう、次のように変更します:<br>
    <tt>rc_configured=<b>YES</b></tt>
 <p>
 
-<li><tt><b>exit</b></tt> $B$H%?%$%W$7$F%7%s%0%k%f!<%6!<$N%7%'%k$rH4$1$^$9!#(B
+<li><tt><b>exit</b></tt> とタイプしてシングルユーザーのシェルを抜けます。
 <p>
 
-<li><tt>root</tt> $B$G%m%0%$%s$7!"?7$7$$(B NetBSD
-   $B%G%#%9%/%l%9%o!<%/%9%F!<%7%g%s$r3Z$7$s$G$/$@$5$$(B !
+<li><tt>root</tt> でログインし、新しい NetBSD
+   ディスクレスワークステーションを楽しんでください !
 </ol>
 <p>
 
-$B$3$3$G!"$5$i$KB3$1$F!"(B
-$B%5!<%P!<$r%j%V!<%H$7$?$H$-$KI,MW$J%G!<%b%s$,$9$Y$F5/F0$9$k$+3N$+$a$F!"(B
-$B%G%#%9%/%l%9$N:n6H$r(B<a href="finish.html">$B;E>e$2$k(B</a>$B$Y$-$G$9!#(B
+ここで、さらに続けて、
+サーバーをリブートしたときに必要なデーモンがすべて起動するか確かめて、
+ディスクレスの作業を<a href="finish.html">仕上げる</a>べきです。
 <p>
 
 <hr>
 
-<a href="nfs.html">$BLa$k(B</a> |
-<a href="finish.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="nfs.html">戻る</a> |
+<a href="finish.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -204,7 +204,7 @@ Device      512-blocks     Used    Avail Capacity  Priority
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -221,8 +221,8 @@ Device      512-blocks     Used    Avail Capacity  Priority
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: files.html,v 1.3 2007/08/01 15:36:01 kano Exp $<br>
   <!-- Based on english version: -->

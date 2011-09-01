@@ -173,7 +173,7 @@ sub makeact
     if ($data !~ s/(<head[^>]*>)/$1$_/i)
 	{ &fail("Unable to locate <head> tag"); }
 
-    open(FILE,"|iconv -f euc-jp -t iso-2022-jp >$outfile") || die("Unable to write '$outfile': $!");
+    open(FILE,"|cat >$outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data,%extras);
     close(FILE);
     if ($date_num)

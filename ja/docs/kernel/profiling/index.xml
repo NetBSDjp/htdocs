@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
   PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
          "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
@@ -15,174 +15,174 @@
     <!-- Copyright (c) 1994-2005
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-    <title>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B%+!<%M%k%W%m%U%!%$%j%s%0(B HOWTO</title>
+    <title>NetBSD ドキュメンテーション: カーネルプロファイリング HOWTO</title>
   </head>
 
 
-  <para>$B$3$NJ8>O$K$O$I$N$h$&$K%+!<%M%k%W%m%U%!%$%j%s%0$,F0:n$7!"(B
-    $B$I$&;H$&$N$+$,=q$+$l$F$$$^$9!#$3$N%I%-%e%a%s%H$O(B Matthias Drochner
-    <email>drochner@zel459.zel.kfa-juelich.de</email> $B$NI.$K$h$j$^$9!#(B</para>
+  <para>この文章にはどのようにカーネルプロファイリングが動作し、
+    どう使うのかが書かれています。このドキュメントは Matthias Drochner
+    <email>drochner@zel459.zel.kfa-juelich.de</email> の筆によります。</para>
 
   <sect1 role="toc">
     <sect2 id="kern-prof">
-      <title>$B%+!<%M%k%W%m%U%!%$%j%s%0(B</title>
+      <title>カーネルプロファイリング</title>
 
       <sect3 id="how-does-it-work">
-      <title>$B$I$N$h$&$KF0:n$9$k$N$+(B</title>
+      <title>どのように動作するのか</title>
 
 
-      <para>$B%W%m%U%!%$%k:Q$_$N%3!<%I$N?6$kIq$$$K4X$9$k!"(B
-	2$B<oN`$N%G!<%?$,8DJL$K5-O?$5$l$^$9(B:
-	$BA44X?t$N8F$S=P$7IQEY(B ($B8F$S=P$7%0%i%U%W%m%U%!%$%j%s%0(B)
-	$B$H3F4X?t$N=hM}$K$+$+$C$?;~4V$G$9!#(B
-	$B$3$l$i$O!"E,Ev$K%5%s%W%k$5$l$?;~$K4X?tFb$K$"$k%W%m%0%i%`%+%&%s%?!<$N3NN($K$h$C$F35;;$5$l!"(B
-	$B$=$N3NN($O!"D4$Y$F$$$k4X?t$,<B9TCf$K5/$3$k!"(B
-	$B%W%m%U%!%$%j%s%0%?%$%^!<$N3d$j9~$_N($K$h$C$F5U$K35;;$5$l$^$9!#(B
-	&man.gprof.1; $B$H$$$&%f!<%F%#%j%F%#!<$r;H$C$F!"%G!<%?$r2r<a$7$^$9!#(B
-	$B$7$+$7!"Fs$D$N%G!<%?$NAj4X@-$,$J$$$?$a!"$$$/$D$+@)8B$,=P$F$-$^$9!#(B
-	$B$3$l$O!"(Bman$B%Z!<%8$N(BBUGS$B$N>O$K=q$+$l$F$$$^$9!#(B</para>
+      <para>プロファイル済みのコードの振る舞いに関する、
+	2種類のデータが個別に記録されます:
+	全関数の呼び出し頻度 (呼び出しグラフプロファイリング)
+	と各関数の処理にかかった時間です。
+	これらは、適当にサンプルされた時に関数内にあるプログラムカウンターの確率によって概算され、
+	その確率は、調べている関数が実行中に起こる、
+	プロファイリングタイマーの割り込み率によって逆に概算されます。
+	&man.gprof.1; というユーティリティーを使って、データを解釈します。
+	しかし、二つのデータの相関性がないため、いくつか制限が出てきます。
+	これは、manページのBUGSの章に書かれています。</para>
 
-      <para>$B%+!<%M%k$N%W%m%U%!%$%j%s%0$H%f!<%6!<%W%m%0%i%`$N%W%m%U%!%$%j%s%0$O!"(B
-	$B$h$/;w$F$$$^$9(B;
-	$B%W%m%U%!%$%j%s%0%G!<%?$r=hM}$9$kJ}K!$H!"(B
-	$B%3%s%H%m!<%k$9$kJ}K!$,<c430c$&DxEY$G$9!#(B</para>
+      <para>カーネルのプロファイリングとユーザープログラムのプロファイリングは、
+	よく似ています;
+	プロファイリングデータを処理する方法と、
+	コントロールする方法が若干違う程度です。</para>
 
-      <para>$B%+!<%M%k%W%m%U%!%$%j%s%0$K4X78$9$k%G!<%?$O!"(B
-	$B%0%m!<%P%k9=B$BN$N(B <emphasis
-	  role="bold"><code>_gmonparam</code></emphasis> $BFb$K$"$j$^$9!#(B
-	$B$3$N9=B$BN$O!"(B(
+      <para>カーネルプロファイリングに関係するデータは、
+	グローバル構造体の <emphasis
+	  role="bold"><code>_gmonparam</code></emphasis> 内にあります。
+	この構造体は、(
 	<emphasis
-	  role="bold"><filename>kern/subr_prof.c</filename></emphasis> $BCf$N(B) <emphasis
-	  role="bold"><code>kmstartup()</code></emphasis> $B$K$h$j!"(B
-	$B%7%9%F%`$,=i4|2=$9$k:]$K=i4|2=$5$l$^$9!#(B
-	$B%f!<%6!<%l%Y%k$N%3%s%H%m!<%k%W%m%0%i%`$G$"$k(B <emphasis
-	  role="bold">&man.kgmon.8;</emphasis> $B$O!"(B
-	$B%3%s%H%m!<%k$H%G!<%?%"%/%;%9$N$?$a$K(B
-	<emphasis role="bold">&man.sysctl.3;</emphasis> $B$r8F$S=P$7!"(B
-	$B0lIt(B <emphasis
-	  role="bold">&man.kvm.3;</emphasis> $B%"%/%;%9$r8F$S=P$7$F$$$^$9(B
-	($BF0:n$7$F$$$k%+!<%M%k$,%W%m%U%!%$%k$5$l$kI8=`E*$J>l9g$b$G$9(B!) $B!#(B</para>
+	  role="bold"><filename>kern/subr_prof.c</filename></emphasis> 中の) <emphasis
+	  role="bold"><code>kmstartup()</code></emphasis> により、
+	システムが初期化する際に初期化されます。
+	ユーザーレベルのコントロールプログラムである <emphasis
+	  role="bold">&man.kgmon.8;</emphasis> は、
+	コントロールとデータアクセスのために
+	<emphasis role="bold">&man.sysctl.3;</emphasis> を呼び出し、
+	一部 <emphasis
+	  role="bold">&man.kvm.3;</emphasis> アクセスを呼び出しています
+	(動作しているカーネルがプロファイルされる標準的な場合もです!) 。</para>
     </sect3>
 
       <sect3 id="call-graph-recording">
-	<title>$B8F$S=P$7%0%i%U$N5-O?(B</title>
+	<title>呼び出しグラフの記録</title>
 
-	<para>$B%W%m%U%!%$%j%s%0$N%U%i%0(B (<emphasis
-	    role="bold"><code>-pg</code></emphasis>) $B$K$h$j!"(B
-	  $B%3%s%Q%$%i!<$O4X?t$N%(%s%H%j!<$4$H$K(B <emphasis
+	<para>プロファイリングのフラグ (<emphasis
+	    role="bold"><code>-pg</code></emphasis>) により、
+	  コンパイラーは関数のエントリーごとに <emphasis
 	    role="bold"><code>mcount()</code></emphasis>
-	  $B$r8F$S=P$7$^$9!#(B
-	  $B$3$l$O!"%^%7%sFH<+$N66EO$7$K$h$C$F!"(B
+	  を呼び出します。
+	  これは、マシン独自の橋渡しによって、
 	  <emphasis
-	    role="bold"><code>_mcount(frompc,selfpc)</code></emphasis> $B$XAw$i$l$^$9!#(B
+	    role="bold"><code>_mcount(frompc,selfpc)</code></emphasis> へ送られます。
 	  <emphasis
-	    role="bold"><code>_mcount(frompc,selfpc)</code></emphasis> $B$O(B
+	    role="bold"><code>_mcount(frompc,selfpc)</code></emphasis> は
 	  <emphasis
-	    role="bold"><filename>sys/lib/libkern/mcount.c</filename></emphasis> $B$G<BAu$5$l$^$9!#(B
+	    role="bold"><filename>sys/lib/libkern/mcount.c</filename></emphasis> で実装されます。
 	  <emphasis role="bold"><code>frompc</code></emphasis>
-	  $B$O4X?t$r8F$S=P$9%"%I%l%9$G!"(B <emphasis
+	  は関数を呼び出すアドレスで、 <emphasis
 	    role="bold"><code>selfpc</code></emphasis>
-	  $B$O8F$P$l$k4X?t<+BN$N%"%I%l%9$G$9!#(B</para>
+	  は呼ばれる関数自体のアドレスです。</para>
 
-	<para>$B%W%m%U%!%$%kCf$KAx6x$9$kA4$F$N(B (<emphasis
+	<para>プロファイル中に遭遇する全ての (<emphasis
 	    role="bold"><code>frompc</code></emphasis>, <emphasis
 	    role="bold"><code>selfpc</code></emphasis>)
-	  $BMQ$K!"(B <emphasis
+	  用に、 <emphasis
 	    role="bold"><code>struct tostruct</code></emphasis>
-	  $B$O(B <emphasis
-	    role="bold"><code>_gmonparam.tos</code></emphasis> $B$,<($9G[Ns$+$i3d$jEv$F$i$l$^$9!#(B
-	  $B%(%s%H%j!<$O:G=i$K;HMQ$9$k=gHV$G!"(B
-	  $B;O$a$+$i=*$o$j$^$GC1=c$K3d$jEv$F$i$l$^$9!#(B <emphasis
-	    role="bold"><code>kmstartup()</code></emphasis> $BFb$N$"$k%^%8%C%/$K$h$C$F!"(B
-	  $B%+!<%M%k$N%F%-%9%H%5%$%:$+$iG[Ns$N%5%$%:$,7h$a$i$l$^$9(B --
-	  $B0l<o$N(B"$B7P83B'(B" $B$N$h$&$G$9!#(B</para>
+	  は <emphasis
+	    role="bold"><code>_gmonparam.tos</code></emphasis> が示す配列から割り当てられます。
+	  エントリーは最初に使用する順番で、
+	  始めから終わりまで単純に割り当てられます。 <emphasis
+	    role="bold"><code>kmstartup()</code></emphasis> 内のあるマジックによって、
+	  カーネルのテキストサイズから配列のサイズが決められます --
+	  一種の"経験則" のようです。</para>
 
 	<para><emphasis role="bold"><code>struct tostruct</code></emphasis> 
-	  $B$N%(%s%H%j!<$O!"%R%9%H%0%i%`%+%&%s%?!<$H0l=o$K!"8F$P$l$?4X?t(B
+	  のエントリーは、ヒストグラムカウンターと一緒に、呼ばれた関数
 	  (<emphasis role="bold"><code>selfpc</code></emphasis>)
-	  $B$N%"%I%l%9$r;}$C$F$$$^$9!#(B
-	  $BF1$88F$S=P$7%"%I%l%9$K$"$k%(%s%H%j!<$O!"%j%s%/$7$?0lMw$r7A@.$7$^$9!#(B
-	  $B0lMw$N%X%C%I(B ($B$D$^$j!"FCDj$N8F$S=P$7%"%I%l%9$KB0$9$k(B
+	  のアドレスを持っています。
+	  同じ呼び出しアドレスにあるエントリーは、リンクした一覧を形成します。
+	  一覧のヘッド (つまり、特定の呼び出しアドレスに属する
 	  <emphasis role="bold"><code>_gmonparam.tos</code></emphasis>
-	  $BG[NsFb$N:G=i$N%(%s%H%j!<$N8+=P$7(B) $B$O!"(B
+	  配列内の最初のエントリーの見出し) は、
 	  <emphasis role="bold"><code>_gmonparam.froms</code></emphasis>
-	  $B$H$$$&Fs$DL\$N%G!<%?G[Ns$K$"$j$^$9!#$3$N(B
-	  <emphasis role="bold"><code>_gmonparam.froms</code></emphasis> $B$O!"(B
-	  $B$"$kCM$K$h$C$FJ,3d$5$l$?8F$S=P$7%"%I%l%9(B
+	  という二つ目のデータ配列にあります。この
+	  <emphasis role="bold"><code>_gmonparam.froms</code></emphasis> は、
+	  ある値によって分割された呼び出しアドレス
 	  (<emphasis role="bold"><code>frompc</code></emphasis>)
-	  $B$K$h$j!"8+=P$7$rIU$1$i$l$^$9(B ($B$"$kCM$O!"%3!<%IFb$NFs$D$N8F$S=P$7$N:GC;5wN%(B
-	  $B$h$jD9$/$J$k$3$H$O$"$j$^$;$s(B - <emphasis 
-	    role="bold"><filename>sys/sys/gmon.h</filename></emphasis> $B$K$"$k%3%a%s%H$r8+$F$/$@$5$$(B) $B!#(B</para>
+	  により、見出しを付けられます (ある値は、コード内の二つの呼び出しの最短距離
+	  より長くなることはありません - <emphasis 
+	    role="bold"><filename>sys/sys/gmon.h</filename></emphasis> にあるコメントを見てください) 。</para>
 
-	<para>$BI8=`E*$J4X?t8F$S=P$7$K$O!"$=$l$>$l$N(B
-	  <emphasis role="bold"><code>frompc</code></emphasis> $B$KBP$7$F(B
-	  <emphasis role="bold"><code>selfpc</code></emphasis> $B$,$R$H$D$7$+$J$$$3$H$KCm0U$7$F$/$@$5$$!#(B
-	  $B$=$N7k2L!"E57?E*$J0lMw$,0l$D$N%a%s%P!<$N$_$G9=@.$5$l$k$h$&$K$J$j$^$9!#(B</para>
+	<para>標準的な関数呼び出しには、それぞれの
+	  <emphasis role="bold"><code>frompc</code></emphasis> に対して
+	  <emphasis role="bold"><code>selfpc</code></emphasis> がひとつしかないことに注意してください。
+	  その結果、典型的な一覧が一つのメンバーのみで構成されるようになります。</para>
       </sect3>
 
       <sect3 id="statistical-profiling">
-	<title>$BE}7WE*$J%W%m%U%!%$%j%s%0(B</title>
+	<title>統計的なプロファイリング</title>
 
-	<para>$B%W%m%U%!%$%j%s%0$,;O$^$k$H!"%W%m%U%!%$%j%s%0%?%$%^!<$N3d$j9~$_$,(B
-	  $B%;%C%H$5$l!"(B <emphasis
-	    role="bold"><code>statclock()</code></emphasis> $B$r8F$S=P$7$^$9(B (
+	<para>プロファイリングが始まると、プロファイリングタイマーの割り込みが
+	  セットされ、 <emphasis
+	    role="bold"><code>statclock()</code></emphasis> を呼び出します (
 	  <emphasis
-	    role="bold"><filename>sys/kern/kern_clock.c</filename></emphasis> $B$r;2>H$7$F$/$@$5$$(B) $B!#(B
-	  $B%W%m%U%!%$%j%s%0%?%$%^!<$O!"4X?t$X$N43>D$,%7%9%F%`$N%/%m%C%/$H(B
-	  $BF14|$7$FF0$+$J$/$J$i$J$$$h$&$K!"DL>o$N%7%9%F%`%/%m%C%/$+$iFHN)$7$?(B
-	  $B%?%$%^!<$G$"$k$Y$-$G$9!#(B <emphasis
-	    role="bold"><code>statclock()</code></emphasis> $B$O%f!<%6!<%W%m%0%i%`$G$b!"(B
-	  $B%+!<%M%k%W%m%U%!%$%j%s%0$G$b;H$o$l$^$9!#(B</para>
+	    role="bold"><filename>sys/kern/kern_clock.c</filename></emphasis> を参照してください) 。
+	  プロファイリングタイマーは、関数への干渉がシステムのクロックと
+	  同期して動かなくならないように、通常のシステムクロックから独立した
+	  タイマーであるべきです。 <emphasis
+	    role="bold"><code>statclock()</code></emphasis> はユーザープログラムでも、
+	  カーネルプロファイリングでも使われます。</para>
 
-	<para>$B$"$kCM$G:FJ,3d$5$l$F$$$l$P!"(B
-	  $B3d$j9~$_;~$K%W%m%0%i%`%+%&%s%?!<$O8+=P$7$H$7$F;H$o$l$F!"(B
-	  $B%R%9%H%0%i%`$N(B <emphasis
+	<para>ある値で再分割されていれば、
+	  割り込み時にプログラムカウンターは見出しとして使われて、
+	  ヒストグラムの <emphasis
 	    role="bold"><code>_gmonparam.kcount</code></emphasis>
-	  $B$K5-O?$5$l!"3:Ev$9$k%;%k$NCM$,A}$($^$9!#(B</para>
+	  に記録され、該当するセルの値が増えます。</para>
       </sect3>
 
       <sect3 id="how-to-use-it">
-	<title>$B;H$$J}(B</title>
+	<title>使い方</title>
 
 
 	<itemizedlist>
-	  <listitem>$B%W%m%U%!%$%j%s%0%+!<%M%k$r9=C[$7!"%V!<%H$7$^$9!#(B
-	    $B$3$l$K$O!"(B <emphasis role="bold"><code>-p</code></emphasis> $B%U%i%0$rMQ$$$F(B
-	    <emphasis role="bold">&man.config.8;</emphasis> $B$7$^$9!#(B
-	    $BMQ$$$J$1$l$P!"FCJL$J$3$H$O$"$j$^$;$s!#%W%m%U%!%$%j%s%0%+!<%M%k$O(B
-	    $B0J2<$N$h$&$J%a%C%;!<%8$r<+F0@_Dj8e!"%k!<%H%U%!%$%k%7%9%F%`$,(B
-	    $B%^%&%s%H$5$l$kA0$K=PNO$7$^$9!#(B
+	  <listitem>プロファイリングカーネルを構築し、ブートします。
+	    これには、 <emphasis role="bold"><code>-p</code></emphasis> フラグを用いて
+	    <emphasis role="bold">&man.config.8;</emphasis> します。
+	    用いなければ、特別なことはありません。プロファイリングカーネルは
+	    以下のようなメッセージを自動設定後、ルートファイルシステムが
+	    マウントされる前に出力します。
 	    <screen>Profiling kernel, textsize=1611256 [f0100000..f02895f8]</screen>
 	    </listitem>
 	  <listitem><emphasis
-	      role="bold"><code>/netbsd</code></emphasis> $B$,8=:_F0:n$7$F$$$k%+!<%M%k$G$"$k$+(B
-	    $B3NG'$7$F$/$@$5$$!#$b$70c$($P!"2<$N(B
-	    <emphasis role="bold">&man.kgmon.8;</emphasis> $B$N8F$S=P$7$G!"(B <emphasis
+	      role="bold"><code>/netbsd</code></emphasis> が現在動作しているカーネルであるか
+	    確認してください。もし違えば、下の
+	    <emphasis role="bold">&man.kgmon.8;</emphasis> の呼び出しで、 <emphasis
 	      role="bold"><code>-N</code></emphasis>
-	    $B%*%W%7%g%s$r;H$C$F$/$@$5$$!#(B</listitem>
+	    オプションを使ってください。</listitem>
 	  <listitem><emphasis
-	      role="bold"><code>kgmon -b</code></emphasis> $B$G%W%m%U%!%$%j%s%0$r3+;O$7$^$9!#(B</listitem>
-	  <listitem>$B$$$/$D$+%"%W%j%1!<%7%g%s$r5/F0$7$F!"%7%9%F%`$NCf$G$bD4$Y$?$$ItJ,$K(B
-	    $BIiC4$r$+$1$^$9!#(B</listitem>
+	      role="bold"><code>kgmon -b</code></emphasis> でプロファイリングを開始します。</listitem>
+	  <listitem>いくつかアプリケーションを起動して、システムの中でも調べたい部分に
+	    負担をかけます。</listitem>
 	  <listitem><emphasis
-	      role="bold"><code>kgmon -h</code></emphasis> $B$G%W%m%U%!%$%j%s%0$r;_$a$^$9!#(B</listitem>
+	      role="bold"><code>kgmon -h</code></emphasis> でプロファイリングを止めます。</listitem>
 	  <listitem><emphasis 
-	      role="bold"><code>kgmon -p</code></emphasis> $B$r5/F0$7$F!"<}=8$7$?%G!<%?$r(B
+	      role="bold"><code>kgmon -p</code></emphasis> を起動して、収集したデータを
 	    <emphasis
-	      role="bold"><filename>gmon.out</filename></emphasis> $B$H$$$&%U%!%$%k$K=q$-9~$_$^$9!#(B</listitem>
-	  <listitem>$BB>$N$b$N$r7WB,$9$kA0$K!"(B <emphasis
+	      role="bold"><filename>gmon.out</filename></emphasis> というファイルに書き込みます。</listitem>
+	  <listitem>他のものを計測する前に、 <emphasis
 	      role="bold"><code>kgmon -r</code></emphasis>
-	    $B$G%+!<%M%kFb$N%W%m%U%!%$%j%s%0%G!<%?$N%P%C%U%!!<$r%j%;%C%H$7$^$9!#(B</listitem>
+	    でカーネル内のプロファイリングデータのバッファーをリセットします。</listitem>
 	  <listitem><emphasis role="bold"><filename>gmon.out</filename></emphasis>
-	    $B$+$i?M4V$,H=FI$G$-$k2r<a$rF~<j$9$k$?$a!"(B
-	    $B0J2<$N%3%^%s%I$r<B9T$7$^$9!#(B
+	    から人間が判読できる解釈を入手するため、
+	    以下のコマンドを実行します。
 	    <screen>% gprof /netbsd gmon.out &gt; gprof.txt</screen></listitem>
-	  <listitem>$B%G!<%?$N2r<a$r$7$^$9!#(B</listitem>
+	  <listitem>データの解釈をします。</listitem>
 	</itemizedlist>
       </sect3>
     </sect2>
   </sect1>
 
-  <parentsec url="../" text="NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B%+!<%M%k(B"/>
+  <parentsec url="../" text="NetBSD ドキュメンテーション: カーネル"/>
 
 </webpage>

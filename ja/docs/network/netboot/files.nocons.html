@@ -4,109 +4,109 @@
 <head>
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rev="made" href="mailto:www@jp.NetBSD.org">
 <title>Setting up Remote Access Without Any Console</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-<a href="files.html">$BLa$k(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="files.html">戻る</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>$B%3%s%=!<%k$rA4$/;H$o$J$$%j%b!<%H%"%/%;%9$N@_Dj(B</h1>
+<h1>コンソールを全く使わないリモートアクセスの設定</h1>
 
-$B$3$3$G@bL@$9$kJ}K!$r;H$&I,MW$,$"$k$N$O!"(B (iBook $B$d(B hp425e $B$N$h$&$K(B)
-$B%^%7%s$KMxMQ2DG=$J%m!<%+%k%3%s%=!<%k$d%7%j%"%k%3%s%=!<%k$,$J$$>l9g$@$1$G$9!#(B
-$B%V!<%H%G%#%9%/!"%+!<%M%k!"%V!<%H%*%W%7%g%s$NA*Br$H$$$C$?!"(B
-$B%3%s%=!<%k$+$i$7$+$G$-$J$$A`:n$,$"$k$N$G!"(B
-$B$3$NJ}K!$O%^%7%s$rF0$+$9J}K!$H$7$F:GNI$N$b$N$G$O$"$j$^$;$s!#(B
+ここで説明する方法を使う必要があるのは、 (iBook や hp425e のように)
+マシンに利用可能なローカルコンソールやシリアルコンソールがない場合だけです。
+ブートディスク、カーネル、ブートオプションの選択といった、
+コンソールからしかできない操作があるので、
+この方法はマシンを動かす方法として最良のものではありません。
 <p>
 
-$B4pK\E*$K!"$3$N%Z!<%8$G@bL@$9$k$N$O!"(B NFS $B%U%!%$%k%7%9%F%`$r@_Dj$7$F(B
-$B%/%i%$%"%s%H$K(B telnet $B%G!<%b%s$r5/F0$5$;!"(B
-$B$5$i$J$k@_Dj$r%m%0%$%s$7$F9T$($k$h$&$K$9$kJ}K!$G$9!#(B
+基本的に、このページで説明するのは、 NFS ファイルシステムを設定して
+クライアントに telnet デーモンを起動させ、
+さらなる設定をログインして行えるようにする方法です。
 
 <ol>
-<li>$B%G%P%$%9%U%!%$%k$r:n$j$^$9!#(B<br>
-   $B4JC1$=$&$KJ9$3$($^$9$,!"0lO"$N<j=g$N$J$+$G$3$3$,0lHVFq$7$$$+$b$7$l$^$;$s!#(B
-   $B$^$:$O!"(B <tt>MAKEDEV</tt> $B%9%/%j%W%H$r<B9T$7$F$_$F$/$@$5$$(B:<br>
+<li>デバイスファイルを作ります。<br>
+   簡単そうに聞こえますが、一連の手順のなかでここが一番難しいかもしれません。
+   まずは、 <tt>MAKEDEV</tt> スクリプトを実行してみてください:<br>
    <tt># <b>cd /export/client/root/dev;./MAKEDEV all</b></tt>
    <p>
-   NFS $B%5!<%P!<>e$G$3$l$,$&$^$/$$$+$J$$>l9g$O!"(B
-   $B<jF0$GI,MW$J%G%P%$%9%U%!%$%k$r:n$j!"(B
-   $B%/%i%$%"%s%H$,%V!<%H$7$F$+$i(B <tt>MAKEDEV all</tt> $B$r<B9T$7(B
-   $BI8=`E*$J%G%P%$%9%U%!%$%k$rF@$kI,MW$,$"$j$^$9!#%G%P%$%9%U%!%$%k$r<jF0$G:n$k$K$O!"(B
-   <tt>MAKEDEV</tt> $B%U%!%$%k$NFbMF$KL\$rDL$7!"$I$N%G%P%$%9$,I,MW$+D4$Y$J$1$l$P$J$j$^$;$s(B
-   ($B$*$=$i$/!"%$!<%5%M%C%H!"2>A[C<Kv!"(B null, stdin, stdout, stderr $B$,I,MW$G$7$g$&(B)$B!#(B
-   miniroot $B%U%!%$%k%7%9%F%`$r%^%&%s%H$9$k$3$H$K$J$k>l9g$O!"$*$=$i$/(B vnode
-   $B%G%#%9%/%G%P%$%9%U%!%$%k$bI,MW$G$9!#%G%P%$%9$N%a%8%c!<HV9f$H%^%$%J!<HV9f$,$o$+$l$P!"(B
-   <tt>man mknod</tt> $B$7$F!"$*;H$$$N%5!<%P!<$G$N(B <tt>mknod</tt> $B%3%^%s%I$N=q<0$rD4$Y!"(B
-   $BI,MW$J%G%P%$%9$r:n$j$^$9!#(B
+   NFS サーバー上でこれがうまくいかない場合は、
+   手動で必要なデバイスファイルを作り、
+   クライアントがブートしてから <tt>MAKEDEV all</tt> を実行し
+   標準的なデバイスファイルを得る必要があります。デバイスファイルを手動で作るには、
+   <tt>MAKEDEV</tt> ファイルの内容に目を通し、どのデバイスが必要か調べなければなりません
+   (おそらく、イーサネット、仮想端末、 null, stdin, stdout, stderr が必要でしょう)。
+   miniroot ファイルシステムをマウントすることになる場合は、おそらく vnode
+   ディスクデバイスファイルも必要です。デバイスのメジャー番号とマイナー番号がわかれば、
+   <tt>man mknod</tt> して、お使いのサーバーでの <tt>mknod</tt> コマンドの書式を調べ、
+   必要なデバイスを作ります。
 <p>
 
-<li><tt>/export/client/root/etc/rc.conf</tt> $B$rJT=8$7$F!"(B rc_configured
-$B$N9T$r0J2<$N$h$&$K=q$-49$($^$9(B:<br>
+<li><tt>/export/client/root/etc/rc.conf</tt> を編集して、 rc_configured
+の行を以下のように書き換えます:<br>
 <tt>rc_configured=<b>YES</b></tt>
 <p>
 
-<li><tt>/export/client/root/etc/inetd.conf</tt> $B$rJT=8$7$F!"(B telnet
-$B%G!<%b%s$,%3%a%s%H$K$5$l$F$$$J$$$h$&$K$7$^$9(B (NetBSD 1.5 $B$H$=$l0J9_$G$O!"(B telnet
-$B$O%G%U%)%k%H$G%3%a%s%H%"%&%H$5$l$F$$$^$9(B)$B!#(B
+<li><tt>/export/client/root/etc/inetd.conf</tt> を編集して、 telnet
+デーモンがコメントにされていないようにします (NetBSD 1.5 とそれ以降では、 telnet
+はデフォルトでコメントアウトされています)。
 <p>
 
-<li><tt>/export/client/root/etc/master.passwd</tt> $B$rJT=8$7$F%f!<%6!<$rDI2C$7!"(B
-telnet $B$GF~$l$k$h$&$K$7$^$9!#(B
-$B%U%!%$%k$N:G8e$K!"0J2<$N$h$&$J9T$r2C$($k$@$1$G$9(B:<br>
+<li><tt>/export/client/root/etc/master.passwd</tt> を編集してユーザーを追加し、
+telnet で入れるようにします。
+ファイルの最後に、以下のような行を加えるだけです:<br>
 <tt><b>me::1000:100::0:0:My account:/home/me:/bin/csh</b></tt><br>
-$B$3$3$G!"(B <tt>me</tt> $B$O%"%+%&%s%HL>!"%Q%9%o!<%I$O6u!"(B
-$B%[!<%`%G%#%l%/%H%j!<$O(B <tt>/home/me</tt>$B!"%7%'%k$O(B <tt>/bin/csh</tt>
-$B$G$9!#9T$NKvHx$G2~9T$9$k$h$&$K$7$F$/$@$5$$!#(B
-$B$?$@$7!"$3$N%U%!%$%k$K6u$N9T$,$"$C$F$O$$$1$^$;$s!#(B
+ここで、 <tt>me</tt> はアカウント名、パスワードは空、
+ホームディレクトリーは <tt>/home/me</tt>、シェルは <tt>/bin/csh</tt>
+です。行の末尾で改行するようにしてください。
+ただし、このファイルに空の行があってはいけません。
 <p>
 
-<li><tt>/export/client/root/etc/group</tt> $B$rJT=8$7$F!"(B
-$BDI2C$7$?%f!<%6!<$r(B <tt>wheel</tt> $B%0%k!<%W$KDI2C$7$^$9(B:<br>
+<li><tt>/export/client/root/etc/group</tt> を編集して、
+追加したユーザーを <tt>wheel</tt> グループに追加します:<br>
 <tt>wheel:*:0:root<b>,me</b></tt>
 <p>
 
-<li><tt>/export/client/root/etc/rc.local</tt> $B$rJT=8$7$F!"%U%!%$%k$N:G8e$K!"(B
-$B0J2<$N$h$&$J9T$r2C$($^$9(B:<br>
+<li><tt>/export/client/root/etc/rc.local</tt> を編集して、ファイルの最後に、
+以下のような行を加えます:<br>
 <tt><b>/usr/sbin/pwd_mkdb -p /etc/master.passwd</b></tt><br>
-$B$3$l$K$h$j!"%7%c%I%&%Q%9%o!<%I%U%!%$%k$d%G!<%?%Y!<%9$,$9$Y$F:n$i$l!"(B
-$BDI2C$7$?%f!<%6!<$,%m%0%$%s$G$-$k$h$&$K$J$j$^$9!#(B
+これにより、シャドウパスワードファイルやデータベースがすべて作られ、
+追加したユーザーがログインできるようになります。
 <p>
 
-<li>$B%V!<%H$7$F(B telnet $B$GF~$j$^$9!#(B <tt>su</tt> $B$7$F(B root $B$K$J$j$^$9!#(B
+<li>ブートして telnet で入ります。 <tt>su</tt> して root になります。
 <p>
 
-<li>$BA0$NCJ3,$G%G%P%$%9%U%!%$%k$r$9$Y$F:n$C$F$$$J$$>l9g$O!"$3$3$G:n$j$^$9(B:<br>
+<li>前の段階でデバイスファイルをすべて作っていない場合は、ここで作ります:<br>
 <tt># <b>cd /dev;./MAKEDEV all</b></tt>
 <p>
 
-<li>$BDI2C$7$?%f!<%6!<(B <tt>me</tt> $B$*$h$S(B <tt>root</tt>
-$B$N%Q%9%o!<%I$r@_Dj$7$^$9(B:<br>
+<li>追加したユーザー <tt>me</tt> および <tt>root</tt>
+のパスワードを設定します:<br>
 <tt># <b>/usr/bin/passwd -l root</b></tt>
 <tt># <b>/usr/bin/passwd -l me</b></tt>
 <p>
 
-<li><tt>/etc/rc.local</tt> $B$+$i(B <tt>pwd_mkdb</tt> $B$N9T$r:o=|$7$^$9!#(B
-$B$3$l$O=i$a$F%V!<%H$7$?;~$K$@$1I,MW$@$+$i$G$9!#(B
+<li><tt>/etc/rc.local</tt> から <tt>pwd_mkdb</tt> の行を削除します。
+これは初めてブートした時にだけ必要だからです。
 </ol>
 <p>
 
-$B$*$a$G$H$&$4$6$$$^$9(B! $B$"$H$O!"(B
-$B%5!<%P!<$,:F5/F0$7$?$H$-$K%G%#%9%/%l%9%5!<%P!<%G!<%b%s72$,$9$Y$F<+F0E*$K5/F0$9$k$h$&$K(B
-<a href="finish.html">$B@_Dj$9$l$P40N;$G$9(B</a>$B!#(B
-$B$^$?$O!"%m!<%+%k%O!<%I%G%#%9%/$X(B NetBSD $B$r%$%s%9%H!<%k$7$?$$$@$1$N>l9g$O!"(B
-<a href="../../../../docs/network/netboot/local.install.html#scripts">$B<jF0$G%$%s%9%H!<%k(B</a>$B$7$F$/$@$5$$!#(B
+おめでとうございます! あとは、
+サーバーが再起動したときにディスクレスサーバーデーモン群がすべて自動的に起動するように
+<a href="finish.html">設定すれば完了です</a>。
+または、ローカルハードディスクへ NetBSD をインストールしたいだけの場合は、
+<a href="../../../../docs/network/netboot/local.install.html#scripts">手動でインストール</a>してください。
 <p>
 
 <hr>
 
-<a href="files.html">$BLa$k(B</a> |
-<a href="./">$BL\<!(B</a>
+<a href="files.html">戻る</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -118,7 +118,7 @@ telnet $B$GF~$l$k$h$&$K$7$^$9!#(B
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -135,8 +135,8 @@ telnet $B$GF~$l$k$h$&$K$7$^$9!#(B
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: files.nocons.html,v 1.3 2007/08/01 15:36:01 kano Exp $<br>
   <!-- Based on english version: -->

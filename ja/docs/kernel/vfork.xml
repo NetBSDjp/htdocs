@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/share/xml/website-netbsd.dtd">
 
 <webpage id="ja-docs-kernel-vfork">
-<config param="desc" value="$B$J$<EAE}E*$J(B vfork()$B$r<BAu$7$?$N$+(B"/>
+<config param="desc" value="なぜ伝統的な vfork()を実装したのか"/>
 <config param="cvstag" value="$NetBSD: vfork.xml,v 1.1 2007/06/09 11:33:47 dsieger Exp $"/>
 <!-- Based on english version: -->
 <!-- NetBSD: vfork.xml,v 1.1 2007/06/09 11:33:47 dsieger Exp   -->
@@ -14,96 +14,96 @@
 <!-- Copyright (c) 1994-2007
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-<title>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B$J$<EAE}E*$J(B vfork()$B$r<BAu$7$?$N$+(B</title>
+<title>NetBSD ドキュメンテーション: なぜ伝統的な vfork()を実装したのか</title>
 </head>
 
 <sect1 role="toc">
 <sect2 id="vfork">
 <sect3 id="intro">
-<title>$B=x(B</title>
+<title>序</title>
 <para><function>vfork()</function>
-$B$O!";R%W%m%;%9$,$$$:$lB>$N%W%m%0%i%`$r(B <function>exec()</function>$B$7!"(B
-$B$+$D?F%W%m%;%9$O$=$l$,5/$-$k$^$GBT$C$F$$$k$H$$$&!"FCJL$J>u67$G(B
-$BMQ$$$k$?$a$K@_7W$5$l$?$b$N$G$9!#(B
-$BEAE}E*$J(B <function>fork()</function> $B$G$O!";R%W%m%;%9$K?F%W%m%;%9$N(B
-$B$9$Y$F$N%Z!<%8$rJ#@=$9$k$H$$$&Cx$7$$%*!<%P!<%X%C%I$,@8$8$^$9!#(B</para>
+は、子プロセスがいずれ他のプログラムを <function>exec()</function>し、
+かつ親プロセスはそれが起きるまで待っているという、特別な状況で
+用いるために設計されたものです。
+伝統的な <function>fork()</function> では、子プロセスに親プロセスの
+すべてのページを複製するという著しいオーバーヘッドが生じます。</para>
 
 <para>
-COW ($B%3%T!<%*%s%i%$%H(B)$B$,DI2C$5$l$?(B
-Mach VM $B%7%9%F%`$G$O(B
-<function>fork()</function> $B$NIi2Y$,BgJQ7Z$/$J$j!"(B
-BSD 4.4$B$G$O(B <function>vfork()</function>$B$O(B <function>fork()</function> $B$H(B
-$BF15A$N$b$N$H$5$l$^$7$?!#(B
-NetBSD 1.3 $B0J9_$G$O!"EAE}E*$J(B <function>vfork()</function> $B$,:F<BAu$5$l$^$7$?!#(B</para>
+COW (コピーオンライト)が追加された
+Mach VM システムでは
+<function>fork()</function> の負荷が大変軽くなり、
+BSD 4.4では <function>vfork()</function>は <function>fork()</function> と
+同義のものとされました。
+NetBSD 1.3 以降では、伝統的な <function>vfork()</function> が再実装されました。</para>
 
 <para><ulink
-url="uvm.html"><emphasis role="bold">UVM</emphasis></ulink>$B$G(B COW $B$r(B
-$B$h$j$h$$$b$N$K$9$k$?$a$KB?Bg$JEXNO$,$*$3$J$o$l$^$7$?!#(B
-$B$7$+$7%"%I%l%96u4V$r6&M-$9$k(B <function>vfork()</function>$B$,(B <emphasis>$B$$$^$@$K(B</emphasis>
-$B>!$k$3$H$,J,$+$C$?$N$G$9!#(B
-$B$3$l$K$h$j!"(B200MHz PPro $B$G$N(B libc$B$N%S%k%I$N=jMW;~4V$r(B
-$B?tIC:o$k$3$H$,$G$-$^$9!#(B</para>
+url="uvm.html"><emphasis role="bold">UVM</emphasis></ulink>で COW を
+よりよいものにするために多大な努力がおこなわれました。
+しかしアドレス空間を共有する <function>vfork()</function>が <emphasis>いまだに</emphasis>
+勝ることが分かったのです。
+これにより、200MHz PPro での libcのビルドの所要時間を
+数秒削ることができます。</para>
 </sect3>
 <sect3 id="4bsd-vfork-cow">
-<title>4.4BSD$B$N(B <function>vfork()</function>/<function>exec()</function> $B$r;H$C$?(B
-<function>vfork()</function> $B$H(B COW $B$N=hM}(B</title>
+<title>4.4BSDの <function>vfork()</function>/<function>exec()</function> を使った
+<function>vfork()</function> と COW の処理</title>
 
 <itemizedlist>
-<listitem><para>$B?F$N(B vm_map $B$r$?$I$C$F!"%"%I%l%96u4V$N=q$-9~$_2DG=$JItJ,$r(B
-        COW $B$H%^!<%/$9$k!#$3$l$O!"(B pmap$B$r8F$S=P$7!"(B PTE$B$r=$@5$7!"(B
-        TLB$B$r%U%i%C%7%e$9$k$3$H$r0UL#$7$^$9!#(B</para></listitem>
+<listitem><para>親の vm_map をたどって、アドレス空間の書き込み可能な部分を
+        COW とマークする。これは、 pmapを呼び出し、 PTEを修正し、
+        TLBをフラッシュすることを意味します。</para></listitem>
 
-<listitem><para>$B;R%W%m%;%9$N(B vm_map $B$r@8@.$7!"?F$N(B vm_map $B%(%s%H%j!<$r;R$N(B vm_map$B$K%3%T!<$7$^$9!#(B
-        $B>l9g$K$h$C$F$O!"(B pmap$B$r8F$S=P$7$F?F$N%Z!<%8%F!<%V%k$+$i(B
-        $B$3$N%Z!<%8%F!<%V%k$K(B PTE $B$r%3%T!<$7$^$9!#(B</para></listitem>
+<listitem><para>子プロセスの vm_map を生成し、親の vm_map エントリーを子の vm_mapにコピーします。
+        場合によっては、 pmapを呼び出して親のページテーブルから
+        このページテーブルに PTE をコピーします。</para></listitem>
 
-<listitem><para>$B?F$r%V%m%C%/$7$^$9!#(B</para></listitem>
+<listitem><para>親をブロックします。</para></listitem>
 
-<listitem><para>$B;R$,Av$j$^$9!#(B PTE$B$,%3%T!<(B <emphasis>$B$5$l$F$J$$(B</emphasis>$B>l9g$K$O!"(B
-        $B%Z!<%8%U%)%k%H$,5/$-$F8=:_%W%m%0%i%`%+%&%s%?$N$"$k%F%-%9%H%Z!<%8$NJ*M}%^%C%T%s%0$,F@$i$l$^$9!#(B</para></listitem>
+<listitem><para>子が走ります。 PTEがコピー <emphasis>されてない</emphasis>場合には、
+        ページフォルトが起きて現在プログラムカウンタのあるテキストページの物理マッピングが得られます。</para></listitem>
 
-<listitem><para>$B;R$O(B exec $B$7!"$=$7$F(B $B:n$i$l$?$P$+$j$N%"%I%l%96u4VA4BN$r(B unmap$B$7$F(B
-        $B?7$7$/:n$j$^$9!#(B
-        $B$3$l$O!"?F$N(B vm_map$B$rC)$C$F(B COW$B$H%^!<%/$5$l$?ItJ,$r(B
-        $BHs(BCOW$B$K$9$k:n6H$rH<$$$^$9!#(B</para></listitem>
+<listitem><para>子は exec し、そして 作られたばかりのアドレス空間全体を unmapして
+        新しく作ります。
+        これは、親の vm_mapを辿って COWとマークされた部分を
+        非COWにする作業を伴います。</para></listitem>
 
-<listitem><para>$B?F$N%V%m%C%/$r2r$-$^$9!#(B</para></listitem>
+<listitem><para>親のブロックを解きます。</para></listitem>
 
-<listitem><para>$B?F$,Av$j!"0JA0$K$O(B R/W $B$G$"$C$F(B COW$B$K$9$k$?$a$K(B R/O$B$H%^!<%/$7$?%G!<%?$r(B
-        $BJQ99$9$k$H%Z!<%8%U%)%k%H$r5/$3$7$^$9!#$3$N;~E@$G$O%G!<%?$N%3%T!<$O9T$J$o$l$^$;$s!#(B</para></listitem>
+<listitem><para>親が走り、以前には R/W であって COWにするために R/Oとマークしたデータを
+        変更するとページフォルトを起こします。この時点ではデータのコピーは行なわれません。</para></listitem>
 </itemizedlist>
 </sect3>
 
 <sect3 id="3bsd-vfork">
-<title>$B%"%I%l%96u4V6&M-$rMQ$$$?(B
-3.0BSD/NetBSD $B$N(B <function>vfork()</function> $B$N=hM}(B</title>
+<title>アドレス空間共有を用いた
+3.0BSD/NetBSD の <function>vfork()</function> の処理</title>
 
 <itemizedlist>
-<listitem><para>$B?F%W%m%;%9$N(B vmspace$B9=B$BN$X$N;2>H$rF@$^$9!#(B</para></listitem>
+<listitem><para>親プロセスの vmspace構造体への参照を得ます。</para></listitem>
 
-<listitem><para>$B?F$r%V%m%C%/$7$^$9!#(B</para></listitem>
+<listitem><para>親をブロックします。</para></listitem>
 
-<listitem><para>$B;R$,Av$j$^$9!#(B $B?F$N%Z!<%8%F!<%V%k$,MQ$$$i$l$k$N$G!"(B PTE$B$O4{$K(B
-        $BM-8z$G$"$j%Z!<%8%U%)%k%H$O5/$3$j$^$;$s!#(B</para></listitem>
+<listitem><para>子が走ります。 親のページテーブルが用いられるので、 PTEは既に
+        有効でありページフォルトは起こりません。</para></listitem>
 
-<listitem><para>$B;R$,(B exec $B$7!"?F$N(B vmspace$B9=B$BN$KBP$7$F;}$C$F$$$?;2>H$r:o=|$7!"(B
-	$B?7$7$$$b$N$r:n$j$^$9!#(B</para></listitem>
+<listitem><para>子が exec し、親の vmspace構造体に対して持っていた参照を削除し、
+	新しいものを作ります。</para></listitem>
 
-<listitem><para>$B?F$N%V%m%C%/$r2r$-$^$9!#(B</para></listitem>
+<listitem><para>親のブロックを解きます。</para></listitem>
 
-<listitem><para>$B?F$,Av$j$^$9!#(B($B?F$N(B vm_map$B$OJQ99$5$l$F$$$J$$$N$G!"(B
-        $B%Z!<%8%U%)%k%H$O5/$3$j$^$;$s!#(B)</para></listitem>
+<listitem><para>親が走ります。(親の vm_mapは変更されていないので、
+        ページフォルトは起こりません。)</para></listitem>
 </itemizedlist>
 
 <para>
-$B$3$N$h$&$K!"(Bfork $B$7$F$5$i$K(B exec$B$9$k$h$&$J>l9g$K$O!"(B
-$BL@$i$+$K8e<T$,$h$j9bB.$G$9!#(B
-$B$?$H$(NI$$(B COW$B%"%k%4%j%:%`$r;H$C$F$$$k$H$7$F$b!"2>A[6u4V$r6&M-$9$k(B
-$B>l9g$HHf$Y$FBgJQB?$/$N:n6H$r9T$J$o$M$P$J$j$^$;$s(B!
+このように、fork してさらに execするような場合には、
+明らかに後者がより高速です。
+たとえ良い COWアルゴリズムを使っているとしても、仮想空間を共有する
+場合と比べて大変多くの作業を行なわねばなりません!
 </para>
 </sect3>
 </sect2>
 </sect1>
-<parentsec url="./" text="NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B%+!<%M%k(B"/>
+<parentsec url="./" text="NetBSD ドキュメンテーション: カーネル"/>
 
 </webpage>

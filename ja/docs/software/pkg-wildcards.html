@@ -2,7 +2,7 @@
 
 <HTML LANG="ja">
 <HEAD>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <TITLE>Implementing Wildcards for the NetBSD Packages System</TITLE>
 </HEAD>
 <BODY BGCOLOR="#FFFFFF">
@@ -10,9 +10,9 @@
 
 <CENTER>
 <HR NOSHADE WIDTH="70%">
- <FONT SIZE="+2" COLOR="green">NetBSD $B%Q%C%1!<%8%7%9%F%`$K$*$1$k(B</FONT><BR>
- <FONT SIZE="+2" COLOR="green">$B%o%$%k%I%+!<%I$N<h$j07$$$K$D$$$F(B</FONT><BR>
- <FONT SIZE="-1">Hubert Feyrer &lt;hubertf@NetBSD.org&gt;$B!"(B 2000 $BG/(B 1 $B7n(B</FONT>
+ <FONT SIZE="+2" COLOR="green">NetBSD パッケージシステムにおける</FONT><BR>
+ <FONT SIZE="+2" COLOR="green">ワイルドカードの取り扱いについて</FONT><BR>
+ <FONT SIZE="-1">Hubert Feyrer &lt;hubertf@NetBSD.org&gt;、 2000 年 1 月</FONT>
 <HR NOSHADE WIDTH="70%">
 </CENTER>
 <BR>
@@ -20,227 +20,227 @@
 
 <BLOCKQUOTE>
 <FONT SIZE=-1>
-	$B35MW(B: $B$3$NJ8=q$G$O!"$^$:(B NetBSD $B%Q%C%1!<%8%7%9%F%`$K$*$$$F(B
-	$B0MB84X78$,$I$N$h$&$K5!G=$7$F$-$?$+$r?6$jJV$j!"%o%$%k%I%+!<%I$r;H$C$?(B
-	$B0MB84X78$r;}$D%P%$%J%j!<%Q%C%1!<%8$N%$%s%9%H!<%k$N$?$a$K(B
-	$B%o%$%k%I%+!<%I$,;H$o$l$kJ}K!$H!"%Q%C%1!<%8$N>WFM$N=hM}$r@bL@$7!"(B
-	$B$5$i$K!"(B pkg_* $B%D!<%k$,F3F~$5$l$F$+$i$NJQ99E@$N35MW$r=R$Y$^$9!#(B
+	概要: この文書では、まず NetBSD パッケージシステムにおいて
+	依存関係がどのように機能してきたかを振り返り、ワイルドカードを使った
+	依存関係を持つバイナリーパッケージのインストールのために
+	ワイルドカードが使われる方法と、パッケージの衝突の処理を説明し、
+	さらに、 pkg_* ツールが導入されてからの変更点の概要を述べます。
 </FONT>
 </BLOCKQUOTE>
 
 
-<H1>1) $B$3$l$^$G$N$"$i$9$8(B</H1>
+<H1>1) これまでのあらすじ</H1>
 
-$B$^$:$O!"(B *BSD Packages/Ports $B%7%9%F%`$K$*$$$F!"0MB84X78$,$I$N$h$&$K(B
-$B=hM}$5$l$F$-$?$+$r@bL@$5$;$F$/$@$5$$!#(B RUN/BUILD_DEPENDS $B$OJL$K$9$k$H!"(B
-$B0MB84X78$N;EAH$_$O!"%Q%C%1!<%8$N(B Makefile $B$G$N<!$N$h$&$J;XDj$K$h$C$F(B
-$BF/$-$^$9(B:
+まずは、 *BSD Packages/Ports システムにおいて、依存関係がどのように
+処理されてきたかを説明させてください。 RUN/BUILD_DEPENDS は別にすると、
+依存関係の仕組みは、パッケージの Makefile での次のような指定によって
+働きます:
 <P>
 
 <PRE>
 	DEPENDS+=	foo-1.2:../../somecat/foo
 </PRE>
 
-$B$3$l$OFs$D$N$3$H$r;XDj$7$^$9(B:
+これは二つのことを指定します:
 <P>
 <OL>
-<LI> $B$3$N%Q%C%1!<%8$,0MB8$7$F$$$k(B "foo" $B$N%P!<%8%g%s!#$3$N%Q%C%1!<%8$r(B
-   $B%$%s%9%H!<%k$9$k$?$a$K$O!"(B foo-1.2 $B$,$J$1$l$P$J$j$^$;$s!#(B
-<LI> $BI,MW$J%P!<%8%g%s$,%$%s%9%H!<%k$5$l$F$$$J$$>l9g!"@h$K$=$A$i$r(B
-   $B%Q%C%1!<%8%7%9%F%`$r;H$C$F9=C[$9$k$?$a!"0lC6$=$A$i$N=hM}$K0\9T$7$^$9!#(B
+<LI> このパッケージが依存している "foo" のバージョン。このパッケージを
+   インストールするためには、 foo-1.2 がなければなりません。
+<LI> 必要なバージョンがインストールされていない場合、先にそちらを
+   パッケージシステムを使って構築するため、一旦そちらの処理に移行します。
 </OL>
 
-$B%$%s%9%H!<%k$N:]!"I,MW$J(B "foo" $B$N%P!<%8%g%s$,%$%s%9%H!<%k$5$l$F$$$k$+(B
-$BD4$Y$k$N$K(B "pkg_info -e" $B$,;H$o$l$^$9!#$b$7%$%s%9%H!<%k$5$l$F$$$l$P!"(B
-$B2?$bLdBj$O$J$/!"(B pkgsrc $B$+$i$N9=C[$G$b(B pkg_add $B$r;H$C$?%P%$%J%j!<%Q%C%1!<%8$N(B
-$B%$%s%9%H!<%k$G$b!"%$%s%9%H!<%k:n6H$rB3$1$^$9!#(B
+インストールの際、必要な "foo" のバージョンがインストールされているか
+調べるのに "pkg_info -e" が使われます。もしインストールされていれば、
+何も問題はなく、 pkgsrc からの構築でも pkg_add を使ったバイナリーパッケージの
+インストールでも、インストール作業を続けます。
 <P>
 
-$B$b$7I,MW$J%P!<%8%g%s$,%$%s%9%H!<%k$5$l$F$$$J$1$l$P!"9=C[%7%9%F%`$O!"(B
-$B0MB84X78$,$9$Y$F2r7h$9$k$^$G!"0MB8$7$F$$$k%Q%C%1!<%8$N%$%s%9%H!<%k$N$?$a!"(B
-$B$=$lMQ$N%G%#%l%/%H%j!<$K0\9T$7$^$9!#(B
-$B%P%$%J%j!<%Q%C%1!<%8$N%$%s%9%H!<%k$N>l9g$O!"(B pkg_add $B$O(B foo-1.2.tgz
-$B$H$$$&%P%$%J%j!<%Q%C%1!<%8$,$"$k$3$H$rA0Ds$H$7!"$=$l$r%$%s%9%H!<%k$7$^$9!#(B
+もし必要なバージョンがインストールされていなければ、構築システムは、
+依存関係がすべて解決するまで、依存しているパッケージのインストールのため、
+それ用のディレクトリーに移行します。
+バイナリーパッケージのインストールの場合は、 pkg_add は foo-1.2.tgz
+というバイナリーパッケージがあることを前提とし、それをインストールします。
 <P>
 
 
-<H1>2) $B%o%$%k%I%+!<%I0MB84X78(B</H1>
+<H1>2) ワイルドカード依存関係</H1>
 
-$B$3$N$h$&$KI,MW$J(B "foo" $B$N%P!<%8%g%s$rFCDj$N$b$N$K8GDj$9$k$H!"(B
-$BJ]<i$,Lq2p$K$J$j$^$9!#$^$?!"B?$/$N>l9g!"FCDj$N%P!<%8%g%s$,I,MW$J$N$G$O$J$/!"(B
-$B$$$/$D$+$N%P!<%8%g%s$N$&$A$N$I$l$+(B ($B$"$k$$$OG$0U$N%P!<%8%g%s(B) $B$,(B
-$B%$%s%9%H!<%k$5$l$F$$$l$P$h$+$C$?$j$7$^$9!#(B
-$B$=$3$G!"<!$N$h$&$J0MB84X78$N@_Dj$,$G$-$^$7$?!#(B
+このように必要な "foo" のバージョンを特定のものに固定すると、
+保守が厄介になります。また、多くの場合、特定のバージョンが必要なのではなく、
+いくつかのバージョンのうちのどれか (あるいは任意のバージョン) が
+インストールされていればよかったりします。
+そこで、次のような依存関係の設定ができました。
 <P>
 
 <PRE>
 	DEPENDS+=	foo-*:../../somecat/foo
 </PRE>
 
-$B$3$l$O!"(B "foo" $B$N(B "$BG$0U$N(B" $B%P!<%8%g%s$rI=$7$^$9!#9=C[%7%9%F%`$O!"(B
-"pkg_info -e 'foo-*'" $B$r;H$C$F(B "foo" $B$N$$$:$l$+$N%P!<%8%g%s$,(B
-$B%$%s%9%H!<%k$5$l$F$$$k$+D4$Y$^$9!#%$%s%9%H!<%k:Q$N%Q%C%1!<%8$r$9$Y$FD4$Y!"$b(B
-$B$7(B "foo" $B$,%$%s%9%H!<%k$5$l$F$$$l$P!"$I$N%P!<%8%g%s$G$"$m$&$H<u$1F~$l$k$N$G$9!#(B
-$B$b$7%$%s%9%H!<%k$5$l$F$$$J$1$l$P!"9=C[%7%9%F%`$O!"(B pkgsrc $B$+$i(B
-$B%P!<%8%g%sITLd$GC5$7=P$7!"$3$l$N%$%s%9%H!<%k$K0\9T$7$^$9!#(B
+これは、 "foo" の "任意の" バージョンを表します。構築システムは、
+"pkg_info -e 'foo-*'" を使って "foo" のいずれかのバージョンが
+インストールされているか調べます。インストール済のパッケージをすべて調べ、も
+し "foo" がインストールされていれば、どのバージョンであろうと受け入れるのです。
+もしインストールされていなければ、構築システムは、 pkgsrc から
+バージョン不問で探し出し、これのインストールに移行します。
 <P>
 
-$B%P%$%J%j!<%Q%C%1!<%8$G$O!"$3$N07$$$O$h$jJ#;($G$9!#3F%P%$%J%j!<%Q%C%1!<%8$O!"(B
-"foo" $B%Q%C%1!<%8$N(B "$BG$0U$N(B" $B%P!<%8%g%s$K0MB8$7$F$$$k$3$H$rCN$C$F$*$j!"(B
-$B9=C[%7%9%F%`$HF1MM$K!"$=$l$r8+$D$1$k$?$a$N%A%'%C%/$r$7$^$9!#(B
-$B$b$7>r7o$rK~$?$9%P!<%8%g%s$,%$%s%9%H!<%k:Q$J$i$PLdBj$"$j$^$;$s!#(B
-$B$=$&$G$J$$>l9g!"(B "foo" $B%Q%C%1!<%8$N(B "$BG$0U$N(B" $B%P!<%8%g%s$N%$%s%9%H!<%k(B
-$B$H$$$&MW5a$r(B ($B<+F0E*$K(B) $BK~$?$9$&$($G!"LdBj$,5/$3$j$^$9!#(B
-$B%P%$%J%j!<%Q%C%1!<%8$N7ABV$G$O0\9T$9$Y$-%G%#%l%/%H%j!<$,M?$($i$l$:!"(B
-$B$^$?!"%=!<%9$+$i$N:F9=C[$H$$$&%*%W%7%g%s$,$J$$$?$a$G$9!#(B
+バイナリーパッケージでは、この扱いはより複雑です。各バイナリーパッケージは、
+"foo" パッケージの "任意の" バージョンに依存していることを知っており、
+構築システムと同様に、それを見つけるためのチェックをします。
+もし条件を満たすバージョンがインストール済ならば問題ありません。
+そうでない場合、 "foo" パッケージの "任意の" バージョンのインストール
+という要求を (自動的に) 満たすうえで、問題が起こります。
+バイナリーパッケージの形態では移行すべきディレクトリーが与えられず、
+また、ソースからの再構築というオプションがないためです。
 <P>
 
-$B$=$3$G!"(B pkg_add $B$G$O!"$9$Y$F$NMxMQ2DG=$J(B ($B%P%$%J%j!<(B) $B%Q%C%1!<%8$r%9%-%c%s$7!"(B
-$B$=$N$J$+$G(B ($B5a$a$i$l$F$$$k>r7o(B "foo-*" $B$K9gCW$9$k$b$N$+$i(B) $B:G?7$N$b$N$r(B
-$B%$%s%9%H!<%k$7$^$9!#$3$N%9%-%c%s$O!"%o%$%k%I%+!<%I$N;EAH$_$X$NBP1~$N$?$a$K(B
-$BI,MW$J$3$H$G$9!#0MB8$7$F$$$k%P!<%8%g%s$K!"(B foo&lt;1.0 $B$N$h$&$J@)Ls(B
-(``dewey depend'') $B$,$"$k>l9g$O!"(B 1.0 $B$h$jA0$N%P!<%8%g%s$GMxMQ2DG=$J(B
-$B%P%$%J%j!<%Q%C%1!<%8$N$J$+$+$i:G?7$N$b$N$rC5$7$F%$%s%9%H!<%k$7$^$9!#(B
-$B$3$&$d$C$FI,MW$J0MB84X78$rK~$?$9$N$G$9!#(B
+そこで、 pkg_add では、すべての利用可能な (バイナリー) パッケージをスキャンし、
+そのなかで (求められている条件 "foo-*" に合致するものから) 最新のものを
+インストールします。このスキャンは、ワイルドカードの仕組みへの対応のために
+必要なことです。依存しているバージョンに、 foo&lt;1.0 のような制約
+(``dewey depend'') がある場合は、 1.0 より前のバージョンで利用可能な
+バイナリーパッケージのなかから最新のものを探してインストールします。
+こうやって必要な依存関係を満たすのです。
 <P>
 
-$B%P%$%J%j!<%Q%C%1!<%8$O!"%m!<%+%k%G%#%9%/$+$i$@$1$G$J$/(B FTP $B7PM3$G$b(B
-$B%$%s%9%H!<%k$G$-$^$9$,!">e$G@bL@$7$?(B "$B%G%#%l%/%H%j!<%9%-%c%s(B" $B$O$3$N>l9g$b(B
-$B9T$J$o$l$^$9!#$3$N!"1s3V%G%#%l%/%H%j!<$N%9%-%c%s$O!"(B
-NetBSD $B%Q%C%1!<%8%7%9%F%`$N%o%$%k%I%+!<%I$r40A4$KM-MQ$J$b$N$K$9$k>e$G!"(B
-$B:G8e$^$G7g$1$F$$$?ItJ,$G$7$?!#(B
+バイナリーパッケージは、ローカルディスクからだけでなく FTP 経由でも
+インストールできますが、上で説明した "ディレクトリースキャン" はこの場合も
+行なわれます。この、遠隔ディレクトリーのスキャンは、
+NetBSD パッケージシステムのワイルドカードを完全に有用なものにする上で、
+最後まで欠けていた部分でした。
 <P>
 
 
-<H1>3) $B=hM}$K$D$$$F$N%a%b(B</H1>
+<H1>3) 処理についてのメモ</H1>
 
-$B%P%$%J%j!<%Q%C%1!<%8(!(B "kde" $B$N$h$&$K!"(B "a-1.0" $B$H$$$&%Q%C%1!<%8$,(B
-"b-1.*" $B$K0MB8$7!"$5$i$K$=$l$,(B "c-*" $B$rI,MW$H$7$F$$$k$J$I$H$7$^$9(!(B
-$B$r(B FTP $B7PM3$G%$%s%9%H!<%k$9$k>l9g!"(B
-$BI,MW$J(B ($B%M%C%H%o!<%/$N(B) $BF0:n$O!"$*$*$6$C$Q$K8@$($P<!$N$h$&$K$J$j$^$9(B:
+バイナリーパッケージ─ "kde" のように、 "a-1.0" というパッケージが
+"b-1.*" に依存し、さらにそれが "c-*" を必要としているなどとします─
+を FTP 経由でインストールする場合、
+必要な (ネットワークの) 動作は、おおざっぱに言えば次のようになります:
 <P>
 
 <UL>
-<LI> "a-1.0" $B$N(B +CONTENTS $B$rF@$k!#(B
-<LI> "b" $B$NMxMQ2DG=$J%P!<%8%g%s$,$o$+$k!#(B
-<LI> "b-1.whateverisavailable" $B$N(B +CONTENTS $B$rF@$k!#(B
-<LI> "c" $B$NMxMQ2DG=$J%P!<%8%g%s$,$o$+$k!#(B
-<LI> "c-something" $B$N(B +CONTENTS $B$rF@$k!#(B
-<LI> "c-something" $B$N;D$j$N=hM}(B
-<LI> "b-1.whateverisavailable" $B$N;D$j$N=hM}(B
-<LI> "a-1.0" $B$N;D$j$N=hM}(B
+<LI> "a-1.0" の +CONTENTS を得る。
+<LI> "b" の利用可能なバージョンがわかる。
+<LI> "b-1.whateverisavailable" の +CONTENTS を得る。
+<LI> "c" の利用可能なバージョンがわかる。
+<LI> "c-something" の +CONTENTS を得る。
+<LI> "c-something" の残りの処理
+<LI> "b-1.whateverisavailable" の残りの処理
+<LI> "a-1.0" の残りの処理
 </UL>
 
-"$B!D$N;D$j$N=hM}(B" $B$G$NA`:n$G$O!"F1$8%3%M%/%7%g%s(B (FTP $B$=$NB>2?$G$b(B)
-$B$r:FMxMQ$7$F9T$J$&$3$H$,$G$-$^$9!#$K$b$+$+$o$i$:!"(B pkg_add $B$N%W%m%;%9$,!"(B
-$B$5$i$J$k%Q%C%1!<%8$NDI2C$N$?$a$K!"F1$8(B FTP $B%5%$%H$KJL$N%3%M%/%7%g%s$r(B
-$BD%$C$F$7$^$&$H!"<!$N$h$&$J7k2L$r@8$_$^$9!#(B
+"…の残りの処理" での操作では、同じコネクション (FTP その他何でも)
+を再利用して行なうことができます。にもかかわらず、 pkg_add のプロセスが、
+さらなるパッケージの追加のために、同じ FTP サイトに別のコネクションを
+張ってしまうと、次のような結果を生みます。
 <P>
 
 <UL>
-<LI> $B%j%b!<%H%5%$%H$G%3%M%/%7%g%s$,HEMt(B
-<LI> $BM>7W$J%3%M%/%7%g%s3NN)$N$?$a$N;~4V$NL5BL(B
+<LI> リモートサイトでコネクションが氾濫
+<LI> 余計なコネクション確立のための時間の無駄
 </UL>
 
-$B$3$l$O!"(B 3 $B8D$N(B pkg_add $B$N%W%m%;%9$9$Y$F$GF1$8(B FTP $B%;%C%7%g%s$r;H$&$3$H$G(B
-$B2sHr$5$l$^$9!#(B ftp(1) $B$rAv$i$;$F$$$k6&DL%W%m%;%9$O!"(B stdin $B$H(B stdout $BMQ$K(B
-$B$U$?$D$N%Q%$%W$r%*!<%W%s$7!"$3$l$i$r$=$N8e$N(B pkg_add $B%3%^%s%I(B
-($B4D6-JQ?t$+$i%U%!%$%k5-=R;R$rF@$^$9(B) $B$KEO$7$^$9!#(B
-$B$3$N%3%M%/%7%g%s$N0];}$K$h$C$F!"J#?t$N%P%$%J%j!<%Q%C%1!<%8$N<hF@$H(B
-$B%$%s%9%H!<%k$K!"DL>o$O$?$@$R$H$D$N%3%M%/%7%g%s$,;H$o$l$^$9!#(B
+これは、 3 個の pkg_add のプロセスすべてで同じ FTP セッションを使うことで
+回避されます。 ftp(1) を走らせている共通プロセスは、 stdin と stdout 用に
+ふたつのパイプをオープンし、これらをその後の pkg_add コマンド
+(環境変数からファイル記述子を得ます) に渡します。
+このコネクションの維持によって、複数のバイナリーパッケージの取得と
+インストールに、通常はただひとつのコネクションが使われます。
 <P>
 
 
-<H1>4) $B$5$i$K0MB84X78$K$D$$$F(B</H1>
+<H1>4) さらに依存関係について</H1>
 
-NetBSD $B%Q%C%1!<%8%7%9%F%`$G;H$o$l$k%o%$%k%I%+!<%I$O!"%7%'%k$N%0%i%V$N(B
-$B%9!<%Q!<%;%C%H$K$J$C$F$$$^$9!#8=:_!"<!$N$b$N$KBP1~$7$F$$$^$9(B:
+NetBSD パッケージシステムで使われるワイルドカードは、シェルのグラブの
+スーパーセットになっています。現在、次のものに対応しています:
 <P>
 
 <UL>
-<LI> fnmatch(3) $B$K5-=R$5$l$F$$$k%7%'%k$N%0%i%V(B (*, ?, ...)
-<LI> csh $BE*$JA*Br;h(B {foo,bar}
-<LI> &gt;=$B!"(B &lt;=$B!"(B &lt;$B!"(B &gt; $B1i;;;R$r;H$C$?!"%Q%C%1!<%8$N%P!<%8%g%sHV9f$N%^%C%A%s%0(B
+<LI> fnmatch(3) に記述されているシェルのグラブ (*, ?, ...)
+<LI> csh 的な選択肢 {foo,bar}
+<LI> &gt;=、 &lt;=、 &lt;、 &gt; 演算子を使った、パッケージのバージョン番号のマッチング
 </UL>
 
-$B$?$H$($P!"(B "pkg_info -e 'foo&gt;=1.3'" $B$O(B "foo" $B%Q%C%1!<%8$N(B 1.3 $B0J9_$N(B
-$B%P!<%8%g%s$,3:Ev$7$^$9!#(B
-$B$3$l$i$N%o%$%k%I%+!<%I$O!"%$%s%9%H!<%k$5$l$?%Q%C%1!<%8$N8!=P$d!"(B
-$B0MB8$9$k%P%$%J%j!<%Q%C%1!<%8$NC5:w$K;H$o$l$k$@$1$G$O$"$j$^$;$s!#(B
-$B%o%$%k%I%+!<%I$O$^$?!"%Q%C%1!<%8$N>WFM$N8!=P$K$b;H$&$3$H$,$G$-$^$9(B
-($B<B:];H$o$l$F$$$^$9(B) $B!#(B $B$3$l$O!"%U%!%$%kL>$d5!G=$N=EJ#$J$I$K$h$j(B
-$BF1;~$K%$%s%9%H!<%k$9$Y$-$G$O$J$$Fs$D$N%Q%C%1!<%8$r;H$&;vBV$r2sHr$9$k$?$a$G$9!#(B
+たとえば、 "pkg_info -e 'foo&gt;=1.3'" は "foo" パッケージの 1.3 以降の
+バージョンが該当します。
+これらのワイルドカードは、インストールされたパッケージの検出や、
+依存するバイナリーパッケージの探索に使われるだけではありません。
+ワイルドカードはまた、パッケージの衝突の検出にも使うことができます
+(実際使われています) 。 これは、ファイル名や機能の重複などにより
+同時にインストールすべきではない二つのパッケージを使う事態を回避するためです。
 <P>
 
-$B%o%$%k%I%+!<%I$NJL$NMQES$H$7$F!"(B pkg_info $B$d(B pkg_delete $B$K(B
-$B%P!<%8%g%s$J$7$N%Q%C%1!<%8L>$@$1$,M?$($i$l$?>l9g!"<+F0E*$K(B "-*" $B$r(B
-$BJd40$7$F%$%s%9%H!<%k:Q$_$N%Q%C%1!<%8$rD4$Y$k$H$$$&$b$N$,$"$j$^$9!#(B
-$B$3$l$K$h$j!"<c43$N%-!<%9%H%m!<%/$N@aLs$,$G$-!"$5$i$K=EMW$J$3$H$K$O!"(B
-$B$I$N%P!<%8%g%s$,%7%9%F%`$K%$%s%9%H!<%k$5$l$F$$$k$+$rCN$C$F$*$/I,MW$,(B
-$B$J$/$J$j$^$9!#(B
+ワイルドカードの別の用途として、 pkg_info や pkg_delete に
+バージョンなしのパッケージ名だけが与えられた場合、自動的に "-*" を
+補完してインストール済みのパッケージを調べるというものがあります。
+これにより、若干のキーストロークの節約ができ、さらに重要なことには、
+どのバージョンがシステムにインストールされているかを知っておく必要が
+なくなります。
 <P>
 
 
-<H1>5) $B$=$NB>!"(B NetBSD $B%Q%C%1!<%8%7%9%F%`$G$NJQ99E@(B</H1>
+<H1>5) その他、 NetBSD パッケージシステムでの変更点</H1>
 
-1997 $BG/Cf$4$m$K(B NetBSD $B$K(B pkg_* $B$,(B FreeBSD $B$+$i$H$jF~$l$i$l$F0JMh!"(B
-$B%D!<%k$N3HD%$N$?$a$K$$$/$D$+$NJQ99$,2C$o$j$^$7$?!#6=L#?<$$$b$N$r(B
-$B$$$/$D$+7G$2$^$9(B:
+1997 年中ごろに NetBSD に pkg_* が FreeBSD からとり入れられて以来、
+ツールの拡張のためにいくつかの変更が加わりました。興味深いものを
+いくつか掲げます:
 <P>
 
 <UL>
-<LI> ftp $B$N%3!<%I$OFsEY=q$-D>$5$l$^$7$?!#0l2sL\$O!"%W%m%-%7!<$N07$$$d(B
-   $B%P%s%II}$N@)8B$J$I$rDI2C$9$k$?$a$K!"(B ftpio $B%i%$%V%i%j!<$,(B ftp(1)
-   $B%W%m%;%9$N@8@.$GCV$-49$($i$l$^$7$?!#Fs2sL\$O%3%M%/%7%g%s$NJ];}$N$?$a$G!"(B
-   $B:F5"E*$J(B pkg_add $B$,(B ftp(1) $B%W%m%;%9$r8F$S=P$7$F$$$?$N$r!"(B
-   $B$R$H$D$NF1$8(B ftp $B%W%m%;%9$r;H$&$h$&$K=q$-49$($i$l$^$7$?!#(B
-<LI> $B%Q%C%1!<%8$K$h$C$F%7%9%F%`$KCV$+$l$?$9$Y$F$N%U%!%$%k$N>pJs$r5-O?$9$k!"(B
-   $B!V%Q%C%1!<%8%G!<%?%Y!<%9!W$,DI2C$5$l$^$7$?!#$3$N>pJs$K$h$C$F!"(B
-   $B%P%$%J%j!<$KBP1~$9$k$9$Y$F$N%I%-%e%a%s%F!<%7%g%s(B ($B%^%K%e%"%k%Z!<%8!"(B
-   README $B$J$I(B) $B$d@_Dj%U%!%$%k$,4JC1$K8+$D$+$j$^$9!#(B
-<LI> $B%$%s%9%H!<%k:Q$_$N%Q%C%1!<%8$d%P%$%J%j!<%Q%C%1!<%8$N%P%$%HC10L$G$N(B
-   $B%5%$%:$r5-O?$9$k$h$&$K$J$j$^$7$?!#$5$i$K!"0MB8$7$F$$$k%Q%C%1!<%8$r4^$`(B
-   $B%5%$%:$b5-O?$7$F$$$^$9!#$3$l$K$h$j!"%Q%C%1!<%8$N%$%s%9%H!<%k$NA08e$K!"(B
-   $BI,MW$J%G%#%9%/%9%Z!<%9$,$o$+$j$^$9!#(B
-<LI> $B%Q%C%1!<%8$N:F5"E*$J:o=|!"$3$l$K$h$j!"$"$k%Q%C%1!<%8$,I,MW$H$7$F$$$k(B
-   $B%Q%C%1!<%8$r$9$Y$F:o=|$7$?$j!"$"$k%Q%C%1!<%8$rI,MW$H$9$k%Q%C%1!<%8$r(B
-   $B$9$Y$F:o=|$7$?$j$9$k$3$H$,$G$-$^$9!#(B
-<LI> $B?7$7$$%P!<%8%g%s$N(B bsd.pkg.mk $B$N5!G=$,I,MW$J>l9g$N$?$a!"(B
-   $B8E$$(B pkg_* $B%D!<%k$N8!=P5!G=$,DI2C$5$l$^$7$?!#$3$N5!G=(B ($B$H(B
-   pkgsrc/pkgtools/pkg_install $B%Q%C%1!<%8$H$NAH$_9g$o$;(B) $B$K$h$j!"(B
-   $B%f!<%6!<$O!"%7%9%F%`>e$N(B pkg_* $B%D!<%k$N%"%C%W%0%l!<%I$ND4@0$,$G$-$^$9!#(B
-<LI> "zoularis" $B%Q%C%1!<%8$N=u$1$K$h$j!"(B NetBSD $B$N<c43$N(B
-   $B%3%"%3%s%]!<%H%M%s%H$,(B Solaris $B$H(B Linux $B$K0\?"$5$l!"(B
-   NetBSD $B%Q%C%1!<%8%7%9%F%`$O!"$3$l$i$N%7%9%F%`>e$G$b;HMQ$G$-$k$h$&$K(B
-   $B$J$j$^$7$?(B ($B8=$K;HMQ$5$l$F$$$^$9(B!) $B!#$3$N%5%V%7%9%F%`$N%I%-%e%a%s%H$O(B
-   $B$=$l@lMQ$N$b$N$,MQ0U$5$l$k$Y$-$G$9$,!"$7$+$7!"$3$NFCD'$+$i$b!"(B NetBSD
-   $B$,@$3&$G:G$b0\?"@-$K$9$0$l$?%*%Z%l!<%F%#%s%0%7%9%F%`$G$"$k$3$H$,$o$+$j$^$9!#(B
+<LI> ftp のコードは二度書き直されました。一回目は、プロキシーの扱いや
+   バンド幅の制限などを追加するために、 ftpio ライブラリーが ftp(1)
+   プロセスの生成で置き換えられました。二回目はコネクションの保持のためで、
+   再帰的な pkg_add が ftp(1) プロセスを呼び出していたのを、
+   ひとつの同じ ftp プロセスを使うように書き換えられました。
+<LI> パッケージによってシステムに置かれたすべてのファイルの情報を記録する、
+   「パッケージデータベース」が追加されました。この情報によって、
+   バイナリーに対応するすべてのドキュメンテーション (マニュアルページ、
+   README など) や設定ファイルが簡単に見つかります。
+<LI> インストール済みのパッケージやバイナリーパッケージのバイト単位での
+   サイズを記録するようになりました。さらに、依存しているパッケージを含む
+   サイズも記録しています。これにより、パッケージのインストールの前後に、
+   必要なディスクスペースがわかります。
+<LI> パッケージの再帰的な削除、これにより、あるパッケージが必要としている
+   パッケージをすべて削除したり、あるパッケージを必要とするパッケージを
+   すべて削除したりすることができます。
+<LI> 新しいバージョンの bsd.pkg.mk の機能が必要な場合のため、
+   古い pkg_* ツールの検出機能が追加されました。この機能 (と
+   pkgsrc/pkgtools/pkg_install パッケージとの組み合わせ) により、
+   ユーザーは、システム上の pkg_* ツールのアップグレードの調整ができます。
+<LI> "zoularis" パッケージの助けにより、 NetBSD の若干の
+   コアコンポートネントが Solaris と Linux に移植され、
+   NetBSD パッケージシステムは、これらのシステム上でも使用できるように
+   なりました (現に使用されています!) 。このサブシステムのドキュメントは
+   それ専用のものが用意されるべきですが、しかし、この特徴からも、 NetBSD
+   が世界で最も移植性にすぐれたオペレーティングシステムであることがわかります。
 </UL>
    
-$B2<5-$O(B NetBSD $B%Q%C%1!<%8%7%9%F%`$K4X$7$FL>A0$r5s$2$k$KCM$9$k?M$?$A$G$9!#(B
-$BH`$i$N$*$+$2$G:#F|$N%7%9%F%`$,$"$k$N$G$9(B:
+下記は NetBSD パッケージシステムに関して名前を挙げるに値する人たちです。
+彼らのおかげで今日のシステムがあるのです:
 <P>
 
 <UL>
-<LI> pkg_* $B%D!<%k(B: Jordan Hubbard$B!"(B John Kohl$B!"$=$NB>1F$N<gLr$?$A(B
-<LI> $B%Q%C%1!<%8>WFM$N%3!<%I(B: Thorsten Frueauf
-<LI> $B%o%$%k%I%+!<%I$N%^%C%A%s%0(B: Alistair Crooks$B!"(B Hubert Feyrer
-<LI> $B%o%$%k%I%+!<%I0MB84X78$N=hM}(B: Hubert Feyrer
-<LI> NetBSD $B$+$i(B Solaris $B$d(B Linux $B$X$N0\?"(B: Christos Zoulas$B!"(B
-     Alistair Crooks$B!"(B Kimmo Suominen
-<LI> NetBSD pkgsrc $B$N(B committer $B$?$A$H!"H`$i$r=u$1!"<jEA$$!";Y1g$7!"(B
-     $B$D$$$F$-$?%f!<%6!<$?$A!#(B
+<LI> pkg_* ツール: Jordan Hubbard、 John Kohl、その他影の主役たち
+<LI> パッケージ衝突のコード: Thorsten Frueauf
+<LI> ワイルドカードのマッチング: Alistair Crooks、 Hubert Feyrer
+<LI> ワイルドカード依存関係の処理: Hubert Feyrer
+<LI> NetBSD から Solaris や Linux への移植: Christos Zoulas、
+     Alistair Crooks、 Kimmo Suominen
+<LI> NetBSD pkgsrc の committer たちと、彼らを助け、手伝い、支援し、
+     ついてきたユーザーたち。
 </UL>
 
 <HR NOSHADE>
 
-$B$5$i$J$k>pJs(B:
+さらなる情報:
 <P>
 <UL>
-<LI> NetBSD $B%W%m%8%'%/%H$N(B<A HREF="http://www.NetBSD.org/ja/">$B%[!<%`%Z!<%8(B</A>
+<LI> NetBSD プロジェクトの<A HREF="http://www.NetBSD.org/ja/">ホームページ</A>
      
-<LI> NetBSD $B%Q%C%1!<%8%3%l%/%7%g%s(B (pkgsrc) $B$K$D$$$F$N(B<A
-     HREF="../pkgsrc/">$B%I%-%e%a%s%F!<%7%g%s(B</A>
+<LI> NetBSD パッケージコレクション (pkgsrc) についての<A
+     HREF="../pkgsrc/">ドキュメンテーション</A>
      
 </UL>
    

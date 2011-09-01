@@ -111,7 +111,7 @@ if ($opt{'q'})
      align="middle" src="../$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
-    <h1>NetBSD ¥É¥­¥å¥á¥ó¥Æ¡¼¥·¥ç¥ó:</h1>
+    <h1>NetBSD ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒ†ãƒ¼ã‚·ãƒ§ãƒ³:</h1>
     <h1>$SUB1</h1>
 </td></tr></table>
 <p>'
@@ -123,7 +123,7 @@ if ($opt{'q'})
      align="middle" src="../$HOME/images/BSD-daemon.jpg" border="0"
      width=146 height=129 alt="BSD daemon"></a>
   </td><td align=center>
-    <h1>NetBSD ³«È¯¼Ô¥É¥­¥å¥á¥ó¥Æ¡¼¥·¥ç¥ó:</h1>
+    <h1>NetBSD é–‹ç™ºè€…ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒ†ãƒ¼ã‚·ãƒ§ãƒ³:</h1>
     <h1>$SUB1</h1>
 </td></tr></table>
 <p>'
@@ -133,7 +133,7 @@ if ($opt{'q'})
 '<table border="0" summary="Footer navigation"><tr>
 <td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
-<span class="foothome"><a href="$HOME/">¥Û¡¼¥à¥Ú¡¼¥¸</a></span><br>
+<span class="foothome"><a href="$HOME/">ãƒ›ãƒ¼ãƒ ãƒšãƒ¼ã‚¸</a></span><br>
 </td>
 </tr></table>'
 ,
@@ -143,14 +143,14 @@ if ($opt{'q'})
 <table border="0" summary="Footer navigation"><tr>
 <td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
-<span class="foothome"><a href="$HOME/">¥Û¡¼¥à¥Ú¡¼¥¸</a></span><br>
+<span class="foothome"><a href="$HOME/">ãƒ›ãƒ¼ãƒ ãƒšãƒ¼ã‚¸</a></span><br>
 </td>
 </tr></table>
 </td><td>
 <table border="0" summary="Footer navigation"><tr>
 <td class="foothome"><span class="foothome"><a href="$DEVELOPERS"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
-<span class="foothome"><a href="$DEVELOPERS">³«È¯¼Ô¥É¥­¥å¥á¥ó¥Æ¡¼¥·¥ç¥ó</a></span><br>
+<span class="foothome"><a href="$DEVELOPERS">é–‹ç™ºè€…ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒ†ãƒ¼ã‚·ãƒ§ãƒ³</a></span><br>
 </td>
 </tr></table>
 
@@ -162,7 +162,7 @@ if ($opt{'q'})
 <table border="0" summary="Footer navigation"><tr>
 <td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
-<span class="foothome"><a href="$HOME/">¥Û¡¼¥à¥Ú¡¼¥¸</a></span><br>
+<span class="foothome"><a href="$HOME/">ãƒ›ãƒ¼ãƒ ãƒšãƒ¼ã‚¸</a></span><br>
 </td>
 </tr></table>
 </td><td>
@@ -181,14 +181,14 @@ if ($opt{'q'})
 <table border="0" summary="Footer navigation"><tr>
 <td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
-<span class="foothome"><a href="$HOME/">¥Û¡¼¥à¥Ú¡¼¥¸</a></span><br>
+<span class="foothome"><a href="$HOME/">ãƒ›ãƒ¼ãƒ ãƒšãƒ¼ã‚¸</a></span><br>
 </td>
 </tr></table>
 </td><td>
 <table border="0" summary="Footer navigation"><tr>
 <td class="foothome"><span class="foothome"><a href="$PORTS"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
-<span class="foothome"><a href="$PORTS">ÂÐ±þµ¡¼ï</a></span><br>
+<span class="foothome"><a href="$PORTS">å¯¾å¿œæ©Ÿç¨®</a></span><br>
 </td>
 </tr></table>
 
@@ -200,7 +200,7 @@ if ($opt{'q'})
 <table border="0" summary="Footer navigation"><tr>
 <td class="foothome"><span class="foothome"><a href="$HOME/"><img src="../$HOME/images/NetBSD-flag.png" alt="" border="0" width="90" height="90"></a></span></td>
 <td class="foothome">
-<span class="foothome"><a href="$HOME/">¥Û¡¼¥à¥Ú¡¼¥¸</a></span><br>
+<span class="foothome"><a href="$HOME/">ãƒ›ãƒ¼ãƒ ãƒšãƒ¼ã‚¸</a></span><br>
 </td>
 </tr></table>
 </td><td>
@@ -353,7 +353,7 @@ sub makelist
 
     $data = $date_month = '';
     $entry_num = $date_num = $date_num_used = 0;
-    open(FILE, "iconv -f iso-2022-jp -t euc-jp $infile|") || die("Unable to open '$infile': $!");
+    open(FILE, "cat $infile|") || die("Unable to open '$infile': $!");
     foreach( <FILE> )
 	{
 	foreach $rcstag (%rcsmap)
@@ -402,7 +402,7 @@ sub makelist
 		    if ($date_month ne '')
 			{ $list .= "</ul>\n"; }
 		    $month !~ /(\S+)\s*(\d+)/;
-		    $jmonth = sprintf "%04dÇ¯%02d·î", $2, $months{$1};
+		    $jmonth = sprintf "%04då¹´%02dæœˆ", $2, $months{$1};
 		    $list .= "<h3>$jmonth</h3>\n<ul>\n";
 		    $_ .= "<hr><h2>$jmonth</h2><hr>\n";
 		    $date_month = $month;
@@ -587,7 +587,7 @@ sub makelist
     if ($data !~ s/(<head[^>]*>)/$1$_/i)
 	{ &fail("Unable to locate <head> tag"); }
 
-    open(FILE, "|iconv -f euc-jp -t iso-2022-jp >$outfile") || die("Unable to write '$outfile': $!");
+    open(FILE, "|cat >$outfile") || die("Unable to write '$outfile': $!");
     print FILE &extras_process($data, %extras);
     close(FILE);
     if ($date_num) {

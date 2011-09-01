@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
@@ -13,7 +13,7 @@
 <!-- Copyright (c) 1994-2007
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-<title>CVS pullup $B$r<B:]$K9T$&J}K!(B</title>
+<title>CVS pullup を実際に行う方法</title>
 </head>
 
 
@@ -22,71 +22,71 @@
 
 
 
-<para>$B%j%j!<%9%5%$%/%k$N4|4VCf!"IaDL$O$=$N=i4|CJ3,$K!"3+H/<T$O(B
-$B%j%j!<%9%(%s%8%K%"$N>5G'$r<u$1!"(B
-$B$=$N8e$K<+J,$G(B pullup $B$r9T$&$h$&$K$J$C$F$$$^$9!#(B</para>
+<para>リリースサイクルの期間中、普通はその初期段階に、開発者は
+リリースエンジニアの承認を受け、
+その後に自分で pullup を行うようになっています。</para>
 
 <para><filename>foo.c</filename>
-1.19$B$+$i(B1.21
-$B$X$NJQ99$r(B pullup $B$9$k>l9g$rNc$K$7$F$_$^$7$g$&!#(B</para>
+1.19から1.21
+への変更を pullup する場合を例にしてみましょう。</para>
 
 <note>
- "1.21$B$X(B pullup $B$9$k(B" $B$H$$$&9M$(J}$O0UL#$,$"$j$^$;$s(B --
-$B>o$KFs$D$N%P!<%8%g%s4V$N(Bdiff$B$r$"$F$k$3$H$K$J$j$^$9!#(B
-$B$I$A$i$+0lJ}$,4pK\$K$J$k%?%0$G$"$k$+$b$7$l$^$;$s$,!"$H$K$+$/(Bdiff$B$r(B pullup $B$9$k$N$G!"(B
-$BJQ99$,5/$3$C$?Fs$D$N%P!<%8%g%s$r$$$D$bCN$C$F$$$kI,MW$,$"$j$^$9!#(B</note>
+ "1.21へ pullup する" という考え方は意味がありません --
+常に二つのバージョン間のdiffをあてることになります。
+どちらか一方が基本になるタグであるかもしれませんが、とにかくdiffを pullup するので、
+変更が起こった二つのバージョンをいつも知っている必要があります。</note>
 
-<para>$B$^$:=i$a$K!"40A4$J(B
-  <filename>foo.c</filename>$B$+$i;O$a$k$3$H$r3NG'$7$^$9!#(B
+<para>まず初めに、完全な
+  <filename>foo.c</filename>から始めることを確認します。
   <screen>
   cvs update -rnetbsd-1-4 foo.c
   </screen>
   </para>
 
-<para>($B$3$N%3%^%s%I$N8z2L$K$D$$$F$O!":G8e$K$"$kCm0U$r;2>H$7$F$/$@$5$$!#(B)</para>
+<para>(このコマンドの効果については、最後にある注意を参照してください。)</para>
 
 
-<para>$B$=$7$F!"(B pullup $B$7$?$$JQ99$r2C$($k$?$a!"(B<filename>foo.c</filename>$B$K%Q%C%A$rEv$F$kI,MW$,$"$j$^$9!#(B
-$B$3$l$K$OFs$DJ}K!$,$"$j$^$9!#(B
-$B%Q%C%A%U%!%$%k$r:n@.$7$F$"$F$k$+!"$=$l$rHr$1$k$?$a$K(Bcvs$B%3%^%s%I$N(Bupdate$B$K$"$k(B
-<option>-j</option> $B%U%i%0$r;H$&;v$,$G$-$^$9!#(B</para>
+<para>そして、 pullup したい変更を加えるため、<filename>foo.c</filename>にパッチを当てる必要があります。
+これには二つ方法があります。
+パッチファイルを作成してあてるか、それを避けるためにcvsコマンドのupdateにある
+<option>-j</option> フラグを使う事ができます。</para>
 
-<para>$B$^$8$J$$(B:
+<para>まじない:
   <screen>
    cvs diff -kk -c -r1.19 -r1.21 foo.c &gt;/tmp/patch
   </screen>
-  $B$G!"0J2<$N%3%^%s%I$G$"$F$k$3$H$,$G$-$k%Q%C%A%U%!%$%k$r:n@.$G$-$^$9!#(B
+  で、以下のコマンドであてることができるパッチファイルを作成できます。
   <screen>
   patch &lt;/tmp/patch
   </screen>
-  $B$3$&$9$k$+$o$j$K!"%Q%$%W$r2p$7$F%Q%C%A$rD>@\$"$F$k$3$H$b$G$-$^$9!#%3%^%s%I(B
+  こうするかわりに、パイプを介してパッチを直接あてることもできます。コマンド
   <screen>
   cvs update -kk -j1.19 -j1.21 foo.c
   </screen>
-  $B$O!"4pK\E*$K>e$K$+$$$F$"$kFs$D$NCJ3,$HF1Ey$G!"(B
-  $BF1$8$h$&$K%U%!%$%k$K%Q%C%A$r$"$F$^$9!#(B</para>
+  は、基本的に上にかいてある二つの段階と同等で、
+  同じようにファイルにパッチをあてます。</para>
 
-<para>$B$5$"!"$"$J$?$,K>$s$@7k2L$K$J$C$F$$$k$+3NG'$9$k$?$a!"(B
-  $B%U%!%$%k$r<jF0$GD4$Y$F$_$^$7$g$&!#(B
-  <filename>foo.c</filename>$B$,Jf@h$H0lCW$7$F$$$k$+D4$Y$?$$$J$i$P(B
-  ($BB?J,(B1.21$B$,Jf@h$G!"(B1.19$B$,;^$NJ,4tE@$+;w$?$h$&$J$b$N$G$7$g$&(B) $B!"(B
-  $B$3$&$7$^$9(B
+<para>さあ、あなたが望んだ結果になっているか確認するため、
+  ファイルを手動で調べてみましょう。
+  <filename>foo.c</filename>が穂先と一致しているか調べたいならば
+  (多分1.21が穂先で、1.19が枝の分岐点か似たようなものでしょう) 、
+  こうします
   <screen>
   cvs diff -kk -r1.21 foo.c
   </screen>
-  $B$9$k$H!":9J,$O$^$C$?$/$J$$$O$:$G$9(B (<option>-kk</option> $B$O(B RCS ID $B$NE83+$rM^;_$7$^$9(B)$B!#(B
-  $B$b$7(B<filename>foo.c</filename>$B$,Jf@h$H0lCW$7$F$$$J$$$H;W$o$l$k$J$i$P!"(B
-  $B<jF0$GBg>fIW$G$"$k$3$H$rD4$Y$k$+!"K>$s$@DL$j$K$J$k$3$H$r3N$+$a$k$?$a(B
-  cvs$B$NAOB$E*$J%;%C%H$r;HMQ$9$k$+$7$J$1$l$P$$$1$^$;$s!#(B</para>
+  すると、差分はまったくないはずです (<option>-kk</option> は RCS ID の展開を抑止します)。
+  もし<filename>foo.c</filename>が穂先と一致していないと思われるならば、
+  手動で大丈夫であることを調べるか、望んだ通りになることを確かめるため
+  cvsの創造的なセットを使用するかしなければいけません。</para>
 
 
-<para>$B$H$K$+$/!"0lEY(Bdiff$B$,$"$F$i$l$?$i!"$3$&$7$^$9(B:
+<para>とにかく、一度diffがあてられたら、こうします:
   <screen>
   cvs commit foo.c
   </screen>
-  $B%j%j!<%9;^$N%3%_%C%H%a%C%;!<%8$N7A<0$O!"$3$l$^$G$NNr;K$N$J$+$G!"(B
-  $BDI@W$dJ]<i$rMF0W$K$9$k$?$a$KI8=`2=$5$l$F$-$^$7$?!#(B
-  $B%3%_%C%H%a%C%;!<%8$N0l9TL\$O!"0J2<$N7A<0$N$$$:$l$+!"$^$?$OL@$i$+$G7ZHy$J0!<o$G$J$1$l$P$J$j$^$;$s!#(B
+  リリース枝のコミットメッセージの形式は、これまでの歴史のなかで、
+  追跡や保守を容易にするために標準化されてきました。
+  コミットメッセージの一行目は、以下の形式のいずれか、または明らかで軽微な亜種でなければなりません。
   <itemizedlist>
   <listitem><code>Pull up revision 1.45 (requested by
   <emphasis>user</emphasis>):</code></listitem>
@@ -97,33 +97,33 @@
   <listitem><code>Apply patch (requested by
   <emphasis>user</emphasis>):</code></listitem>
   </itemizedlist>
- $B%3%_%C%H%a%C%;!<%8$NFs9TL\0J9_$K$O!"(B pullup $B$r$7$?M}M3$N@bL@$r!"(B
-$B<+M3$J7A<0$G5-$7$F$+$^$$$^$;$s!#$3$N%a%C%;!<%8$G$O!"$J$k$Y$/!"(B
-$B=$@5J}K!$N>\:Y$r87L)$K=q$/$N$G$O$J$/!"(B<emphasis role="bold">$B2?$r(B</emphasis>$B=$@5$7$?$N$+$r(B
-"$BBP30E*$K$o$+$k$h$&$K(B" $B@bL@$9$k$h$&$K$7$F$/$@$5$$!#(B
-$B$3$N@bL@$O!"%9%Z!<%9(B 2 $B8D$G;z2<$2$9$k$h$&$K$7!"(B
-$B$^$?!"%Q%C%A%j%j!<%9$KBP$7$F$O!"E,@Z$J(B
-<filename>CHANGES</filename> $B%U%!%$%k$K$3$N@bL@$N9`L\$r2C$($F$/$@$5$$!#(B</para>
+ コミットメッセージの二行目以降には、 pullup をした理由の説明を、
+自由な形式で記してかまいません。このメッセージでは、なるべく、
+修正方法の詳細を厳密に書くのではなく、<emphasis role="bold">何を</emphasis>修正したのかを
+"対外的にわかるように" 説明するようにしてください。
+この説明は、スペース 2 個で字下げするようにし、
+また、パッチリリースに対しては、適切な
+<filename>CHANGES</filename> ファイルにこの説明の項目を加えてください。</para>
 
-<para>$B$3$N(B pullup $B$K$h$C$F!"8x<0$KJs9p$5$l$F$$$kLdBj$,=$@5$5$l$?>l9g$O!"(B
-  $B%3%_%C%H%a%C%;!<%8$N@bL@$N:G8e$K(B <emphasis role="bold">Fixes PR#nnnn</emphasis>
-  $B$N$h$&$K5-$7$F$/$@$5$$!#(B</para>
+<para>この pullup によって、公式に報告されている問題が修正された場合は、
+  コミットメッセージの説明の最後に <emphasis role="bold">Fixes PR#nnnn</emphasis>
+  のように記してください。</para>
 
-<para>$B$5$F!"%3%_%C%H%a%C%;!<%8$K%j%S%8%g%sHV9f$r@53N$K5-O?$9$k$h$&5a$a$^$7$?$,!"(B
-  $B$3$l$O!"F1$8%G%#%l%/%H%j!<$KBP$9$k(B pullup $B$r$^$H$a$F%3%_%C%H$7$F!"(B"sync
- with trunk," $B$G$9$^$;$?$j$7$F$O(B<emphasis>$B$$$1$J$$(B</emphasis>$B$H$$$&$3$H$G$9!#$3$l$G$O(B
-  $B$I$N%P!<%8%g%s$r(B pullup $B$7$?$+$,$o$+$i$J$$$+$i$G$9!#(B</para>
+<para>さて、コミットメッセージにリビジョン番号を正確に記録するよう求めましたが、
+  これは、同じディレクトリーに対する pullup をまとめてコミットして、"sync
+ with trunk," ですませたりしては<emphasis>いけない</emphasis>ということです。これでは
+  どのバージョンを pullup したかがわからないからです。</para>
 
 
 <note>
-  $B%3%^%s%I(B
+  コマンド
   <screen>
   cvs update -rnetbsd-1-4 foo.c
   </screen>
- $B$O(B<filename>foo.c</filename>$B$r(B"netbsd-1-4" $B$XE=$jIU$1(B
- (<filename>CVS/Entries</filename>$B$K2?$,5/$3$C$F$$$k$+8+$F$/$@$5$$(B) $B!"(B
-  $B$=$N8e$N(BCVS$B%3%^%s%I$O$3$N(B"$B@\Ce:^(B" $B$r0J2<$N%3%^%s%I$G<h$i$J$$$+$.$j!"(B
-  $B$3$N%j%j!<%9$KE,1~$5$l$k$3$H$K$J$j$^$9!#(B
+ は<filename>foo.c</filename>を"netbsd-1-4" へ貼り付け
+ (<filename>CVS/Entries</filename>に何が起こっているか見てください) 、
+  その後のCVSコマンドはこの"接着剤" を以下のコマンドで取らないかぎり、
+  このリリースに適応されることになります。
   <screen>
   cvs update -A foo.c
   </screen></note>

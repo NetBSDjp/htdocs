@@ -17,7 +17,7 @@ sub printfile {
     if ( ! -f $file && -f "../../../gallery/in-Action/$file" ) {
 	$file = "../../../gallery/in-Action/$file";
     }
-    open(F, "iconv -f iso-2022-jp -t euc-jp $file|") or die "Cannot open $file for reading: $!\n";
+    open(F, "cat $file|") or die "Cannot open $file for reading: $!\n";
     while(<F>) {
 	s/<!--.*//g;
 	s#(href|src)="([^"/]+\.(png|gif|jpg))"#$1="../../../gallery/in-Action/$2"#gi;

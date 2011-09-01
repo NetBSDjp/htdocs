@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
   PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
 	 "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
 <webpage id="ja-docs-network-ipsec-rasvpn">
-<config param="desc" value="$B%j%b!<%H%f!<%6!<%"%/%;%9(B VPN $B$N9=C[J}K!(B"/>
+<config param="desc" value="リモートユーザーアクセス VPN の構築方法"/>
 <config param="cvstag" value="$NetBSD: rasvpn.xml,v 1.5 2009/01/13 12:57:25 hubertf Exp $"/>
 <!-- Based on english version: -->
 <!-- NetBSD: rasvpn.xml,v 1.5 2009/01/13 12:57:25 hubertf Exp   -->
@@ -13,127 +13,127 @@
 
   <!-- Copyright (c) 2005 Emmanuel Dreyfus.  ALL RIGHTS RESERVED. -->
 
-  <title>Racoon $B$r;H$C$?%j%b!<%H%f!<%6!<%"%/%;%9(B VPN $B$N9=C[J}K!(B</title>
+  <title>Racoon を使ったリモートユーザーアクセス VPN の構築方法</title>
 </head>
 
 <sect1 role="toc">
 
   <sect2 id="version">
-    <title>$B%=%U%H%&%'%"%j%j!<%9(B</title>
+    <title>ソフトウェアリリース</title>
 
     <sect3 id="kernel">
-      <title>$B%+!<%M%k(B</title>
-      <para>$B$3$NJ8=q$N>pJs$O!"0J2<$N(B
-	NetBSD $B%+!<%M%k$rBP>]$H$7$F$$$^$9!#(B
+      <title>カーネル</title>
+      <para>この文書の情報は、以下の
+	NetBSD カーネルを対象としています。
 	<itemizedlist>
-	  <listitem>2005 $BG/(B 5 $B7n0J9_$N(B NetBSD-current</listitem>
-	  <listitem>2005 $BG/(B 5 $B7n0J9_$N(B NetBSD-3.0_BETA</listitem>
+	  <listitem>2005 年 5 月以降の NetBSD-current</listitem>
+	  <listitem>2005 年 5 月以降の NetBSD-3.0_BETA</listitem>
 	</itemizedlist>
       </para>
     </sect3>
 
     <sect3 id="userland">
-      <title>$B%f!<%6!<%i%s%I(B</title>
-      <para>$B$3$NJ8=q$N>pJs$O!"0J2<$N%f!<%6!<%i%s%I(B
-	(&man.setkey.8;, &man.racoon.8;, &man.racoonctl.8; $B$*$h$S(B
-	libipsec) $B$rBP>]$H$7$F$$$^$9!#(B
+      <title>ユーザーランド</title>
+      <para>この文書の情報は、以下のユーザーランド
+	(&man.setkey.8;, &man.racoon.8;, &man.racoonctl.8; および
+	libipsec) を対象としています。
 	<itemizedlist>
-	  <listitem>2005 $BG/(B 5 $B7n0J9_$N(B NetBSD-current</listitem>
-	  <listitem>2005 $BG/(B 5 $B7n0J9_$N(B NetBSD-3.0_BETA</listitem>
-	  <listitem>$B$3$l$h$jA0$N(B NetBSD $B%j%j!<%9$K!"(BNetBSD $B$N(B pkgsrc $B$r;H$C$F(B
-	    ipsec-tools 0.6.beta2 $B0J>e$N%Q%C%1!<%8$rDI2C$7$?$b$N(B</listitem>
+	  <listitem>2005 年 5 月以降の NetBSD-current</listitem>
+	  <listitem>2005 年 5 月以降の NetBSD-3.0_BETA</listitem>
+	  <listitem>これより前の NetBSD リリースに、NetBSD の pkgsrc を使って
+	    ipsec-tools 0.6.beta2 以上のパッケージを追加したもの</listitem>
 	</itemizedlist>
       </para>
     </sect3>
   </sect2>
 
   <sect2 id="remote-user-vpn">
-    <title>$B%j%b!<%H%f!<%6!<%"%/%;%9(B VPN</title>
+    <title>リモートユーザーアクセス VPN</title>
 
     <sect3 id="context">
-      <title>$BGX7J$H$J$k>u67(B</title>
+      <title>背景となる状況</title>
     
-      <para>$BB?$/$NAH?%$G$O!"%j%b!<%H%"%/%;%9%5!<%P!<(B (Remote Access Server, RAS)
-	$B$r;}$C$F$*$j!"%f!<%6!<$,5lMh$N8x=0EEOC2s@~(B (Plain Old Telephone System, POTS)
-	$B$H%b%G%`@\B3$r;H$C$F%j%b!<%H%"%/%;%9$G$-$k$h$&$K$7$F$$$^$9!#(B</para>
+      <para>多くの組織では、リモートアクセスサーバー (Remote Access Server, RAS)
+	を持っており、ユーザーが旧来の公衆電話回線 (Plain Old Telephone System, POTS)
+	とモデム接続を使ってリモートアクセスできるようにしています。</para>
       
-      <para>$B%G%8%?%k2CF~<T2s@~(B (Digital Subscriber Line, DSL) $B$d%1!<%V%k2s@~$H$$$C$?(B
-	$B9bBS0h@\B3$NIa5Z$KH<$$!"(BPOTS $B$r;H$C$?%j%b!<%H%"%/%;%9$O;~BeCY$l$H$J$j!"(B
-	$B%f!<%6!<$O9bBS0h$N%j%b!<%H%"%/%;%9$r5a$a$k$h$&$K$J$C$F$$$^$9!#(B
-	$B2>A[%W%i%$%Y!<%H%M%C%H%o!<%/(B (Virtual Private Network, VPN) $B$r;H$&$3$H$O!"(B
-	$B$3$NLdBj$KBP$9$k2r7h:v$N$R$H$D$G$9!#(B</para>
+      <para>デジタル加入者回線 (Digital Subscriber Line, DSL) やケーブル回線といった
+	高帯域接続の普及に伴い、POTS を使ったリモートアクセスは時代遅れとなり、
+	ユーザーは高帯域のリモートアクセスを求めるようになっています。
+	仮想プライベートネットワーク (Virtual Private Network, VPN) を使うことは、
+	この問題に対する解決策のひとつです。</para>
 
-      <para>VPN $B%"%/%;%9MQ$N%f!<%6!<G'>Z$H$7$F$O!"$$$/$D$+$NJ}K!$,$"$j$^$9!#(B
+      <para>VPN アクセス用のユーザー認証としては、いくつかの方法があります。
 	<itemizedlist>
-	  <listitem>$B%0%k!<%W%Q%9%o!<%I(B ($B%f!<%6!<A40w$,F1$8%Q%9%o!<%I$r;H$&(B)</listitem>
-	  <listitem>$B%m%0%$%sL>$H%Q%9%o!<%I(B</listitem>
-	  <listitem>x509 $B>ZL@=q(B</listitem>
+	  <listitem>グループパスワード (ユーザー全員が同じパスワードを使う)</listitem>
+	  <listitem>ログイン名とパスワード</listitem>
+	  <listitem>x509 証明書</listitem>
 	</itemizedlist>
       </para>
 
-      <para>$B%0%k!<%W%Q%9%o!<%I$ONt$C$?<jK!$G$"$j!";H$&$Y$-$G$O$"$j$^$;$s!#(B
-	$B%f!<%6!<$rK\Ev$KG'>Z$7$F$$$k$o$1$G$O$J$$$+$i$G$9!#(B
-	x509 $B>ZL@=q$O:G9b$N%;%-%e%j%F%#!<$r$b$?$i$7$^$9$,!"%f!<%6!<>ZL@=q$N4IM}$,LLE]$+$b$7$l$^$;$s!#(B
-	$B$=$l$G$b9=$o$J$1$l$P!"I,MW$J>pJs$O(B <ulink url="index.html">IPsec FAQ</ulink>
-	$B$K$9$Y$F$"$j$^$9!#%m%0%$%sL>$H%Q%9%o!<%I$O!"JB$N%;%-%e%j%F%#!<%l%Y%k$G$9!#(B
-	$B%Q%9%o!<%I$O?dB,$5$l$?$j!"JL$N%W%m%H%3%k$G8x3+$5$l$?$j(B ($BNc(B: SSL $B$r;H$o$J$$(B POP3)
-	$B$9$k$N$G!"0BA4@-$O9b$/$O$"$j$^$;$s!#$7$+$7!"6/$$%Q%9%o!<%I$r;H$&$h$&$K$7!"(B
-	$B$^$?!"K5<u$5$l$J$$$h$&$J%W%m%H%3%k$N;H$$J}$r$7$F$$$l$P!"(B
-	$B7P:QE*$K0BA4$r<B8=$G$-$^$9!#(B</para>
+      <para>グループパスワードは劣った手法であり、使うべきではありません。
+	ユーザーを本当に認証しているわけではないからです。
+	x509 証明書は最高のセキュリティーをもたらしますが、ユーザー証明書の管理が面倒かもしれません。
+	それでも構わなければ、必要な情報は <ulink url="index.html">IPsec FAQ</ulink>
+	にすべてあります。ログイン名とパスワードは、並のセキュリティーレベルです。
+	パスワードは推測されたり、別のプロトコルで公開されたり (例: SSL を使わない POP3)
+	するので、安全性は高くはありません。しかし、強いパスワードを使うようにし、
+	また、傍受されないようなプロトコルの使い方をしていれば、
+	経済的に安全を実現できます。</para>
 
-      <para>$B$3$N(B HOW-TO $B$G$O!"%j%b!<%H%f!<%6!<(B VPN $B%"%/%;%9MQ$K(B
-	$B%m%0%$%sL>$H%Q%9%o!<%I$,;H$o$l$F$$$k>u67$rBP>]$H$7$^$9!#(B</para>
+      <para>この HOW-TO では、リモートユーザー VPN アクセス用に
+	ログイン名とパスワードが使われている状況を対象とします。</para>
     </sect3>
 
     <sect3 id="security">
-      <title>$B%;%-%e%j%F%#!<>e$NLdBj(B</title>
+      <title>セキュリティー上の問題</title>
       
-      <para>$B0BA4$J(B VPN $B$r3NN)$9$k$?$a$K!"%j%b!<%H%f!<%6!<$O(B VPN $B%2!<%H%&%'%$$rG'>Z$7$J$1$l$P$J$i$:!"(B
-	$B$^$?!"(BVPN $B%2!<%H%&%'%$$O%j%b!<%H%f!<%6!<$rG'>Z$7$J$1$l$P$J$j$^$;$s!#(B
-	$B$*8_$$$NG'>Z$,$*$3$J$o$l$J$$$H!"Cf4V<T967b(B (Man in the Middle (MiM) attack)
-	$B$NH4$17j$,3+$-!"967b<T$,(B VPN $B%2!<%H%&%'%$$K$J$j$9$^$7$F(B
-	$B%f!<%6!<%Q%9%o!<%I$r<}=8$G$-$F$7$^$$$^$9!#(B</para>
+      <para>安全な VPN を確立するために、リモートユーザーは VPN ゲートウェイを認証しなければならず、
+	また、VPN ゲートウェイはリモートユーザーを認証しなければなりません。
+	お互いの認証がおこなわれないと、中間者攻撃 (Man in the Middle (MiM) attack)
+	の抜け穴が開き、攻撃者が VPN ゲートウェイになりすまして
+	ユーザーパスワードを収集できてしまいます。</para>
       
-      <para>$B%j%b!<%H%f!<%6!<$,%m%0%$%sL>$H%Q%9%o!<%I$GG'>Z$9$k$H@bL@$7$^$7$?$,!"(B
-	VPN $B%2!<%H%&%'%$$O$I$&$d$C$FG'>Z$9$k$N$G$7$g$&$+(B? $B;vA06&M-80$r;H$&>l9g!"(B
-	$B$=$N80$rCN$C$F$$$k?M$J$iC/$G$b(B VPN $B%2!<%H%&%'%$$K$J$j$9$^$9$3$H$,$G$-$^$9$7!"(B
-	$B@5Ev$J%f!<%6!<$O;vA06&M-80$rCN$C$F$*$+$M$P$J$i$J$/$J$j$^$9!#$3$l$OHs>o$K<e$$%;%-%e%j%F%#!<$G$9!#(B
-	$BBeBX:v$O!"(BVPN $B%2!<%H%&%'%$$G(B x509 $B>ZL@=q$r;H$&$3$H$G$9!#$3$l$O%5!<%P!<>ZL@=q$G$"$j!"(B
-	$B%f!<%6!<>ZL@=q$h$j4IM}$7$d$9$$$b$N$G$9!#$3$3$G$O!"(B
-	VPN $B%2!<%H%&%'%$$NG'>Z$K>ZL@=q$r;H$&$b$N$H$7$^$9!#(B</para>
+      <para>リモートユーザーがログイン名とパスワードで認証すると説明しましたが、
+	VPN ゲートウェイはどうやって認証するのでしょうか? 事前共有鍵を使う場合、
+	その鍵を知っている人なら誰でも VPN ゲートウェイになりすますことができますし、
+	正当なユーザーは事前共有鍵を知っておかねばならなくなります。これは非常に弱いセキュリティーです。
+	代替策は、VPN ゲートウェイで x509 証明書を使うことです。これはサーバー証明書であり、
+	ユーザー証明書より管理しやすいものです。ここでは、
+	VPN ゲートウェイの認証に証明書を使うものとします。</para>
     </sect3>
 
     <sect3 id="solutions">
-      <title>$B2r7h:v(B</title>
+      <title>解決策</title>
 
-      <para>$B$3$3$G$O!"%f!<%6!<$NG'>Z$K$O%m%0%$%sL>$H%Q%9%o!<%I$r;H$$!"(B
-	VPN $B%2!<%H%&%'%$$NG'>Z$K$O>ZL@=q$r;H$&$3$H$,I,MW$G$9!#$3$l$r<B8=$G$-$k<jK!$O$"$^$j$"$j$^$;$s!#(B
-	<ulink url="http://www.openvpn.org">OpenVPN</ulink> $B$O!"$3$l$,<B8=2DG=$J!"(B
-	Secure Socket Layer (SSL) $B$r;H$C$?2r7h:v$G$9!#JL$N2r7h:v$H$7$F!"(B IPsec $B$r;H$&J}K!$b$"$j!"(B
-	$B$3$N(B HOW-TO $B$G$O$3$A$i$NJ}K!$r<h$j07$$$^$9!#(B</para>
+      <para>ここでは、ユーザーの認証にはログイン名とパスワードを使い、
+	VPN ゲートウェイの認証には証明書を使うことが必要です。これを実現できる手法はあまりありません。
+	<ulink url="http://www.openvpn.org">OpenVPN</ulink> は、これが実現可能な、
+	Secure Socket Layer (SSL) を使った解決策です。別の解決策として、 IPsec を使う方法もあり、
+	この HOW-TO ではこちらの方法を取り扱います。</para>
     </sect3>
   </sect2>
 
   <sect2 id="remote-user-ipsec">
-    <title>IPsec $B$r;H$C$?%f!<%6!<%j%b!<%H%"%/%;%9(B</title>
+    <title>IPsec を使ったユーザーリモートアクセス</title>
 
     <sect3 id="ph1auth">
-      <title>IPsec $B%U%'!<%:(B 1 $BG'>Z(B</title>
+      <title>IPsec フェーズ 1 認証</title>
       
-      <para>IPsec $B%U%'!<%:(B 1 $B$O!"(BNetBSD $B$G$O(B &man.racoon.8; $B$H$7$F$bCN$i$l$k(B IKE $B%G!<%b%s$K$h$C$F9T$J$o$l$k!"(B
-	IPsec $B808r49(B (IPsec Key Exchange, IKE) $BA`:n$N0lIt$G$9!#(BIPsec $B%U%'!<%:(B 1 $B$NL\E*$O!"(B
-	$BDL?.Aj<j$rG'>Z$7$?$&$($G!"(B IPsec $B%U%'!<%:(B 2 $B$r0BA4$K9T$J$&$?$a$N%^%9%?!<80$N@_Dj$r$9$k$3$H$G$9!#(B
-	$B%U%'!<%:(B 2 $B$NL\E*$O!"(BIPsec $B%H%i%U%#%C%/8r49$K;H$o$l$k80$rF@$k$3$H$G$9!#(B
-	IPsec $B%H%i%U%#%C%/8r49$,$*$3$J$o$l$F$$$k4V!"%U%'!<%:(B 2 $B$N80$ODj4|E*$K:F@8@.$5$l$^$9!#(B</para>
+      <para>IPsec フェーズ 1 は、NetBSD では &man.racoon.8; としても知られる IKE デーモンによって行なわれる、
+	IPsec 鍵交換 (IPsec Key Exchange, IKE) 操作の一部です。IPsec フェーズ 1 の目的は、
+	通信相手を認証したうえで、 IPsec フェーズ 2 を安全に行なうためのマスター鍵の設定をすることです。
+	フェーズ 2 の目的は、IPsec トラフィック交換に使われる鍵を得ることです。
+	IPsec トラフィック交換がおこなわれている間、フェーズ 2 の鍵は定期的に再生成されます。</para>
 
-      <para>IPsec $B%U%'!<%:(B 1 $B$O!"Fs$D$NG'>ZJ}K!$rDs6!$7$^$9!#;vA06&M-80$H!">ZL@=q$G$9!#(B
-	$B0J2<$NM}M3$K$h$j!"(BIPsec $B%U%'!<%:(B 1 $B$O$o$l$o$l$,5a$a$F$$$k$b$N$G$O$"$j$^$;$s!#(B
+      <para>IPsec フェーズ 1 は、二つの認証方法を提供します。事前共有鍵と、証明書です。
+	以下の理由により、IPsec フェーズ 1 はわれわれが求めているものではありません。
 	<itemizedlist>
-	  <listitem>$B;vA06&M-80$O!"%m%0%$%sL>$KG{$i$l$^$;$s!#%0%k!<%W%Q%9%o!<%I$H$7$?>l9g$@$1$O4IM}2DG=$G$9$,!"(B
-	    $B$=$l$r=|$1$P!";vA06&M-80$rE,@Z$K07$&$?$a$N4IM}%D!<%k$,$"$j$^$;$s!#(B</listitem>
-	  <listitem>IPsec $B%U%'!<%:(B 1 $BG'>Z$O!"BP>NE*$G$"$k$3$H$,A0Ds$G$9!#(B
-	    $B$D$^$j!"N>C<$H$b$K;vA06&M-80G'>Z$r!"$^$?$ON>C<$H$b$K>ZL@=qG'>Z$r;H$&!"$H$$$&$b$N$G$9!#(B
-	    $B$3$l$O!"$o$l$o$l$,C5$7$F$$$k$b$N$G$O$"$j$^$;$s!#(B</listitem>
+	  <listitem>事前共有鍵は、ログイン名に縛られません。グループパスワードとした場合だけは管理可能ですが、
+	    それを除けば、事前共有鍵を適切に扱うための管理ツールがありません。</listitem>
+	  <listitem>IPsec フェーズ 1 認証は、対称的であることが前提です。
+	    つまり、両端ともに事前共有鍵認証を、または両端ともに証明書認証を使う、というものです。
+	    これは、われわれが探しているものではありません。</listitem>
 	</itemizedlist>
       </para>
     </sect3>
@@ -141,106 +141,106 @@
     <sect3 id="xauth">
       <title>Xauth</title>
 
-      <para>Xauth $B$O!"%U%'!<%:(B 1 $B$N8e$K;H$o$l!"%m%0%$%sL>(B/$B%Q%9%o!<%IG'>Z$rDI2C$9$k(B IKE $B3HD%$G$9!#(B
-	$B$3$l$O!"G'>Z$K$^$D$o$kLdBj$NH>J,$r2r7h$7$^$9!#(BXauth $B$O%U%'!<%:(B 1 $B$ND>8e$K;H$o$l$k$N$G!"(B
-	$B%U%'!<%:(B 1 $BG'>Z$K$h$j0BA4$J$b$N$H$J$j$^$9!#LdBj$NH>J,$O2r7h$7$^$7$?$,!"$^$@(B
-	$B%U%'!<%:(B 1 $B$G$O;vA06&M-80$+>ZL@=q$,I,MW$G$9!#;vA06&M-80$N;HMQ$O0BA4$G$O$"$j$^$;$s$7!"(B
-	$B>ZL@=q$r;H$&$3$H$O!"%f!<%6!<>ZL@=q$r;H$&$3$H$r0UL#$7$^$9!#(B
-	$B%f!<%6!<>ZL@=q$N;HMQ$O$o$l$o$l$,Hr$1$?$+$C$?$3$H$G$9!#(B</para>
+      <para>Xauth は、フェーズ 1 の後に使われ、ログイン名/パスワード認証を追加する IKE 拡張です。
+	これは、認証にまつわる問題の半分を解決します。Xauth はフェーズ 1 の直後に使われるので、
+	フェーズ 1 認証により安全なものとなります。問題の半分は解決しましたが、まだ
+	フェーズ 1 では事前共有鍵か証明書が必要です。事前共有鍵の使用は安全ではありませんし、
+	証明書を使うことは、ユーザー証明書を使うことを意味します。
+	ユーザー証明書の使用はわれわれが避けたかったことです。</para>
     </sect3>
 
     <sect3 id="hybrid">
       <title>Hybrid auth</title>
 
-      <para>Hybrid auth $B$O$b$&$R$H$D$N(B IKE $B3HD%$G!"%U%'!<%:(B 1 $B$rHsBP>N$K$9$k$b$N$G$9!#(B
-        $B%U%'!<%:(B 1 $B$N9T$J$o$l$F$$$k4V!"(BVPN $B%2!<%H%&%'%$$O!"%j%b!<%H%f!<%6!<$,G'>Z$r$9$kI,MW$,$J$/$F$b!"(B
-        $B>ZL@=q$r;H$&$3$H$,$G$-$^$9!#%U%'!<%:(B 1 $B$,9T$J$o$l$?8e$N>u67$O!"0J2<$N$H$*$j$G$9!#(B
+      <para>Hybrid auth はもうひとつの IKE 拡張で、フェーズ 1 を非対称にするものです。
+        フェーズ 1 の行なわれている間、VPN ゲートウェイは、リモートユーザーが認証をする必要がなくても、
+        証明書を使うことができます。フェーズ 1 が行なわれた後の状況は、以下のとおりです。
         <itemizedlist>
-          <listitem>$B%j%b!<%H%f!<%6!<$O!"DL?.Aj<j$,(B VPN $B%2!<%H%&%'%$$G$"$k$3$H$,$o$+$C$F$$$^$9(B</listitem>
-          <listitem>$B%j%b!<%H%f!<%6!<$H(B VPN $B%2!<%H%&%'%$$H$N4V$N$d$j$H$j$O0BA4$G$9(B</listitem>
-	  <listitem>VPN $B%2!<%H%&%'%$$O!"OC$7$F$$$kAj<j$,C/$+$o$+$C$F$$$^$;$s(B</listitem>
+          <listitem>リモートユーザーは、通信相手が VPN ゲートウェイであることがわかっています</listitem>
+          <listitem>リモートユーザーと VPN ゲートウェイとの間のやりとりは安全です</listitem>
+	  <listitem>VPN ゲートウェイは、話している相手が誰かわかっていません</listitem>
 	</itemizedlist>
       </para>
 
-      <para>$B$3$N%U%'!<%:(B 1 $B$N8e!"%j%b!<%H%f!<%6!<$N%;%-%e%j%F%#!<G'>Z$N$?$a$K(B Xauth $B8r49$r$9$k$3$H$,$G$-$^$9!#(B
-        $B$=$N8e!"%U%'!<%:(B 2 $B$,$*$3$J$o$l$^$9!#(B</para>
+      <para>このフェーズ 1 の後、リモートユーザーのセキュリティー認証のために Xauth 交換をすることができます。
+        その後、フェーズ 2 がおこなわれます。</para>
 
-      <para>IPsec + Xauth + Hybrid auth $B$N%;%-%e%j%F%#!<$NEY9g$O!"(B
-        $B%Q%9%o!<%IG'>Z$r;H$C$?(B SSH $B$H$@$$$?$$F1$8$0$i$$$G$9!#(B</para>
+      <para>IPsec + Xauth + Hybrid auth のセキュリティーの度合は、
+        パスワード認証を使った SSH とだいたい同じぐらいです。</para>
     </sect3>
 
     <sect3 id="mode_cfg">
-      <title>ISAKMP $B%b!<%I@_Dj(B</title>
+      <title>ISAKMP モード設定</title>
 
-      <para>$B0J>e$N$H$*$j!"G'>Z$NLdBj$O(B IPsec + Xauth + Hybrid auth $B$r;H$&$3$H$G2r7h$5$l$^$7$?!#(B
-	$B%j%b!<%H%"%/%;%9$r%f!<%6!<%U%l%s%I%j!<$J$b$N$K$9$k$?$a$K!"(B
-	$B%j%b!<%H%f!<%6!<$N%^%7%s@_Dj$r<+F02=$9$kI,MW$,$"$j$^$9!#(BISAKMP $B%b!<%I@_Dj$O!"(B
-	VPN $B%2!<%H%&%'%$$,%j%b!<%H%f!<%6!<$N%^%7%s$K%M%C%H%o!<%/@_Dj(B ($BFbIt(B IP $B%"%I%l%9!"(B
-	DNS $B%"%I%l%9!"%I%a%$%sL>$J$I(B) $B$rDs6!$G$-$k$h$&$K$9$k(B IKE $B3HD%$G$9!#(B</para>
+      <para>以上のとおり、認証の問題は IPsec + Xauth + Hybrid auth を使うことで解決されました。
+	リモートアクセスをユーザーフレンドリーなものにするために、
+	リモートユーザーのマシン設定を自動化する必要があります。ISAKMP モード設定は、
+	VPN ゲートウェイがリモートユーザーのマシンにネットワーク設定 (内部 IP アドレス、
+	DNS アドレス、ドメイン名など) を提供できるようにする IKE 拡張です。</para>
     </sect3>
 
     <sect3 id="nat_t">
       <title>NAT Traversal</title>
 
-      <para>$B%j%b!<%H%f!<%6!<$O!"(BIPsec $B0E9f2=%9%H%j!<%`$r;H$C$?>l9g$K$O5!G=$7$J$$!"(B
-	$B%M%C%H%o!<%/%"%I%l%9JQ494o(B (Network Address Translator, NAT) $B$N8~$3$&$K$$$k$+$b$7$l$^$;$s!#(B
-	$B%H%i%U%#%C%/$r0E9f2=$9$kI,MW$,$"$k$H$-$O!"(BIPsec $B$O!"0E9f%Z%$%m!<%I(B (Encapsulated Security Payload, ESP)
-	$B$H$$$&%l%$%d!<(B 4 $B$N%W%m%H%3%k$r;HMQ$7$^$9!#(BTCP $B$d(B UDP $B$H$O0[$J$j!"(BESP
-	$B$O%]!<%HHV9f$r;}$?$:!"(B NAT $B%G%P%$%9$,4JC1$K07$&$3$H$O$G$-$^$;$s!#(B</para>
+      <para>リモートユーザーは、IPsec 暗号化ストリームを使った場合には機能しない、
+	ネットワークアドレス変換器 (Network Address Translator, NAT) の向こうにいるかもしれません。
+	トラフィックを暗号化する必要があるときは、IPsec は、暗号ペイロード (Encapsulated Security Payload, ESP)
+	というレイヤー 4 のプロトコルを使用します。TCP や UDP とは異なり、ESP
+	はポート番号を持たず、 NAT デバイスが簡単に扱うことはできません。</para>
 
-      <para>RFC 3947 $B$*$h$S(B 3948 $B$G$O!"(BESP $B$r(B UDP $B$G%+%W%;%k2=$9$kJ}K!$H!"(B
-	IPsec $B%9%H%j!<%`$NN>C<$N4V$K$"$k(B NAT $B$r4IM}$9$k$?$a$N(B IKE $B3HD%$K$D$$$F2r@b$7$F$$$^$9!#(B
-	$B$3$N%+%W%;%k2=$NJ}K!$H(B IKE $B3HD%$NAH$_9g$o$;$O!"(BNAT Traversal (NAT-T)
-	$B$H$7$FCN$i$l$F$$$^$9!#(B</para>
+      <para>RFC 3947 および 3948 では、ESP を UDP でカプセル化する方法と、
+	IPsec ストリームの両端の間にある NAT を管理するための IKE 拡張について解説しています。
+	このカプセル化の方法と IKE 拡張の組み合わせは、NAT Traversal (NAT-T)
+	として知られています。</para>
 
-      <para>NAT-T $B$O!"9g=09qFC5v$N(B<ulink url="https://datatracker.ietf.org/public/ipr_detail_show.cgi?&amp;ipr_id=78">$B@)Ls$r<u$1$k$3$H$K$J$k$+$b$7$l$^$;$s(B</ulink>$B!#(B</para>
+      <para>NAT-T は、合衆国特許の<ulink url="https://datatracker.ietf.org/public/ipr_detail_show.cgi?&amp;ipr_id=78">制約を受けることになるかもしれません</ulink>。</para>
     </sect3>
 
     <sect3 id="ike_frag">
-      <title>IKE $B%U%i%0%a%s%F!<%7%g%s$*$h$S(B ESP $B%U%i%0%a%s%F!<%7%g%s(B</title>
+      <title>IKE フラグメンテーションおよび ESP フラグメンテーション</title>
 
-      <para>$B%j%b!<%H%f!<%6!<$,(B DSL $B%b%G%`%k!<%?!<5!4o$r2p$7$F@\B3$7$F$/$k$N$O!"$h$/$"$k$3$H$G$7$g$&!#(B
-	$B$3$l$i$N%G%P%$%9$N$[$H$s$I$O!"Bg$-$J(B UDP $B%Q%1%C%H$N07$$$K4X$7$F!"$^$C$?$/MQ$r$J$7$^$;$s!#(B
-	UDP $B$,(B DNS $B%j%/%(%9%H$G$7$+;H$o$l$J$$$H$$$&A[Dj$G:n$i$l$F$*$j!"$=$l$h$jBg$-$J(B
-	UDP $B%Q%1%C%H$d%U%i%0%a%s%H$5$l$?(B UDP $B%Q%1%C%H$O$3$\$7$F$7$^$$$^$9!#(B
-	IKE $B%H%i%s%6%/%7%g%s$d(B ESP $B%*!<%P!<(B UDP $B$OBg$-$/$J$j$,$A$J$N$G!"(B
-	$B%V%m%C%/$5$l$F$7$^$$$^$9!#(B</para>
+      <para>リモートユーザーが DSL モデムルーター機器を介して接続してくるのは、よくあることでしょう。
+	これらのデバイスのほとんどは、大きな UDP パケットの扱いに関して、まったく用をなしません。
+	UDP が DNS リクエストでしか使われないという想定で作られており、それより大きな
+	UDP パケットやフラグメントされた UDP パケットはこぼしてしまいます。
+	IKE トランザクションや ESP オーバー UDP は大きくなりがちなので、
+	ブロックされてしまいます。</para>
 
-      <para>$B$3$NLdBj$r=hM}$9$k$?$a!"(BIKE $B%Q%1%C%H$r>.$5$JCGJR$KJ,3d(B IKE $B3HD%$G$"$k!"(B
-	IKE $B%U%i%0%a%s%F!<%7%g%s$r;H$$$^$9!#(B
-	ESP $B%U%i%0%a%s%F!<%7%g%s$O!"Bg$-$J(B ESP $B%*!<%P!<(B UDP $B%Q%1%C%H$NLdBj$r!"(B
-	ESP $B$N%+%W%;%k2=$NA0$K(B IP $B%U%i%0%a%s%F!<%7%g%s$r$9$k$3$H$K$h$C$F!"=hM}$7$^$9!#(B
-	$B$9$J$o$A!"%M%C%H%o!<%/$K(B frag(IP/UDP/ESP/IP) $B$rAw$k$N$G$O$J$/(B IP/UDP/ESP/frag(IP) $B$rAw$k$N$G$9!#(B
-	$B$3$N$?$a!"(BIPsec $BN>C<E@$N4V$K$O$5$^$l$?%G%P%$%9$O!"(B
-	$B$$$+$J$k%U%i%0%a%s%H$5$l$?%Q%1%C%H$bG'<1$7$^$;$s!#(B</para>
+      <para>この問題を処理するため、IKE パケットを小さな断片に分割 IKE 拡張である、
+	IKE フラグメンテーションを使います。
+	ESP フラグメンテーションは、大きな ESP オーバー UDP パケットの問題を、
+	ESP のカプセル化の前に IP フラグメンテーションをすることによって、処理します。
+	すなわち、ネットワークに frag(IP/UDP/ESP/IP) を送るのではなく IP/UDP/ESP/frag(IP) を送るのです。
+	このため、IPsec 両端点の間にはさまれたデバイスは、
+	いかなるフラグメントされたパケットも認識しません。</para>
     </sect3>
 
     <sect3 id="dpd">
       <title>Dead Peer Detection</title>
 
-      <para>$B:G8e$NLdBj$G$9!#%j%b!<%H%f!<%6!<$N%$%s%?!<%M%C%H@\B3$,IT0BDj$G!"(B
-	$B$"$?$+$b@\B3$,@Z$l$?$+$N$h$&$K$J$k$3$H$,$"$j$^$9!#$3$l$KBP$7$F!"(B
-	IPsec $B$KFbB"$5$l$F$$$k;EAH$_$O!"$7$P$i$/8e$K(B IKE phase 2 $B80:F@8@.$r6/@)E*$K9T$J$&$3$H$@$1$G$9!#(B
-	$B$=$N;~$KDL?.Aj<j$,%*%s%i%$%s$G$J$+$C$?$i!"$3$l$O<:GT$7!"$=$N7k2L(B VPN $B%H%s%M%k$OGK4~$5$l$^$9!#(B</para>
+      <para>最後の問題です。リモートユーザーのインターネット接続が不安定で、
+	あたかも接続が切れたかのようになることがあります。これに対して、
+	IPsec に内蔵されている仕組みは、しばらく後に IKE phase 2 鍵再生成を強制的に行なうことだけです。
+	その時に通信相手がオンラインでなかったら、これは失敗し、その結果 VPN トンネルは破棄されます。</para>
 
-      <para>$B$3$N;EAH$_$O!"%j%b!<%H%f!<%6!<$,%*%U%i%$%s$K$J$C$?$3$H$r3NG'$9$k$?$aIQHK$K80:F@8@.$r6/@)$5$l$k$N$G!"(B
-	$B$"$^$jJXMx$G$O$"$j$^$;$s!#(BDead Peer Detection (DPD) $B$O!"%j%b!<%H$N(B IPsec $BC<E@$,@8$-$F$$$k$3$H$r(B
-	$BDj4|E*$K3NG'$9$k$N$K;H$o$l$k(B IKE $B3HD%$G$9!#(B
-	DPD $B$O!"%j%b!<%H%[%9%H$,?tIC4V%*%U%i%$%s$K$J$C$?$3$H$r3NG'$9$k$N$K;H$&$3$H$,$G$-$^$9!#(B</para>
+      <para>この仕組みは、リモートユーザーがオフラインになったことを確認するため頻繁に鍵再生成を強制されるので、
+	あまり便利ではありません。Dead Peer Detection (DPD) は、リモートの IPsec 端点が生きていることを
+	定期的に確認するのに使われる IKE 拡張です。
+	DPD は、リモートホストが数秒間オフラインになったことを確認するのに使うことができます。</para>
     </sect3>
   </sect2>
 
   <sect2 id="vpn-gateway">
-    <title>VPN $B%2!<%H%&%'%$$N@_Dj(B</title>
+    <title>VPN ゲートウェイの設定</title>
 
-    <para>$B0J2<$K!"(BIPsec + Xauth + Hybrid auth + ISAKMP $B%b!<%I@_Dj(B + NAT-T + DPD + IKE $B%U%i%0%a%s%F!<%7%g%s(B +
-      ESP $B%U%i%0%a%s%F!<%7%g%s$r;H$C$?(B VPN $B%2!<%H%&%'%$$N@_DjNc$r<($7$^$9!#(B</para>
+    <para>以下に、IPsec + Xauth + Hybrid auth + ISAKMP モード設定 + NAT-T + DPD + IKE フラグメンテーション +
+      ESP フラグメンテーションを使った VPN ゲートウェイの設定例を示します。</para>
 
     <sect3 id="kernel">
-      <title>$B%+!<%M%k%3%s%U%#%.%e%l!<%7%g%s(B</title>
+      <title>カーネルコンフィギュレーション</title>
 
-      <para>$B:G=i$K!">/$J$/$H$b0J2<$N%*%W%7%g%s$r4^$a$?(B<ulink url="../../kernel/#how_to_build_a_kernel">$B%+!<%M%k$r(B
-	  $B9=C[$7$F%$%s%9%H!<%k(B</ulink>$B$9$kI,MW$,$"$j$^$9!#(B</para>
+      <para>最初に、少なくとも以下のオプションを含めた<ulink url="../../kernel/#how_to_build_a_kernel">カーネルを
+	  構築してインストール</ulink>する必要があります。</para>
       <programlisting>options INET
 options GATEWAY
 options PFIL_HOOKS
@@ -252,33 +252,33 @@ pseudo-device   ipfilter</programlisting>
     </sect3>
 
     <sect3 id="forw">
-      <title>$B%Q%1%C%H%U%)%o!<%G%#%s%0(B</title>
+      <title>パケットフォワーディング</title>
 
-      <para>$B0J2<$N%3%^%s%I$r;H$C$F!"(BIPv4 $B%Q%1%C%H%U%)%o!<%G%#%s%0$rM-8z2=$9$kI,MW$,$"$j$^$9!#(B
+      <para>以下のコマンドを使って、IPv4 パケットフォワーディングを有効化する必要があります。
 	<programlisting># sysctl -w net.inet.ip.forwarding=1</programlisting>
-	<filename>/etc/sysctl.conf</filename> $B$K0J2<$N9T$rDI2C$7$F!"(B
-	$B%j%V!<%H;~$K<+F0E*$K<B9T$9$k$3$H$,$G$-$^$9!#(B
+	<filename>/etc/sysctl.conf</filename> に以下の行を追加して、
+	リブート時に自動的に実行することができます。
 	<programlisting>net.inet.ip.forwarding=1</programlisting></para>
     </sect3>
 
     <sect3 id="cert">
-      <title>$B>ZL@=q$N:n@.(B</title>
+      <title>証明書の作成</title>
 
-      <para>OpenSSL $B$N@_Dj$r$^$@9T$J$C$F$$$J$$>l9g$O!"@_Dj%U%!%$%k$N%5%s%W%k$N%$%s%9%H!<%k$+$i;O$a$F$/$@$5$$!#(B
+      <para>OpenSSL の設定をまだ行なっていない場合は、設定ファイルのサンプルのインストールから始めてください。
 	<programlisting># cp /usr/share/examples/openssl/openssl.cnf /etc/openssl/</programlisting>
-	$B@_Dj%U%!%$%k$NMQ0U$,$G$-$?$i!"HkL)80$r:n$j!"$=$N80$r;H$C$F>ZL@=q=pL>MW5a(B (Certificate Signing 
-	Request, CSR) $B$r:n$j$^$9!#(B
+	設定ファイルの用意ができたら、秘密鍵を作り、その鍵を使って証明書署名要求 (Certificate Signing 
+	Request, CSR) を作ります。
 	<programlisting># cd /etc/openssl
 # umask 077
 # openssl genrsa > certs/vpngw.key
 # umask 022
 # openssl req -new -key certs/vpngw.key -out certs/vpngw.csr</programlisting>
-	$B$3$N(B CSR (<filename>vpngw.csr</filename>) $B$rG'>Z6I$XAw$C$F!"=pL>$r$7$F$b$i$$$^$9!#(B
-	$B$3$l$G(B x509 $B>ZL@=q$,8rIU$5$l$^$9!#$3$N>ZL@=q$r(B <filename>vpngw.crt</filename>
-	$B$H$$$&L>A0$K$9$k$3$H$K$7$^$9!#(B</para>
+	この CSR (<filename>vpngw.csr</filename>) を認証局へ送って、署名をしてもらいます。
+	これで x509 証明書が交付されます。この証明書を <filename>vpngw.crt</filename>
+	という名前にすることにします。</para>
 
-      <para>$B<+J,<+?H$,G'>Z6I$H$J$j$?$$>l9g$O!"0J2<$N<j=g$G(B
-	CA $BHkL)80$N@8@.$H=pL>$r$*$3$J$$$^$9!#(B
+      <para>自分自身が認証局となりたい場合は、以下の手順で
+	CA 秘密鍵の生成と署名をおこないます。
 	<programlisting># cd /etc/openssl
 # mkdir -p demoCA/newcerts
 # touch demoCA/index.txt
@@ -289,15 +289,15 @@ pseudo-device   ipfilter</programlisting>
 # openssl req -days 3650 -x509 -key certs/ca.key -new > certs/ca.crt
 # openssl ca -in certs/vpngw.csr -keyfile certs/ca.key -cert certs/ca.crt -out certs/vpngw.crt</programlisting></para>
 
-      <para>$BHkL)80$,O3$l$k$H!"(B VPN $B$O$b$&0BA4$G$O$J$/$J$C$F$7$^$&$N$G!"(B
-	$BHkL)80$OHkL)$K$9$k$h$&$K$7$F$/$@$5$$!#(BCA $B>ZL@=q(B <filename>ca.crt</filename>
-	$B$r%j%b!<%H%f!<%6!<$KEO$7$F!"<!$N<j=g$K?J$s$G$/$@$5$$!#(B</para>
+      <para>秘密鍵が漏れると、 VPN はもう安全ではなくなってしまうので、
+	秘密鍵は秘密にするようにしてください。CA 証明書 <filename>ca.crt</filename>
+	をリモートユーザーに渡して、次の手順に進んでください。</para>
     </sect3>
 
     <sect3 id="config">
-      <title>&man.racoon.8; $B$N@_Dj(B</title>
+      <title>&man.racoon.8; の設定</title>
 
-      <para>$B0J2<$K(B <filename>/etc/racoon/racoon.conf</filename> $B%U%!%$%k$NNc$r<($7$^$9!#(B
+      <para>以下に <filename>/etc/racoon/racoon.conf</filename> ファイルの例を示します。
 	<programlisting>path certificate "/etc/openssl/certs";
 
 listen {
@@ -309,11 +309,11 @@ remote anonymous {
         certificate_type x509 "vpngw.crt" "vpngw.key";
         my_identifier asn1dn;
         proposal_check claim;
-        generate_policy on;		# IPsec $B%]%j%7!<$r<+F0@8@.$9$k(B
-	dpd_delay 20;			# 20 $BICKh$K!"(B DPD $B%]!<%j%s%0$9$k(B
-        nat_traversal force;		# NAT-T $B$r>o$K;H$&(B
-        ike_frag on;			# IKE $B%U%i%0%a%s%F!<%7%g%s$r;H$&(B
-        esp_frag 552;			# ESP $B%U%i%0%a%s%F!<%7%g%s$r;H$&(B
+        generate_policy on;		# IPsec ポリシーを自動生成する
+	dpd_delay 20;			# 20 秒毎に、 DPD ポーリングする
+        nat_traversal force;		# NAT-T を常に使う
+        ike_frag on;			# IKE フラグメンテーションを使う
+        esp_frag 552;			# ESP フラグメンテーションを使う
         proposal {
                 encryption_algorithm aes;
                 hash_algorithm sha1;
@@ -322,12 +322,12 @@ remote anonymous {
         }
 }
 mode_cfg {
-        network4 10.99.99.1;		# VPN $BMQ(B IPv4 $B%"%I%l%9:_8K$N@hF,$N%"%I%l%9(B
-        pool_size 253;			# VPN $BMQ(B IP $B%"%I%l%9:_8K$N%5%$%:(B: 253 $B%"%I%l%9(B
-        auth_source system;		# /etc/passwd $B$r$b$H$K%m%0%$%s$r8!>Z$9$k(B
-        dns4 10.0.12.1;			# IPv4 DNS $B%5!<%P!<(B
-        wins4 10.0.12.1;		# IPv4 WINS $B%5!<%P!<(B
-        banner "/etc/racoon/motd";	# $B%/%i%$%"%s%H$KBP$9$k%P%J!<%a%C%;!<%8(B
+        network4 10.99.99.1;		# VPN 用 IPv4 アドレス在庫の先頭のアドレス
+        pool_size 253;			# VPN 用 IP アドレス在庫のサイズ: 253 アドレス
+        auth_source system;		# /etc/passwd をもとにログインを検証する
+        dns4 10.0.12.1;			# IPv4 DNS サーバー
+        wins4 10.0.12.1;		# IPv4 WINS サーバー
+        banner "/etc/racoon/motd";	# クライアントに対するバナーメッセージ
 	pfs_group 2;
 }
 
@@ -339,118 +339,118 @@ sainfo anonymous {
         compression_algorithm deflate;
 }</programlisting></para>
 
-      <para><code>mode_cfg</code> $B%;%/%7%g%s$G!"(BISAKMP $B%b!<%I@_Dj$r;H$C$F(B
-	VPN $B%2!<%H%&%'%$$+$i%/%i%$%"%s%H$XAw$i$l$k@_Dj$rDj5A$7$F$$$^$9!#(B
-	$B8=:_$N$H$3$m!"(BIPv4 $B$N@_Dj$@$1$KBP1~$7$F$$$^$9!#(B
-	$B$3$N%;%/%7%g%s$G!"J'$$=P$9(B VPN $B%"%I%l%9$N:_8K$r!"@hF,$N%"%I%l%9(B (<code>network4</code>)
-	$B$H:_8K$N%5%$%:(B (<code>pool_size</code>) $B$K$h$jDj5A$7$F$$$^$9!#(B<code>auth_source</code>
-	$B$O!"%m%0%$%sL>$H%Q%9%o!<%I$r$I$&$d$C$F8!>Z$9$k$+$rI=$7$^$9!#$3$3$G;XDj$G$-$kCM$O!"(B
-	$B%7%9%F%`%f!<%6!<%G!<%?%Y!<%9$r$b$H$K8!>Z$9$k(B <code>system</code>$B!"(BPluggable Authentication Module (PAM)
-	$B%7%9%F%`(B (<filename>/etc/pam.d/racoon</filename> $B$,;H$o$l$^$9(B) $B$r;H$&(B <code>pam</code>$B!"(B
-	RADIUS $B$r$b$H$K%m%0%$%s$r8!>Z$9$k(B <code>radius</code> $B$G$9!#(B</para>
+      <para><code>mode_cfg</code> セクションで、ISAKMP モード設定を使って
+	VPN ゲートウェイからクライアントへ送られる設定を定義しています。
+	現在のところ、IPv4 の設定だけに対応しています。
+	このセクションで、払い出す VPN アドレスの在庫を、先頭のアドレス (<code>network4</code>)
+	と在庫のサイズ (<code>pool_size</code>) により定義しています。<code>auth_source</code>
+	は、ログイン名とパスワードをどうやって検証するかを表します。ここで指定できる値は、
+	システムユーザーデータベースをもとに検証する <code>system</code>、Pluggable Authentication Module (PAM)
+	システム (<filename>/etc/pam.d/racoon</filename> が使われます) を使う <code>pam</code>、
+	RADIUS をもとにログインを検証する <code>radius</code> です。</para>
 
-      <para><filename>/etc/racoon/racoon.conf</filename> $B%U%!%$%k$N=`Hw$,$G$-$l$P!"(B
-	&man.racoon.8; $B$r<B9T$9$k$3$H$,$G$-$^$9!#(B
+      <para><filename>/etc/racoon/racoon.conf</filename> ファイルの準備ができれば、
+	&man.racoon.8; を実行することができます。
 	<programlisting># racoon</programlisting></para>
 
-      <para>$B%V!<%H;~$K(B &man.racoon.8; $B$r5/F0$9$k$?$a$K$O!"(B
-	<filename>/etc/rc.conf</filename> $B$K0J2<$N$h$&$K=q$-$^$9!#(B
+      <para>ブート時に &man.racoon.8; を起動するためには、
+	<filename>/etc/rc.conf</filename> に以下のように書きます。
 	<programlisting>racoon=YES</programlisting></para>
     </sect3>
 
     <sect3 id="more_frag">
-      <title>$B$5$i$J$k%U%i%0%a%s%F!<%7%g%sLdBj(B</title>
+      <title>さらなるフラグメンテーション問題</title>
 
-      <para>$B$3$N@_DjNc$G$O!"(BESP $B%U%i%0%a%s%F!<%7%g%s$r;H$C$F!"Aw=P$9$k%Q%1%C%H$,(B
-	552 $B%P%$%H$h$jBg$-$/$J$i$J$$$h$&$J(B <code>esp_frag</code> $B$N;XDj$r$7$F$$$^$9!#(B
-	552 $B%P%$%H$OHs>o$K>.$5$$$G$9$,!"$3$l$J$i:G$b$R$I$$(B DSL $B%b%G%`%k!<%?!<5!4o$G$b;H$($k$O$:$G$9!#(B
-	<code>esp_frag</code> $B$rBg$-$/$9$l$P!"@-G=$,8~>e$7$^$9!#(B</para>
+      <para>この設定例では、ESP フラグメンテーションを使って、送出するパケットが
+	552 バイトより大きくならないような <code>esp_frag</code> の指定をしています。
+	552 バイトは非常に小さいですが、これなら最もひどい DSL モデムルーター機器でも使えるはずです。
+	<code>esp_frag</code> を大きくすれば、性能が向上します。</para>
 
-      <para>ESP $B%U%i%0%a%s%F!<%7%g%s$r;H$($P!"$I$s$J%5%$%:$N(B IP $B%Q%1%C%H$G$b%H%s%M%k7PM3$G8r492DG=$G$9!#(B
-	$B$7$+$7!"(BTCP $B$K$OFCJL$J>l9g$,$"$j!"(BPath Maximum Transmission Unit (PMTU)
-	$BC5:w$K$^$D$o$kLdBj$,5/$-$k$+$b$7$l$^$;$s!#$3$l$KBP$9$k2r7h:v$O!"(B
-	$B:GBg%;%0%a%s%HD9(B (Maximum Segment Size, MSS)
-	$B$ND4@a$r;H$&$3$H$G$9!#J'$$=P$7MQ$N(B VPN $BFbIt%"%I%l%9$NHO0O$,(B 10.99.99.0/24 $B$G$"$k$H$9$k$H!"(B
-	<filename>/etc/ipnat.conf</filename> $B$K0J2<$N$h$&$K=q$1$P$h$$$G$9!#(B
+      <para>ESP フラグメンテーションを使えば、どんなサイズの IP パケットでもトンネル経由で交換可能です。
+	しかし、TCP には特別な場合があり、Path Maximum Transmission Unit (PMTU)
+	探索にまつわる問題が起きるかもしれません。これに対する解決策は、
+	最大セグメント長 (Maximum Segment Size, MSS)
+	の調節を使うことです。払い出し用の VPN 内部アドレスの範囲が 10.99.99.0/24 であるとすると、
+	<filename>/etc/ipnat.conf</filename> に以下のように書けばよいです。
 	<programlisting>map ex0 10.99.99.0/24 -> 0/0 mssclamp 512</programlisting>
-	$B$3$N@_Dj$rM-8z$K$9$k$?$a$K!"0J2<$N$h$&$K%?%$%W$7$^$9!#(B
+	この設定を有効にするために、以下のようにタイプします。
 	<programlisting># ipf -E; ipnat -f /etc/ipnat.conf</programlisting>
-	$B5/F0;~$K$3$N%3%^%s%I$r<B9T$9$k$K$O!"(B
-	<filename>/etc/rc.conf</filename> $B$K0J2<$N$h$&$K=q$-$^$9!#(B
+	起動時にこのコマンドを実行するには、
+	<filename>/etc/rc.conf</filename> に以下のように書きます。
 	<programlisting>ipfilter=YES
 ipnat=YES</programlisting>
 	
-	$BCm0U(B: <filename>/etc/ipf.conf</filename> $B%U%!%$%k$,$J$$>l9g$O!"(B<code>ipfilter=YES</code>
-	$B$H$9$k$H%7%9%F%`$,5/F0$7$^$;$s!#(B IP $B%U%#%k%?%j%s%0$,0l@ZI,MW$J$$>l9g$O!"(B
-	$B6u$N%U%!%$%k$r:n$C$F$*$1$P$h$$$G$9!#(B</para>
+	注意: <filename>/etc/ipf.conf</filename> ファイルがない場合は、<code>ipfilter=YES</code>
+	とするとシステムが起動しません。 IP フィルタリングが一切必要ない場合は、
+	空のファイルを作っておけばよいです。</para>
     </sect3>
 
     <sect3 id="firewall">
-      <title>$B%U%!%$%"%&%)!<%k$H$N4X78(B</title>
+      <title>ファイアウォールとの関係</title>
 
-      <para>$B$3$N(B VPN $B$N<jK!$G$O!"%/%i%$%"%s%H$O(B VPN $B%2!<%H%&%'%$$N(B 500 $BHV%]!<%H$H(B 4500 $BHV%]!<%H$X(B
-	UDP $B%Q%1%C%H$rAw$kI,MW$,$"$j$^$9!#:G=i$N%Q%1%C%H$O(B 500 $BHV%]!<%H$G8r49$5$l!"(B
-	$B$=$l$+$i(B NAT-T $B8r>D$G(B 4500 $BHV%]!<%H$K%H%i%s%6%/%7%g%s$,0\$j$^$9!#(B</para>
+      <para>この VPN の手法では、クライアントは VPN ゲートウェイの 500 番ポートと 4500 番ポートへ
+	UDP パケットを送る必要があります。最初のパケットは 500 番ポートで交換され、
+	それから NAT-T 交渉で 4500 番ポートにトランザクションが移ります。</para>
 
-      <para>VPN $B%2!<%H%&%'%$$NA0$KN)$D%U%!%$%"%&%)!<%k$O!"(B
-	VPN $B%2!<%H%&%'%$08$N(B udp/500 $B$H(B udp/4500 $B$rDL$9$h$&$K@_Dj$9$kI,MW$,$"$j$^$9!#(B</para>
+      <para>VPN ゲートウェイの前に立つファイアウォールは、
+	VPN ゲートウェイ宛の udp/500 と udp/4500 を通すように設定する必要があります。</para>
     </sect3>
 
 
     <sect3 id="radius">
-      <title>VPN $B%2!<%H%&%'%$$H(B RADIUS </title>
+      <title>VPN ゲートウェイと RADIUS </title>
 
-      <para>RADIUS $B$O!"%m%0%$%s$N8!>Z!"(BIP $B%"%I%l%9$N3d$jEv$F$H!"(B
-	$B%"%+%&%s%F%#%s%0$K;H$&$3$H$,$G$-$^$9!#0J2<$K<($9$N$O!"(B
-	<filename>/etc/racoon/racoon.conf</filename> $B%U%!%$%k$N(B <code>mode_cfg</code> $B%;%/%7%g%s$G!"(B
-	RADIUS $B$r;H$&$h$&$K$9$k$?$a$NNc$G$9!#(B
+      <para>RADIUS は、ログインの検証、IP アドレスの割り当てと、
+	アカウンティングに使うことができます。以下に示すのは、
+	<filename>/etc/racoon/racoon.conf</filename> ファイルの <code>mode_cfg</code> セクションで、
+	RADIUS を使うようにするための例です。
 	<programlisting>mode_cfg {
-	pool_size 253;			# IPv4 $B%"%I%l%9:_8K$N%5%$%:(B
-	auth_source radius;		# RADIUS $B$r$b$H$K%m%0%$%s$r8!>Z$9$k(B
-	conf_source radius;		# RADIUS $B$G(B IPv4 $B%"%I%l%9$r3d$jEv$F$k(B
-	accounting radius;		# RADIUS $B%"%+%&%s%F%#%s%0(B
-        dns4 10.0.12.1;			# IPv4 DNS $B%5!<%P!<(B
-        wins4 10.0.12.1;		# IPv4 WINS $B%5!<%P!<(B
-        banner "/etc/racoon/motd";	# $B%/%i%$%"%s%H$KBP$9$k%P%J!<%a%C%;!<%8(B
+	pool_size 253;			# IPv4 アドレス在庫のサイズ
+	auth_source radius;		# RADIUS をもとにログインを検証する
+	conf_source radius;		# RADIUS で IPv4 アドレスを割り当てる
+	accounting radius;		# RADIUS アカウンティング
+        dns4 10.0.12.1;			# IPv4 DNS サーバー
+        wins4 10.0.12.1;		# IPv4 WINS サーバー
+        banner "/etc/racoon/motd";	# クライアントに対するバナーメッセージ
 	pfs_group 2;
 }</programlisting></para>
 
-      <para>$B$3$N@_Dj$N$[$+!"(BRADIUS $B%5!<%P!<$N%"%I%l%9$H(B RADIUS $B%5!<%P!<$H$N6&M-80$r4^$s$@(B
-	<filename>/etc/radius.conf</filename> $B%U%!%$%k$r:n$kI,MW$,$"$j$^$9!#(B
-	$B$3$N%U%!%$%k$O!"6&M-80$r0BA4$KJ]$D$?$a$K!"(B
-	root $B$N=jM-$H$7$F%Q!<%_%C%7%g%s$r(B 0600 $B$K$7$J$1$l$P$J$j$^$;$s!#(B
-	$B0J2<$KNc$r<($7$^$9!#>\:Y$O(B &man.radius.conf.5; $B$r$4Mw$/$@$5$$!#(B
+      <para>この設定のほか、RADIUS サーバーのアドレスと RADIUS サーバーとの共有鍵を含んだ
+	<filename>/etc/radius.conf</filename> ファイルを作る必要があります。
+	このファイルは、共有鍵を安全に保つために、
+	root の所有としてパーミッションを 0600 にしなければなりません。
+	以下に例を示します。詳細は &man.radius.conf.5; をご覧ください。
 	<programlisting>auth radius.example.net MyDirtySecret
 acct radius.example.net MyDirtySecret</programlisting></para>
     </sect3>
   </sect2>
 
   <sect2 id="vpn-client">
-    <title>VPN $B%/%i%$%"%s%H(B</title>
+    <title>VPN クライアント</title>
 
     <sect3 id="client">
       <title>Cisco VPN client</title>
 
-      <para>$BA0>O$G@bL@$7$?$h$&$J@_Dj$r$7$?(B VPN $B%2!<%H%&%'%$$O!"Aj8_%0%k!<%WG'>Z(B (mutual group authentication;
-	Hybrid authentication $B$HF15A(B) $B$N@_Dj$r$7$?(B Cisco VPN Client $B$HAj8_1?MQ$9$k$3$H$,$G$-$^$9!#(B
-	Cisco VPN $B%/%i%$%"%s%H$,MW5a$9$k%0%k!<%W$*$h$S%0%k!<%W%Q%9%o!<%I$r!"(B
-	&man.racoon.8; $B$OL5;k$7$^$9$,!"$3$l$K$h$C$F%f!<%6!<G'>Z$,0BA4$G$J$/$J$k$3$H$O$"$j$^$;$s!#(B</para>
+      <para>前章で説明したような設定をした VPN ゲートウェイは、相互グループ認証 (mutual group authentication;
+	Hybrid authentication と同義) の設定をした Cisco VPN Client と相互運用することができます。
+	Cisco VPN クライアントが要求するグループおよびグループパスワードを、
+	&man.racoon.8; は無視しますが、これによってユーザー認証が安全でなくなることはありません。</para>
 
-      <para>NAT-T $B$,M-8z$K$J$k$h$&!"%/%i%$%"%s%H$K(B
-	IPsec $B%*!<%P!<(B UDP $B%H%i%s%9%]!<%H$N@_Dj$r$9$k$3$H$rK:$l$J$$$G$/$@$5$$!#(B</para>
+      <para>NAT-T が有効になるよう、クライアントに
+	IPsec オーバー UDP トランスポートの設定をすることを忘れないでください。</para>
     </sect3>
 
     <sect3 id="client_conf">
-      <title>$B%/%i%$%"%s%H$H$7$F$N(B &man.racoon.8; : $B@_DjNc(B</title>
+      <title>クライアントとしての &man.racoon.8; : 設定例</title>
 
-      <para>&man.racoon.8; $B$O%/%i%$%"%s%H$H$7$F;H$&$3$H$,$G$-$^$9!#(B
-	CA $B>ZL@=q$r(B <filename>/etc/openssl/certs/ca.crt</filename> $B$K%$%s%9%H!<%k$7!"(B
-	<filename>/etc/racoon/racoon.conf</filename> $B$r0J2<$N$h$&$K@_Dj$9$kI,MW$,$"$j$^$9!#(B
+      <para>&man.racoon.8; はクライアントとして使うことができます。
+	CA 証明書を <filename>/etc/openssl/certs/ca.crt</filename> にインストールし、
+	<filename>/etc/racoon/racoon.conf</filename> を以下のように設定する必要があります。
 	<programlisting>path certificate "/etc/openssl/certs";
 path pre_shared_key "/etc/racoon/psk.txt";
 
 listen {
-	# racoon $B$H(B racoonctl $B$H$N4V$G;H$&%=%1%C%H(B
+	# racoon と racoonctl との間で使うソケット
         adminsock "/var/racoon/racoon.sock" "root" "operator" 0660;
 }
 
@@ -459,7 +459,7 @@ remote 192.0.2.50 {
         exchange_mode aggressive;
         ca_type x509 "ca.crt";
         proposal_check obey;
-        mode_cfg on;		# ISAKMP $B%b!<%I@_Dj$K$h$k@_Dj$r<u$1F~$l$k(B
+        mode_cfg on;		# ISAKMP モード設定による設定を受け入れる
 	dpd_delay 20;
         nat_traversal force;
         ike_frag on;
@@ -483,26 +483,26 @@ sainfo anonymous {
         compression_algorithm deflate ;
 }</programlisting></para>
 
-      <para>$BFs$D$N%9%/%j%W%H(B <filename>phase1-up.sh</filename> $B$H(B <filename>phase1-down.sh</filename> $B$O!"(B
-	$B$=$l$>$l(B IKE phase 1 $B$N3NN);~$H=*N;;~!"$D$^$j(B VPN $B@\B3;~$H@ZCG;~$K8F$P$l$^$9!#(B
-	$B$3$N%9%/%j%W%H$O(B IPsec Security Policies (SP), VPN IP $B%"%I%l%9!"(B
-	$B%k!<%F%#%s%0%(%s%H%j!<$N@_Dj$H>C5n$r<u$1;}$C$F$$$^$9!#(B
-	$B%5%s%W%k%9%/%j%W%H$N$^$^$G$bI,MW$J$3$H$O$G$-$k$O$:$G$9$,!"(B
-	$B3F<+$NI,MW$K1~$8$F%+%9%?%^%$%:$9$k$3$H$b$G$-$^$9!#(B
+      <para>二つのスクリプト <filename>phase1-up.sh</filename> と <filename>phase1-down.sh</filename> は、
+	それぞれ IKE phase 1 の確立時と終了時、つまり VPN 接続時と切断時に呼ばれます。
+	このスクリプトは IPsec Security Policies (SP), VPN IP アドレス、
+	ルーティングエントリーの設定と消去を受け持っています。
+	サンプルスクリプトのままでも必要なことはできるはずですが、
+	各自の必要に応じてカスタマイズすることもできます。
 	<programlisting># cp /usr/share/examples/racoon/roadwarrior/client/*.sh /etc/racoon/</programlisting></para>
 
-      <para>$B$3$N=`Hw$,$G$-$l$P!"(B &man.racoon.8; $B$r5/F0$G$-$^$9!#(B
+      <para>この準備ができれば、 &man.racoon.8; を起動できます。
 	<programlisting># racoon</programlisting>
-	$B%V!<%H;~$K(B &man.racoon.8; $B$r5/F0$9$k$K$O!"(B<filename>/etc/rc.conf</filename> $B$K(B
-	<code>racoon=YES</code> $B$r=q$-2C$($^$9!#(B</para>
+	ブート時に &man.racoon.8; を起動するには、<filename>/etc/rc.conf</filename> に
+	<code>racoon=YES</code> を書き加えます。</para>
     </sect3>
 
     <sect3 id="connection">
-      <title>VPN $B$H$N@\B3$H@ZCG(B</title>
+      <title>VPN との接続と切断</title>
 
-      <para>racoonctl(8) $B$O!"(BVPN $B$X$N@\B3$d(B VPN $B$+$i$N@ZCG$K;H$&$3$H$,$G$-$^$9!#(B
-	$B%m%0%$%sL>$r(B <code>-u</code> $B%*%W%7%g%s$G;XDj$7$^$9!#(B
-	$B%Q%9%o!<%I$OC<Kv>e$GF~NO$rB%$5$l$^$9!#(B
+      <para>racoonctl(8) は、VPN への接続や VPN からの切断に使うことができます。
+	ログイン名を <code>-u</code> オプションで指定します。
+	パスワードは端末上で入力を促されます。
 	<programlisting>$ racoonctl vc -u username 192.0.2.50
 Password: password
 Bound to address 10.99.99.3
@@ -513,39 +513,39 @@ Bound to address 10.99.99.3
 ==========================================================
 $ racoonctl vd 192.0.2.50
 VPN connection terminated</programlisting>
-	$B$3$NNc$G$O(B IP $B%"%I%l%9$r;H$C$F$$$^$9$,!"(BDNS $B%"%I%l%9$r;H$&$3$H$b$G$-$^$9!#(B
-	$BCm0U(B: $B2?$i$+$NM}M3$G!"%k!<%F%#%s%0%(%s%H%j!<$+%;%-%e%j%F%#!<%]%j%7!<%G!<%?%Y!<%9(B
-	(Security Policy Database, SPD) $B$K$M$8$l$,5/$-$k$H!"(B
-	VPN $B$N@ZCG;~$K(B DNS $BL>A02r7h$,$G$-$J$/$J$j$^$9!#(B
-	$B$3$N>l9g$O!"(Broot $B$G0J2<$N%3%^%s%I$r;H$C$FI|5l$G$-$^$9!#(B
+	この例では IP アドレスを使っていますが、DNS アドレスを使うこともできます。
+	注意: 何らかの理由で、ルーティングエントリーかセキュリティーポリシーデータベース
+	(Security Policy Database, SPD) にねじれが起きると、
+	VPN の切断時に DNS 名前解決ができなくなります。
+	この場合は、root で以下のコマンドを使って復旧できます。
 	<programlisting># setkey -F
 # setkey -FP
 # route flush
 # route add default your_default_gateway</programlisting></para>
 
-      <para>&man.racoon.8; $B%=%1%C%H(B <filename>/var/racoon/racoon.sock</filename> $B$X$NFI$_=q$-8"8B$,$"$k?M$J$i!"(B
-	$BC/$G$b(B VPN $B$N5/F0$dDd;_$r$9$k$3$H$,$G$-$^$9!#(B
-	$B$3$N%=%1%C%H$N=jM-<T$H%"%/%;%98"8B$O!"(B<filename>/etc/racoon/racoon.conf</filename> $B$N(B
-	<code>listen</code> $B%;%/%7%g%s$G!"(B<code>adminsock</code> $B%9%F!<%H%a%s%H$r;H$C$F@_Dj$G$-$^$9!#(B</para>
+      <para>&man.racoon.8; ソケット <filename>/var/racoon/racoon.sock</filename> への読み書き権限がある人なら、
+	誰でも VPN の起動や停止をすることができます。
+	このソケットの所有者とアクセス権限は、<filename>/etc/racoon/racoon.conf</filename> の
+	<code>listen</code> セクションで、<code>adminsock</code> ステートメントを使って設定できます。</para>
     </sect3>
 
     <sect3 id="save_pwd">
-      <title>Xauth $B%Q%9%o!<%I$NJ]B8(B</title>
+      <title>Xauth パスワードの保存</title>
 
-      <para>Xauth $B%Q%9%o!<%I$NF~NO$r>JN,$7$?$$>l9g!"$3$N%Q%9%o!<%I$r(B racoon $B$N;vA06&M-80(B (PSK)
-	$B%U%!%$%k$KJ];}$9$k$3$H$,$G$-$^$9!#(B<filename>/etc/racoon/racoon.conf</filename> $B$N(B
-	<code>remote</code> $B%;%/%7%g%s$K!"0J2<$N5-=R$rDI2C$7$^$9!#(B
+      <para>Xauth パスワードの入力を省略したい場合、このパスワードを racoon の事前共有鍵 (PSK)
+	ファイルに保持することができます。<filename>/etc/racoon/racoon.conf</filename> の
+	<code>remote</code> セクションに、以下の記述を追加します。
 	<programlisting>xauth_login "username";</programlisting></para>
 
-      <para>$B$=$7$F!"(B <filename>/etc/racoon/psk.txt</filename> $B$K!"(B
-	$B%m%0%$%sL>$H%Q%9%o!<%I$r0l9T$G=q$-B-$7$^$9!#(B
+      <para>そして、 <filename>/etc/racoon/psk.txt</filename> に、
+	ログイン名とパスワードを一行で書き足します。
 	<programlisting>username	password</programlisting></para>
 
-      <para>$B0J>e$N@_Dj$r$7$F$*$1$P!"0J2<$N%3%^%s%I$O!"%Q%9%o!<%I$NF~NO$r5a$a$k$3$H$J$/!"(B
-	<code>toto</code> $B%m%0%$%s(B<!-- XXX -->$B$r;H$C$F(B VPN $B@\B3$r3NN)$7$^$9!#(B
+      <para>以上の設定をしておけば、以下のコマンドは、パスワードの入力を求めることなく、
+	<code>toto</code> ログイン<!-- XXX -->を使って VPN 接続を確立します。
 	<programlisting>$ racoonctl vc 192.0.2.50</programlisting></para>
     </sect3>
   </sect2>
 </sect1>
-<parentsec url="./" text="NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: NetBSD IPSec"/>
+<parentsec url="./" text="NetBSD ドキュメンテーション: NetBSD IPSec"/>
 </webpage>

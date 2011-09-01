@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
   PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
 <webpage id="ja-docs-kernel-pseudo-index">
-  <config param="desc" value="NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B5<;w%G%P%$%9$N=q$-J}(B"/>
+  <config param="desc" value="NetBSD ドキュメンテーション: 擬似デバイスの書き方"/>
   <config param="cvstag" value="$NetBSD: index.xml,v 1.1 2007/06/09 11:33:49 dsieger Exp $"/>
 <!-- Based on english version: -->
 <!-- NetBSD: index.xml,v 1.1 2007/06/09 11:33:49 dsieger Exp   -->
@@ -14,177 +14,177 @@
   <!-- Copyright (c) 1994-2007
         The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 
-    <title>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B5<;w%G%P%$%9$N=q$-J}(B</title>
+    <title>NetBSD ドキュメンテーション: 擬似デバイスの書き方</title>
   </head>
 
   <sect1 role="toc">
     <sect2 id="pseudo">
-      <title>$B5<;w%G%P%$%9$N=q$-J}(B</title>
+      <title>擬似デバイスの書き方</title>
 
       <sect3 id="intro">
-        <title>$B=x@b(B</title>
+        <title>序説</title>
 	
-	<para>$B$3$N%I%-%e%a%s%H$O%+!<%M%k%I%i%$%P!<$r=q$$$F$_$h$&$H$$$&J}$X$N%,%$%I$G$9!#(B
-	  $B$3$3$G$O%7%s%W%k$J5<;w%G%P%$%9%I%i%$%P!<$N=q$-J}$r07$$$^$9!#(B
-	  $B%+!<%M%k$N9=C[!"(Bmakefile $B4XO"$d?7$7$$%+!<%M%k$N%$%s%9%H!<%k$K4X$9$kB>$N1|5A(B
-	  $B$O$3$l$i$O$3$N%I%-%e%a%s%H$K$O4^$^$l$F$J$/(B($BJL$K(B)$BI,MW$G$9!#(B
-	  $B$^$?!"%+!<%M%k%W%m%0%i%_%s%0$=$l<+BN$b4^$^$l$F$$$J$/(B
-	   - $B$3$l$O!"%f!<%6!<%l%Y%k%W%m%0%i%_%s%0$H$OB?$/$NLL$G$H$F$b0c$$$^$9!#(B
-	  $B$H$$$&CG$j=q$-$r$7$?>e$G!"$3$NJ8>O$rFI$a$P!"$"$J$?$N%3!<%I$r(B
-	  $B%+!<%M%k$K2C$($FF0:n$5$;$k$3$H$,$G$-$k$h$&$K$J$j$^$9!#(B</para>
+	<para>このドキュメントはカーネルドライバーを書いてみようという方へのガイドです。
+	  ここではシンプルな擬似デバイスドライバーの書き方を扱います。
+	  カーネルの構築、makefile 関連や新しいカーネルのインストールに関する他の奥義
+	  はこれらはこのドキュメントには含まれてなく(別に)必要です。
+	  また、カーネルプログラミングそれ自体も含まれていなく
+	   - これは、ユーザーレベルプログラミングとは多くの面でとても違います。
+	  という断り書きをした上で、この文章を読めば、あなたのコードを
+	  カーネルに加えて動作させることができるようになります。</para>
       </sect3>
 
       <sect3 id="your_code">
-        <title>$B$"$J$?$N%3!<%I(B</title>
+        <title>あなたのコード</title>
 
 	<para><ulink
-	  url="../../../../docs/kernel/pseudo/pseudo_dev_skel.c">pseudo_dev_skel.c</ulink> $B%U%!%$%k$,(B
-	  $B5<;w%G%P%$%9$H%U%!%$%k$N9|3J$H$J$j$^$9!#(B
+	  url="../../../../docs/kernel/pseudo/pseudo_dev_skel.c">pseudo_dev_skel.c</ulink> ファイルが
+	  擬似デバイスとファイルの骨格となります。
 	  <ulink
-	  url="../../../../docs/kernel/pseudo/pseudo_dev_skel.h">pseudo_dev_skel.h</ulink> $B$G$O(B 
-	  kernel $B4X?t%W%m%H%?%$%W$H(B ioctl $B%G!<%?9=B$(B $B$H2C$($F(B ioctl $BHV9f<+BN$rDj5A$7$^$9!#(B
-	  $BCm$H$7$F!"IaDL$N%G%P%$%9%I%i%$%P!<$H0c$C$F!"(B
-	  $B5<;w%G%P%$%9%I%i%$%P!<$K$O!"%W%m!<%V%k!<%A%s$OI,MW$J$$$N$G;}$C$F$$$^$;$s!#(B
-	  $B$3$N$?$a!"(Bautoconfig $B%U%l!<%`%o!<%/$r07$&I,MW$,$J$/!"OC$,4JC1$K$J$j$^$9!#(B
-	  $B$3$N(B skeleton $B%U%!%$%k$O5<;w%G%P%$%9$N(B open, close, ioctl calls $B$r%5%]!<%H$7$^$9!#(B
-	  $B$3$l$O!"<B:]$N5<;w%G%P%$%9$K$*$$$F:GDc8B<BMQE*$J%3!<%k$N%;%C%H$G$9!#(B
-	  read, write, mmap $B$d(B $B$[$+$N(B $B%G%P%$%9(B $B4X?t(B $B$r%5%]!<%H$9$k$?$a$N$[$+$N%3!<%k$b$"$j$^$9$,!"(B
-	  $B>\:Y$r=|$1$PA4$F(B open, close, ioctl $B$N%Q%?!<%s$HF1MM$K07$($^$9!#(B</para>
+	  url="../../../../docs/kernel/pseudo/pseudo_dev_skel.h">pseudo_dev_skel.h</ulink> では 
+	  kernel 関数プロトタイプと ioctl データ構造 と加えて ioctl 番号自体を定義します。
+	  注として、普通のデバイスドライバーと違って、
+	  擬似デバイスドライバーには、プローブルーチンは必要ないので持っていません。
+	  このため、autoconfig フレームワークを扱う必要がなく、話が簡単になります。
+	  この skeleton ファイルは擬似デバイスの open, close, ioctl calls をサポートします。
+	  これは、実際の擬似デバイスにおいて最低限実用的なコールのセットです。
+	  read, write, mmap や ほかの デバイス 関数 をサポートするためのほかのコールもありますが、
+	  詳細を除けば全て open, close, ioctl のパターンと同様に扱えます。</para>
 
-	<para>   $B$?$V$s!":G=i$N=EMW$J7hDj$O!"?7$7$$%G%P%$%9$r$J$s$H8F$V$+$r7h$a$k$3$H$G$9!#(B
-	  $B4X?t%3!<%kL>$NA0$K%G%P%$%9L>$r$/$C$D$1$?(B kernel $B9=B$BN$r$D$/$k$N$K(B
-	  $BJXMx$J%^%/%m$,$?$/$5$s$"$k$3$H$,CN$i$l$F$$$F!"$3$l$O(B
-	  $B:n$j$?$$%+!<%M%k%3%s%U%#%0%U%!%$%k%(%s%H%j!<$N=u$1$K$J$k$G$7$g$&!#(B
-	  config $B%U%!%$%k%(%s%H%j!<$O%X%C%@!<%U%!%$%kL>$H9g$o$;$kI,MW$O$"$j$^$;$s!#(B
-	  $B$3$N(B skeleton $B%I%i%$%P!<(B $B$G$O!"(B <quote>skeleton</quote> $B5<;w%G%P%$%9$H8F$V;v$K$7$?$N$G(B
-	  skeleton $B$H$$$&%(%s%H%j!<$r(B $B%3%s%U%#%0%U%!%$%k$K:n$k;v$K$J$j$^$9!#(B
-	  $B$D$^$j!"(B attach, open, close, ioctl $B4X?t(B $B8F$S=P$7(Bcall $B$NL>A0$r!"$=$l$>$l(B
-	  skeletonattach, skeletonopen, skeletonclose, skeletonioctl $B$H$9$k$H8@$&;v$G$9!#(B
-	  $B$b$&(B1$B$D$N=EMW$J$N$O%G%P%$%9$N<oN`$r7h$a$k$3$H$G(B -
-	  $B$"$J$?$N%3!<%I$,!"%+!<%M%k$H!"$b$A$m$s!"$"$J$?$N%3!<%I<+BN$H!"$I$&Aj8_:nMQ$9$k$+$G(B
-	  $B%-%c%i%/%?!<7?(B $B$+(B $B%V%m%C%/(B $B%G%P%$%9(B $B$N$I$A$i$+$K$7$^$9!#(B
-	  $B%V%m%C%/7?BP%-%c%i%/%?!<7?$N%G%P%$%9$N7hDj$O!"(B
-	  $B%I%i%$%P!<$,2qOC$9$k:,Dl$N(B $B%O!<%I%&%'%"$K$+$J$j0MB8$7!"(B
-	  $B$b$7%I%i%$%P!<$,%G!<%?$NFI=q$-$r0lDj$N2t$G9T$J$&%G%P%$%9$J$i(B
-	  $B%V%m%C%/%G%P%$%9$,NI$$A*Br$G!"$=$N$h$&$J%G%P%$%9$NNc$H$7$F!"(B
-	  $B%O!<%I%G%#%9%/$O$?$$$F$$(B 512 byte $B%;%/%?!<$r%V%m%C%/$H$7$FFI$_=q$-$7$^$9!#(B
-	  $B%O!<%I%&%'%"$,0lEY$KFI$_=q$-$9$k$N$,(B 1 byte $B$N%G!<%?$J$i!"(B
-	  $BIaDL!"%-%c%i%/%?!<7?%G%P%$%9$,:G$b$h$$A*Br$G!"(B
-	  $BNc$($P!"%7%j%"%k%i%$%s%I%i%$%P!<$,$=$&$G$9!#(B
-	  $BCm$H$7$F!"$$$/$D$+$N%I%i%$%P!<$O%G%P%$%9$N%"%/%;%9$K(B
-	  $B%V%m%C%/%b!<%I$H%-%c%i%/%?!<%b!<%I$NN>J}$r%5%]!<%H$7$F$$$F!"(B
-	  $B$3$N>l9g!"%-%c%i%/%?!<%b!<%I$O$7$P$7$P(B "raw" $B%G%P%$%9$H8F$P$l$^$9!#(B
-	  $B$=$l$O!"%"%/%;%9;~$K(B
-	  $B%G!<%?%V%m%C%/Cj=PA`:n(B(the data blocking abstractions operating) $B$J$7$K(B
-	  $B%O!<%I%&%'%"$N%"%/%;%9$,$G$-$k$+$i$G$9!#(B
-	  $B5<;w%G%P%$%9$G$O!"9MN8$9$k$Y$-:,Dl$N%O!<%I%&%'%"$,$J$$$N$G!"$h$j=@Fp$KA*$Y$^$9!#(B
-	  $B5<;w%G%P%$%9$r;H$C$F$9$kFbMF$K$h$jA*Br$7!"%V%m%C%/7?%G%P%$%9$O(B 
-	  $B%O!<%I%G%#%9%/$d$=$N$h$&$J$b$N$N%(%_%e%l!<%H$K$OJXMx$G$7$g$&!#(B
-	  skeleton $B%I%i%$%P!<$O(B $B%-%c%i%/%?!<7?%G%P%$%9$G$9!#(B</para>
+	<para>   たぶん、最初の重要な決定は、新しいデバイスをなんと呼ぶかを決めることです。
+	  関数コール名の前にデバイス名をくっつけた kernel 構造体をつくるのに
+	  便利なマクロがたくさんあることが知られていて、これは
+	  作りたいカーネルコンフィグファイルエントリーの助けになるでしょう。
+	  config ファイルエントリーはヘッダーファイル名と合わせる必要はありません。
+	  この skeleton ドライバー では、 <quote>skeleton</quote> 擬似デバイスと呼ぶ事にしたので
+	  skeleton というエントリーを コンフィグファイルに作る事になります。
+	  つまり、 attach, open, close, ioctl 関数 呼び出しcall の名前を、それぞれ
+	  skeletonattach, skeletonopen, skeletonclose, skeletonioctl とすると言う事です。
+	  もう1つの重要なのはデバイスの種類を決めることで -
+	  あなたのコードが、カーネルと、もちろん、あなたのコード自体と、どう相互作用するかで
+	  キャラクター型 か ブロック デバイス のどちらかにします。
+	  ブロック型対キャラクター型のデバイスの決定は、
+	  ドライバーが会話する根底の ハードウェアにかなり依存し、
+	  もしドライバーがデータの読書きを一定の塊で行なうデバイスなら
+	  ブロックデバイスが良い選択で、そのようなデバイスの例として、
+	  ハードディスクはたいてい 512 byte セクターをブロックとして読み書きします。
+	  ハードウェアが一度に読み書きするのが 1 byte のデータなら、
+	  普通、キャラクター型デバイスが最もよい選択で、
+	  例えば、シリアルラインドライバーがそうです。
+	  注として、いくつかのドライバーはデバイスのアクセスに
+	  ブロックモードとキャラクターモードの両方をサポートしていて、
+	  この場合、キャラクターモードはしばしば "raw" デバイスと呼ばれます。
+	  それは、アクセス時に
+	  データブロック抽出操作(the data blocking abstractions operating) なしに
+	  ハードウェアのアクセスができるからです。
+	  擬似デバイスでは、考慮するべき根底のハードウェアがないので、より柔軟に選べます。
+	  擬似デバイスを使ってする内容により選択し、ブロック型デバイスは 
+	  ハードディスクやそのようなもののエミュレートには便利でしょう。
+	  skeleton ドライバーは キャラクター型デバイスです。</para>
 
-	<para>$B$=$l$r7hDj$7$?$i!"%3!<%I$rJT=8$9$k$3$H$,$G$-$^$9$,!"(B
-	  $B$=$NA0$K%U%!%$%k$r$I$3$KCV$/$+7h$a$k$3$H$,I,MW$G$9!#(B
-	  $BJ#?t$N%"!<%-%F%/%A%c!<$G;H$o$l$k5<;w%G%P%$%9$r=q$/$J$i!"(B
-	  $B$=$N%I%i%$%P!<$N%3!<%I$NCV$->l$O(B <filename>/usr/src/sys/dev</filename> $B$G$9!#(B
-	  $B$b$75<;w%G%P%$%9$,8DJL$N%"!<%-%F%/%A%c!<$KFCM-$NJ*$J$i!"(B
-	  $B%I%i%$%P!<$N%3!<%I$O8DJL$N%G%#%l%/%H%j!<$N2<$KCV$-!"(B
-	  i386 $B$NNc$G$O!"(B <filename>/usr/src/sys/arch/i386/i386</filename> $B$G$9!#(B
-	  $B%$%s%/%k!<%I%U%!%$%k$K$D$$$F$O!"(B
-	  $B%"!<%-%F%/%A%c!<Hs0MB8$N%G%P%$%9$O(B <filename>/usr/src/sys/sys</filename> $B$K!"(B
-	  $B%"!<%-%F%/%A%c!<FCM-$N%G%P%$%9$G$O!"(B
-	  $B%"!<%-%F%/%A%c!<8DJL$N%G%#%l%/%H%j!<$N2<$N(B <filename>include</filename> $B%G%#%l%/%H%j!<!"(B
-	  $BNc$($P(B i386 $B%"!<%-%F%/%A%c!<$G$O(B
-	  <filename>/usr/src/sys/arch/i386/include</filename> $B$KCV$/$Y$-$G$9!#(B
-	  $B$I$A$i$N>l9g$G$b!"E,@Z$J(B <filename>Makefile</filename> $B$r99?7$7$F$/$@$5$$!#(B
-	  $B$=$l$G!"%$%s%/%k!<%I%U%!%$%k$,%$%s%9%H!<%k$5$l$^$9!#(B
+	<para>それを決定したら、コードを編集することができますが、
+	  その前にファイルをどこに置くか決めることが必要です。
+	  複数のアーキテクチャーで使われる擬似デバイスを書くなら、
+	  そのドライバーのコードの置き場は <filename>/usr/src/sys/dev</filename> です。
+	  もし擬似デバイスが個別のアーキテクチャーに特有の物なら、
+	  ドライバーのコードは個別のディレクトリーの下に置き、
+	  i386 の例では、 <filename>/usr/src/sys/arch/i386/i386</filename> です。
+	  インクルードファイルについては、
+	  アーキテクチャー非依存のデバイスは <filename>/usr/src/sys/sys</filename> に、
+	  アーキテクチャー特有のデバイスでは、
+	  アーキテクチャー個別のディレクトリーの下の <filename>include</filename> ディレクトリー、
+	  例えば i386 アーキテクチャーでは
+	  <filename>/usr/src/sys/arch/i386/include</filename> に置くべきです。
+	  どちらの場合でも、適切な <filename>Makefile</filename> を更新してください。
+	  それで、インクルードファイルがインストールされます。
 	  <ulink
-	  url="../../../../docs/kernel/pseudo/pseudo_dev_skel.c">pseudo_dev_skel.c</ulink> $B$N@hF,$K(B
+	  url="../../../../docs/kernel/pseudo/pseudo_dev_skel.c">pseudo_dev_skel.c</ulink> の先頭に
 	  <code>struct
-	  skeleton_softc</code> $B$r=q$$$F$/$@$5$$!#(B
-	  $B%G%P%$%9L>$K(B "_softc" $B$,=q$-E:$($i$l$?L>A0$G(B softc $B9=B$BN$N@k8@$,I,MW$G!"(B
-	  $B$3$N9=B$BN$N:G=i$NMWAG$O(B <code>struct device</code> $B7?$G$"$kI,MW$,$"$j!"(B
-	  $B%(%s%H%j!<L>$O=EMW$G$O$"$j$^$;$s$,!":G=i$K$"$kI,MW$,$"$j!"(B
-	  autoconfig $B%7%9%F%`$,(B softc struct $B$,@k8@$5$l$F$$$k$3$H$r$"$F$K$7$F$$$k$+$i(B
-	  <!-- ??? $B$3$lK\Ev(B ??? -->$B$G!"$=$N:G=i$NMWAG$O(B struct device $B$G$9!#(B
-	  $B%G%P%$%9%O%s%I%k(B minor $BHV9f(B $B$4$H$K(B softc struct $B$,I,MW$G$9!#(B
-	  softc $B9=B$BN$O(B minor $B%G%P%$%9$,$=$l$r0];}$9$k>uBV$N>pJs$r!"I,MW$K1~$8$F(B
-	  $B$?$@$N(B struct device $B$h$jB?$/$NMWAG$r;}$D$3$H$,$G$-$^$9!#(B</para>
+	  skeleton_softc</code> を書いてください。
+	  デバイス名に "_softc" が書き添えられた名前で softc 構造体の宣言が必要で、
+	  この構造体の最初の要素は <code>struct device</code> 型である必要があり、
+	  エントリー名は重要ではありませんが、最初にある必要があり、
+	  autoconfig システムが softc struct が宣言されていることをあてにしているから
+	  <!-- ??? これ本当 ??? -->で、その最初の要素は struct device です。
+	  デバイスハンドル minor 番号 ごとに softc struct が必要です。
+	  softc 構造体は minor デバイスがそれを維持する状態の情報を、必要に応じて
+	  ただの struct device より多くの要素を持つことができます。</para>
 
       </sect3>
 
       <sect3 id="functions">
-        <title>$B4X?t(B</title>
+        <title>関数</title>
 
-	<para>$B%f!<%6!<%l%Y%k%W%m%0%i%`$K$h$k%"%/%;%9$K$O(B
-	  $B%+!<%M%k%$%s%?!<%U%'!<%9$O%G%P%$%9$KBP$7$F$O4X?t$N%3!<%k$rDL$7$F9T$J$$$^$9!#(B
-	  $B%G%P%$%9$O8e$K<($9$h$&$KA4$F$N4X?t$r%5%]!<%H$9$kI,MW$O$"$j$^$;$s$,!"(B
-	  $B<BMQE*$J%G%P%$%9$O:GDc8B%*!<%W%s$H%/%m!<%:$r%5%]!<%H$9$kI,MW$O$"$j$^$9!#(B
-	  $B4X?tL>$O%G%P%$%9L>$rA0$K$D$1$k$3$H$r;W$$=P$7$F$/$@$5$$!#(B
-	  $B$3$N4X?t$O(B:</para>
+	<para>ユーザーレベルプログラムによるアクセスには
+	  カーネルインターフェースはデバイスに対しては関数のコールを通して行ないます。
+	  デバイスは後に示すように全ての関数をサポートする必要はありませんが、
+	  実用的なデバイスは最低限オープンとクローズをサポートする必要はあります。
+	  関数名はデバイス名を前につけることを思い出してください。
+	  この関数は:</para>
 
 	<orderedlist>
 	  <listitem>
 	    <para><function>attach()</function></para>
-	    <para>$B$3$N4X?t$O%+!<%M%k$,=i4|2=$9$k$H$-$K0lEY8F$S=P$5$l$^$9!#(B
-	      $B$3$l$O!"$"$i$f$kJQ?t$N@_Dj$K;H$o$l!"(B
-	      $B8e$N%3!<%k$d!"%P%C%U%!!<$,I,MW$H$9$k%+!<%M%k%a%b%j!<3d$jEv$F(B
-	      $B$G;2>H$5$l$^$9!#(B
-	      attach $B4X?t$K$O0z?t$,0l$DEO$5$l$^$9!#$3$l$O$3$N%I%i%$%P!<$,07$&(B
-	      $B%G%P%$%9$N?t$G$9!#(B</para>
+	    <para>この関数はカーネルが初期化するときに一度呼び出されます。
+	      これは、あらゆる変数の設定に使われ、
+	      後のコールや、バッファーが必要とするカーネルメモリー割り当て
+	      で参照されます。
+	      attach 関数には引数が一つ渡されます。これはこのドライバーが扱う
+	      デバイスの数です。</para>
 	  </listitem>
 	  <listitem>
 	    <para><function>open()</function></para>
-	    <para>$B$=$NL>$,<($9$h$&$K!"%f!<%6!<%l%Y%k%W%m%0%i%`$,(B
-	      $B%G%P%$%9$KBP$7$F(B &man.open.2; $B%3!<%k$r$7$?;~$K8F$S=P$5$l$^$9!#(B
-	      $B0lHV4JC1$J>l9g!"(B open $B4X?t$OC1$K(B success $B$GLa$k$@$1$G$9!#(B
-	      $B$h$j0lHL$K(B open call $B$O(B
-	      $B%P%C%U%!!<$NMW5a$H2DG=$J$i(B allocate $B$9$k$3$H$d(B
-	      $BB>%I%i%$%P!<4X?t$N%3!<%k$r%5%]!<%H$9$k$?$a(B
-	      $BB>$N%I%i%$%P!<$N>uBV$r=i4|2=$9$k$3$H$rM-8z$K$7$^$9!#(B
-	      open call $B$O2<5-$N%Q%i%a!<%?!<$,;H$((B:</para>
+	    <para>その名が示すように、ユーザーレベルプログラムが
+	      デバイスに対して &man.open.2; コールをした時に呼び出されます。
+	      一番簡単な場合、 open 関数は単に success で戻るだけです。
+	      より一般に open call は
+	      バッファーの要求と可能なら allocate することや
+	      他ドライバー関数のコールをサポートするため
+	      他のドライバーの状態を初期化することを有効にします。
+	      open call は下記のパラメーターが使え:</para>
 	    <itemizedlist>
 	      <listitem>
 	        <para><parameter>dev</parameter></para>
-		<para>open $B$7$h$&$H$9$k%G%P%$%9$N%^%$%J!<HV9f!#(B</para>
+		<para>open しようとするデバイスのマイナー番号。</para>
               </listitem>
 	      <listitem>
 	        <para><parameter>flags</parameter></para>
-		<para>open call $B$KEO$5$l$k%U%i%0(B</para> <!-- ??? $B%f!<%6!<$K$h$k(B open call $B$N%U%i%0$rAGDL$7(B ??? -->
+		<para>open call に渡されるフラグ</para> <!-- ??? ユーザーによる open call のフラグを素通し ??? -->
 	      </listitem>
 	      <listitem>
 	        <para><parameter>mode</parameter></para>
-		<para>open $B$N%b!<%I(B</para> <!-- ??? open $B$N%b!<%I(B ??? -->
+		<para>open のモード</para> <!-- ??? open のモード ??? -->
 	      </listitem>
 	      <listitem>
 	        <para><parameter>proc</parameter></para>
-		<para>$B%*!<%W%sMW5a$r$7$F$$$k%W%m%;%9$N(B proc $B9=B$BN$N%]%$%s%?!<(B
-                  $B$3$l$O!"$=$N%W%m%;%9$,(B
-                  $B?.Mj$G$-$k$b$N$G$"$k(B($B;q3J>ZL@$rM-8z$K$7$F$h$$(B)$B$3$H$r<($7$^$9!#(B</para>
+		<para>オープン要求をしているプロセスの proc 構造体のポインター
+                  これは、そのプロセスが
+                  信頼できるものである(資格証明を有効にしてよい)ことを示します。</para>
 	      </listitem>
 	    </itemizedlist>
 	  </listitem>
 	  <listitem>
 	    <para><function>close()</function></para>
-	    <para>open $B$5$l$F$$$?%G%P%$%9$r(B close $B$7$^$9!#(B
-	      $B%I%i%$%P!<$K$h$C$F!"$3$l$O$?$@C1=c$K(B success $B$GLa$k$@$1$N$b$N$@$C$?$j!"(B
-	      $B$"$k$$$O!"3d$jEv$F$i$l$F$$$?%a%b%j!<$N2rJ|$d(B
-	      $B%I%i%$%P!<$N>uBVJQ?t$r!"$b$O$d(B open $B$5$l$F$O$$$J$$$H<($9$h$&$KJQ99$9$k(B
-	      $BI,MW$,$"$C$?$j$7$^$9!#(B
-	      close $B4X?t8F$S=P$7$N%Q%i%a!<%?!<$O!"(B open $B$G5-=R$7$?$N$HF1$8$G$9!#(B</para>
+	    <para>open されていたデバイスを close します。
+	      ドライバーによって、これはただ単純に success で戻るだけのものだったり、
+	      あるいは、割り当てられていたメモリーの解放や
+	      ドライバーの状態変数を、もはや open されてはいないと示すように変更する
+	      必要があったりします。
+	      close 関数呼び出しのパラメーターは、 open で記述したのと同じです。</para>
 	  </listitem>
 	  <listitem>
 	    <para><function>read()</function></para>
-	    <para>$B%G%P%$%9$+$i%G!<%?$rFI$_=P$7$^$9!#(B
-	      $B$3$N4X?t$N%Q%i%a!<%?!<$O(B:</para>
+	    <para>デバイスからデータを読み出します。
+	      この関数のパラメーターは:</para>
 	    <itemizedlist>
 	      <listitem>
 	        <para><parameter>dev</parameter></para>
-		<para>$B%G%P%$%9$N%^%$%J!<HV9f!#(B</para>
+		<para>デバイスのマイナー番号。</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>uio</parameter></para>
-		<para> uio $B9=B$BN$X$N%]%$%s%?!<$G$9!#(B
-		  read $B4X?t$O(B uio $B9=B$BN(B $B$K%f!<%6!<$,M_$7$$%G!<%?$rK~$?$7$FLa$j$^$9!#(B</para>
+		<para> uio 構造体へのポインターです。
+		  read 関数は uio 構造体 にユーザーが欲しいデータを満たして戻ります。</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>flags</parameter></para>
@@ -194,30 +194,30 @@
 	  </listitem>
 	  <listitem>
 	    <para><function>write()</function></para>
-	    <para>$B%G%P%$%9$K%G!<%?$r=q$-$3$_$^$9!#(B
-	      write $B4X?t(B $B$N%Q%i%a!<%?!<$O!"(B read $B4X?t$N$b$N$HF1$8$G(B - $B$?$@!"0c$&$N$O(B
-	      uio $B9=B$BN$O%G%P%$%9$K=q$-$3$^$l$k%G!<%?$r4^$s$G$$$k$3$H$G$9!#(B</para>
+	    <para>デバイスにデータを書きこみます。
+	      write 関数 のパラメーターは、 read 関数のものと同じで - ただ、違うのは
+	      uio 構造体はデバイスに書きこまれるデータを含んでいることです。</para>
 	  </listitem>
 	  <listitem>
 	    <para><function>ioctl()</function></para>
-	    <para>$B%G%P%$%9$K(B ioctl $B$r$7$^$9!#(B
-	      ioctl call $B$N%Q%i%a!<%?!<$O(B:</para>
+	    <para>デバイスに ioctl をします。
+	      ioctl call のパラメーターは:</para>
 	    <itemizedlist>
 	      <listitem>
 	        <para><parameter>dev</parameter></para>
-		<para>$B%G%P%$%9$N%^%$%J!<HV9f!#(B</para>
+		<para>デバイスのマイナー番号。</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>cmd</parameter></para>
-		<para>$B<B9T$5$l$k(B ioctl $B%3%^%s%I$G$9!#(B
-                  $B$3$N%3%^%s%I$O%X%C%@!<%U%!%$%kFb$GDj5A$5$l(B
-                  $B%+!<%M%k%3!<%I$*$h$S%f!<%6!<%l%Y%k%3!<%I$,;2>H$7$^$9!#(B
-                  $BNc$O(B<ulink url="../../../../docs/kernel/pseudo/pseudo_dev_skel.c">$B%5%s%W%k$N%X%C%@!<(B</ulink>$B$r8+$F$/$@$5$$!#(B</para>
+		<para>実行される ioctl コマンドです。
+                  このコマンドはヘッダーファイル内で定義され
+                  カーネルコードおよびユーザーレベルコードが参照します。
+                  例は<ulink url="../../../../docs/kernel/pseudo/pseudo_dev_skel.c">サンプルのヘッダー</ulink>を見てください。</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>data</parameter></para>
-		<para>$B%f!<%6!<%l%Y%k%3!<%I$G;H$($k%Q%i%a!<%?!<$N%]%$%s%?!<$G$9!#(B
-                  $B$3$N%Q%i%a!<%?!<$O(B ioctl $B$N<BAu$H!"<B:]$KH/9T$5$l$?%3%^%s%I$K0MB8$7$^$9!#(B</para>
+		<para>ユーザーレベルコードで使えるパラメーターのポインターです。
+                  このパラメーターは ioctl の実装と、実際に発行されたコマンドに依存します。</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>flags</parameter></para>
@@ -225,18 +225,18 @@
 	      </listitem>
 	      <listitem>
 	        <para><parameter>proc</parameter></para>
-		<para>ioctl $BMW5a$r=P$7$?%f!<%6!<%l%Y%k%W%m%;%9$K4XO"$9$k(B
-                  proc $B9=B$BN(B $B$G$9!#(B</para>
+		<para>ioctl 要求を出したユーザーレベルプロセスに関連する
+                  proc 構造体 です。</para>
 	      </listitem>
 	    </itemizedlist>
 	  </listitem>
 	  <listitem>
 	    <para><function>stop()</function></para>
-	    <para>tty $BMM<0%G%P%$%9$G=PNO$rDd;_$7$^$9!#(B</para>
+	    <para>tty 様式デバイスで出力を停止します。</para>
 	    <itemizedlist>
 	      <listitem>
 	        <para><parameter>tty</parameter></para>
-		<para>$B%G%P%$%9$K7k$SIU$1$i$l$?(B tty</para>
+		<para>デバイスに結び付けられた tty</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>flags</parameter></para>
@@ -246,142 +246,142 @@
 	  </listitem>
 	  <listitem>
 	    <para><function>poll()</function></para>
-	    <para>$B%G%P%$%9$+$i%G!<%?$,FI$a$k$+%A%'%C%/$7$^$9!#(B
-	      $B%Q%i%a!<%?!<$O(B:</para>
+	    <para>デバイスからデータが読めるかチェックします。
+	      パラメーターは:</para>
 	    <itemizedlist>
 	      <listitem>
 	        <para><parameter>dev</parameter></para>
-		<para>$B%G%P%$%9$,;H$C$F$$$k%^%$%J!<HV9f!#(B</para>
+		<para>デバイスが使っているマイナー番号。</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>events</parameter></para>
-		<para>$B%f!<%6!<%l%Y%k%3!<%k$,%]!<%j%s%0$9$k%$%Y%s%H!#(B</para>
+		<para>ユーザーレベルコールがポーリングするイベント。</para>
 	      </listitem>
 	      <listitem>
 	        <para>proc</para>
-		<para>ioctl $BMW5a$r=P$7$?%f!<%6!<%l%Y%k%W%m%;%9$K4XO"$9$k(B
-		  proc $B9=B$BN(B $B$G$9!#(B</para>
+		<para>ioctl 要求を出したユーザーレベルプロセスに関連する
+		  proc 構造体 です。</para>
 	      </listitem>
 	    </itemizedlist>
 	  </listitem>
 	  <listitem>
 	    <para><function>mmap()</function></para>
-	    <para>$B%I%i%$%P!<$N%P%C%U%!!<$r%f!<%6!<%l%Y%k%W%m%0%i%`$N%a%b%j!<6u4V$K(B mmap $B$9$k(B
-	      $B8"8B$r%5%]!<%H$7$^$9!#%Q%i%a!<%?!<$O(B:</para>
+	    <para>ドライバーのバッファーをユーザーレベルプログラムのメモリー空間に mmap する
+	      権限をサポートします。パラメーターは:</para>
 	    <itemizedlist>
 	      <listitem>
 	        <para><parameter>dev</parameter></para>
-		<para>$B%G%P%$%9$,;H$C$F$$$k%^%$%J!<%G%P%$%9HV9f!#(B</para>
+		<para>デバイスが使っているマイナーデバイス番号。</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>offset</parameter></para>
-		<para>mmap $B3+;O;~$N%P%C%U%!!<$N@hF,$+$i$N%*%U%;%C%H!#(B</para>
+		<para>mmap 開始時のバッファーの先頭からのオフセット。</para>
 	      </listitem>
 	      <listitem>
 	        <para><parameter>prot</parameter></para>
-		<para>mmap $B$N5sF0$N%?%$%W$G!"(B
-                  $BFI$_$3$_@lMQ!"=q$-$3$_@lMQ!"FI$_=q$-2DG=$+$N$$$:$l$+$G$9!#(B
-                  $B%G%P%$%9%I%i%$%P!<$OA4$F$r%5%]!<%H$9$kI,MW$O$"$j$^$;$s!#(B</para>
+		<para>mmap の挙動のタイプで、
+                  読みこみ専用、書きこみ専用、読み書き可能かのいずれかです。
+                  デバイスドライバーは全てをサポートする必要はありません。</para>
 	      </listitem>
 	    </itemizedlist>
 	  </listitem>
 	</orderedlist>
 
-	<para>$B$3$N%G%P%$%9%I%i%$%P!<$,%5%]!<%H$9$k4X?t$r!"(B
-	  $B%-%c%i%/%?!<7?%G%P%$%9MQ$N(B <code>struct cdevsw</code> $B$H(B
-	  <code>struct bdevsw</code> $B$N$$$:$l$+$^$?$ON>J}$K4^$a$kI,MW$,$"$j$^$9!#(B
-	  $B$3$N9=B$BN$NL>A0$O!"%b%8%e!<%kL>$N8e$K(B <code>_cdevsw</code> $B$^$?$O(B <code>_bdevsw</code>
-	  $B$rIU$1$?$b$N$G$9!#(B
-	  $B$3$3$GNc<($9$k5?;w%G%P%$%9$O!"%-%c%i%/%?!<7?%G%P%$%9$H$7$F$N$_$U$k$^$&$N$G!"(B
-	  $B9=B$BN$NL>A0$O(B <code>skeleton_cdevsw</code> $B$H$7$^$9!#(B
-	  $B$J$*!"$3$N9=B$BN$K$O!"$9$Y$F$N%G%P%$%9%$%s%?!<%U%'!<%94X?t$N%(%s%H%j!<$,$"$j$^$9$,!"(B
-	  $B%G%P%$%9B&$G<BAu$9$k$N$O!"$3$N4X?t$N0lItJ,$@$1$G$+$^$$$^$;$s!#(B
-	  $B;H$o$l$J$$%9%?%V4X?t$r$9$Y$F$N%G%P%$%9$K<BAu$5$;$k$N$G$O$J$/!"(B
-	  $BF,$K(B <code>no</code> $B$,$D$$$?(B ($B$?$H$($P(B <code>noread</code>,
-	  <code>nowrite</code> $B$J$I(B)$B!"(B
-	  $B$"$i$+$8$a@k8@$5$l$?%9%?%V$,MQ0U$5$l$F$*$j!"$3$l$i$O8F$P$l$?;~$K(B <code>ENODEV</code>
-	  $B$^$?$O!"2?$NA`:n$b$;$:$K@.8y$rJV$9(B <code>null</code>
-	  ($B$?$H$($P(B <code>nullread</code>, <code>nullwrite</code>
-	  $B$J$I(B) $B$rJV$7$^$9!#(B
-	  cdevsw $B$d(B bdevsw $B$K$"$k4X?t$G%I%i%$%P!<$,%5%]!<%H$7$F$$$J$$$b$N$KBP$7$F$O!"(B
-	  $B$"$i$+$8$a@k8@$5$l$?%9%?%V$N$b$N$r;H$&$@$1$G$9!#(B</para>
+	<para>このデバイスドライバーがサポートする関数を、
+	  キャラクター型デバイス用の <code>struct cdevsw</code> と
+	  <code>struct bdevsw</code> のいずれかまたは両方に含める必要があります。
+	  この構造体の名前は、モジュール名の後に <code>_cdevsw</code> または <code>_bdevsw</code>
+	  を付けたものです。
+	  ここで例示する疑似デバイスは、キャラクター型デバイスとしてのみふるまうので、
+	  構造体の名前は <code>skeleton_cdevsw</code> とします。
+	  なお、この構造体には、すべてのデバイスインターフェース関数のエントリーがありますが、
+	  デバイス側で実装するのは、この関数の一部分だけでかまいません。
+	  使われないスタブ関数をすべてのデバイスに実装させるのではなく、
+	  頭に <code>no</code> がついた (たとえば <code>noread</code>,
+	  <code>nowrite</code> など)、
+	  あらかじめ宣言されたスタブが用意されており、これらは呼ばれた時に <code>ENODEV</code>
+	  または、何の操作もせずに成功を返す <code>null</code>
+	  (たとえば <code>nullread</code>, <code>nullwrite</code>
+	  など) を返します。
+	  cdevsw や bdevsw にある関数でドライバーがサポートしていないものに対しては、
+	  あらかじめ宣言されたスタブのものを使うだけです。</para>
 
       </sect3>
 
       <sect3 id="newdevice">
-        <title>$B%+!<%M%k$K?7$7$$%G%P%$%9$rCN$i$;$k(B</title>
+        <title>カーネルに新しいデバイスを知らせる</title>
 
-	<para>$B5<;w%G%P%$%9$N%3!<%G%#%s%0$r$7$?$i!"(B
-	  $B%"%/%;%9$G$-$k$h$&!"%+!<%M%k$KAH$_9~$_$^$9!#(B
-	  $BCm$H$7$F!"%+!<%M%k$,5<;w%G%P%$%9$rAH$_$3$`J}K!$O(B
-	  $BDL>o$N%G%P%$%9$N>l9g$H!"$$$m$$$m0c$$$^$9!#(B
-	  $B5<;w%G%P%$%9$O!"DL>o$N%G%P%$%98!=P$H(B auto-configuration $B$rHt$P$7!"(B
-	  $B<B9T;~$NBe$o$j$K%=!<%9%l%Y%k$G%+!<%M%k9=B$BN$NCf$K%(%s%H%j!<$r:n$C$?$j(B
-	  $B$=$&$G$O$J$+$C$?$j$9$k$+$i$G$9!#(B
-	  $B%+!<%M%k$,$"$J$?$N%3!<%I$r;H$&$h$&$K$9$k$K$O!"(B
-	  $B$3$l$i$N%U%!%$%k$rJQ99$9$kI,MW$,$"$C$F(B:</para>
+	<para>擬似デバイスのコーディングをしたら、
+	  アクセスできるよう、カーネルに組み込みます。
+	  注として、カーネルが擬似デバイスを組みこむ方法は
+	  通常のデバイスの場合と、いろいろ違います。
+	  擬似デバイスは、通常のデバイス検出と auto-configuration を飛ばし、
+	  実行時の代わりにソースレベルでカーネル構造体の中にエントリーを作ったり
+	  そうではなかったりするからです。
+	  カーネルがあなたのコードを使うようにするには、
+	  これらのファイルを変更する必要があって:</para>
 
         <orderedlist>
 	  <listitem>
 	    <para><filename>/usr/src/sys/conf/majors</filename> or
 	      <filename>/usr/src/sys/&lt;arch&gt;/conf/majors.&lt;arch&gt;</filename></para>
 
-	    <para>$B$3$N3F%U%!%$%k$K$O!"(B
-	      &os; $B$K$*$1$k%G%P%$%9%a%8%c!<HV9f$N%j%9%H$,4^$^$l$^$9!#(B
-	      <filename>/usr/src/sys/conf/majors</filename> $B$K$"$k$N$O!"5!<oFHN)$J%G%P%$%9!"$9$J$o$A(B
-	      &os; $B$,BP1~$7$F$$$k$9$Y$F$N%"!<%-%F%/%A%c!<$GMxMQ2DG=$J%G%P%$%9$N%a%8%c!<HV9f$G$9!#(B
-	      $B%G%P%$%9$,FCDj$N%"!<%-%F%/%A%c!<$K$N$_4XO"$9$k$b$N$G$"$k>l9g$O!"(B
+	    <para>この各ファイルには、
+	      &os; におけるデバイスメジャー番号のリストが含まれます。
+	      <filename>/usr/src/sys/conf/majors</filename> にあるのは、機種独立なデバイス、すなわち
+	      &os; が対応しているすべてのアーキテクチャーで利用可能なデバイスのメジャー番号です。
+	      デバイスが特定のアーキテクチャーにのみ関連するものである場合は、
 	      <filename>/usr/src/sys/&lt;arch&gt;/conf/majors.&lt;arch&gt;</filename>
-	      (&lt;arch&gt; $B$O!"4XO"$9$k%"!<%-%F%/%A%c!<$KCV$-49$($^$9(B)
-	      $B%U%!%$%k$r;H$&I,MW$,$"$j$^$9!#(B
-	      $B$3$N3F%U%!%$%k$K4^$^$l$k%(%s%H%j!<$O!"0J2<$N7A<0$r$H$j$^$9!#(B</para>
+	      (&lt;arch&gt; は、関連するアーキテクチャーに置き換えます)
+	      ファイルを使う必要があります。
+	      この各ファイルに含まれるエントリーは、以下の形式をとります。</para>
 
 	    <programlisting>
 device-major    prefix		type      number	condition</programlisting>
-	    <para>$B$3$N9T$N@53N$JJ8K!$O!"(B
-	      &man.config.5; $B%^%K%e%"%k%Z!<%8$G@bL@$5$l$F$$$^$9$,!"(B
-	      $B$3$3$GNc<($9$k%I%i%$%P!<$N$?$a$K$=$NFbMF$r@bL@$7$F$*$-$^$9!#(B</para>
+	    <para>この行の正確な文法は、
+	      &man.config.5; マニュアルページで説明されていますが、
+	      ここで例示するドライバーのためにその内容を説明しておきます。</para>
 
 	    <itemizedlist>
 	      <listitem>
 	        <para>device-major</para>
-		<para>$B$3$N%(%s%H%j!<$,!"(B
-		  $B%G%P%$%9%a%8%c!<HV9f$N%(%s%H%j!<$G$"$k$3$H$r<($9%-!<%o!<%I$G$9!#(B</para>
+		<para>このエントリーが、
+		  デバイスメジャー番号のエントリーであることを示すキーワードです。</para>
 	      </listitem>
 	      <listitem>
 	        <para>prefix</para>
-		<para>$B$9$Y$F$N%I%i%$%P!<$N4X?t$KBP$7$F!"(B
-		  $B4X?tL>$,<+F0@8@.$5$l$k;~$KM?$($i$l$k@\F,<-$G$9!#(B
-		  $B$3$3$G$NNc$K$*$$$F$O!"(B
-		  <code>skeleton</code> $B$H$7$^$9!#(B</para>
+		<para>すべてのドライバーの関数に対して、
+		  関数名が自動生成される時に与えられる接頭辞です。
+		  ここでの例においては、
+		  <code>skeleton</code> とします。</para>
 	      </listitem>
 	      <listitem>
 	        <para>type</para>
-		<para>$B%a%8%c!<%G%P%$%9$N7?$G!"(B
-		  <code>char</code> $B$^$?$O(B <code>block</code> $B$N$$$:$l$+$G$9!#(B
-		  char $B$H(B block $B$=$l$>$l$N(B type $B$H(B number $B$NAH$r7+$jJV$7=q$/$3$H$G!"(B
-		  $BN>J}$N7?$N%G%P%$%9$r;XDj$9$k$3$H$,$G$-$^$9!#(B</para>
+		<para>メジャーデバイスの型で、
+		  <code>char</code> または <code>block</code> のいずれかです。
+		  char と block それぞれの type と number の組を繰り返し書くことで、
+		  両方の型のデバイスを指定することができます。</para>
 	      </listitem>
 	      <listitem>
 	        <para>number</para>
-		<para>$B%G%P%$%9$N%a%8%c!<HV9f$G$9!#<!$N6u$$$F$$$kHV9f$rA*$S$^$9!#(B
-		  $B$J$*!"(B<filename>/dev</filename> $B$K%G%P%$%9%N!<%I$r:n$kI,MW$,$"$k$N$G!"(B
-		  $BA*$s$@HV9f$r95$($F$*$-$^$9!#(B</para>
+		<para>デバイスのメジャー番号です。次の空いている番号を選びます。
+		  なお、<filename>/dev</filename> にデバイスノードを作る必要があるので、
+		  選んだ番号を控えておきます。</para>
 	      </listitem>
 	      <listitem>
 	        <para>condition</para>
-		<para>$B$3$N%G%P%$%9$,%+!<%M%k$K4^$^$l$k>r7o$G$9!#(B
-		  $B$3$l$O!"(Bconf $B%U%!%$%k(B ($B8e=R(B)
-		  $B$K4^$a$?5?;w%G%P%$%9$N%(%s%H%j!<$H0lCW$5$;$k$h$&$K$7$^$9!#(B</para>
+		<para>このデバイスがカーネルに含まれる条件です。
+		  これは、conf ファイル (後述)
+		  に含めた疑似デバイスのエントリーと一致させるようにします。</para>
 	      </listitem>
 	    </itemizedlist>
 
-	    <para>$B$3$3$GNc<($9$k(B skeleton $B5?;w%G%P%$%9$O!"%-%c%i%/%?!<7?%G%P%$%9$H$7!"(B
-	      $B%I%i%$%P!<$O(B i386 $B%"!<%-%F%/%A%c!<$K0MB8$9$k$b$N$H$7$^$9!#(B
-	      $B$3$N$h$&$J2>Dj$r$7$?$N$G!"(B
+	    <para>ここで例示する skeleton 疑似デバイスは、キャラクター型デバイスとし、
+	      ドライバーは i386 アーキテクチャーに依存するものとします。
+	      このような仮定をしたので、
 	      <filename>/usr/src/sys/arch/i386/conf/majors.i386</filename>
-	      $B%U%!%$%k$rJT=8$9$l$P$h$$$3$H$K$J$j$^$9!#$9$k$H!"(B
-	      $B%a%8%c!<HV9f(B 140 $B$,;H$($k$3$H$,$o$+$k$N$G!"0J2<$N$h$&$J9T$rDI2C$7$^$9!#(B</para>
+	      ファイルを編集すればよいことになります。すると、
+	      メジャー番号 140 が使えることがわかるので、以下のような行を追加します。</para>
 	    <programlisting>
 device-major	skeleton	char	140	skeleton</programlisting>
 	  </listitem>
@@ -389,126 +389,126 @@ device-major	skeleton	char	140	skeleton</programlisting>
       </sect3>
 
       <sect3 id="config">
-        <title>&man.config.1; $B$K?7$7$$%G%P%$%9$rCN$i$;$k(B</title>
+        <title>&man.config.1; に新しいデバイスを知らせる</title>
 
-	<para>&man.config.1; $B$K?7$7$$5<;w%G%P%$%9$rCN$i$;$k$K$O!"(B
-	  <filename>/usr/src/sys/conf/files</filename> ($B%"!<%-%F%/%A%c!<FHN)$J%G%P%$%9$N>l9g(B) $B$^$?$O(B
+	<para>&man.config.1; に新しい擬似デバイスを知らせるには、
+	  <filename>/usr/src/sys/conf/files</filename> (アーキテクチャー独立なデバイスの場合) または
 	  <filename>/usr/src/sys/arch/&lt;arch&gt;/conf/files.&lt;arch&gt;</filename>
-	  (&lt;arch&gt; $B$O4XO"$9$k%"!<%-%F%/%A%c!<(B) $B$N$$$:$l$+$N%U%!%$%k$rJT=8$7$^$9!#(B
-	  $B$3$N%U%!%$%k$O(B  $BM-8z$J(B $B%G%P%$%9$NL>A0(B $B$H(B
-	  $B$3$l$i$N%G%P%$%9$H4XO"$9$k%U%!%$%k$r(B config $B$K65$($^$9!#(B
-	  $B:G=i$K5<;w%G%P%$%9$rDj5A$9$k%;%/%7%g%s$rA\$7$^$9!#(B
-	  $B$3$N(B $B%;%/%7%g%s$O(B <code>defpseudo</code> $B$G;O$^$k9T$r;}$C$F$$$^$9!#(B
-	  $B$3$3$G$O!"%I%i%$%P!<$O%"!<%-%F%/%A%c!<0MB8$G$"$k$3$H$r2>Dj$7$F$$$k$N$G!"(B
+	  (&lt;arch&gt; は関連するアーキテクチャー) のいずれかのファイルを編集します。
+	  このファイルは  有効な デバイスの名前 と
+	  これらのデバイスと関連するファイルを config に教えます。
+	  最初に擬似デバイスを定義するセクションを捜します。
+	  この セクションは <code>defpseudo</code> で始まる行を持っています。
+	  ここでは、ドライバーはアーキテクチャー依存であることを仮定しているので、
 	  <filename>/usr/src/sys/arch/i386/conf/files.i386</filename>
-	  $B$rJT=8$7$^$9!#(B
-	  $B@5$7$$%;%/%7%g%s$r8+$D$1$k$H!"$3$&$$$&9T$r2C$($k$3$H$,$G$-(B:</para>
+	  を編集します。
+	  正しいセクションを見つけると、こういう行を加えることができ:</para>
 
 	<programlisting>
 defpseudo skeleton</programlisting>
 
-        <para>&man.config.1;$B$K(B skeleton $B$H$$$&5<;w%G%P%$%9$,$"$k$3$H$r65$($^$9!#(B
-	  $B$D$.$K!"(B &man.config.1; $B$K(B skeleton $B5<;w%G%P%$%9$K4XO"$9$k%U%!%$%k$r65$($F$"$2$kI,MW$,$"$j$^$9!#(B
-	  $B$3$N>l9g$O$R$H$D$N%U%!%$%k(B
-	  $B$,$"$k$@$1$G$9$,!"$h$jJ#;($J5<;w%G%P%$%9$G$O(B $B$h$jB?$/$N%U%!%$%k$,$"$k$+$b$7$l$:!"(B
-	  $BF1$8J}K!$GI,MW$H$5$l$k%U%!%$%k$4$H$K9T$rC1=c$KDI2C$7$F$$$-$^$9!#(B
-	  $BNc$G$O!"$3$N$h$&$J(B1$B9T$,I,MW$J$@$1$G(B:</para>
+        <para>&man.config.1;に skeleton という擬似デバイスがあることを教えます。
+	  つぎに、 &man.config.1; に skeleton 擬似デバイスに関連するファイルを教えてあげる必要があります。
+	  この場合はひとつのファイル
+	  があるだけですが、より複雑な擬似デバイスでは より多くのファイルがあるかもしれず、
+	  同じ方法で必要とされるファイルごとに行を単純に追加していきます。
+	  例では、このような1行が必要なだけで:</para>
 
 	<programlisting>
 file dev/skeleton.c	   skeleton	needs-flag</programlisting>
 
-        <para>$B9TCf$N(B <code>file</code> $B$O%G%P%$%9$H%U%!%$%k$N4X78$NDj5A(B 
-	  $B$r=q$/$?$a$N%-!<%o!<%I$G$9!#(B
-	  2$BHVL\$N%U%#!<%k%I$O!"%U%!%$%k$N(B
-	  $B%+!<%M%k%=!<%9%D%j!<%k!<%H$+$i$NAjBP0LCV(B ($BDL>o!"(B
-	  <filename>/usr/src/sys</filename>) $B$G$9!#(B
-	  3$BHVL\$N%U%#!<%k%I$O%I%i%$%P!<L>$G$3$N%U%!%$%k$,4XO"$7$F$$$k$b$N$G!"(B
-	  $B$3$N>l9g(B skeleton - $B%5%s%W%k5<;w%G%P%$%9$G$9!#(B
-	  4$BHVL\(B $B$G(B $B:G8e$N(B $B%U%#!<%k%I(B $B$O(B &man.config.1; $B$K(B
-	  <filename>skeleton.h</filename> $B%$%s%/%k!<%I%U%!%$%k$r=q$+$;$k$?$a$N@)8f%U%i%0$G$9!#(B
-	  $B$3$3$G%U%!%$%kL>$,(B <filename>skeleton.c</filename> $B$K$J$C$F$$$^$9$,!"Nc<($7$?%U%!%$%k$r;H$C$?>l9g!"(B
-	  $B%U%!%$%k(B <filename>pseudo_dev_skel.c</filename> $B$r(B
-	  <filename>skeleton.c</filename> $B$K%j%M!<%`$9$k$+!"$3$N%(%s%H%j!<$r(B
-	  (<filename>pseudo_dev_skel.c</filename> $B$K(B) $BJQ99$9$k$+$9$kI,MW$,$"$j$^$9$N$GCm0U$7$F$/$@$5$$!#(B
-	  $B>e=R$N$H$*$j!";d$?$A$O$3$l$r(B skeleton $B$H8F$s$G$$$k$N$G!"$3$3$O(B
+        <para>行中の <code>file</code> はデバイスとファイルの関係の定義 
+	  を書くためのキーワードです。
+	  2番目のフィールドは、ファイルの
+	  カーネルソースツリールートからの相対位置 (通常、
+	  <filename>/usr/src/sys</filename>) です。
+	  3番目のフィールドはドライバー名でこのファイルが関連しているもので、
+	  この場合 skeleton - サンプル擬似デバイスです。
+	  4番目 で 最後の フィールド は &man.config.1; に
+	  <filename>skeleton.h</filename> インクルードファイルを書かせるための制御フラグです。
+	  ここでファイル名が <filename>skeleton.c</filename> になっていますが、例示したファイルを使った場合、
+	  ファイル <filename>pseudo_dev_skel.c</filename> を
+	  <filename>skeleton.c</filename> にリネームするか、このエントリーを
+	  (<filename>pseudo_dev_skel.c</filename> に) 変更するかする必要がありますので注意してください。
+	  上述のとおり、私たちはこれを skeleton と呼んでいるので、ここは
 	  <filename>skeleton.c</filename>
-	  $B$H$7$?$[$&$,$*$=$i$/AGD>$G$7$g$&!#(B</para>
+	  としたほうがおそらく素直でしょう。</para>
 
 	</sect3>
 
 	<sect3 id="kernelconfig">
-	  <title>$B%+!<%M%k%3%s%U%#%0%U%!%$%k$K?7$7$$%G%P%$%9$rDI2C$9$k(B</title>
+	  <title>カーネルコンフィグファイルに新しいデバイスを追加する</title>
 
-	  <para>&man.config.1; $B$K%G%P%$%9$N$3$H$r65$($F$d$C$?$"$H!"(B
-	    $B$=$N%G%P%$%9$r%+!<%M%k%3%s%U%#%0%U%!%$%k$KDI2C$9$k$3$H$O4JC1$G$9!#(B
-	    skeleton $B%G%P%$%9$rDI2C$9$k$K$O!"$3$N$h$&$J9T$r2C$((B:</para>
+	  <para>&man.config.1; にデバイスのことを教えてやったあと、
+	    そのデバイスをカーネルコンフィグファイルに追加することは簡単です。
+	    skeleton デバイスを追加するには、このような行を加え:</para>
 
 	  <programlisting>
 pseudo-device  skeleton</programlisting>
 
-          <para>$B%+!<%M%k%3%s%U%#%0%U%!%$%k$K$O!"(B
-	    $BA0@a$G$N(B <code>defpseudo</code> $B9T$GM?$($i$l$?L>$KB7$($?(B
-	    $B5<;w%G%P%$%9L>$r=q$-$^$9!#(B
+          <para>カーネルコンフィグファイルには、
+	    前節での <code>defpseudo</code> 行で与えられた名に揃えた
+	    擬似デバイス名を書きます。
 	    
-	    $B?7$7$$Dj5A$O(B
-	    <code>options</code> $B%+!<%M%k%3%s%U%#%0%U%!%$%k(B $B%-!<%o!<%I$r$D$+$&$3$H$G!"(B
-	    $B%+!<%M%k(B makefile $B$KDI2C$9$k$3$H$,$G$-!"(B
-	    config $B$O(B <command>cc</command> $B%3%^%s%I$KBP$7(B
-	    <option>-D</option> $B%3%^%s%I%i%$%s%*%W%7%g%s$r;XDj$7$?(B
-	    makefile $B$r:n$j$^$9!#(B</para>
+	    新しい定義は
+	    <code>options</code> カーネルコンフィグファイル キーワードをつかうことで、
+	    カーネル makefile に追加することができ、
+	    config は <command>cc</command> コマンドに対し
+	    <option>-D</option> コマンドラインオプションを指定した
+	    makefile を作ります。</para>
 	    
 	</sect3>
 
 	<sect3 id="userlevel">
-	  <title>$B%f!<%6!<%l%Y%k%W%m%0%i%`$,?7$7$$%G%P%$%9$K%"%/%;%9$9$k$3$H$r5v$9(B</title>
+	  <title>ユーザーレベルプログラムが新しいデバイスにアクセスすることを許す</title>
 
-	  <para>$B?7$7$$%+!<%M%k$r9=C[$7%$%s%9%H!<%k$7$?8e!"(B
-	    $B:G8e$K$9$k$3$H$H$7$F!"?7$7$$5<;w%G%P%$%9$K%"%/%;%9$G$-$k$h$&$K(B
-	    $B%G%P%$%9%N!<%I$r:n$kI,MW$,$"$j$^$9!#(B
-	    $B$=$N%G%P%$%9%N!<%I$O%"%/%;%9$9$k$3$H$,$G$-$k(B
-	    $B$I$s$J%U%!%$%k%7%9%F%`>e$K:n$k$3$H$b$G$-$^$9$,!"(B
-	    $B47=,$K$h$C$F!"(B $B%G%P%$%9%N!<%I$O(B
-	    <filename>/dev</filename> $B$K:n$i$l$^$9!#(B
-	    $B%G%P%$%9%N!<%I(B $B$r$D$/$k$?$a$K(B &man.mknod.8;$B$r;H$&I,MW$,$"$j!"(B
-	    4.i $B@a$G=q$-$H$a$?(B major $BHV9f$G(B $B%G%P%$%9%N!<%I(B $B$r:n$j$^$9!#(B
-	    $B$3$N>l9g!"(B &man.mknod.8; $B%3%^%s%I$G$3$N$h$&$K$G$-(B:</para>
+	  <para>新しいカーネルを構築しインストールした後、
+	    最後にすることとして、新しい擬似デバイスにアクセスできるように
+	    デバイスノードを作る必要があります。
+	    そのデバイスノードはアクセスすることができる
+	    どんなファイルシステム上に作ることもできますが、
+	    慣習によって、 デバイスノードは
+	    <filename>/dev</filename> に作られます。
+	    デバイスノード をつくるために &man.mknod.8;を使う必要があり、
+	    4.i 節で書きとめた major 番号で デバイスノード を作ります。
+	    この場合、 &man.mknod.8; コマンドでこのようにでき:</para>
 
 	  <screen>&rprompt; <userinput>mknod /dev/skel c 140 0</userinput></screen>
 
-	  <para>$B$3$l$G!"?7$7$$%G%P%$%9$r%*!<%W%s$7$F;n$9$3$H$,$G$-$^$9!#(B
+	  <para>これで、新しいデバイスをオープンして試すことができます。
 	    <ulink
-	    url="../../../../docs/kernel/pseudo/sample.c">sample.c</ulink> $B%U%!%$%k$O(B
-	    skeleton $B5<;w%G%P%$%9$,855$$G$"$k$3$H$r<($7$^$9!#(B
-	    $B$3$N%U%!%$%k$O!"$3$3$K$"$k;X<($K=>$C$F$$$F(B
-	    <filename>/dev/skel</filename> $B$,:n$i$l$F$$$k$H2>Dj$7$F$$$F!"(B
-	    $B$3$N%G%P%$%9$O%*!<%W%s$5$l!"%Q%i%a!<%?!<9=B$BN$O(B
-	    ioctl call $B$G%G%P%$%9%I%i%$%P!<$K0\$5$l$^$9!#(B
-	    $B%5%s%W%k%3!<%I$r%3%s%Q%$%k$9$k$K$O!"%3%^%s%I%i%$%s$G(B:</para>
+	    url="../../../../docs/kernel/pseudo/sample.c">sample.c</ulink> ファイルは
+	    skeleton 擬似デバイスが元気であることを示します。
+	    このファイルは、ここにある指示に従っていて
+	    <filename>/dev/skel</filename> が作られていると仮定していて、
+	    このデバイスはオープンされ、パラメーター構造体は
+	    ioctl call でデバイスドライバーに移されます。
+	    サンプルコードをコンパイルするには、コマンドラインで:</para>
 	    
 	  <screen>&uprompt; <userinput>cc -o sample sample.c</userinput></screen>
 
-	  <para>$B$3$l$G!"(B sample $B$H$$$&%P%$%J%j!<$,$G$-$k$G$7$g$&!#(B
-	    <emphasis>$BCm0U(B:</emphasis> $B%X%C%@!<%U%!%$%kCV$->l$G!"(B
-	    <filename>pseudo_dev_skel.h</filename> $B$rF~$l$?(B
-	    $B%7%9%F%`%$%s%/%k!<%I%U%!%$%k$N%G%#%l%/%H%j!<$G(B
-	    <command>make includes</command> $B$r$9$kI,MW$,$"$j$^$9!#(B
-	    $B$5$b$J$1$l$P!"%3%s%Q%$%i!<$O%$%s%/%k!<%I%U%!%$%k$,8+$D$+$i$J$$$HAJ$($k$G$7$g$&!#(B
-	    $B%W%m%0%i%`$r%3%s%Q%$%k$7$F<B9T$9$k$H!"(B
-	    $B%+!<%M%k%a%C%;!<%8$,%3%s%=!<%k$H(B
-	    <filename>/var/log/messages</filename> $B$NN>J}$K8=$o$l!"(B
-	    $B$=$l$O$3$N$h$&$J$b$N$G(B:</para>
+	  <para>これで、 sample というバイナリーができるでしょう。
+	    <emphasis>注意:</emphasis> ヘッダーファイル置き場で、
+	    <filename>pseudo_dev_skel.h</filename> を入れた
+	    システムインクルードファイルのディレクトリーで
+	    <command>make includes</command> をする必要があります。
+	    さもなければ、コンパイラーはインクルードファイルが見つからないと訴えるでしょう。
+	    プログラムをコンパイルして実行すると、
+	    カーネルメッセージがコンソールと
+	    <filename>/var/log/messages</filename> の両方に現われ、
+	    それはこのようなもので:</para>
 
 	  <programlisting>
 May 17 20:32:57 siren /netbsd: Got number of 42 and string of Hello World</programlisting>
 
-          <para>SKELTEST ioctl $BMW5a$r<u$1$?;~$K(B skeleton ioctl $B%O%s%I%i!<$,I=<($9$k(B
-	    $B%a%C%;!<%8$G$9(B; $B$3$NHV9f$HJ8;zNs$O(B <filename>sample.c</filename> $B$N(B <code>param</code>
-	    $B9=B$BN$NCf$KF~$l$F$"$C$?$b$N$G$9!#(B</para>
+          <para>SKELTEST ioctl 要求を受けた時に skeleton ioctl ハンドラーが表示する
+	    メッセージです; この番号と文字列は <filename>sample.c</filename> の <code>param</code>
+	    構造体の中に入れてあったものです。</para>
 
 	</sect3>
     </sect2>
   </sect1>
 
-  <parentsec url="../" text="&os; $B%I%-%e%a%s%F!<%7%g%s(B: $B%+!<%M%k(B"/>
+  <parentsec url="../" text="&os; ドキュメンテーション: カーネル"/>
   
 </webpage>

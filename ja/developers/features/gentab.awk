@@ -234,7 +234,7 @@ END {
 	printf("</tbody>\n");
 
 	printf("</table>\n")
-	printf("\n<h2>³Æµ¡Ç½¤ÎÀâÌÀ</h2>\n")
+	printf("\n<h2>å„æ©Ÿèƒ½ã®èª¬æ˜</h2>\n")
 	
 	printf("<dl>\n")
 	for (i = 0; i < nfeature; i++) {
@@ -253,7 +253,7 @@ END {
 	printf("</dl>\n")
 
 
-	printf("\n<hr>\n<h2>Á´¥İ¡¼¥È¤¬ÂĞ±ş¤·¤Æ¤¤¤ëµ¡Ç½</h2>\n")
+	printf("\n<hr>\n<h2>å…¨ãƒãƒ¼ãƒˆãŒå¯¾å¿œã—ã¦ã„ã‚‹æ©Ÿèƒ½</h2>\n")
 
 	printf("<dl>\n")
 

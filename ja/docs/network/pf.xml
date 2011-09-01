@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
         "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
@@ -13,100 +13,100 @@
 <head>
 <!-- Copyright (c) 1994-2006
 The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-<title>NetBSD Packet Filter $B>pJs(B</title>
+<title>NetBSD Packet Filter 情報</title>
 </head>
 
 <para>
 <ulink url="http://www.benzedrine.cx/pf.html">OpenBSD Packet Filter</ulink> (PF)
-$B$O!"(B 2004 $BG/(B 7 $B7n0JMh(B NetBSD $B$KE}9g$5$l$F$*$j!"%j%j!<%9HG$H$7$F$O(B
+は、 2004 年 7 月以来 NetBSD に統合されており、リリース版としては
 <ulink url="../../releases/formal-3/NetBSD-3.0.html">NetBSD 3.0</ulink>
-$B$G=i$a$FBP1~$7$^$7$?!#(B
-NetBSD $B$G$N(B PF $B$N;H$$J}$O!"4pK\E*$K(B OpenBSD $B$HF1$8$G$9$,!"<c43$N0c$$$,$"$j$^$9!#(B
-$B$3$N%Z!<%8$G$O!"$=$N0c$$$K$D$$$F@bL@$9$k$H$H$b$K!"(B
-PF $B$N(B NetBSD $B$X$N0\?"$HE}9g$K4X$9$kDI2C>pJs$rDs6!$7$^$9!#(B
+で初めて対応しました。
+NetBSD での PF の使い方は、基本的に OpenBSD と同じですが、若干の違いがあります。
+このページでは、その違いについて説明するとともに、
+PF の NetBSD への移植と統合に関する追加情報を提供します。
 </para>
 
 <sect1 role="toc">
 
 <sect2 id="overview">
-<title>$B>pJs(B</title>
+<title>情報</title>
 
 <sect3 id="availability">
-<title>$B2DMQ@-(B</title>
+<title>可用性</title>
 
 <para>
-NetBSD 4.0 $B$K$O!"(B OpenBSD 3.7 $BM3Mh$N(B PF $B$K(B 3.7 $B;^M3Mh$N=$@5$,$*$3$J$o$l$?$b$N$,ImB0$7$^$9!#(B
+NetBSD 4.0 には、 OpenBSD 3.7 由来の PF に 3.7 枝由来の修正がおこなわれたものが附属します。
 </para>
 
 <para>
-NetBSD 3.0 $B$O(B PF $B$K8x<0$KBP1~$7$?:G=i$N%j%j!<%9HG$G$9!#(B
-NetBSD 3.0 $B$K$O!"(B OpenBSD 3.6 $BM3Mh$N(B PF $B$K(B 3.6 $B;^M3Mh$N=$@5$,$*$3$J$o$l$?$b$N$,ImB0$7$^$9!#(B
+NetBSD 3.0 は PF に公式に対応した最初のリリース版です。
+NetBSD 3.0 には、 OpenBSD 3.6 由来の PF に 3.6 枝由来の修正がおこなわれたものが附属します。
 </para>
 
 </sect3>
 
 <sect3 id="kernel">
-<title>$B%+!<%M%k%*%W%7%g%s(B</title>
+<title>カーネルオプション</title>
 <para>
-PF $B$r;H$&$?$a$K%+!<%M%k$N%3%s%Q%$%k$OI,MW$"$j$^$;$s!#(B LKM <filename>/usr/lkm/pf.o</filename>
-$B$r;H$&$3$H$,$G$-$^$9!#(B &man.modload.8; $B$r;H$C$F$3$N(B LKM $B$r%m!<%I$7$^$9!#(B
+PF を使うためにカーネルのコンパイルは必要ありません。 LKM <filename>/usr/lkm/pf.o</filename>
+を使うことができます。 &man.modload.8; を使ってこの LKM をロードします。
 <screen>
 # modload /usr/lkm/pf.o
 </screen>
-$B$7$+$7!"(B PF $B$r%+!<%M%kFb$KAH$_9~$s$G$*$-$?$$>l9g$O!"(B
-$B>/$J$/$H$b0J2<$N%*%W%7%g%s$rM-8z$K$9$kI,MW$,$"$j$^$9!#(B
+しかし、 PF をカーネル内に組み込んでおきたい場合は、
+少なくとも以下のオプションを有効にする必要があります。
 <screen>
 options 	PFIL_HOOKS	# &man.pfil.9; packet filter hooks
 </screen>
-$B$3$N%*%W%7%g%s$O!"(BGENERIC $B%+!<%M%k$G%G%U%)%k%H$GM-8z$K$J$C$F$$$k$O$:$G$9!#(B
-$B%+!<%M%kFb$G(B PF $B$rM-8z$K$9$k$?$a$K$O!"(B
-$B0J2<$N5<;w%G%P%$%9$r%+!<%M%k%3%s%U%#%.%e%l!<%7%g%s$KDI2C$7$F$*$-$^$9!#(B
+このオプションは、GENERIC カーネルでデフォルトで有効になっているはずです。
+カーネル内で PF を有効にするためには、
+以下の擬似デバイスをカーネルコンフィギュレーションに追加しておきます。
 <screen>
 pseudo-device	pf		# PF packet filter
 pseudo-device	pflog		# PF log interface
 </screen>
-PF $B$r;H$C$?%Q%1%C%H$N%m%.%s%0$K6=L#$,$J$1$l$P!"(B
-pflog $B%G%P%$%9$O30$7$F$b$h$$$G$7$g$&!#(B
+PF を使ったパケットのロギングに興味がなければ、
+pflog デバイスは外してもよいでしょう。
 </para>
 
 <para>
-$B0J>e$N@_Dj$rM-8z$K$9$k$?$a!"%+!<%M%k$r:F%3%s%Q%$%k$7$F%$%s%9%H!<%k$9$kI,MW$,$"$j$^$9!#(B
+以上の設定を有効にするため、カーネルを再コンパイルしてインストールする必要があります。
 </para>
 </sect3>
 
 <sect3 id="enable">
-<title>PF $B$rM-8z2=$9$k(B</title>
+<title>PF を有効化する</title>
 <para>
-$B%V!<%H;~$K(B PF $B$rM-8z2=$9$k$K$O!"(B<filename>/etc/rc.conf</filename> $B$G(B
-<userinput>pf=YES</userinput> $B$r@_Dj$7$^$9!#(B
+ブート時に PF を有効化するには、<filename>/etc/rc.conf</filename> で
+<userinput>pf=YES</userinput> を設定します。
 
-$B$J$*!"(B PF $B$N@_Dj%U%!%$%k$,B8:_$7$J$$>l9g!"(B
-$B%V!<%H<jB3$-$OCfCG$7$^$9!#(B
-(<ulink url="#configuration">$B@_Dj(B</ulink>$B$b$4Mw$/$@$5$$(B)$B!#(B
+なお、 PF の設定ファイルが存在しない場合、
+ブート手続きは中断します。
+(<ulink url="#configuration">設定</ulink>もご覧ください)。
 
-PF $B$N<jF0$G$N5/F0!"Dd;_!":F5/F0!":FFI$_9~$_$K$O!"(Brc.d $B%9%/%j%W%H(B
-<filename>/etc/rc.d/pf</filename> $B$r;H$($^$9!#(B
+PF の手動での起動、停止、再起動、再読み込みには、rc.d スクリプト
+<filename>/etc/rc.d/pf</filename> を使えます。
 </para>
 
 <para>
-$B%V!<%H;~$K(B &man.pflogd.8; (pf $B%m%.%s%0%G!<%b%s(B) $B$rM-8z2=$9$k$K$O!"(B
-<filename>/etc/rc.conf</filename> $B$G(B <userinput>pflogd=YES</userinput> $B$r@_Dj$7$^$9!#(B
-&man.pflogd.8; $B$N<jF0$G$N5/F0!"Dd;_!":F5/F0$K$O!"(Brc.d $B%9%/%j%W%H(B
-<filename>/etc/rc.d/pflogd</filename> $B$r;H$($^$9!#(B
+ブート時に &man.pflogd.8; (pf ロギングデーモン) を有効化するには、
+<filename>/etc/rc.conf</filename> で <userinput>pflogd=YES</userinput> を設定します。
+&man.pflogd.8; の手動での起動、停止、再起動には、rc.d スクリプト
+<filename>/etc/rc.d/pflogd</filename> を使えます。
 </para>
 
 <para>
-$B%V!<%H;~$K(B LKM $B$r%m!<%I$9$k$K$O!"(B <filename>/etc/rc.conf</filename> $B$G(B
-<userinput>lkm=YES</userinput> $B$r@_Dj$7!"0J2<$N9T$r(B
-<filename>/etc/lkm.conf</filename> $B$KDI2C$9$kI,MW$,$"$j$^$9!#(B
+ブート時に LKM をロードするには、 <filename>/etc/rc.conf</filename> で
+<userinput>lkm=YES</userinput> を設定し、以下の行を
+<filename>/etc/lkm.conf</filename> に追加する必要があります。
 <screen>
 /usr/lkm/pf.o - - - - BEFORENET
 </screen>
 </para>
 
 <para>
-/usr $B$,%k!<%H%Q!<%F%#%7%g%s$H$OJL$N%Q!<%F%#%7%g%s$K$"$k>l9g$O!"(B
-$B0J2<$NFbMF$r(B <filename>/etc/rc.conf</filename> $B$KDI2C$9$k$3$H$bI,MW$G$9!#(B
+/usr がルートパーティションとは別のパーティションにある場合は、
+以下の内容を <filename>/etc/rc.conf</filename> に追加することも必要です。
 <screen>
 critical_filesystems_local="${critical_filesystems_local} /usr"
 </screen>
@@ -115,57 +115,57 @@ critical_filesystems_local="${critical_filesystems_local} /usr"
 </sect3>
 
 <sect3 id="configuration">
-<title>$B@_Dj(B</title>
+<title>設定</title>
 <para>
-$B%G%U%)%k%H$N@_Dj%U%!%$%k$O(B <filename>/etc/pf.conf</filename> $B$G$9!#(B
-$B$3$l$O!"(B <filename>/etc/rc.conf</filename> $B$GJQ?t(B <userinput>pf_rules</userinput>
-$B$r@_Dj$7$FJQ$($k$3$H$,$G$-$^$9!#(B
+デフォルトの設定ファイルは <filename>/etc/pf.conf</filename> です。
+これは、 <filename>/etc/rc.conf</filename> で変数 <userinput>pf_rules</userinput>
+を設定して変えることができます。
 </para>
 
 <para>
-$B=i4|@_Dj%U%!%$%k$O(B
-<filename>/etc/defaults/pf.boot.conf</filename> $B$G$9!#$3$N@_Dj$O!"(B
-$B%M%C%H%o!<%/@_Dj$r$7$F$$$k:GCf$K%^%7%s$r967b$+$iKI8f$9$k$?$a$@$1$N$b$N$G$9!#(B
-$B$3$N%G%U%)%k%H@_Dj$O!"(B <filename>/etc/pf.boot.conf</filename> $B$H$$$&%U%!%$%k$r:n$k$3$H$G(B
-$B>e=q$-$9$k$3$H$,$G$-$^$9$,!"$[$H$s$I$N>l9g$OI,MW$J$$$O$:$G$9!#(B
-$B$3$N%U%!%$%k$K4X$9$k$5$i$J$k>pJs$O!"(B &man.pf.boot.conf.5; $B$r$4Mw$/$@$5$$!#(B
+初期設定ファイルは
+<filename>/etc/defaults/pf.boot.conf</filename> です。この設定は、
+ネットワーク設定をしている最中にマシンを攻撃から防御するためだけのものです。
+このデフォルト設定は、 <filename>/etc/pf.boot.conf</filename> というファイルを作ることで
+上書きすることができますが、ほとんどの場合は必要ないはずです。
+このファイルに関するさらなる情報は、 &man.pf.boot.conf.5; をご覧ください。
 </para>
 
 <para>
-$BN>@_Dj%U%!%$%k$N=q<0$O!"(B
-&man.pf.conf.5; $B%^%K%e%"%k%Z!<%8$G@bL@$5$l$F$$$^$9!#(B
+両設定ファイルの書式は、
+&man.pf.conf.5; マニュアルページで説明されています。
 </para>
 </sect3>
 
 <sect3 id="bridge">
-<title>$B%V%j%C%8$K$*$1$k(B PF $B$N@_Dj(B</title>
+<title>ブリッジにおける PF の設定</title>
 <para>
-PF $B$O%V%j%C%8%s%0%b!<%I$KBP1~$7$F$$$^$9$,!"%V%j%C%8>e$G$N%Q%1%C%H%U%#%k%?%j%s%0$rM-8z2=$9$k$K$O!"(B
-$B%+!<%M%k$r:F%3%s%Q%$%k$9$kI,MW$,$"$j$^$9!#(B
-$B0J2<$N9T$r%+!<%M%k%3%s%U%#%.%e%l!<%7%g%s$KDI2C$7$^$9!#(B
+PF はブリッジングモードに対応していますが、ブリッジ上でのパケットフィルタリングを有効化するには、
+カーネルを再コンパイルする必要があります。
+以下の行をカーネルコンフィギュレーションに追加します。
 <screen>
 options         BRIDGE_IPF	# bridge uses IP/IPv6 pfil hooks too
 </screen>
-<ulink url="../../../docs/guide/en/chap-net-misc.html#chap-net-misc-bridge">NetBSD Guide</ulink> $B$G@bL@$5$l$F$$$k$H$*$j!"(B
-$B%V%j%C%8$r@_Dj$7$^$9!#(B
-$B<!$K!"(B &man.brconfig.8; $B%3%^%s%I$r;H$C$F%V%j%C%8>e$G%Q%1%C%H%U%#%k%?%j%s%0$rM-8z2=$7$^$9!#(B
+<ulink url="../../../docs/guide/en/chap-net-misc.html#chap-net-misc-bridge">NetBSD Guide</ulink> で説明されているとおり、
+ブリッジを設定します。
+次に、 &man.brconfig.8; コマンドを使ってブリッジ上でパケットフィルタリングを有効化します。
 <screen>
 # brconfig bridgeN ipf
 </screen>
-"ipf" $B%*%W%7%g%s$O(B PF $B$KBP$7$F$bE,MQ$5$l$^$9!#$3$N%*%W%7%g%s$O<B:]$K$O(B
-&man.pfil.9; $B%$%s%?!<%U%'!<%9$rM-8z$K$9$k$b$N$@$+$i$G$9!#(B
-$B$3$l$G!"%V%j%C%8$H$7$F@_Dj$5$l$?%$%s%?!<%U%'!<%9>e$N%Q%1%C%H$r(B
-PF $B$,%U%#%k%?!<$G$-$k$h$&$K$J$C$?$O$:$G$9!#$J$*!"(B
-$BF1$8%G!<%?$,N>%$%s%?!<%U%'!<%9$rDL2a$9$k$N$G!"(B
-$B%U%#%k%?!<$9$kI,MW$,$"$k$N$OJRJ}$N%$%s%?!<%U%'!<%9>e$@$1$G$9!#(B
+"ipf" オプションは PF に対しても適用されます。このオプションは実際には
+&man.pfil.9; インターフェースを有効にするものだからです。
+これで、ブリッジとして設定されたインターフェース上のパケットを
+PF がフィルターできるようになったはずです。なお、
+同じデータが両インターフェースを通過するので、
+フィルターする必要があるのは片方のインターフェース上だけです。
 </para>
 </sect3>
 
 <sect3 id="altq">
 <title>ALTQ</title>
 <para>
-PF $B$G$N(B ALTQ $B$N;HMQ$O!"(BNetBSD 4.0 $B$+$iBP1~$7$F$$$^$9!#(B
-$B0J2<$N%+!<%M%k%*%W%7%g%s$,4X78$7$^$9!#(B
+PF での ALTQ の使用は、NetBSD 4.0 から対応しています。
+以下のカーネルオプションが関係します。
 <screen>
 options         ALTQ            # Manipulate network interfaces' output queues
 options         ALTQ_CBQ        # Class-Based Queueing
@@ -173,56 +173,56 @@ options         ALTQ_HFSC       # Hierarchical Fair Service Curve
 options         ALTQ_PRIQ       # Priority Queueing
 options         ALTQ_RED        # Random Early Detection
 </screen>
-$B$J$*!"(Bpf $B$rAH$_9~$s$@%+!<%M%k$r%3%s%Q%$%k$9$kI,MW$,$"$k$3$H$KCm0U$7$F$/$@$5$$!#(B
-PF LKM $B$H%+!<%M%kFb$N(B ALTQ $B$NAH9g$;$OF0:n$7$^$;$s!#(B
+なお、pf を組み込んだカーネルをコンパイルする必要があることに注意してください。
+PF LKM とカーネル内の ALTQ の組合せは動作しません。
 </para>
 
 <para>
-ALTQ $B$N@_Dj$K$D$$$F$O!"FCJL$J$3$H$O2?$iI,MW$"$j$^$;$s!#%I%-%e%a%s%F!<%7%g%s$K=>$C$F%k!<%k$r@_Dj$9$k$@$1$G$9!#(B
-$B%k!<%k$N@_DjNc$,$$$/$D$+(B <filename>/usr/share/examples/pf</filename> $B$K$"$j$^$9!#(B
+ALTQ の設定については、特別なことは何ら必要ありません。ドキュメンテーションに従ってルールを設定するだけです。
+ルールの設定例がいくつか <filename>/usr/share/examples/pf</filename> にあります。
 </para>
 </sect3>
 
 <sect3 id="differences">
-<title>OpenBSD $B$H$N:90[(B</title>
+<title>OpenBSD との差異</title>
 <para>
-NetBSD $BMQ$N(B PF $B$O!"(BOpenBSD $B$N$b$N$H$/$i$Y<c43$N0c$$$,$"$j$^$9!#(B
-$B0c$$$N$[$H$s$I$O!"5!G=$N7gG!$G$9!#(B
+NetBSD 用の PF は、OpenBSD のものとくらべ若干の違いがあります。
+違いのほとんどは、機能の欠如です。
 
 <itemizedlist>
 <listitem>
 <ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=pfsync">pfsync(4)</ulink>
-$B$K$OBP1~$7$F$$$^$;$s(B ($B%W%m%H%3%kHV9f$N3d$jEv$F$NLdBj$N$?$a(B)$B!#(B
-$B$&$^$/$$$1$P>-Mh$N%j%j!<%9$G2r7h$9$k$G$7$g$&!#(B
+には対応していません (プロトコル番号の割り当ての問題のため)。
+うまくいけば将来のリリースで解決するでしょう。
 </listitem>
 <listitem>
-ALTQ $B$K$O(B NetBSD 4.0 $B$+$iBP1~$7$F$$$^$9!#(B
+ALTQ には NetBSD 4.0 から対応しています。
 </listitem>
 <listitem>
 <ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=carp">carp(4)</ulink>
-$B$K$O(B NetBSD 4.0 $B$+$iBP1~$7$F$$$^$9!#(B
+には NetBSD 4.0 から対応しています。
 </listitem>
 <listitem>
-'group' $B%-!<%o!<%I$O2?$b$7$^$;$s!#(B
-NetBSD $B$O(B GID $B$r(B uidinfo $B9=B$BN$KJ];}$7$J$$$+$i$G$9!#(B
-$B$*$=$i$/!">-Mh$N%j%j!<%9$G$O2r7h$9$k$G$7$g$&!#(B
+'group' キーワードは何もしません。
+NetBSD は GID を uidinfo 構造体に保持しないからです。
+おそらく、将来のリリースでは解決するでしょう。
 </listitem>
 <listitem>
-$B%k!<%H%i%Y%k$K$b$H$E$/%U%#%k%?%j%s%0$O5!G=$7$^$;$s!#(B NetBSD $B$O(B
-$B7PO)MQ$N%i%Y%k$r;}$A$^$;$s!#>-Mh$N%j%j!<%9$GBP1~$9$k$+$I$&$+$O!"(B
-$B$o$+$j$^$;$s!#(B
+ルートラベルにもとづくフィルタリングは機能しません。 NetBSD は
+経路用のラベルを持ちません。将来のリリースで対応するかどうかは、
+わかりません。
 </listitem>
 <listitem>
-$B=i4|@_Dj%U%!%$%k(B &man.pf.boot.conf.5; $B$O(B NetBSD $BFCM-$N%U%!%$%k$G$9!#(B
-OpenBSD $B$O(B  PF $B$N=i4|@_Dj$r(B /etc/rc $B$+$iFI$_9~$_$^$9$,!"(B
-$B$3$N%U%!%$%k$OJQ99$,I,MW$J$H$-$N07$$$,LLE]$G$9!#(B
-$B$3$N$?$a!"(B NetBSD $B$G$O(B PF $B$N=i4|@_DjMQ$K?7$7$$%U%!%$%k$rDI2C$7$F$$$^$9!#(B
+初期設定ファイル &man.pf.boot.conf.5; は NetBSD 特有のファイルです。
+OpenBSD は  PF の初期設定を /etc/rc から読み込みますが、
+このファイルは変更が必要なときの扱いが面倒です。
+このため、 NetBSD では PF の初期設定用に新しいファイルを追加しています。
 </listitem>
 <listitem>
 <ulink url="http://www.openbsd.org/cgi-bin/man.cgi?query=spamd">spamd</ulink>
-$B$O:G=i$O(B NetBSD $B$KF3F~$5$l$^$7$?$,!"(B 3.0 $B$N%j%j!<%9A0$K:o=|$5$l$^$7$?!#(B
-$B$3$l$O(B PF $B$N0lIt$H$O$5$l$:!"(B pkgsrc $B$GMxMQ2DG=$K$J$C$F$$$^$9(B
-(<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/mail/spamd/README.html">mail/spamd</ulink>)$B!#(B
+は最初は NetBSD に導入されましたが、 3.0 のリリース前に削除されました。
+これは PF の一部とはされず、 pkgsrc で利用可能になっています
+(<ulink url="ftp://ftp.NetBSD.org/pub/NetBSD/packages/pkgsrc/mail/spamd/README.html">mail/spamd</ulink>)。
 </listitem>
 </itemizedlist>
 </para>
@@ -231,10 +231,10 @@ OpenBSD $B$O(B  PF $B$N=i4|@_Dj$r(B /etc/rc $B$+$iFI$_9~$_$^$9$,!"(B
 </sect2>
 
 <sect2 id="links">
-<title>$B%j%s%/(B</title>
+<title>リンク</title>
 
 <sect3 id="misclinks">
-<title>$B;(B?$J%j%s%/(B</title>
+<title>雑多なリンク</title>
 <itemizedlist>
 <listitem>
 <ulink url="http://www.openbsd.org/faq/pf/index.html">OpenBSD PF User's Guide</ulink>
@@ -249,17 +249,17 @@ OpenBSD $B$O(B  PF $B$N=i4|@_Dj$r(B /etc/rc $B$+$iFI$_9~$_$^$9$,!"(B
 </sect3>
 
 <sect3 id="manpages">
-<title>$B%^%K%e%"%k%Z!<%8(B</title>
+<title>マニュアルページ</title>
 <itemizedlist>
-<listitem>&man.pf.4; - $B%Q%1%C%H%U%#%k%?!<(B</listitem>
-<listitem>&man.pflog.4; - $B%Q%1%C%H%U%#%k%?!<%m%.%s%0%$%s%?!<%U%'!<%9(B</listitem>
-<listitem>&man.pf.boot.conf.5; - $B%Q%1%C%H%U%#%k%?!<$N=i4|@_Dj(B</listitem>
-<listitem>&man.pf.conf.5; - $B%Q%1%C%H%U%#%k%?!<$N@_Dj%U%!%$%k(B</listitem>
-<listitem>&man.pf.os.5; - $B%*%Z%l!<%F%#%s%0%7%9%F%`$N;XLf%U%!%$%k$N7A<0(B</listitem>
-<listitem>&man.authpf.8; - $BG'>Z%2!<%H%&%'%$%f!<%6!<%7%'%k(B</listitem>
-<listitem>&man.ftp-proxy.8; - $B%$%s%?!<%M%C%H%U%!%$%kE>Aw%W%m%H%3%k$N%W%m%-%7!<%5!<%P!<(B</listitem>
-<listitem>&man.pfctl.8; - $B%Q%1%C%H%U%#%k%?!<(B (PF) $B$*$h$S%M%C%H%o!<%/%"%I%l%9JQ49(B (NAT) $B%G%P%$%9$N@)8f(B</listitem>
-<listitem>&man.pflogd.8; - $B%Q%1%C%H%U%#%k%?!<%m%.%s%0%G!<%b%s(B</listitem>
+<listitem>&man.pf.4; - パケットフィルター</listitem>
+<listitem>&man.pflog.4; - パケットフィルターロギングインターフェース</listitem>
+<listitem>&man.pf.boot.conf.5; - パケットフィルターの初期設定</listitem>
+<listitem>&man.pf.conf.5; - パケットフィルターの設定ファイル</listitem>
+<listitem>&man.pf.os.5; - オペレーティングシステムの指紋ファイルの形式</listitem>
+<listitem>&man.authpf.8; - 認証ゲートウェイユーザーシェル</listitem>
+<listitem>&man.ftp-proxy.8; - インターネットファイル転送プロトコルのプロキシーサーバー</listitem>
+<listitem>&man.pfctl.8; - パケットフィルター (PF) およびネットワークアドレス変換 (NAT) デバイスの制御</listitem>
+<listitem>&man.pflogd.8; - パケットフィルターロギングデーモン</listitem>
 </itemizedlist>
 </sect3>
 
@@ -267,5 +267,5 @@ OpenBSD $B$O(B  PF $B$N=i4|@_Dj$r(B /etc/rc $B$+$iFI$_9~$_$^$9$,!"(B
 
 </sect1>
 
-<parentsec url="./" text="$B%M%C%H%o!<%-%s%0%I%-%e%a%s%F!<%7%g%s(B"/>
+<parentsec url="./" text="ネットワーキングドキュメンテーション"/>
 </webpage>

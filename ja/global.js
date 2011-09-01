@@ -47,7 +47,7 @@ function validateAmount(amount){
 	if(amount.value.match( /^[0-9]+(\.([0-9]+))?$/)){
 		return true;
 	}else{
-		alert('$B6b3[$r@5$7$$7A<0$GF~NO$7$F$/$@$5$$!#(B');
+		alert('金額を正しい形式で入力してください。');
 		amount.focus();
 		return false;
 	}

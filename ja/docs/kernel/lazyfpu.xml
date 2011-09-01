@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
   PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
          "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
 <webpage id="ja-docs-kernel-lazyfpu">
   <config param="desc" 
-    value="NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B$I$N$h$&$K(B lazy FPU $B%3%s%F%-%9%H%9%$%C%A$OF0:n$9$k$N$+(B"/>
+    value="NetBSD ドキュメンテーション: どのように lazy FPU コンテキストスイッチは動作するのか"/>
   <config param="cvstag" 
     value="$NetBSD: lazyfpu.xml,v 1.1 2007/06/09 11:33:44 dsieger Exp $"/>
 <!-- Based on english version: -->
@@ -15,75 +15,75 @@
   <head>
     <!-- Copyright (c) 1994-2005
     The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
-    <title>NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B$I$N$h$&$K(B lazy FPU $B%3%s%F%-%9%H%9%$%C%A$OF0:n$9$k$N$+(B</title>
+    <title>NetBSD ドキュメンテーション: どのように lazy FPU コンテキストスイッチは動作するのか</title>
   </head>
 
   <sect1 id="top">
     <blockquote>
-      <para>$B$I$N$h$&$K(Blazy FPU $B%3%s%F%-%9%H%9%$%C%A$OF0:n$9$k$N$+$K$D$$$F@bL@$7$^$9!#(B</para>
+      <para>どのようにlazy FPU コンテキストスイッチは動作するのかについて説明します。</para>
       <para>Tohru Nishimura - Nara Insititute of Science and Technology</para>
     </blockquote>
 
-    <para>FPU $B%O!<%I%&%'%"$O0lHLE*$K!"8=:_$N(B FPU $B%3%s%F%-%9%H$rJ];}$9$k$?$a$N(B
-      $B%O!<%I%&%'%"%l%8%9%?!<0l<0$r;}$C$F$$$^$9!#3F%W%m%;%9$O!"(B
-      $B$=$N%W%m%;%9$,<B9T$5$l$F$$$J$$4V!"%W%m%;%9$N>uBV$rJ];}$9$k$?$a$K!"(B
-      $B%W%m%;%9Kh$NM=Ls:Q$_$N%a%b%j!<NN0h(B (NetBSD/mips $B$G$O(B u_pcb $B$NCf$K$"$j$^$9(B)
-      $B$r;}$C$F$$$^$9!#%3%s%F%-%9%H%9%$%C%A$NEY$K(B FPU
-      $B%3%s%F%-%9%H$NJ]B8$H:F%m!<%I$r$9$k$3$H$O!"Cx$7$$(B CPU $B%5%$%/%k$r>CHq$7$^$9!#(B</para>
+    <para>FPU ハードウェアは一般的に、現在の FPU コンテキストを保持するための
+      ハードウェアレジスター一式を持っています。各プロセスは、
+      そのプロセスが実行されていない間、プロセスの状態を保持するために、
+      プロセス毎の予約済みのメモリー領域 (NetBSD/mips では u_pcb の中にあります)
+      を持っています。コンテキストスイッチの度に FPU
+      コンテキストの保存と再ロードをすることは、著しい CPU サイクルを消費します。</para>
     
-    <para>$B:G6a$N(B CPU $B$O!"(BFP $B%$%s%9%H%i%/%7%g%s$r<B9T$G$-$J$/$9$k(B
-      $BJ}K!$rDs6!$7$F$$$^$9!#(B CPU $B$,(B FP $B%$%s%9%H%i%/%7%g%s$r(B
-      $B<B9T$7$h$&$H$9$k$HNc30$,Ej$2$i$l!"%*%Z%l!<%F%#%s%0%7%9%F%`(B
-      $B$O<B9TCf$N%W%m%;%9$K!V(BFPU $B$,$D$+$($J$$$h!W%O%s%I%i!<$N(B
-      $B=hM}$r3+;O$7$^$9!#$=$l$O!"%W%m%;%9$,(B FPU $B$r;H$($k$h$&$K(B
-      $B%A%'%C%/!"=`Hw$7!"$=$l$+$i$=$N%W%m%;%9$r(B
-      $BNc30$rH/@8$5$;$?(B FP $B%$%s%9%H%i%/%7%g%s$+$i:F<B9T$5$;$^$9!#:#EY$O!"(B
-      FP $B%$%s%9%H%i%/%7%g%s$ODL>oDL$j$K<B9T$5$l!"8e$GB>$N%W%m%;%9$,!"$3$N(B
-      $B%W%m%;%9$+$i(B FPU $B$rC%$&$^$G!"!V(BFPU $B$,;HMQIT2DG=!W$H$$$&>u67$O(B
-      $BH/@8$7$^$;$s!#(B</para>
+    <para>最近の CPU は、FP インストラクションを実行できなくする
+      方法を提供しています。 CPU が FP インストラクションを
+      実行しようとすると例外が投げられ、オペレーティングシステム
+      は実行中のプロセスに「FPU がつかえないよ」ハンドラーの
+      処理を開始します。それは、プロセスが FPU を使えるように
+      チェック、準備し、それからそのプロセスを
+      例外を発生させた FP インストラクションから再実行させます。今度は、
+      FP インストラクションは通常通りに実行され、後で他のプロセスが、この
+      プロセスから FPU を奪うまで、「FPU が使用不可能」という状況は
+      発生しません。</para>
 
-    <para>$B$9$Y$F$N%W%m%;%9$O!"(BFPU $B$N=jM-8"L5$7$G@8@.$5$l!"$+$D(B FPU $B$N;HMQ$r(B
-      $B6X$8$i$l$F$$$^$9!#%W%m%;%9$,(B FP $B%$%s%9%H%i%/%7%g%s$r<B9T$7$J$1(B
-      $B$l$P!"2?$bFCJL$J;v$O$*$3$i$:!"$=$N%W%m%;%9$N<B9TCf$K(B FPU
-      $B$K$O<j=P$7$5$l$^$;$s!#(B</para>
+    <para>すべてのプロセスは、FPU の所有権無しで生成され、かつ FPU の使用を
+      禁じられています。プロセスが FP インストラクションを実行しなけ
+      れば、何も特別な事はおこらず、そのプロセスの実行中に FPU
+      には手出しされません。</para>
 
-    <para>$B$b$7!"(BFPU $B$N;HMQ$r6X;_$5$l$?%W%m%;%9$,!"(BFP $B%$%s%9%H%i%/%7%g%s$r(B
-      $B<B9T$7$h$&$H$9$k$H!"(BCPU $B$O!"!V;HMQIT2DG=!WNc30$rEj$2$^$9!#%0%m!<(B
-      $B%P%k$JJQ?t(B fpcurproc$B$O$I$N%W%m%;%9$,(B FPU $B$r=jM-$7$F$$$k$+$r<($7$^$9!#(B
-      $B!V;HMQIT2DG=!WNc30$,H/@8$7$?;~!"(BFPU $B%O!<%I%&%'%"$O$=$N=jM-%W%m%;%9$N(B
-      $B>u67$r;}$C$F$$$^$9!#$3$l$O!"Nc30$rEj$2$?(B curproc $B$H$O0[$J$j$^$9!#(B
-      $B;HMQIT2DG=%O%s%I%i!<$O!"(B FPU $B%O!<%I%&%'%"%3%s%F%-%9%H$r(B fpcurproc
-      $B$NM=Ls$5$l$?NN0h$XJ]B8$7$^$9!#$=$7$F!"(Bcurproc $B$N(B FPU $B%3%s%F%-%9%H$r(B
-      FPU $B%l%8%9%?!<$K%m!<%I$7$^$9!#%W%m%;%9$N(B FPU $B%3%s%F%-%9%H$,:G=i(B
-      $B$K%m!<%I$5$l$k$H$-$O!"(BFPU $BA4BN$,%/%j%"!<$5$l$^$9!#$3$N$h$&$K!"(B
-      $BB>$N%W%m%;%9$,(B FPU $B$N;HMQ$rMW5a$9$k$^$G!"(BFPU $B%3%s%F%-%9%H%9%$%C%A(B
-      $B$O1d4|$5$l$^$9!#BgB??t$N%W%m%0%i%`$O!"(B FP $B%$%s%9%H%i%/%7%g%s$r(B
-      $B0l@Z<B9T$7$J$$$?$a!"1d4|$5$l$?(B lazy FPU $B%3%s%F%-%9%H%9%$%C%A$O!"(B
-      $B9b%3%9%H$J(B FPU $B$NJ]B8(B/$B%m!<%I$N2s?t$rBgI}$K8:$i$7$^$9!#(B</para>
+    <para>もし、FPU の使用を禁止されたプロセスが、FP インストラクションを
+      実行しようとすると、CPU は、「使用不可能」例外を投げます。グロー
+      バルな変数 fpcurprocはどのプロセスが FPU を所有しているかを示します。
+      「使用不可能」例外が発生した時、FPU ハードウェアはその所有プロセスの
+      状況を持っています。これは、例外を投げた curproc とは異なります。
+      使用不可能ハンドラーは、 FPU ハードウェアコンテキストを fpcurproc
+      の予約された領域へ保存します。そして、curproc の FPU コンテキストを
+      FPU レジスターにロードします。プロセスの FPU コンテキストが最初
+      にロードされるときは、FPU 全体がクリアーされます。このように、
+      他のプロセスが FPU の使用を要求するまで、FPU コンテキストスイッチ
+      は延期されます。大多数のプログラムは、 FP インストラクションを
+      一切実行しないため、延期された lazy FPU コンテキストスイッチは、
+      高コストな FPU の保存/ロードの回数を大幅に減らします。</para>
 
-    <para><emphasis>fpcurproc $B$,;X$9%W%m%;%9$,=*N;$9$k$H$-$K!"(Blazy $B$K3d$jEv$F$i$l(B
-	$B$F$$$k(B FP context $B$r!"@5$7$/2rJ|$9$k$h$&$KCm0U$7$J$1$l$P$$$1$J$$$3(B
-	$B$H$r(B Matt Thomas $B$,;XE&$7$F$/$l$^$7$?!#(B</emphasis></para>
+    <para><emphasis>fpcurproc が指すプロセスが終了するときに、lazy に割り当てられ
+	ている FP context を、正しく解放するように注意しなければいけないこ
+	とを Matt Thomas が指摘してくれました。</emphasis></para>
 
-    <para>$B$3$NLq2p$J(B FPU $B%3%s%F%-%9%H%9%$%C%A%7%s%I%m!<%`$O!"(BMMU $B$,%W%m%;%9(B
-      $B%3%s%F%-%9%H%9%$%C%A$KD>LL$7$?;~$N>u67$K;w$F$$$^$9!#(B
-      MMU $B$O$+$J$jJ#;($J%G%P%$%9$G$9!#$3$l$O!"%W%m%;%9$N%"%I%l%96u4V$rI=8=$9(B
-      $B$k$?$a$NJ#;($JFbIt!V>uBV!W!"$"$k$$$O$b$C$H5)$K$O!"(B CPU $B%O!<%I%&%'%"$K(B
-      $B4p$E$$$FDj5A$5$l$k!"%W%m%;%9$NK\<A$HFCD'(B(nature and feature)$B$G$"$k$H$3(B
-      $B$m$N<B9T4D6-$N!V%?%9%/I=8=!W$rJ];}$7$^$9!#$$$/$D$+$N(B MMU $B$K$O!"%W%m%;%9$N%"%I%l%9(B
-      $B6u4V$r<($9%a%b%j!<NN0h$r;XDj$9$k!"@lMQ$N%l%8%9%?!<$,$"$j$^$9!#$3$N$h$&$J>l9g!"(B
-      $BJ#?t$N%a%b%j!<NN0h$r;}$A!"@lMQ$N(B MMU $B%$%s%9%H%i%/%7%g%s$r<B9T$7$F(B
-      $B$=$N%l%8%9%?!<$r99?7$9$k$3$H$G%a%b%j!<NN0h$r@Z$jBX$($k$3$H$K$h$j!"(B
-      MMU $B%3%s%F%-%9%H%9%$%C%A$K$+$+$k%3%9%H$r2<$2$k$3$H$,$G$-$^$9!#(B
-      $B$"$k<o$N(B CPU $B%G%6%$%s$O!"(BMMU $B%3%s%F%-%9%H%9%$%C%A(B
-      $B$N$?$a$K$5$o$,$7$$8+$;J*$N$h$&$JJ}<0$r$*$3$J$&$3$H$GM-L>$G$9!#$*$I$m(B
-      $B$/$Y$-D9$5$N(B CPU $B%5%$%/%k$r>CHq$7$F!"B??t$N%l%8%9%?!<$rJ]B8(B/$B%m!<%I(B
-      $B$7!"?7$7$$%W%m%;%9$N<B9T%3%s%F%-%9%H$r3NN)$9$k$?$a$K%a%b%j!<NN0h$r$$$C$?(B
-      $B$j$-$?$j$7$^$9!#%O!<%I%&%'%"$K$h$k%3%s%F%-%9%H%9%$%C%A5!G=(B
-      $B$N%5%]!<%H$OHs>o$K%3%9%H$,9b$/!"<B:]LdBj$a$C$?$K;H$o$l$k$3$H$O$"$j$^$;$s!#(B
-      $B$=$7$F!"B?$/$N?M$O!"$=$l$O(B CISC $BIw!"$"$k$$$O%7%j%3%s$NO2Hq$@$H9M$($F$$$^$9!#(B</para>
+    <para>この厄介な FPU コンテキストスイッチシンドロームは、MMU がプロセス
+      コンテキストスイッチに直面した時の状況に似ています。
+      MMU はかなり複雑なデバイスです。これは、プロセスのアドレス空間を表現す
+      るための複雑な内部「状態」、あるいはもっと稀には、 CPU ハードウェアに
+      基づいて定義される、プロセスの本質と特徴(nature and feature)であるとこ
+      ろの実行環境の「タスク表現」を保持します。いくつかの MMU には、プロセスのアドレス
+      空間を示すメモリー領域を指定する、専用のレジスターがあります。このような場合、
+      複数のメモリー領域を持ち、専用の MMU インストラクションを実行して
+      そのレジスターを更新することでメモリー領域を切り替えることにより、
+      MMU コンテキストスイッチにかかるコストを下げることができます。
+      ある種の CPU デザインは、MMU コンテキストスイッチ
+      のためにさわがしい見せ物のような方式をおこなうことで有名です。おどろ
+      くべき長さの CPU サイクルを消費して、多数のレジスターを保存/ロード
+      し、新しいプロセスの実行コンテキストを確立するためにメモリー領域をいった
+      りきたりします。ハードウェアによるコンテキストスイッチ機能
+      のサポートは非常にコストが高く、実際問題めったに使われることはありません。
+      そして、多くの人は、それは CISC 風、あるいはシリコンの浪費だと考えています。</para>
   </sect1>
 
-  <parentsec url="." text="NetBSD $B%I%-%e%a%s%F!<%7%g%s(B: $B%+!<%M%k(B"/>
+  <parentsec url="." text="NetBSD ドキュメンテーション: カーネル"/>
 
 </webpage>

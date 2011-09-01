@@ -5,41 +5,41 @@
 <!-- Copyright (c) 1998-2004
 	The NetBSD Foundation, Inc.  ALL RIGHTS RESERVED. -->
 <link rev="made" href="mailto:www@jp.NetBSD.org">
-<title>Diskless NetBSD HOW-TO, ndbootd (ND) $B%5!<%P!<$N@_Dj(B</title>
+<title>Diskless NetBSD HOW-TO, ndbootd (ND) サーバーの設定</title>
 </head>
 <body bgcolor="#FFFFFF" text="#000000">
 
-$BLa$k(B |
-<a href="rarp.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+戻る |
+<a href="rarp.html">進む</a> |
+<a href="./">目次</a>
 
 <hr>
 
-<h1>Diskless NetBSD HOW-TO, <tt>ndbootd</tt> (ND) $B%5!<%P!<$N@_Dj(B</h1>
+<h1>Diskless NetBSD HOW-TO, <tt>ndbootd</tt> (ND) サーバーの設定</h1>
 
-Sun $B5lMh$N(B Network Disk (ND) $B%W%m%H%3%k$O!"(B Sun 2 $B%^%7%s$G$N(B
-$B%M%C%H%o!<%/7PM3$N%V!<%H$K;H$o$l$F$$$^$9!#(B ND $B%W%m%H%3%k$O!"(B
-Sun $B$,(B NFS $B0JA0$K@_7W$7$?$b$N$G$9!#(B ND $B$O!"%G%#%9%/$N(B raw
-$B%V%m%C%/$r%M%C%H%o!<%/%/%i%$%"%s%H$,MxMQ$G$-$k$h$&$K$9$k$@$1$N$b$N$G$9!#(B
-$B$3$l$O!"(B NFS $B$,??$NL>A06u4V$H%U%!%$%kCj=P$rDs6!$7$F$$$k$N$H$OBP>HE*$G$9!#(B
+Sun 旧来の Network Disk (ND) プロトコルは、 Sun 2 マシンでの
+ネットワーク経由のブートに使われています。 ND プロトコルは、
+Sun が NFS 以前に設計したものです。 ND は、ディスクの raw
+ブロックをネットワーククライアントが利用できるようにするだけのものです。
+これは、 NFS が真の名前空間とファイル抽出を提供しているのとは対照的です。
 <p>
 
-<tt>ndbootd</tt> $B$O!"(B ND $B%W%m%H%3%k$r%5%]!<%H$9$k%5!<%P!<$G$9!#(B
-$B$?$@$7!"$3$l$G%5!<%S%9$G$-$k$3$H$O!"0lCJL\$HFsCJL\$N%V!<%H%m!<%@!<(B
-$B$@$1$r4^$s$@2>A[E*$J%G%#%9%/$K8B$i$l$^$9!#(B
+<tt>ndbootd</tt> は、 ND プロトコルをサポートするサーバーです。
+ただし、これでサービスできることは、一段目と二段目のブートローダー
+だけを含んだ仮想的なディスクに限られます。
 <p>
 
-$B:G=i$K!"$3$NFs<oN`$N%V!<%H%m!<%@!<$rF~<j$9$kI,MW$,$"$j$^$9!#$3$N0lCJL\$H(B
-$BFsCJL\$N%V!<%H%m!<%@!<$O!"$=$l$>$l(B <tt>bootyy</tt> $B$H(B <tt>netboot</tt>
-$B$H$$$&L>A0$G$9!#$3$l$i$O(B NetBSD/sun2 $BG[I[J*$K4^$^$l$F$*$j!"(B
-<b><tt>installation/netboot/</tt></b> $B0J2<$K$"$j$^$9!#(B
+最初に、この二種類のブートローダーを入手する必要があります。この一段目と
+二段目のブートローダーは、それぞれ <tt>bootyy</tt> と <tt>netboot</tt>
+という名前です。これらは NetBSD/sun2 配布物に含まれており、
+<b><tt>installation/netboot/</tt></b> 以下にあります。
 <p>
 
-<tt>/tftpboot</tt> $B%G%#%l%/%H%j!<$K$"$k%V!<%H%m!<%@!<$r8+$D$1$i$l$k$h$&$K(B
-<tt>ndbootd</tt> $B$r@_Dj$9$kJ}K!$O!"$=$3$K%U%!%$%k$rCV$/$@$1$H$$$&4JC1$3$N$&$($J$$$b$N$G$9!#(B
-$B$=$l$+$i!"(B<a href="../../../../docs/network/netboot/intro.sun2.html">$B=x@b(B</a>$B$G35@b$7$?$H$*$j!"(B
-$B8D!9$N%/%i%$%"%s%HMQ$K(B <tt>netboot</tt> $B$X$N%7%s%\%j%C%/%j%s%/$rMQ0U$9$kI,MW$,$"$j$^$9!#(B
-$B$?$H$($P!"(B IP $B%"%I%l%9$,(B 192.168.1.10 $B$N(B sun2 $B%/%i%$%"%s%H$,$"$l$P!"0J2<$N$h$&$K$7$^$9(B:
+<tt>/tftpboot</tt> ディレクトリーにあるブートローダーを見つけられるように
+<tt>ndbootd</tt> を設定する方法は、そこにファイルを置くだけという簡単このうえないものです。
+それから、<a href="../../../../docs/network/netboot/intro.sun2.html">序説</a>で概説したとおり、
+個々のクライアント用に <tt>netboot</tt> へのシンボリックリンクを用意する必要があります。
+たとえば、 IP アドレスが 192.168.1.10 の sun2 クライアントがあれば、以下のようにします:
 
 <pre># <b>mkdir -p /tftpboot</b>
 # <b>cp /from/some/where/bootxx /tftpboot</b>
@@ -47,42 +47,42 @@ Sun $B$,(B NFS $B0JA0$K@_7W$7$?$b$N$G$9!#(B ND $B$O!"%G%#%9%/$N(B raw
 # <b>cd /tftpboot</b> 
 # <b>ln -s netboot C0A8010A.SUN2</b></pre>
 
-<tt>ndbootd</tt> $B$O!"%/%i%$%"%s%H$K%V!<%H%m!<%@!<$r%5!<%S%9$9$k$[$+!"(B
-$B%/%i%$%"%s%H$N(B IP $B%"%I%l%9$NDLCN$b$7$^$9!#$h$C$F!"0J2<$N@bL@$G$O(B
-<a href="rarp.html">rarp</a> $B$K;w$?$h$&$J@bL@$b$"$j$^$9!#(B
-(rarp $B$N@_Dj$b$9$kI,MW$,$"$k$N$G!"$3$l$G$$$$$N$G$9!#(B)
+<tt>ndbootd</tt> は、クライアントにブートローダーをサービスするほか、
+クライアントの IP アドレスの通知もします。よって、以下の説明では
+<a href="rarp.html">rarp</a> に似たような説明もあります。
+(rarp の設定もする必要があるので、これでいいのです。)
 <p>
 
-<a href="#netbsd">NetBSD</a> $B$G$N(B ndbootd $B$N@_Dj(B<br>
-<a href="#openbsd">OpenBSD</a> $B$G$N(B ndbootd $B$N@_Dj(B<br>
-<a href="#freebsd">FreeBSD</a> $B$G$N(B ndbootd $B$N@_Dj(B<br>
-<a href="#linux">Linux</a> $B$G$N(B ndbootd $B$N@_Dj(B<br>
-<a href="#sunos">SunOS</a> $B$G$N(B ndbootd $B$N@_Dj(B<br>
-<a href="#solaris">Solaris</a> $B$G$N(B ndbootd $B$N@_Dj(B<br>
+<a href="#netbsd">NetBSD</a> での ndbootd の設定<br>
+<a href="#openbsd">OpenBSD</a> での ndbootd の設定<br>
+<a href="#freebsd">FreeBSD</a> での ndbootd の設定<br>
+<a href="#linux">Linux</a> での ndbootd の設定<br>
+<a href="#sunos">SunOS</a> での ndbootd の設定<br>
+<a href="#solaris">Solaris</a> での ndbootd の設定<br>
 <p>
 
 <hr>
 
 <h3><a name="netbsd">NetBSD</a></h3>
 <dl><dt><dd>
-$B:G6a$N(B NetBSD $B%j%j!<%9HG$O(B <tt>ndbootd</tt> $B$r4^$s$G$$$^$9!#8E$$%j%j!<%9HG$N>l9g$O!"(B
+最近の NetBSD リリース版は <tt>ndbootd</tt> を含んでいます。古いリリース版の場合は、
 <a href="http://mit.edu/fredette/www/ndbootd/">http://mit.edu/fredette/www/ndbootd/</a>
-$B0J2<$K$"$k:G?7%P!<%8%g%s$r%@%&%s%m!<%I!&9=C[!&%$%s%9%H!<%k$9$kI,MW$,$"$j$^$9!#(B
+以下にある最新バージョンをダウンロード・構築・インストールする必要があります。
 <p>
 
-$B%+!<%M%k$r:F9=C[$7$F$$$k>l9g!"(B
-$B%3%s%U%#%0%U%!%$%k$K0J2<$N5-=R$,$"$k$3$H$r3NG'$7$F$/$@$5$$(B: 
+カーネルを再構築している場合、
+コンフィグファイルに以下の記述があることを確認してください: 
 <pre>pseudo-device   bpfilter       4</pre>
-NetBSD $B$NG[I[$K4^$^$l$k(B <tt>GENERIC</tt> $B%+!<%M%k$O!"$3$l$r4^$s$G$$$^$9!#(B 
+NetBSD の配布に含まれる <tt>GENERIC</tt> カーネルは、これを含んでいます。 
 <p>
 
 <ol>
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$r:n$j!"%/%i%$%"%s%H$rNs5s$7$F$*$-$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルを作り、クライアントを列挙しておきます:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
 
-<li><tt>/etc/hosts</tt> $B%U%!%$%k$K%/%i%$%"%s%H$N>pJs$r=q$$$F$*$-$^$9(B:<br>
+<li><tt>/etc/hosts</tt> ファイルにクライアントの情報を書いておきます:<br>
     <b><tt>192.168.1.10           client</tt></b>
 <p>
 
@@ -90,30 +90,30 @@ CC:CC:CC:CC:CC:CC     client</b></pre>
 </ol>
 <p>
 
-$B$3$l$G(B <tt>ndbootd</tt> $B$,%U%)%"%0%i%&%s%I$G%G%P%C%0%b!<%I$GF0$-$^$9(B
-($B$D$^$j(B <tt>^C</tt> $B$G;_$a$i$l$^$9(B) $B!#(B
-$B%5!<%P!<$,MW5a$r<u$1$k$H!"%G%P%C%0MQ$N%a%C%;!<%8$r$?$/$5$s=PNO$7$^$9(B:
+これで <tt>ndbootd</tt> がフォアグラウンドでデバッグモードで動きます
+(つまり <tt>^C</tt> で止められます) 。
+サーバーが要求を受けると、デバッグ用のメッセージをたくさん出力します:
 <p>
 
-<a href="rarp.html">rarp</a> $B$N@_Dj$K?J$`(B
+<a href="rarp.html">rarp</a> の設定に進む
 </dd></dl>
 
 <hr>
 
-<h3><a name="freebsd">FreeBSD</a> $B$H(B <a name="openbsd">OpenBSD</a></h3>
+<h3><a name="freebsd">FreeBSD</a> と <a name="openbsd">OpenBSD</a></h3>
 <dl><dt><dd>
 <a href="http://mit.edu/fredette/www/ndbootd/">http://mit.edu/fredette/www/ndbootd/</a>
-$B0J2<$K$"$k(B <tt>ndbootd</tt>
-$B$N:G?7%P!<%8%g%s$r%@%&%s%m!<%I!&9=C[!&%$%s%9%H!<%k$9$kI,MW$,$"$j$^$9!#(B
+以下にある <tt>ndbootd</tt>
+の最新バージョンをダウンロード・構築・インストールする必要があります。
 <p>
 
 <ol>
-<li><tt>/etc/ethers</tt> $B%U%!%$%k$r:n$j!"%/%i%$%"%s%H$rNs5s$7$F$*$-$^$9(B:<br>
+<li><tt>/etc/ethers</tt> ファイルを作り、クライアントを列挙しておきます:<br>
 <pre><b>#/etc/ethers
 CC:CC:CC:CC:CC:CC     client</b></pre>
 <p>
 
-<li><tt>/etc/hosts</tt> $B%U%!%$%k$K%/%i%$%"%s%H$N>pJs$r=q$$$F$*$-$^$9(B:<br>
+<li><tt>/etc/hosts</tt> ファイルにクライアントの情報を書いておきます:<br>
     <b><tt>192.168.1.10           client</tt></b>
 <p>
 
@@ -121,49 +121,49 @@ CC:CC:CC:CC:CC:CC     client</b></pre>
 </ol>
 <p>
 
-$B$3$l$G(B <tt>ndbootd</tt> $B$,%U%)%"%0%i%&%s%I$G%G%P%C%0%b!<%I$GF0$-$^$9(B
-($B$D$^$j(B <tt>^C</tt> $B$G;_$a$i$l$^$9(B) $B!#(B
-$B%5!<%P!<$,MW5a$r<u$1$k$H!"%G%P%C%0MQ$N%a%C%;!<%8$r$?$/$5$s=PNO$7$^$9(B:
+これで <tt>ndbootd</tt> がフォアグラウンドでデバッグモードで動きます
+(つまり <tt>^C</tt> で止められます) 。
+サーバーが要求を受けると、デバッグ用のメッセージをたくさん出力します:
 <p>
 
-<a href="rarp.html">rarp</a> $B$N@_Dj$K?J$`(B
+<a href="rarp.html">rarp</a> の設定に進む
 </dd></dl>
 
 <hr>
 
 <h3><a name="linux">Linux</a></h3>
 <dl><dt><dd>
-$BL$Dj$G$9!#(B <tt>ndbootd</tt> $B$O:#$N$H$3$m(B Linux $B>e$GF0:n$7$^$;$s(B
-($BDc%l%Y%k$N%$!<%5%M%C%H%"%/%;%95!G=$O$^$@=q$+$l$F$$$^$;$s(B) $B!#(B
-$B%W%m%0%i%^!<$J$i=q$1$k$G$7$g$&(B - $B%=!<%9(B <tt>config/ndbootd-bpf.c</tt>
-$B$K$"$k$N$HF1Ey$N%$%s%?!<%U%'!<%9$rMQ0U$9$l$P$h$$$N$G$9!#(B
+未定です。 <tt>ndbootd</tt> は今のところ Linux 上で動作しません
+(低レベルのイーサネットアクセス機能はまだ書かれていません) 。
+プログラマーなら書けるでしょう - ソース <tt>config/ndbootd-bpf.c</tt>
+にあるのと同等のインターフェースを用意すればよいのです。
 </dd></dl>
 
 <hr>
 
 <h3><a name="sunos">SunOS</a></h3>
 <dl><dt><dd>
-$BL$Dj$G$9!#(B <tt>ndbootd</tt> $B$O:#$N$H$3$m(B SunOS $B>e$GF0:n$7$^$;$s(B
-($BDc%l%Y%k$N%$!<%5%M%C%H%"%/%;%95!G=$O$^$@=q$+$l$F$$$^$;$s(B) $B!#(B
-$B%W%m%0%i%^!<$J$i=q$1$k$G$7$g$&(B - $B%=!<%9(B <tt>config/ndbootd-bpf.c</tt>
-$B$K$"$k$N$HF1Ey$N%$%s%?!<%U%'!<%9$rMQ0U$9$l$P$h$$$N$G$9!#(B
+未定です。 <tt>ndbootd</tt> は今のところ SunOS 上で動作しません
+(低レベルのイーサネットアクセス機能はまだ書かれていません) 。
+プログラマーなら書けるでしょう - ソース <tt>config/ndbootd-bpf.c</tt>
+にあるのと同等のインターフェースを用意すればよいのです。
 </dd></dl>
 
 <hr>
 
 <h3><a name="solaris">Solaris</a></h3>
 <dl><dt><dd>
-$BL$Dj$G$9!#(B <tt>ndbootd</tt> $B$O:#$N$H$3$m(B Solaris $B>e$GF0:n$7$^$;$s(B
-($BDc%l%Y%k$N%$!<%5%M%C%H%"%/%;%95!G=$O$^$@=q$+$l$F$$$^$;$s(B) $B!#(B
-$B%W%m%0%i%^!<$J$i=q$1$k$G$7$g$&(B - $B%=!<%9(B <tt>config/ndbootd-bpf.c</tt>
-$B$K$"$k$N$HF1Ey$N%$%s%?!<%U%'!<%9$rMQ0U$9$l$P$h$$$N$G$9!#(B
+未定です。 <tt>ndbootd</tt> は今のところ Solaris 上で動作しません
+(低レベルのイーサネットアクセス機能はまだ書かれていません) 。
+プログラマーなら書けるでしょう - ソース <tt>config/ndbootd-bpf.c</tt>
+にあるのと同等のインターフェースを用意すればよいのです。
 </dd></dl>
 
 <hr>
 
-$BLa$k(B |
-<a href="rarp.html">$B?J$`(B</a> |
-<a href="./">$BL\<!(B</a>
+戻る |
+<a href="rarp.html">進む</a> |
+<a href="./">目次</a>
 
 <hr> 
 
@@ -175,7 +175,7 @@ CC:CC:CC:CC:CC:CC     client</b></pre>
   </td><td>
     <a href="../../../"><img
         src="../../../../images/empty.gif" border="0"
-        width="1" height="1" alt="NetBSD ">$B%[!<%`%Z!<%8(B</a>
+        width="1" height="1" alt="NetBSD ">ホームページ</a>
   </td></tr></table>
 </td><td>
   <table><tr><td> 
@@ -192,8 +192,8 @@ CC:CC:CC:CC:CC:CC     client</b></pre>
 <hr>
 <address>
   <small>
-  ($BO"Mm@h(B - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">$B1Q8l(B</a>,
-       <a href="mailto:www@jp.NetBSD.org">$BF|K\8l(B:
+  (連絡先 - <a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">英語</a>,
+       <a href="mailto:www@jp.NetBSD.org">日本語:
        www@jp.NetBSD.org</a>)<br>
   $NetBSD: nd.html,v 1.3 2007/08/01 15:36:02 kano Exp $<br>
   <!-- Based on english version: -->
