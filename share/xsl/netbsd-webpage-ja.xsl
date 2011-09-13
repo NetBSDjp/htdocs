@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-2022-JP"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xsl:stylesheet
   PUBLIC "-//NetBSD/DTD NetBSD XSLT 1.0 DTD//EN"
          "http://www.NetBSD.org/XML/htdocs/share/xml/xslt10-netbsd.dtd">
@@ -14,9 +14,9 @@
 
   <xsl:import href="netbsd-webpage.xsl" />
 
-  <xsl:param name="locale.backto">$B$KLa$k(B</xsl:param>
+  <xsl:param name="locale.backto">に戻る</xsl:param>
 
-  <xsl:output method="html" encoding="ISO-2022-JP"
+  <xsl:output method="html" encoding="UTF-8"
 	indent="yes"
 	doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
 
@@ -32,15 +32,15 @@
     <xsl:choose>
       <xsl:when test="$role = 'archive'">
         <a href="http://mail-index.NetBSD.org/{$name}/"><xsl:apply-templates />
-        $B%a!<%j%s%0%j%9%H(B</a>
+        メーリングリスト</a>
       </xsl:when>
       <xsl:when test="$role = 'email'">
         <a href="mailto:{$name} AT NetBSD.org"><xsl:apply-templates />
-        $B%a!<%j%s%0%j%9%H(B</a>
+        メーリングリスト</a>
       </xsl:when>
       <xsl:otherwise>
         <a href="http://www.NetBSD.org/ja/mailinglists/#{$name}"><xsl:apply-templates />
-        $B%a!<%j%s%0%j%9%H(B</a>
+        メーリングリスト</a>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -62,7 +62,7 @@
 
 <xsl:template match="portabout">
   <xsl:variable name="port" select="ancestor::webpage/@portpage"/>
-  <h2><xsl:text>NetBSD/</xsl:text><xsl:value-of select="$port"/><xsl:text> $B$K$D$$$F(B</xsl:text></h2>
+  <h2><xsl:text>NetBSD/</xsl:text><xsl:value-of select="$port"/><xsl:text> について</xsl:text></h2>
   <xsl:apply-templates/>
 </xsl:template>
 
@@ -75,7 +75,7 @@
 <xsl:template match="portnews">
   <xsl:variable name="port" select="ancestor::webpage/@portpage"/>
   <h2><xsl:text>NetBSD/</xsl:text><xsl:value-of select="$port"
-  /><xsl:text> $B%K%e!<%9(B</xsl:text></h2>
+  /><xsl:text> ニュース</xsl:text></h2>
   <xsl:for-each select="child::portnewsitem">
     <dl>
       <dt>
@@ -95,7 +95,7 @@
     <p><a href="news.html">
 	<xsl:text>NetBSD/</xsl:text>
 	<xsl:value-of select="$port"/>
-	<xsl:text> $B%K%e!<%95-;v$N%"!<%+%$%V(B</xsl:text>
+	<xsl:text> ニュース記事のアーカイブ</xsl:text>
     </a></p>
   </xsl:if>
   <xsl:apply-templates/>
@@ -118,7 +118,7 @@
   <div class="portinfo">
     <xsl:if test="child::portinfoitem">
       <h2><xsl:text>NetBSD/</xsl:text><xsl:value-of select="$port"
-      /><xsl:text> $B>pJs(B</xsl:text></h2>
+      /><xsl:text> 情報</xsl:text></h2>
 
       <ul>
         <xsl:for-each select="child::portinfoitem">
@@ -128,7 +128,7 @@
     </xsl:if>
 
     <xsl:if test="child::portml">
-      <h2>$B%a!<%j%s%0%j%9%H(B</h2>
+      <h2>メーリングリスト</h2>
 
       <ul>
         <xsl:for-each select="child::portml">
@@ -142,11 +142,11 @@
               </xsl:attribute>
               <xsl:text>NetBSD/</xsl:text>
               <xsl:value-of select="$ml"/>
-              <xsl:text> $B%a!<%j%s%0%j%9%H(B</xsl:text>
+              <xsl:text> メーリングリスト</xsl:text>
             </a>
-            <xsl:text>$B!"(B</xsl:text>
+            <xsl:text>、</xsl:text>
             <xsl:value-of select="./text()"/>
-            <xsl:text>$B$r%+%P!<$7$^$9(B:</xsl:text>
+            <xsl:text>をカバーします:</xsl:text>
             <br/>
             <xsl:text>[</xsl:text>
             &nbsp;
@@ -155,7 +155,7 @@
                 <xsl:text>http://www.NetBSD.org/cgi-bin/subscribe_list.pl?list=port-</xsl:text>
                 <xsl:value-of select="$ml"/>
               </xsl:attribute>
-              <xsl:text>$B;22C?=9~(B</xsl:text>
+              <xsl:text>参加申込</xsl:text>
             </a>
             &nbsp;
             <xsl:text>|</xsl:text>
@@ -166,7 +166,7 @@
                 <xsl:value-of select="$ml"/>
                 <xsl:text>/</xsl:text>
               </xsl:attribute>
-              <xsl:text>$B%"!<%+%$%V(B</xsl:text>
+              <xsl:text>アーカイブ</xsl:text>
             </a>
             &nbsp;
             <xsl:text>]</xsl:text>
@@ -178,7 +178,7 @@
     </xsl:if>
 
     <xsl:if test="child::portcurrentitem">
-      <h2>$B8=:_$N%j%j!<%9(B</h2>
+      <h2>現在のリリース</h2>
 
       <ul>
         <xsl:for-each select="child::portcurrentitem">
@@ -188,7 +188,7 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="concat('ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-', $currel, '/', $port, '/')" />
               </xsl:attribute>
-              <xsl:value-of select="concat('NetBSD/', $port, ' ', $currel, ' $B$N(B FTP $B7PM3%@%&%s%m!<%I(B')"/>
+              <xsl:value-of select="concat('NetBSD/', $port, ' ', $currel, ' の FTP 経由ダウンロード')"/>
             </a>
           </xsl:if>
           <xsl:if test="@type='installnotes'">
@@ -196,7 +196,7 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="concat('ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-', $currel, '/', $port, '/INSTALL.html')" />
               </xsl:attribute>
-              <xsl:value-of select="concat('NetBSD/', $port, ' ', $currel, ' $B%$%s%9%H!<%k%N!<%H(B')"/>
+              <xsl:value-of select="concat('NetBSD/', $port, ' ', $currel, ' インストールノート')"/>
             </a>
           </xsl:if>
           <xsl:if test="@type='ra'">
@@ -204,7 +204,7 @@
               <xsl:attribute name="href">
 		<xsl:value-of select="concat('../../releases/formal-', $currel.major, '/NetBSD-', $currel, '.html')" />
               </xsl:attribute>
-              <xsl:value-of select="concat('NetBSD ', $currel, ' $B%j%j!<%9@<L@(B')" />
+              <xsl:value-of select="concat('NetBSD ', $currel, ' リリース声明')" />
             </a>
           </xsl:if>
           <xsl:if test="@type='port-changes'">
@@ -212,7 +212,7 @@
               <xsl:attribute name="href">
 		<xsl:value-of select="concat('../../../changes/changes-', $currel.major, '.0.html#port-', $port)" />
               </xsl:attribute>
-	      <xsl:value-of select="concat($currel.major, '.0 $B$K$*$1$k(B NetBSD/', $port, ' $B$NJQ99E@(B')" />
+	      <xsl:value-of select="concat($currel.major, '.0 における NetBSD/', $port, ' の変更点')" />
             </a>
           </xsl:if>
           <xsl:if test="@type='netbsd-changes'">
@@ -220,7 +220,7 @@
               <xsl:attribute name="href">
 		<xsl:value-of select="concat('ftp://ftp.NetBSD.org/pub/NetBSD/NetBSD-', $currel.major, '.0/CHANGES')"/>
               </xsl:attribute>
-	      <xsl:value-of select="concat('NetBSD ', $currel.previous.major, '.0 $B$+$i(B NetBSD ', $currel.major, '.0 $B$K$*$1$kJQ99E@(B')" />
+	      <xsl:value-of select="concat('NetBSD ', $currel.previous.major, '.0 から NetBSD ', $currel.major, '.0 における変更点')" />
             </a>
           </xsl:if>
           <xsl:if test="@type='packages'">
@@ -229,9 +229,9 @@
               <xsl:attribute name="href">
                 <xsl:text>../../docs/software/packages.html</xsl:text>
               </xsl:attribute>
-              <xsl:text>$B%Q%C%1!<%8%3%l%/%7%g%s(B</xsl:text>
+              <xsl:text>パッケージコレクション</xsl:text>
             </a>
-            <xsl:text>$B$rMxMQ$7$?(B NetBSD/</xsl:text>
+            <xsl:text>を利用した NetBSD/</xsl:text>
             <xsl:value-of select="$port"/>
             <xsl:text> </xsl:text>
             <xsl:value-of select="@packages-for"/>
@@ -244,17 +244,17 @@
                 <xsl:value-of select="@packages-for"/>
                 <xsl:text>/</xsl:text>
               </xsl:attribute>
-              <xsl:text>$B%3%s%Q%$%k:Q$_%P%$%J%j!<%Q%C%1!<%83F<o(B</xsl:text>
+              <xsl:text>コンパイル済みバイナリーパッケージ各種</xsl:text>
             </a>
           </xsl:if>
           <xsl:if test="@type='mirrors'">
             <a href="../../mirrors/">
-              <xsl:text>NetBSD FTP $B%_%i!<%5%$%H0lMw(B</xsl:text>
+              <xsl:text>NetBSD FTP ミラーサイト一覧</xsl:text>
             </a>
           </xsl:if>
           <xsl:if test="@type='cdroms'">
             <a href="../../sites/cdroms.html">
-              <xsl:text>NetBSD $B$N(B CD-ROM</xsl:text>
+              <xsl:text>NetBSD の CD-ROM</xsl:text>
             </a>
           </xsl:if>
           <xsl:if test="not(@type)">
@@ -266,7 +266,7 @@
     </xsl:if>
 
     <xsl:if test="child::portfutureitem">
-      <h2>$B:#8e$N%j%j!<%9(B</h2>
+      <h2>今後のリリース</h2>
 
       <ul>
         <xsl:for-each select="child::portfutureitem">
@@ -277,7 +277,7 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="concat('../../../changes/changes-', $currel.next.major, '.0.html#port-', $port)" />
               </xsl:attribute>
-              <xsl:value-of select="concat($currel.major, '.0 $B$+$i(B ', $currel.next.major, '.0 $B$K$*$1$k(B', 'NetBSD/', $port, ' $B$NJQ99E@(B')" />
+              <xsl:value-of select="concat($currel.major, '.0 から ', $currel.next.major, '.0 における', 'NetBSD/', $port, ' の変更点')" />
             </a>
             </xsl:if>
             <xsl:if test="@type='snapshots'">
@@ -285,18 +285,18 @@
               <xsl:attribute name="href">
                 <xsl:text>http://releng.NetBSD.org/cgi-bin/builds.cgi</xsl:text>
               </xsl:attribute>
-              <xsl:text>$BKhF|:n@.$5$l$F$$$k(B</xsl:text>
+              <xsl:text>毎日作成されている</xsl:text>
             </a>
-            <xsl:text>$B!"(B</xsl:text>
+            <xsl:text>、</xsl:text>
             <a href="../../releases/release-map.html">
               <xsl:text>NetBSD-current</xsl:text>
             </a>
-            <xsl:text> $B$N(B</xsl:text>
+            <xsl:text> の</xsl:text>
             <a>
               <xsl:attribute name="href">
                 <xsl:text>ftp://ftp.NetBSD.org/pub/NetBSD-daily/HEAD/</xsl:text>
               </xsl:attribute>
-              <xsl:text>$B%P%$%J%j!<%9%J%C%W%7%g%C%H(B</xsl:text>
+              <xsl:text>バイナリースナップショット</xsl:text>
             </a>
             </xsl:if>
           </font></li>
@@ -304,7 +304,7 @@
       </ul>
     </xsl:if>
 
-    <h2>$B4XO"%j%s%/(B</h2>
+    <h2>関連リンク</h2>
 
     <ul>
       <xsl:for-each select="child::portlinkitem">
@@ -319,7 +319,7 @@
           </xsl:attribute>
           <xsl:text>NetBSD/</xsl:text>
           <xsl:value-of select="$port"/>
-          <xsl:text> $B%]!<%H%a%s%F%J!<$K%a!<%k(B</xsl:text>
+          <xsl:text> ポートメンテナーにメール</xsl:text>
         </a>
         </font>
       </li>
@@ -333,7 +333,7 @@
 
 <xsl:template name="allpages.banner">
   <div id="top">
-    <a href="#mainContent" class="doNotDisplay doNotPrint">$BK\J8$XHt$V!#(B</a>
+    <a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a>
   </div>
     <div id="header">
       <div class="topNavigation">
@@ -342,27 +342,27 @@
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/docs/guide/en/')"/>
 	  </xsl:attribute>
-	  $B%,%$%I(B</a> |
-	<a href="http://man.NetBSD.org/">$B%^%K%e%"%k%Z!<%8(B</a> |
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/mailinglists/')"/>
 	  </xsl:attribute>
-	  $B%a!<%j%s%0%j%9%H(B</a>$B$H(B
-	<a href="http://mail-index.NetBSD.org/">$B5-;v(B</a> |
-	<a href="http://cvsweb.NetBSD.org/">CVS $B%j%]%8%H%j!<(B</a> |
-	$B%P%0$N(B<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">$BJs9p(B</a>
-	$B$H(B
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
 	<a>
 	 <xsl:attribute name="href">
 	   <xsl:value-of select="concat($reltopdir,'/ja/support/query-pr.html')"/>
 	 </xsl:attribute>
-	 $B>H2q(B</a> |
+	 照会</a> |
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/docs/software/packages.html')"/>
 	  </xsl:attribute>
-	  $B%=%U%H%&%'%"%Q%C%1!<%8(B
+	  ソフトウェアパッケージ
 	</a>
       </div>
       <div class="centralHeader">
@@ -370,7 +370,7 @@
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/')"/>
 	  </xsl:attribute>
-	  <img alt="NetBSD $B%W%m%8%'%/%H(B &quot;Of course it runs NetBSD&quot;" width="506" height="90">
+	  <img alt="NetBSD プロジェクト &quot;Of course it runs NetBSD&quot;" width="506" height="90">
 	    <xsl:attribute name="src">
 	      <xsl:value-of select="concat($reltopdir,'/images/NetBSD-headerlogo.png')"/>
 	    </xsl:attribute>
@@ -387,55 +387,55 @@
 		     value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"/>
 	      <input type="hidden" name="domains" value="NetBSD.org"/>
 	      <input type="hidden" name="sitesearch" value="www.NetBSD.org"/>
-	      <input type="submit" value="$B8!:w(B"/>
+	      <input type="submit" value="検索"/>
 	    </form>
 	  </div>
 	</div>
       </div>
       <div class="navBar">
 	<span class="doNotDisplay">
-	  $B0FFb(B:
+	  案内:
 	</span>
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/')"/>
 	  </xsl:attribute>
-	  $B%[!<%`(B</a>&nbsp;|&nbsp;
+	  ホーム</a>&nbsp;|&nbsp;
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/about/')"/>
 	  </xsl:attribute>
-	  $B35MW(B</a>&nbsp;|&nbsp;
+	  概要</a>&nbsp;|&nbsp;
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/gallery/')"/>
 	  </xsl:attribute>
-	  $BE8<(<<(B</a>&nbsp;|&nbsp;
+	  展示室</a>&nbsp;|&nbsp;
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/releases/')"/>
 	  </xsl:attribute>
-	  $B%@%&%s%m!<%I(B</a>&nbsp;|&nbsp;
+	  ダウンロード</a>&nbsp;|&nbsp;
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/docs/')"/>
 	  </xsl:attribute>
-	  $B%I%-%e%a%s%F!<%7%g%s(B</a>&nbsp;|&nbsp;
+	  ドキュメンテーション</a>&nbsp;|&nbsp;
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/support/')"/>
 	  </xsl:attribute>
-	  $B%5%]!<%H(B</a>&nbsp;|&nbsp;
+	  サポート</a>&nbsp;|&nbsp;
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/community/')"/>
 	  </xsl:attribute>
-	  $B%3%_%e%K%F%#!<(B</a>&nbsp;|&nbsp;
+	  コミュニティー</a>&nbsp;|&nbsp;
 	<a>
 	  <xsl:attribute name="href">
 	    <xsl:value-of select="concat($reltopdir,'/ja/ports/')"/>
 	  </xsl:attribute>
-	  $B5!<o(B</a>
+	  機種</a>
       </div>
     </div>
 </xsl:template>
@@ -541,7 +541,7 @@
               </xsl:attribute>
             </xsl:otherwise>
           </xsl:choose>
-	  $BO"Mm(B</a> |
+	  連絡</a> |
       </span>
     </xsl:when>
   </xsl:choose>
@@ -551,7 +551,7 @@
       <xsl:attribute name="href">
 	<xsl:value-of select="concat($reltopdir,'/ja/about/disclaimer.html')"/>
       </xsl:attribute>
-      $BLH@U;v9`(B</a> |
+      免責事項</a> |
 
       <xsl:choose>
         <xsl:when test="head/copyright">
@@ -566,8 +566,8 @@
       <br />
       <xsl:text>NetBSD</xsl:text>
 	<sup><xsl:text>&reg;</xsl:text></sup>
-	<xsl:text> $B$O(B The NetBSD
-	Foundation, Inc. $B$NEPO?>&I8$G$9!#(B</xsl:text>
+	<xsl:text> は The NetBSD
+	Foundation, Inc. の登録商標です。</xsl:text>
   </span>
   </center>
 
