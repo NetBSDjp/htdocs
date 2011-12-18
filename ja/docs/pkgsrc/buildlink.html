@@ -1,179 +1,177 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Chapter�14.�Buildlink methodology</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chapter 14. buildlink 方法論</title>
 <link rel="stylesheet" type="text/css" href="/global.css">
 <meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
 <link rel="home" href="index.html" title="The pkgsrc guide">
-<link rel="up" href="developers-guide.html" title="Part�II.�The pkgsrc developer's guide">
-<link rel="prev" href="plist.html" title="Chapter�13.�PLIST issues">
-<link rel="next" href="pkginstall.html" title="Chapter�15.�The pkginstall framework">
+<link rel="up" href="developers-guide.html" title="Part II. pkgsrc 開発者向けの手引き">
+<link rel="prev" href="plist.html" title="Chapter 13. PLIST 問題">
+<link rel="next" href="pkginstall.html" title="Chapter 15. pkginstall の枠組">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="navheader">
 <table width="100%" summary="Navigation header">
-<tr><th colspan="3" align="center">Chapter�14.�Buildlink methodology</th></tr>
+<tr><th colspan="3" align="center">Chapter 14. buildlink 方法論</th></tr>
 <tr>
 <td width="20%" align="left">
-<a accesskey="p" href="plist.html">Prev</a>�</td>
-<th width="60%" align="center">Part�II.�The pkgsrc developer's guide</th>
-<td width="20%" align="right">�<a accesskey="n" href="pkginstall.html">Next</a>
+<a accesskey="p" href="plist.html">Prev</a> </td>
+<th width="60%" align="center">Part II. pkgsrc 開発者向けの手引き</th>
+<td width="20%" align="right"> <a accesskey="n" href="pkginstall.html">Next</a>
 </td>
 </tr>
 </table>
 <hr>
 </div>
-<div class="chapter" title="Chapter�14.�Buildlink methodology">
+<div class="chapter" title="Chapter 14. buildlink 方法論">
 <div class="titlepage"><div><div><h2 class="title">
-<a name="buildlink"></a>Chapter�14.�Buildlink methodology</h2></div></div></div>
+<a name="buildlink"></a>Chapter 14. buildlink 方法論</h2></div></div></div>
 <div class="toc">
 <p><b>Table of Contents</b></p>
 <dl>
-<dt><span class="sect1"><a href="buildlink.html#converting-to-buildlink3">14.1. Converting packages to use buildlink3</a></span></dt>
-<dt><span class="sect1"><a href="buildlink.html#creating-buildlink3.mk">14.2. Writing <code class="filename">buildlink3.mk</code> files</a></span></dt>
+<dt><span class="sect1"><a href="buildlink.html#converting-to-buildlink3">14.1. パッケージを変換して buildlink3 を使うようにする</a></span></dt>
+<dt><span class="sect1"><a href="buildlink.html#creating-buildlink3.mk">14.2. <code class="filename">buildlink3.mk</code> ファイルを書く</a></span></dt>
 <dd><dl>
-<dt><span class="sect2"><a href="buildlink.html#anatomy-of-bl3">14.2.1. Anatomy of a buildlink3.mk file</a></span></dt>
-<dt><span class="sect2"><a href="buildlink.html#updating-buildlink-depends">14.2.2. Updating
-      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      and
-      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      in <code class="filename">buildlink3.mk</code> files</a></span></dt>
+<dt><span class="sect2"><a href="buildlink.html#anatomy-of-bl3">14.2.1. buildlink3.mk ファイルの分析</a></span></dt>
+<dt><span class="sect2"><a href="buildlink.html#updating-buildlink-depends">14.2.2. <code class="filename">buildlink3.mk</code> ファイルの <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code> を更新する</a></span></dt>
 </dl></dd>
-<dt><span class="sect1"><a href="buildlink.html#writing-builtin.mk">14.3. Writing <code class="filename">builtin.mk</code> files</a></span></dt>
+<dt><span class="sect1"><a href="buildlink.html#writing-builtin.mk">14.3. <code class="filename">builtin.mk</code> ファイルを書く</a></span></dt>
 <dd><dl>
-<dt><span class="sect2"><a href="buildlink.html#anatomy-of-builtin.mk">14.3.1. Anatomy of a <code class="filename">builtin.mk</code> file</a></span></dt>
-<dt><span class="sect2"><a href="buildlink.html#native-or-pkgsrc-preference">14.3.2. Global preferences for native or pkgsrc software</a></span></dt>
+<dt><span class="sect2"><a href="buildlink.html#anatomy-of-builtin.mk">14.3.1. <code class="filename">builtin.mk</code> ファイルの分析</a></span></dt>
+<dt><span class="sect2"><a href="buildlink.html#native-or-pkgsrc-preference">14.3.2. ネイティブおよび pkgsrc のソフトウェアの選択に関する、大域的な設定</a></span></dt>
 </dl></dd>
 </dl>
 </div>
-<p>Buildlink is a framework in pkgsrc that controls what headers and libraries
-  are seen by a package's configure and build processes.  This is implemented
-  in a two step process:</p>
+<p>buildlink は pkgsrc における枠組のひとつで、パッケージのコンフィギュレーション (configure)
+  および構築 (build) の過程で、どのヘッダーやライブラリーが使われるかを制御するものです。
+  これは以下の二つの手順によって実現されます。</p>
 <div class="orderedlist"><ol class="orderedlist" type="1">
-<li class="listitem"><p>Symlink headers and libraries for dependencies into
-      <code class="varname">BUILDLINK_DIR</code>, which by default is a subdirectory
-      of <code class="varname">WRKDIR</code>.</p></li>
-<li class="listitem"><p>Create wrapper scripts that are used in place of the normal compiler
-      tools that translate <code class="option">-I${LOCALBASE}/include</code> and
-      <code class="option">-L${LOCALBASE}/lib</code> into references to
-      <code class="varname">BUILDLINK_DIR</code>. The wrapper scripts also make
-      native compiler on some operating systems look like GCC, so that
-      packages that expect GCC won't require modifications to build with
-      those native compilers.</p></li>
+<li class="listitem"><p><code class="varname">BUILDLINK_DIR</code> (標準では、
+      <code class="varname">WRKDIR</code> のサブディレクトリー) 内に、
+      依存するヘッダーやライブラリーを指すシンボリックリンクを作ります。</p></li>
+<li class="listitem"><p>通常のコンパイラーツールを置き換えるラッパースクリプトを生成します。
+      これは、<code class="option">-I${LOCALBASE}/include</code> および
+      <code class="option">-L${LOCALBASE}/lib</code> を、
+      <code class="varname">BUILDLINK_DIR</code> への参照に変換します。
+      また、オペレーティングシステムによっては、このラッパースクリプトは、
+      ネイティブのコンパイラーが GCC に見えるようにし、
+      GCC を要求するパッケージを修正することなく、
+      ネイティブのコンパイラーで構築できるようにします。</p></li>
 </ol></div>
-<p>This normalizes the environment in which a package is built so that the
-  package may be built consistently despite what other software may be
-  installed. Please note that the normal system header and library paths,
-  e.g. <code class="filename">/usr/include</code>,
-  <code class="filename">/usr/lib</code>, etc., are always searched -- buildlink3 is
-  designed to insulate the package build from non-system-supplied
-  software.</p>
-<div class="sect1" title="14.1.�Converting packages to use buildlink3">
+<p>こうすることで、パッケージ構築環境を正規化して、
+  他にどのようなソフトウェアがインストールされているかにかかわらず、
+  パッケージを一貫して構築できるようにします。
+  なお、通常のシステムヘッダーおよびライブラリーのパス、
+  たとえば <code class="filename">/usr/include</code>,
+  <code class="filename">/usr/lib</code> などは、すでに探索されていることに注意してください
+  -- buildlink3 は、パッケージの構築を、
+  システム非標準のソフトウェアから独立させるために設計されたものなのです。</p>
+<div class="sect1" title="14.1. パッケージを変換して buildlink3 を使うようにする">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="converting-to-buildlink3"></a>14.1.�Converting packages to use buildlink3</h2></div></div></div>
-<p>The process of converting packages to use the buildlink3
-    framework (<span class="quote">&#8220;<span class="quote">bl3ifying</span>&#8221;</span>) is fairly straightforward.
-    The things to keep in mind are:</p>
+<a name="converting-to-buildlink3"></a>14.1. パッケージを変換して buildlink3 を使うようにする</h2></div></div></div>
+<p>パッケージが buildlink3 の枠組を使うようにする変換の過程
+    (<span class="quote">“<span class="quote">bl3ifying</span>”</span> - buildlink3 化) は、かなり単純です。
+    以下のことに注意してください。</p>
 <div class="orderedlist"><ol class="orderedlist" type="1">
-<li class="listitem"><p>Ensure that the build always calls the wrapper scripts
-	instead of the actual toolchain.  Some packages are tricky,
-	and the only way to know for sure is the check
-	<code class="filename">${WRKDIR}/.work.log</code> to see if the
-	wrappers are being invoked.</p></li>
-<li class="listitem"><p>Don't override <code class="varname">PREFIX</code> from within
-	the package Makefile, e.g. Java VMs, standalone shells,
-	etc., because the code to symlink files into
-	<code class="filename">${BUILDLINK_DIR}</code> looks for files
-	relative to <span class="quote">&#8220;<span class="quote">pkg_info -qp <em class="replaceable"><code>pkgname</code></em></span>&#8221;</span>.
+<li class="listitem"><p>構築の際には、常に、
+        toolchain 本体ではなくラッパースクリプトが呼ばれるようにしてください。
+        パッケージによっては巧妙なものがあるので、
+        ラッパーが呼ばれたかどうかを確実に調べる方法は、
+        <code class="filename">${WRKDIR}/.work.log</code> を確認することだけです。</p></li>
+<li class="listitem"><p>たとえば Java VM やスタンドアローンのシェルでは、
+	パッケージの Makefile で <code class="varname">PREFIX</code>
+	を上書きしないでください。<code class="filename">${BUILDLINK_DIR}</code>
+	からシンボリックリンクするためのコードは、
+	<span class="quote">“<span class="quote">pkg_info -qp <em class="replaceable"><code>pkgname</code></em></span>”</span>
+	からの相対位置にあるファイルを探すからです。
 	</p></li>
-<li class="listitem"><p>Remember that <span class="emphasis"><em>only</em></span> the
-	<code class="filename">buildlink3.mk</code> files that you list in a
-	package's Makefile are added as dependencies for that package.
+<li class="listitem"><p>パッケージの依存性として追加されるのは、パッケージの Makefile に列挙した
+	<code class="filename">buildlink3.mk</code> ファイル<span class="emphasis"><em>だけ</em></span>
+	であることを忘れないでください。
 	</p></li>
 </ol></div>
-<p>If a dependency on a particular package is required for its libraries and
-    headers, then we replace:</p>
+<p>あるパッケージのライブラリーやヘッダーに対する依存性が必要な場合は、</p>
 <pre class="programlisting">
 DEPENDS+=       foo&gt;=1.1.0:../../category/foo
 </pre>
-<p>with</p>
+<p>を、以下のものに置き換えます。</p>
 <pre class="programlisting">
 .include "../../category/foo/buildlink3.mk"
 </pre>
-<p>The buildlink3.mk files usually define the required dependencies.
-    If you need a newer version of the dependency when using buildlink3.mk
-    files, then you can define it in your Makefile; for example:</p>
+<p>通常は、buildlink3.mk ファイルで必要な依存性を定義します。
+    buildlink3.mk ファイルを使う際に、より新しいバージョンへの依存性が必要な場合は、
+    そのことを Makefile で定義することができます。たとえば以下のようにします。</p>
 <pre class="programlisting">
 BUILDLINK_API_DEPENDS.foo+=   foo&gt;=1.1.0
 .include "../../category/foo/buildlink3.mk"
 </pre>
-<p>There are several <code class="filename">buildlink3.mk</code>
-    files in <code class="filename">pkgsrc/mk</code>
-    that handle special package issues:</p>
+<p><code class="filename">pkgsrc/mk</code> 以下には、
+    特別なパッケージを扱うための
+    <code class="filename">buildlink3.mk</code> ファイルがいくつかあります。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
-<li class="listitem"><p><code class="filename">bdb.buildlink3.mk</code> chooses either
-	the native or a pkgsrc Berkeley DB implementation based on
-	the values of <code class="varname">BDB_ACCEPTED</code> and
-	<code class="varname">BDB_DEFAULT</code>.</p></li>
-<li class="listitem"><p><code class="filename">curses.buildlink3.mk</code>: If the system
-	comes with neither Curses nor NCurses, this will take care
-	to install the <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/ncurses/README.html" target="_top"><code class="filename">devel/ncurses</code></a> package.</p></li>
-<li class="listitem"><p><code class="filename">krb5.buildlink3.mk</code> uses the value
-	of <code class="varname">KRB5_ACCEPTED</code> to choose between
-	adding a dependency on Heimdal or MIT-krb5 for packages that
-	require a Kerberos 5 implementation.</p></li>
-<li class="listitem"><p><code class="filename">motif.buildlink3.mk</code> checks for a
-	system-provided Motif installation or adds a dependency on
-	<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/x11/lesstif/README.html" target="_top"><code class="filename">x11/lesstif</code></a> or <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/x11/openmotif/README.html" target="_top"><code class="filename">x11/openmotif</code></a>.  The user can set
-	<code class="varname">MOTIF_TYPE</code> to <span class="quote">&#8220;<span class="quote">dt</span>&#8221;</span>,
-	<span class="quote">&#8220;<span class="quote">lesstif</span>&#8221;</span>, or <span class="quote">&#8220;<span class="quote">openmotif</span>&#8221;</span> to choose
-	which Motif version will be used.</p></li>
-<li class="listitem"><p><code class="filename">oss.buildlink3.mk</code> defines several
-	variables that may be used by packages that use the
-	Open Sound System (OSS) API.</p></li>
-<li class="listitem"><p><code class="filename">pgsql.buildlink3.mk</code> will accept
-	either Postgres 8.0, 8.1, or 8.2, whichever is found installed. See
-	the file for more information.</p></li>
-<li class="listitem"><p><code class="filename">pthread.buildlink3.mk</code> uses the value of
-	<code class="varname">PTHREAD_OPTS</code> and checks for native pthreads or adds
-	a dependency on <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/pth/README.html" target="_top"><code class="filename">devel/pth</code></a> as needed.</p></li>
-<li class="listitem"><p><code class="filename">xaw.buildlink3.mk</code> uses the value of
-	<code class="varname">XAW_TYPE</code> to choose a particular Athena widgets
-	library.</p></li>
+<li class="listitem"><p><code class="filename">bdb.buildlink3.mk</code> は、
+	<code class="varname">BDB_ACCEPTED</code> および
+	<code class="varname">BDB_DEFAULT</code> の値にもとづき、
+	ネイティブまたは pkgsrc の Berkeley DB の実装のどちらかを選択します。</p></li>
+<li class="listitem"><p><code class="filename">curses.buildlink3.mk</code>: システムに
+	Curses も NCurses も附属しない場合に、<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/ncurses/README.html" target="_top"><code class="filename">devel/ncurses</code></a>
+	パッケージをインストールしてくれます。</p></li>
+<li class="listitem"><p><code class="filename">krb5.buildlink3.mk</code> は、
+	<code class="varname">KRB5_ACCEPTED</code> の値を使って、
+	Kerberos 5 の実装を必要とするパッケージを
+	Heimdal または MIT-krb5 のどちらに依存させるかを選択します。</p></li>
+<li class="listitem"><p><code class="filename">motif.buildlink3.mk</code> は、
+	システム附属の Motif がインストールされているかを確認し、
+	ない場合は、<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/x11/lesstif/README.html" target="_top"><code class="filename">x11/lesstif</code></a> または <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/x11/openmotif/README.html" target="_top"><code class="filename">x11/openmotif</code></a> への依存性を追加します。
+	利用者は、<code class="varname">MOTIF_TYPE</code> を <span class="quote">“<span class="quote">dt</span>”</span>,
+	<span class="quote">“<span class="quote">lesstif</span>”</span> または <span class="quote">“<span class="quote">openmotif</span>”</span> に設定して、
+	どの版の Motif を使うかを選択することができます。</p></li>
+<li class="listitem"><p><code class="filename">oss.buildlink3.mk</code> は、
+	Open Sound System (OSS) API
+	を使うパッケージが使うことがある変数をいくつか定義します。</p></li>
+<li class="listitem"><p><code class="filename">pgsql.buildlink3.mk</code> は、
+	Postgres 8.0, 8.1 または 8.2 のうち、インストールされているものを受け入れます。
+	さらなる情報は、このファイルの内容をご覧ください。</p></li>
+<li class="listitem"><p><code class="filename">pthread.buildlink3.mk</code> は、
+	<code class="varname">PTHREAD_OPTS</code> の値を使うとともに、ネイティブの pthread があるか確認し、
+	ない場合は、必要に応じて <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/pth/README.html" target="_top"><code class="filename">devel/pth</code></a> への依存性を追加します。</p></li>
+<li class="listitem"><p><code class="filename">xaw.buildlink3.mk</code> は、
+	<code class="varname">XAW_TYPE</code> の値を使って、具体的にどの
+	Athena widget ライブラリーを使うかを選択します。</p></li>
 </ul></div>
-<p>The comments in those <code class="filename">buildlink3.mk</code>
-    files provide a more complete
-    description of how to use them properly.</p>
+<p>それぞれの <code class="filename">buildlink3.mk</code>
+    ファイルのコメントに、
+    適切な使い方に関するより詳しい説明があります。</p>
 </div>
-<div class="sect1" title="14.2.�Writing buildlink3.mk files">
+<div class="sect1" title="14.2. buildlink3.mk ファイルを書く">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="creating-buildlink3.mk"></a>14.2.�Writing <code class="filename">buildlink3.mk</code> files</h2></div></div></div>
-<a name="buildlink3.mk"></a><p>A package's <code class="filename">buildlink3.mk</code> file is
-    included by Makefiles to indicate the need to compile and link
-    against header files and libraries provided by the package.  A
-    <code class="filename">buildlink3.mk</code> file should always provide
-    enough information to add the correct type of dependency
-    relationship and include any other
-    <code class="filename">buildlink3.mk</code> files that it needs to find
-    headers and libraries that it needs in turn.</p>
-<p>To generate an initial <code class="filename">buildlink3.mk</code>
-    file for further editing, Rene Hexel's <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/createbuildlink/README.html" target="_top"><code class="filename">pkgtools/createbuildlink</code></a>
-    package is highly recommended.  For most packages, the following
-    command will generate a good starting point for
-    <code class="filename">buildlink3.mk</code> files:</p>
+<a name="creating-buildlink3.mk"></a>14.2. <code class="filename">buildlink3.mk</code> ファイルを書く</h2></div></div></div>
+<a name="buildlink3.mk"></a><p>パッケージの <code class="filename">buildlink3.mk</code> ファイルは、
+    そのパッケージに附属するヘッダーファイルやライブラリーをコンパイルしたりリンクしたりする必要があることを示すために、
+    Makefile からインクルードされます。
+    <code class="filename">buildlink3.mk</code> ファイルは、
+    適切な種類の依存関係を追加したり、
+    さらに必要となるヘッダーやライブラリーを使うために別の
+    <code class="filename">buildlink3.mk</code> をインクルードしたりするために必要な情報を、
+    いつでも提供できるように作ります。</p>
+<p>編集するための元となる <code class="filename">buildlink3.mk</code>
+    ファイルを作るには、Rene Hexel の  <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/createbuildlink/README.html" target="_top"><code class="filename">pkgtools/createbuildlink</code></a>
+    パッケージを使うことを強くおすすめします。ほとんどのパッケージに対しては、
+    以下のコマンドを使うと、<code class="filename">buildlink3.mk</code>
+    ファイルのよい出発点となるものを作ってくれます。</p>
 <pre class="screen">
 <code class="prompt">%</code> <strong class="userinput"><code>cd pkgsrc/<em class="replaceable"><code>category</code></em>/<em class="replaceable"><code>pkgdir</code></em>
 <code class="prompt">%</code> createbuildlink &gt;buildlink3.mk</code></strong>
     </pre>
-<div class="sect2" title="14.2.1.�Anatomy of a buildlink3.mk file">
+<div class="sect2" title="14.2.1. buildlink3.mk ファイルの分析">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="anatomy-of-bl3"></a>14.2.1.�Anatomy of a buildlink3.mk file</h3></div></div></div>
-<p>The following real-life example
-      <code class="filename">buildlink3.mk</code> is taken
-      from <code class="filename">pkgsrc/graphics/tiff</code>:</p>
+<a name="anatomy-of-bl3"></a>14.2.1. buildlink3.mk ファイルの分析</h3></div></div></div>
+<p>以下に掲げるのは、
+      <code class="filename">pkgsrc/graphics/tiff</code> における
+      <code class="filename">buildlink3.mk</code> の実例です。</p>
 <pre class="programlisting">
-# $NetBSD: buildlink.html,v 1.29 2011/10/30 22:05:36 wiz Exp $
+# $NetBSD: buildlink3.mk,v 1.16 2009/03/20 19:24:45 joerg Exp $
 
 BUILDLINK_TREE+=	tiff
 
@@ -190,177 +188,174 @@ BUILDLINK_PKGSRCDIR.tiff?=	../../graphics/tiff
 
 BUILDLINK_TREE+=	-tiff
 </pre>
-<p>The header and footer manipulate
-      <code class="varname">BUILDLINK_TREE</code>, which is common across all
-      <code class="filename">buildlink3.mk</code> files and is used to track
-      the dependency tree.</p>
-<p>The main section is protected from multiple inclusion
-      and controls how the dependency on <em class="replaceable"><code>pkg</code></em> is
-      added.  Several important variables are set in the section:</p>
+<p>ヘッダーとフッターで、
+      <code class="varname">BUILDLINK_TREE</code> の値を操作しています。
+      この変数は、パッケージの依存関係を辿るために、
+      すべての <code class="filename">buildlink3.mk</code> ファイルの間で、
+      共通に使われます。</p>
+<p>本体の節では、多重のインクルードを防いだうえで、
+      <em class="replaceable"><code>pkg</code></em> への依存性をどのように追加するかを制御しています。
+      いくつもの重要な変数がこの節で設定されます。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
 <li class="listitem"><p><code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-	  is the actual dependency recorded in the installed
-	  package; this should always be set using
-	  <span class="command"><strong>+=</strong></span> to ensure that
-	  we're appending to any pre-existing list of values.  This
-	  variable should be set to the first version of the
-	  package that had an backwards-incompatible API change.
+	  は、インストールされるパッケージに対して、実際に記録される依存性です。
+	  この変数の既存のリストを残したまま追加するために、
+	  かならず <span class="command"><strong>+=</strong></span> を使って設定します。
+	  この変数の設定値は、
+	  パッケージの API が現行のものになった以降の最初 (最古) のバージョンにします。
 	  </p></li>
 <li class="listitem"><p><code class="varname">BUILDLINK_PKGSRCDIR.<em class="replaceable"><code>pkg</code></em></code>
-	  is the location of the <em class="replaceable"><code>pkg</code></em>
-	  pkgsrc directory.</p></li>
+	  は、pkgsrc における
+	  <em class="replaceable"><code>pkg</code></em> のディレクトリーです。</p></li>
 <li class="listitem"><p><code class="varname">BUILDLINK_DEPMETHOD.<em class="replaceable"><code>pkg</code></em></code>
-	  (not shown above) controls whether we use
-	  <code class="varname">BUILD_DEPENDS</code> or
-	  <code class="varname">DEPENDS</code> to add the dependency on
-	  <em class="replaceable"><code>pkg</code></em>.  The build dependency is
-	  selected by setting
+	  (上の例には出てきません) は、
+	  <em class="replaceable"><code>pkg</code></em> への依存性として
+	  <code class="varname">BUILD_DEPENDS</code> と
+	  <code class="varname">DEPENDS</code> のどちらを使うかを制御します。
 	  <code class="varname">BUILDLINK_DEPMETHOD.<em class="replaceable"><code>pkg</code></em></code>
-	  to <span class="quote">&#8220;<span class="quote">build</span>&#8221;</span>.  By default, the full dependency is
-	  used.</p></li>
+	  を <span class="quote">“<span class="quote">build</span>”</span> にすれば、
+	  構築時の依存性となります。この変数を設定しなかった場合は、
+	  完全な依存性となります。</p></li>
 <li class="listitem"><p><code class="varname">BUILDLINK_INCDIRS.<em class="replaceable"><code>pkg</code></em></code>
-	    and
+	    および
 	    <code class="varname">BUILDLINK_LIBDIRS.<em class="replaceable"><code>pkg</code></em></code>
-	    (not shown above) are lists of subdirectories of
+	    (上の例には出てきません) は、ヘッダーおよびライブラリーの検索パスに追加するための、
 	    <code class="filename">${BUILDLINK_PREFIX.<em class="replaceable"><code>pkg</code></em>}</code>
-	    to add to the header and library search paths.  These
-	    default to <span class="quote">&#8220;<span class="quote">include</span>&#8221;</span> and <span class="quote">&#8220;<span class="quote">lib</span>&#8221;</span>
-	  respectively.</p></li>
+	    のサブディレクトリーです。設定しなかった場合は、それぞれ
+	    <span class="quote">“<span class="quote">include</span>”</span> および <span class="quote">“<span class="quote">lib</span>”</span>
+	  となります。</p></li>
 <li class="listitem"><p><code class="varname">BUILDLINK_CPPFLAGS.<em class="replaceable"><code>pkg</code></em></code>
-	    (not shown above) is the list of preprocessor flags to add
-	    to <code class="varname">CPPFLAGS</code>, which are passed on to the
-	    configure and build phases.  The <span class="quote">&#8220;<span class="quote">-I</span>&#8221;</span> option
-	    should be avoided and instead be handled using
-	    <code class="varname">BUILDLINK_INCDIRS.<em class="replaceable"><code>pkg</code></em></code> as
-	  above.</p></li>
+	    (上の例には出てきません) は、<code class="varname">CPPFLAGS</code>
+	    に追加するためのプリプロセッサー用のフラグで、このフラグは
+	    configure および build の段階に渡されます。<span class="quote">“<span class="quote">-I</span>”</span>
+	    オプションは使わずに、上述の
+	    <code class="varname">BUILDLINK_INCDIRS.<em class="replaceable"><code>pkg</code></em></code>
+	  を使って処理するようにしてください。</p></li>
 </ul></div>
-<p>The following variables are all optionally defined within
-      this second section (protected against multiple inclusion) and
-      control which package files are symlinked into
-      <code class="filename">${BUILDLINK_DIR}</code> and how their names are
-      transformed during the symlinking:</p>
+<p>以下の各変数はすべて、二つ目の (多重のインクルードを防いでいる) 節において、
+      任意に定義されるものであり、どのパッケージのファイルを
+      <code class="filename">${BUILDLINK_DIR}</code> からシンボリックリンクするか、および、
+      シンボリックリンクによってファイル名をどのように変換するか、
+      を制御します。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
 <li class="listitem"><p><code class="varname">BUILDLINK_FILES.<em class="replaceable"><code>pkg</code></em></code>
-	    (not shown above) is a shell glob pattern relative to
+	    (上の例には出てきません) は、
+	    <code class="filename">${BUILDLINK_DIR}</code>
+	    からシンボリックリンクされるリンク先の、
 	    <code class="filename">${BUILDLINK_PREFIX.<em class="replaceable"><code>pkg</code></em>}</code>
-	    to be symlinked into
-	    <code class="filename">${BUILDLINK_DIR}</code>,
-	  e.g. <code class="filename">include/*.h</code>.</p></li>
+	    からの相対位置のシェルのグロブパターンです。
+	  たとえば <code class="filename">include/*.h</code> のようになります。</p></li>
 <li class="listitem"><p><code class="varname">BUILDLINK_FILES_CMD.<em class="replaceable"><code>pkg</code></em></code>
-	    (not shown above) is a shell pipeline that
-	    outputs to stdout a list of files relative to
+	    (上の例には出てきません) は、
 	    <code class="filename">${BUILDLINK_PREFIX.<em class="replaceable"><code>pkg</code></em>}</code>.
-	    The resulting files are to be symlinked
-	    into <code class="filename">${BUILDLINK_DIR}</code>.  By default,
-	    this takes the <code class="filename">+CONTENTS</code> of a
-	    <em class="replaceable"><code>pkg</code></em> and filters it through
-	    <code class="varname">${BUILDLINK_CONTENTS_FILTER.<em class="replaceable"><code>pkg</code></em>}</code>.</p></li>
+	    からの相対位置でのファイルのリストを標準出力に出力する、シェルのパイプラインです。
+	    これにより出力されるファイルは、
+	    <code class="filename">${BUILDLINK_DIR}</code> からシンボリックリンクされます。指定しなかった場合、
+	    <em class="replaceable"><code>pkg</code></em> の
+	    <code class="filename">+CONTENTS</code> を
+	    <code class="varname">${BUILDLINK_CONTENTS_FILTER.<em class="replaceable"><code>pkg</code></em>}</code>
+	    でフィルターした結果が出力されるようになります。</p></li>
 <li class="listitem"><p><code class="varname">BUILDLINK_CONTENTS_FILTER.<em class="replaceable"><code>pkg</code></em></code>
-	    (not shown above) is a filter command that filters
-	    <code class="filename">+CONTENTS</code> input into a list of files
-	    relative to
+	    (上の例には出てきません) は、<code class="filename">+CONTENTS</code>
+	    を入力にとり、
 	    <code class="filename">${BUILDLINK_PREFIX.<em class="replaceable"><code>pkg</code></em>}</code>
-	    on stdout.  By default for overwrite packages,
+	    からの相対位置でのファイルのリストを標準出力に出力するフィルターコマンドです。
+	    指定しなかった場合、overwrite パッケージでは、
 	    <code class="varname">BUILDLINK_CONTENTS_FILTER.<em class="replaceable"><code>pkg</code></em></code>
-	    outputs the contents of the <code class="filename">include</code>
-	    and <code class="filename">lib</code> directories in the package
-	    <code class="filename">+CONTENTS</code>, and for pkgviews packages,
-	    it outputs any libtool archives in
-	    <code class="filename">lib</code> directories.</p></li>
+	    はパッケージの <code class="filename">+CONTENTS</code> から <code class="filename">include</code>
+	    および <code class="filename">lib</code> ディレクトリーの内容を出力し、
+	    pkgviews パッケージでは、<code class="filename">lib</code> ディレクトリーにある
+	    libtool アーカイブをすべて出力します。</p></li>
 <li class="listitem"><p><code class="varname">BUILDLINK_FNAME_TRANSFORM.<em class="replaceable"><code>pkg</code></em></code>
-	    (not shown above) is a list of sed arguments used to
-	    transform the name of the source filename into a
-	    destination filename, e.g. <span class="command"><strong>-e
-	    "s|/curses.h|/ncurses.h|g"</strong></span>.</p></li>
+	    (上の例には出てきません) は、元ファイル名から宛先ファイル名への変換用の
+	    sed の引数のリストです。たとえば <span class="command"><strong>-e
+	    "s|/curses.h|/ncurses.h|g"</strong></span> のようになります。</p></li>
 </ul></div>
-<p>This section can additionally include any
-      <code class="filename">buildlink3.mk</code> needed for
-      <em class="replaceable"><code>pkg</code></em>'s library dependencies.
-      Including these <code class="filename">buildlink3.mk</code> files
-      means that the headers and libraries for these
-      dependencies are also symlinked into
+<p>この節では、
+      <em class="replaceable"><code>pkg</code></em> のライブラリー依存性として必要な
+      <code class="filename">buildlink3.mk</code> をすべてインクルードすることができます。
+      ここで <code class="filename">buildlink3.mk</code> ファイルをインクルードすると、
+      <em class="replaceable"><code>pkg</code></em> の
+      <code class="filename">buildlink3.mk</code> ファイルがインクルードされる場合はいつも、
+      これらへの依存性のためのヘッダーやライブラリーも、
       <code class="filename">${BUILDLINK_DIR}</code>
-      whenever the <em class="replaceable"><code>pkg</code></em>
-      <code class="filename">buildlink3.mk</code>
-      file is included. Dependencies are only added for directly
-      include <code class="filename">buildlink3.mk</code> files.</p>
+      からシンボリックリンクされることになります。
+      依存性が追加されるのは、
+      <code class="filename">buildlink3.mk</code> ファイルを直接インクルードした場合だけです。</p>
 </div>
-<div class="sect2" title="14.2.2.�Updating BUILDLINK_API_DEPENDS.pkg and BUILDLINK_ABI_DEPENDS.pkg in buildlink3.mk files">
+<div class="sect2" title="14.2.2. buildlink3.mk ファイルの BUILDLINK_API_DEPENDS.pkg を更新する">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="updating-buildlink-depends"></a>14.2.2.�Updating
+<a name="updating-buildlink-depends"></a>14.2.2. <code class="filename">buildlink3.mk</code> ファイルの <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code> を更新する</h3></div></div></div>
+<p>パッケージを更新した際に
+	<code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+	に列挙されている依存性のバージョンを上げる必要があるのは、
+      その更新で API やヘッダーファイルへのインターフェースが変わった場合です。</p>
+<p>このような場合は、
       <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      and
-      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      in <code class="filename">buildlink3.mk</code> files</h3></div></div></div>
-<p>These two variables differ in that one describes source
-      compatibility (API) and the other binary compatibility (ABI).
-      The difference is that a change in the API breaks compilation of
-      programs while changes in the ABI stop compiled programs from
-      running.</p>
-<p>Changes to the
+      を調節して、最低限、新しいパッケージのバージョンを要するようにします。
+      場合によっては、新しいバージョンに依存するパッケージの
+      <code class="varname">PKGREVISION</code> を上げる必要があることがあります。
+      また、依存しているパッケージに <code class="filename">buildlink3.mk</code>
+      ファイルがある場合は、
       <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      variable in a <code class="filename">buildlink3.mk</code> file happen
-      very rarely. One possible reason is that all packages depending
-      on this already need a newer version. In case it is bumped see
-      the description below.</p>
-<p>The most common example of an ABI change is that the major
-      version of a shared library is increased. In this case,
-      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      should be adjusted to require at least the new package version.
-      Then the packages that depend on this package need their
-      <code class="varname">PKGREVISION</code>s increased and, if they have
-      <code class="filename">buildlink3.mk</code> files, their
-      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      adjusted, too. This is needed so pkgsrc will require the correct
-      package dependency and not settle for an older one when building
-      the source.</p>
-<p>See <a class="xref" href="fixes.html#dependencies" title="19.1.6.�Handling dependencies">Section�19.1.6, &#8220;Handling dependencies&#8221;</a> for
-      more information about dependencies on other packages,
-      including the <code class="varname">BUILDLINK_ABI_DEPENDS</code> and
-      <code class="varname">ABI_DEPENDS</code> definitions.</p>
-<p>Please take careful consideration before adjusting
+      も調節します。これは、pkgsrc が適切なパッケージの依存性を求めるようにして、
+      ソースからの構築時に古いパッケージに依存したりしないようにするために、
+      必要なことです。</p>
+<p><code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+	を上げるのは、バイナリーインターフェースや、
+	インストールされている共有ライブラリーのいずれかの soname
+	(ライブラリーのバージョンのメジャー番号) が変わった場合です。
+	これは、これらを使うバイナリーパッケージが、
+	適切なパッケージの依存性を求めるようにして、
+	必要な共有ライブラリーをもたない古いパッケージに依存したりしないようにするために、
+      必要なことです。</p>
+<p><code class="varname">BUILDLINK_ABI_DEPENDS</code> および
+	<code class="varname">ABI_DEPENDS</code> の定義を含めた、
+	他のパッケージへの依存性について、さらなる情報は、
+      <a class="xref" href="fixes.html#dependencies" title="19.1.6. 依存性の処理">Section 19.1.6, “依存性の処理”</a>をご覧ください。</p>
+<p>なお、必要もないのにパッケージを削除したり再構築したりするようなことのないよう、
       <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      or
+      や
       <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      as we don't want to cause unneeded package deletions and
-      rebuilds.  In many cases, new versions of packages work just
-      fine with older dependencies.</p>
-<p>Also it is not needed to set
-      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
-      when it is identical to
-      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>.	</p>
+      の調節は、事前に熟考するようにしてください。
+      多くの場合、新しいバージョンのパッケージは、
+      従前の依存性のままでも問題なく動作します。</p>
+<p>また、
+	<code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+	は、
+	<code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      と同じ値となる場合には設定する必要はありません。	</p>
 </div>
 </div>
-<div class="sect1" title="14.3.�Writing builtin.mk files">
+<div class="sect1" title="14.3. builtin.mk ファイルを書く">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="writing-builtin.mk"></a>14.3.�Writing <code class="filename">builtin.mk</code> files</h2></div></div></div>
-<p>Some packages in pkgsrc install headers and libraries that
-      coincide with headers and libraries present in the base system.
-      Aside from a <code class="filename">buildlink3.mk</code> file, these
-      packages should also include a <code class="filename">builtin.mk</code>
-      file that includes the necessary checks to decide whether using
-      the built-in software or the pkgsrc software is
-    appropriate.</p>
-<p>The only requirements of a builtin.mk file for
-    <em class="replaceable"><code>pkg</code></em> are:</p>
+<a name="writing-builtin.mk"></a>14.3. <code class="filename">builtin.mk</code> ファイルを書く</h2></div></div></div>
+<p>pkgsrc のパッケージのなかには、
+      ベースシステムにも存在するようなヘッダーやライブラリーをインストールするものがあります。
+      そのようなパッケージでは、
+      <code class="filename">buildlink3.mk</code> ファイルとは別に、
+      <code class="filename">builtin.mk</code> ファイルも含めておきます。
+      このファイルでは、ベースシステム附属のソフトウェアと
+    pkgsrc のソフトウェアのどちらを使うのが適切かを判断するために必要な確認をおこないます。</p>
+<p><em class="replaceable"><code>pkg</code></em> 用の
+    builtin.mk ファイルで必要なのは、以下のことだけです。</p>
 <div class="orderedlist"><ol class="orderedlist" type="1">
-<li class="listitem"><p>It should set
+<li class="listitem"><p>インクルードされた後に
 	<code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-	to either <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span> or <span class="quote">&#8220;<span class="quote">no</span>&#8221;</span>
-	after it is included.</p></li>
-<li class="listitem"><p>It should <span class="emphasis"><em>not</em></span> override any
+	を <span class="quote">“<span class="quote">yes</span>”</span> または <span class="quote">“<span class="quote">no</span>”</span>
+	のどちらかに設定すること。</p></li>
+<li class="listitem"><p><code class="filename">builtin.mk</code> ファイルがインクルードされる前から定義されている
 	<code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-	which is already set before the
-	<code class="filename">builtin.mk</code> file is included.</p></li>
-<li class="listitem"><p>It should be written to allow multiple inclusion.  This
-	is <span class="emphasis"><em>very</em></span> important and takes careful
-	attention to <code class="filename">Makefile</code> coding.</p></li>
+	を、一切上書き<span class="emphasis"><em>しない</em></span>こと。</p></li>
+<li class="listitem"><p>複数のインクルードができるように書くこと。
+	これは<span class="emphasis"><em>非常に</em></span>重要なことであり、
+	<code class="filename">Makefile</code> のコーディングに対する配慮となります。</p></li>
 </ol></div>
-<div class="sect2" title="14.3.1.�Anatomy of a builtin.mk file">
+<div class="sect2" title="14.3.1. builtin.mk ファイルの分析">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="anatomy-of-builtin.mk"></a>14.3.1.�Anatomy of a <code class="filename">builtin.mk</code> file</h3></div></div></div>
-<p>The following is the recommended template for builtin.mk
-      files:</p>
+<a name="anatomy-of-builtin.mk"></a>14.3.1. <code class="filename">builtin.mk</code> ファイルの分析</h3></div></div></div>
+<p>以下に掲げるのは、builtin.mk
+      ファイルの推奨テンプレートです。</p>
 <pre class="programlisting">
 .if !defined(IS_BUILTIN.foo)
 #
@@ -398,81 +393,87 @@ CHECK_BUILTIN.foo?=     no
 #
 .endif  # CHECK_BUILTIN.foo
 </pre>
-<p>The first section sets
+<p>最初の節では、<em class="replaceable"><code>pkg</code></em>
+      がベースシステムに実際に存在するかどうかに応じて、
       <code class="varname">IS_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-      depending on if <em class="replaceable"><code>pkg</code></em> really exists
-      in the base system.  This should not be a base system software
-      with similar functionality to <em class="replaceable"><code>pkg</code></em>;
-      it should only be <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span> if the actual package is
-      included as part of the base system.  This variable is only
-      used internally within the <code class="filename">builtin.mk</code>
-      file.</p>
-<p>The second section sets
+      を設定しています。これは、ベースシステムに <em class="replaceable"><code>pkg</code></em>
+      相当の機能のソフトウェアが存在するかどうかではありません。
+      この変数を <span class="quote">“<span class="quote">yes</span>”</span> にするのは、
+      このパッケージそのものがベースシステムの一部として附属する場合だけです。
+      この変数は、<code class="filename">builtin.mk</code>
+      ファイルの内部でのみ使われます。</p>
+<p>二つ目の節では、<em class="replaceable"><code>pkg</code></em>
+      がベースシステムに存在する場合 (つまり
+      <code class="varname">IS_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      が <span class="quote">“<span class="quote">yes</span>”</span> の場合)、
       <code class="varname">BUILTIN_PKG.<em class="replaceable"><code>pkg</code></em></code>
-      to the version of <em class="replaceable"><code>pkg</code></em> in the base
-      system if it exists (if
-      <code class="varname">IS_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-      is <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span>).  This variable is only used internally
-      within the <code class="filename">builtin.mk</code> file.</p>
-<p>The third section sets
+      をそのバージョンに設定しています。この変数は、<code class="filename">builtin.mk</code>
+      ファイルの内部でのみ使われます。</p>
+<p>三つ目の節では、
       <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-      and is <span class="emphasis"><em>required</em></span> in all
-      <code class="filename">builtin.mk</code> files.  The code in this
-      section must make the determination whether the built-in
-      software is adequate to satisfy the dependencies listed in
-      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>.
-      This is typically done by comparing
+      を設定しており、これはすべての <code class="filename">builtin.mk</code>
+      ファイルで<span class="emphasis"><em>必須です</em></span>。
+      この節のコードは、ベースシステム附属のソフトウェアが、
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      で列挙されている依存性を満たすのに十分かどうかを判別する必要があります。
+      この判別は、たいていは、
       <code class="varname">BUILTIN_PKG.<em class="replaceable"><code>pkg</code></em></code>
-      against each of the dependencies in
-      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>.
+      を、
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      の各依存性と比較することでおこなわれます。
+
       <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-      <span class="emphasis"><em>must</em></span> be set to the correct value by the
-      end of the <code class="filename">builtin.mk</code> file.  Note that
-      <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-      may be <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span> even if
+      は、<code class="filename">builtin.mk</code> ファイルの終わりまでに、
+      適切な値に設定する<span class="emphasis"><em>必要があります</em></span>。なお、たとえ
       <code class="varname">IS_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-      is <span class="quote">&#8220;<span class="quote">no</span>&#8221;</span> because we may make the determination
-      that the built-in version of the software is similar enough to
-      be used as a replacement.</p>
-<p>The last section is guarded by
-      <code class="varname">CHECK_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>,
-      and includes code that uses the value of
+      が <span class="quote">“<span class="quote">no</span>”</span> であっても、
       <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
-      set in the previous section.  This typically includes, e.g.,
-      adding additional dependency restrictions and listing additional
-      files to symlink into <code class="filename">${BUILDLINK_DIR}</code> (via
-      <code class="varname">BUILDLINK_FILES.<em class="replaceable"><code>pkg</code></em></code>).</p>
+      は <span class="quote">“<span class="quote">yes</span>”</span> にすることができます。なぜなら、
+      ベースシステム附属のソフトウェアが依存パッケージに十分似ており、
+      代替可能であるという判断もできるからです。</p>
+<p>最後の節は
+      <code class="varname">CHECK_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      に守られており、前の節で設定された
+      <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      の値を使うコードをインクルードします。たいていの場合、ここでインクルードするのは、
+      たとえば依存性への制約の追加や、<code class="filename">${BUILDLINK_DIR}</code>
+      からシンボリックリンクされるファイルのリストの
+      (<code class="varname">BUILDLINK_FILES.<em class="replaceable"><code>pkg</code></em></code>
+      を使った) 追加などです。</p>
 </div>
-<div class="sect2" title="14.3.2.�Global preferences for native or pkgsrc software">
+<div class="sect2" title="14.3.2. ネイティブおよび pkgsrc のソフトウェアの選択に関する、大域的な設定">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="native-or-pkgsrc-preference"></a>14.3.2.�Global preferences for native or pkgsrc software</h3></div></div></div>
-<p>When building packages, it's possible to choose whether to set
-	a global preference for using either the built-in (native)
-	version or the pkgsrc version of software to satisfy a
-	dependency.  This is controlled by setting
-	<code class="varname">PREFER_PKGSRC</code> and
-	<code class="varname">PREFER_NATIVE</code>.  These variables take values
-	of either <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span>, <span class="quote">&#8220;<span class="quote">no</span>&#8221;</span>, or a list of
-	packages.  <code class="varname">PREFER_PKGSRC</code> tells pkgsrc to
-	use the pkgsrc versions of software, while
-	<code class="varname">PREFER_NATIVE</code> tells pkgsrc to use the
-	built-in versions.  Preferences are determined by the most
-	specific instance of the package in either
-	<code class="varname">PREFER_PKGSRC</code> or
-	<code class="varname">PREFER_NATIVE</code>.  If a package is specified
-	in neither or in both variables, then
-	<code class="varname">PREFER_PKGSRC</code> has precedence over
-	<code class="varname">PREFER_NATIVE</code>.  For example, to require
-	using pkgsrc versions of software for all but the most basic
-      bits on a NetBSD system, you can set:</p>
+<a name="native-or-pkgsrc-preference"></a>14.3.2. ネイティブおよび pkgsrc のソフトウェアの選択に関する、大域的な設定</h3></div></div></div>
+<p>パッケージの構築時に、
+	依存性を満たすソフトウェアとして組み込み (ネイティブ)
+	のものを使うか pkgsrc のものを使うかを、
+	大域的な設定に応じて切替えることができます。
+	この制御は、<code class="varname">PREFER_PKGSRC</code> および
+	<code class="varname">PREFER_NATIVE</code> を設定することでおこないます。
+	この両変数は、<span class="quote">“<span class="quote">yes</span>”</span>, <span class="quote">“<span class="quote">no</span>”</span>
+	またはパッケージのリストを値として持ちます。
+	<code class="varname">PREFER_PKGSRC</code> は pkgsrc 版のソフトウェアを使うことを、
+	<code class="varname">PREFER_NATIVE</code> で組み込み版を使うことを、
+	それぞれ指示します。この設定は、
+	対象パッケージではどちらを使うのがもっとも適当かに応じて、
+	<code class="varname">PREFER_PKGSRC</code> か
+	<code class="varname">PREFER_NATIVE</code> のいずれかで指定します。
+	あるパッケージがどちらにも設定されていない場合、
+	または両方で設定されている場合は、
+	<code class="varname">PREFER_PKGSRC</code> が
+	<code class="varname">PREFER_NATIVE</code> より優先します。たとえば、
+	NetBSD システムの最も基本的な要素を除き、
+	すべて pkgsrc 版のソフトウェアを使うこととする場合、
+      以下のように設定することができます。</p>
 <pre class="programlisting">
 PREFER_PKGSRC=  yes
 PREFER_NATIVE=  getopt skey tcp_wrappers
 </pre>
-<p>A package <span class="emphasis"><em>must</em></span> have a
+<p>あるパッケージを <code class="varname">PREFER_NATIVE</code>
+      のリストに加えるには、そのパッケージに
       <code class="filename">builtin.mk</code>
-      file to be listed in <code class="varname">PREFER_NATIVE</code>,
-      otherwise it is simply ignored in that list.</p>
+      ファイルがある<span class="emphasis"><em>必要があります</em></span>。
+      このファイルがない場合は、リストに加えても単に無視されます。</p>
 </div>
 </div>
 </div>
@@ -481,15 +482,15 @@ PREFER_NATIVE=  getopt skey tcp_wrappers
 <table width="100%" summary="Navigation footer">
 <tr>
 <td width="40%" align="left">
-<a accesskey="p" href="plist.html">Prev</a>�</td>
+<a accesskey="p" href="plist.html">Prev</a> </td>
 <td width="20%" align="center"><a accesskey="u" href="developers-guide.html">Up</a></td>
-<td width="40%" align="right">�<a accesskey="n" href="pkginstall.html">Next</a>
+<td width="40%" align="right"> <a accesskey="n" href="pkginstall.html">Next</a>
 </td>
 </tr>
 <tr>
-<td width="40%" align="left" valign="top">Chapter�13.�PLIST issues�</td>
+<td width="40%" align="left" valign="top">Chapter 13. PLIST 問題 </td>
 <td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
-<td width="40%" align="right" valign="top">�Chapter�15.�The pkginstall framework</td>
+<td width="40%" align="right" valign="top"> Chapter 15. pkginstall の枠組</td>
 </tr>
 </table>
 </div>

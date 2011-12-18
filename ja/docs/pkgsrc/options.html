@@ -1,93 +1,99 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Chapter�16.�Options handling</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chapter 16. オプションの扱い</title>
 <link rel="stylesheet" type="text/css" href="/global.css">
 <meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
 <link rel="home" href="index.html" title="The pkgsrc guide">
-<link rel="up" href="developers-guide.html" title="Part�II.�The pkgsrc developer's guide">
-<link rel="prev" href="pkginstall.html" title="Chapter�15.�The pkginstall framework">
-<link rel="next" href="build.html" title="Chapter�17.�The build process">
+<link rel="up" href="developers-guide.html" title="Part II. pkgsrc 開発者向けの手引き">
+<link rel="prev" href="pkginstall.html" title="Chapter 15. pkginstall の枠組">
+<link rel="next" href="build.html" title="Chapter 17. 構築の手順">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="navheader">
 <table width="100%" summary="Navigation header">
-<tr><th colspan="3" align="center">Chapter�16.�Options handling</th></tr>
+<tr><th colspan="3" align="center">Chapter 16. オプションの扱い</th></tr>
 <tr>
 <td width="20%" align="left">
-<a accesskey="p" href="pkginstall.html">Prev</a>�</td>
-<th width="60%" align="center">Part�II.�The pkgsrc developer's guide</th>
-<td width="20%" align="right">�<a accesskey="n" href="build.html">Next</a>
+<a accesskey="p" href="pkginstall.html">Prev</a> </td>
+<th width="60%" align="center">Part II. pkgsrc 開発者向けの手引き</th>
+<td width="20%" align="right"> <a accesskey="n" href="build.html">Next</a>
 </td>
 </tr>
 </table>
 <hr>
 </div>
-<div class="chapter" title="Chapter�16.�Options handling">
+<div class="chapter" title="Chapter 16. オプションの扱い">
 <div class="titlepage"><div><div><h2 class="title">
-<a name="options"></a>Chapter�16.�Options handling</h2></div></div></div>
+<a name="options"></a>Chapter 16. オプションの扱い</h2></div></div></div>
 <div class="toc">
 <p><b>Table of Contents</b></p>
 <dl>
-<dt><span class="sect1"><a href="options.html#global-default-options">16.1. Global default options</a></span></dt>
-<dt><span class="sect1"><a href="options.html#converting-to-options">16.2. Converting packages to use <code class="filename">bsd.options.mk</code></a></span></dt>
-<dt><span class="sect1"><a href="options.html#option-names">16.3. Option Names</a></span></dt>
-<dt><span class="sect1"><a href="options.html#option-build">16.4. Determining the options of dependencies</a></span></dt>
+<dt><span class="sect1"><a href="options.html#global-default-options">16.1. 標準の大域的なオプション</a></span></dt>
+<dt><span class="sect1"><a href="options.html#converting-to-options">16.2. パッケージを変換して <code class="filename">bsd.options.mk</code> を使うようにする</a></span></dt>
+<dt><span class="sect1"><a href="options.html#option-names">16.3. オプション名</a></span></dt>
+<dt><span class="sect1"><a href="options.html#option-build">16.4. 依存パッケージのオプションを判別する</a></span></dt>
 </dl>
 </div>
-<p>Many packages have the ability to be built to support different
-sets of features.  <code class="filename">bsd.options.mk</code> is a framework
-in pkgsrc that provides generic handling of those options that
-determine different ways in which the packages can be built.  It's
-possible for the user to specify exactly which sets of options will be
-built into a package or to allow a set of global default options
-apply.</p>
-<p>There are two broad classes of behaviors that one might want to
-control via options.  One is whether some particular feature is
-enabled in a program that will be built anyway, often by including or
-not including a dependency on some other package.  The other is
-whether or not an additional program will be built as part of the
-package.  Generally, it is better to make a split package for such
-additional programs instead of using options, because it enables
-binary packages to be built which can then be added separately.  For
-example, the foo package might have minimal dependencies (those
-packages without which foo doesn't make sense), and then the foo-gfoo
-package might include the GTK frontend program gfoo.  This is better
-than including a gtk option to foo that adds gfoo, because either that
-option is default, in which case binary users can't get foo without
-gfoo, or not default, in which case they can't get gfoo.  With split
-packages, they can install foo without having GTK, and later decide to
-install gfoo (pulling in GTK at that time).  This is an advantage to
-source users too, avoiding the need for rebuilds.</p>
-<p>Plugins with widely varying dependencies should usually be split
-instead of options.</p>
-<p>It is often more work to maintain split packages, especially if
-the upstream package does not support this.  The decision of split
-vs. option should be made based on the likelihood that users will want
-or object to the various pieces, the size of the dependencies that are
-included, and the amount of work.</p>
-<p>A further consideration is licensing.  Non-free parts, or parts
-that depend on non-free dependencies (especially plugins) should
-almost always be split if feasible.</p>
-<div class="sect1" title="16.1.�Global default options">
+<p>多くのパッケージは、対応する機能の組合せを変えて構築することができます。
+<code class="filename">bsd.options.mk</code> は pkgsrc における枠組のひとつで、
+このようなオプションに応じて異なるパッケージ構築方法の判断を、
+汎用的に処理するものです。この枠組のなかで、利用者は、
+どのようなオプションの組合せを組み込んでパッケージを構築するかを厳密に指定したり、
+大域的な標準状態のオプションの組合せを適用したりすることができます。</p>
+<p>パッケージの振舞を、オプションの枠組を使って制御したい状況は、
+大きく分けて二つあります。
+ひとつは、プログラム自体の構築は常におこなうものの、
+そのなかのある機能を有効にするかしないかです
+(他のパッケージに依存させるかさせないかによって制御することがよくあります)。
+もうひとつは、別のプログラムを、
+そのパッケージの一部として追加するかしないかです。
+後者は、一般的には、オプションの枠組を使わずに、
+パッケージを分割したほうがいいでしょう。
+パッケージを分割すれば、
+バイナリーパッケージを別々に追加できるようになるからです。
+たとえば、foo パッケージには最小限の
+(それがないと foo パッケージに何の意味もなくなるような) 依存性を持たせておいたうえで、
+別の foo-gfoo パッケージに GTK のフロントエンドプログラム gfoo を入れておくのです。
+この方法は、foo パッケージに gfoo を追加する gtk オプションを用意する方法より、
+すぐれています。なぜなら、オプションの枠組を使ってしまうと、
+このオプションが標準で有効な場合は、
+バイナリーパッケージの利用者は gfoo 抜き版の foo を使えず、
+また、標準で有効ではない場合は、
+バイナリーパッケージの利用者は gfoo を使えないからです。
+パッケージを分割すれば、バイナリーパッケージの利用者は、
+GTK 抜き版の goo をインストールすることも、
+後から gfoo をインストールする (GTK はそのときになってから取り寄せる) こともできます。
+また、ソースの利用者にとっても、
+foo パッケージの再構築の必要がなくなるという利点があります。</p>
+<p>依存性が大きく変化するようなプラグインは、通常は、
+オプションではなく分割したほうがよいでしょう。</p>
+<p>パッケージを分割すると、保守の手間が増えることがよくあります。
+そのパッケージの本家が分割に対応していない場合は特にそうです。
+分割するかオプションにするかは、
+たくさんのパッケージの細切れや、依存パッケージの大きさや、作業量に対して、
+利用者がどう思うであろうか、という見地に立って判断するようにします。</p>
+<p>さらに考慮が必要なことは、ライセンスです。フリーではない部品や、
+フリーでないもの (特にプラグイン) に依存する部品は、
+分割可能な限り分割するのがよいでしょう。</p>
+<div class="sect1" title="16.1. 標準の大域的なオプション">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="global-default-options"></a>16.1.�Global default options</h2></div></div></div>
-<p>Global default options are listed in
-<code class="varname">PKG_DEFAULT_OPTIONS</code>, which is a list of the options
-that should be built into every package if that option is supported.
-This variable should be set in <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a>.</p>
+<a name="global-default-options"></a>16.1. 標準の大域的なオプション</h2></div></div></div>
+<p>標準の大域的なオプションは、
+<code class="varname">PKG_DEFAULT_OPTIONS</code> に列挙します。この値は、
+そのオプションに対応しているパッケージすべてに組み込むオプションを並べたものです。
+この変数は <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> で設定するようにします。</p>
 </div>
-<div class="sect1" title="16.2.�Converting packages to use bsd.options.mk">
+<div class="sect1" title="16.2. パッケージを変換して bsd.options.mk を使うようにする">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="converting-to-options"></a>16.2.�Converting packages to use <code class="filename">bsd.options.mk</code>
-</h2></div></div></div>
-<p>The following example shows how
-<code class="filename">bsd.options.mk</code> should be used
-by the hypothetical ``wibble'' package, either in the package
-<code class="filename">Makefile</code>, or in a file,
-e.g. <code class="filename">options.mk</code>, that is included by the
-main package <code class="filename">Makefile</code>.</p>
+<a name="converting-to-options"></a>16.2. パッケージを変換して <code class="filename">bsd.options.mk</code> を使うようにする</h2></div></div></div>
+<p>以下に掲げるのは、<code class="filename">bsd.options.mk</code>
+を架空の ``wibble'' パッケージでどのように使うかを示したものです。
+パッケージの <code class="filename">Makefile</code> に直接書くか、
+別のファイル <code class="filename">options.mk</code> に書いて
+<code class="filename">Makefile</code> からインクルードするか、
+どちらかの方法をとります。</p>
 <pre class="programlisting">
 PKG_OPTIONS_VAR=                PKG_OPTIONS.wibble
 PKG_SUPPORTED_OPTIONS=          wibble-foo ldap
@@ -135,120 +141,122 @@ CONFIGURE_ARGS+=    --enable-ldap=${BUILDLINK_PREFIX.openldap-client}
 .  include "../../mk/pgsql.buildlink3.mk"
 .endif
 </pre>
-<p>The first section contains the information about which build
-options are supported by the package, and any default options settings
-if needed.</p>
+<p>最初の節には、
+このパッケージがどの構築オプションに対応しているかに関する情報があり、
+標準状態を設定する必要があるオプションについてはその設定をしています。</p>
 <div class="orderedlist"><ol class="orderedlist" type="1">
-<li class="listitem"><p><code class="varname">PKG_OPTIONS_VAR</code> is the name of the
-<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> variable that the user can set to override the default
-options.  It should be set to
-PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em>. Do not set it to
-PKG_OPTIONS.${PKGBASE}, since <code class="varname">PKGBASE</code> is not defined
-at the point where the options are processed.</p></li>
-<li class="listitem"><p><code class="varname">PKG_SUPPORTED_OPTIONS</code> is a list of
-build options supported by the package.</p></li>
-<li class="listitem"><p><code class="varname">PKG_OPTIONS_OPTIONAL_GROUPS</code> is a
-list of names of groups of mutually exclusive options.  The options in
-each group are listed in
-<code class="varname">PKG_OPTIONS_GROUP.<em class="replaceable"><code>groupname</code></em></code>.
-The most specific setting of any option from the group takes
-precedence over all other options in the group.  Options from the
-groups will be automatically added to
-<code class="varname">PKG_SUPPORTED_OPTIONS</code>.</p></li>
-<li class="listitem"><p><code class="varname">PKG_OPTIONS_REQUIRED_GROUPS</code> is like
-<code class="varname">PKG_OPTIONS_OPTIONAL_GROUPS</code>, but building the
-packages will fail if no option from the group is
-selected.</p></li>
-<li class="listitem"><p><code class="varname">PKG_OPTIONS_NONEMPTY_SETS</code> is a list
-of names of sets of options.  At least one option from each set must
-be selected.  The options in each set are listed in
-<code class="varname">PKG_OPTIONS_SET.<em class="replaceable"><code>setname</code></em></code>.
-Options from the sets will be automatically added to
-<code class="varname">PKG_SUPPORTED_OPTIONS</code>.  Building the package will
-fail if no option from the set is selected.</p></li>
-<li class="listitem"><p><code class="varname">PKG_SUGGESTED_OPTIONS</code> is a list of
-build options which are enabled by default.</p></li>
-<li class="listitem"><p><code class="varname">PKG_OPTIONS_LEGACY_VARS</code> is a list
-of
-<span class="quote">&#8220;<span class="quote"><em class="replaceable"><code>USE_VARIABLE</code></em>:<em class="replaceable"><code>option</code></em></span>&#8221;</span>
-pairs that map legacy <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> variables to
-their option counterparts.  Pairs should be added with
-<span class="quote">&#8220;<span class="quote">+=</span>&#8221;</span> to keep the listing of global legacy variables.  A
-warning will be issued if the user uses a legacy
-variable.</p></li>
-<li class="listitem"><p><code class="varname">PKG_OPTIONS_LEGACY_OPTS</code> is a list
-of
-<span class="quote">&#8220;<span class="quote"><em class="replaceable"><code>old-option</code></em>:<em class="replaceable"><code>new-option</code></em></span>&#8221;</span>
-pairs that map options that have been renamed to their new
-counterparts.  Pairs should be added with <span class="quote">&#8220;<span class="quote">+=</span>&#8221;</span> to keep
-the listing of global legacy options.  A warning will be issued if
-the user uses a legacy option.</p></li>
-<li class="listitem"><p><code class="varname">PKG_LEGACY_OPTIONS</code> is a list of
-options implied by deprecated variables used.  This can be used for
-cases that neither <code class="varname">PKG_OPTIONS_LEGACY_VARS</code> nor
-<code class="varname">PKG_OPTIONS_LEGACY_OPTS</code> can handle, e. g. when
-<code class="varname">PKG_OPTIONS_VAR</code> is renamed.</p></li>
-<li class="listitem"><p><code class="varname">PKG_OPTIONS_DEPRECATED_WARNINGS</code> is
-a list of warnings about deprecated variables or options used, and
-what to use instead.</p></li>
+<li class="listitem"><p><code class="varname">PKG_OPTIONS_VAR</code> は、
+<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> 変数の名前で、
+利用者はその名前の変数を設定して標準のオプションを上書きすることができます。
+この変数名は PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em> のように設定します。
+オプションの処理をする段階では
+<code class="varname">PKGBASE</code> は定義されていないので、
+PKG_OPTIONS.${PKGBASE} と定義してはいけません。</p></li>
+<li class="listitem"><p><code class="varname">PKG_SUPPORTED_OPTIONS</code>
+は、このパッケージが対応している構築オプションを並べたリストです。</p></li>
+<li class="listitem"><p><code class="varname">PKG_OPTIONS_OPTIONAL_GROUPS</code> は、
+互いに排他的なオプションからなるグループの名前を並べたリストです。
+各グループに含まれるオプションは、
+<code class="varname">PKG_OPTIONS_GROUP.<em class="replaceable"><code>groupname</code></em></code> に列挙します。
+ここでは、各グループのオプションのうちもっとも特徴的な設定を先頭に書きます。
+各グループに含まれるオプションは、自動的に
+<code class="varname">PKG_SUPPORTED_OPTIONS</code> に追加されます。</p></li>
+<li class="listitem"><p><code class="varname">PKG_OPTIONS_REQUIRED_GROUPS</code> は、
+<code class="varname">PKG_OPTIONS_OPTIONAL_GROUPS</code> に似ていますが、
+グループに含まれるオプションをどれも選ばなかった場合には、
+パッケージの構築に失敗する点が異なります。</p></li>
+<li class="listitem"><p><code class="varname">PKG_OPTIONS_NONEMPTY_SETS</code> は、
+オプションの集合の名前を並べたリストです。
+各集合からは、少なくともひとつのオプションを設定する必要があります。
+各集合に含まれるオプションは、
+<code class="varname">PKG_OPTIONS_SET.<em class="replaceable"><code>setname</code></em></code> に列挙します。
+各集合に含まれるオプションは、自動的に
+<code class="varname">PKG_SUPPORTED_OPTIONS</code> に追加されます。
+集合に含まれるオプションをひとつも設定しなかった場合、パッケージの構築に失敗します。</p></li>
+<li class="listitem"><p><code class="varname">PKG_SUGGESTED_OPTIONS</code> は、
+標準状態で有効となる構築オプションを並べたリストです。</p></li>
+<li class="listitem"><p><code class="varname">PKG_OPTIONS_LEGACY_VARS</code> は、
+旧式の <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> 変数を同等のオプションに対応づけた
+<span class="quote">“<span class="quote"><em class="replaceable"><code>USE_VARIABLE</code></em>:<em class="replaceable"><code>option</code></em></span>”</span>
+という組合せを並べたリストです。
+この組合せは、旧式の変数の大域的なリストを残すために、
+<span class="quote">“<span class="quote">+=</span>”</span> を使って追加するようにします。
+利用者が旧式の変数を使った場合には、警告が出ます。</p></li>
+<li class="listitem"><p><code class="varname">PKG_OPTIONS_LEGACY_OPTS</code> は、
+名前が変更されたオプションを新しいものに対応づけた
+<span class="quote">“<span class="quote"><em class="replaceable"><code>old-option</code></em>:<em class="replaceable"><code>new-option</code></em></span>”</span>
+という組合せを並べたリストです。
+この組合せは、旧名のオプションの大域的なリストを残すために、
+<span class="quote">“<span class="quote">+=</span>”</span> を使って追加するようにします。
+利用者が旧名のオプションを使った場合には、警告が出ます。</p></li>
+<li class="listitem"><p><code class="varname">PKG_LEGACY_OPTIONS</code> は、
+廃止された変数用のオプションを並べたリストです。
+これは、<code class="varname">PKG_OPTIONS_LEGACY_VARS</code> と
+<code class="varname">PKG_OPTIONS_LEGACY_OPTS</code> のどちらでも対処できない場合、
+たとえば <code class="varname">PKG_OPTIONS_VAR</code> の名前が変更された場合などに使うものです。</p></li>
+<li class="listitem"><p><code class="varname">PKG_OPTIONS_DEPRECATED_WARNINGS</code> は、
+廃止された変数やオプションが使われたことと、その代替として何を使うかについての、
+警告を並べたリストです。</p></li>
 </ol></div>
-<p>A package should never modify
-<code class="varname">PKG_DEFAULT_OPTIONS</code> or the variable named in
-<code class="varname">PKG_OPTIONS_VAR</code>.  These are strictly user-settable.
-To suggest a default set of options, use
-<code class="varname">PKG_SUGGESTED_OPTIONS</code>.</p>
-<p><code class="varname">PKG_OPTIONS_VAR</code> must be defined before
-including <code class="filename">bsd.options.mk</code>.  If none of
+<p>パッケージ側では <code class="varname">PKG_DEFAULT_OPTIONS</code> や、
+<code class="varname">PKG_OPTIONS_VAR</code> による変数名を変えてはいけません。
+これらはもっぱら利用者が設定するためのものです。
+オプションの標準設定を提案する場合は
+<code class="varname">PKG_SUGGESTED_OPTIONS</code> を使います。</p>
+<p><code class="varname">PKG_OPTIONS_VAR</code> は、
+<code class="filename">bsd.options.mk</code> をインクルードする前に定義する必要があります。
 <code class="varname">PKG_SUPPORTED_OPTIONS</code>,
-<code class="varname">PKG_OPTIONS_OPTIONAL_GROUPS</code>, and
-<code class="varname">PKG_OPTIONS_REQUIRED_GROUPS</code> are defined (as can
-happen with platform-specific options if none of them is supported on
-the current platform), <code class="varname">PKG_OPTIONS</code> is set to the
-empty list and the package is otherwise treated as not using the
-options framework.</p>
-<p>After the inclusion of <code class="filename">bsd.options.mk</code>, the
-variable <code class="varname">PKG_OPTIONS</code> contains the list of selected
-build options, properly filtered to remove unsupported and duplicate
-options.</p>
-<p>The remaining sections contain the logic that is specific to
-each option.  The correct way to check for an option is to check
-whether it is listed in <code class="varname">PKG_OPTIONS</code>:</p>
+<code class="varname">PKG_OPTIONS_OPTIONAL_GROUPS</code>,
+<code class="varname">PKG_OPTIONS_REQUIRED_GROUPS</code> のいずれも定義されていない場合は
+(実行対象のプラットフォームが、
+プラットフォーム固有のオプションのどれにも対応していない場合に、
+これらの影響を受ける可能性があるため)、 <code class="varname">PKG_OPTIONS</code> は空のリストに設定され、
+パッケージがオプションの枠組を使わないように保護されます。</p>
+<p><code class="filename">bsd.options.mk</code> がインクルードされた後、
+変数 <code class="varname">PKG_OPTIONS</code> は、
+選択された構築オプションを並べたリスト
+(非対応あるいは廃止されたオプションは適切に除去されています)
+を値として持っています。</p>
+<p>残りの節では、各オプション固有の処理をしています。
+あるオプションが <code class="varname">PKG_OPTIONS</code> のリストに含まれているかどうかの確認は、
+以下のようにするのが正しい方法です。</p>
 <pre class="programlisting">
 .if !empty(PKG_OPTIONS:M<em class="replaceable"><code>option</code></em>)
 </pre>
 </div>
-<div class="sect1" title="16.3.�Option Names">
+<div class="sect1" title="16.3. オプション名">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="option-names"></a>16.3.�Option Names</h2></div></div></div>
-<p>Options that enable similar features in different packages (like
-optional support for a library) should use a common name in all
-packages that support it (like the name of the library).  If another
-package already has an option with the same meaning, use the same
-name.</p>
-<p>Options that enable features specific to one package, where it's
-unlikely that another (unrelated) package has the same (or a similar)
-optional feature, should use a name prefixed with
-<code class="varname"><em class="replaceable"><code>pkgname</code></em>-</code>.</p>
-<p>If a group of related packages share an optional feature
-specific to that group, prefix it with the name of the
-<span class="quote">&#8220;<span class="quote">main</span>&#8221;</span> package
-(e. g. <code class="varname">djbware-errno-hack</code>).</p>
-<p>For new options, add a line to
-<code class="filename">mk/defaults/options.description</code>.  Lines have two
-fields, separated by tab.  The first field is the option name, the
-second its description.  The description should be a whole sentence
-(starting with an uppercase letter and ending with a period) that
-describes what enabling the option does.  E. g. <span class="quote">&#8220;<span class="quote">Enable ispell
-support.</span>&#8221;</span> The file is sorted by option names.</p>
+<a name="option-names"></a>16.3. オプション名</h2></div></div></div>
+<p>異なるパッケージに類似の機能を追加するオプション
+(あるライブラリーにオプションで対応するなど) は、
+その機能に対応した全パッケージの間で共通の名前 (そのライブラリーの名前など) を使うべきです。
+同じ意味のオプションをもつパッケージがすでに存在する場合は、
+それと同じ名前を使ってください。</p>
+<p>ひとつのパッケージに固有の機能を追加するオプションで、
+他の (無関連の) パッケージが同じ (または類似の) オプション機能をもちそうにない場合は、
+冒頭に <code class="varname"><em class="replaceable"><code>pkgname</code></em>-</code>
+をつけたオプション名を使うようにします。</p>
+<p>一群の関連パッケージの間で、
+それらに固有のオプション機能を共有している場合は、
+<span class="quote">“<span class="quote">主たる</span>”</span>パッケージ名を冒頭につけた形にします
+(たとえば <code class="varname">djbware-errno-hack</code>)。</p>
+<p>新しいオプションを追加する場合は、
+<code class="filename">mk/defaults/options.description</code> にそのオプションの行を追加します。
+行は、タブで区切られた二つのフィールドからなります。
+最初のフィールドはオプション名、
+二つ目はその説明です。この説明は、完全な文章 (大文字ではじまり、ピリオドで終わる)
+で、このオプションで何ができるかを説明します。たとえば、<span class="quote">“<span class="quote">Enable ispell
+support.</span>”</span> とします。このファイルはオプション名でソートします。</p>
 </div>
-<div class="sect1" title="16.4.�Determining the options of dependencies">
+<div class="sect1" title="16.4. 依存パッケージのオプションを判別する">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="option-build"></a>16.4.�Determining the options of dependencies</h2></div></div></div>
-<p>When writing <a class="link" href="buildlink.html#buildlink3.mk"><code class="filename">buildlink3.mk</code></a> files, it is often necessary to list
-different dependencies based on the options with which the package was
-built. For querying these options, the file
-<code class="filename">pkgsrc/mk/pkg-build-options.mk</code> should be used. A
-typical example looks like this:</p>
+<a name="option-build"></a>16.4. 依存パッケージのオプションを判別する</h2></div></div></div>
+<p><a class="link" href="buildlink.html#buildlink3.mk"><code class="filename">buildlink3.mk</code></a> ファイルを書くときには、
+依存パッケージがどのようなオプションで構築されたかによって場合分けして、
+異なる依存性を列挙する必要がある場合がよくあります。
+このようなオプションの問い合わせには、
+<code class="filename">pkgsrc/mk/pkg-build-options.mk</code> ファイルを使うようにします。
+通常は、以下のように使います。</p>
 <pre class="programlisting">
 pkgbase := libpurple
 .include "../../mk/pkg-build-options.mk"
@@ -257,12 +265,14 @@ pkgbase := libpurple
 ...
 .endif
 </pre>
-<p>Including <code class="filename">pkg-build-options.mk</code> here will set
-the variable <code class="varname">PKG_BUILD_OPTIONS.libpurple</code> to the build
-options of the libpurple package, which can then be queried like
-<code class="varname">PKG_OPTIONS</code> in the <code class="filename">options.mk</code>
-file. See the file <code class="filename">pkg-build-options.mk</code> for more
-details.</p>
+<p><code class="filename">pkg-build-options.mk</code> をインクルードしたところで、
+<code class="varname">PKG_BUILD_OPTIONS.libpurple</code> 変数に、
+libpurple パッケージの構築オプションが設定されます。これにより、
+<code class="filename">options.mk</code> における <code class="varname">PKG_OPTIONS</code>
+と同様に、オプションを問い合わせることができます。
+詳細は、<code class="filename">pkg-build-options.mk</code>
+ファイルをご覧ください。
+</p>
 </div>
 </div>
 <div class="navfooter">
@@ -270,15 +280,15 @@ details.</p>
 <table width="100%" summary="Navigation footer">
 <tr>
 <td width="40%" align="left">
-<a accesskey="p" href="pkginstall.html">Prev</a>�</td>
+<a accesskey="p" href="pkginstall.html">Prev</a> </td>
 <td width="20%" align="center"><a accesskey="u" href="developers-guide.html">Up</a></td>
-<td width="40%" align="right">�<a accesskey="n" href="build.html">Next</a>
+<td width="40%" align="right"> <a accesskey="n" href="build.html">Next</a>
 </td>
 </tr>
 <tr>
-<td width="40%" align="left" valign="top">Chapter�15.�The pkginstall framework�</td>
+<td width="40%" align="left" valign="top">Chapter 15. pkginstall の枠組 </td>
 <td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
-<td width="40%" align="right" valign="top">�Chapter�17.�The build process</td>
+<td width="40%" align="right" valign="top"> Chapter 17. 構築の手順</td>
 </tr>
 </table>
 </div>

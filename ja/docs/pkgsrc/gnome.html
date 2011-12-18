@@ -1,119 +1,119 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Chapter�23.�GNOME packaging and porting</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chapter 23. GNOME のパッケージングおよび移植</title>
 <link rel="stylesheet" type="text/css" href="/global.css">
 <meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
 <link rel="home" href="index.html" title="The pkgsrc guide">
-<link rel="up" href="developers-guide.html" title="Part�II.�The pkgsrc developer's guide">
-<link rel="prev" href="devfaq.html" title="Chapter�22.�Frequently Asked Questions">
-<link rel="next" href="infrastructure.html" title="Part�III.�The pkgsrc infrastructure internals">
+<link rel="up" href="developers-guide.html" title="Part II. pkgsrc 開発者向けの手引き">
+<link rel="prev" href="devfaq.html" title="Chapter 22. よくある質問">
+<link rel="next" href="infrastructure.html" title="Part III. pkgsrc 基盤の内部">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="navheader">
 <table width="100%" summary="Navigation header">
-<tr><th colspan="3" align="center">Chapter�23.�GNOME packaging and porting</th></tr>
+<tr><th colspan="3" align="center">Chapter 23. GNOME のパッケージングおよび移植</th></tr>
 <tr>
 <td width="20%" align="left">
-<a accesskey="p" href="devfaq.html">Prev</a>�</td>
-<th width="60%" align="center">Part�II.�The pkgsrc developer's guide</th>
-<td width="20%" align="right">�<a accesskey="n" href="infrastructure.html">Next</a>
+<a accesskey="p" href="devfaq.html">Prev</a> </td>
+<th width="60%" align="center">Part II. pkgsrc 開発者向けの手引き</th>
+<td width="20%" align="right"> <a accesskey="n" href="infrastructure.html">Next</a>
 </td>
 </tr>
 </table>
 <hr>
 </div>
-<div class="chapter" title="Chapter�23.�GNOME packaging and porting">
+<div class="chapter" title="Chapter 23. GNOME のパッケージングおよび移植">
 <div class="titlepage"><div><div><h2 class="title">
-<a name="gnome"></a>Chapter�23.�GNOME packaging and porting</h2></div></div></div>
+<a name="gnome"></a>Chapter 23. GNOME のパッケージングおよび移植</h2></div></div></div>
 <div class="toc">
 <p><b>Table of Contents</b></p>
 <dl>
-<dt><span class="sect1"><a href="gnome.html#meta-packages">23.1. Meta packages</a></span></dt>
-<dt><span class="sect1"><a href="gnome.html#new-package">23.2. Packaging a GNOME application</a></span></dt>
-<dt><span class="sect1"><a href="gnome.html#full-update">23.3. Updating GNOME to a newer version</a></span></dt>
-<dt><span class="sect1"><a href="gnome.html#patching">23.4. Patching guidelines</a></span></dt>
+<dt><span class="sect1"><a href="gnome.html#meta-packages">23.1. メタパッケージ</a></span></dt>
+<dt><span class="sect1"><a href="gnome.html#new-package">23.2. GNOME アプリケーションをパッケージングする</a></span></dt>
+<dt><span class="sect1"><a href="gnome.html#full-update">23.3. GNOME を新バージョンに更新する</a></span></dt>
+<dt><span class="sect1"><a href="gnome.html#patching">23.4. 修正の指針</a></span></dt>
 </dl>
 </div>
-<p>Quoting <a class="ulink" href="http://www.gnome.org/" target="_top">GNOME's web
-site</a>:</p>
-<div class="blockquote"><blockquote class="blockquote"><p>The GNOME project provides two things: The GNOME desktop
-  environment, an intuitive and attractive desktop for users, and the
-  GNOME development platform, an extensive framework for building
-  applications that integrate into the rest of the desktop.</p></blockquote></div>
-<p>pkgsrc provides a seamless way to automatically build and install
-a complete GNOME environment <span class="emphasis"><em>under many different
-platforms</em></span>.  We can say with confidence that pkgsrc is one of
-the most advanced build and packaging systems for GNOME due to its
-included technologies buildlink3, the wrappers and tools framework and
-automatic configuration file management.  Lots of efforts are put into
-achieving a completely clean deinstallation of installed software
-components.</p>
-<p>Given that pkgsrc is <a class="ulink" href="http://www.NetBSD.org/" target="_top">NetBSD</a>'s official packaging system,
-the above also means that great efforts are put into making GNOME work
-under this operating system.  Recently, <a class="ulink" href="http://www.dragonflybsd.org/" target="_top">DragonFly BSD</a> also adopted
-pkgsrc as its preferred packaging system, contributing lots of
-portability fixes to make GNOME build and install under it.</p>
-<p>This chapter is aimed at pkgsrc developers and other people
-interested in helping our GNOME porting and packaging efforts.  It
-provides instructions on how to manage the existing packages and some
-important information regarding their internals.</p>
-<div class="note" title="We need your help!" style="margin-left: 0.5in; margin-right: 0.5in;">
-<h3 class="title">We need your help!</h3>
-<p>Should you have some spare cycles to devote to NetBSD, pkgsrc
-  and GNOME and are willing to learn new exciting stuff, please jump
-  straight to the <a class="ulink" href="http://www.NetBSD.org/contrib/projects.html#gnome" target="_top">pending
-  work</a> list!  There is still a long way to go to get a
-  fully-functional GNOME desktop under NetBSD and we need your help to
-  achieve it!</p>
+<p><a class="ulink" href="http://www.gnome.org/" target="_top">GNOME の web
+サイト</a>によれば、</p>
+<div class="blockquote"><blockquote class="blockquote"><p>GNOME プロジェクトでは二つのものを提供します: 一つは、
+  利用者にとって直観的で魅力的なデスクトップである GNOME デスクトップ環境です。
+  もう一つは、アプリケーション構築用の広範な枠組である GNOME
+  開発プラットフォームで、その他のデスクトップに統合されています。</p></blockquote></div>
+<p>pkgsrc を使うと、<span class="emphasis"><em>多くのプラットフォームのもとで</em></span>、
+完全な GNOME 環境の自動的な構築やインストールを透過的におこなうことができます。
+pkgsrc は、buildlink3 技術、ラッパーとツールの枠組や、
+設定ファイルの自動処理があることから、
+GNOME の構築およびパッケージングシステムとして最も高度なもののひとつであると、
+自信を持っていうことができます。
+インストールされたソフトウェアの構成要素を、
+完全にきれいにアンインストールできるようにするため、
+多くの取り組みがおこなわれています。</p>
+<p>pkgsrc は <a class="ulink" href="http://www.NetBSD.org/" target="_top">NetBSD</a> の公式パッケージングシステムなので、
+上述したことはすなわち、NetBSD のもとで GNOME が機能するようにするために、
+多大な取り込みがおこなわれているということです。最近では、<a class="ulink" href="http://www.dragonflybsd.org/" target="_top">DragonFly BSD</a> も
+pkgsrc をパッケージングシステムとして採用しており、
+同 OS のもとで GNOME の構築やインストールができるようにするため、
+移植性に関する修正を数多く寄せてくれています。</p>
+<div class="note" title="あなたの力が必要です" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">あなたの力が必要です</h3>
+<p>あなたの空き時間を NetBSD のために使っていただけたら、 pkgsrc
+  および GNOME は、おもしろげな新機能の導入に注力することができます。まずは<a class="ulink" href="http://www.NetBSD.org/contrib/projects.html#gnome" target="_top">保留中の作業
+  </a>の一覧をご覧ください。NetBSD のもとで
+  GNOME デスクトップを完全に機能させるまでには、まだ長い道が残っているため、
+  あなたの助けが必要なのです。</p>
 </div>
-<div class="sect1" title="23.1.�Meta packages">
+<div class="sect1" title="23.1. メタパッケージ">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="meta-packages"></a>23.1.�Meta packages</h2></div></div></div>
-<p>pkgsrc includes three GNOME-related meta packages:</p>
+<a name="meta-packages"></a>23.1. メタパッケージ</h2></div></div></div>
+<p>pkgsrc には、GNOME 関連のメタパッケージが三つあります。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
-<li class="listitem"><p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-base/README.html" target="_top"><code class="filename">meta-pkgs/gnome-base</code></a>: Provides
-    the core GNOME desktop environment.  It only includes the necessary
-    bits to get it to boot correctly, although it may lack important
-    functionality for daily operation.  The idea behind this package is
-    to let end users build their own configurations on top of this one,
-    first installing this meta package to achieve a functional setup and
-    then adding individual applications.</p></li>
-<li class="listitem"><p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome/README.html" target="_top"><code class="filename">meta-pkgs/gnome</code></a>: Provides a
-    complete installation of the GNOME platform and desktop as defined
-    by the GNOME project; this is based on the components distributed in
-    the <code class="filename">platform/x.y/x.y.z/sources</code> and
-    <code class="filename">desktop/x.y/x.y.z/sources</code> directories of the
-    official FTP server.  Developer-only tools found in those
-    directories are not installed unless required by some other
-    component to work properly.  Similarly, packages from the bindings
-    set (<code class="filename">bindings/x.y/x.y.z/sources</code>) are not pulled
-    in unless required as a dependency for an end-user component.  This
-    package "extends" <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-base/README.html" target="_top"><code class="filename">meta-pkgs/gnome-base</code></a>.</p></li>
+<li class="listitem"><p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-base/README.html" target="_top"><code class="filename">meta-pkgs/gnome-base</code></a>: GNOME
+    デスクトップ環境の中核部分を提供します。
+    これは GNOME を正常に起動させるために必要なものだけからなっており、
+    日々の操作をするうえで重要な機能が足りないかもしれません。
+    このパッケージの考え方は、
+    末端利用者がこのパッケージの上層で独自の構成をできるようにするためのものであり、
+    このメタパッケージをまずインストールして最低限の機能を整えてから、
+    個々のアプリケーションを追加するというものです。</p></li>
+<li class="listitem"><p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome/README.html" target="_top"><code class="filename">meta-pkgs/gnome</code></a>: GNOME
+    プロジェクトが定義する GNOME プラットフォームおよびデスクトップの、
+    完全なインストールを提供します。これは、GNOME の公式 FTP サーバーの
+    <code class="filename">platform/x.y/x.y.z/sources</code> および
+    <code class="filename">desktop/x.y/x.y.z/sources</code>
+    ディレクトリーで配布されている構成要素にもとづいています。
+    このディレクトリーにある開発者専用ツールは、他の構成要素の正常動作のために必要な場合以外は、
+    インストールされません。同様に、バインディングセット附属のパッケージ
+    (<code class="filename">bindings/x.y/x.y.z/sources</code>)
+    も、末端利用者向けの構成要素からの依存により必要な場合以外は、
+    含まれません。このパッケージは、<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-base/README.html" target="_top"><code class="filename">meta-pkgs/gnome-base</code></a> を「拡張」するものです。</p></li>
 <li class="listitem"><p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-devel/README.html" target="_top"><code class="filename">meta-pkgs/gnome-devel</code></a>:
-    Installs all the tools required to build a GNOME component when
-    fetched from the CVS repository.  These are required to let the
-    <span class="command"><strong>autogen.sh</strong></span> scripts work appropriately.</p></li>
+    GNOME の構成要素を CVS リポジトリーから取得した場合用に、
+    その構築のために必要なツールをすべてインストールします。
+    これらは
+    <span class="command"><strong>autogen.sh</strong></span> スクリプトを正常に動かすために必要なものです。</p></li>
 </ul></div>
-<p>In all these packages, the <code class="varname">DEPENDS</code> lines are
-sorted in a way that eases updates: a package may depend on other
-packages listed before it but not on any listed after it.  It is very
-important to keep this order to ease updates so... <span class="emphasis"><em>do not
-change it to alphabetical sorting!</em></span></p>
+<p>以上の各パッケージでは、更新を簡単にできるようにするため、
+<code class="varname">DEPENDS</code> 行が依存性にもとづく順序で並べられています。
+あるパッケージが、それより前に並んでいるパッケージに依存することはできますが、
+後に並んでいるパッケージに依存することはできません。この順序を守ることは、
+更新を簡単にするために非常に重要なことです。<span class="emphasis"><em>これを、
+アルファベット順に並びかえてはいけません。</em></span></p>
 </div>
-<div class="sect1" title="23.2.�Packaging a GNOME application">
+<div class="sect1" title="23.2. GNOME アプリケーションをパッケージングする">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="new-package"></a>23.2.�Packaging a GNOME application</h2></div></div></div>
-<p>Almost all GNOME applications are written in C and use a common
-set of tools as their build system.  Things get different with the new
-bindings to other languages (such as Python), but the following will
-give you a general idea on the minimum required tools:</p>
+<a name="new-package"></a>23.2. GNOME アプリケーションをパッケージングする</h2></div></div></div>
+<p>ほとんどすべての GNOME アプリケーションは C で書かれており、
+構築システムとして共通のツール一式を使っています。C 以外の言語 (Python など)
+を新たに追加する場合は事情が異なりますが、
+最低限必要なツールについては、以下のことが参考になるでしょう。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
 <li class="listitem">
-<p>Almost all GNOME applications use the GNU Autotools as their
-    build system.  As a general rule you will need to tell this to your
-    package:</p>
+<p>ほとんどすべての GNOME アプリケーションは、構築システムとして
+    GNU Autotool を使っています。GNOME に限らない一般的な決めごととして、
+    このことをパッケージに教えてやる必要があります。</p>
 <pre class="programlisting">
 GNU_CONFIGURE=yes
 USE_LIBTOOL=yes
@@ -121,129 +121,142 @@ USE_TOOLS+=gmake
 </pre>
 </li>
 <li class="listitem">
-<p>If the package uses pkg-config to detect dependencies, add this
-    tool to the list of required utilities:</p>
+<p>パッケージが pkg-config を使って依存性を決めている場合は、
+    必要なユーティリティーのリストに同ツールを追加します。</p>
 <pre class="programlisting">USE_TOOLS+=pkg-config</pre>
-<p>Also use <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/verifypc/README.html" target="_top"><code class="filename">pkgtools/verifypc</code></a> at
-    the end of the build process to ensure that you did not miss to
-    specify any dependency in your package and that the version
-    requirements are all correct.</p>
+<p>さらに、構築の過程の最後で
+    <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/verifypc/README.html" target="_top"><code class="filename">pkgtools/verifypc</code></a> を使って、
+    作ったパッケージのなかで指定した依存性に間違いがなく、
+    要求バージョンもすべて正しいことを確認します。</p>
 </li>
-<li class="listitem"><p>If the package uses intltool, be sure to add
-    <code class="literal">intltool</code> to the <code class="varname">USE_TOOLS</code>
-    to handle dependencies and to force the package to use the latest
-    available version.</p></li>
+<li class="listitem"><p>パッケージが intltool を使う場合は、依存性を処理するため、また、
+    利用可能な最新バージョンを使うようにするため、かならず
+    <code class="literal">intltool</code> を <code class="varname">USE_TOOLS</code>
+    に追加します。</p></li>
 <li class="listitem">
-<p>If the package uses gtk-doc (a documentation generation
-    utility), do <span class="emphasis"><em>not</em></span> add a dependency on it.  The
-    tool is rather big and the distfile should come with pregenerated
-    documentation anyway; if it does not, it is a bug that you ought to
-    report.  For such packages you should disable gtk-doc (unless it is
-    the default):</p>
+<p>パッケージが gtk-doc (ドキュメンテーション生成ユーティリティー)
+    を使う場合は、依存性を追加しては<span class="emphasis"><em>いけません</em></span>。
+    このツールは巨大なものですし、
+    パッケージの distfile には生成済みのドキュメンテーションが附属しているはずだからです
+    (そうなっていない場合はバグですので、報告してください)。
+    このようなパッケージでは、以下のようにして gtk-doc を無効化するようにします
+    (標準で無効になっている場合を除く)。</p>
 <pre class="programlisting">CONFIGURE_ARGS+=--disable-gtk-doc</pre>
-<p>The default location of installed HTML files
-    (<code class="filename">share/gtk-doc/&lt;package-name&gt;</code>) is correct
-    and should not be changed unless the package insists on installing
-    them somewhere else.  Otherwise programs as
-    <span class="command"><strong>devhelp</strong></span> will not be able to open them.  You can
-    do that with an entry similar to:</p>
+<p>HTML ファイルの標準でのインストール場所
+    (<code class="filename">share/gtk-doc/&lt;package-name&gt;</code>) は適切なものなので、
+    パッケージが別の場所へのインストールを要求した場合以外は変更しないようにします。
+    場所を変更すると、<span class="command"><strong>devhelp</strong></span>
+    などのプログラムがファイルを開けなくなってしまいます。
+    場所の変更は、以下のようにしておこなうことができます。</p>
 <pre class="programlisting">CONFIGURE_ARGS+=--with-html-dir=${PREFIX}/share/gtk-doc/...</pre>
 </li>
 </ul></div>
-<p>GNOME uses multiple <span class="emphasis"><em>shared</em></span> directories and
-files under the installation prefix to maintain databases.  In this
-context, shared means that those exact same directories and files are
-used among several different packages, leading to conflicts in the
-<code class="filename">PLIST</code>.  pkgsrc currently includes functionality to
-handle the most common cases, so you have to forget about using
-<code class="literal">@unexec ${RMDIR}</code> lines in your file lists and
-omitting shared files from them.  If you find yourself doing those,
-<span class="emphasis"><em>your package is most likely incorrect</em></span>.</p>
-<p>The following table lists the common situations that result in
-using shared directories or files.  For each of them, the appropriate
-solution is given.  After applying the solution be sure to
-<span class="emphasis"><em>regenerate the package's file list</em></span> with
-<span class="command"><strong>make print-PLIST</strong></span> and ensure it is correct.</p>
+<p>GNOME は、インストール用プレフィックスの下に複数の
+<span class="emphasis"><em>共有</em></span>ディレクトリーおよびファイルをもっており、
+データベースの保守のために使っています。ここでいう共有とは、
+同じディレクトリーやファイルを複数の異なるパッケージが使うことであり、
+<code class="filename">PLIST</code> の内容の衝突を起こします。
+現在、pkgsrc にはもっともありがちな部類の事例を扱うための仕組みがあるので、
+ファイルのリストには必ず
+<code class="literal">@unexec ${RMDIR}</code> という行を書くようにし、
+共有のファイルは書かないようにしてください。
+この仕組みを使わずに独自の処理をしてしまうと、
+<span class="emphasis"><em>作成したパッケージが、正しくないものになってしまうでしょう</em></span>。</p>
+<p>以下の表は、共有ディレクトリーまたはファイルを使うような、
+ありがちな状況を挙げたものです。各状況について、適切な処置を示しています。
+ここで示した処置を適用した後は、
+<span class="command"><strong>make print-PLIST</strong></span> を使って
+<span class="emphasis"><em>パッケージのファイルのリストを作り直し</em></span>、
+それが正しいことを確認してください。</p>
 <div class="table">
-<a name="plist-handling"></a><p class="title"><b>Table�23.1.�PLIST handling for GNOME packages</b></p>
-<div class="table-contents"><table summary="PLIST handling for GNOME packages" border="1">
+<a name="plist-handling"></a><p class="title"><b>Table 23.1. GNOME パッケージ用の PLIST の扱い</b></p>
+<div class="table-contents"><table summary="GNOME パッケージ用の PLIST の扱い" border="1">
 <colgroup>
 <col>
 <col>
 </colgroup>
 <thead><tr>
-<th>If the package...</th>
-<th>Then...</th>
+<th>パッケージの挙動</th>
+<th>処置</th>
 </tr></thead>
 <tbody>
 <tr>
-<td>Installs OMF files under <code class="filename">share/omf</code>.</td>
-<td>See <a class="xref" href="fixes.html#scrollkeeper-data-files" title="19.6.10.�Packages installing scrollkeeper/rarian data files">Section�19.6.10, &#8220;Packages installing scrollkeeper/rarian data files&#8221;</a>.</td>
+<td>
+<code class="filename">share/omf</code> 以下に OMF ファイルをインストールする。</td>
+<td>
+<a class="xref" href="fixes.html#scrollkeeper-data-files" title="19.6.10. scrollkeeper/rarian のデータファイルをインストールするパッケージ">Section 19.6.10, “scrollkeeper/rarian のデータファイルをインストールするパッケージ”</a>参照。</td>
 </tr>
 <tr>
-<td>Installs icons under the
-        <code class="filename">share/icons/hicolor</code> hierarchy or updates
-        <code class="filename">share/icons/hicolor/icon-theme.cache</code>.</td>
-<td>See <a class="xref" href="fixes.html#hicolor-theme" title="19.6.19.�Packages installing hicolor theme icons">Section�19.6.19, &#8220;Packages installing hicolor theme icons&#8221;</a>.</td>
+<td>
+<code class="filename">share/icons/hicolor</code>
+        階層以下にアイコンをインストールする、または
+        <code class="filename">share/icons/hicolor/icon-theme.cache</code> を更新する。</td>
+<td>
+<a class="xref" href="fixes.html#hicolor-theme" title="19.6.19. ハイカラーテーマのアイコンをインストールするパッケージ">Section 19.6.19, “ハイカラーテーマのアイコンをインストールするパッケージ”</a>参照。</td>
 </tr>
 <tr>
-<td>Installs files under
-        <code class="filename">share/mime/packages</code>.</td>
-<td>See <a class="xref" href="fixes.html#mime-database" title="19.6.14.�Packages installing extensions to the MIME database">Section�19.6.14, &#8220;Packages installing extensions to the MIME database&#8221;</a>.</td>
+<td>
+<code class="filename">share/mime/packages</code>
+        以下にファイルをインストールする。</td>
+<td>
+<a class="xref" href="fixes.html#mime-database" title="19.6.14. MIME データベースの拡張をインストールするパッケージ">Section 19.6.14, “MIME データベースの拡張をインストールするパッケージ”</a>参照。</td>
 </tr>
 <tr>
-<td>Installs <code class="filename">.desktop</code> files under
-        <code class="filename">share/applications</code> and these include MIME
-        information.</td>
-<td>See <a class="xref" href="fixes.html#desktop-files" title="19.6.20.�Packages installing desktop files">Section�19.6.20, &#8220;Packages installing desktop files&#8221;</a>.</td>
+<td>
+<code class="filename">share/applications</code> 以下に
+        <code class="filename">.desktop</code> ファイルをインストールし、かつそのファイルに MIME
+        情報が含まれる。</td>
+<td>
+<a class="xref" href="fixes.html#desktop-files" title="19.6.20. デスクトップファイルをインストールするパッケージ">Section 19.6.20, “デスクトップファイルをインストールするパッケージ”</a>参照。</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <br class="table-break">
 </div>
-<div class="sect1" title="23.3.�Updating GNOME to a newer version">
+<div class="sect1" title="23.3. GNOME を新バージョンに更新する">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="full-update"></a>23.3.�Updating GNOME to a newer version</h2></div></div></div>
-<p>When seeing GNOME as a whole, there are two kinds of
-updates:</p>
+<a name="full-update"></a>23.3. GNOME を新バージョンに更新する</h2></div></div></div>
+<p>GNOME を全体として見た場合、
+二種類の更新があります。</p>
 <div class="variablelist"><dl>
-<dt><span class="term">Major update</span></dt>
+<dt><span class="term">メジャーアップデート</span></dt>
 <dd>
-<p>Given that there is still a very long way for GNOME 3 (if it
-      ever appears), we consider a major update one that goes from a
-      <code class="literal">2.X</code> version to a <code class="literal">2.Y</code> one,
-      where <code class="literal">Y</code> is even and greater than
-      <code class="literal">X</code>.  These are hard to achieve because they
-      introduce lots of changes in the components' code and almost all
-      GNOME distfiles are updated to newer versions.  Some of them can
-      even break API and ABI compatibility with the previous major
-      version series.  As a result, the update needs to be done all at
-      once to minimize breakage.</p>
-<p>A major update typically consists of around 80 package
-      updates and the addition of some new ones.</p>
+<p>GNOME 3 (がいつか登場したとして) への道程は、まだ相当長いものなので、
+      ここでは、バージョンが <code class="literal">2.X</code> から <code class="literal">2.Y</code>
+      (<code class="literal">Y</code> は <code class="literal">X</code> より大きい偶数)
+      に上がることをメジャーアップデートということにします。
+      メジャーアップデートでは構成要素のコードに多くの変更がおこなわれており、
+      GNOME のほとんどすべての distfile が新しいバージョンに更新されているため、
+      更新は面倒な作業になります。変更のなかには、
+      以前のバージョン系列との API や ABI の互換性を損なうものがあることもあります。
+      このような事情があるので、破損を最小限にするために、
+      更新は一度にまとめておこなう必要があります。</p>
+<p>通常、メジャーアップデートでは、
+      約 80 個のパッケージが更新されるほか、新しいパッケージがいくつか追加されます。</p>
 </dd>
-<dt><span class="term">Minor update</span></dt>
+<dt><span class="term">マイナーアップデート</span></dt>
 <dd>
-<p>We consider a minor update one that goes from a
-      <code class="literal">2.A.X</code> version to a <code class="literal">2.A.Y</code>
-      one where <code class="literal">Y</code> is greater than
-      <code class="literal">X</code>.  These are easy to achieve because they do
-      not update all GNOME components, can be done in an incremental way
-      and do not break API nor ABI compatibility.</p>
-<p>A minor update typically consists of around 50 package
-      updates, although the numbers here may vary a lot.</p>
+<p>ここでは、バージョンが <code class="literal">2.A.X</code> から <code class="literal">2.A.Y</code>
+      (<code class="literal">Y</code> は <code class="literal">X</code> より大きい数)
+      に上がることをマイナーアップデートということにします。
+      GNOME の構成要素すべてが更新されるわけではないことや、
+      枝内でのバージョン増大に沿った形でおこなうことができ、
+      API や ABI の互換性が失われないことなどから、
+      更新は簡単におこなうことができます。</p>
+<p>マイナーアップデートで更新されるパッケージ数は、
+      大きく変動することがありますが、通常は約 50 個です。</p>
 </dd>
 </dl></div>
-<p>In order to update the GNOME components in pkgsrc to a new stable
-release (either major or minor), the following steps should be
-followed:</p>
+<p>pkgsrc の GNOME 構成要素を新しい安定版リリース
+(メジャーまたはマイナー) に更新するためには、
+以下の手順に沿っておこなうようにします。</p>
 <div class="orderedlist"><ol class="orderedlist" type="1">
 <li class="listitem">
-<p>Get a list of all the tarballs that form the new release by
-    using the following commands.  These will leave the full list of the
-    components' distfiles into the <code class="filename">list.txt</code>
-    file:</p>
+<p>以下のコマンドを使って、新しいリリースを構成する tarball
+    の一覧を作ります。
+    こうすると、構成要素の distfile の全一覧が
+    <code class="filename">list.txt</code> ファイルに得られます。</p>
 <pre class="screen"><code class="prompt">%</code> <strong class="userinput"><code>echo ls "*.tar.bz2" | \
     ftp -V ftp://ftp.gnome.org/pub/gnome/platform/x.y/x.y.z/sources/ | \
     awk '{ print $9 }' &gt;list.txt</code></strong>
@@ -251,71 +264,74 @@ followed:</p>
     ftp -V ftp://ftp.gnome.org/pub/gnome/desktop/x.y/x.y.z/sources/ | \
     awk '{ print $9 }' &gt;&gt;list.txt</code></strong></pre>
 </li>
-<li class="listitem"><p>Open each meta package's <code class="filename">Makefile</code> and
-    bump their version to the release you are updating them to.  The
-    three meta packages should be always consistent with versioning.
-    Obviously remove any <code class="varname">PKGREVISION</code>s that might be
-    in them.</p></li>
+<li class="listitem"><p>各メタパッケージの <code class="filename">Makefile</code> を開き、
+    バージョンを更新後のリリースのものに上げます。
+    3 個のメタパッケージは常にバージョンに整合性をもたせるようにします。
+    <code class="varname">PKGREVISION</code> がある場合は、
+    当然、削除します。</p></li>
 <li class="listitem">
-<p>For each meta package, update all its
-    <code class="varname">DEPENDS</code> lines to match the latest versions as
-    shown by the above commands.  Do <span class="emphasis"><em>not</em></span> list any
-    newer version (even if found in the FTP) because the meta packages
-    are supposed to list the exact versions that form a specific GNOME
-    release.  Exceptions are permitted here if a newer version solves a
-    serious issue in the overall desktop experience; these typically
-    come in the form of a revision bump in pkgsrc, not in newer versions
-    from the developers.</p>
-<p>Packages not listed in the <code class="filename">list.txt</code> file
-    should be updated to the latest version available (if found in
-    pkgsrc).  This is the case, for example, of the dependencies on the
-    GNU Autotools in the <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-devel/README.html" target="_top"><code class="filename">meta-pkgs/gnome-devel</code></a> meta package.</p>
+<p>各メタパッケージについて、
+    <code class="varname">DEPENDS</code> 行を更新して、
+    前掲のコマンドで得られた最新バージョンと合致するようにします。
+    これより新しいバージョンにしては (たとえそれが FTP サーバーにあったとしても)
+    <span class="emphasis"><em>いけません</em></span>。このメタパッケージは、
+    特定の GNOME リリースを構成するバージョンだけを揃えることを意図したものだからです。
+    ただし、統合デスクトップを使用する上での深刻な問題が新しいバージョンで解決する場合には、
+    例外的に認められます。これは、たいていの場合、
+    GNOME による新しいバージョンは使わずに、
+    pkgsrc 内でのリビジョンを上げる形をとります。</p>
+<p><code class="filename">list.txt</code> ファイルに現れないパッケージは、
+    利用可能な最新バージョンに (pkgsrc にそれがあれば) アップデートするようにします。
+    たとえば、<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-devel/README.html" target="_top"><code class="filename">meta-pkgs/gnome-devel</code></a> メタパッケージに含まれるパッケージのうち
+    GNU Autotools に依存するパッケージがこれに該当します。</p>
 </li>
 <li class="listitem">
-<p>Generate a patch from the modified meta packages and extract the
-    list of "new" lines.  This will provide you an outline on what
-    packages need to be updated in pkgsrc and in what order:</p>
+<p>変更後のメタパッケージからパッチを作り、そこから「新規の」行を抽出します。
+    この結果から、pkgsrc のどのパッケージをどの順序でアップデートする必要があるか、
+    概要がわかります。</p>
 <pre class="screen"><code class="prompt">%</code> <strong class="userinput"><code>cvs diff -u gnome-devel gnome-base gnome | grep '^+D' &gt;todo.txt</code></strong></pre>
 </li>
-<li class="listitem"><p>For major desktop updates it is recommended to zap all your
-    installed packages and start over from scratch at this point.</p></li>
-<li class="listitem"><p>Now comes the longest step by far: iterate over the contents
-    of <code class="filename">todo.txt</code> and update the packages listed in
-    it in order.  For major desktop updates none of these should be
-    committed until the entire set is completed because there are chances
-    of breaking not-yet-updated packages.</p></li>
-<li class="listitem"><p>Once the packages are up to date and working, commit them to
-    the tree one by one with appropriate log messages.  At the end,
-    commit the three meta package updates and all the corresponding
-    changes to the <code class="filename">doc/CHANGES-&lt;YEAR&gt;</code> and
-    <a href="http://cvsweb.NetBSD.org/bsdweb.cgi/pkgsrc/doc/TODO?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">pkgsrc/doc/TODO</code></a> files.</p></li>
+<li class="listitem"><p>デスクトップのメジャーアップデートの場合は、
+    インストールされているパッケージをすべて削除し、まっさらな状態から始めることをおすすめします。</p></li>
+<li class="listitem"><p>ここが、もっとも長い作業が必要なところです。
+    <code class="filename">todo.txt</code> に書き出された各パッケージを、
+    並んでいる順序どおりに更新するという作業を繰り返します。
+    デスクトップのメジャーアップデートの場合は、
+    全パッケージの更新が完了するまで commit してはいけません。
+    未更新のパッケージを壊す可能性があるからです。</p></li>
+<li class="listitem"><p>パッケージが新しいものになり動作する状態になったら、
+    個々のパッケージを一つずつ、適切な log メッセージをつけて commit してゆきます。
+    最後に、3 個のメタパッケージの更新と、これらに対応する
+    <code class="filename">doc/CHANGES-&lt;YEAR&gt;</code> および
+    <a href="http://cvsweb.NetBSD.org/bsdweb.cgi/pkgsrc/doc/TODO?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">pkgsrc/doc/TODO</code></a> ファイルの変更を
+    commit します。</p></li>
 </ol></div>
 </div>
-<div class="sect1" title="23.4.�Patching guidelines">
+<div class="sect1" title="23.4. 修正の指針">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="patching"></a>23.4.�Patching guidelines</h2></div></div></div>
-<p>GNOME is a very big component in pkgsrc which approaches 100
-packages.  Please, it is very important that you always, always,
-<span class="strong"><strong>always</strong></span> feed back any portability
-fixes you do to a GNOME package to the mainstream developers (see <a class="xref" href="components.html#components.patches.feedback" title="11.3.5.�Feedback to the author">Section�11.3.5, &#8220;Feedback to the author&#8221;</a>).  This is the only way to get
-their attention on portability issues and to ensure that future versions
-can be built out-of-the box on NetBSD.  The less custom patches in
-pkgsrc, the easier further updates are.  Those developers in charge of
-issuing major GNOME updates will be grateful if you do that.</p>
-<p>The most common places to report bugs are the <a class="ulink" href="http://bugzilla.gnome.org/" target="_top">GNOME's Bugzilla</a> and the <a class="ulink" href="http://bugzilla.freedesktop.org/" target="_top">freedesktop.org's
-Bugzilla</a>.  Not all components use these to track bugs, but most
-of them do.  Do not be short on your reports: always provide detailed
-explanations of the current failure, how it can be improved to achieve
-maximum portability and, if at all possible, provide a patch against CVS
-head.  The more verbose you are, the higher chances of your patch being
-accepted.</p>
-<p>Also, please avoid using preprocessor magic to fix portability
-issues.  While the FreeBSD GNOME people are doing a great job in porting
-GNOME to their operating system, the official GNOME sources are now
-plagued by conditionals that check for <code class="varname">__FreeBSD__</code>
-and similar macros.  This hurts portability.  Please see our patching
-guidelines (<a class="xref" href="components.html#components.patches.guidelines" title="11.3.4.�Patching guidelines">Section�11.3.4, &#8220;Patching guidelines&#8221;</a>) for more
-details.</p>
+<a name="patching"></a>23.4. 修正の指針</h2></div></div></div>
+<p>GNOME は 100 のパッケージを擁する、pkgsrc の大きな構成要素です。
+GNOME パッケージに移植性に関する修正を施した場合は、常に、常に、
+<span class="strong"><strong>常に</strong></span>、
+GNOME 本家の開発者に還元していただくということが重要です (<a class="xref" href="components.html#components.patches.feedback" title="11.3.5. 作者へのフィードバック">Section 11.3.5, “作者へのフィードバック”</a>参照)。
+彼らに移植性についての注意を喚起して、将来のバージョンが無修正で
+NetBSD で構築できるようにするためには、そうするしかないのです。
+pkgsrc 独自のパッチを少なくすればするほど、将来の更新は楽になります。
+GNOME のメジャーアップデート対応に取り組む開発者としては、
+皆さんにそのようにしていただけるとありがたく思います。</p>
+<p>最もありふれたバグの報告先は、<a class="ulink" href="http://bugzilla.gnome.org/" target="_top">GNOME の Bugzilla</a> と <a class="ulink" href="http://bugzilla.freedesktop.org/" target="_top">freedesktop.org の
+Bugzilla</a> です。GNOME の構成要素すべてがこれらをバグ追跡用に使っているわけではありませんが、
+ほとんどはこれらを使っています。バグ報告に際しては、常に、
+現在起きている問題や、移植性を最大限にするためにはどのように改良したらよいかについて、
+詳細に説明するようにし、また、可能であれば CVS の head に対するパッチをつけてください。
+詳しく書けば書くほど、パッチが採用される可能性が高くなります。</p>
+<p>また、プリプロセッサーを使った細工で移植性の問題を修正するようなことはしないでください。
+FreeBSD で GNOME に取り組む人たちは、彼らのオペレーティングシステムへの GNOME の移植にあたり大きな仕事をしていますが、
+このせいで、公式の GNOME のソースに <code class="varname">__FreeBSD__</code>
+や、これと同類のマクロの検査が蔓延してしまっています。これは移植性を損なうものです。
+詳細は、私たちのパッチ作成の指針
+(<a class="xref" href="components.html#components.patches.guidelines" title="11.3.4. パッチ作成の指針">Section 11.3.4, “パッチ作成の指針”</a>)
+をご覧ください。</p>
 </div>
 </div>
 <div class="navfooter">
@@ -323,15 +339,15 @@ details.</p>
 <table width="100%" summary="Navigation footer">
 <tr>
 <td width="40%" align="left">
-<a accesskey="p" href="devfaq.html">Prev</a>�</td>
+<a accesskey="p" href="devfaq.html">Prev</a> </td>
 <td width="20%" align="center"><a accesskey="u" href="developers-guide.html">Up</a></td>
-<td width="40%" align="right">�<a accesskey="n" href="infrastructure.html">Next</a>
+<td width="40%" align="right"> <a accesskey="n" href="infrastructure.html">Next</a>
 </td>
 </tr>
 <tr>
-<td width="40%" align="left" valign="top">Chapter�22.�Frequently Asked Questions�</td>
+<td width="40%" align="left" valign="top">Chapter 22. よくある質問 </td>
 <td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
-<td width="40%" align="right" valign="top">�Part�III.�The pkgsrc infrastructure internals</td>
+<td width="40%" align="right" valign="top"> Part III. pkgsrc 基盤の内部</td>
 </tr>
 </table>
 </div>

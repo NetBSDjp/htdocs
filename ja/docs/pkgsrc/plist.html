@@ -1,173 +1,172 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Chapter�13.�PLIST issues</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chapter 13. PLIST 問題</title>
 <link rel="stylesheet" type="text/css" href="/global.css">
 <meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
 <link rel="home" href="index.html" title="The pkgsrc guide">
-<link rel="up" href="developers-guide.html" title="Part�II.�The pkgsrc developer's guide">
-<link rel="prev" href="makefile.html" title="Chapter�12.�Programming in Makefiles">
-<link rel="next" href="buildlink.html" title="Chapter�14.�Buildlink methodology">
+<link rel="up" href="developers-guide.html" title="Part II. pkgsrc 開発者向けの手引き">
+<link rel="prev" href="makefile.html" title="Chapter 12. Makefile におけるプログラミング">
+<link rel="next" href="buildlink.html" title="Chapter 14. buildlink 方法論">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="navheader">
 <table width="100%" summary="Navigation header">
-<tr><th colspan="3" align="center">Chapter�13.�PLIST issues</th></tr>
+<tr><th colspan="3" align="center">Chapter 13. PLIST 問題</th></tr>
 <tr>
 <td width="20%" align="left">
-<a accesskey="p" href="makefile.html">Prev</a>�</td>
-<th width="60%" align="center">Part�II.�The pkgsrc developer's guide</th>
-<td width="20%" align="right">�<a accesskey="n" href="buildlink.html">Next</a>
+<a accesskey="p" href="makefile.html">Prev</a> </td>
+<th width="60%" align="center">Part II. pkgsrc 開発者向けの手引き</th>
+<td width="20%" align="right"> <a accesskey="n" href="buildlink.html">Next</a>
 </td>
 </tr>
 </table>
 <hr>
 </div>
-<div class="chapter" title="Chapter�13.�PLIST issues">
+<div class="chapter" title="Chapter 13. PLIST 問題">
 <div class="titlepage"><div><div><h2 class="title">
-<a name="plist"></a>Chapter�13.�PLIST issues</h2></div></div></div>
+<a name="plist"></a>Chapter 13. PLIST 問題</h2></div></div></div>
 <div class="toc">
 <p><b>Table of Contents</b></p>
 <dl>
 <dt><span class="sect1"><a href="plist.html#rcs-id">13.1. RCS ID</a></span></dt>
-<dt><span class="sect1"><a href="plist.html#automatic-plist-generation">13.2. Semi-automatic <code class="filename">PLIST</code> generation</a></span></dt>
-<dt><span class="sect1"><a href="plist.html#print-PLIST">13.3. Tweaking output of <span class="command"><strong>make print-PLIST</strong></span></a></span></dt>
-<dt><span class="sect1"><a href="plist.html#plist.misc">13.4. Variable substitution in PLIST</a></span></dt>
-<dt><span class="sect1"><a href="plist.html#manpage-compression">13.5. Man page compression</a></span></dt>
-<dt><span class="sect1"><a href="plist.html#using-PLIST_SRC">13.6. Changing PLIST source with <code class="varname">PLIST_SRC</code></a></span></dt>
-<dt><span class="sect1"><a href="plist.html#platform-specific-plist">13.7. Platform-specific and differing PLISTs</a></span></dt>
-<dt><span class="sect1"><a href="plist.html#faq.common-dirs">13.8. Sharing directories between packages</a></span></dt>
+<dt><span class="sect1"><a href="plist.html#automatic-plist-generation">13.2. <code class="filename">PLIST</code> の半自動生成</a></span></dt>
+<dt><span class="sect1"><a href="plist.html#print-PLIST">13.3. <span class="command"><strong>make print-PLIST</strong></span> の出力を細工する</a></span></dt>
+<dt><span class="sect1"><a href="plist.html#plist.misc">13.4. PLIST における各種の置換</a></span></dt>
+<dt><span class="sect1"><a href="plist.html#manpage-compression">13.5. マニュアルページの圧縮</a></span></dt>
+<dt><span class="sect1"><a href="plist.html#using-PLIST_SRC">13.6. <code class="varname">PLIST_SRC</code> を使って PLIST のソースを変更する</a></span></dt>
+<dt><span class="sect1"><a href="plist.html#platform-specific-plist">13.7. プラットフォーム別に異なるPLIST</a></span></dt>
+<dt><span class="sect1"><a href="plist.html#faq.common-dirs">13.8. 複数のパッケージでディレクトリーを共有する</a></span></dt>
 </dl>
 </div>
-<p>The <code class="filename">PLIST</code> file contains a package's
-  <span class="quote">&#8220;<span class="quote">packing list</span>&#8221;</span>, i.e. a list of files that belong to
-  the package (relative to the <code class="filename">${PREFIX}</code>
-  directory it's been installed in) plus some additional statements
-  - see the <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?pkg_create+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">pkg_create</span>(1)</span></a> man page for a full list.
-  This chapter addresses some issues that need attention when
-  dealing with the <code class="filename">PLIST</code> file (or files, see
-  below!).</p>
-<div class="sect1" title="13.1.�RCS ID">
+<p><code class="filename">PLIST</code> ファイルは、パッケージの
+  <span class="quote">“<span class="quote">packing list</span>”</span> (梱包明細) です。すなわち、
+  パッケージを構成するファイルの一覧 (インストール先である
+  <code class="filename">${PREFIX}</code> ディレクトリーからの相対位置)
+  と、それに加えて、いくつかの追加情報
+  (完全な一覧は <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?pkg_create+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">pkg_create</span>(1)</span></a> マニュアルページを参照) が載っています。
+  この章では、<code class="filename">PLIST</code>ファイル
+  (複数の場合もあります、以下を参照してください)を扱う場合に注意が必要な、
+  いくつかの特別な問題について述べます。</p>
+<div class="sect1" title="13.1. RCS ID">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="rcs-id"></a>13.1.�RCS ID</h2></div></div></div>
-<p>Be sure to add a RCS ID line as the first thing in any
-    <code class="filename">PLIST</code> file you write:</p>
+<a name="rcs-id"></a>13.1. RCS ID</h2></div></div></div>
+<p>あなたが書いたすべての<code class="filename">PLIST</code>ファイルの先頭行にRCS IDが追加されていること
+    を確認してください。</p>
 <pre class="programlisting">
-@comment $NetBSD: plist.html,v 1.29 2011/10/30 22:05:39 wiz Exp $
+@comment $NetBSD$
     </pre>
 </div>
-<div class="sect1" title="13.2.�Semi-automatic PLIST generation">
+<div class="sect1" title="13.2. PLIST の半自動生成">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="automatic-plist-generation"></a>13.2.�Semi-automatic <code class="filename">PLIST</code> generation</h2></div></div></div>
-<p>You can use the <span class="command"><strong>make print-PLIST</strong></span> command
-    to output a PLIST that matches any new files since the package
-    was extracted.  See <a class="xref" href="build.html#build.helpful-targets" title="17.17.�Other helpful targets">Section�17.17, &#8220;Other helpful targets&#8221;</a> for
-    more information on this target.</p>
+<a name="automatic-plist-generation"></a>13.2. <code class="filename">PLIST</code> の半自動生成</h2></div></div></div>
+<p><span class="command"><strong>make print-PLIST</strong></span>コマンドを使って、パッケージの展開後に新しくできた全ファ
+    イルにマッチするPLISTを出力することができます。このターゲットに関するさ
+    らなる情報は、
+    <a class="xref" href="build.html#build.helpful-targets" title="17.17. 他の役に立つターゲット">Section 17.17, “他の役に立つターゲット”</a>をご覧ください。</p>
 </div>
-<div class="sect1" title="13.3.�Tweaking output of make print-PLIST">
+<div class="sect1" title="13.3. make print-PLIST の出力を細工する">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="print-PLIST"></a>13.3.�Tweaking output of <span class="command"><strong>make print-PLIST</strong></span>
-</h2></div></div></div>
-<p>If you have used any of the *-dirs packages, as explained in
-    <a class="xref" href="plist.html#faq.common-dirs" title="13.8.�Sharing directories between packages">Section�13.8, &#8220;Sharing directories between packages&#8221;</a>, you may have noticed that
-    <span class="command"><strong>make print-PLIST</strong></span> outputs a set of
-    <code class="varname">@comment</code>s instead of real
-    <code class="varname">@dirrm</code> lines.  You can also do this for
-    specific directories and files, so that the results of that
-    command are very close to reality. This helps <span class="emphasis"><em>a
-    lot</em></span> during the update of packages.</p>
-<p>The <code class="varname">PRINT_PLIST_AWK</code> variable takes a set
-    of AWK patterns and actions that are used to filter the output of
-    print-PLIST.  You can <span class="emphasis"><em>append</em></span> any chunk of AWK
-    scripting you like to it, but be careful with quoting.</p>
-<p>For example, to get all files inside the
-    <code class="filename">libdata/foo</code> directory removed from the
-    resulting PLIST:</p>
+<a name="print-PLIST"></a>13.3. <span class="command"><strong>make print-PLIST</strong></span> の出力を細工する</h2></div></div></div>
+<p>*-dirs パッケージを<a class="xref" href="plist.html#faq.common-dirs" title="13.8. 複数のパッケージでディレクトリーを共有する">Section 13.8, “複数のパッケージでディレクトリーを共有する”</a>で説明したように
+    使った場合、<span class="command"><strong>make print-PLIST</strong></span> で、
+    実際の <code class="varname">@dirrm</code> 行のかわりに
+    <code class="varname">@comment</code> が出力されることにお気づきかもしれません。
+    ここでディレクトリーやファイルを指定して、
+    実際に近い結果を出力させることもできます。
+    これはパッケージの更新の際に<span class="emphasis"><em>非常に
+    </em></span>役立ちます。</p>
+<p><code class="varname">PRINT_PLIST_AWK</code> 変数を、
+    print-PLIST の出力をフィルターする
+    AWK のパターンと動作の一式に設定します。
+    AWK スクリプト塊を好きなように
+    <span class="emphasis"><em>追加</em></span>することができますが、
+    適切にクォートするよう注意してください。</p>
+<p>たとえば、PLIST の結果から <code class="filename">libdata/foo</code>
+    ディレクトリー内のファイルをすべて消すには、
+    以下のようにします。</p>
 <pre class="programlisting">
 PRINT_PLIST_AWK+=       /^libdata\/foo/ { next; }
     </pre>
-<p>And to get all the <code class="varname">@dirrm</code> lines referring
-    to a specific (shared) directory converted to
-    <code class="varname">@comment</code>s:</p>
+<p>また、特定の (共有) ディレクトリーを参照している
+    <code class="varname">@dirrm</code> 行を <code class="varname">@comment</code>
+    に変換するには、以下のようにします。</p>
 <pre class="programlisting">
 PRINT_PLIST_AWK+=       /^@dirrm share\/specific/ { print "@comment " $$0; next; }
     </pre>
 </div>
-<div class="sect1" title="13.4.�Variable substitution in PLIST">
+<div class="sect1" title="13.4. PLIST における各種の置換">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="plist.misc"></a>13.4.�Variable substitution in PLIST</h2></div></div></div>
-<p>A number of variables are substituted automatically in
-    PLISTs when a package is installed on a system. This includes the
-    following variables:</p>
+<a name="plist.misc"></a>13.4. PLIST における各種の置換</h2></div></div></div>
+<p>パッケージがシステムにインストールされる際に、
+    PLIST 内のいくつもの変数が自動的に置換されます。
+    置換される変数には、以下のようなものがあります。</p>
 <div class="variablelist"><dl>
 <dt><span class="term"><code class="varname">${MACHINE_ARCH}</code>, <code class="varname">${MACHINE_GNU_ARCH}</code></span></dt>
 <dd>
-<p>Some packages like emacs and perl embed information
-	  about which architecture they were built on into the
-	  pathnames where they install their files. To handle this
-	  case, PLIST will be preprocessed before actually used, and
-	  the symbol
-	  <span class="quote">&#8220;<span class="quote"><code class="varname">${MACHINE_ARCH}</code></span>&#8221;</span> will be
-	  replaced by what <span class="command"><strong>uname -p</strong></span> gives. The
-	  same is done if the string
-	  <code class="varname">${MACHINE_GNU_ARCH}</code> is embedded in
-	  PLIST somewhere - use this on packages that have GNU
-	  autoconf-created configure scripts.</p>
-<div class="note" title="Legacy note" style="margin-left: 0.5in; margin-right: 0.5in;">
-<h3 class="title">Legacy note</h3>
-<p>There used to be a symbol
-	    <span class="quote">&#8220;<span class="quote"><code class="varname">$ARCH</code></span>&#8221;</span> that
-	    was replaced by the output of <span class="command"><strong>uname
-	    -m</strong></span>, but that's no longer supported and has
-	    been removed.</p>
+<p>emacs、およびperlのようないくつかのパッケージは、それらが構築されたアー
+	  キテクチャーに関する情報を、インストールするファイルのパス名に埋め込みま
+	  す。このようなケースに対応するため、実際に使われる前に、PLISTに前処理が
+	  おこなわれます。そして、シンボル
+	  <span class="quote">“<span class="quote"><code class="varname">${MACHINE_ARCH}</code></span>”</span>は、<span class="command"><strong>uname -p</strong></span>の出
+	  力でおきかえられます。
+	  <code class="varname">${MACHINE_GNU_ARCH}</code>がPLISTのどこかにうめこまれてい
+	  る場合も同様の事がおこなわれます。これは、GNU autoconfで作成された
+	  configureスクリプトを持つパッケージで使われます。</p>
+<div class="note" title="昔の話" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">昔の話</h3>
+<p><span class="quote">“<span class="quote"><code class="varname">$ARCH</code></span>”</span>シンボルは<span class="command"><strong>uname
+	    -m</strong></span>の出力によって置きかえられていま
+	    した。しかし、もはやサポートされていませんし、削除されています。</p>
 </div>
 </dd>
 <dt><span class="term"><code class="varname">${OPSYS}</code>, <code class="varname">${LOWER_OPSYS}</code>, <code class="varname">${OS_VERSION}</code></span></dt>
 <dd>
-<p>Some packages want to embed the OS name and version
-	  into some paths.  To do this, use these variables in the
-	  <code class="filename">PLIST</code>:
+<p>いくつかのパッケージでは、OS名とバージョンをいくつかのパス名に埋め込みま
+	  す。このような場合、<code class="filename">PLIST</code>で以下の各変数を使用してください。
 	  </p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
-<li class="listitem"><p><code class="varname">${OPSYS}</code> - output of <span class="quote">&#8220;<span class="quote"><span class="command"><strong>uname -s</strong></span></span>&#8221;</span></p></li>
-<li class="listitem"><p><code class="varname">${LOWER_OPSYS}</code> - lowercase common name (eg. <span class="quote">&#8220;<span class="quote">solaris</span>&#8221;</span>)</p></li>
-<li class="listitem"><p><code class="varname">${OS_VERSION}</code> - <span class="quote">&#8220;<span class="quote"><span class="command"><strong>uname -r</strong></span></span>&#8221;</span></p></li>
+<li class="listitem"><p><code class="varname">${OPSYS}</code> - <span class="quote">“<span class="quote"><span class="command"><strong>uname -s</strong></span></span>”</span>の出力</p></li>
+<li class="listitem"><p><code class="varname">${LOWER_OPSYS}</code> - 共通名の小文字表記(例: <span class="quote">“<span class="quote">solaris</span>”</span>)</p></li>
+<li class="listitem"><p><code class="varname">${OS_VERSION}</code> - <span class="quote">“<span class="quote"><span class="command"><strong>uname -r</strong></span></span>”</span></p></li>
 </ul></div>
 </dd>
 </dl></div>
-<p>For a complete list of values which are replaced by
-    default, please look in <code class="filename">bsd.pkg.mk</code> (and
-    search for <code class="varname">PLIST_SUBST</code>).</p>
-<p>If you want to change other variables not listed above, you
-    can add variables and their expansions to this variable in the
-    following way, similar to <code class="varname">MESSAGE_SUBST</code> (see <a class="xref" href="components.html#components.optional" title="11.5.�Optional files">Section�11.5, &#8220;Optional files&#8221;</a>):</p>
+<p>デフォルトで置換される値の全一覧は、
+    <code class="filename">bsd.pkg.mk</code> を参照してください (あわせて、
+    <code class="varname">PLIST_SUBST</code> を調べてください)。</p>
+<p>上述以外の変数を置換したい場合は、
+    <code class="varname">MESSAGE_SUBST</code> (<a class="xref" href="components.html#components.optional" title="11.5. オプションのファイル">Section 11.5, “オプションのファイル”</a>参照) と同様に、
+    以下のようにして、変数とその展開方法を定義することができます。</p>
 <pre class="programlisting">
 PLIST_SUBST+=   SOMEVAR="somevalue"
     </pre>
-<p>This replaces all occurrences of <span class="quote">&#8220;<span class="quote">${SOMEVAR}</span>&#8221;</span>
-    in the <code class="filename">PLIST</code> with
-    <span class="quote">&#8220;<span class="quote">somevalue</span>&#8221;</span>.</p>
-<p>The <code class="varname">PLIST_VARS</code> variable can be used to simplify
-    the common case of conditionally including some
-    <code class="filename">PLIST</code> entries. It can be done by adding
-    <code class="literal"><code class="varname">PLIST_VARS</code>+=foo</code> and
-    setting the corresponding <code class="varname">PLIST.foo</code> variable
-    to <code class="literal">yes</code> if the entry should be included.
-    This will substitute <span class="quote">&#8220;<span class="quote"><code class="varname">${PLIST.foo}</code></span>&#8221;</span>
-    in the <code class="filename">PLIST</code> with either
-    <span class="quote">&#8220;<span class="quote"><code class="literal">""</code></span>&#8221;</span> or
-    <span class="quote">&#8220;<span class="quote"><code class="literal">"@comment "</code></span>&#8221;</span>.
-    For example, in <code class="filename">Makefile</code>:</p>
+<p>こうすると、<code class="filename">PLIST</code>
+    内のすべての <span class="quote">“<span class="quote">${SOMEVAR}</span>”</span>
+    が <span class="quote">“<span class="quote">somevalue</span>”</span> で置き換えられます。</p>
+<p><code class="varname">PLIST_VARS</code> 変数を使うと、
+    条件に応じて <code class="filename">PLIST</code>
+    の項目を追加することができます。
+    <code class="literal"><code class="varname">PLIST_VARS</code>+=foo</code>
+    のように値を追加して、
+    これに対応する <code class="varname">PLIST.foo</code> 変数を
+    <code class="literal">yes</code> に設定します。
+    このように設定すると、<code class="filename">PLIST</code> にある 
+    <span class="quote">“<span class="quote"><code class="varname">${PLIST.foo}</code></span>”</span> が
+    <span class="quote">“<span class="quote"><code class="literal">""</code></span>”</span> に置換されるようになります
+    (設定していない場合は
+    <span class="quote">“<span class="quote"><code class="literal">"@comment "</code></span>”</span> に置換されます)。
+    たとえば、<code class="filename">Makefile</code> では以下のようにします。</p>
 <pre class="programlisting">
 PLIST_VARS+=	foo
 .if <em class="replaceable"><code>condition</code></em>
 PLIST.foo=	yes
 .else
     </pre>
-<p>And then in <code class="filename">PLIST</code>:</p>
+<p>こうしたうえで、<code class="filename">PLIST</code> では以下のようにします。</p>
 <pre class="programlisting">
-@comment $NetBSD: plist.html,v 1.29 2011/10/30 22:05:39 wiz Exp $
+@comment $NetBSD$
 bin/bar
 man/man1/bar.1
 ${PLIST.foo}bin/foo
@@ -176,36 +175,30 @@ ${PLIST.foo}share/bar/foo.data
 ${PLIST.foo}@dirrm share/bar
     </pre>
 </div>
-<div class="sect1" title="13.5.�Man page compression">
+<div class="sect1" title="13.5. マニュアルページの圧縮">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="manpage-compression"></a>13.5.�Man page compression</h2></div></div></div>
-<p>Man pages should be installed in compressed form if
-    <code class="varname">MANZ</code> is set (in <code class="filename">bsd.own.mk</code>),
-    and uncompressed otherwise. To handle this in the
-    <code class="filename">PLIST</code> file, the suffix <span class="quote">&#8220;<span class="quote">.gz</span>&#8221;</span> is
-    appended/removed automatically for man pages according to
-    <code class="varname">MANZ</code> and <code class="varname">MANCOMPRESSED</code> being set
-    or not, see above for details. This modification of the
-    <code class="filename">PLIST</code> file is done on a copy of it, not
-    <code class="filename">PLIST</code> itself.</p>
+<a name="manpage-compression"></a>13.5. マニュアルページの圧縮</h2></div></div></div>
+<p>もし、(<code class="filename">bsd.own.mk</code>に)<code class="varname">MANZ</code>が設定されていれば、マニュアルページは圧縮形式で
+    インストールされます。そうでなければ展開された形式でインストールされます。
+    <code class="filename">PLIST</code>ファイルでこれをサポートするために、<code class="varname">MANZ</code>と <code class="varname">MANCOMPRESSED</code>の設定の有
+    無に従い、<span class="quote">“<span class="quote">.gz</span>”</span>サフィックスがマニュアルページに自動的に追加、削除され
+    ます。この<code class="filename">PLIST</code>ファイルに対する変更は、<code class="filename">PLIST</code>自身にたいしてでなく、それが
+    コピーされる時におこなわれます。</p>
 </div>
-<div class="sect1" title="13.6.�Changing PLIST source with PLIST_SRC">
+<div class="sect1" title="13.6. PLIST_SRC を使って PLIST のソースを変更する">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="using-PLIST_SRC"></a>13.6.�Changing PLIST source with <code class="varname">PLIST_SRC</code>
-</h2></div></div></div>
-<p>To use one or more files as source for the <code class="filename">PLIST</code> used
-    in generating the binary package, set the variable
-    <code class="varname">PLIST_SRC</code> to the names of that file(s).
-    The files are later concatenated using <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?cat+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">cat</span>(1)</span></a>, and the order of things is
-    important. The default for <code class="varname">PLIST_SRC</code> is
-    <code class="filename">${PKGDIR}/PLIST</code>.</p>
+<a name="using-PLIST_SRC"></a>13.6. <code class="varname">PLIST_SRC</code> を使って PLIST のソースを変更する</h2></div></div></div>
+<p>ひとつ以上のファイルを、バイナリーパッケージを構築するために<code class="filename">PLIST</code>のソース
+    として使用する時は、それらのファイル名を変数<code class="varname">PLIST_SRC</code>に設定してください。こ
+    れらのファイルは、後で<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?cat+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">cat</span>(1)</span></a>によって連結されます。連結の順番は重要です。
+    <code class="varname">PLIST_SRC</code> は、標準では <code class="filename">${PKGDIR}/PLIST</code> になります。</p>
 </div>
-<div class="sect1" title="13.7.�Platform-specific and differing PLISTs">
+<div class="sect1" title="13.7. プラットフォーム別に異なるPLIST">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="platform-specific-plist"></a>13.7.�Platform-specific and differing PLISTs</h2></div></div></div>
-<p>Some packages decide to install a different set of files based on
-    the operating system being used. These differences can be
-    automatically handled by using the following files:</p>
+<a name="platform-specific-plist"></a>13.7. プラットフォーム別に異なるPLIST</h2></div></div></div>
+<p>パッケージのなかには、インストールするファイルの組合せを、対象のオペレー
+    ティングシステムによって変えるものがあります。このような差異は、以下のファ
+    イルを使って自動的に処理することができます。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
 <li class="listitem"><p><code class="filename">PLIST.common</code></p></li>
 <li class="listitem"><p><code class="filename">PLIST.${OPSYS}</code></p></li>
@@ -214,21 +207,21 @@ ${PLIST.foo}@dirrm share/bar
 <li class="listitem"><p><code class="filename">PLIST.common_end</code></p></li>
 </ul></div>
 </div>
-<div class="sect1" title="13.8.�Sharing directories between packages">
+<div class="sect1" title="13.8. 複数のパッケージでディレクトリーを共有する">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="faq.common-dirs"></a>13.8.�Sharing directories between packages</h2></div></div></div>
-<p>A <span class="quote">&#8220;<span class="quote">shared directory</span>&#8221;</span> is a directory where
-    multiple (and unrelated) packages install files.  These
-    directories were problematic because you had to add special
-    tricks in the PLIST to conditionally remove them, or have some
-    centralized package handle them.</p>
-<p>In pkgsrc, it is now easy: Each package should create
-    directories and install files as needed; <span class="command"><strong>pkg_delete</strong></span>
-    will remove any directories left empty after uninstalling a
-    package.</p>
-<p>If a package needs an empty directory to work, create
-    the directory during installation as usual, and also add an
-    entry to the PLIST:
+<a name="faq.common-dirs"></a>13.8. 複数のパッケージでディレクトリーを共有する</h2></div></div></div>
+<p><span class="quote">“<span class="quote">共有ディレクトリー</span>”</span>とは、複数の (かつ関連のない)
+    パッケージがファイルをインストールするディレクトリーのことです。
+    以前は、共有ディレクトリーは、条件に応じた削除のために PLIST に特殊な細工をするか、
+    集権的な処理用パッケージを用意する必要があったので、
+    問題を起こすことがありました。</p>
+<p>現在の pkgsrc では、話は単純になっています。
+    各パッケージは、必要に応じて、ディレクトリーを作成してファイルをインストールします。
+    <span class="command"><strong>pkg_delete</strong></span> は、パッケージのアンインストール後、
+    空のディレクトリーが残っていればすべて削除します。</p>
+<p>パッケージの動作のために空のディレクトリーが必要な場合は、
+    インストール時に通常と同じようにディレクトリーを作成するようにし、
+    さらに PLIST に以下のような項目を追加します。
     </p>
 <pre class="programlisting">
 @pkgdir path/to/empty/directory
@@ -242,15 +235,15 @@ ${PLIST.foo}@dirrm share/bar
 <table width="100%" summary="Navigation footer">
 <tr>
 <td width="40%" align="left">
-<a accesskey="p" href="makefile.html">Prev</a>�</td>
+<a accesskey="p" href="makefile.html">Prev</a> </td>
 <td width="20%" align="center"><a accesskey="u" href="developers-guide.html">Up</a></td>
-<td width="40%" align="right">�<a accesskey="n" href="buildlink.html">Next</a>
+<td width="40%" align="right"> <a accesskey="n" href="buildlink.html">Next</a>
 </td>
 </tr>
 <tr>
-<td width="40%" align="left" valign="top">Chapter�12.�Programming in <code class="filename">Makefile</code>s�</td>
+<td width="40%" align="left" valign="top">Chapter 12. <code class="filename">Makefile</code> におけるプログラミング </td>
 <td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
-<td width="40%" align="right" valign="top">�Chapter�14.�Buildlink methodology</td>
+<td width="40%" align="right" valign="top"> Chapter 14. buildlink 方法論</td>
 </tr>
 </table>
 </div>

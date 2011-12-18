@@ -1,185 +1,188 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Chapter�5.�Configuring pkgsrc</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chapter 5. pkgsrc を設定する</title>
 <link rel="stylesheet" type="text/css" href="/global.css">
 <meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
 <link rel="home" href="index.html" title="The pkgsrc guide">
-<link rel="up" href="users-guide.html" title="Part�I.�The pkgsrc user's guide">
-<link rel="prev" href="using.html" title="Chapter�4.�Using pkgsrc">
-<link rel="next" href="binary.html" title="Chapter�6.�Creating binary packages">
+<link rel="up" href="users-guide.html" title="Part I. pkgsrc 利用者向けの手引き">
+<link rel="prev" href="using.html" title="Chapter 4. pkgsrc を使う">
+<link rel="next" href="binary.html" title="Chapter 6. バイナリーパッケージを作る">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="navheader">
 <table width="100%" summary="Navigation header">
-<tr><th colspan="3" align="center">Chapter�5.�Configuring pkgsrc</th></tr>
+<tr><th colspan="3" align="center">Chapter 5. pkgsrc を設定する</th></tr>
 <tr>
 <td width="20%" align="left">
-<a accesskey="p" href="using.html">Prev</a>�</td>
-<th width="60%" align="center">Part�I.�The pkgsrc user's guide</th>
-<td width="20%" align="right">�<a accesskey="n" href="binary.html">Next</a>
+<a accesskey="p" href="using.html">Prev</a> </td>
+<th width="60%" align="center">Part I. pkgsrc 利用者向けの手引き</th>
+<td width="20%" align="right"> <a accesskey="n" href="binary.html">Next</a>
 </td>
 </tr>
 </table>
 <hr>
 </div>
-<div class="chapter" title="Chapter�5.�Configuring pkgsrc">
+<div class="chapter" title="Chapter 5. pkgsrc を設定する">
 <div class="titlepage"><div><div><h2 class="title">
-<a name="configuring"></a>Chapter�5.�Configuring pkgsrc</h2></div></div></div>
+<a name="configuring"></a>Chapter 5. pkgsrc を設定する</h2></div></div></div>
 <div class="toc">
 <p><b>Table of Contents</b></p>
 <dl>
-<dt><span class="sect1"><a href="configuring.html#general-configuration">5.1. General configuration</a></span></dt>
-<dt><span class="sect1"><a href="configuring.html#variables-affecting-build">5.2. Variables affecting the build process</a></span></dt>
-<dt><span class="sect1"><a href="configuring.html#variables-affecting-installation">5.3. Variables affecting the installation process</a></span></dt>
-<dt><span class="sect1"><a href="configuring.html#conf.compiler">5.4. Selecting and configuring the compiler</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#general-configuration">5.1. 全般的な設定</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#variables-affecting-build">5.2. 構築の過程に影響を及ぼす変数</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#variables-affecting-installation">5.3. インストール過程に影響をおよぼす変数</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#conf.compiler">5.4. コンパイラーの選択と設定</a></span></dt>
 <dd><dl>
-<dt><span class="sect2"><a href="configuring.html#selecting-the-compiler">5.4.1. Selecting the compiler</a></span></dt>
-<dt><span class="sect2"><a href="configuring.html#conf.cflags">5.4.2. Additional flags to the compiler (<code class="varname">CFLAGS</code>)</a></span></dt>
-<dt><span class="sect2"><a href="configuring.html#conf.ldflags">5.4.3. Additional flags to the linker (<code class="varname">LDFLAGS</code>)</a></span></dt>
+<dt><span class="sect2"><a href="configuring.html#selecting-the-compiler">5.4.1. コンパイラーを選ぶ</a></span></dt>
+<dt><span class="sect2"><a href="configuring.html#conf.cflags">5.4.2. コンパイラーへのフラグの追加 (<code class="varname">CFLAGS</code>)</a></span></dt>
+<dt><span class="sect2"><a href="configuring.html#conf.ldflags">5.4.3. リンカーへのフラグの追加 (<code class="varname">LDFLAGS</code>)</a></span></dt>
 </dl></dd>
-<dt><span class="sect1"><a href="configuring.html#developer-advanced-settings">5.5. Developer/advanced settings</a></span></dt>
-<dt><span class="sect1"><a href="configuring.html#selecting-build-options">5.6. Selecting Build Options</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#developer-advanced-settings">5.5. 開発者および上級者向けの設定</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#selecting-build-options">5.6. 構築オプションの選択</a></span></dt>
 </dl>
 </div>
-<a name="mk.conf"></a><p>The whole pkgsrc system is configured in a single file, usually
-called <code class="filename">mk.conf</code>. In which directory pkgsrc looks for
-that file depends on the installation. On NetBSD, when you use
-<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> from the base system, it is in the directory
-<code class="filename">/etc/</code>. In all other cases the default location is
-<code class="literal">${PREFIX}/etc/</code>, depending on where you told the
-bootstrap program to install the binary packages.</p>
-<p>During the bootstrap, an example configuration file is created. To
-use that, you have to create the directory
-<code class="filename">${PREFIX}/etc</code> and copy the example file
-there.</p>
-<p>The format of the configuration file is that of the usual
-BSD-style <code class="filename">Makefile</code>s. The whole pkgsrc configuration
-is done by setting variables in this file. Note that you can define all
-kinds of variables, and no special error checking (for example for
-spelling mistakes) takes place, so you have to try it out to see if it
-works.</p>
-<div class="sect1" title="5.1.�General configuration">
+<a name="mk.conf"></a><p>pkgsrc システム全体の設定は、ひとつのファイル (通常は
+<code class="filename">mk.conf</code>) でおこなわれます。pkgsrc
+がこのファイルをどのディレクトリーから探すかは、
+インストールの時に決まります。NetBSD で、ベースシステムの
+<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> を使う場合は、<code class="filename">/etc/</code>
+ディレクトリーとなります。これ以外の場合はすべて、
+<code class="literal">${PREFIX}/etc/</code> が標準の場所となり、これは
+bootstrap プログラムに指示したバイナリーパッケージのインストール先に依存します。</p>
+<p>bootstrap の実行中に、設定ファイルの例が作成されます。
+このファイルを使うには、
+<code class="filename">${PREFIX}/etc</code> ディレクトリーを作って、
+その中にこのファイルをコピーする必要があります。</p>
+<p>この設定ファイルの書式は、通常の BSD 形式の
+<code class="filename">Makefile</code> の書式です。pkgsrc 全体の設定は、
+このファイルで変数を設定することでおこなわれます。なお、
+ここではあらゆる種類の変数を定義することができ、また、
+特別なエラーの検査 (たとえば、綴りの誤り) はおこなわれないので、
+設定が有効かどうか調べるには、
+いろいろ試す必要があるということに注意してください。</p>
+<div class="sect1" title="5.1. 全般的な設定">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="general-configuration"></a>5.1.�General configuration</h2></div></div></div>
-<p>In this section, you can find some variables that apply to all
-    pkgsrc packages. A complete list of the variables that can be
-    configured by the user is available in
-    <code class="filename">mk/defaults/mk.conf</code>, together with some
-    comments that describe each variable's intent.</p>
+<a name="general-configuration"></a>5.1. 全般的な設定</h2></div></div></div>
+<p>本節では、pkgsrc の全パッケージに影響する変数をいくつか掲げます。
+    ユーザーが設定可能な変数の完全な一覧は、
+    <code class="filename">mk/defaults/mk.conf</code> にあり、
+    各変数の目的もコメントで説明されています。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
-<li class="listitem"><p><code class="varname">LOCALBASE</code>: Where
-	    packages will be installed. The default is
-	    <code class="filename">/usr/pkg</code>. Do not mix binary packages
-	    with different <code class="varname">LOCALBASE</code>s!</p></li>
-<li class="listitem"><p><code class="varname">CROSSBASE</code>: Where
-	    <span class="quote">&#8220;<span class="quote">cross</span>&#8221;</span> category packages will be
-	    installed. The default is
-	    <code class="filename">${LOCALBASE}/cross</code>.</p></li>
-<li class="listitem"><p><code class="varname">X11BASE</code>: Where
-	    X11 is installed on the system. The default is
-	    <code class="filename">/usr/X11R6</code>.</p></li>
-<li class="listitem"><p><code class="varname">DISTDIR</code>: Where to store the
-	    downloaded copies of the original source distributions used
-	    for building pkgsrc packages. The default is
-	    <code class="filename">${PKGSRCDIR}/distfiles</code>.</p></li>
-<li class="listitem"><p><code class="varname">PKG_DBDIR</code>: Where the
-	    database about installed packages is stored.  The default is
-	    <code class="filename">/var/db/pkg</code>.</p></li>
+<li class="listitem"><p><code class="varname">LOCALBASE</code>:
+	    パッケージをどこにインストールするか。標準では
+	    <code class="filename">/usr/pkg</code> になります。異なる <code class="varname">LOCALBASE</code>
+	    をもつバイナリーパッケージを混在させないでください。</p></li>
+<li class="listitem"><p><code class="varname">CROSSBASE</code>:
+	    <span class="quote">“<span class="quote">cross</span>”</span> カテゴリーのパッケージをどこにインストールするか。
+	    標準では
+	    <code class="filename">${LOCALBASE}/cross</code> になります。</p></li>
+<li class="listitem"><p><code class="varname">X11BASE</code>:
+	    当該システムで X11 がどこにインストールされているか。標準では
+	    <code class="filename">/usr/X11R6</code> になります。</p></li>
+<li class="listitem"><p><code class="varname">DISTDIR</code>: pkgsrc のパッケージ構築用にダウンロードしたままの状態の
+	    ソース配布物をどこに置くか。標準では
+	    <code class="filename">${PKGSRCDIR}/distfiles</code> になります。</p></li>
+<li class="listitem"><p><code class="varname">PKG_DBDIR</code>: インストールされたパッケージに関する
+	    データベースをどこに置くか。標準では
+	    <code class="filename">/var/db/pkg</code> になります。</p></li>
 <li class="listitem"><p><code class="varname">MASTER_SITE_OVERRIDE</code>:
-	    If set, override the packages'
-	    <code class="varname">MASTER_SITES</code> with this value.</p></li>
+	    設定した場合、その値でパッケージの
+	    <code class="varname">MASTER_SITES</code> が上書きされます。</p></li>
 <li class="listitem"><p><code class="varname">MASTER_SITE_BACKUP</code>:
-	    Backup location(s) for distribution files and patch files
-	    if not found locally or in
-	    <code class="filename">${MASTER_SITES}</code> or
-	    <code class="filename">${PATCH_SITES}</code> respectively.
-	    The defaults are
+	    配布ファイルおよびパッチファイルが、ローカルにも、
+	    <code class="filename">${MASTER_SITES}</code> や
+	    <code class="filename">${PATCH_SITES}</code> にもなかった場合のための予備の場所 (複数可)。
+	    標準では
 	    <code class="filename">ftp://ftp.NetBSD.org/pub/pkgsrc/distfiles/${DIST_SUBDIR}/</code>
-	    and
-	    <code class="filename">ftp://ftp.freebsd.org/pub/FreeBSD/distfiles/${DIST_SUBDIR}/</code>.</p></li>
+	    と
+	    <code class="filename">ftp://ftp.freebsd.org/pub/FreeBSD/distfiles/${DIST_SUBDIR}/</code> になります。</p></li>
 <li class="listitem"><p><code class="varname">BINPKG_SITES</code>:
-	    List of sites carrying binary pkgs. <em class="replaceable"><code>rel</code></em> and
-	    <em class="replaceable"><code>arch</code></em> are replaced with OS
-	    release (<span class="quote">&#8220;<span class="quote">2.0</span>&#8221;</span>, etc.) and architecture
-	    (<span class="quote">&#8220;<span class="quote">mipsel</span>&#8221;</span>, etc.).</p></li>
+	    バイナリーパッケージの配布サイトのリストです。<em class="replaceable"><code>rel</code></em> および
+	    <em class="replaceable"><code>arch</code></em> は、それぞれ OS
+	    リリース (<span class="quote">“<span class="quote">2.0</span>”</span> など) およびアーキテクチャー
+	    (<span class="quote">“<span class="quote">mipsel</span>”</span> など) で置き換えられます。</p></li>
 <li class="listitem"><p><code class="varname">ACCEPTABLE_LICENSES</code>:
-	    List of acceptable licenses. License names are case-sensitive.
-	    Whenever you try to build a package whose license is not in this
-	    list, you will get an error message. If the license condition is
-	    simple enough, the error message will include specific
-	    instructions on how to change this variable.</p></li>
+	    受け入れ可能なライセンスのリストです。ライセンス名は、大文字・小文字を区別します。
+	    このリストにないライセンスが適用されるパッケージを構築しようとするたびに、
+	    エラーメッセージが表示されます。
+	    簡便な変更でライセンスを受け入れるようにできる場合は、
+	    エラーメッセージでこの値の変更方法の説明も表示されます。</p></li>
 </ul></div>
 </div>
-<div class="sect1" title="5.2.�Variables affecting the build process">
+<div class="sect1" title="5.2. 構築の過程に影響を及ぼす変数">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="variables-affecting-build"></a>5.2.�Variables affecting the build process</h2></div></div></div>
+<a name="variables-affecting-build"></a>5.2. 構築の過程に影響を及ぼす変数</h2></div></div></div>
 <p>XXX
       </p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
-<li class="listitem"><p><code class="varname">PACKAGES</code>: The top level
-	    directory for the binary packages. The default is
-	    <code class="filename">${PKGSRCDIR}/packages</code>.</p></li>
+<li class="listitem"><p><code class="varname">PACKAGES</code>: バイナリーパッケージ用のディレクトリーの最上層。
+	    標準では
+	    <code class="filename">${PKGSRCDIR}/packages</code> になります。</p></li>
 <li class="listitem"><p><code class="varname">WRKOBJDIR</code>:
-	    The top level directory where, if defined, the separate
-	    working directories will get created, and symbolically
-	    linked to from <code class="filename">${WRKDIR}</code> (see below).
-	    This is useful for building packages on several
-	    architectures, then <code class="filename">${PKGSRCDIR}</code>
-	    can be NFS-mounted while <code class="filename">${WRKOBJDIR}</code>
-	    is local to every architecture. (It should be noted that
-	    <code class="varname">PKGSRCDIR</code> should not be set by the user
-	    &mdash; it is an internal definition which refers to the
-	    root of the pkgsrc tree. It is possible to have many
-	    pkgsrc tree instances.)</p></li>
+	    設定した場合、この値を最上層として、
+	    別に分離された作業ディレクトリーが作られて
+	    <code class="filename">${WRKDIR}</code> (前述) からシンボリックリンクされます。
+	    これは、複数のアーキテクチャー用のパッケージを構築する際に便利です。
+	    さらに、<code class="filename">${PKGSRCDIR}</code> を NFS マウントして、
+	    <code class="filename">${WRKOBJDIR}</code>
+	    は各アーキテクチャーのローカルに置くということができます。(なお、
+	    <code class="varname">PKGSRCDIR</code>
+	    は利用者が設定するようなものではないことを断っておきます
+	    &mdash;これは pkgsrc ツリーのルートを参照する内部的な定義です。
+	    ここでいう pkgsrc ツリーは、多くの文脈がありえます。)</p></li>
 <li class="listitem"><p><code class="varname">LOCALPATCHES</code>:
-	    Directory for local patches that aren't part of pkgsrc.
-	    See <a class="xref" href="components.html#components.patches" title="11.3.�patches/*">Section�11.3, &#8220;patches/*&#8221;</a> for more
-	    information.</p></li>
-<li class="listitem"><p><code class="varname">PKGMAKECONF</code>: Location of
-	    the <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> file used by a package's
-	    BSD-style Makefile. If this is not set,
-	    <code class="varname">MAKECONF</code> is set to
-	    <code class="filename">/dev/null</code> to avoid picking up
-	    settings used by builds in <code class="filename">/usr/src</code>.</p></li>
+	    pkgsrc に含まれていないローカルなパッチ用のディレクトリーです。
+	    さらなる情報は、<a class="xref" href="components.html#components.patches" title="11.3. patches/*">Section 11.3, “patches/*”</a>
+	    をご覧ください。</p></li>
+<li class="listitem"><p><code class="varname">PKGMAKECONF</code>: パッケージの
+	    BSD 形式の Makefile が使用する <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a>
+	    ファイルの場所です。この変数が設定されていない場合は、
+	    <code class="filename">/usr/src</code> 以下の構築用の設定を見ることのないようにするために、
+	    <code class="varname">MAKECONF</code> が
+	    <code class="filename">/dev/null</code> に設定されます。</p></li>
 <li class="listitem"><p><code class="varname">DEPENDS_TARGET</code>:
-	    By default, dependencies are only installed, and no binary
-	    package is created for them. You can set this variable to
-	    <code class="literal">package</code> to automatically create binary
-	    packages after installing dependencies.</p></li>
+	    標準では、依存するパッケージはインストールされるだけで、
+	    バイナリーパッケージの作成まではおこなわれません。
+	    この変数を <code class="literal">package</code> に設定して、
+	    依存パッケージのインストール後にバイナリーパッケージを自動的に作成することができます。</p></li>
 </ul></div>
 </div>
-<div class="sect1" title="5.3.�Variables affecting the installation process">
+<div class="sect1" title="5.3. インストール過程に影響をおよぼす変数">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="variables-affecting-installation"></a>5.3.�Variables affecting the installation process</h2></div></div></div>
-<p>Most packages support installation into a
-    subdirectory of <code class="varname">WRKDIR</code>. This allows a package
-    to be built, before the actual filesystem is touched. DESTDIR
-    support exists in two variations:</p>
+<a name="variables-affecting-installation"></a>5.3. インストール過程に影響をおよぼす変数</h2></div></div></div>
+<p>ほとんどのパッケージは、<code class="varname">WRKDIR</code>
+    のサブディレクトリーへのインストールに対応しています。そのようにインストールをすれば、
+    本番のファイルシステムに手を加えずにパッケージを構築することができます。
+    DESTDIR への対応には、以下の二通りの形態があります。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
-<li class="listitem"><p>Basic DESTDIR support means that the package
-      installation and packaging is still run as root.</p></li>
-<li class="listitem"><p>Full DESTDIR support can run the complete
-      build, installation and packaging as normal user. Root
-      privileges are only needed to add packages.</p></li>
+<li class="listitem"><p>基本的な (basic) DESTDIR 対応。
+      パッケージのインストールや、バイナリーパッケージ作成は、
+      通常と同じく root で実行します。</p></li>
+<li class="listitem"><p>完全な (full) DESTDIR 対応。
+      完全な構築、インストール、バイナリーパッケージ作成を、
+      通常ユーザー権限でおこなうことができます。root 権限が必要なのは、
+      パッケージを追加するときだけです。</p></li>
 </ul></div>
-<p>DESTDIR support is now the default. To switch back to non-DESTDIR,
-    you can set
-    <code class="varname">USE_DESTDIR=no</code>; this setting will be deprecated though,
-    so it's preferable to convert a package to DESTDIR instead.</p>
-<p>DESTDIR support changes the behaviour of various targets
-    slightly. To install a package after building it, use
-    <code class="literal">package-install</code>. <code class="literal">package</code> and
-    <code class="literal">install</code> don't do that any
-    longer. <code class="literal">package-install</code> can be used as
-    <code class="varname">DEPENDS_TARGET</code>.  <code class="literal">bin-install</code>
-    will ask for the root password to install the package and fail,
-    <code class="literal">package-install</code> will ask again.</p>
-<p>With basic DESTDIR support, <strong class="userinput"><code>make
-    clean</code></strong> needs to be run as root.</p>
-<p>Considering the <code class="filename">foo/bar</code> package,
-    DESTDIR full support can be tested using the following commands
+<p>現在では、標準状態で DESTDIR へ対応するようになっています。
+    <code class="varname">USE_DESTDIR=no</code> を設定すれば
+    以前のような DESTDIR を使わない挙動に戻すことができますが、この設定は廃止予定ですので、
+    パッケージを DESTDIR 対応にするほうが望ましいでしょう。</p>
+<p>DESTDIR への対応によって、各種ターゲットの挙動が少し変わります。
+    パッケージを構築してからインストールする場合は、
+    <code class="literal">package-install</code> を使ってください。<code class="literal">package</code>
+    および <code class="literal">install</code> の各ターゲットは、何もしてくれません。
+    <code class="literal">package-install</code> は、
+    <code class="varname">DEPENDS_TARGET</code> にすることができます。
+    <code class="literal">bin-install</code>
+    は、インストール用に root のパスワードを尋ねてきますが、
+    その後に失敗し、
+    <code class="literal">package-install</code> があらためてパスワードを尋ねてきます。</p>
+<p>基本的な DESTDIR 対応を使う場合、<strong class="userinput"><code>make
+    clean</code></strong> は root で実行する必要があります。</p>
+<p><code class="filename">foo/bar</code> パッケージに対して、
+    DESTDIR に完全に対応できているかどうか、以下のコマンドでテストすることができます。
 
 </p>
 <pre class="programlisting">
@@ -190,8 +193,8 @@ uid=1000(myusername) gid=100(users) groups=100(users),0(wheel)
 </pre>
 <p>
 
-    Verify <code class="varname">DESTDIR</code> full support, no root privileges
-    should be needed
+    <code class="varname">DESTDIR</code> に完全に対応しているか確認します。
+    root 権限は必要ないはずです。
 
 </p>
 <pre class="programlisting">
@@ -199,7 +202,7 @@ uid=1000(myusername) gid=100(users) groups=100(users),0(wheel)
 </pre>
 <p>
 
-    Create a package without root privileges
+    root 権限なしでパッケージを作ってみます。
 
 </p>
 <pre class="programlisting">
@@ -207,8 +210,8 @@ uid=1000(myusername) gid=100(users) groups=100(users),0(wheel)
 </pre>
 <p>
 
-    For the following command, you must be able to gain root
-    privileges using <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?su+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">su</span>(1)</span></a>
+    以下のコマンドでは、
+    <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?su+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">su</span>(1)</span></a> を使って root 権限を得られることが必要です。
 
 </p>
 <pre class="programlisting">
@@ -216,7 +219,7 @@ uid=1000(myusername) gid=100(users) groups=100(users),0(wheel)
 </pre>
 <p>
 
-    Then, as a simple user
+    あとは、通常のユーザーで以下のコマンドを実行します。
 
 </p>
 <pre class="programlisting">
@@ -226,27 +229,26 @@ uid=1000(myusername) gid=100(users) groups=100(users),0(wheel)
 
     </p>
 </div>
-<div class="sect1" title="5.4.�Selecting and configuring the compiler">
+<div class="sect1" title="5.4. コンパイラーの選択と設定">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="conf.compiler"></a>5.4.�Selecting and configuring the compiler</h2></div></div></div>
-<div class="sect2" title="5.4.1.�Selecting the compiler">
+<a name="conf.compiler"></a>5.4. コンパイラーの選択と設定</h2></div></div></div>
+<div class="sect2" title="5.4.1. コンパイラーを選ぶ">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="selecting-the-compiler"></a>5.4.1.�Selecting the compiler</h3></div></div></div>
-<p>By default, pkgsrc will use GCC to build packages.  This may be
-    overridden by setting the following variables in /etc/mk.conf:</p>
+<a name="selecting-the-compiler"></a>5.4.1. コンパイラーを選ぶ</h3></div></div></div>
+<p>pkgsrc は、標準では GCC を使ってパッケージを構築します。
+    これは /etc/mk.conf で以下の変数を設定して変えることができます。</p>
 <div class="variablelist"><dl>
 <dt><span class="term"><code class="varname">PKGSRC_COMPILER</code>:</span></dt>
 <dd>
-<p>This is a list of values specifying the chain of
-	  compilers to invoke when building packages.  Valid values
-	  are:</p>
+<p>パッケージ構築時に使われる一連のコンパイラーを指定する値を並べたものです。
+	  以下の値を使うことができます。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
 <li class="listitem"><p><code class="varname">distcc</code>:
-	    distributed C/C++ (chainable)</p></li>
+	    分散 C/C++ コンパイラー (連鎖可能)</p></li>
 <li class="listitem"><p><code class="varname">ccache</code>:
-	    compiler cache (chainable)</p></li>
+	    コンパイラーキャッシュ (連鎖可能)</p></li>
 <li class="listitem"><p><code class="varname">gcc</code>:
-	    GNU C/C++ Compiler</p></li>
+	    GNU C/C++ コンパイラー</p></li>
 <li class="listitem"><p><code class="varname">mipspro</code>:
 	    Silicon Graphics, Inc. MIPSpro (n32/n64)</p></li>
 <li class="listitem"><p><code class="varname">mipspro</code>:
@@ -254,99 +256,97 @@ uid=1000(myusername) gid=100(users) groups=100(users),0(wheel)
 <li class="listitem"><p><code class="varname">sunpro</code>:
 	    Sun Microsystems, Inc. WorkShip/Forte/Sun ONE Studio</p></li>
 </ul></div>
-<p>The default is
-	  <span class="quote">&#8220;<span class="quote"><code class="varname">gcc</code></span>&#8221;</span>.  You can use
-	  <code class="varname">ccache</code> and/or
-	  <code class="varname">distcc</code> with an appropriate
-	  <code class="varname">PKGSRC_COMPILER</code> setting,
-	  e.g. <span class="quote">&#8220;<span class="quote"><code class="varname">ccache gcc</code></span>&#8221;</span>.  This
-	  variable should always be terminated with a value for
-	  a real compiler.  Note that only one real compiler
-	  should be listed (e.g. <span class="quote">&#8220;<span class="quote"><code class="varname">sunpro gcc</code></span>&#8221;</span>
-	  is not allowed).</p>
+<p>標準では
+	  <span class="quote">“<span class="quote"><code class="varname">gcc</code></span>”</span> になります。
+	  <code class="varname">PKGSRC_COMPILER</code> の設定には、適切なコンパイラー本体とともに、
+	  <code class="varname">ccache</code> と
+	  <code class="varname">distcc</code> のいずれかまたは両方を併用することができます。
+	  たとえば <span class="quote">“<span class="quote"><code class="varname">ccache gcc</code></span>”</span> のようにします。
+	  この変数の設定では、コンパイラー本体を示す値を最後に置くようにします。
+	  なお、コンパイラー本体はただ一つだけ掲げるようにします (たとえば、
+	  <span class="quote">“<span class="quote"><code class="varname">sunpro gcc</code></span>”</span> などとすることはできません)。</p>
 </dd>
 <dt><span class="term"><code class="varname">GCC_REQD</code>:</span></dt>
-<dd><p>This specifies the minimum version of GCC to use
-	  when building packages.  If the system GCC doesn't
-	  satisfy this requirement, then pkgsrc will build and
-	  install one of the GCC packages to use instead.</p></dd>
+<dd><p>パッケージの構築用として、最低限必要な
+	  GCC のバージョンを指定します。システム附属の GCC
+	  がこの条件を満たさない場合、pkgsrc はそのかわりに使うため、
+	  GCC のパッケージを構築してインストールします。</p></dd>
 </dl></div>
 </div>
-<div class="sect2" title="5.4.2.�Additional flags to the compiler (CFLAGS)">
+<div class="sect2" title="5.4.2. コンパイラーへのフラグの追加 (CFLAGS)">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="conf.cflags"></a>5.4.2.�Additional flags to the compiler (<code class="varname">CFLAGS</code>)</h3></div></div></div>
-<p>If you wish to set the <code class="varname">CFLAGS</code> variable,
-	please make sure to use the <code class="literal">+=</code> operator
-	instead of the <code class="literal">=</code> operator:</p>
+<a name="conf.cflags"></a>5.4.2. コンパイラーへのフラグの追加 (<code class="varname">CFLAGS</code>)</h3></div></div></div>
+<p><code class="varname">CFLAGS</code> 変数を設定したい場合は、
+	<code class="literal">=</code> 演算子は使わずに、
+	かならず <code class="literal">+=</code> 演算子を使ってください。</p>
 <pre class="programlisting">
 CFLAGS+=        -your -flags
 </pre>
-<p>Using <code class="varname">CFLAGS=</code> (i.e. without the
-	<span class="quote">&#8220;<span class="quote">+</span>&#8221;</span>) may lead to problems with packages that
-	need to add their own flags.  You may want to take a look
-	at the <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/cpuflags/README.html" target="_top"><code class="filename">devel/cpuflags</code></a>
-	package if you're interested in optimization specifically
-	for the current CPU. </p>
+<p><code class="varname">CFLAGS=</code> のようにする (つまり、<span class="quote">“<span class="quote">+</span>”</span>を付けない) と、
+	独自のフラグを追加する必要があるパッケージで問題を起こすことがあります。
+	CPU に特化した最適化に関心がある場合は、
+	<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/cpuflags/README.html" target="_top"><code class="filename">devel/cpuflags</code></a>
+	パッケージを見ておくとよいでしょう。</p>
 </div>
-<div class="sect2" title="5.4.3.�Additional flags to the linker (LDFLAGS)">
+<div class="sect2" title="5.4.3. リンカーへのフラグの追加 (LDFLAGS)">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="conf.ldflags"></a>5.4.3.�Additional flags to the linker (<code class="varname">LDFLAGS</code>)</h3></div></div></div>
-<p>If you want to pass flags to the linker, both in the configure
-step and the build step, you can do this in two ways.  Either set
-<code class="varname">LDFLAGS</code> or <code class="varname">LIBS</code>.  The difference
-between the two is that <code class="varname">LIBS</code> will be appended to
-the command line, while <code class="varname">LDFLAGS</code> come earlier.
-<code class="varname">LDFLAGS</code> is pre-loaded with rpath settings for ELF
-machines depending on the setting of <code class="varname">USE_IMAKE</code> or
-the inclusion of <code class="filename">mk/x11.buildlink3.mk</code>.  As with
-<code class="varname">CFLAGS</code>, if you do not wish to override these
-settings, use the <code class="literal">+=</code> operator:</p>
+<a name="conf.ldflags"></a>5.4.3. リンカーへのフラグの追加 (<code class="varname">LDFLAGS</code>)</h3></div></div></div>
+<p>configure および build の各段階において、リンカーにフラグを渡したい場合、
+二通りの方法を使うことができます。すなわち、
+<code class="varname">LDFLAGS</code> または <code class="varname">LIBS</code> のいずれかを設定します。
+両者の違いは、<code class="varname">LIBS</code> はコマンドラインに付け加えられますが、
+<code class="varname">LDFLAGS</code> はそれより早く現れます。
+<code class="varname">LDFLAGS</code> はあらかじめ読み込まれ、
+<code class="varname">USE_IMAKE</code> の設定や
+<code class="filename">mk/x11.buildlink3.mk</code> のインクルードの有無に応じた
+ELF マシン向けの rpath の設定が追加されます。
+<code class="varname">CFLAGS</code> と同様に、この設定を上書きしたいわけでなければ、
+<code class="literal">+=</code> 演算子を使います。</p>
 <pre class="programlisting">
 LDFLAGS+=        -your -linkerflags
 </pre>
 </div>
 </div>
-<div class="sect1" title="5.5.�Developer/advanced settings">
+<div class="sect1" title="5.5. 開発者および上級者向けの設定">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="developer-advanced-settings"></a>5.5.�Developer/advanced settings</h2></div></div></div>
+<a name="developer-advanced-settings"></a>5.5. 開発者および上級者向けの設定</h2></div></div></div>
 <p>XXX
       </p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
 <li class="listitem">
 <p><code class="varname">PKG_DEVELOPER</code>:
-	    Run some sanity checks that package developers want:
+	    パッケージ開発者向けに、いくつかの正当性検査を実行します。
 	    </p>
 <div class="itemizedlist"><ul class="itemizedlist" type="circle">
-<li class="listitem"><p>make sure patches apply with zero
-	      fuzz</p></li>
-<li class="listitem"><p>run check-shlibs to see that all
-	      binaries will find their shared libs.</p></li>
+<li class="listitem"><p>パッチが曖昧さゼロで適用できることを確認する
+	      </p></li>
+<li class="listitem"><p>check-shlibs を実行して、
+	      すべてのバイナリーパッケージが共有ライブラリーを見つけられることを確認する。</p></li>
 </ul></div>
 <p>
 	</p>
 </li>
-<li class="listitem"><p><code class="varname">PKG_DEBUG_LEVEL</code>: The level
-	of debugging output which is displayed whilst making and
-	installing the package.  The default value for this is 0,
-	which will not display the commands as they are executed
-	(normal, default, quiet operation); the value 1 will display
-	all shell commands before their invocation, and the value 2
-	will display both the shell commands before their invocation,
-	and their actual execution progress with <span class="command"><strong>set
-	-x</strong></span> will be displayed.</p></li>
+<li class="listitem"><p><code class="varname">PKG_DEBUG_LEVEL</code>:
+	パッケージの構築およびインストールの際に表示される、
+	デバッグ用出力の水準です。標準の値は 0 です。この場合、コマンドは
+	(通常の、標準状態で、静粛な操作で) 実行されるだけで、表示されません。
+	値が 1 の場合、すべてのシェルコマンドを実行前に表示します。
+	値が 2 の場合、すべてのシェルコマンドを実行前に表示するほか、
+	実際に実行される経過を <span class="command"><strong>set
+	-x</strong></span> により表示します。</p></li>
 </ul></div>
 <p>
     </p>
 </div>
-<div class="sect1" title="5.6.�Selecting Build Options">
+<div class="sect1" title="5.6. 構築オプションの選択">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="selecting-build-options"></a>5.6.�Selecting Build Options</h2></div></div></div>
-<p>Some packages have build time options, usually to select
-    between different dependencies, enable optional support for big
-    dependencies or enable experimental features.</p>
-<p>To see which options, if any, a package supports, and which
-    options are mutually exclusive, run <span class="command"><strong>make
-    show-options</strong></span>, for example:</p>
+<a name="selecting-build-options"></a>5.6. 構築オプションの選択</h2></div></div></div>
+<p>パッケージのなかには、構築時にオプションがあるものがあります。
+    通常は、数通りの依存性からいずれかを選択、大きな依存性を伴うオプション対応の有効化、
+    実験的な機能の有効化などです。</p>
+<p>パッケージがどんなオプションに対応しているか (対応している場合)、
+    また、どのオプション同士が排他的かを調べるには、<span class="command"><strong>make
+    show-options</strong></span> を実行します。結果は、たとえば以下のようになります。</p>
 <pre class="programlisting">
     The following options are supported by this package:
         ssl      Enable SSL support.
@@ -360,53 +360,54 @@ LDFLAGS+=        -your -linkerflags
     These options are enabled by default: firefox
     These options are currently enabled: mozilla ssl
 </pre>
-<p>The following variables can be defined in
-    <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> to select which options to
-    enable for a package: <code class="varname">PKG_DEFAULT_OPTIONS</code>,
-    which can be used to select or disable options for all packages
-    that support them, and
-    <code class="varname">PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em></code>,
-    which can be used to select or disable options specifically for
-    package <em class="replaceable"><code>pkgbase</code></em>.  Options listed in
-    these variables are selected, options preceded by <span class="quote">&#8220;<span class="quote">-</span>&#8221;</span>
-    are disabled. A few examples:</p>
+<p>以下の変数を <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> で定義して、
+    パッケージに対してどのオプションを有効にするかを選んでおくことができます:
+    <code class="varname">PKG_DEFAULT_OPTIONS</code> は、対応している全パッケージを対象に、
+    オプションを選択または無効化するために使うことができます。
+    <code class="varname">PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em></code>
+    は、特定のパッケージ <em class="replaceable"><code>pkgbase</code></em> を対象に、
+    オプションを選択または無効化するために使うことができます。
+    この両変数で列挙された各変数が選択され、<span class="quote">“<span class="quote">-</span>”</span>
+    が先頭についた変数は無効化されます。いくつか例を示します。</p>
 <pre class="screen">
 <code class="prompt">$</code> <span class="command"><strong>grep "PKG.*OPTION" <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a></strong></span>
 PKG_DEFAULT_OPTIONS=    -arts -dvdread -esound
 PKG_OPTIONS.kdebase=    debug -sasl
 PKG_OPTIONS.apache=     suexec </pre>
-<p>It is important to note that options that were specifically
-    suggested by the package maintainer must be explicitly removed if
-    you do not wish to include the option.  If you are unsure you can view
-    the current state with <span class="command"><strong>make show-options</strong></span>.</p>
-<p>The following settings are consulted in the order given, and
-    the last setting that selects or disables an option is
-    used:</p>
+<p>ここで重要なことは、
+    パッケージのメンテナーがこの方法を使って標準状態のオプションを提示している場合、
+    そのオプションを選択したくなければ明示的に削除する必要があるということです。
+    よくわからない場合は、<span class="command"><strong>make show-options</strong></span>
+    を使ってオプションの設定状況を調べることができます。</p>
+<p>以下の各設定は、以下に掲げた順に適用されます。
+    このため、あるオプションは、
+    それが最後に選択または無効化された設定に従って選択または無効化されます。</p>
 <div class="orderedlist"><ol class="orderedlist" type="1">
-<li class="listitem"><p>the default options as suggested by the package
-      maintainer</p></li>
-<li class="listitem"><p>the options implied by the settings of legacy
-      variables (see below)</p></li>
+<li class="listitem"><p>パッケージのメンテナーが提示した、
+      標準状態のオプション</p></li>
+<li class="listitem"><p>旧式の変数 (後述)
+      の設定から導かれるオプション</p></li>
 <li class="listitem"><p><code class="varname">PKG_DEFAULT_OPTIONS</code></p></li>
 <li class="listitem"><p><code class="varname">PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em></code></p></li>
 </ol></div>
-<p>For groups of mutually exclusive options, the last option
-    selected is used, all others are automatically disabled.  If an
-    option of the group is explicitly disabled, the previously
-    selected option, if any, is used.  It is an error if no option
-    from a required group of options is selected, and building the
-    package will fail.</p>
-<p>Before the options framework was introduced, build options
-    were selected by setting a variable (often named
-    <code class="varname">USE_<em class="replaceable"><code>FOO</code></em></code>) in
-    <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> for each option.  To ease
-    transition to the options framework for the user, these legacy
-    variables are converted to the appropriate options setting
+<p>互いに排他的なオプション群からは、
+    最後に選択されたオプションが使われ、それ以外のオプションは自動的に無効化されます。
+    オプション群のあるオプションが明示的に無効化された場合は、
+    その前に選択されたオプションがあれば、それが使われます。
+    必須のオプション群からどのオプションも選択されなかった場合は、
+    エラーとなり、パッケージの構築は失敗します。</p>
+<p>このオプションの枠組が導入される前は、
+    構築オプションは <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a>
+    で各オプションごとの変数 (たいていは
+    <code class="varname">USE_<em class="replaceable"><code>FOO</code></em></code> という名前)
+    を設定することで選択していました。
+    利用者が現在のオプションの枠組に容易に移行できるようにするため、
+    このような旧式の変数は、適切なオプションの設定
     (<code class="varname">PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em></code>)
-    automatically.  A warning is issued to prompt the user to update
-    <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> to use the options framework
-    directly.  Support for the legacy variables will be removed
-    eventually.</p>
+    に自動的に変換されます。利用者に対しては、
+    <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a>
+    を更新してオプションの枠組を直接使うよう促す警告が表示されます。
+    旧式の変数への対応は、いずれ打ち切られる予定です。</p>
 </div>
 </div>
 <div class="navfooter">
@@ -414,15 +415,15 @@ PKG_OPTIONS.apache=     suexec </pre>
 <table width="100%" summary="Navigation footer">
 <tr>
 <td width="40%" align="left">
-<a accesskey="p" href="using.html">Prev</a>�</td>
+<a accesskey="p" href="using.html">Prev</a> </td>
 <td width="20%" align="center"><a accesskey="u" href="users-guide.html">Up</a></td>
-<td width="40%" align="right">�<a accesskey="n" href="binary.html">Next</a>
+<td width="40%" align="right"> <a accesskey="n" href="binary.html">Next</a>
 </td>
 </tr>
 <tr>
-<td width="40%" align="left" valign="top">Chapter�4.�Using pkgsrc�</td>
+<td width="40%" align="left" valign="top">Chapter 4. pkgsrc を使う </td>
 <td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
-<td width="40%" align="right" valign="top">�Chapter�6.�Creating binary packages</td>
+<td width="40%" align="right" valign="top"> Chapter 6. バイナリーパッケージを作る</td>
 </tr>
 </table>
 </div>

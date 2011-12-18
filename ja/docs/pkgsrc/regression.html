@@ -1,120 +1,118 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Chapter�25.�Regression tests</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chapter 25. 退行テスト</title>
 <link rel="stylesheet" type="text/css" href="/global.css">
 <meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
 <link rel="home" href="index.html" title="The pkgsrc guide">
-<link rel="up" href="infrastructure.html" title="Part�III.�The pkgsrc infrastructure internals">
-<link rel="prev" href="infr.design.html" title="Chapter�24.�Design of the pkgsrc infrastructure">
-<link rel="next" href="porting.html" title="Chapter�26.�Porting pkgsrc">
+<link rel="up" href="infrastructure.html" title="Part III. pkgsrc 基盤の内部">
+<link rel="prev" href="infr.design.html" title="Chapter 24. pkgsrc の基盤の設計">
+<link rel="next" href="porting.html" title="Chapter 26. pkgsrc を移植する">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="navheader">
 <table width="100%" summary="Navigation header">
-<tr><th colspan="3" align="center">Chapter�25.�Regression tests</th></tr>
+<tr><th colspan="3" align="center">Chapter 25. 退行テスト</th></tr>
 <tr>
 <td width="20%" align="left">
-<a accesskey="p" href="infr.design.html">Prev</a>�</td>
-<th width="60%" align="center">Part�III.�The pkgsrc infrastructure internals</th>
-<td width="20%" align="right">�<a accesskey="n" href="porting.html">Next</a>
+<a accesskey="p" href="infr.design.html">Prev</a> </td>
+<th width="60%" align="center">Part III. pkgsrc 基盤の内部</th>
+<td width="20%" align="right"> <a accesskey="n" href="porting.html">Next</a>
 </td>
 </tr>
 </table>
 <hr>
 </div>
-<div class="chapter" title="Chapter�25.�Regression tests">
+<div class="chapter" title="Chapter 25. 退行テスト">
 <div class="titlepage"><div><div><h2 class="title">
-<a name="regression"></a>Chapter�25.�Regression tests</h2></div></div></div>
+<a name="regression"></a>Chapter 25. 退行テスト</h2></div></div></div>
 <div class="toc">
 <p><b>Table of Contents</b></p>
 <dl>
-<dt><span class="sect1"><a href="regression.html#regression.descr">25.1. The regression tests framework</a></span></dt>
-<dt><span class="sect1"><a href="regression.html#regression.run">25.2. Running the regression tests</a></span></dt>
-<dt><span class="sect1"><a href="regression.html#regression.new">25.3. Adding a new regression test</a></span></dt>
+<dt><span class="sect1"><a href="regression.html#regression.descr">25.1. 退行テストの枠組</a></span></dt>
+<dt><span class="sect1"><a href="regression.html#regression.run">25.2. 退行テストを実行する</a></span></dt>
+<dt><span class="sect1"><a href="regression.html#regression.new">25.3. 新しい退行テストを追加する</a></span></dt>
 <dd><dl>
-<dt><span class="sect2"><a href="regression.html#regression.fun.override">25.3.1. Overridable functions</a></span></dt>
-<dt><span class="sect2"><a href="regression.html#regression.fun.helper">25.3.2. Helper functions</a></span></dt>
+<dt><span class="sect2"><a href="regression.html#regression.fun.override">25.3.1. 上書き可能な関数</a></span></dt>
+<dt><span class="sect2"><a href="regression.html#regression.fun.helper">25.3.2. 補助関数</a></span></dt>
 </dl></dd>
 </dl>
 </div>
-<p>The pkgsrc infrastructure consists of a large codebase,
-	and there are many corners where every little bit of a file is
-	well thought out, making pkgsrc likely to fail as soon as
-	anything is changed near those parts. To prevent most changes
-	from breaking anything, a suite of regression tests should go
-	along with every important part of the pkgsrc infrastructure.
-	This chapter describes how regression tests work in pkgsrc and
-	how you can add new tests.</p>
-<div class="sect1" title="25.1.�The regression tests framework">
+<p>pkgsrc の基盤は多くのコードベースの集合体であり、
+	熟考のすえ作られた各小片の周辺を少し変更しただけで
+	pkgsrc が使い物にならなくなるであろう曲り角がたくさんあります。
+	ほとんどの変更によって pkgsrc が壊されることを防ぐため、
+	pkgsrc の基盤の重要な部分に変更を加える場合は、
+	常に一連の退行テストを実行するようにします。
+	本章では、pkgsrc において退行テストがどのように機能するか、および、
+	新しいテストをどのように追加すればよいかを、説明します。</p>
+<div class="sect1" title="25.1. 退行テストの枠組">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="regression.descr"></a>25.1.�The regression tests framework</h2></div></div></div>
+<a name="regression.descr"></a>25.1. 退行テストの枠組</h2></div></div></div>
 <p></p>
 </div>
-<div class="sect1" title="25.2.�Running the regression tests">
+<div class="sect1" title="25.2. 退行テストを実行する">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="regression.run"></a>25.2.�Running the regression tests</h2></div></div></div>
-<p>You first need to install the <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/pkg_regress/README.html" target="_top"><code class="filename">pkgtools/pkg_regress</code></a> package, which
-	provides the <span class="command"><strong>pkg_regress</strong></span> command. Then you
-	can simply run that command, which will run all tests in the
-	<code class="filename">regress</code> category.</p>
+<a name="regression.run"></a>25.2. 退行テストを実行する</h2></div></div></div>
+<p>まず、<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/pkg_regress/README.html" target="_top"><code class="filename">pkgtools/pkg_regress</code></a> パッケージをインストールする必要があります。
+	このパッケージには <span class="command"><strong>pkg_regress</strong></span> コマンドが附属しており、
+	あとは、このコマンドを実行するだけで、
+	<code class="filename">regress</code> カテゴリーにあるテストをすべて実行してくれます。</p>
 </div>
-<div class="sect1" title="25.3.�Adding a new regression test">
+<div class="sect1" title="25.3. 新しい退行テストを追加する">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="regression.new"></a>25.3.�Adding a new regression test</h2></div></div></div>
-<p>Every directory in the <code class="filename">regress</code>
-	category that contains a file called <code class="filename">spec</code>
-	is considered a regression test. This file is a shell program
-	that is included by the <span class="command"><strong>pkg_regress</strong></span> command.
-	The following functions can be overridden to suit your
-	needs.</p>
-<div class="sect2" title="25.3.1.�Overridable functions">
+<a name="regression.new"></a>25.3. 新しい退行テストを追加する</h2></div></div></div>
+<p><code class="filename">regress</code> カテゴリー内のディレクトリーのうち、
+	<code class="filename">spec</code> というファイルを含むものは、
+	それぞれがひとつの退行テストに対応しています。
+	<code class="filename">spec</code> ファイルはシェルプログラムで、
+	<span class="command"><strong>pkg_regress</strong></span> コマンドからインクルードされます。
+	以下の関数は、必要に応じて上書きすることができます。</p>
+<div class="sect2" title="25.3.1. 上書き可能な関数">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="regression.fun.override"></a>25.3.1.�Overridable functions</h3></div></div></div>
-<p>These functions do not take any parameters. They are all
-	called in <span class="quote">&#8220;<span class="quote">set -e</span>&#8221;</span> mode, so you should be careful
-	to check the exitcodes of any commands you run in the
-	test.</p>
+<a name="regression.fun.override"></a>25.3.1. 上書き可能な関数</h3></div></div></div>
+<p>各関数は引数をとりません。関数はいずれも、
+	<span class="quote">“<span class="quote">set -e</span>”</span> された状態の下で呼ばれるので、
+	テストにおいて実行される各コマンドの終了コードを、
+	注意して確認してください。</p>
 <div class="variablelist"><dl>
 <dt><span class="term"><code class="varname">do_setup()</code></span></dt>
-<dd><p>This function prepares the environment for the
-	test. By default it does nothing.</p></dd>
+<dd><p>この関数は、テスト用に環境変数を準備します。
+	標準では、何もしません。</p></dd>
 <dt><span class="term"><code class="varname">do_test()</code></span></dt>
-<dd><p>This function runs the actual test. By default,
-	it calls <code class="varname">TEST_MAKE</code> with the arguments
-	<code class="varname">MAKEARGS_TEST</code> and writes its output including
-	error messages into the file
-	<code class="varname">TEST_OUTFILE</code>.</p></dd>
+<dd><p>この関数は、テストを実際に実行します。
+	標準では、この関数は <code class="varname">TEST_MAKE</code> を
+	引数 <code class="varname">MAKEARGS_TEST</code> で呼んで、
+	エラーメッセージをはじめとする出力をファイル
+	<code class="varname">TEST_OUTFILE</code> に書き込みます。</p></dd>
 <dt><span class="term"><code class="varname">check_result()</code></span></dt>
-<dd><p>This function is run after the test and is
-	typically used to compare the actual output from the one that is
-	expected. It can make use of the various helper functions from
-	the next section.</p></dd>
+<dd><p>この関数は、テスト実行後に実行するもので、
+	ふつうは、実際の出力を予想したものと比較するために使います。
+	これにより、次節のようなさまざまな補助関数が使えるようになります。</p></dd>
 <dt><span class="term"><code class="varname">do_cleanup()</code></span></dt>
-<dd><p>This function cleans everything up after the
-	test has been run. By default it does nothing.</p></dd>
+<dd><p>この関数は、テストの実行が終わった後に、
+	すべての掃除をします。標準では、何もしません。</p></dd>
 </dl></div>
 </div>
-<div class="sect2" title="25.3.2.�Helper functions">
+<div class="sect2" title="25.3.2. 補助関数">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="regression.fun.helper"></a>25.3.2.�Helper functions</h3></div></div></div>
+<a name="regression.fun.helper"></a>25.3.2. 補助関数</h3></div></div></div>
 <div class="variablelist"><dl>
 <dt><span class="term"><code class="varname">exit_status(expected)</code></span></dt>
-<dd><p>This function compares the exitcode of the
-	<span class="command"><strong>do_test()</strong></span> function with its first parameter.
-	If they differ, the test will fail.</p></dd>
+<dd><p>この関数は、<span class="command"><strong>do_test()</strong></span> 関数の終了コードを、
+	第一引数と比較します。
+	異なる場合は、テストは失敗します。</p></dd>
 <dt><span class="term"><code class="varname">output_require(regex...)</code></span></dt>
-<dd><p>This function checks for each of its parameters
-	if the output from <span class="command"><strong>do_test()</strong></span> matches the
-	extended regular expression. If it does not, the test will
-	fail.</p></dd>
+<dd><p>この関数は、各引数について、
+	<span class="command"><strong>do_test()</strong></span>
+	の出力が拡張正規表現に一致することを検査します。
+	一致しない場合、テストは失敗します。</p></dd>
 <dt><span class="term"><code class="varname">output_prohibit(regex...)</code></span></dt>
-<dd><p>This function checks for each of its parameters
-	if the output from <span class="command"><strong>do_test()</strong></span> does
-	<span class="emphasis"><em>not</em></span> match the extended regular expression.
-	If any of the regular expressions matches, the test will
-	fail.</p></dd>
+<dd><p>この関数は、各引数について、
+	<span class="command"><strong>do_test()</strong></span>
+	の出力が拡張正規表現に一致<span class="emphasis"><em>しない</em></span>ことを検査します。
+	いずれかの正規表現に一致する場合、テストは失敗します。</p></dd>
 </dl></div>
 </div>
 </div>
@@ -124,15 +122,15 @@
 <table width="100%" summary="Navigation footer">
 <tr>
 <td width="40%" align="left">
-<a accesskey="p" href="infr.design.html">Prev</a>�</td>
+<a accesskey="p" href="infr.design.html">Prev</a> </td>
 <td width="20%" align="center"><a accesskey="u" href="infrastructure.html">Up</a></td>
-<td width="40%" align="right">�<a accesskey="n" href="porting.html">Next</a>
+<td width="40%" align="right"> <a accesskey="n" href="porting.html">Next</a>
 </td>
 </tr>
 <tr>
-<td width="40%" align="left" valign="top">Chapter�24.�Design of the pkgsrc infrastructure�</td>
+<td width="40%" align="left" valign="top">Chapter 24. pkgsrc の基盤の設計 </td>
 <td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
-<td width="40%" align="right" valign="top">�Chapter�26.�Porting pkgsrc</td>
+<td width="40%" align="right" valign="top"> Chapter 26. pkgsrc を移植する</td>
 </tr>
 </table>
 </div>

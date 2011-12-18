@@ -1,96 +1,97 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Chapter�26.�Porting pkgsrc</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chapter 26. pkgsrc を移植する</title>
 <link rel="stylesheet" type="text/css" href="/global.css">
 <meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
 <link rel="home" href="index.html" title="The pkgsrc guide">
-<link rel="up" href="infrastructure.html" title="Part�III.�The pkgsrc infrastructure internals">
-<link rel="prev" href="regression.html" title="Chapter�25.�Regression tests">
-<link rel="next" href="examples.html" title="Appendix�A.�A simple example package: bison">
+<link rel="up" href="infrastructure.html" title="Part III. pkgsrc 基盤の内部">
+<link rel="prev" href="regression.html" title="Chapter 25. 退行テスト">
+<link rel="next" href="examples.html" title="Appendix A. パッケージの簡単な例: bison">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="navheader">
 <table width="100%" summary="Navigation header">
-<tr><th colspan="3" align="center">Chapter�26.�Porting pkgsrc</th></tr>
+<tr><th colspan="3" align="center">Chapter 26. pkgsrc を移植する</th></tr>
 <tr>
 <td width="20%" align="left">
-<a accesskey="p" href="regression.html">Prev</a>�</td>
-<th width="60%" align="center">Part�III.�The pkgsrc infrastructure internals</th>
-<td width="20%" align="right">�<a accesskey="n" href="examples.html">Next</a>
+<a accesskey="p" href="regression.html">Prev</a> </td>
+<th width="60%" align="center">Part III. pkgsrc 基盤の内部</th>
+<td width="20%" align="right"> <a accesskey="n" href="examples.html">Next</a>
 </td>
 </tr>
 </table>
 <hr>
 </div>
-<div class="chapter" title="Chapter�26.�Porting pkgsrc">
+<div class="chapter" title="Chapter 26. pkgsrc を移植する">
 <div class="titlepage"><div><div><h2 class="title">
-<a name="porting"></a>Chapter�26.�Porting pkgsrc</h2></div></div></div>
+<a name="porting"></a>Chapter 26. pkgsrc を移植する</h2></div></div></div>
 <div class="toc">
 <p><b>Table of Contents</b></p>
 <dl>
-<dt><span class="sect1"><a href="porting.html#porting.opsys">26.1. Porting pkgsrc to a new operating system</a></span></dt>
-<dt><span class="sect1"><a href="porting.html#porting.compiler">26.2. Adding support for a new compiler</a></span></dt>
+<dt><span class="sect1"><a href="porting.html#porting.opsys">26.1. pkgsrc を未対応のオペレーティングシステムに新たに移植する</a></span></dt>
+<dt><span class="sect1"><a href="porting.html#porting.compiler">26.2. 未対応のコンパイラーに新たに対応させる</a></span></dt>
 </dl>
 </div>
-<p>The pkgsrc system has already been ported to many
-	operating systems, hardware architectures and compilers. This
-	chapter explains the necessary steps to make pkgsrc even more
-	portable.</p>
-<div class="sect1" title="26.1.�Porting pkgsrc to a new operating system">
+<p>pkgsrc システムはすでに、多くのオペレーティングシステム、
+	ハードウェアアーキテクチャー、およびコンパイラーに移植されています。
+	本章では、pkgsrc
+	の移植性をさらに高めるために必要な手順を説明します。</p>
+<div class="sect1" title="26.1. pkgsrc を未対応のオペレーティングシステムに新たに移植する">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="porting.opsys"></a>26.1.�Porting pkgsrc to a new operating system</h2></div></div></div>
-<p>To port pkgsrc to a new operating system (called
-	<code class="literal">MyOS</code> in this example), you need to touch the
-	following files:</p>
+<a name="porting.opsys"></a>26.1. pkgsrc を未対応のオペレーティングシステムに新たに移植する</h2></div></div></div>
+<p>pkgsrc を未対応のオペレーティングシステム (以下、
+	<code class="literal">MyOS</code> とします) に移植するには、
+	以下のファイルを作成あるいは修正する必要があります。</p>
 <div class="variablelist"><dl>
 <dt><span class="term"><code class="filename">pkgtools/bootstrap-mk-files/files/mods/<em class="replaceable"><code>MyOS</code></em>.sys.mk</code></span></dt>
-<dd><p>This file contains some basic definitions, for
-	example the name of the C
-	compiler.</p></dd>
+<dd><p>このファイルには、いくつかの基本的な定義、
+	たとえば C
+	コンパイラーの名前が含まれています。</p></dd>
 <dt><span class="term"><code class="filename">mk/bsd.prefs.mk</code></span></dt>
-<dd><p>Insert code that defines the variables
-	<code class="varname">OPSYS</code>, <code class="varname">OS_VERSION</code>,
+<dd><p><code class="varname">OPSYS</code>, <code class="varname">OS_VERSION</code>,
 	<code class="varname">LOWER_OS_VERSION</code>,
 	<code class="varname">LOWER_VENDOR</code>,
 	<code class="varname">MACHINE_ARCH</code>, <code class="varname">OBJECT_FMT</code>,
-	<code class="varname">APPEND_ELF</code>, and the other variables that
-	appear in this file.</p></dd>
+	<code class="varname">APPEND_ELF</code> の各変数、
+	その他このファイルに書かれている各変数を定義するコードを追加します。</p></dd>
 <dt><span class="term"><code class="filename">mk/platform/<em class="replaceable"><code>MyOS</code></em>.mk</code></span></dt>
-<dd><p>This file contains the platform-specific
-	definitions that are used by pkgsrc. Start by copying one of the
-	other files and edit it to your
-	needs.</p></dd>
+<dd><p>このファイルには、
+	pkgsrc が使用するプラットフォーム固有の定義が含まれています。
+	まず他のプラットフォーム用のファイルのいずれかをコピーしてから、
+	必要に応じて編集します。</p></dd>
 <dt><span class="term"><code class="filename">mk/platform/<em class="replaceable"><code>MyOS</code></em>.pkg.dist</code></span></dt>
-<dd><p>This file contains a list of directories,
-	together with their permission bits and ownership. These
-	directories will be created automatically with every package
-	that explicitly sets <code class="varname">USE_MTREE</code>. This feature will
-	be removed.</p></dd>
+<dd><p>このファイルには、ディレクトリーを並べたリストが、
+	パーミッションビットと所有権とともに含まれています。
+	ここに含まれるディレクトリーは、明示的に <code class="varname">USE_MTREE</code>
+	を設定している各パッケージのインストールに際して、
+	自動的に作成されます。この機能は、
+	廃止が予定されています。</p></dd>
 <dt><span class="term"><code class="filename">mk/platform/<em class="replaceable"><code>MyOS</code></em>.x11.dist</code></span></dt>
-<dd><p>Just copy one of the pre-existing x11.dist files
-	to your
-	<code class="filename"><em class="replaceable"><code>MyOS</code></em>.x11.dist</code>.</p></dd>
+<dd><p>既存の x11.dist ファイルのいずれかを、
+	<code class="filename"><em class="replaceable"><code>MyOS</code></em>.x11.dist</code>
+	にコピーするだけです。</p></dd>
 <dt><span class="term"><code class="filename">mk/tools/bootstrap.mk</code></span></dt>
-<dd><p>On some operating systems, the tools that are
-	provided with the base system are not good enough for pkgsrc.
-	For example, there are many versions of <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?sed+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">sed</span>(1)</span></a> that have a
-	narrow limit on the line length they can process. Therefore
-	pkgsrc brings its own tools, which can be enabled
-	here.</p></dd>
+<dd><p>プラットフォームによっては、ベースシステム附属のツールが
+	pkgsrc で使うには不十分なことがあります。
+	たとえば <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?sed+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">sed</span>(1)</span></a> には、
+	処理可能な行長が短く制限されているバージョンがたくさんあります。
+	したがって、pkgsrc では別途ツールを用意しており、
+	このファイルで有効化することができます。</p></dd>
 <dt><span class="term"><code class="filename">mk/tools/tools.<em class="replaceable"><code>MyOS</code></em>.mk</code></span></dt>
-<dd><p>This file defines the paths to all the tools
-	that are needed by one or the other package in pkgsrc, as well
-	as by pkgsrc itself. Find out where these tools are on your
-	platform and add them.</p></dd>
+<dd><p>このファイルでは、
+	pkgsrc 自身が必要とするツールおよび、別のツールや
+	pkgsrc のパッケージが必要とするツールすべてのパスを定義しています。
+	これらのツールが移植対象のプラットフォームではどこにあるかを調べて、
+	書き足します。</p></dd>
 </dl></div>
-<p>Now, you should be able to build some basic packages, like
-	<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/lang/perl5/README.html" target="_top"><code class="filename">lang/perl5</code></a>, <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/shells/bash/README.html" target="_top"><code class="filename">shells/bash</code></a>.</p>
+<p>これで、<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/lang/perl5/README.html" target="_top"><code class="filename">lang/perl5</code></a> や <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/shells/bash/README.html" target="_top"><code class="filename">shells/bash</code></a> のような、
+	いくつかの基本的なパッケージが構築できるようになったはずです。</p>
 </div>
-<div class="sect1" title="26.2.�Adding support for a new compiler">
+<div class="sect1" title="26.2. 未対応のコンパイラーに新たに対応させる">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="porting.compiler"></a>26.2.�Adding support for a new compiler</h2></div></div></div>
+<a name="porting.compiler"></a>26.2. 未対応のコンパイラーに新たに対応させる</h2></div></div></div>
 <p>TODO</p>
 </div>
 </div>
@@ -99,15 +100,15 @@
 <table width="100%" summary="Navigation footer">
 <tr>
 <td width="40%" align="left">
-<a accesskey="p" href="regression.html">Prev</a>�</td>
+<a accesskey="p" href="regression.html">Prev</a> </td>
 <td width="20%" align="center"><a accesskey="u" href="infrastructure.html">Up</a></td>
-<td width="40%" align="right">�<a accesskey="n" href="examples.html">Next</a>
+<td width="40%" align="right"> <a accesskey="n" href="examples.html">Next</a>
 </td>
 </tr>
 <tr>
-<td width="40%" align="left" valign="top">Chapter�25.�Regression tests�</td>
+<td width="40%" align="left" valign="top">Chapter 25. 退行テスト </td>
 <td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
-<td width="40%" align="right" valign="top">�Appendix�A.�A simple example package: bison</td>
+<td width="40%" align="right" valign="top"> Appendix A. パッケージの簡単な例: bison</td>
 </tr>
 </table>
 </div>

@@ -1,72 +1,72 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Chapter�12.�Programming in Makefiles</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chapter 12. Makefile におけるプログラミング</title>
 <link rel="stylesheet" type="text/css" href="/global.css">
 <meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
 <link rel="home" href="index.html" title="The pkgsrc guide">
-<link rel="up" href="developers-guide.html" title="Part�II.�The pkgsrc developer's guide">
-<link rel="prev" href="components.html" title="Chapter�11.�Package components - files, directories and contents">
-<link rel="next" href="plist.html" title="Chapter�13.�PLIST issues">
+<link rel="up" href="developers-guide.html" title="Part II. pkgsrc 開発者向けの手引き">
+<link rel="prev" href="components.html" title="Chapter 11. パッケージコンポーネント - ファイル、ディレクトリー、およびコンテンツ">
+<link rel="next" href="plist.html" title="Chapter 13. PLIST 問題">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <div class="navheader">
 <table width="100%" summary="Navigation header">
-<tr><th colspan="3" align="center">Chapter�12.�Programming in <code class="filename">Makefile</code>s</th></tr>
+<tr><th colspan="3" align="center">Chapter 12. <code class="filename">Makefile</code> におけるプログラミング</th></tr>
 <tr>
 <td width="20%" align="left">
-<a accesskey="p" href="components.html">Prev</a>�</td>
-<th width="60%" align="center">Part�II.�The pkgsrc developer's guide</th>
-<td width="20%" align="right">�<a accesskey="n" href="plist.html">Next</a>
+<a accesskey="p" href="components.html">Prev</a> </td>
+<th width="60%" align="center">Part II. pkgsrc 開発者向けの手引き</th>
+<td width="20%" align="right"> <a accesskey="n" href="plist.html">Next</a>
 </td>
 </tr>
 </table>
 <hr>
 </div>
-<div class="chapter" title="Chapter�12.�Programming in Makefiles">
+<div class="chapter" title="Chapter 12. Makefile におけるプログラミング">
 <div class="titlepage"><div><div><h2 class="title">
-<a name="makefile"></a>Chapter�12.�Programming in <code class="filename">Makefile</code>s</h2></div></div></div>
+<a name="makefile"></a>Chapter 12. <code class="filename">Makefile</code> におけるプログラミング</h2></div></div></div>
 <div class="toc">
 <p><b>Table of Contents</b></p>
 <dl>
-<dt><span class="sect1"><a href="makefile.html#makefile.style">12.1. Caveats</a></span></dt>
-<dt><span class="sect1"><a href="makefile.html#makefile.variables">12.2. <code class="filename">Makefile</code> variables</a></span></dt>
-<dd><dl><dt><span class="sect2"><a href="makefile.html#makefile.variables.names">12.2.1. Naming conventions</a></span></dt></dl></dd>
-<dt><span class="sect1"><a href="makefile.html#makefile.code">12.3. Code snippets</a></span></dt>
+<dt><span class="sect1"><a href="makefile.html#makefile.style">12.1. 警告</a></span></dt>
+<dt><span class="sect1"><a href="makefile.html#makefile.variables">12.2. <code class="filename">Makefile</code> 変数</a></span></dt>
+<dd><dl><dt><span class="sect2"><a href="makefile.html#makefile.variables.names">12.2.1. 命名規約</a></span></dt></dl></dd>
+<dt><span class="sect1"><a href="makefile.html#makefile.code">12.3. コードの断片</a></span></dt>
 <dd><dl>
-<dt><span class="sect2"><a href="makefile.html#adding-to-list">12.3.1. Adding things to a list</a></span></dt>
-<dt><span class="sect2"><a href="makefile.html#converting-internal-to-external">12.3.2. Converting an internal list into an external list</a></span></dt>
-<dt><span class="sect2"><a href="makefile.html#passing-variable-to-shell">12.3.3. Passing variables to a shell command</a></span></dt>
-<dt><span class="sect2"><a href="makefile.html#quoting-guideline">12.3.4. Quoting guideline</a></span></dt>
-<dt><span class="sect2"><a href="makefile.html#bsd-make-bug-workaround">12.3.5. Workaround for a bug in BSD Make</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#adding-to-list">12.3.1. リストに要素を追加する</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#converting-internal-to-external">12.3.2. 内部リストを外部リストに変換する</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#passing-variable-to-shell">12.3.3. シェルコマンドに値を渡す</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#quoting-guideline">12.3.4. クォートの指針</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#bsd-make-bug-workaround">12.3.5. BSD Make のバグの回避方法</a></span></dt>
 </dl></dd>
 </dl>
 </div>
-<p>Pkgsrc consists of many <code class="filename">Makefile</code> fragments,
-  each of which forms a well-defined part of the pkgsrc system. Using
-  the <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> system as a programming language for a big system
-  like pkgsrc requires some discipline to keep the code correct and
-  understandable.</p>
-<p>The basic ingredients for <code class="filename">Makefile</code>
-  programming are variables (which are actually macros) and shell
-  commands. Among these shell commands may even be more complex ones
-  like <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?awk+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">awk</span>(1)</span></a> programs. To make sure that every shell command runs
-  as intended it is necessary to quote all variables correctly when they
-  are used.</p>
-<p>This chapter describes some patterns, that appear quite often in
-  <code class="filename">Makefile</code>s, including the pitfalls that come along
-  with them.</p>
-<div class="sect1" title="12.1.�Caveats">
+<p>pkgsrc は、多くの <code class="filename">Makefile</code> の断片からなっており、
+  この各断片が、pkgsrc システムの各部分を明確に形成しています。
+  pkgsrc のような大規模なシステムのプログラミング言語として <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a>
+  システムを使う場合、コードを適切かつわかりやすい状態に保つために、
+  いくらかの規律が必要です。</p>
+<p><code class="filename">Makefile</code> プログラミングの基本的な構成要素は、
+  変数 (実はマクロ) とシェルコマンドです。
+  シェルコマンドは、<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?awk+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">awk</span>(1)</span></a> プログラムのような複雑なものになることもあります。
+  各シェルコマンドを意図どおりに動かすため、変数を使うときは、
+  すべての変数を適切にクォートすることが必要です。</p>
+<p>本章では、<code class="filename">Makefile</code>
+  で頻出するいくつかのパターンと、
+  それらに伴う落とし穴を説明します。</p>
+<div class="sect1" title="12.1. 警告">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="makefile.style"></a>12.1.�Caveats</h2></div></div></div>
+<a name="makefile.style"></a>12.1. 警告</h2></div></div></div>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
-<p>When you are creating a file as a
-    target of a rule, always write the data to a temporary file first
-    and finally rename that file. Otherwise there might occur an error
-    in the middle of generating the file, and when the user runs
-    <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> for the second time, the file exists and will not be
-    regenerated properly. Example:</p>
+<p>ルールのターゲットとしてファイルを作る場合、
+    常に、データをまず一時ファイルに書き込んでから、
+    最後にファイル名を変えるようにしてください。
+    そうしておかないと、ファイルの生成の途中にエラーが起きた場合、
+    利用者が <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> を 2 回目に実行したときに、
+    前回のファイルが存在したままとなり、ファイルが正しく再生成されません。
+    たとえば、</p>
 <pre class="programlisting">
 wrong:
         @echo "line 1" &gt; ${.TARGET}
@@ -79,101 +79,103 @@ correct:
         @false
         @mv ${.TARGET}.tmp ${.TARGET}
 </pre>
-<p>When you run <span class="command"><strong>make wrong</strong></span> twice, the file
-    <code class="filename">wrong</code> will exist, although there was an error
-    message in the first run. On the other hand, running <span class="command"><strong>make
-    correct</strong></span> gives an error message twice, as expected.</p>
-<p>You might remember that <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> sometimes removes
-    <code class="literal">${.TARGET}</code> in case of error, but this only
-    happens when it is interrupted, for example by pressing
-    <code class="literal">^C</code>. This does <span class="emphasis"><em>not</em></span> happen
-    when one of the commands fails (like <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?false+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">false</span>(1)</span></a> above).</p>
+<p><span class="command"><strong>make wrong</strong></span> を 2 回実行したときに、
+    1 回目の実行でエラーメッセージが出ますが、
+    ファイル <code class="filename">wrong</code> は作られた状態になります。
+    一方、<span class="command"><strong>make
+    correct</strong></span> を実行すると、エラーメッセージが 2 回出るという、
+    期待どおりの動作となります。</p>
+<p>エラーの場合には <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> が <code class="literal">${.TARGET}</code>
+    を削除することがあるということをご存知かもしれませんが、
+    この削除は、たとえば <code class="literal">^C</code> を押すなど、
+    割り込みがあった場合にのみおこなわれます。コマンドのどれかが
+    (上の例の <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?false+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">false</span>(1)</span></a> のように) 失敗した場合には、
+    削除は<span class="emphasis"><em>おこなわれません</em></span>。</p>
 </li></ul></div>
 </div>
-<div class="sect1" title="12.2.�Makefile variables">
+<div class="sect1" title="12.2. Makefile 変数">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="makefile.variables"></a>12.2.�<code class="filename">Makefile</code> variables</h2></div></div></div>
-<p><code class="filename">Makefile</code> variables contain strings that
-    can be processed using the five operators ``='', ``+='', ``?='',
-    ``:='', and ``!='', which are described in the <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> man
-    page.</p>
-<p>When a variable's value is parsed from a
-    <code class="filename">Makefile</code>, the hash character ``#'' and the
-    backslash character ``\'' are handled specially. If a backslash is
-    followed by a newline, any whitespace immediately in front of the
-    backslash, the backslash, the newline, and any whitespace
-    immediately behind the newline are replaced with a single space. A
-    backslash character and an immediately following hash character are
-    replaced with a single hash character. Otherwise, the backslash is
-    passed as is. In a variable assignment, any hash character that is
-    not preceded by a backslash starts a comment that continues upto the
-    end of the logical line.</p>
-<p><span class="emphasis"><em>Note:</em></span> Because of this parsing algorithm
-    the only way to create a variable consisting of a single backslash
-    is using the ``!='' operator, for example: <code class="varname">BACKSLASH!=echo "\\"</code>.</p>
-<p>So far for defining variables. The other thing you can do with
-    variables is evaluating them. A variable is evaluated when it is
-    part of the right side of the ``:='' or the ``!='' operator, or
-    directly before executing a shell command which the variable is part
-    of. In all other cases, <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> performs lazy evaluation, that
-    is, variables are not evaluated until there's no other way. The
-    ``modifiers'' mentioned in the man page also evaluate the
-    variable.</p>
-<p>Some of the modifiers split the string into words and then
-    operate on the words, others operate on the string as a whole. When
-    a string is split into words, it is split as you would expect
-    it from <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?sh+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">sh</span>(1)</span></a>.</p>
-<p>No rule without exception&mdash;the <span class="command"><strong>.for</strong></span>
-    loop does not follow the shell quoting rules but splits at sequences
-    of whitespace.</p>
-<p>There are several types of variables that should be handled
-    differently. Strings and two types of lists.</p>
+<a name="makefile.variables"></a>12.2. <code class="filename">Makefile</code> 変数</h2></div></div></div>
+<p><code class="filename">Makefile</code> 変数は文字列を値として持ち、
+    文字列は 5 種類の演算子  ``='', ``+='', ``?='',
+    ``:='', ``!='' を使って操作することができます。演算子については
+    <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> マニュアルページに説明があります。</p>
+<p><code class="filename">Makefile</code> の変数が解釈される際、
+    ハッシュ文字 ``#'' とバックスラッシュ文字  ``\'' は特別扱いされます。
+    バックスラッシュに改行が続く場合、当該バックスラッシュの直前にあるあらゆる空白・
+    当該バックスラッシュ・改行・改行の直後にあるあらゆる空白は、
+    ひとつのスペースに置き換えられます。
+    バックスラッシュ文字とその直後に続くハッシュ文字は、
+    ひとつのハッシュ文字に置き換えられます。
+    以上の場合以外は、バックスラッシュはそのまま渡されます。
+    変数への代入の際は、ハッシュ文字 (その前にバックスラッシュがないもの)
+    はコメントの開始となり、そこから論理行の最後までがコメントとなります。</p>
+<p><span class="emphasis"><em>註:</em></span> このようなアルゴリズムで解釈されるせいで、
+    バックスラッシュ一文字を値として持つ変数を作るには、
+    ``!='' 演算子を使う方法しかありません。たとえば以下のようにします: <code class="varname">BACKSLASH!=echo "\\"</code>.</p>
+<p>以上は、変数の定義に関する説明です。このほか、変数に関してできることは、
+    変数を評価することです。変数が評価されるのは、変数が ``:='' または ``!=''
+    演算子の右辺にある場合と、変数がシェルコマンドの一部となっている場合
+    (コマンドが実行される直前に評価される) です。これら以外の場合、
+    <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> は遅延評価をおこないます。つまり、
+    変数は他の処理がすべてすんだ後に評価されます。
+    このほか、マニュアルページに記載されている「修飾子」も、
+    変数を評価します。</p>
+<p>修飾子のなかには、文字列を語に分割してから、分割した語に対して操作をするものがあります。
+    それ以外の修飾子は、文字列全体に対して操作をします。
+    文字列が語に分割される場合、その分割は、
+    <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?sh+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">sh</span>(1)</span></a> の解釈と同様の方式でおこなわれます。</p>
+<p>例外のない規則はありません&mdash; <span class="command"><strong>.for</strong></span>
+    ループはシェルのクォートの規約には従わず、
+    空白の並びで分離します。</p>
+<p>変数には、取り扱い方が異なる複数の種類の変数があります。
+    文字列 (strings) と、二種類のリストです。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
-<li class="listitem"><p><span class="emphasis"><em>Strings</em></span> can contain arbitrary
-      characters. Nevertheless, you should restrict yourself to only
-      using printable characters. Examples are
-      <code class="varname">PREFIX</code> and
-      <code class="varname">COMMENT</code>.</p></li>
-<li class="listitem"><p><span class="emphasis"><em>Internal lists</em></span> are lists that
-      are never exported to any shell command. Their elements are
-      separated by whitespace. Therefore, the elements themselves cannot
-      have embedded whitespace. Any other characters are allowed.
-      Internal lists can be used in <span class="command"><strong>.for</strong></span> loops.
-      Examples are <code class="varname">DEPENDS</code> and
-      <code class="varname">BUILD_DEPENDS</code>.</p></li>
-<li class="listitem"><p><span class="emphasis"><em>External lists</em></span> are lists that
-      may be exported to a shell command. Their elements can contain any
-      characters, including whitespace. That's why they cannot be used
-      in <span class="command"><strong>.for</strong></span> loops. Examples are
-      <code class="varname">DISTFILES</code> and
-      <code class="varname">MASTER_SITES</code>.</p></li>
+<li class="listitem"><p>文字列 (<span class="emphasis"><em>strings</em></span>) には、
+      任意の文字を含めることができます。とはいえ、
+      使うのは印字可能文字だけにしておくのがよいでしょう。
+      例としては <code class="varname">PREFIX</code> や
+      <code class="varname">COMMENT</code> があります。</p></li>
+<li class="listitem"><p>内部リスト (<span class="emphasis"><em>internal lists</em></span>) は、
+      シェルコマンドに決して渡されることのないリストです。
+      内部リストの要素は空白で区切られます。このため、
+      要素自体に空白を含めることはできません。空白以外の文字はすべて使うことができます。
+      内部リストは <span class="command"><strong>.for</strong></span> ループ内で使うことができます。
+      例としては <code class="varname">DEPENDS</code> や
+      <code class="varname">BUILD_DEPENDS</code> があります。</p></li>
+<li class="listitem"><p>外部リスト (<span class="emphasis"><em>external lists</em></span>) は、
+      シェルコマンドに渡すことのできるリストです。外部リストの要素には、
+      空白を含む任意の文字を含めることができます。このことが理由で、
+      外部リストは <span class="command"><strong>.for</strong></span> ループ内では使うことができません。
+      例としては <code class="varname">DISTFILES</code> や
+      <code class="varname">MASTER_SITES</code> があります。</p></li>
 </ul></div>
-<div class="sect2" title="12.2.1.�Naming conventions">
+<div class="sect2" title="12.2.1. 命名規約">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="makefile.variables.names"></a>12.2.1.�Naming conventions</h3></div></div></div>
+<a name="makefile.variables.names"></a>12.2.1. 命名規約</h3></div></div></div>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
-<li class="listitem"><p>All variable names starting with an underscore
-	are reserved for use by the pkgsrc infrastructure. They shall
-	not be used by package
-	<code class="filename">Makefile</code>s.</p></li>
-<li class="listitem"><p>In <span class="command"><strong>.for</strong></span> loops you should use
-	lowercase variable names for the iteration
-	variables.</p></li>
-<li class="listitem"><p>All list variables should have a ``plural''
-	name, e.g. <code class="varname">PKG_OPTIONS</code> or
-	<code class="varname">DISTFILES</code>.</p></li>
+<li class="listitem"><p>下線で始まる変数名はすべて、
+	pkgsrc の基盤が使うために予約されています。
+	そのような変数名はパッケージの
+	<code class="filename">Makefile</code> では使ってはいけません。</p></li>
+<li class="listitem"><p><span class="command"><strong>.for</strong></span> ループでは、
+	反復変数の変数名は小文字にします。
+	</p></li>
+<li class="listitem"><p>リスト変数はすべて、<code class="varname">PKG_OPTIONS</code> や
+	<code class="varname">DISTFILES</code> のように、
+	「複数形」の名前にします。</p></li>
 </ul></div>
 </div>
 </div>
-<div class="sect1" title="12.3.�Code snippets">
+<div class="sect1" title="12.3. コードの断片">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="makefile.code"></a>12.3.�Code snippets</h2></div></div></div>
-<p>This section presents you with some code snippets you should
-    use in your own code. If you don't find anything appropriate here,
-    you should test your code and add it here.</p>
-<div class="sect2" title="12.3.1.�Adding things to a list">
+<a name="makefile.code"></a>12.3. コードの断片</h2></div></div></div>
+<p>本節では、読者がコードを書く際に使うことになるコードの断片を
+    いくつか説明します。適当なコードがここに載っていない場合は、
+    あなたのコードをテストして、ここに追加してください。</p>
+<div class="sect2" title="12.3.1. リストに要素を追加する">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="adding-to-list"></a>12.3.1.�Adding things to a list</h3></div></div></div>
+<a name="adding-to-list"></a>12.3.1. リストに要素を追加する</h3></div></div></div>
 <pre class="programlisting">
 STRING=                 foo * bar `date`
 INT_LIST=               # empty
@@ -186,33 +188,33 @@ INT_LIST+=              ${ANOTHER_INT_LIST}     # 2
 EXT_LIST+=              ${STRING:Q}             # 3
 EXT_LIST+=              ${ANOTHER_EXT_LIST}     # 4
 </pre>
-<p>When you add a string to an external list (example 3), it
-      must be quoted. In all other cases, you must not add a quoting
-      level. You must not merge internal and external lists, unless you
-      are sure that all entries are correctly interpreted in both
-      lists.</p>
+<p>文字列を外部リストに追加する場合 (例 3) は、
+      その文字列をクォートする必要があります。それ以外の場合は、
+      クォートを追加してはいけません。内部リストと外部リストは、
+      その各要素がどちらのリストでも適切に処理されることが確実な場合をのぞき、
+      統合してはいけません。</p>
 </div>
-<div class="sect2" title="12.3.2.�Converting an internal list into an external list">
+<div class="sect2" title="12.3.2. 内部リストを外部リストに変換する">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="converting-internal-to-external"></a>12.3.2.�Converting an internal list into an external list</h3></div></div></div>
+<a name="converting-internal-to-external"></a>12.3.2. 内部リストを外部リストに変換する</h3></div></div></div>
 <pre class="programlisting">
 EXT_LIST=       # empty
 .for i in ${INT_LIST}
 EXT_LIST+=      ${i:Q}""
 .endfor
 </pre>
-<p>This code converts the internal list
-      <code class="varname">INT_LIST</code> into the external list
-      <code class="varname">EXT_LIST</code>. As the elements of an internal list
-      are unquoted they must be quoted here. The reason for appending
-      <code class="varname">""</code> is explained below.</p>
+<p>このコードは、内部リスト
+      <code class="varname">INT_LIST</code> を外部リスト
+      <code class="varname">EXT_LIST</code> に変換します。内部リストの要素はクォートされていないので、
+      変換に際してはクォートする必要があります。
+      <code class="varname">""</code> を追加する理由は後述します。</p>
 </div>
-<div class="sect2" title="12.3.3.�Passing variables to a shell command">
+<div class="sect2" title="12.3.3. シェルコマンドに値を渡す">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="passing-variable-to-shell"></a>12.3.3.�Passing variables to a shell command</h3></div></div></div>
-<p>Sometimes you may want to print an arbitrary string. There
-	are many ways to get it wrong and only few that can handle every
-	nastiness.</p>
+<a name="passing-variable-to-shell"></a>12.3.3. シェルコマンドに値を渡す</h3></div></div></div>
+<p>時には、任意の文字列を出力したいことがあるかもしれません。
+	不具合を起こす方法はたくさんありますが、
+	どんな複雑なものも扱えるような方法は少ししかありません。</p>
 <pre class="programlisting">
 STRING=         foo bar &lt;    &gt; * `date` $$HOME ' "
 EXT_LIST=       string=${STRING:Q} x=second\ item
@@ -226,56 +228,52 @@ all:
         printf "%s\\n" ${STRING:Q}""    # 6
         env ${EXT_LIST} /bin/sh -c 'echo "$$string"; echo "$$x"'
 </pre>
-<p>Example 1 leads to a syntax error in the shell, as the
-      characters are just copied.</p>
-<p>Example 2 leads to a syntax error too, and if you leave out
-      the last " character from <code class="varname">${STRING}</code>,
-      <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?date+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">date</span>(1)</span></a> will be executed. The <code class="varname">$HOME</code> shell
-      variable would be evaluated, too.</p>
-<p>Example 3 outputs each space character preceded by a
-      backslash (or not), depending on the implementation of the
-      <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> command.</p>
-<p>Example 4 handles correctly every string that does not start
-      with a dash. In that case, the result depends on the
-      implementation of the <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> command. As long as you can
-      guarantee that your input does not start with a dash, this form is
-      appropriate.</p>
-<p>Example 5 handles even the case of a leading dash
-      correctly.</p>
-<p>Example 6 also works with every string and is the
-      light-weight solution, since it does not involve a pipe, which has
-      its own problems.</p>
-<p>The <code class="varname">EXT_LIST</code> does not need to be quoted
-      because the quoting has already been done when adding elements to
-      the list.</p>
-<p>As internal lists shall not be passed to the shell, there is
-      no example for it.</p>
+<p>例 1 は、シェルで構文エラーを起こします。
+      各文字がそのままコピーされるだけだからです。</p>
+<p>例 2 も構文エラーを起こします。また、<code class="varname">${STRING}</code> の末尾の "
+      文字を除いた場合は、<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?date+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">date</span>(1)</span></a> が実行されてしまいます。
+      また、<code class="varname">$HOME</code> シェル変数も評価されるでしょう。</p>
+<p>例 3 は、<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> コマンドの実装によって、
+      各空白文字の前にバックスラッシュが出力されたり、
+      されなかったりします。</p>
+<p>例 4 は、最初の文字がダッシュでない文字列はすべて適切に処理します。
+      文字列の最初の文字がダッシュの場合、結果がどうなるかは
+      <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> コマンドの実装に依存します。
+      入力される文字列の最初の文字がダッシュにならないことを保証できる限りは、この形式は適切です。</p>
+<p>例 5 は、たとえ文字列がダッシュで始まっていたとしても、
+      適切に処理します。</p>
+<p>例 6 も、あらゆる文字列を適切に処理できますし、
+      それ自体に問題のあるパイプを使わないので、
+      より軽い方法です。</p>
+<p><code class="varname">EXT_LIST</code> はクォートする必要はありません。
+      なぜなら、リストに要素を追加した時に、
+      すでにクォートされているからです。</p>
+<p>内部リストはシェルに渡されないものなので、
+      例示はありません。</p>
 </div>
-<div class="sect2" title="12.3.4.�Quoting guideline">
+<div class="sect2" title="12.3.4. クォートの指針">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="quoting-guideline"></a>12.3.4.�Quoting guideline</h3></div></div></div>
-<p>There are many possible sources of wrongly quoted variables.
-      This section lists some of the commonly known ones.</p>
+<a name="quoting-guideline"></a>12.3.4. クォートの指針</h3></div></div></div>
+<p>変数が不適切にクォートされたソースは、多くありえます。
+      本節では、よく知られている例をいくつか掲げます。</p>
 <div class="itemizedlist"><ul class="itemizedlist" type="disc">
 <li class="listitem">
-<p>Whenever you use the value of a list, think
-	about what happens to leading or trailing whitespace. If the
-	list is a well-formed shell expression, you can apply the
-	<code class="varname">:M*</code> modifier to strip leading and trailing
-	whitespace from each word. The <code class="varname">:M</code> operator
-	first splits its argument according to the rules of the shell,
-	and then creates a new list consisting of all words that match
-	the shell glob expression <code class="varname">*</code>, that is: all.
-	One class of situations where this is needed is when adding a
-	variable like <code class="varname">CPPFLAGS</code> to
-	<code class="varname">CONFIGURE_ARGS</code>. If the configure script
-	invokes other configure scripts, it strips the leading and
-	trailing whitespace from the variable and then passes it to the
-	other configure scripts. But these configure scripts expect the
-	(child) <code class="varname">CPPFLAGS</code> variable to be the same as
-	the parent <code class="varname">CPPFLAGS</code>. That's why we better
-	pass the <code class="varname">CPPFLAGS</code> value properly trimmed. And
-	here is how we do it:</p>
+<p>リストの値を使うときは常に、
+	値の冒頭や末尾にある空白がどうなるかを考えてください。
+	リストが整形式のシェルの式である場合、それぞれの語から冒頭や末尾の空白を取り除くために、
+	<code class="varname">:M*</code> 修飾子を使うことができます。
+	<code class="varname">:M</code> 演算子は、最初にその引数をシェルの規約に従って分割してから、
+	シェルのグロブ式 <code class="varname">*</code> にマッチする語 (つまり全部)
+	すべてからなるリストを新たに作ります。
+	これが必要となる状況は、<code class="varname">CPPFLAGS</code> のような変数を
+	<code class="varname">CONFIGURE_ARGS</code> に追加する場合です。
+	configure スクリプトが別の configure スクリプトから呼び出される場合、
+	呼び出された側のスクリプトは変数から冒頭と末尾の空白を取り除き、
+	それを別の configure スクリプトに渡します。しかし、この両 configure
+	スクリプトは、(子の) <code class="varname">CPPFLAGS</code> 変数が
+	親の <code class="varname">CPPFLAGS</code> と同じものであると見込んでいます。
+	これが、<code class="varname">CPPFLAGS</code> の値を適切に切り取ったものを
+	渡したほうがよい理由です。そして、以下に掲げるのは、その方法です。</p>
 <pre class="programlisting">
 CPPFLAGS=               # empty
 CPPFLAGS+=              -Wundef -DPREFIX=\"${PREFIX:Q}\"
@@ -284,26 +282,26 @@ CPPFLAGS+=              ${MY_CPPFLAGS}
 CONFIGURE_ARGS+=        CPPFLAGS=${CPPFLAGS:M*:Q}
 
 all:
-        echo x${CPPFLAGS:Q}x            # leading and trailing whitespace
-        echo x${CONFIGURE_ARGS}x        # properly trimmed
+        echo x${CPPFLAGS:Q}x            # 前後に空白がつく
+        echo x${CONFIGURE_ARGS}x        # 適切に切り取られる
 </pre>
 </li>
-<li class="listitem"><p>The example above contains one bug: The
-	<code class="varname">${PREFIX}</code> is a properly quoted shell
-	expression, but there is the C compiler after it, which also
-	expects a properly quoted string (this time in C syntax). The
-	version above is therefore only correct if
-	<code class="varname">${PREFIX}</code> does not have embedded backslashes
-	or double quotes. If you want to allow these, you have to add
-	another layer of quoting to each variable that is used as a C
-	string literal. You cannot use the <code class="varname">:Q</code>
-	operator for it, as this operator only works for the
-	shell.</p></li>
+<li class="listitem"><p>上の例にはバグがひとつあります:
+	<code class="varname">${PREFIX}</code> は適切にクォートされたシェルの式ですが、
+	シェルの後には C コンパイラーがあり、こちらでも適切に
+	(今度は C の文法で) クォートされている必要があります。
+	このため、上で例示したものは、<code class="varname">${PREFIX}</code>
+	の値にバックスラッシュや二重引用符が含まれていない場合に限って、
+	正しいものになります。これらの文字を含めたい場合、
+	C の文字列リテラルとして扱われる値をすべてクォートするために、
+	もう一つの層を追加する必要があります。
+	<code class="varname">:Q</code> 演算子はシェル用のクォートしかできないので、
+	C コンパイラー用のクォートには使えません。</p></li>
 <li class="listitem">
-<p>Whenever a variable can be empty, the
-	<code class="varname">:Q</code> operator can have surprising results. Here
-	are two completely different cases which can be solved with the
-	same trick.</p>
+<p>値が空になりうる場合は、
+	<code class="varname">:Q</code> 演算子が妙な結果を出すことがあります。
+	以下に 2 種類のまったく異なる事例を掲げますが、
+	どちらも同じ細工をすることで解決できます。</p>
 <pre class="programlisting">
 EMPTY=                  # empty
 empty_test:
@@ -317,36 +315,37 @@ for_test:
         echo "foo"
 .endfor
 </pre>
-<p>The first example will only print two of the three lines
-	we might have expected. This is because
-	<code class="varname">${EMPTY:Q}</code> expands to the empty string, which
-	the shell cannot see. The workaround is to write
-	<code class="varname">${EMPTY:Q}""</code>. This pattern can be often found
-	as <code class="varname">${TEST} -z ${VAR:Q}</code> or as <code class="varname">${TEST}
-	-f ${FNAME:Q}</code> (both of these are wrong).</p>
-<p>The second example will only print three lines instead of
-	four. The first line looks like <code class="varname">a:\ echo foo</code>.
-	This is because the backslash of the value
-	<code class="varname">a:\</code> is interpreted as a line-continuation by
-	<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a>, which makes the second line the arguments of the
-	<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> command from the first line. To avoid this, write
-	<code class="varname">${i:Q}""</code>.</p>
+<p>一つ目の例では、3 行が表示されると思うかもしれませんが、
+	そのうちの 2 行しか表示されません。これは、
+	<code class="varname">${EMPTY:Q}</code> が空の文字列に展開され、
+	シェルからは見えなくなるからです。回避策は、
+	<code class="varname">${EMPTY:Q}""</code> と書くことです。このパターンは、
+	<code class="varname">${TEST} -z ${VAR:Q}</code> や <code class="varname">${TEST}
+	-f ${FNAME:Q}</code> のように、しばしば見られます
+	(いずれも、間違いです)。</p>
+<p>二つ目の例では、表示されるのは 4 行ではなく 3 行です。
+	最初に表示される行は <code class="varname">a:\ echo foo</code> のようになります。
+	これは、値 <code class="varname">a:\</code> のバックスラッシュを
+	<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> が継続行として処理し、2 行目が 1 行目の
+	<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-5.0.1+i386"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> コマンドの引数になってしまうためです。
+	これを防ぐには、<code class="varname">${i:Q}""</code>
+	と書きます。</p>
 </li>
 </ul></div>
 </div>
-<div class="sect2" title="12.3.5.�Workaround for a bug in BSD Make">
+<div class="sect2" title="12.3.5. BSD Make のバグの回避方法">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="bsd-make-bug-workaround"></a>12.3.5.�Workaround for a bug in BSD Make</h3></div></div></div>
-<p>The pkgsrc bmake program does not handle the following
-      assignment correctly. In case <code class="varname">_othervar_</code>
-      contains a ``-'' character, one of the closing braces is included
-      in <code class="varname">${VAR}</code> after this code executes.</p>
+<a name="bsd-make-bug-workaround"></a>12.3.5. BSD Make のバグの回避方法</h3></div></div></div>
+<p>pkgsrc の bmake プログラムは、以下のような代入を適切に処理することができません。
+      <code class="varname">_othervar_</code> が ``-'' 文字を含んでいる場合、
+      以下のコードを実行すると、閉じ中括弧のひとつが
+      <code class="varname">${VAR}</code> に含まれてしまいます。</p>
 <pre class="programlisting">
 VAR:=   ${VAR:N${_othervar_:C/-//}}
 </pre>
-<p>For a more complex code snippet and a workaround, see the
-      package <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/regress/make-quoting/README.html" target="_top"><code class="filename">regress/make-quoting</code></a>, testcase
-      <code class="varname">bug1</code>.</p>
+<p>もっと複雑なコードの断片と回避策については、
+      <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/regress/make-quoting/README.html" target="_top"><code class="filename">regress/make-quoting</code></a> パッケージのテストケース
+      <code class="varname">bug1</code> をご覧ください。</p>
 </div>
 </div>
 </div>
@@ -355,15 +354,15 @@ VAR:=   ${VAR:N${_othervar_:C/-//}}
 <table width="100%" summary="Navigation footer">
 <tr>
 <td width="40%" align="left">
-<a accesskey="p" href="components.html">Prev</a>�</td>
+<a accesskey="p" href="components.html">Prev</a> </td>
 <td width="20%" align="center"><a accesskey="u" href="developers-guide.html">Up</a></td>
-<td width="40%" align="right">�<a accesskey="n" href="plist.html">Next</a>
+<td width="40%" align="right"> <a accesskey="n" href="plist.html">Next</a>
 </td>
 </tr>
 <tr>
-<td width="40%" align="left" valign="top">Chapter�11.�Package components - files, directories and contents�</td>
+<td width="40%" align="left" valign="top">Chapter 11. パッケージコンポーネント - ファイル、ディレクトリー、およびコンテンツ </td>
 <td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
-<td width="40%" align="right" valign="top">�Chapter�13.�PLIST issues</td>
+<td width="40%" align="right" valign="top"> Chapter 13. PLIST 問題</td>
 </tr>
 </table>
 </div>
