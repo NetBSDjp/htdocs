@@ -1,0 +1,318 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 24. Design of the pkgsrc infrastructure</title>
+<link rel="stylesheet" type="text/css" href="/global.css">
+<meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
+<link rel="home" href="index.html" title="The pkgsrc guide">
+<link rel="up" href="infrastructure.html" title="Part III. The pkgsrc infrastructure internals">
+<link rel="prev" href="infrastructure.html" title="Part III. The pkgsrc infrastructure internals">
+<link rel="next" href="regression.html" title="Chapter 25. Regression tests">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr><th colspan="3" align="center">Chapter 24. Design of the pkgsrc infrastructure</th></tr>
+<tr>
+<td width="20%" align="left">
+<a accesskey="p" href="infrastructure.html">Prev</a> </td>
+<th width="60%" align="center">Part III. The pkgsrc infrastructure internals</th>
+<td width="20%" align="right"> <a accesskey="n" href="regression.html">Next</a>
+</td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter" title="Chapter 24. Design of the pkgsrc infrastructure">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="infr.design"></a>Chapter 24. Design of the pkgsrc infrastructure</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="sect1"><a href="infr.design.html#infr.vardef">24.1. The meaning of variable definitions</a></span></dt>
+<dt><span class="sect1"><a href="infr.design.html#infr.vardef.problems">24.2. Avoiding problems before they arise</a></span></dt>
+<dt><span class="sect1"><a href="infr.design.html#infr.var">24.3. Variable evaluation</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="infr.design.html#infr.var.load">24.3.1. At load time</a></span></dt>
+<dt><span class="sect2"><a href="infr.design.html#infr.var.run">24.3.2. At runtime</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="infr.design.html#infr.varspec">24.4. How can variables be specified?</a></span></dt>
+<dt><span class="sect1"><a href="infr.design.html#infr.design.intf">24.5. Designing interfaces for Makefile fragments</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="infr.design.html#infr.design.intf.proc">24.5.1. Procedures with parameters</a></span></dt>
+<dt><span class="sect2"><a href="infr.design.html#infr.design.intf.action">24.5.2. Actions taken on behalf of parameters</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="infr.design.html#infr.order">24.6. The order in which files are loaded</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="infr.design.html#infr.order.prefs">24.6.1. The order in <code class="filename">bsd.prefs.mk</code></a></span></dt>
+<dt><span class="sect2"><a href="infr.design.html#infr.order.pkg">24.6.2. The order in <code class="filename">bsd.pkg.mk</code></a></span></dt>
+</dl></dd>
+</dl>
+</div>
+<p>The pkgsrc infrastructure consists of many small Makefile
+	fragments. Each such fragment needs a properly specified
+	interface. This chapter explains how such an interface looks
+	like.</p>
+<div class="sect1" title="24.1. The meaning of variable definitions">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="infr.vardef"></a>24.1. The meaning of variable definitions</h2></div></div></div>
+<p>Whenever a variable is defined in the pkgsrc
+	infrastructure, the location and the way of definition provide
+	much information about the intended use of that variable.
+	Additionally, more documentation may be found in a header
+	comment or in this pkgsrc guide.</p>
+<p>A special file is
+	<code class="filename">mk/defaults/mk.conf</code>, which lists all
+	variables that are intended to be user-defined. They are either
+	defined using the <code class="literal">?=</code> operator or they are
+	left undefined because defining them to anything would
+	effectively mean <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span>. All these variables may be
+	overridden by the pkgsrc user in the <code class="varname">MAKECONF</code>
+	file.</p>
+<p>Outside this file, the following conventions apply:
+	Variables that are defined using the <code class="literal">?=</code>
+	operator may be overridden by a package.</p>
+<p>Variables that are defined using the <code class="literal">=</code>
+	operator may be used read-only at run-time.</p>
+<p>Variables whose name starts with an underscore must not be
+	accessed outside the pkgsrc infrastructure at all. They may
+	change without further notice.</p>
+<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>These conventions are currently not applied
+	consistently to the complete pkgsrc
+	infrastructure.</p>
+</div>
+</div>
+<div class="sect1" title="24.2. Avoiding problems before they arise">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="infr.vardef.problems"></a>24.2. Avoiding problems before they arise</h2></div></div></div>
+<p>All variables that contain lists of things should default
+	to being empty. Two examples that do not follow this rule are
+	<code class="varname">USE_LANGUAGES</code> and
+	<code class="varname">DISTFILES</code>. These variables cannot simply be
+	modified using the <code class="literal">+=</code> operator in package
+	<code class="filename">Makefile</code>s (or other files included by
+	them), since there is no guarantee whether the variable is
+	already set or not, and what its value is. In the case of
+	<code class="varname">DISTFILES</code>, the packages <span class="quote">&#8220;<span class="quote">know</span>&#8221;</span>
+	the default value and just define it as in the following
+	example.</p>
+<pre class="programlisting">
+DISTFILES=      ${DISTNAME}${EXTRACT_SUFX} additional-files.tar.gz
+</pre>
+<p>Because of the selection of this default value, the same
+	value appears in many package Makefiles. Similarly for
+	<code class="varname">USE_LANGUAGES</code>, but in this case the default
+	value (<span class="quote">&#8220;<span class="quote"><code class="literal">c</code></span>&#8221;</span>) is so short that it
+	doesn't stand out. Nevertheless it is mentioned in many
+	files.</p>
+</div>
+<div class="sect1" title="24.3. Variable evaluation">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="infr.var"></a>24.3. Variable evaluation</h2></div></div></div>
+<div class="sect2" title="24.3.1. At load time">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="infr.var.load"></a>24.3.1. At load time</h3></div></div></div>
+<p>Variable evaluation takes place either at load time or at
+	runtime, depending on the context in which they occur. The
+	contexts where variables are evaluated at load time are:</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p>The right hand side of the <code class="literal">:=</code>
+	and <code class="literal">!=</code> operators,</p></li>
+<li class="listitem"><p>Make directives like <code class="literal">.if</code> or
+	<code class="literal">.for</code>,</p></li>
+<li class="listitem"><p>Dependency lines.</p></li>
+</ul></div>
+<p>A special exception are references to the iteration
+	variables of <code class="literal">.for</code> loops, which are expanded
+	inline, no matter in which context they appear.</p>
+<p>As the values of variables may change during load time,
+	care must be taken not to evaluate them by accident. Typical
+	examples for variables that should not be evaluated at load time
+	are <code class="varname">DEPENDS</code> and
+	<code class="varname">CONFIGURE_ARGS</code>. To make the effect more
+	clear, here is an example:</p>
+<pre class="programlisting">
+CONFIGURE_ARGS=         # none
+CFLAGS=                 -O
+CONFIGURE_ARGS+=        CFLAGS=${CFLAGS:Q}
+
+CONFIGURE_ARGS:=        ${CONFIGURE_ARGS}
+
+CFLAGS+=                -Wall
+	</pre>
+<p>This code shows how the use of the <code class="literal">:=</code>
+	operator can quickly lead to unexpected results. The first
+	paragraph is fairly common code. The second paragraph evaluates
+	the <code class="varname">CONFIGURE_ARGS</code> variable, which results in
+	<code class="literal">CFLAGS=-O</code>. In the third paragraph, the
+	<code class="literal">-Wall</code> is appended to the
+	<code class="varname">CFLAGS</code>, but this addition will not appear in
+	<code class="varname">CONFIGURE_ARGS</code>. In actual code, the three
+	paragraphs from above typically occur in completely unrelated
+	files.</p>
+</div>
+<div class="sect2" title="24.3.2. At runtime">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="infr.var.run"></a>24.3.2. At runtime</h3></div></div></div>
+<p>After all the files have been loaded, the values of the
+	variables cannot be changed anymore. Variables that are used in
+	the shell commands are expanded at this point.</p>
+</div>
+</div>
+<div class="sect1" title="24.4. How can variables be specified?">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="infr.varspec"></a>24.4. How can variables be specified?</h2></div></div></div>
+<p>There are many ways in which the definition and use of a
+	variable can be restricted in order to detect bugs and
+	violations of the (mostly unwritten) policies. See the
+	<code class="literal">pkglint</code> developer's documentation for further
+	details.</p>
+</div>
+<div class="sect1" title="24.5. Designing interfaces for Makefile fragments">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="infr.design.intf"></a>24.5. Designing interfaces for Makefile fragments</h2></div></div></div>
+<p>Most of the <code class="filename">.mk</code> files fall into one
+	of the following classes. Cases where a file falls into more
+	than one class should be avoided as it often leads to subtle
+	bugs.</p>
+<div class="sect2" title="24.5.1. Procedures with parameters">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="infr.design.intf.proc"></a>24.5.1. Procedures with parameters</h3></div></div></div>
+<p>In a traditional imperative programming language some of
+	the <code class="filename">.mk</code> files could be described as
+	procedures. They take some input parameters and&mdash;after
+	inclusion&mdash;provide a result in output parameters. Since all
+	variables in <code class="filename">Makefile</code>s have global scope
+	care must be taken not to use parameter names that have already
+	another meaning. For example, <code class="varname">PKGNAME</code> is a
+	bad choice for a parameter name.</p>
+<p>Procedures are completely evaluated at preprocessing time.
+	That is, when calling a procedure all input parameters must be
+	completely resolvable. For example,
+	<code class="varname">CONFIGURE_ARGS</code> should never be an input
+	parameter since it is very likely that further text will be
+	added after calling the procedure, which would effectively apply
+	the procedure to only a part of the variable. Also, references
+	to other variables wit will be modified after calling the
+	procedure.</p>
+<p>A procedure can declare its output parameters either as
+	suitable for use in preprocessing directives or as only
+	available at runtime. The latter alternative is for variables
+	that contain references to other runtime variables.</p>
+<p>Procedures shall be written such that it is possible to
+	call the procedure more than once. That is, the file must not
+	contain multiple-inclusion guards.</p>
+<p>Examples for procedures are
+	<code class="filename">mk/bsd.options.mk</code> and
+	<code class="filename">mk/buildlink3/bsd.builtin.mk</code>. To express
+	that the parameters are evaluated at load time, they should be
+	assigned using the <code class="literal">:=</code> operator, which should
+	be used only for this purpose.</p>
+</div>
+<div class="sect2" title="24.5.2. Actions taken on behalf of parameters">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="infr.design.intf.action"></a>24.5.2. Actions taken on behalf of parameters</h3></div></div></div>
+<p>Action files take some input parameters and may define
+	runtime variables. They shall not define loadtime variables.
+	There are action files that are included implicitly by the
+	pkgsrc infrastructure, while other must be included
+	explicitly.</p>
+<p>An example for action files is
+	<code class="filename">mk/subst.mk</code>.</p>
+</div>
+</div>
+<div class="sect1" title="24.6. The order in which files are loaded">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="infr.order"></a>24.6. The order in which files are loaded</h2></div></div></div>
+<p>Package <code class="filename">Makefile</code>s usually consist of
+	a set of variable definitions, and include the file
+	<code class="filename">../../mk/bsd.pkg.mk</code> in the very last line.
+	Before that, they may also include various other
+	<code class="filename">*.mk</code> files if they need to query the
+	availability of certain features like the type of compiler or
+	the X11 implementation. Due to the heavy use of preprocessor
+	directives like <code class="literal">.if</code> and
+	<code class="literal">.for</code>, the order in which the files are loaded
+	matters.</p>
+<p>This section describes at which point the various files
+	are loaded and gives reasons for that order.</p>
+<div class="sect2" title="24.6.1. The order in bsd.prefs.mk">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="infr.order.prefs"></a>24.6.1. The order in <code class="filename">bsd.prefs.mk</code>
+</h3></div></div></div>
+<p>The very first action in <code class="filename">bsd.prefs.mk</code>
+	is to define some essential variables like
+	<code class="varname">OPSYS</code>, <code class="varname">OS_VERSION</code> and
+	<code class="varname">MACHINE_ARCH</code>.</p>
+<p>Then, the user settings are loaded from the file specified
+	in <code class="varname">MAKECONF</code>, which is usually <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a>.
+	After that, those variables
+	that have not been overridden by the user are loaded from
+	<code class="filename">mk/defaults/mk.conf</code>.</p>
+<p>After the user settings, the system settings and platform
+	settings are loaded, which may override the user
+	settings.</p>
+<p>Then, the tool definitions are loaded. The tool wrappers
+	are not yet in effect. This only happens when building a
+	package, so the proper variables must be used instead of the
+	direct tool names.</p>
+<p>As the last steps, some essential variables from the
+	wrapper and the package system flavor are loaded, as well as the
+	variables that have been cached in earlier phases of a package
+	build.</p>
+</div>
+<div class="sect2" title="24.6.2. The order in bsd.pkg.mk">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="infr.order.pkg"></a>24.6.2. The order in <code class="filename">bsd.pkg.mk</code>
+</h3></div></div></div>
+<p>First, <code class="filename">bsd.prefs.mk</code> is loaded.</p>
+<p>Then, the various <code class="filename">*-vars.mk</code> files are
+	loaded, which fill default values for those variables that have
+	not been defined by the package. These variables may later
+	be used even in unrelated files.</p>
+<p>Then, the file <code class="filename">bsd.pkg.error.mk</code>
+	provides the target <code class="literal">error-check</code> that is added
+	as a special dependency to all other targets that use
+	<code class="varname">DELAYED_ERROR_MSG</code> or
+	<code class="varname">DELAYED_WARNING_MSG</code>.</p>
+<p>Then, the package-specific hacks from
+	<code class="filename">hacks.mk</code> are included.</p>
+<p>Then, various other files follow. Most of them don't have
+	any dependencies on what they need to have included before or
+	after them, though some do.</p>
+<p>The code to check <code class="varname">PKG_FAIL_REASON</code> and
+	<code class="varname">PKG_SKIP_REASON</code> is then executed, which
+	restricts the use of these variables to all the files that have
+	been included before. Appearances in later files will be
+	silently ignored.</p>
+<p>Then, the files for the main targets are included, in the
+	order of later execution, though the actual order should not
+	matter.</p>
+<p>At last, some more files are included that don't set any
+	interesting variables but rather just define make targets to be
+	executed.</p>
+</div>
+</div>
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left">
+<a accesskey="p" href="infrastructure.html">Prev</a> </td>
+<td width="20%" align="center"><a accesskey="u" href="infrastructure.html">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="regression.html">Next</a>
+</td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Part III. The pkgsrc infrastructure internals </td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top"> Chapter 25. Regression tests</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

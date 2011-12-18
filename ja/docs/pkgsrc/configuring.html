@@ -1,0 +1,430 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 5. Configuring pkgsrc</title>
+<link rel="stylesheet" type="text/css" href="/global.css">
+<meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
+<link rel="home" href="index.html" title="The pkgsrc guide">
+<link rel="up" href="users-guide.html" title="Part I. The pkgsrc user's guide">
+<link rel="prev" href="using.html" title="Chapter 4. Using pkgsrc">
+<link rel="next" href="binary.html" title="Chapter 6. Creating binary packages">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr><th colspan="3" align="center">Chapter 5. Configuring pkgsrc</th></tr>
+<tr>
+<td width="20%" align="left">
+<a accesskey="p" href="using.html">Prev</a> </td>
+<th width="60%" align="center">Part I. The pkgsrc user's guide</th>
+<td width="20%" align="right"> <a accesskey="n" href="binary.html">Next</a>
+</td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter" title="Chapter 5. Configuring pkgsrc">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="configuring"></a>Chapter 5. Configuring pkgsrc</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="sect1"><a href="configuring.html#general-configuration">5.1. General configuration</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#variables-affecting-build">5.2. Variables affecting the build process</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#variables-affecting-installation">5.3. Variables affecting the installation process</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#conf.compiler">5.4. Selecting and configuring the compiler</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="configuring.html#selecting-the-compiler">5.4.1. Selecting the compiler</a></span></dt>
+<dt><span class="sect2"><a href="configuring.html#conf.cflags">5.4.2. Additional flags to the compiler (<code class="varname">CFLAGS</code>)</a></span></dt>
+<dt><span class="sect2"><a href="configuring.html#conf.ldflags">5.4.3. Additional flags to the linker (<code class="varname">LDFLAGS</code>)</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="configuring.html#developer-advanced-settings">5.5. Developer/advanced settings</a></span></dt>
+<dt><span class="sect1"><a href="configuring.html#selecting-build-options">5.6. Selecting Build Options</a></span></dt>
+</dl>
+</div>
+<a name="mk.conf"></a><p>The whole pkgsrc system is configured in a single file, usually
+called <code class="filename">mk.conf</code>. In which directory pkgsrc looks for
+that file depends on the installation. On NetBSD, when you use
+<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> from the base system, it is in the directory
+<code class="filename">/etc/</code>. In all other cases the default location is
+<code class="literal">${PREFIX}/etc/</code>, depending on where you told the
+bootstrap program to install the binary packages.</p>
+<p>During the bootstrap, an example configuration file is created. To
+use that, you have to create the directory
+<code class="filename">${PREFIX}/etc</code> and copy the example file
+there.</p>
+<p>The format of the configuration file is that of the usual
+BSD-style <code class="filename">Makefile</code>s. The whole pkgsrc configuration
+is done by setting variables in this file. Note that you can define all
+kinds of variables, and no special error checking (for example for
+spelling mistakes) takes place, so you have to try it out to see if it
+works.</p>
+<div class="sect1" title="5.1. General configuration">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="general-configuration"></a>5.1. General configuration</h2></div></div></div>
+<p>In this section, you can find some variables that apply to all
+    pkgsrc packages. A complete list of the variables that can be
+    configured by the user is available in
+    <code class="filename">mk/defaults/mk.conf</code>, together with some
+    comments that describe each variable's intent.</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><code class="varname">LOCALBASE</code>: Where
+	    packages will be installed. The default is
+	    <code class="filename">/usr/pkg</code>. Do not mix binary packages
+	    with different <code class="varname">LOCALBASE</code>s!</p></li>
+<li class="listitem"><p><code class="varname">CROSSBASE</code>: Where
+	    <span class="quote">&#8220;<span class="quote">cross</span>&#8221;</span> category packages will be
+	    installed. The default is
+	    <code class="filename">${LOCALBASE}/cross</code>.</p></li>
+<li class="listitem"><p><code class="varname">X11BASE</code>: Where
+	    X11 is installed on the system. The default is
+	    <code class="filename">/usr/X11R6</code>.</p></li>
+<li class="listitem"><p><code class="varname">DISTDIR</code>: Where to store the
+	    downloaded copies of the original source distributions used
+	    for building pkgsrc packages. The default is
+	    <code class="filename">${PKGSRCDIR}/distfiles</code>.</p></li>
+<li class="listitem"><p><code class="varname">PKG_DBDIR</code>: Where the
+	    database about installed packages is stored.  The default is
+	    <code class="filename">/var/db/pkg</code>.</p></li>
+<li class="listitem"><p><code class="varname">MASTER_SITE_OVERRIDE</code>:
+	    If set, override the packages'
+	    <code class="varname">MASTER_SITES</code> with this value.</p></li>
+<li class="listitem"><p><code class="varname">MASTER_SITE_BACKUP</code>:
+	    Backup location(s) for distribution files and patch files
+	    if not found locally or in
+	    <code class="filename">${MASTER_SITES}</code> or
+	    <code class="filename">${PATCH_SITES}</code> respectively.
+	    The defaults are
+	    <code class="filename">ftp://ftp.NetBSD.org/pub/pkgsrc/distfiles/${DIST_SUBDIR}/</code>
+	    and
+	    <code class="filename">ftp://ftp.freebsd.org/pub/FreeBSD/distfiles/${DIST_SUBDIR}/</code>.</p></li>
+<li class="listitem"><p><code class="varname">BINPKG_SITES</code>:
+	    List of sites carrying binary pkgs. <em class="replaceable"><code>rel</code></em> and
+	    <em class="replaceable"><code>arch</code></em> are replaced with OS
+	    release (<span class="quote">&#8220;<span class="quote">2.0</span>&#8221;</span>, etc.) and architecture
+	    (<span class="quote">&#8220;<span class="quote">mipsel</span>&#8221;</span>, etc.).</p></li>
+<li class="listitem"><p><code class="varname">ACCEPTABLE_LICENSES</code>:
+	    List of acceptable licenses. License names are case-sensitive.
+	    Whenever you try to build a package whose license is not in this
+	    list, you will get an error message. If the license condition is
+	    simple enough, the error message will include specific
+	    instructions on how to change this variable.</p></li>
+</ul></div>
+</div>
+<div class="sect1" title="5.2. Variables affecting the build process">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="variables-affecting-build"></a>5.2. Variables affecting the build process</h2></div></div></div>
+<p>XXX
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><code class="varname">PACKAGES</code>: The top level
+	    directory for the binary packages. The default is
+	    <code class="filename">${PKGSRCDIR}/packages</code>.</p></li>
+<li class="listitem"><p><code class="varname">WRKOBJDIR</code>:
+	    The top level directory where, if defined, the separate
+	    working directories will get created, and symbolically
+	    linked to from <code class="filename">${WRKDIR}</code> (see below).
+	    This is useful for building packages on several
+	    architectures, then <code class="filename">${PKGSRCDIR}</code>
+	    can be NFS-mounted while <code class="filename">${WRKOBJDIR}</code>
+	    is local to every architecture. (It should be noted that
+	    <code class="varname">PKGSRCDIR</code> should not be set by the user
+	    &mdash; it is an internal definition which refers to the
+	    root of the pkgsrc tree. It is possible to have many
+	    pkgsrc tree instances.)</p></li>
+<li class="listitem"><p><code class="varname">LOCALPATCHES</code>:
+	    Directory for local patches that aren't part of pkgsrc.
+	    See <a class="xref" href="components.html#components.patches" title="11.3. patches/*">Section 11.3, &#8220;patches/*&#8221;</a> for more
+	    information.</p></li>
+<li class="listitem"><p><code class="varname">PKGMAKECONF</code>: Location of
+	    the <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> file used by a package's
+	    BSD-style Makefile. If this is not set,
+	    <code class="varname">MAKECONF</code> is set to
+	    <code class="filename">/dev/null</code> to avoid picking up
+	    settings used by builds in <code class="filename">/usr/src</code>.</p></li>
+<li class="listitem"><p><code class="varname">DEPENDS_TARGET</code>:
+	    By default, dependencies are only installed, and no binary
+	    package is created for them. You can set this variable to
+	    <code class="literal">package</code> to automatically create binary
+	    packages after installing dependencies.</p></li>
+</ul></div>
+</div>
+<div class="sect1" title="5.3. Variables affecting the installation process">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="variables-affecting-installation"></a>5.3. Variables affecting the installation process</h2></div></div></div>
+<p>Most packages support installation into a
+    subdirectory of <code class="varname">WRKDIR</code>. This allows a package
+    to be built, before the actual filesystem is touched. DESTDIR
+    support exists in two variations:</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p>Basic DESTDIR support means that the package
+      installation and packaging is still run as root.</p></li>
+<li class="listitem"><p>Full DESTDIR support can run the complete
+      build, installation and packaging as normal user. Root
+      privileges are only needed to add packages.</p></li>
+</ul></div>
+<p>DESTDIR support is now the default. To switch back to non-DESTDIR,
+    you can set
+    <code class="varname">USE_DESTDIR=no</code>; this setting will be deprecated though,
+    so it's preferable to convert a package to DESTDIR instead.</p>
+<p>DESTDIR support changes the behaviour of various targets
+    slightly. To install a package after building it, use
+    <code class="literal">package-install</code>. <code class="literal">package</code> and
+    <code class="literal">install</code> don't do that any
+    longer. <code class="literal">package-install</code> can be used as
+    <code class="varname">DEPENDS_TARGET</code>.  <code class="literal">bin-install</code>
+    will ask for the root password to install the package and fail,
+    <code class="literal">package-install</code> will ask again.</p>
+<p>With basic DESTDIR support, <strong class="userinput"><code>make
+    clean</code></strong> needs to be run as root.</p>
+<p>Considering the <code class="filename">foo/bar</code> package,
+    DESTDIR full support can be tested using the following commands
+
+</p>
+<pre class="programlisting">
+<code class="prompt">$</code> id
+uid=1000(myusername) gid=100(users) groups=100(users),0(wheel)
+<code class="prompt">$</code> mkdir $HOME/packages
+<code class="prompt">$</code> cd $PKGSRCDIR/foo/bar
+</pre>
+<p>
+
+    Verify <code class="varname">DESTDIR</code> full support, no root privileges
+    should be needed
+
+</p>
+<pre class="programlisting">
+<code class="prompt">$</code> make USE_DESTDIR=yes install
+</pre>
+<p>
+
+    Create a package without root privileges
+
+</p>
+<pre class="programlisting">
+<code class="prompt">$</code> make USE_DESTDIR=yes PACKAGES=$HOME/packages package
+</pre>
+<p>
+
+    For the following command, you must be able to gain root
+    privileges using <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?su+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">su</span>(1)</span></a>
+
+</p>
+<pre class="programlisting">
+<code class="prompt">$</code> make USE_DESTDIR=yes PACKAGES=$HOME/packages package-install
+</pre>
+<p>
+
+    Then, as a simple user
+
+</p>
+<pre class="programlisting">
+<code class="prompt">$</code> make clean
+</pre>
+<p>
+
+    </p>
+</div>
+<div class="sect1" title="5.4. Selecting and configuring the compiler">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="conf.compiler"></a>5.4. Selecting and configuring the compiler</h2></div></div></div>
+<div class="sect2" title="5.4.1. Selecting the compiler">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="selecting-the-compiler"></a>5.4.1. Selecting the compiler</h3></div></div></div>
+<p>By default, pkgsrc will use GCC to build packages.  This may be
+    overridden by setting the following variables in /etc/mk.conf:</p>
+<div class="variablelist"><dl>
+<dt><span class="term"><code class="varname">PKGSRC_COMPILER</code>:</span></dt>
+<dd>
+<p>This is a list of values specifying the chain of
+	  compilers to invoke when building packages.  Valid values
+	  are:</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><code class="varname">distcc</code>:
+	    distributed C/C++ (chainable)</p></li>
+<li class="listitem"><p><code class="varname">ccache</code>:
+	    compiler cache (chainable)</p></li>
+<li class="listitem"><p><code class="varname">gcc</code>:
+	    GNU C/C++ Compiler</p></li>
+<li class="listitem"><p><code class="varname">mipspro</code>:
+	    Silicon Graphics, Inc. MIPSpro (n32/n64)</p></li>
+<li class="listitem"><p><code class="varname">mipspro</code>:
+	    Silicon Graphics, Inc. MIPSpro (o32)</p></li>
+<li class="listitem"><p><code class="varname">sunpro</code>:
+	    Sun Microsystems, Inc. WorkShip/Forte/Sun ONE Studio</p></li>
+</ul></div>
+<p>The default is
+	  <span class="quote">&#8220;<span class="quote"><code class="varname">gcc</code></span>&#8221;</span>.  You can use
+	  <code class="varname">ccache</code> and/or
+	  <code class="varname">distcc</code> with an appropriate
+	  <code class="varname">PKGSRC_COMPILER</code> setting,
+	  e.g. <span class="quote">&#8220;<span class="quote"><code class="varname">ccache gcc</code></span>&#8221;</span>.  This
+	  variable should always be terminated with a value for
+	  a real compiler.  Note that only one real compiler
+	  should be listed (e.g. <span class="quote">&#8220;<span class="quote"><code class="varname">sunpro gcc</code></span>&#8221;</span>
+	  is not allowed).</p>
+</dd>
+<dt><span class="term"><code class="varname">GCC_REQD</code>:</span></dt>
+<dd><p>This specifies the minimum version of GCC to use
+	  when building packages.  If the system GCC doesn't
+	  satisfy this requirement, then pkgsrc will build and
+	  install one of the GCC packages to use instead.</p></dd>
+</dl></div>
+</div>
+<div class="sect2" title="5.4.2. Additional flags to the compiler (CFLAGS)">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="conf.cflags"></a>5.4.2. Additional flags to the compiler (<code class="varname">CFLAGS</code>)</h3></div></div></div>
+<p>If you wish to set the <code class="varname">CFLAGS</code> variable,
+	please make sure to use the <code class="literal">+=</code> operator
+	instead of the <code class="literal">=</code> operator:</p>
+<pre class="programlisting">
+CFLAGS+=        -your -flags
+</pre>
+<p>Using <code class="varname">CFLAGS=</code> (i.e. without the
+	<span class="quote">&#8220;<span class="quote">+</span>&#8221;</span>) may lead to problems with packages that
+	need to add their own flags.  You may want to take a look
+	at the <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/cpuflags/README.html" target="_top"><code class="filename">devel/cpuflags</code></a>
+	package if you're interested in optimization specifically
+	for the current CPU. </p>
+</div>
+<div class="sect2" title="5.4.3. Additional flags to the linker (LDFLAGS)">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="conf.ldflags"></a>5.4.3. Additional flags to the linker (<code class="varname">LDFLAGS</code>)</h3></div></div></div>
+<p>If you want to pass flags to the linker, both in the configure
+step and the build step, you can do this in two ways.  Either set
+<code class="varname">LDFLAGS</code> or <code class="varname">LIBS</code>.  The difference
+between the two is that <code class="varname">LIBS</code> will be appended to
+the command line, while <code class="varname">LDFLAGS</code> come earlier.
+<code class="varname">LDFLAGS</code> is pre-loaded with rpath settings for ELF
+machines depending on the setting of <code class="varname">USE_IMAKE</code> or
+the inclusion of <code class="filename">mk/x11.buildlink3.mk</code>.  As with
+<code class="varname">CFLAGS</code>, if you do not wish to override these
+settings, use the <code class="literal">+=</code> operator:</p>
+<pre class="programlisting">
+LDFLAGS+=        -your -linkerflags
+</pre>
+</div>
+</div>
+<div class="sect1" title="5.5. Developer/advanced settings">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="developer-advanced-settings"></a>5.5. Developer/advanced settings</h2></div></div></div>
+<p>XXX
+      </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<p><code class="varname">PKG_DEVELOPER</code>:
+	    Run some sanity checks that package developers want:
+	    </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="circle">
+<li class="listitem"><p>make sure patches apply with zero
+	      fuzz</p></li>
+<li class="listitem"><p>run check-shlibs to see that all
+	      binaries will find their shared libs.</p></li>
+</ul></div>
+<p>
+	</p>
+</li>
+<li class="listitem"><p><code class="varname">PKG_DEBUG_LEVEL</code>: The level
+	of debugging output which is displayed whilst making and
+	installing the package.  The default value for this is 0,
+	which will not display the commands as they are executed
+	(normal, default, quiet operation); the value 1 will display
+	all shell commands before their invocation, and the value 2
+	will display both the shell commands before their invocation,
+	and their actual execution progress with <span class="command"><strong>set
+	-x</strong></span> will be displayed.</p></li>
+</ul></div>
+<p>
+    </p>
+</div>
+<div class="sect1" title="5.6. Selecting Build Options">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="selecting-build-options"></a>5.6. Selecting Build Options</h2></div></div></div>
+<p>Some packages have build time options, usually to select
+    between different dependencies, enable optional support for big
+    dependencies or enable experimental features.</p>
+<p>To see which options, if any, a package supports, and which
+    options are mutually exclusive, run <span class="command"><strong>make
+    show-options</strong></span>, for example:</p>
+<pre class="programlisting">
+    The following options are supported by this package:
+        ssl      Enable SSL support.
+    Exactly one of the following gecko options is required:
+        firefox  Use firefox as gecko rendering engine.
+        mozilla  Use mozilla as gecko rendering engine.
+    At most one of the following database options may be selected:
+        mysql    Enable support for MySQL database.
+        pgsql    Enable support for PostgreSQL database.
+
+    These options are enabled by default: firefox
+    These options are currently enabled: mozilla ssl
+</pre>
+<p>The following variables can be defined in
+    <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> to select which options to
+    enable for a package: <code class="varname">PKG_DEFAULT_OPTIONS</code>,
+    which can be used to select or disable options for all packages
+    that support them, and
+    <code class="varname">PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em></code>,
+    which can be used to select or disable options specifically for
+    package <em class="replaceable"><code>pkgbase</code></em>.  Options listed in
+    these variables are selected, options preceded by <span class="quote">&#8220;<span class="quote">-</span>&#8221;</span>
+    are disabled. A few examples:</p>
+<pre class="screen">
+<code class="prompt">$</code> <span class="command"><strong>grep "PKG.*OPTION" <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a></strong></span>
+PKG_DEFAULT_OPTIONS=    -arts -dvdread -esound
+PKG_OPTIONS.kdebase=    debug -sasl
+PKG_OPTIONS.apache=     suexec </pre>
+<p>It is important to note that options that were specifically
+    suggested by the package maintainer must be explicitly removed if
+    you do not wish to include the option.  If you are unsure you can view
+    the current state with <span class="command"><strong>make show-options</strong></span>.</p>
+<p>The following settings are consulted in the order given, and
+    the last setting that selects or disables an option is
+    used:</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><p>the default options as suggested by the package
+      maintainer</p></li>
+<li class="listitem"><p>the options implied by the settings of legacy
+      variables (see below)</p></li>
+<li class="listitem"><p><code class="varname">PKG_DEFAULT_OPTIONS</code></p></li>
+<li class="listitem"><p><code class="varname">PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em></code></p></li>
+</ol></div>
+<p>For groups of mutually exclusive options, the last option
+    selected is used, all others are automatically disabled.  If an
+    option of the group is explicitly disabled, the previously
+    selected option, if any, is used.  It is an error if no option
+    from a required group of options is selected, and building the
+    package will fail.</p>
+<p>Before the options framework was introduced, build options
+    were selected by setting a variable (often named
+    <code class="varname">USE_<em class="replaceable"><code>FOO</code></em></code>) in
+    <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> for each option.  To ease
+    transition to the options framework for the user, these legacy
+    variables are converted to the appropriate options setting
+    (<code class="varname">PKG_OPTIONS.<em class="replaceable"><code>pkgbase</code></em></code>)
+    automatically.  A warning is issued to prompt the user to update
+    <a class="link" href="configuring.html#mk.conf"><code class="filename">mk.conf</code></a> to use the options framework
+    directly.  Support for the legacy variables will be removed
+    eventually.</p>
+</div>
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left">
+<a accesskey="p" href="using.html">Prev</a> </td>
+<td width="20%" align="center"><a accesskey="u" href="users-guide.html">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="binary.html">Next</a>
+</td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 4. Using pkgsrc </td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top"> Chapter 6. Creating binary packages</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

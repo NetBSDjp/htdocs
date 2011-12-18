@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 25. Regression tests</title>
+<link rel="stylesheet" type="text/css" href="/global.css">
+<meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
+<link rel="home" href="index.html" title="The pkgsrc guide">
+<link rel="up" href="infrastructure.html" title="Part III. The pkgsrc infrastructure internals">
+<link rel="prev" href="infr.design.html" title="Chapter 24. Design of the pkgsrc infrastructure">
+<link rel="next" href="porting.html" title="Chapter 26. Porting pkgsrc">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr><th colspan="3" align="center">Chapter 25. Regression tests</th></tr>
+<tr>
+<td width="20%" align="left">
+<a accesskey="p" href="infr.design.html">Prev</a> </td>
+<th width="60%" align="center">Part III. The pkgsrc infrastructure internals</th>
+<td width="20%" align="right"> <a accesskey="n" href="porting.html">Next</a>
+</td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter" title="Chapter 25. Regression tests">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="regression"></a>Chapter 25. Regression tests</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="sect1"><a href="regression.html#regression.descr">25.1. The regression tests framework</a></span></dt>
+<dt><span class="sect1"><a href="regression.html#regression.run">25.2. Running the regression tests</a></span></dt>
+<dt><span class="sect1"><a href="regression.html#regression.new">25.3. Adding a new regression test</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="regression.html#regression.fun.override">25.3.1. Overridable functions</a></span></dt>
+<dt><span class="sect2"><a href="regression.html#regression.fun.helper">25.3.2. Helper functions</a></span></dt>
+</dl></dd>
+</dl>
+</div>
+<p>The pkgsrc infrastructure consists of a large codebase,
+	and there are many corners where every little bit of a file is
+	well thought out, making pkgsrc likely to fail as soon as
+	anything is changed near those parts. To prevent most changes
+	from breaking anything, a suite of regression tests should go
+	along with every important part of the pkgsrc infrastructure.
+	This chapter describes how regression tests work in pkgsrc and
+	how you can add new tests.</p>
+<div class="sect1" title="25.1. The regression tests framework">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="regression.descr"></a>25.1. The regression tests framework</h2></div></div></div>
+<p></p>
+</div>
+<div class="sect1" title="25.2. Running the regression tests">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="regression.run"></a>25.2. Running the regression tests</h2></div></div></div>
+<p>You first need to install the <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/pkg_regress/README.html" target="_top"><code class="filename">pkgtools/pkg_regress</code></a> package, which
+	provides the <span class="command"><strong>pkg_regress</strong></span> command. Then you
+	can simply run that command, which will run all tests in the
+	<code class="filename">regress</code> category.</p>
+</div>
+<div class="sect1" title="25.3. Adding a new regression test">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="regression.new"></a>25.3. Adding a new regression test</h2></div></div></div>
+<p>Every directory in the <code class="filename">regress</code>
+	category that contains a file called <code class="filename">spec</code>
+	is considered a regression test. This file is a shell program
+	that is included by the <span class="command"><strong>pkg_regress</strong></span> command.
+	The following functions can be overridden to suit your
+	needs.</p>
+<div class="sect2" title="25.3.1. Overridable functions">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="regression.fun.override"></a>25.3.1. Overridable functions</h3></div></div></div>
+<p>These functions do not take any parameters. They are all
+	called in <span class="quote">&#8220;<span class="quote">set -e</span>&#8221;</span> mode, so you should be careful
+	to check the exitcodes of any commands you run in the
+	test.</p>
+<div class="variablelist"><dl>
+<dt><span class="term"><code class="varname">do_setup()</code></span></dt>
+<dd><p>This function prepares the environment for the
+	test. By default it does nothing.</p></dd>
+<dt><span class="term"><code class="varname">do_test()</code></span></dt>
+<dd><p>This function runs the actual test. By default,
+	it calls <code class="varname">TEST_MAKE</code> with the arguments
+	<code class="varname">MAKEARGS_TEST</code> and writes its output including
+	error messages into the file
+	<code class="varname">TEST_OUTFILE</code>.</p></dd>
+<dt><span class="term"><code class="varname">check_result()</code></span></dt>
+<dd><p>This function is run after the test and is
+	typically used to compare the actual output from the one that is
+	expected. It can make use of the various helper functions from
+	the next section.</p></dd>
+<dt><span class="term"><code class="varname">do_cleanup()</code></span></dt>
+<dd><p>This function cleans everything up after the
+	test has been run. By default it does nothing.</p></dd>
+</dl></div>
+</div>
+<div class="sect2" title="25.3.2. Helper functions">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="regression.fun.helper"></a>25.3.2. Helper functions</h3></div></div></div>
+<div class="variablelist"><dl>
+<dt><span class="term"><code class="varname">exit_status(expected)</code></span></dt>
+<dd><p>This function compares the exitcode of the
+	<span class="command"><strong>do_test()</strong></span> function with its first parameter.
+	If they differ, the test will fail.</p></dd>
+<dt><span class="term"><code class="varname">output_require(regex...)</code></span></dt>
+<dd><p>This function checks for each of its parameters
+	if the output from <span class="command"><strong>do_test()</strong></span> matches the
+	extended regular expression. If it does not, the test will
+	fail.</p></dd>
+<dt><span class="term"><code class="varname">output_prohibit(regex...)</code></span></dt>
+<dd><p>This function checks for each of its parameters
+	if the output from <span class="command"><strong>do_test()</strong></span> does
+	<span class="emphasis"><em>not</em></span> match the extended regular expression.
+	If any of the regular expressions matches, the test will
+	fail.</p></dd>
+</dl></div>
+</div>
+</div>
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left">
+<a accesskey="p" href="infr.design.html">Prev</a> </td>
+<td width="20%" align="center"><a accesskey="u" href="infrastructure.html">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="porting.html">Next</a>
+</td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 24. Design of the pkgsrc infrastructure </td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top"> Chapter 26. Porting pkgsrc</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

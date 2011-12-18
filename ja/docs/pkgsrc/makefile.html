@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 12. Programming in Makefiles</title>
+<link rel="stylesheet" type="text/css" href="/global.css">
+<meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
+<link rel="home" href="index.html" title="The pkgsrc guide">
+<link rel="up" href="developers-guide.html" title="Part II. The pkgsrc developer's guide">
+<link rel="prev" href="components.html" title="Chapter 11. Package components - files, directories and contents">
+<link rel="next" href="plist.html" title="Chapter 13. PLIST issues">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr><th colspan="3" align="center">Chapter 12. Programming in <code class="filename">Makefile</code>s</th></tr>
+<tr>
+<td width="20%" align="left">
+<a accesskey="p" href="components.html">Prev</a> </td>
+<th width="60%" align="center">Part II. The pkgsrc developer's guide</th>
+<td width="20%" align="right"> <a accesskey="n" href="plist.html">Next</a>
+</td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter" title="Chapter 12. Programming in Makefiles">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="makefile"></a>Chapter 12. Programming in <code class="filename">Makefile</code>s</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="sect1"><a href="makefile.html#makefile.style">12.1. Caveats</a></span></dt>
+<dt><span class="sect1"><a href="makefile.html#makefile.variables">12.2. <code class="filename">Makefile</code> variables</a></span></dt>
+<dd><dl><dt><span class="sect2"><a href="makefile.html#makefile.variables.names">12.2.1. Naming conventions</a></span></dt></dl></dd>
+<dt><span class="sect1"><a href="makefile.html#makefile.code">12.3. Code snippets</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="makefile.html#adding-to-list">12.3.1. Adding things to a list</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#converting-internal-to-external">12.3.2. Converting an internal list into an external list</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#passing-variable-to-shell">12.3.3. Passing variables to a shell command</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#quoting-guideline">12.3.4. Quoting guideline</a></span></dt>
+<dt><span class="sect2"><a href="makefile.html#bsd-make-bug-workaround">12.3.5. Workaround for a bug in BSD Make</a></span></dt>
+</dl></dd>
+</dl>
+</div>
+<p>Pkgsrc consists of many <code class="filename">Makefile</code> fragments,
+  each of which forms a well-defined part of the pkgsrc system. Using
+  the <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> system as a programming language for a big system
+  like pkgsrc requires some discipline to keep the code correct and
+  understandable.</p>
+<p>The basic ingredients for <code class="filename">Makefile</code>
+  programming are variables (which are actually macros) and shell
+  commands. Among these shell commands may even be more complex ones
+  like <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?awk+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">awk</span>(1)</span></a> programs. To make sure that every shell command runs
+  as intended it is necessary to quote all variables correctly when they
+  are used.</p>
+<p>This chapter describes some patterns, that appear quite often in
+  <code class="filename">Makefile</code>s, including the pitfalls that come along
+  with them.</p>
+<div class="sect1" title="12.1. Caveats">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="makefile.style"></a>12.1. Caveats</h2></div></div></div>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+<p>When you are creating a file as a
+    target of a rule, always write the data to a temporary file first
+    and finally rename that file. Otherwise there might occur an error
+    in the middle of generating the file, and when the user runs
+    <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> for the second time, the file exists and will not be
+    regenerated properly. Example:</p>
+<pre class="programlisting">
+wrong:
+        @echo "line 1" &gt; ${.TARGET}
+        @echo "line 2" &gt;&gt; ${.TARGET}
+        @false
+
+correct:
+        @echo "line 1" &gt; ${.TARGET}.tmp
+        @echo "line 2" &gt;&gt; ${.TARGET}.tmp
+        @false
+        @mv ${.TARGET}.tmp ${.TARGET}
+</pre>
+<p>When you run <span class="command"><strong>make wrong</strong></span> twice, the file
+    <code class="filename">wrong</code> will exist, although there was an error
+    message in the first run. On the other hand, running <span class="command"><strong>make
+    correct</strong></span> gives an error message twice, as expected.</p>
+<p>You might remember that <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> sometimes removes
+    <code class="literal">${.TARGET}</code> in case of error, but this only
+    happens when it is interrupted, for example by pressing
+    <code class="literal">^C</code>. This does <span class="emphasis"><em>not</em></span> happen
+    when one of the commands fails (like <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?false+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">false</span>(1)</span></a> above).</p>
+</li></ul></div>
+</div>
+<div class="sect1" title="12.2. Makefile variables">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="makefile.variables"></a>12.2. <code class="filename">Makefile</code> variables</h2></div></div></div>
+<p><code class="filename">Makefile</code> variables contain strings that
+    can be processed using the five operators ``='', ``+='', ``?='',
+    ``:='', and ``!='', which are described in the <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> man
+    page.</p>
+<p>When a variable's value is parsed from a
+    <code class="filename">Makefile</code>, the hash character ``#'' and the
+    backslash character ``\'' are handled specially. If a backslash is
+    followed by a newline, any whitespace immediately in front of the
+    backslash, the backslash, the newline, and any whitespace
+    immediately behind the newline are replaced with a single space. A
+    backslash character and an immediately following hash character are
+    replaced with a single hash character. Otherwise, the backslash is
+    passed as is. In a variable assignment, any hash character that is
+    not preceded by a backslash starts a comment that continues upto the
+    end of the logical line.</p>
+<p><span class="emphasis"><em>Note:</em></span> Because of this parsing algorithm
+    the only way to create a variable consisting of a single backslash
+    is using the ``!='' operator, for example: <code class="varname">BACKSLASH!=echo "\\"</code>.</p>
+<p>So far for defining variables. The other thing you can do with
+    variables is evaluating them. A variable is evaluated when it is
+    part of the right side of the ``:='' or the ``!='' operator, or
+    directly before executing a shell command which the variable is part
+    of. In all other cases, <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a> performs lazy evaluation, that
+    is, variables are not evaluated until there's no other way. The
+    ``modifiers'' mentioned in the man page also evaluate the
+    variable.</p>
+<p>Some of the modifiers split the string into words and then
+    operate on the words, others operate on the string as a whole. When
+    a string is split into words, it is split as you would expect
+    it from <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?sh+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">sh</span>(1)</span></a>.</p>
+<p>No rule without exception&mdash;the <span class="command"><strong>.for</strong></span>
+    loop does not follow the shell quoting rules but splits at sequences
+    of whitespace.</p>
+<p>There are several types of variables that should be handled
+    differently. Strings and two types of lists.</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><span class="emphasis"><em>Strings</em></span> can contain arbitrary
+      characters. Nevertheless, you should restrict yourself to only
+      using printable characters. Examples are
+      <code class="varname">PREFIX</code> and
+      <code class="varname">COMMENT</code>.</p></li>
+<li class="listitem"><p><span class="emphasis"><em>Internal lists</em></span> are lists that
+      are never exported to any shell command. Their elements are
+      separated by whitespace. Therefore, the elements themselves cannot
+      have embedded whitespace. Any other characters are allowed.
+      Internal lists can be used in <span class="command"><strong>.for</strong></span> loops.
+      Examples are <code class="varname">DEPENDS</code> and
+      <code class="varname">BUILD_DEPENDS</code>.</p></li>
+<li class="listitem"><p><span class="emphasis"><em>External lists</em></span> are lists that
+      may be exported to a shell command. Their elements can contain any
+      characters, including whitespace. That's why they cannot be used
+      in <span class="command"><strong>.for</strong></span> loops. Examples are
+      <code class="varname">DISTFILES</code> and
+      <code class="varname">MASTER_SITES</code>.</p></li>
+</ul></div>
+<div class="sect2" title="12.2.1. Naming conventions">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="makefile.variables.names"></a>12.2.1. Naming conventions</h3></div></div></div>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p>All variable names starting with an underscore
+	are reserved for use by the pkgsrc infrastructure. They shall
+	not be used by package
+	<code class="filename">Makefile</code>s.</p></li>
+<li class="listitem"><p>In <span class="command"><strong>.for</strong></span> loops you should use
+	lowercase variable names for the iteration
+	variables.</p></li>
+<li class="listitem"><p>All list variables should have a ``plural''
+	name, e.g. <code class="varname">PKG_OPTIONS</code> or
+	<code class="varname">DISTFILES</code>.</p></li>
+</ul></div>
+</div>
+</div>
+<div class="sect1" title="12.3. Code snippets">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="makefile.code"></a>12.3. Code snippets</h2></div></div></div>
+<p>This section presents you with some code snippets you should
+    use in your own code. If you don't find anything appropriate here,
+    you should test your code and add it here.</p>
+<div class="sect2" title="12.3.1. Adding things to a list">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="adding-to-list"></a>12.3.1. Adding things to a list</h3></div></div></div>
+<pre class="programlisting">
+STRING=                 foo * bar `date`
+INT_LIST=               # empty
+ANOTHER_INT_LIST=       apache-[0-9]*:../../www/apache
+EXT_LIST=               # empty
+ANOTHER_EXT_LIST=       a=b c=d
+
+INT_LIST+=              ${STRING}               # 1
+INT_LIST+=              ${ANOTHER_INT_LIST}     # 2
+EXT_LIST+=              ${STRING:Q}             # 3
+EXT_LIST+=              ${ANOTHER_EXT_LIST}     # 4
+</pre>
+<p>When you add a string to an external list (example 3), it
+      must be quoted. In all other cases, you must not add a quoting
+      level. You must not merge internal and external lists, unless you
+      are sure that all entries are correctly interpreted in both
+      lists.</p>
+</div>
+<div class="sect2" title="12.3.2. Converting an internal list into an external list">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="converting-internal-to-external"></a>12.3.2. Converting an internal list into an external list</h3></div></div></div>
+<pre class="programlisting">
+EXT_LIST=       # empty
+.for i in ${INT_LIST}
+EXT_LIST+=      ${i:Q}""
+.endfor
+</pre>
+<p>This code converts the internal list
+      <code class="varname">INT_LIST</code> into the external list
+      <code class="varname">EXT_LIST</code>. As the elements of an internal list
+      are unquoted they must be quoted here. The reason for appending
+      <code class="varname">""</code> is explained below.</p>
+</div>
+<div class="sect2" title="12.3.3. Passing variables to a shell command">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="passing-variable-to-shell"></a>12.3.3. Passing variables to a shell command</h3></div></div></div>
+<p>Sometimes you may want to print an arbitrary string. There
+	are many ways to get it wrong and only few that can handle every
+	nastiness.</p>
+<pre class="programlisting">
+STRING=         foo bar &lt;    &gt; * `date` $$HOME ' "
+EXT_LIST=       string=${STRING:Q} x=second\ item
+
+all:
+        echo ${STRING}                  # 1
+        echo "${STRING}"                # 2
+        echo "${STRING:Q}"              # 3
+        echo ${STRING:Q}                # 4
+        echo x${STRING:Q} | sed 1s,.,,  # 5
+        printf "%s\\n" ${STRING:Q}""    # 6
+        env ${EXT_LIST} /bin/sh -c 'echo "$$string"; echo "$$x"'
+</pre>
+<p>Example 1 leads to a syntax error in the shell, as the
+      characters are just copied.</p>
+<p>Example 2 leads to a syntax error too, and if you leave out
+      the last " character from <code class="varname">${STRING}</code>,
+      <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?date+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">date</span>(1)</span></a> will be executed. The <code class="varname">$HOME</code> shell
+      variable would be evaluated, too.</p>
+<p>Example 3 outputs each space character preceded by a
+      backslash (or not), depending on the implementation of the
+      <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> command.</p>
+<p>Example 4 handles correctly every string that does not start
+      with a dash. In that case, the result depends on the
+      implementation of the <a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> command. As long as you can
+      guarantee that your input does not start with a dash, this form is
+      appropriate.</p>
+<p>Example 5 handles even the case of a leading dash
+      correctly.</p>
+<p>Example 6 also works with every string and is the
+      light-weight solution, since it does not involve a pipe, which has
+      its own problems.</p>
+<p>The <code class="varname">EXT_LIST</code> does not need to be quoted
+      because the quoting has already been done when adding elements to
+      the list.</p>
+<p>As internal lists shall not be passed to the shell, there is
+      no example for it.</p>
+</div>
+<div class="sect2" title="12.3.4. Quoting guideline">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="quoting-guideline"></a>12.3.4. Quoting guideline</h3></div></div></div>
+<p>There are many possible sources of wrongly quoted variables.
+      This section lists some of the commonly known ones.</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<p>Whenever you use the value of a list, think
+	about what happens to leading or trailing whitespace. If the
+	list is a well-formed shell expression, you can apply the
+	<code class="varname">:M*</code> modifier to strip leading and trailing
+	whitespace from each word. The <code class="varname">:M</code> operator
+	first splits its argument according to the rules of the shell,
+	and then creates a new list consisting of all words that match
+	the shell glob expression <code class="varname">*</code>, that is: all.
+	One class of situations where this is needed is when adding a
+	variable like <code class="varname">CPPFLAGS</code> to
+	<code class="varname">CONFIGURE_ARGS</code>. If the configure script
+	invokes other configure scripts, it strips the leading and
+	trailing whitespace from the variable and then passes it to the
+	other configure scripts. But these configure scripts expect the
+	(child) <code class="varname">CPPFLAGS</code> variable to be the same as
+	the parent <code class="varname">CPPFLAGS</code>. That's why we better
+	pass the <code class="varname">CPPFLAGS</code> value properly trimmed. And
+	here is how we do it:</p>
+<pre class="programlisting">
+CPPFLAGS=               # empty
+CPPFLAGS+=              -Wundef -DPREFIX=\"${PREFIX:Q}\"
+CPPFLAGS+=              ${MY_CPPFLAGS}
+
+CONFIGURE_ARGS+=        CPPFLAGS=${CPPFLAGS:M*:Q}
+
+all:
+        echo x${CPPFLAGS:Q}x            # leading and trailing whitespace
+        echo x${CONFIGURE_ARGS}x        # properly trimmed
+</pre>
+</li>
+<li class="listitem"><p>The example above contains one bug: The
+	<code class="varname">${PREFIX}</code> is a properly quoted shell
+	expression, but there is the C compiler after it, which also
+	expects a properly quoted string (this time in C syntax). The
+	version above is therefore only correct if
+	<code class="varname">${PREFIX}</code> does not have embedded backslashes
+	or double quotes. If you want to allow these, you have to add
+	another layer of quoting to each variable that is used as a C
+	string literal. You cannot use the <code class="varname">:Q</code>
+	operator for it, as this operator only works for the
+	shell.</p></li>
+<li class="listitem">
+<p>Whenever a variable can be empty, the
+	<code class="varname">:Q</code> operator can have surprising results. Here
+	are two completely different cases which can be solved with the
+	same trick.</p>
+<pre class="programlisting">
+EMPTY=                  # empty
+empty_test:
+        for i in a ${EMPTY:Q} c; do \
+            echo "$$i"; \
+        done
+
+for_test:
+.for i in a:\ a:\test.txt
+        echo ${i:Q}
+        echo "foo"
+.endfor
+</pre>
+<p>The first example will only print two of the three lines
+	we might have expected. This is because
+	<code class="varname">${EMPTY:Q}</code> expands to the empty string, which
+	the shell cannot see. The workaround is to write
+	<code class="varname">${EMPTY:Q}""</code>. This pattern can be often found
+	as <code class="varname">${TEST} -z ${VAR:Q}</code> or as <code class="varname">${TEST}
+	-f ${FNAME:Q}</code> (both of these are wrong).</p>
+<p>The second example will only print three lines instead of
+	four. The first line looks like <code class="varname">a:\ echo foo</code>.
+	This is because the backslash of the value
+	<code class="varname">a:\</code> is interpreted as a line-continuation by
+	<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?make+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">make</span>(1)</span></a>, which makes the second line the arguments of the
+	<a class="citerefentry" href="http://netbsd.gw.com/cgi-bin/man-cgi?echo+1+NetBSD-current"><span class="citerefentry"><span class="refentrytitle">echo</span>(1)</span></a> command from the first line. To avoid this, write
+	<code class="varname">${i:Q}""</code>.</p>
+</li>
+</ul></div>
+</div>
+<div class="sect2" title="12.3.5. Workaround for a bug in BSD Make">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="bsd-make-bug-workaround"></a>12.3.5. Workaround for a bug in BSD Make</h3></div></div></div>
+<p>The pkgsrc bmake program does not handle the following
+      assignment correctly. In case <code class="varname">_othervar_</code>
+      contains a ``-'' character, one of the closing braces is included
+      in <code class="varname">${VAR}</code> after this code executes.</p>
+<pre class="programlisting">
+VAR:=   ${VAR:N${_othervar_:C/-//}}
+</pre>
+<p>For a more complex code snippet and a workaround, see the
+      package <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/regress/make-quoting/README.html" target="_top"><code class="filename">regress/make-quoting</code></a>, testcase
+      <code class="varname">bug1</code>.</p>
+</div>
+</div>
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left">
+<a accesskey="p" href="components.html">Prev</a> </td>
+<td width="20%" align="center"><a accesskey="u" href="developers-guide.html">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="plist.html">Next</a>
+</td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 11. Package components - files, directories and contents </td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top"> Chapter 13. PLIST issues</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
