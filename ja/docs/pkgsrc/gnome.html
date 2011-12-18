@@ -1,0 +1,339 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 23. GNOME packaging and porting</title>
+<link rel="stylesheet" type="text/css" href="/global.css">
+<meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
+<link rel="home" href="index.html" title="The pkgsrc guide">
+<link rel="up" href="developers-guide.html" title="Part II. The pkgsrc developer's guide">
+<link rel="prev" href="devfaq.html" title="Chapter 22. Frequently Asked Questions">
+<link rel="next" href="infrastructure.html" title="Part III. The pkgsrc infrastructure internals">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr><th colspan="3" align="center">Chapter 23. GNOME packaging and porting</th></tr>
+<tr>
+<td width="20%" align="left">
+<a accesskey="p" href="devfaq.html">Prev</a> </td>
+<th width="60%" align="center">Part II. The pkgsrc developer's guide</th>
+<td width="20%" align="right"> <a accesskey="n" href="infrastructure.html">Next</a>
+</td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter" title="Chapter 23. GNOME packaging and porting">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="gnome"></a>Chapter 23. GNOME packaging and porting</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="sect1"><a href="gnome.html#meta-packages">23.1. Meta packages</a></span></dt>
+<dt><span class="sect1"><a href="gnome.html#new-package">23.2. Packaging a GNOME application</a></span></dt>
+<dt><span class="sect1"><a href="gnome.html#full-update">23.3. Updating GNOME to a newer version</a></span></dt>
+<dt><span class="sect1"><a href="gnome.html#patching">23.4. Patching guidelines</a></span></dt>
+</dl>
+</div>
+<p>Quoting <a class="ulink" href="http://www.gnome.org/" target="_top">GNOME's web
+site</a>:</p>
+<div class="blockquote"><blockquote class="blockquote"><p>The GNOME project provides two things: The GNOME desktop
+  environment, an intuitive and attractive desktop for users, and the
+  GNOME development platform, an extensive framework for building
+  applications that integrate into the rest of the desktop.</p></blockquote></div>
+<p>pkgsrc provides a seamless way to automatically build and install
+a complete GNOME environment <span class="emphasis"><em>under many different
+platforms</em></span>.  We can say with confidence that pkgsrc is one of
+the most advanced build and packaging systems for GNOME due to its
+included technologies buildlink3, the wrappers and tools framework and
+automatic configuration file management.  Lots of efforts are put into
+achieving a completely clean deinstallation of installed software
+components.</p>
+<p>Given that pkgsrc is <a class="ulink" href="http://www.NetBSD.org/" target="_top">NetBSD</a>'s official packaging system,
+the above also means that great efforts are put into making GNOME work
+under this operating system.  Recently, <a class="ulink" href="http://www.dragonflybsd.org/" target="_top">DragonFly BSD</a> also adopted
+pkgsrc as its preferred packaging system, contributing lots of
+portability fixes to make GNOME build and install under it.</p>
+<p>This chapter is aimed at pkgsrc developers and other people
+interested in helping our GNOME porting and packaging efforts.  It
+provides instructions on how to manage the existing packages and some
+important information regarding their internals.</p>
+<div class="note" title="We need your help!" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">We need your help!</h3>
+<p>Should you have some spare cycles to devote to NetBSD, pkgsrc
+  and GNOME and are willing to learn new exciting stuff, please jump
+  straight to the <a class="ulink" href="http://www.NetBSD.org/contrib/projects.html#gnome" target="_top">pending
+  work</a> list!  There is still a long way to go to get a
+  fully-functional GNOME desktop under NetBSD and we need your help to
+  achieve it!</p>
+</div>
+<div class="sect1" title="23.1. Meta packages">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="meta-packages"></a>23.1. Meta packages</h2></div></div></div>
+<p>pkgsrc includes three GNOME-related meta packages:</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-base/README.html" target="_top"><code class="filename">meta-pkgs/gnome-base</code></a>: Provides
+    the core GNOME desktop environment.  It only includes the necessary
+    bits to get it to boot correctly, although it may lack important
+    functionality for daily operation.  The idea behind this package is
+    to let end users build their own configurations on top of this one,
+    first installing this meta package to achieve a functional setup and
+    then adding individual applications.</p></li>
+<li class="listitem"><p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome/README.html" target="_top"><code class="filename">meta-pkgs/gnome</code></a>: Provides a
+    complete installation of the GNOME platform and desktop as defined
+    by the GNOME project; this is based on the components distributed in
+    the <code class="filename">platform/x.y/x.y.z/sources</code> and
+    <code class="filename">desktop/x.y/x.y.z/sources</code> directories of the
+    official FTP server.  Developer-only tools found in those
+    directories are not installed unless required by some other
+    component to work properly.  Similarly, packages from the bindings
+    set (<code class="filename">bindings/x.y/x.y.z/sources</code>) are not pulled
+    in unless required as a dependency for an end-user component.  This
+    package "extends" <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-base/README.html" target="_top"><code class="filename">meta-pkgs/gnome-base</code></a>.</p></li>
+<li class="listitem"><p><a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-devel/README.html" target="_top"><code class="filename">meta-pkgs/gnome-devel</code></a>:
+    Installs all the tools required to build a GNOME component when
+    fetched from the CVS repository.  These are required to let the
+    <span class="command"><strong>autogen.sh</strong></span> scripts work appropriately.</p></li>
+</ul></div>
+<p>In all these packages, the <code class="varname">DEPENDS</code> lines are
+sorted in a way that eases updates: a package may depend on other
+packages listed before it but not on any listed after it.  It is very
+important to keep this order to ease updates so... <span class="emphasis"><em>do not
+change it to alphabetical sorting!</em></span></p>
+</div>
+<div class="sect1" title="23.2. Packaging a GNOME application">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="new-package"></a>23.2. Packaging a GNOME application</h2></div></div></div>
+<p>Almost all GNOME applications are written in C and use a common
+set of tools as their build system.  Things get different with the new
+bindings to other languages (such as Python), but the following will
+give you a general idea on the minimum required tools:</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<p>Almost all GNOME applications use the GNU Autotools as their
+    build system.  As a general rule you will need to tell this to your
+    package:</p>
+<pre class="programlisting">
+GNU_CONFIGURE=yes
+USE_LIBTOOL=yes
+USE_TOOLS+=gmake
+</pre>
+</li>
+<li class="listitem">
+<p>If the package uses pkg-config to detect dependencies, add this
+    tool to the list of required utilities:</p>
+<pre class="programlisting">USE_TOOLS+=pkg-config</pre>
+<p>Also use <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/verifypc/README.html" target="_top"><code class="filename">pkgtools/verifypc</code></a> at
+    the end of the build process to ensure that you did not miss to
+    specify any dependency in your package and that the version
+    requirements are all correct.</p>
+</li>
+<li class="listitem"><p>If the package uses intltool, be sure to add
+    <code class="literal">intltool</code> to the <code class="varname">USE_TOOLS</code>
+    to handle dependencies and to force the package to use the latest
+    available version.</p></li>
+<li class="listitem">
+<p>If the package uses gtk-doc (a documentation generation
+    utility), do <span class="emphasis"><em>not</em></span> add a dependency on it.  The
+    tool is rather big and the distfile should come with pregenerated
+    documentation anyway; if it does not, it is a bug that you ought to
+    report.  For such packages you should disable gtk-doc (unless it is
+    the default):</p>
+<pre class="programlisting">CONFIGURE_ARGS+=--disable-gtk-doc</pre>
+<p>The default location of installed HTML files
+    (<code class="filename">share/gtk-doc/&lt;package-name&gt;</code>) is correct
+    and should not be changed unless the package insists on installing
+    them somewhere else.  Otherwise programs as
+    <span class="command"><strong>devhelp</strong></span> will not be able to open them.  You can
+    do that with an entry similar to:</p>
+<pre class="programlisting">CONFIGURE_ARGS+=--with-html-dir=${PREFIX}/share/gtk-doc/...</pre>
+</li>
+</ul></div>
+<p>GNOME uses multiple <span class="emphasis"><em>shared</em></span> directories and
+files under the installation prefix to maintain databases.  In this
+context, shared means that those exact same directories and files are
+used among several different packages, leading to conflicts in the
+<code class="filename">PLIST</code>.  pkgsrc currently includes functionality to
+handle the most common cases, so you have to forget about using
+<code class="literal">@unexec ${RMDIR}</code> lines in your file lists and
+omitting shared files from them.  If you find yourself doing those,
+<span class="emphasis"><em>your package is most likely incorrect</em></span>.</p>
+<p>The following table lists the common situations that result in
+using shared directories or files.  For each of them, the appropriate
+solution is given.  After applying the solution be sure to
+<span class="emphasis"><em>regenerate the package's file list</em></span> with
+<span class="command"><strong>make print-PLIST</strong></span> and ensure it is correct.</p>
+<div class="table">
+<a name="plist-handling"></a><p class="title"><b>Table 23.1. PLIST handling for GNOME packages</b></p>
+<div class="table-contents"><table summary="PLIST handling for GNOME packages" border="1">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>If the package...</th>
+<th>Then...</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Installs OMF files under <code class="filename">share/omf</code>.</td>
+<td>See <a class="xref" href="fixes.html#scrollkeeper-data-files" title="19.6.10. Packages installing scrollkeeper/rarian data files">Section 19.6.10, &#8220;Packages installing scrollkeeper/rarian data files&#8221;</a>.</td>
+</tr>
+<tr>
+<td>Installs icons under the
+        <code class="filename">share/icons/hicolor</code> hierarchy or updates
+        <code class="filename">share/icons/hicolor/icon-theme.cache</code>.</td>
+<td>See <a class="xref" href="fixes.html#hicolor-theme" title="19.6.19. Packages installing hicolor theme icons">Section 19.6.19, &#8220;Packages installing hicolor theme icons&#8221;</a>.</td>
+</tr>
+<tr>
+<td>Installs files under
+        <code class="filename">share/mime/packages</code>.</td>
+<td>See <a class="xref" href="fixes.html#mime-database" title="19.6.14. Packages installing extensions to the MIME database">Section 19.6.14, &#8220;Packages installing extensions to the MIME database&#8221;</a>.</td>
+</tr>
+<tr>
+<td>Installs <code class="filename">.desktop</code> files under
+        <code class="filename">share/applications</code> and these include MIME
+        information.</td>
+<td>See <a class="xref" href="fixes.html#desktop-files" title="19.6.20. Packages installing desktop files">Section 19.6.20, &#8220;Packages installing desktop files&#8221;</a>.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<br class="table-break">
+</div>
+<div class="sect1" title="23.3. Updating GNOME to a newer version">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="full-update"></a>23.3. Updating GNOME to a newer version</h2></div></div></div>
+<p>When seeing GNOME as a whole, there are two kinds of
+updates:</p>
+<div class="variablelist"><dl>
+<dt><span class="term">Major update</span></dt>
+<dd>
+<p>Given that there is still a very long way for GNOME 3 (if it
+      ever appears), we consider a major update one that goes from a
+      <code class="literal">2.X</code> version to a <code class="literal">2.Y</code> one,
+      where <code class="literal">Y</code> is even and greater than
+      <code class="literal">X</code>.  These are hard to achieve because they
+      introduce lots of changes in the components' code and almost all
+      GNOME distfiles are updated to newer versions.  Some of them can
+      even break API and ABI compatibility with the previous major
+      version series.  As a result, the update needs to be done all at
+      once to minimize breakage.</p>
+<p>A major update typically consists of around 80 package
+      updates and the addition of some new ones.</p>
+</dd>
+<dt><span class="term">Minor update</span></dt>
+<dd>
+<p>We consider a minor update one that goes from a
+      <code class="literal">2.A.X</code> version to a <code class="literal">2.A.Y</code>
+      one where <code class="literal">Y</code> is greater than
+      <code class="literal">X</code>.  These are easy to achieve because they do
+      not update all GNOME components, can be done in an incremental way
+      and do not break API nor ABI compatibility.</p>
+<p>A minor update typically consists of around 50 package
+      updates, although the numbers here may vary a lot.</p>
+</dd>
+</dl></div>
+<p>In order to update the GNOME components in pkgsrc to a new stable
+release (either major or minor), the following steps should be
+followed:</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+<p>Get a list of all the tarballs that form the new release by
+    using the following commands.  These will leave the full list of the
+    components' distfiles into the <code class="filename">list.txt</code>
+    file:</p>
+<pre class="screen"><code class="prompt">%</code> <strong class="userinput"><code>echo ls "*.tar.bz2" | \
+    ftp -V ftp://ftp.gnome.org/pub/gnome/platform/x.y/x.y.z/sources/ | \
+    awk '{ print $9 }' &gt;list.txt</code></strong>
+<code class="prompt">%</code> <strong class="userinput"><code>echo ls "*.tar.bz2" | \
+    ftp -V ftp://ftp.gnome.org/pub/gnome/desktop/x.y/x.y.z/sources/ | \
+    awk '{ print $9 }' &gt;&gt;list.txt</code></strong></pre>
+</li>
+<li class="listitem"><p>Open each meta package's <code class="filename">Makefile</code> and
+    bump their version to the release you are updating them to.  The
+    three meta packages should be always consistent with versioning.
+    Obviously remove any <code class="varname">PKGREVISION</code>s that might be
+    in them.</p></li>
+<li class="listitem">
+<p>For each meta package, update all its
+    <code class="varname">DEPENDS</code> lines to match the latest versions as
+    shown by the above commands.  Do <span class="emphasis"><em>not</em></span> list any
+    newer version (even if found in the FTP) because the meta packages
+    are supposed to list the exact versions that form a specific GNOME
+    release.  Exceptions are permitted here if a newer version solves a
+    serious issue in the overall desktop experience; these typically
+    come in the form of a revision bump in pkgsrc, not in newer versions
+    from the developers.</p>
+<p>Packages not listed in the <code class="filename">list.txt</code> file
+    should be updated to the latest version available (if found in
+    pkgsrc).  This is the case, for example, of the dependencies on the
+    GNU Autotools in the <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/meta-pkgs/gnome-devel/README.html" target="_top"><code class="filename">meta-pkgs/gnome-devel</code></a> meta package.</p>
+</li>
+<li class="listitem">
+<p>Generate a patch from the modified meta packages and extract the
+    list of "new" lines.  This will provide you an outline on what
+    packages need to be updated in pkgsrc and in what order:</p>
+<pre class="screen"><code class="prompt">%</code> <strong class="userinput"><code>cvs diff -u gnome-devel gnome-base gnome | grep '^+D' &gt;todo.txt</code></strong></pre>
+</li>
+<li class="listitem"><p>For major desktop updates it is recommended to zap all your
+    installed packages and start over from scratch at this point.</p></li>
+<li class="listitem"><p>Now comes the longest step by far: iterate over the contents
+    of <code class="filename">todo.txt</code> and update the packages listed in
+    it in order.  For major desktop updates none of these should be
+    committed until the entire set is completed because there are chances
+    of breaking not-yet-updated packages.</p></li>
+<li class="listitem"><p>Once the packages are up to date and working, commit them to
+    the tree one by one with appropriate log messages.  At the end,
+    commit the three meta package updates and all the corresponding
+    changes to the <code class="filename">doc/CHANGES-&lt;YEAR&gt;</code> and
+    <a href="http://cvsweb.NetBSD.org/bsdweb.cgi/pkgsrc/doc/TODO?rev=HEAD&amp;content-type=text/x-cvsweb-markup" target="_top"><code class="filename">pkgsrc/doc/TODO</code></a> files.</p></li>
+</ol></div>
+</div>
+<div class="sect1" title="23.4. Patching guidelines">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="patching"></a>23.4. Patching guidelines</h2></div></div></div>
+<p>GNOME is a very big component in pkgsrc which approaches 100
+packages.  Please, it is very important that you always, always,
+<span class="strong"><strong>always</strong></span> feed back any portability
+fixes you do to a GNOME package to the mainstream developers (see <a class="xref" href="components.html#components.patches.feedback" title="11.3.5. Feedback to the author">Section 11.3.5, &#8220;Feedback to the author&#8221;</a>).  This is the only way to get
+their attention on portability issues and to ensure that future versions
+can be built out-of-the box on NetBSD.  The less custom patches in
+pkgsrc, the easier further updates are.  Those developers in charge of
+issuing major GNOME updates will be grateful if you do that.</p>
+<p>The most common places to report bugs are the <a class="ulink" href="http://bugzilla.gnome.org/" target="_top">GNOME's Bugzilla</a> and the <a class="ulink" href="http://bugzilla.freedesktop.org/" target="_top">freedesktop.org's
+Bugzilla</a>.  Not all components use these to track bugs, but most
+of them do.  Do not be short on your reports: always provide detailed
+explanations of the current failure, how it can be improved to achieve
+maximum portability and, if at all possible, provide a patch against CVS
+head.  The more verbose you are, the higher chances of your patch being
+accepted.</p>
+<p>Also, please avoid using preprocessor magic to fix portability
+issues.  While the FreeBSD GNOME people are doing a great job in porting
+GNOME to their operating system, the official GNOME sources are now
+plagued by conditionals that check for <code class="varname">__FreeBSD__</code>
+and similar macros.  This hurts portability.  Please see our patching
+guidelines (<a class="xref" href="components.html#components.patches.guidelines" title="11.3.4. Patching guidelines">Section 11.3.4, &#8220;Patching guidelines&#8221;</a>) for more
+details.</p>
+</div>
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left">
+<a accesskey="p" href="devfaq.html">Prev</a> </td>
+<td width="20%" align="center"><a accesskey="u" href="developers-guide.html">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="infrastructure.html">Next</a>
+</td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 22. Frequently Asked Questions </td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top"> Part III. The pkgsrc infrastructure internals</td>
+</tr>
+</table>
+</div>
+</body>
+</html>

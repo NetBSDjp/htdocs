@@ -1,0 +1,497 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 14. Buildlink methodology</title>
+<link rel="stylesheet" type="text/css" href="/global.css">
+<meta name="generator" content="DocBook XSL Stylesheets VX.X.X">
+<link rel="home" href="index.html" title="The pkgsrc guide">
+<link rel="up" href="developers-guide.html" title="Part II. The pkgsrc developer's guide">
+<link rel="prev" href="plist.html" title="Chapter 13. PLIST issues">
+<link rel="next" href="pkginstall.html" title="Chapter 15. The pkginstall framework">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="navheader">
+<table width="100%" summary="Navigation header">
+<tr><th colspan="3" align="center">Chapter 14. Buildlink methodology</th></tr>
+<tr>
+<td width="20%" align="left">
+<a accesskey="p" href="plist.html">Prev</a> </td>
+<th width="60%" align="center">Part II. The pkgsrc developer's guide</th>
+<td width="20%" align="right"> <a accesskey="n" href="pkginstall.html">Next</a>
+</td>
+</tr>
+</table>
+<hr>
+</div>
+<div class="chapter" title="Chapter 14. Buildlink methodology">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="buildlink"></a>Chapter 14. Buildlink methodology</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="sect1"><a href="buildlink.html#converting-to-buildlink3">14.1. Converting packages to use buildlink3</a></span></dt>
+<dt><span class="sect1"><a href="buildlink.html#creating-buildlink3.mk">14.2. Writing <code class="filename">buildlink3.mk</code> files</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="buildlink.html#anatomy-of-bl3">14.2.1. Anatomy of a buildlink3.mk file</a></span></dt>
+<dt><span class="sect2"><a href="buildlink.html#updating-buildlink-depends">14.2.2. Updating
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      and
+      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      in <code class="filename">buildlink3.mk</code> files</a></span></dt>
+</dl></dd>
+<dt><span class="sect1"><a href="buildlink.html#writing-builtin.mk">14.3. Writing <code class="filename">builtin.mk</code> files</a></span></dt>
+<dd><dl>
+<dt><span class="sect2"><a href="buildlink.html#anatomy-of-builtin.mk">14.3.1. Anatomy of a <code class="filename">builtin.mk</code> file</a></span></dt>
+<dt><span class="sect2"><a href="buildlink.html#native-or-pkgsrc-preference">14.3.2. Global preferences for native or pkgsrc software</a></span></dt>
+</dl></dd>
+</dl>
+</div>
+<p>Buildlink is a framework in pkgsrc that controls what headers and libraries
+  are seen by a package's configure and build processes.  This is implemented
+  in a two step process:</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><p>Symlink headers and libraries for dependencies into
+      <code class="varname">BUILDLINK_DIR</code>, which by default is a subdirectory
+      of <code class="varname">WRKDIR</code>.</p></li>
+<li class="listitem"><p>Create wrapper scripts that are used in place of the normal compiler
+      tools that translate <code class="option">-I${LOCALBASE}/include</code> and
+      <code class="option">-L${LOCALBASE}/lib</code> into references to
+      <code class="varname">BUILDLINK_DIR</code>. The wrapper scripts also make
+      native compiler on some operating systems look like GCC, so that
+      packages that expect GCC won't require modifications to build with
+      those native compilers.</p></li>
+</ol></div>
+<p>This normalizes the environment in which a package is built so that the
+  package may be built consistently despite what other software may be
+  installed. Please note that the normal system header and library paths,
+  e.g. <code class="filename">/usr/include</code>,
+  <code class="filename">/usr/lib</code>, etc., are always searched -- buildlink3 is
+  designed to insulate the package build from non-system-supplied
+  software.</p>
+<div class="sect1" title="14.1. Converting packages to use buildlink3">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="converting-to-buildlink3"></a>14.1. Converting packages to use buildlink3</h2></div></div></div>
+<p>The process of converting packages to use the buildlink3
+    framework (<span class="quote">&#8220;<span class="quote">bl3ifying</span>&#8221;</span>) is fairly straightforward.
+    The things to keep in mind are:</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><p>Ensure that the build always calls the wrapper scripts
+	instead of the actual toolchain.  Some packages are tricky,
+	and the only way to know for sure is the check
+	<code class="filename">${WRKDIR}/.work.log</code> to see if the
+	wrappers are being invoked.</p></li>
+<li class="listitem"><p>Don't override <code class="varname">PREFIX</code> from within
+	the package Makefile, e.g. Java VMs, standalone shells,
+	etc., because the code to symlink files into
+	<code class="filename">${BUILDLINK_DIR}</code> looks for files
+	relative to <span class="quote">&#8220;<span class="quote">pkg_info -qp <em class="replaceable"><code>pkgname</code></em></span>&#8221;</span>.
+	</p></li>
+<li class="listitem"><p>Remember that <span class="emphasis"><em>only</em></span> the
+	<code class="filename">buildlink3.mk</code> files that you list in a
+	package's Makefile are added as dependencies for that package.
+	</p></li>
+</ol></div>
+<p>If a dependency on a particular package is required for its libraries and
+    headers, then we replace:</p>
+<pre class="programlisting">
+DEPENDS+=       foo&gt;=1.1.0:../../category/foo
+</pre>
+<p>with</p>
+<pre class="programlisting">
+.include "../../category/foo/buildlink3.mk"
+</pre>
+<p>The buildlink3.mk files usually define the required dependencies.
+    If you need a newer version of the dependency when using buildlink3.mk
+    files, then you can define it in your Makefile; for example:</p>
+<pre class="programlisting">
+BUILDLINK_API_DEPENDS.foo+=   foo&gt;=1.1.0
+.include "../../category/foo/buildlink3.mk"
+</pre>
+<p>There are several <code class="filename">buildlink3.mk</code>
+    files in <code class="filename">pkgsrc/mk</code>
+    that handle special package issues:</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><code class="filename">bdb.buildlink3.mk</code> chooses either
+	the native or a pkgsrc Berkeley DB implementation based on
+	the values of <code class="varname">BDB_ACCEPTED</code> and
+	<code class="varname">BDB_DEFAULT</code>.</p></li>
+<li class="listitem"><p><code class="filename">curses.buildlink3.mk</code>: If the system
+	comes with neither Curses nor NCurses, this will take care
+	to install the <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/ncurses/README.html" target="_top"><code class="filename">devel/ncurses</code></a> package.</p></li>
+<li class="listitem"><p><code class="filename">krb5.buildlink3.mk</code> uses the value
+	of <code class="varname">KRB5_ACCEPTED</code> to choose between
+	adding a dependency on Heimdal or MIT-krb5 for packages that
+	require a Kerberos 5 implementation.</p></li>
+<li class="listitem"><p><code class="filename">motif.buildlink3.mk</code> checks for a
+	system-provided Motif installation or adds a dependency on
+	<a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/x11/lesstif/README.html" target="_top"><code class="filename">x11/lesstif</code></a> or <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/x11/openmotif/README.html" target="_top"><code class="filename">x11/openmotif</code></a>.  The user can set
+	<code class="varname">MOTIF_TYPE</code> to <span class="quote">&#8220;<span class="quote">dt</span>&#8221;</span>,
+	<span class="quote">&#8220;<span class="quote">lesstif</span>&#8221;</span>, or <span class="quote">&#8220;<span class="quote">openmotif</span>&#8221;</span> to choose
+	which Motif version will be used.</p></li>
+<li class="listitem"><p><code class="filename">oss.buildlink3.mk</code> defines several
+	variables that may be used by packages that use the
+	Open Sound System (OSS) API.</p></li>
+<li class="listitem"><p><code class="filename">pgsql.buildlink3.mk</code> will accept
+	either Postgres 8.0, 8.1, or 8.2, whichever is found installed. See
+	the file for more information.</p></li>
+<li class="listitem"><p><code class="filename">pthread.buildlink3.mk</code> uses the value of
+	<code class="varname">PTHREAD_OPTS</code> and checks for native pthreads or adds
+	a dependency on <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/pth/README.html" target="_top"><code class="filename">devel/pth</code></a> as needed.</p></li>
+<li class="listitem"><p><code class="filename">xaw.buildlink3.mk</code> uses the value of
+	<code class="varname">XAW_TYPE</code> to choose a particular Athena widgets
+	library.</p></li>
+</ul></div>
+<p>The comments in those <code class="filename">buildlink3.mk</code>
+    files provide a more complete
+    description of how to use them properly.</p>
+</div>
+<div class="sect1" title="14.2. Writing buildlink3.mk files">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="creating-buildlink3.mk"></a>14.2. Writing <code class="filename">buildlink3.mk</code> files</h2></div></div></div>
+<a name="buildlink3.mk"></a><p>A package's <code class="filename">buildlink3.mk</code> file is
+    included by Makefiles to indicate the need to compile and link
+    against header files and libraries provided by the package.  A
+    <code class="filename">buildlink3.mk</code> file should always provide
+    enough information to add the correct type of dependency
+    relationship and include any other
+    <code class="filename">buildlink3.mk</code> files that it needs to find
+    headers and libraries that it needs in turn.</p>
+<p>To generate an initial <code class="filename">buildlink3.mk</code>
+    file for further editing, Rene Hexel's <a href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/createbuildlink/README.html" target="_top"><code class="filename">pkgtools/createbuildlink</code></a>
+    package is highly recommended.  For most packages, the following
+    command will generate a good starting point for
+    <code class="filename">buildlink3.mk</code> files:</p>
+<pre class="screen">
+<code class="prompt">%</code> <strong class="userinput"><code>cd pkgsrc/<em class="replaceable"><code>category</code></em>/<em class="replaceable"><code>pkgdir</code></em>
+<code class="prompt">%</code> createbuildlink &gt;buildlink3.mk</code></strong>
+    </pre>
+<div class="sect2" title="14.2.1. Anatomy of a buildlink3.mk file">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="anatomy-of-bl3"></a>14.2.1. Anatomy of a buildlink3.mk file</h3></div></div></div>
+<p>The following real-life example
+      <code class="filename">buildlink3.mk</code> is taken
+      from <code class="filename">pkgsrc/graphics/tiff</code>:</p>
+<pre class="programlisting">
+# $NetBSD: buildlink.html,v 1.29 2011/10/30 22:05:36 wiz Exp $
+
+BUILDLINK_TREE+=	tiff
+
+.if !defined(TIFF_BUILDLINK3_MK)
+TIFF_BUILDLINK3_MK:=
+
+BUILDLINK_API_DEPENDS.tiff+=	tiff&gt;=3.6.1
+BUILDLINK_ABI_DEPENDS.tiff+=	tiff&gt;=3.7.2nb1
+BUILDLINK_PKGSRCDIR.tiff?=	../../graphics/tiff
+
+.include "../../devel/zlib/buildlink3.mk"
+.include "../../graphics/jpeg/buildlink3.mk"
+.endif # TIFF_BUILDLINK3_MK
+
+BUILDLINK_TREE+=	-tiff
+</pre>
+<p>The header and footer manipulate
+      <code class="varname">BUILDLINK_TREE</code>, which is common across all
+      <code class="filename">buildlink3.mk</code> files and is used to track
+      the dependency tree.</p>
+<p>The main section is protected from multiple inclusion
+      and controls how the dependency on <em class="replaceable"><code>pkg</code></em> is
+      added.  Several important variables are set in the section:</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+	  is the actual dependency recorded in the installed
+	  package; this should always be set using
+	  <span class="command"><strong>+=</strong></span> to ensure that
+	  we're appending to any pre-existing list of values.  This
+	  variable should be set to the first version of the
+	  package that had an backwards-incompatible API change.
+	  </p></li>
+<li class="listitem"><p><code class="varname">BUILDLINK_PKGSRCDIR.<em class="replaceable"><code>pkg</code></em></code>
+	  is the location of the <em class="replaceable"><code>pkg</code></em>
+	  pkgsrc directory.</p></li>
+<li class="listitem"><p><code class="varname">BUILDLINK_DEPMETHOD.<em class="replaceable"><code>pkg</code></em></code>
+	  (not shown above) controls whether we use
+	  <code class="varname">BUILD_DEPENDS</code> or
+	  <code class="varname">DEPENDS</code> to add the dependency on
+	  <em class="replaceable"><code>pkg</code></em>.  The build dependency is
+	  selected by setting
+	  <code class="varname">BUILDLINK_DEPMETHOD.<em class="replaceable"><code>pkg</code></em></code>
+	  to <span class="quote">&#8220;<span class="quote">build</span>&#8221;</span>.  By default, the full dependency is
+	  used.</p></li>
+<li class="listitem"><p><code class="varname">BUILDLINK_INCDIRS.<em class="replaceable"><code>pkg</code></em></code>
+	    and
+	    <code class="varname">BUILDLINK_LIBDIRS.<em class="replaceable"><code>pkg</code></em></code>
+	    (not shown above) are lists of subdirectories of
+	    <code class="filename">${BUILDLINK_PREFIX.<em class="replaceable"><code>pkg</code></em>}</code>
+	    to add to the header and library search paths.  These
+	    default to <span class="quote">&#8220;<span class="quote">include</span>&#8221;</span> and <span class="quote">&#8220;<span class="quote">lib</span>&#8221;</span>
+	  respectively.</p></li>
+<li class="listitem"><p><code class="varname">BUILDLINK_CPPFLAGS.<em class="replaceable"><code>pkg</code></em></code>
+	    (not shown above) is the list of preprocessor flags to add
+	    to <code class="varname">CPPFLAGS</code>, which are passed on to the
+	    configure and build phases.  The <span class="quote">&#8220;<span class="quote">-I</span>&#8221;</span> option
+	    should be avoided and instead be handled using
+	    <code class="varname">BUILDLINK_INCDIRS.<em class="replaceable"><code>pkg</code></em></code> as
+	  above.</p></li>
+</ul></div>
+<p>The following variables are all optionally defined within
+      this second section (protected against multiple inclusion) and
+      control which package files are symlinked into
+      <code class="filename">${BUILDLINK_DIR}</code> and how their names are
+      transformed during the symlinking:</p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p><code class="varname">BUILDLINK_FILES.<em class="replaceable"><code>pkg</code></em></code>
+	    (not shown above) is a shell glob pattern relative to
+	    <code class="filename">${BUILDLINK_PREFIX.<em class="replaceable"><code>pkg</code></em>}</code>
+	    to be symlinked into
+	    <code class="filename">${BUILDLINK_DIR}</code>,
+	  e.g. <code class="filename">include/*.h</code>.</p></li>
+<li class="listitem"><p><code class="varname">BUILDLINK_FILES_CMD.<em class="replaceable"><code>pkg</code></em></code>
+	    (not shown above) is a shell pipeline that
+	    outputs to stdout a list of files relative to
+	    <code class="filename">${BUILDLINK_PREFIX.<em class="replaceable"><code>pkg</code></em>}</code>.
+	    The resulting files are to be symlinked
+	    into <code class="filename">${BUILDLINK_DIR}</code>.  By default,
+	    this takes the <code class="filename">+CONTENTS</code> of a
+	    <em class="replaceable"><code>pkg</code></em> and filters it through
+	    <code class="varname">${BUILDLINK_CONTENTS_FILTER.<em class="replaceable"><code>pkg</code></em>}</code>.</p></li>
+<li class="listitem"><p><code class="varname">BUILDLINK_CONTENTS_FILTER.<em class="replaceable"><code>pkg</code></em></code>
+	    (not shown above) is a filter command that filters
+	    <code class="filename">+CONTENTS</code> input into a list of files
+	    relative to
+	    <code class="filename">${BUILDLINK_PREFIX.<em class="replaceable"><code>pkg</code></em>}</code>
+	    on stdout.  By default for overwrite packages,
+	    <code class="varname">BUILDLINK_CONTENTS_FILTER.<em class="replaceable"><code>pkg</code></em></code>
+	    outputs the contents of the <code class="filename">include</code>
+	    and <code class="filename">lib</code> directories in the package
+	    <code class="filename">+CONTENTS</code>, and for pkgviews packages,
+	    it outputs any libtool archives in
+	    <code class="filename">lib</code> directories.</p></li>
+<li class="listitem"><p><code class="varname">BUILDLINK_FNAME_TRANSFORM.<em class="replaceable"><code>pkg</code></em></code>
+	    (not shown above) is a list of sed arguments used to
+	    transform the name of the source filename into a
+	    destination filename, e.g. <span class="command"><strong>-e
+	    "s|/curses.h|/ncurses.h|g"</strong></span>.</p></li>
+</ul></div>
+<p>This section can additionally include any
+      <code class="filename">buildlink3.mk</code> needed for
+      <em class="replaceable"><code>pkg</code></em>'s library dependencies.
+      Including these <code class="filename">buildlink3.mk</code> files
+      means that the headers and libraries for these
+      dependencies are also symlinked into
+      <code class="filename">${BUILDLINK_DIR}</code>
+      whenever the <em class="replaceable"><code>pkg</code></em>
+      <code class="filename">buildlink3.mk</code>
+      file is included. Dependencies are only added for directly
+      include <code class="filename">buildlink3.mk</code> files.</p>
+</div>
+<div class="sect2" title="14.2.2. Updating BUILDLINK_API_DEPENDS.pkg and BUILDLINK_ABI_DEPENDS.pkg in buildlink3.mk files">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="updating-buildlink-depends"></a>14.2.2. Updating
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      and
+      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      in <code class="filename">buildlink3.mk</code> files</h3></div></div></div>
+<p>These two variables differ in that one describes source
+      compatibility (API) and the other binary compatibility (ABI).
+      The difference is that a change in the API breaks compilation of
+      programs while changes in the ABI stop compiled programs from
+      running.</p>
+<p>Changes to the
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      variable in a <code class="filename">buildlink3.mk</code> file happen
+      very rarely. One possible reason is that all packages depending
+      on this already need a newer version. In case it is bumped see
+      the description below.</p>
+<p>The most common example of an ABI change is that the major
+      version of a shared library is increased. In this case,
+      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      should be adjusted to require at least the new package version.
+      Then the packages that depend on this package need their
+      <code class="varname">PKGREVISION</code>s increased and, if they have
+      <code class="filename">buildlink3.mk</code> files, their
+      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      adjusted, too. This is needed so pkgsrc will require the correct
+      package dependency and not settle for an older one when building
+      the source.</p>
+<p>See <a class="xref" href="fixes.html#dependencies" title="19.1.6. Handling dependencies">Section 19.1.6, &#8220;Handling dependencies&#8221;</a> for
+      more information about dependencies on other packages,
+      including the <code class="varname">BUILDLINK_ABI_DEPENDS</code> and
+      <code class="varname">ABI_DEPENDS</code> definitions.</p>
+<p>Please take careful consideration before adjusting
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      or
+      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      as we don't want to cause unneeded package deletions and
+      rebuilds.  In many cases, new versions of packages work just
+      fine with older dependencies.</p>
+<p>Also it is not needed to set
+      <code class="varname">BUILDLINK_ABI_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>
+      when it is identical to
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>.	</p>
+</div>
+</div>
+<div class="sect1" title="14.3. Writing builtin.mk files">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="writing-builtin.mk"></a>14.3. Writing <code class="filename">builtin.mk</code> files</h2></div></div></div>
+<p>Some packages in pkgsrc install headers and libraries that
+      coincide with headers and libraries present in the base system.
+      Aside from a <code class="filename">buildlink3.mk</code> file, these
+      packages should also include a <code class="filename">builtin.mk</code>
+      file that includes the necessary checks to decide whether using
+      the built-in software or the pkgsrc software is
+    appropriate.</p>
+<p>The only requirements of a builtin.mk file for
+    <em class="replaceable"><code>pkg</code></em> are:</p>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><p>It should set
+	<code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+	to either <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span> or <span class="quote">&#8220;<span class="quote">no</span>&#8221;</span>
+	after it is included.</p></li>
+<li class="listitem"><p>It should <span class="emphasis"><em>not</em></span> override any
+	<code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+	which is already set before the
+	<code class="filename">builtin.mk</code> file is included.</p></li>
+<li class="listitem"><p>It should be written to allow multiple inclusion.  This
+	is <span class="emphasis"><em>very</em></span> important and takes careful
+	attention to <code class="filename">Makefile</code> coding.</p></li>
+</ol></div>
+<div class="sect2" title="14.3.1. Anatomy of a builtin.mk file">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="anatomy-of-builtin.mk"></a>14.3.1. Anatomy of a <code class="filename">builtin.mk</code> file</h3></div></div></div>
+<p>The following is the recommended template for builtin.mk
+      files:</p>
+<pre class="programlisting">
+.if !defined(IS_BUILTIN.foo)
+#
+# IS_BUILTIN.foo is set to "yes" or "no" depending on whether "foo"
+# genuinely exists in the system or not.
+#
+IS_BUILTIN.foo?=        no
+
+# BUILTIN_PKG.foo should be set here if "foo" is built-in and its package
+# version can be determined.
+#
+.  if !empty(IS_BUILTIN.foo:M[yY][eE][sS])
+BUILTIN_PKG.foo?=       foo-1.0
+.  endif
+.endif  # IS_BUILTIN.foo
+
+.if !defined(USE_BUILTIN.foo)
+USE_BUILTIN.foo?=       ${IS_BUILTIN.foo}
+.  if defined(BUILTIN_PKG.foo)
+.    for _depend_ in ${BUILDLINK_API_DEPENDS.foo}
+.      if !empty(USE_BUILTIN.foo:M[yY][eE][sS])
+USE_BUILTIN.foo!=                                                       \
+        ${PKG_ADMIN} pmatch '${_depend_}' ${BUILTIN_PKG.foo}            \
+        &amp;&amp; ${ECHO} "yes" || ${ECHO} "no"
+.      endif
+.    endfor
+.  endif
+.endif  # USE_BUILTIN.foo
+
+CHECK_BUILTIN.foo?=     no
+.if !empty(CHECK_BUILTIN.foo:M[nN][oO])
+#
+# Here we place code that depends on whether USE_BUILTIN.foo is set to
+# "yes" or "no".
+#
+.endif  # CHECK_BUILTIN.foo
+</pre>
+<p>The first section sets
+      <code class="varname">IS_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      depending on if <em class="replaceable"><code>pkg</code></em> really exists
+      in the base system.  This should not be a base system software
+      with similar functionality to <em class="replaceable"><code>pkg</code></em>;
+      it should only be <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span> if the actual package is
+      included as part of the base system.  This variable is only
+      used internally within the <code class="filename">builtin.mk</code>
+      file.</p>
+<p>The second section sets
+      <code class="varname">BUILTIN_PKG.<em class="replaceable"><code>pkg</code></em></code>
+      to the version of <em class="replaceable"><code>pkg</code></em> in the base
+      system if it exists (if
+      <code class="varname">IS_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      is <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span>).  This variable is only used internally
+      within the <code class="filename">builtin.mk</code> file.</p>
+<p>The third section sets
+      <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      and is <span class="emphasis"><em>required</em></span> in all
+      <code class="filename">builtin.mk</code> files.  The code in this
+      section must make the determination whether the built-in
+      software is adequate to satisfy the dependencies listed in
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>.
+      This is typically done by comparing
+      <code class="varname">BUILTIN_PKG.<em class="replaceable"><code>pkg</code></em></code>
+      against each of the dependencies in
+      <code class="varname">BUILDLINK_API_DEPENDS.<em class="replaceable"><code>pkg</code></em></code>.
+      <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      <span class="emphasis"><em>must</em></span> be set to the correct value by the
+      end of the <code class="filename">builtin.mk</code> file.  Note that
+      <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      may be <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span> even if
+      <code class="varname">IS_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      is <span class="quote">&#8220;<span class="quote">no</span>&#8221;</span> because we may make the determination
+      that the built-in version of the software is similar enough to
+      be used as a replacement.</p>
+<p>The last section is guarded by
+      <code class="varname">CHECK_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>,
+      and includes code that uses the value of
+      <code class="varname">USE_BUILTIN.<em class="replaceable"><code>pkg</code></em></code>
+      set in the previous section.  This typically includes, e.g.,
+      adding additional dependency restrictions and listing additional
+      files to symlink into <code class="filename">${BUILDLINK_DIR}</code> (via
+      <code class="varname">BUILDLINK_FILES.<em class="replaceable"><code>pkg</code></em></code>).</p>
+</div>
+<div class="sect2" title="14.3.2. Global preferences for native or pkgsrc software">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="native-or-pkgsrc-preference"></a>14.3.2. Global preferences for native or pkgsrc software</h3></div></div></div>
+<p>When building packages, it's possible to choose whether to set
+	a global preference for using either the built-in (native)
+	version or the pkgsrc version of software to satisfy a
+	dependency.  This is controlled by setting
+	<code class="varname">PREFER_PKGSRC</code> and
+	<code class="varname">PREFER_NATIVE</code>.  These variables take values
+	of either <span class="quote">&#8220;<span class="quote">yes</span>&#8221;</span>, <span class="quote">&#8220;<span class="quote">no</span>&#8221;</span>, or a list of
+	packages.  <code class="varname">PREFER_PKGSRC</code> tells pkgsrc to
+	use the pkgsrc versions of software, while
+	<code class="varname">PREFER_NATIVE</code> tells pkgsrc to use the
+	built-in versions.  Preferences are determined by the most
+	specific instance of the package in either
+	<code class="varname">PREFER_PKGSRC</code> or
+	<code class="varname">PREFER_NATIVE</code>.  If a package is specified
+	in neither or in both variables, then
+	<code class="varname">PREFER_PKGSRC</code> has precedence over
+	<code class="varname">PREFER_NATIVE</code>.  For example, to require
+	using pkgsrc versions of software for all but the most basic
+      bits on a NetBSD system, you can set:</p>
+<pre class="programlisting">
+PREFER_PKGSRC=  yes
+PREFER_NATIVE=  getopt skey tcp_wrappers
+</pre>
+<p>A package <span class="emphasis"><em>must</em></span> have a
+      <code class="filename">builtin.mk</code>
+      file to be listed in <code class="varname">PREFER_NATIVE</code>,
+      otherwise it is simply ignored in that list.</p>
+</div>
+</div>
+</div>
+<div class="navfooter">
+<hr>
+<table width="100%" summary="Navigation footer">
+<tr>
+<td width="40%" align="left">
+<a accesskey="p" href="plist.html">Prev</a> </td>
+<td width="20%" align="center"><a accesskey="u" href="developers-guide.html">Up</a></td>
+<td width="40%" align="right"> <a accesskey="n" href="pkginstall.html">Next</a>
+</td>
+</tr>
+<tr>
+<td width="40%" align="left" valign="top">Chapter 13. PLIST issues </td>
+<td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td>
+<td width="40%" align="right" valign="top"> Chapter 15. The pkginstall framework</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
