@@ -13,6 +13,7 @@
 		version="1.0">
 
   <xsl:import href="netbsd-webpage.xsl" />
+  <xsl:import href="webpage.xsl" />
 
   <xsl:param name="locale.backto">に戻る</xsl:param>
 
@@ -376,21 +377,25 @@
 	    </xsl:attribute>
 	  </img>
 	</a>
-	<div class="headerTools">
-	  <div id="headerSearch">
-	    <form method="get" action="http://www.google.com/custom">
-	      <input class="whiteOnBlack" type="text" 
-		     name="q"
-		     onfocus="if(this.value==this.defaultValue ) this.value='';" 
-		     size="12" maxlength="255" value="Search"/>
-	      <input type="hidden" name="cof" 
-		     value="L:http://www.NetBSD.org/images/NetBSD-smaller.png;LH:200;LW:200;AH:center;AWFID:4f6b0499f0f58d2c;"/>
-	      <input type="hidden" name="domains" value="NetBSD.org"/>
-	      <input type="hidden" name="sitesearch" value="www.NetBSD.org"/>
-	      <input type="submit" value="検索"/>
-	    </form>
-	  </div>
-	</div>
+        <div class="headerTools">
+          <div id="headerSearch">
+                <div id="header-cse-search-form" style="width: 24%;">Google custom search</div>
+		<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+		<script type="text/javascript"> 
+		  google.load('search', '1', {language : 'ja'});
+		  google.setOnLoadCallback(function() {
+		  var header_customSearchControl = new google.search.CustomSearchControl(
+		  '016685087845965994609:5539h4dkepg');
+
+		  header_customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+		  var header_options = new google.search.DrawOptions();
+		  header_options.enableSearchboxOnly("http://google.com/cse?cx=016685087845965994609:5539h4dkepg");
+		  header_customSearchControl.draw('header-cse-search-form', header_options);
+		  }, true);
+		</script>
+		<link rel="stylesheet" href="http://www.google.com/cse/style/look/default.css" type="text/css" />
+          </div>
+        </div>
       </div>
       <div class="navBar">
 	<span class="doNotDisplay">
@@ -615,6 +620,7 @@
   <xsl:text> </xsl:text>
   <xsl:value-of select="$locale.backto" />
 </xsl:template>
+
 
 
 </xsl:stylesheet>
