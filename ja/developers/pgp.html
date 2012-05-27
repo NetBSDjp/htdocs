@@ -1,0 +1,663 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="home" href="../../." title="Welcome to The NetBSD Project: Of course it runs NetBSD.">
+<link rel="up" href="../../ja/developers/." title="NetBSD 開発者ドキュメンテーション">
+<link rel="previous" href="../../ja/developers/htdocs.html" title="htdocsを編集する">
+<link rel="next" href="../../ja/developers/PR.html" title="問題報告の解決">
+<link rel="first" href="../../ja/developers/cvs-repos/." title="CVS リポジトリー問題">
+<link rel="last" href="../../ja/developers/translate.html" title="htdocs を翻訳する">
+<link rel="stylesheet" href="../../global.css" type="text/css">
+<title>NetBSD開発者のためのPGP鍵管理ガイド</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-developers-pgp"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch">
+<div id="header-cse-search-form" style="width: 24%;">Google custom search</div>
+<script src="http://www.google.com/jsapi" type="text/javascript"></script><script type="text/javascript"> 
+		  google.load('search', '1', {language : 'ja'});
+		  google.setOnLoadCallback(function() {
+		  var header_customSearchControl = new google.search.CustomSearchControl(
+		  '016685087845965994609:5539h4dkepg');
+
+		  header_customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+		  var header_options = new google.search.DrawOptions();
+		  header_options.enableSearchboxOnly("http://google.com/cse?cx=016685087845965994609:5539h4dkepg");
+		  header_customSearchControl.draw('header-cse-search-form', header_options);
+		  }, true);
+		</script><link rel="stylesheet" href="http://www.google.com/cse/style/look/default.css" type="text/css">
+</div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../ja/">
+	  ホーム</a> | 
+	<a href="../../ja/about/">
+	  概要</a> | 
+	<a href="../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../ja/support/">
+	  サポート</a> | 
+	<a href="../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD開発者のためのPGP鍵管理ガイド</h1>
+<div class="sect1">
+<div class="titlepage"></div>
+
+<div class="sect2" title="範囲">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="scope"></a>範囲</h3></div></div></div>
+  
+  <p>
+このガイドの話題はPGP鍵の管理です。
+あなたが、非対称暗号(秘密鍵と公開鍵を使う)を理解していること、
+PGP鍵を作る方法と使う方法を知っていること、
+お気に入りの電子メールクライアントにPGPサポートを組み込む方法を知っていること
+を前提とします。
+あなたが、デジタルメッセージの署名と暗号化の概念を理解していることを前提とします。
+  </p>
+  <p>
+PGP鍵を使うための情報は、以下で得ることができます。
+  </p>
+  <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+      <a class="ulink" href="http://www.gnupg.org/faq/GnuPG-FAQ.html" target="_top">http://www.gnupg.org/faq/GnuPG-FAQ.html</a>
+    </li>
+<li class="listitem">
+      <a class="ulink" href="http://www.gnupg.org/documentation/howtos.en.html" target="_top">http://www.gnupg.org/documentation/howtos.en.html</a>
+    </li>
+<li class="listitem">
+       <a class="ulink" href="http://www.gnupg.org/gph/en/manual.html" target="_top">http://www.gnupg.org/gph/en/manual.html</a>
+    </li>
+</ul></div>
+</div>
+
+<div class="sect2" title="予想される読者">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="audience"></a>予想される読者</h3></div></div></div>
+  
+  <p>
+NetBSD開発者と、NetBSD Projectのメンバーへの応募者
+  </p>
+</div>
+
+<div class="sect2" title="根拠: なぜPGPを使える開発者が必要なのか">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="rationale"></a>根拠: なぜPGPを使える開発者が必要なのか</h3></div></div></div>
+  
+  <p>
+The NetBSD Projectは、世界中のプロジェクトメンバーからの
+要求やその他のコミュニケーションの出自を明らかにできる必要があります。
+これを実行する最も単純な方法は、メンバー間でPGPの信頼の輪を構築することです。
+  </p>
+  <p>
+信頼の輪を必要とする典型的な活動の例を示します。
+  </p>
+  <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+      <p>
+例えばアカウントの詳細の変更に関連する管理者宛ての電子メールに署名できること
+      </p>
+    </li>
+<li class="listitem">
+      <p>
+(プロジェクト全体の信頼の輪を構築するために)他の誰かの鍵に署名できること、
+そして応募者の鍵に署名できること
+      </p>
+    </li>
+<li class="listitem">
+      <p>
+外部に公開されないセキュリティーの問題についてのコミュニケーションを例とする
+暗号化された電子メールを受信できること
+      </p>
+    </li>
+</ul></div>
+  <p>
+PGP鍵を作り、管理し、使う、最も一般的なプログラムは、
+おそらくgpg (GNU Privacy Guard)であり、
+pkgsrcの<a href="http://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/security/gnupg/README.html" target="_top"><code class="filename">security/gnupg</code></a>から利用できます。
+この文書中の例は、(pgpではなく)gnupgを使います。
+  </p>
+</div>
+
+<div class="sect2" title="信頼の輪アプローチ">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="approach"></a>信頼の輪アプローチ</h3></div></div></div>
+  
+  <p>
+誰でも任意の数の鍵を作ることができ、
+どの鍵も任意の識別情報を持たせることができます。
+持ち主の識別情報は本当のものでないかもしれません。
+持ち主は、これらの鍵を任意の鍵サーバーにアップロードすることができます。
+このことは、ある人物が本人でなくても(ユーザーIDとして与えられる)鍵の所有者の
+ふりをすることができることを意味します。
+  </p>
+  <p>
+特定のPGP鍵が特定の人物の所有物であることに確証を持つための概念には
+二つの根本的に異なるものがあります。
+  </p>
+  <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+      <p>
+一般的には政府の管理下にある認証局(CA)が
+特定の人物の識別情報を確認し、
+特定の鍵が特定の人物(や組織)の所有物であることを証明する方法があります。
+このサービスには一般的にはお金がかかります。
+      </p>
+     </li>
+<li class="listitem">
+      <p>
+信頼の輪: 二人のPGP鍵の所有者が会ったとき、彼らが識別情報を確認し、
+お互いの鍵に署名をする方法(後で他の誰かの鍵に署名することの重大さを
+説明します)。
+政府によって管理はされませんが、あなたの知っている多くの人に署名されていれば、
+その信頼性に確証を持つことができます。
+信頼の輪アプローチで重要なのは、多くの鍵の所有者が参加することです。
+      </p>
+     </li>
+</ul></div>
+    <p>
+信頼の輪アプローチでは、AがBの鍵に署名し、BがCの鍵に署名したならば、
+AはCの信頼性について確証を持つことができます。
+これが成り立つには、AはBを「Bはいつも責任ある署名をする」と
+信頼している必要があります
+AからCへの経路は「信頼の鎖」と呼ばれます。
+    </p>
+</div>
+
+<div class="sect2" title="他の誰かの鍵に署名することの重大さとは?">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="significance"></a>他の誰かの鍵に署名することの重大さとは?</h3></div></div></div>
+  
+  <p>
+しばしば以下に述べられているのを聞くことがあります。
+「Fooの行動が気に食わないから彼の鍵には署名しない」とか
+「Fooが強迫メールに私の署名した鍵で署名したら、法的な責任を取ることになる」
+これらや似たような発言は、正しくありません。
+  </p>
+  <p>
+誰かの鍵に自分の鍵で署名するということは、
+「PGP鍵xは人物yの所有物であることを確認した」ということであり、
+それ以上でもそれ以下でもありません。
+  </p>
+  <p>
+注意深く本人であることを調査した人に対して、その人の鍵に署名しない
+理由はありません。
+  </p>
+</div>
+
+<div class="sect2" title="鍵生成でのお薦め">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="keygen-recommendations"></a>鍵生成でのお薦め</h3></div></div></div>
+  
+  <p>
+最初に、長い期間に渡って最高のセキュリティーを保つには、
+長い鍵長を選ぶのが良いです。
+現在のDSA標準での最大1024ビットの鍵長の制限は、DSAのセキュリティーを
+制限することになります。
+最大のセキュリティーを確保するために、2048ビットのRSA鍵を暗号化と署名に
+使うのが賢明です。
+  </p>
+  <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+    <pre class="programlisting">
+% gpg --gen-key
+gpg (GnuPG) 1.4.12; Copyright (C) 2012 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Please select what kind of key you want:
+   (1) RSA and RSA (default)
+   (2) DSA and Elgamal
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+Your selection? 1
+RSA keys may be between 1024 and 4096 bits long.
+What keysize do you want? (2048) 2048
+Requested keysize is 2048 bits       
+Please specify how long the key should be valid.
+         0 = key does not expire
+      &lt;n&gt;  = key expires in n days
+      &lt;n&gt;w = key expires in n weeks
+      &lt;n&gt;m = key expires in n months
+      &lt;n&gt;y = key expires in n years
+Key is valid for? (0) 0
+Key does not expire at all
+Is this correct? (y/N) y
+                        
+You need a user ID to identify your key; the software constructs the user ID
+from the Real Name, Comment and Email Address in this form:
+    "Heinrich Heine (Der Dichter) &lt;heinrichh@duesseldorf.de&gt;"
+
+Real name: Joe Doe    
+Email address: joe@doe.org
+Comment: NetBSD           
+You selected this USER-ID:
+    "Joe Doe (NetBSD) &lt;joe@doe.org&gt;"
+
+Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o
+You need a Passphrase to protect your secret key.    
+Enter passphrase:
+Repeat passphrase:
+
+gpg: /home/joe/.gnupg/trustdb.gpg: trustdb created
+gpg: key 7CEBFEBC marked as ultimately trusted
+public and secret key created and signed.
+
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+pub   2048R/7CEBFEBC 2012-05-20
+      Key fingerprint = 67A7 FC80 8140 5F9B CE96  E19D E5B7 BF68 7CEB FEBC
+uid                  Joe Doe (NetBSD) &lt;joe@doe.org&gt;
+sub   2048R/6F64A1B1 2012-05-20
+    </pre>
+    </div>
+    <p>
+以上で完了です。
+    </p>
+    <p>
+ほかの質問としては、最初に満了日を設定すべきか否かがあるでしょう。
+満了日は(PGP 2.xの鍵と違って)後で変更することができます。
+この質問は個人の選択にまかせる問題です。
+鍵に満了日を設定する理由として、人はときどきパスフレーズを忘れたり、
+秘密鍵を紛失するというものがあります。
+満了日を設定すると、鍵が急に使えなくなる日が存在することになります。
+    </p>
+    <p>
+鍵を作った後、あなたの使っている全ての電子メールアドレスをUIDとしてあなたの鍵に
+追加すべきです。
+@NetBSD.org UIDを第一のUIDにすることを検討してください。
+    </p>
+</div>
+
+<div class="sect2" title="あなたの秘密鍵を管理するお薦めの方法">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="manage-recommendations"></a>あなたの秘密鍵を管理するお薦めの方法</h3></div></div></div>
+  
+  <p>
+PGP鍵ペアを作ったらすぐに、ブランクな無効鍵を作っておくのが良いでしょう。
+そうすることで、セキュリティー上の危険があった場合や、秘密鍵を失なった場合
+(ディスクがクラッシュした)や、パスフレーズを忘れた場合に、あなたの鍵を
+無効化することができます。
+無効鍵は安全な場所に保管しておいてください。
+秘密鍵とは別に保管するのが望ましいです。
+印刷して安全に保管しておくのは、良い考えです。
+  </p>
+  <p>
+常に、あなたにPGP秘密鍵はあなただけが管理権限を持つマシンにだけ保管する
+ようにしてください。あるいは、秘密鍵を取り外し可能なUSBスティック
+(市販されているもののなかで最もちっぽけなので良い)に
+保管するようにしてください。
+そして、鍵を使わない時にはUSBスティックを取り外すようにしてください。
+  </p>
+  <p>
+あなたのPGP秘密鍵を強いパスフレーズで守るようにしてください。
+  </p>
+  <p>
+定期的に鍵のバックアップを取るようにしてください。
+  </p>
+</div>
+
+<div class="sect2" title="あなたのPGP公開鍵の配布についてのお薦め">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="distribution-recommendations"></a>あなたのPGP公開鍵の配布についてのお薦め</h3></div></div></div>
+  
+  <p>
+公開鍵秘密鍵モデルでは、秘密鍵は安全に守られている必要がありますが、
+公開鍵はできるだけ広く配布されるものです。
+あなたに暗号化されたメッセージを送りたい誰かや、あなたの署名を確認したい誰か
+は、あなたの公開鍵を必要としています。
+  </p>
+  <p>
+よって、あなたは以下のことをすべきです。
+  </p>
+  <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+      <p>
+あなたの公開鍵を公開鍵サーバーに登録する
+</p>
+    </li>
+<li class="listitem">
+      <p>
+あなたの鍵をlocalsrc/security/publickeys/developersにコミットする
+</p>
+    </li>
+</ul></div>
+  <p>
+標準的な鍵サーバーは、www.pgp.net、pgp.mit.edu、www.keyserver.netです。
+デフォルトの鍵サーバーは、~/.gnupg/gpg.confに以下のように指定できます。
+  </p>
+  <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+      keyserver pgp.mit.edu
+  </div>
+  <p>
+localsrc/security/publickeys/developers/READMEには、どのようにあなたのPGP公開鍵をNetBSDローカルソースリポジトリーにコミットするかが説明されています。
+全ての開発者のPGP公開鍵をこのディレクトリーに収めておくことで、
+全ての鍵(全ての署名付き)をただ一つのコマンドでインポートすることができます。
+  </p>
+</div>
+
+<div class="sect2" title="鍵に署名するお薦めの方法">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="sign-recommendations"></a>鍵に署名するお薦めの方法</h3></div></div></div>
+  
+  <p>
+<span class="emphasis"><em>重要:</em></span>
+鍵の構成要素を確認することなく、信頼性を確認することなく、
+鍵に署名しないでください。
+鍵の所有者であると主張する人物の所有する鍵であることを確認してください。
+あなただけではなく他人もあなたの署名を信頼することを忘れないでください!
+  </p>
+  <p>
+お薦めの逐一の手順は以下のようです。
+  </p>
+  <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+      <p>
+あなたのPGP鍵に関する以下の情報を記した「名刺」型の文書を用意してください。
+      </p>
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p>
+鍵長
+</p></li>
+<li class="listitem"><p>
+鍵のタイプ
+</p></li>
+<li class="listitem"><p>
+鍵のID
+</p></li>
+<li class="listitem"><p>
+作成日
+</p></li>
+<li class="listitem"><p>
+満了日(もし設定していれば)
+</p></li>
+<li class="listitem"><p>
+全てのUID
+</p></li>
+<li class="listitem"><p>
+公開鍵の指紋
+</p></li>
+</ul></div>
+      <p>
+あなたの鍵の「gpg --fingerprint」の出力が、必要とされるものそのものです
+(「gpg --fingerprint」の出力をファイルにリダイレクトし、それを複数回
+複製して、「a2ps -2 --borders no -B ...」で印刷し、短冊状に切って、ホチキスで
+とめておくのが良いでしょう)。
+      </p>
+    </li>
+<li class="listitem">
+      <p>
+このPGP「名刺」と信頼できる写真付きの身分証明書(パスポート)を、
+ほかの開発者(やPGP鍵所有者)と会う時には持って行くようにしてください。
+      </p>
+    </li>
+<li class="listitem">
+      <p>
+ほかの開発者に実際に会ったとき、その人にあなたのPGP「名刺」を渡し、
+あなたのパスポートを調べてもらうために手渡してください。
+同じように、その人のPGP「名刺」をもらい、その人のパスポートを調べてください。
+その人の識別情報を、パスポートで確認し、パスポートに記載の
+名前とPGP「名刺」の名前を比較してください。
+      </p>
+      <p>
+識別情報を確認するときには、極端にいろいろと話しをするように
+してください。本人確認を正しくすることが、PGP鍵にサインすることの全てです。
+      </p>
+      <p>
+その人のPGP鍵UIDの名前が正確にはパスポートの名前と一致しない場合が
+あるかもしれません。
+例としては、ファーストネームとして「William」の代わりに「Bill」が使われて
+いたり、「Richard」の代わりに「Dick」が使われていたりといった具合です。
+あなたが、あなたの鍵でその人の識別情報を正しいと追認すべきか
+迷った場合には、署名してはいけません。
+署名しないのでなければ、写真付き身分証明書にあるのと同じ名前のUIDを追加する
+ように要求し、そのUIDに署名するようにしてください。
+      </p>
+      <p>
+全てが一致したならば、PGP「名刺」に本人であることの確認が完了した
+ことを(日付と一緒に)記入してください。
+一人の開発者と会った時には、これは奇妙なことに思えるかもしれません。
+しかし、この方法は、
+鍵署名パーティーで何をしたか信頼性をもって追跡できる唯一の方法であり、
+良い習慣であるとされています。
+      </p>
+    </li>
+<li class="listitem">
+      <p> 
+コンピューターの前に戻ったら、他の人たちの公開鍵をインポートしてください
+(公開鍵サーバーからでもlocalsrcからでも可)。
+gnupgでは、これは以下のように簡単にできます。
+      </p>
+      <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+<pre class="programlisting">
+% gpg --import moe_pgp_key.asc
+      </pre>
+</div>
+      <p>
+同じ鍵を複数回インポートしても問題は生じません。
+      </p>
+      <p>
+公開鍵サーバーからインポートするには、以下のようにしてください。
+      </p>
+      <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+<pre class="programlisting">
+% gpg --recv-key &lt;keyid&gt;
+      </pre>
+</div>
+    </li>
+<li class="listitem">
+      <p>
+少なくとも以下の新しくインポートした鍵の構成要素を、もらったPGP「名刺」の
+情報と照合してください。
+      </p>
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><p>
+鍵のタイプ
+</p></li>
+<li class="listitem"><p>
+鍵長
+</p></li>
+<li class="listitem"><p>
+鍵のID
+</p></li>
+<li class="listitem"><p>
+鍵の指紋
+</p></li>
+</ul></div>
+      <p>
+任意の鍵のIDを持つ鍵を作成可能であり、
+(設計の弱みにより)どんな指紋を持ったPGP鍵も作ることが可能です。
+しかし、これらの鍵は、奇妙な鍵長を持つことになります。
+      </p>
+      <p>
+現在のところ、任意の鍵長、鍵のID、鍵の指紋の組み合わせを持つ鍵を作成
+することは不可能と考えられています。
+      </p>
+      <p>
+PGP鍵の全ての構成要素が、PGP「名刺」のそれと一致しらならば、
+その公開鍵は本当にPGP「名刺」をくれた人物の所有物であると確信して良いです。
+      </p>
+    </li>
+<li class="listitem">
+      <p>
+署名する前の残りの仕事は、相手が提示された全てのUIDを管理下に置いているか
+を確認することです。
+これを確認するためには、乱数を発生させ、
+相手の鍵で暗号化してそれを送れば良いです。
+相手のやるべき事は、この乱数を暗号化し、送り返すことです。
+このときは、あなたの公開鍵で暗号化してもらいます
+(暗号化して返信してもらうのは、暗号解読攻撃を防止するためです)。
+相手に送り返すメッセージに署名してもらうことが大切です。
+そうすれば、<a class="xref" href="#signsteps-pkey-verify-signature">7</a>ステップで
+相手の識別情報を確認することができます。
+      </p>
+      <p>
+複数のUIDを持つPGP鍵を確認するならば、どの乱数をどの電子メールアドレスに
+送ったかをメモしておくようにしてください。
+      </p>
+      <p>
+gnupgを使ったこのステップの例を示します。
+      </p>
+      <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+<pre class="programlisting">
+% cat &gt;&gt; moe@doe.org
+Hi Moe,
+
+please return this message to me. Please sign and encrypt it.
+
+Thanks,
+Joe
+^D
+% dd if=/dev/urandom count=1 | md5 &gt;&gt; moe@doe.org
+% gpg --armor --encrypt moe@doe.org &gt; moe@doe.org.asc
+      </pre>
+</div>
+    </li>
+<li class="listitem">
+      <p> 
+相手からの返信を受け取ったら、復号して署名を確認します。
+これに成功したら、必要な試験は終了です。
+相手の公開鍵に署名することができます。
+      </p>
+      <p>
+GPGを使って、鍵に署名するのは以下のようです。
+      </p>
+      <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+<pre class="programlisting">
+% gpg --edit-key &lt;Key ID&gt;
+sign
+      </pre>
+</div>
+    </li>
+<li class="listitem">
+      <p> 
+この手順の最後のステップは、署名したばかりのPGP鍵をエクスポートし、
+所有者に送ることです。
+      </p>
+      <p>
+注意: あなたがPGP鍵をそもそも鍵サーバーから入手したのではない限り、
+他人のPGP鍵を直接、公開鍵サーバーに送るべきではありません。
+あなたが署名し、「公開」鍵と呼ばれてはいますが、
+どのように自分自身の鍵を配布したいかを決めるのは、鍵の所有者の役割です。
+公開鍵サーバーに送るのではなく、署名した鍵は鍵の所有者に送り、
+所有者が鍵を配布するようにします。
+      </p>
+      <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+<pre class="programlisting">
+% gpg --armor --export &lt;Key ID&gt;
+      </pre>
+</div>
+      <p>
+あるいは、muttを使っているのであれば、muttの「mail-key」機能を使うこと
+ができます。
+      </p>
+      <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+<pre class="programlisting">
+% mutt
+&lt;ESC&gt;k
+To: moe@NetBSD.org
+Subject: Your signed PGP key
+Please enter the key ID: 4461CF46
+&lt;Select key&gt;
+...
+      </pre>
+</div>
+      <p>
+最後に、あなたの鍵束にある公開鍵を新しい署名のあるものにアップデートしたい
+と思うかもしれません。これは、以下のコマンドで実行できます。
+      </p>
+      <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title"></h3>
+<pre class="programlisting">
+% gpg --refresh-keys [--keyserver ...]
+      </pre>
+</div>
+      <p>
+これによって、あなたが鍵を受けとってから鍵サーバー上で公開された追加の署名を
+取得しマージすることができます。
+      </p>
+    </li>
+</ol></div>
+</div>
+      
+<div class="sect2" title="応募者の鍵署名手順">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="applicants"></a>応募者の鍵署名手順</h3></div></div></div>
+  
+  <p>
+Executive Committee for Membershipは、メンバー資格を得ようとする者に、
+現在NetBSD開発者である者に署名されたPGP鍵で署名された
+アカウント作成に関連する電子メールを送ることを要求しています。
+これは必然的に、アカウントの作成の前には、
+応募者は現在NetBSD開発者である者に会わなくてはならないということを
+意味しています。
+その時、@NetBSD.orgのUIDは署名されていないことになります。
+もちろん、応募者の@NetBSD.orgのUIDに、アカウントが作成され次第すぐに、
+再度会うことなく署名することには価値があります。
+これは、簡単にできます。
+  </p>
+  <p>
+応募者の鍵に署名する手順は、上に示した通りです。
+もちろん、最初はNetBSDでないUIDだけが署名されています。
+応募者の@NetBSD.orgアカウントが作成されたら、
+<a class="xref" href="#signsteps-pkey-verify-email">6</a>から
+<a class="xref" href="#signsteps-pkey-update">8</a>までのステップの手順を
+@NetBSD.orgのUIDも実行してください。
+再度、応募者と会う必要はありません。すでに以前に人物と鍵の関係性は
+確認済みです。
+  </p>
+</div>
+
+</div>
+</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2012 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>
