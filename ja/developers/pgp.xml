@@ -1,0 +1,519 @@
+<?xml version="1.0"?>
+<!DOCTYPE webpage
+  PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
+	 "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
+
+<webpage id="developers-pgp">
+<config param="desc" value="PGP Key Management Guide for NetBSD developers"/>
+<config param="cvstag" value="$NetBSD: pgp.xml,v 1.15 2012/05/20 11:19:19 ryoon Exp $"/>
+<config param="rcsdate" value="$Date: 2012/05/20 11:19:19 $"/>
+<head>
+<title>PGP Key Management Guide for NetBSD developers</title>
+</head>
+
+<sect1 id="pgp-management">
+
+<sect2 id="scope">
+  <title>Scope</title>
+  <para>
+    The topic of this guide is PGP key management. It assumes that
+    you understand the concept of asymmetric cryptography (using
+    a private and a public key), that you know how to create and
+    use PGP keys, and that you know how to integrate PGP support
+    into your favourite e-mail client. It assumes that you understand
+    the concept of signing, and encrypting, a digital message.
+  </para>
+  <para>
+    More information about using PGP keys can be found at:
+  </para>
+  <itemizedlist>
+    <listitem>
+      <ulink url="http://www.gnupg.org/faq/GnuPG-FAQ.html"/>
+    </listitem>
+    <listitem>
+      <ulink url="http://www.gnupg.org/documentation/howtos.en.html"/>
+    </listitem>
+    <listitem>
+       <ulink url="http://www.gnupg.org/gph/en/manual.html"/>
+    </listitem>
+  </itemizedlist>
+</sect2>
+
+<sect2 id="audience">
+  <title>Intended Audience</title>
+  <para>
+    NetBSD developers and applicants for NetBSD Project membership.
+  </para>
+</sect2>
+
+<sect2 id="rationale">
+  <title>Rationale: Why we need PGP enabled developers</title>
+  <para>
+    The NetBSD project needs to be able to establish the authenticity of
+    requests and other communications originating from project members around
+    the world. The simplest way to do this is to establish a PGP web-of-trust
+    amongst its members.
+  </para>
+  <para>
+    Typical examples activities requiring this web of trust are:
+  </para>
+  <itemizedlist>
+    <listitem>
+      <para>
+        the ability to sign messages to admins, e.g. for mails
+        pertaining to the change of account details
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+      the ability to sign someone else's key (to build a project
+      wide web-of-trust, see below), and to be able to sign an applicants
+      key
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+      the ability to receive encrypted e-mails, e.g. in communications
+      about security issues not to be disclosed to the outside
+      </para>
+    </listitem>
+  </itemizedlist>
+  <para>
+    The most popular program for creating, managing, and using PGP keys is
+    probably gpg (GNU Privacy Guard), readily available as
+    <filename role="pkg">security/gnupg</filename> from pkgsrc. 
+    Examples given in this document
+    use gnupg (rather than the alternative, pgp).
+  </para>
+</sect2>
+
+<sect2 id="approach">
+  <title>Web-of-trust approach</title>
+  <para>
+    Everyone can create an arbitrary number of keys: any key with any identity;
+    it may not be her/his real identity. He or she may upload these keys to any
+    key server. This implies that a person could pretend to be the key owner
+    (who is given as the user-id) although she/he isn't.
+  </para>
+  <para>
+    There are two fundamentally different concepts to address the problem of
+    how one can establish that a certain PGP key belongs to a specific person:
+  </para>
+  <itemizedlist>
+    <listitem>
+      <para>
+        Certification Authority (CA), usually under control of a government,
+        verifies the identity of a person and testifies that a certain key
+        belongs to a person (or organization). This service usually costs money.
+      </para>
+     </listitem>
+    <listitem>
+      <para>
+        Web-of-trust: whenever two PGP key holders meet, they verify
+        their identity and sign each other's keys (see below about the
+        significance of signing someone's key). Although not controlled
+        by a government, if a key is signed by many persons you know you
+        can be pretty sure about its authenticity. Crucial to the 
+        web-of-trust approach is that many key holders participate.
+      </para>
+     </listitem>
+    </itemizedlist>
+    <para>
+      In a web-of-trust approach, if A has signed the key of B and B has signed
+      the Key of C, then A can be confident about the authenticity of C. For
+      this to work, A has to trust B not to make irresponsible signatures.
+      The path from A to C is referred to as "chain-of-trust".
+    </para>
+</sect2>
+
+<sect2 id="significance">
+  <title>What is the significance of signing someone's key?</title>
+  <para>
+    Often one encounters statements like: "I do not approve of Foo's actions,
+    therefore I will not sign his key." or "If Foo signs his threat mail with
+    a key that carries my signature that means that I will be held legally
+    liable."  These and similar statements are false.
+  </para>
+  <para>
+    What it means when you sign someone's PGP key with your signature is:
+    "I have verified that PGP key x belongs to person y." Not more, not less.
+  </para>
+  <para>
+    There's no reason not to sign someone's key, provided you have carefully
+    verified his identity.
+  </para>
+</sect2>
+
+<sect2 id="keygen-recommendations">
+  <title>Recommendations for key generation</title>
+  <para>
+    First of all, to ensure maximum security over time, it is advisable to
+    choose long key lengths. The key size limitation of a maximum of 1024 bits
+    in the current DSA standard may limit the security of DSA. For maximum
+    security it is therefore advisable to use 2048-bit RSA keys for both,
+    encrypting and signing.
+    keys).
+  </para>
+  <note><title/>
+    <programlisting>
+% gpg --gen-key
+gpg (GnuPG) 1.4.12; Copyright (C) 2012 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Please select what kind of key you want:
+   (1) RSA and RSA (default)
+   (2) DSA and Elgamal
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+Your selection? 1
+RSA keys may be between 1024 and 4096 bits long.
+What keysize do you want? (2048) 2048
+Requested keysize is 2048 bits       
+Please specify how long the key should be valid.
+         0 = key does not expire
+      &lt;n&gt;  = key expires in n days
+      &lt;n&gt;w = key expires in n weeks
+      &lt;n&gt;m = key expires in n months
+      &lt;n&gt;y = key expires in n years
+Key is valid for? (0) 0
+Key does not expire at all
+Is this correct? (y/N) y
+                        
+You need a user ID to identify your key; the software constructs the user ID
+from the Real Name, Comment and Email Address in this form:
+    "Heinrich Heine (Der Dichter) &lt;heinrichh@duesseldorf.de&gt;"
+
+Real name: Joe Doe    
+Email address: joe@doe.org
+Comment: NetBSD           
+You selected this USER-ID:
+    "Joe Doe (NetBSD) &lt;joe@doe.org&gt;"
+
+Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o
+You need a Passphrase to protect your secret key.    
+Enter passphrase:
+Repeat passphrase:
+
+gpg: /home/joe/.gnupg/trustdb.gpg: trustdb created
+gpg: key 7CEBFEBC marked as ultimately trusted
+public and secret key created and signed.
+
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+pub   2048R/7CEBFEBC 2012-05-20
+      Key fingerprint = 67A7 FC80 8140 5F9B CE96  E19D E5B7 BF68 7CEB FEBC
+uid                  Joe Doe (NetBSD) &lt;joe@doe.org&gt;
+sub   2048R/6F64A1B1 2012-05-20
+    </programlisting>
+    </note>
+    <para>
+      ... and you're done!
+    </para>
+    <para>
+      Another question is whether a key should initially have an expiration
+      date, or not. As the expiration date can set or changed later on (unlike
+      PGP 2.x keys), this question is mostly a matter of personal choice. A
+      good reason to put an expiration date on a key is that people sometimes
+      forget their passphrase or lose the secret key.  With an expiration date,
+      there is a drop-dead date after which the key is not going to be used.
+    </para>
+    <para>
+      After key creation, uids for all e-mail addresses you use should be added
+      to your key. Don't forget to add a @NetBSD.org uid! Consider making your
+      @NetBSD.org uid the primary uid.
+    </para>
+</sect2>
+
+<sect2 id="manage-recommendations">
+  <title>Recommendations for managing your private PGP key(s)</title>
+  <para>
+    As soon as you have created a PGP key pair, you may want to create a
+    blank revocation certificate, so that you will be able to revoke your
+    key in the event that it is compromised, or that you lose the private
+    key (disk crash) or forget the passphrase. Be sure to store the revocation
+    certificate in a safe place, preferably separate from the private key.
+    Printing it out and keeping it in a safe is a good idea.
+  </para>
+  <para>
+    Always keep your private PGP keys on a machine to which only you have
+    administrative access, or better yet, store your private key only on
+    a removable USB stick (the tiniest ones sold are sufficient). Remove
+    the USB stick whenever you are not using the key. 
+  </para>
+  <para>
+    Protect your private PGP keys with strong passphrases. 
+  </para>
+  <para>
+    Regularly backup your keys.
+  </para>
+</sect2>
+
+<sect2 id="distribution-recommendations">
+  <title>Recommendations for the distribution of your public PGP key</title>
+  <para>
+    In a public/private key model, it is essential that the private key is
+    guarded securely, while the public key is distributed as widely as possible.
+    Anyone wanting to send you an encrypted message, or wanting to verify your
+    signature needs your public key.
+  </para>
+  <para>
+    Therefore you should:
+  </para>
+  <itemizedlist>
+    <listitem>
+      <para>submit your public key to public key servers</para>
+    </listitem>
+    <listitem>
+      <para>commit your key to localsrc/security/publickeys/developers</para>
+    </listitem>
+  </itemizedlist>
+  <para>
+    The canonical key servers these days are www.pgp.net, pgp.mit.edu, and
+    www.keyserver.net. The default keyserver can be specified in
+    ~/.gnupg/gpg.conf with:
+  </para>
+  <note><title/>
+      keyserver pgp.mit.edu
+  </note>
+  <para>
+    localsrc/security/publickeys/developers/README describes how to commit your
+    public PGP key to NetBSD's local source repository. Having the public PGP
+    keys of all developers in this directory makes it very easy to import all
+    keys (with all signatures) with just one command.
+  </para>
+</sect2>
+
+<sect2 id="sign-recommendations">
+  <title>Recommended procedure for signing keys</title>
+  <para>
+    <emphasis type="strong">Important:</emphasis> Do not sign a key without
+    checking the components of the key and without checking the authenticity.
+    Make sure the key belongs to the person who pretends to be the key owner.
+    Keep in mind that not you, but others will rely on your signature!
+  </para>
+  <para>
+    Here is the recommended step-by-step procedure:
+  </para>
+  <orderedlist>
+    <listitem id="signsteps-bcard-prep">
+      <para>
+        Prepare a "business card" type of document with the following
+        information on your PGP key: 
+      </para>
+      <itemizedlist>
+        <listitem><para>Key length</para></listitem>
+        <listitem><para>Key type</para></listitem>
+        <listitem><para>Key Id</para></listitem>
+        <listitem><para>Creation date</para></listitem>
+        <listitem><para>Expiration date, if any</para></listitem>
+        <listitem><para>all uids</para></listitem>
+        <listitem><para>Public key fingerprint</para></listitem>
+      </itemizedlist>
+      <para>
+        The output of "gpg --fingerprint" for your key provides exactly what is
+        needed.  (You may want to redirect the output of "gpg --fingerprint"
+        into a file, duplicate the entries multiple times, and print it with
+        "a2ps -2 --borders no -B ..." cut out the individual stripes
+        and staple them.)
+      </para>
+    </listitem>
+    <listitem id="signsteps-bcard-carry">
+      <para>
+        Carry this PGP "business card" and a solid photo ID (passport) with
+        you when you're going to meet another developer (or any PGP key holder).
+      </para>
+    </listitem>
+    <listitem id="signsteps-bcard-exchange">
+      <para>
+        When you meet another developer in person, give him one of your PGP
+        "business cards" and hand him over your passport for inspection.
+        Likewise, obtain his PGP "business card" and his passport.
+        Verify his identity by checking his passport and compare the name
+        on his PGP "business card" with the name mentioned in his passport.
+      </para>
+      <para>
+        Be extremely pedantic with checking the person's identity, doing
+        this correctly is what signing PGP keys is all about. 
+      </para>
+      <para>
+        It may happen that the person's name on a PGP key uid does not exactly
+        correspond to the name in his passport. Common examples are the use of
+        "Bill" instead of "William" or "Dick" instead of "Richard" as first
+        names. If you're in doubt whether you should confirm the identity of a
+        person with your signature, don't do it. Instead, ask the other party to
+        add a new uid with his name, exactly as in the photo ID, to his key, and
+        sign that uid.
+      </para>
+      <para>
+        If everything matches, make a note on his PGP "business card" that
+        the identity check was successful (with date). This does seem an odd
+        thing to do when you meet a single developer, but is really the only
+        way to reliably keep track of things at key signing parties and
+        therefore is considered good practice.
+      </para>
+    </listitem>
+    <listitem id="signsteps-pkey-import">
+      <para> 
+        When back at your computer, import the other party's public key
+        (either from a public key server, or from localsrc). With gnupg, this
+        is simply done with:
+      </para>
+      <note><title/><programlisting>
+% gpg --import moe_pgp_key.asc
+      </programlisting></note>
+      <para>
+        Importing the same key multiple times does not cause problems.
+      </para>
+      <para>
+        Importing from a public key server is done with:
+      </para>
+      <note><title/><programlisting>
+% gpg --recv-key &lt;keyid&gt;
+      </programlisting></note>
+    </listitem>
+    <listitem id="signsteps-pkey-verify-contents">
+      <para>
+        Verify that at least the following key components of the freshly
+        imported PGP key correspond to the information on his PGP "business
+        card":
+      </para>
+      <itemizedlist>
+        <listitem><para>Key type</para></listitem>
+        <listitem><para>Key length</para></listitem>
+        <listitem><para>Key ID</para></listitem>
+        <listitem><para>Key fingerprint</para></listitem>
+      </itemizedlist>
+      <para>
+        It is possible to generate keys for any given Key ID, and it is (due to
+        a design flaw) even possible to create PGP keys for every fingerprint!
+        These keys will, however, have odd key lengths.
+      </para>
+      <para>
+        It is currently thought impossible to generate a key for a given
+        arbitrary tuple of (key length, key ID, key fingerprint).
+      </para>
+      <para>
+        If all components described above on the PGP key correspond to their
+        counterparts on the PGP "business card" you can be sure that the public
+        PGP key really belongs to the person that gave you the PGP "business
+        card".
+      </para>
+    </listitem>
+    <listitem id="signsteps-pkey-verify-email">
+      <para>
+        The remaining task prior to signing is to determine whether the other
+        party has control over the e-mails given in all uids. To check this,
+        generate a random number and send this number, encrypted with his key,
+        to the other party. The task of the other party is to encrypt this
+        random number and send it back, this time encrypted with your public
+        key (the requirement for the encrypted return channel is to spoil any
+        crypto-analysis attacks).  It is important for the other party
+        to sign the message he sends back, so that you can verify
+        his identify in step <xref linkend="signsteps-pkey-verify-signature"/>.
+      </para>
+      <para>
+        If you're checking multiple uids for one PGP key, keep track of which
+        random number you send to which e-mail address.
+      </para>
+      <para>
+        Here is an example of this step using gnupg:
+      </para>
+      <note><title/><programlisting>
+% cat &gt;&gt; moe@doe.org
+Hi Moe,
+
+please return this message to me. Please sign and encrypt it.
+
+Thanks,
+Joe
+^D
+% dd if=/dev/urandom count=1 | md5 &gt;&gt; moe@doe.org
+% gpg --armor --encrypt moe@doe.org &gt; moe@doe.org.asc
+      </programlisting></note>
+    </listitem>
+    <listitem id="signsteps-pkey-verify-signature">
+      <para> 
+        Once you've received his reply, decrypt it and check his signature.
+        If that is successful, that concludes the necessary tests and you can
+        signs his public key.
+      </para>
+      <para>
+        Using GPG, signing a key is done like this:
+      </para>
+      <note><title/><programlisting>
+% gpg --edit-key &lt;Key ID&gt;
+sign
+      </programlisting></note>
+    </listitem>
+    <listitem id="signsteps-pkey-update">
+      <para> 
+        The last step of the procedure is to export the freshly signed PGP key
+        and to send it to the owner.
+      </para>
+      <para>
+        Note: You should not directly send someone else's PGP key to a public
+        key server, unless you received it from that key server in the first
+        place. Although you signed it, and although it is called a "public" key,
+        it is up to the key holder to decide how he wants to distribute his key.
+        Instead, send the signed key to the key holder and let him deal with
+        distributing the key.
+      </para>
+      <note><title/><programlisting>
+% gpg --armor --export &lt;Key ID&gt;
+      </programlisting></note>
+      <para>
+        or, if you use mutt, you can take advantage of mutt's "mail-key"
+        function:
+      </para>
+      <note><title/><programlisting>
+% mutt
+&lt;ESC&gt;k
+To: moe@NetBSD.org
+Subject: Your signed PGP key
+Please enter the key ID: 4461CF46
+&lt;Select key&gt;
+...
+      </programlisting></note>
+      <para>
+        Finally, you may want to update the public keys on your key ring with
+        new signatures. This can be done using the command
+      </para>
+      <note><title/><programlisting>
+% gpg --refresh-keys [--keyserver ...]
+      </programlisting></note>
+      <para>
+        which retrieves and merges in any extra signatures that have been
+        published on the keyserver since you received the key.
+      </para>
+    </listitem>
+  </orderedlist>
+</sect2>
+      
+<sect2 id="applicants">
+  <title>Key signing procedure for applicants</title>
+  <para>
+    The Executive Committee for Membership requires that membership applicants
+    send e-mails pertaining to their account creation signed with a PGP key
+    which bears the signature of a current NetBSD developer. This requirement
+    entails that the applicant must have met a current NetBSD developer prior
+    to his account creation. At that time, his @NetBSD.org uid can not yet be
+    signed. It is, of course, worthwhile that his @NetBSD.org uid be signed as
+    soon as his account has been created, without requiring a new meeting. This
+    can easily be achieved:
+  </para>
+  <para>
+    The key signing procedure for the applicant is performed as
+    described above.  Of course, initially only his non-NetBSD uids
+    are signed. After his @NetBSD.org account has been created,
+    steps <xref linkend="signsteps-pkey-verify-email"/> to <xref
+    linkend="signsteps-pkey-update"/> of the procedure are carried
+    out for his @NetBSD.org uid. There is no need for an additional
+    meeting with the applicant, as the correspondence of key and
+    person have been checked previously.
+  </para>
+</sect2>
+
+</sect1>
+</webpage>
