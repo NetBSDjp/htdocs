@@ -1,30 +1,32 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webpage
   PUBLIC "-//NetBSD//DTD Website-based NetBSD Extension//EN"
 	 "http://www.NetBSD.org/XML/htdocs/lang/share/xml/website-netbsd.dtd">
 
-<webpage id="developers-pgp">
-<config param="desc" value="PGP Key Management Guide for NetBSD developers"/>
+<webpage id="ja-developers-pgp">
+<config param="desc" value="NetBSD開発者のためのPGP鍵管理ガイド"/>
 <config param="cvstag" value="$NetBSD: pgp.xml,v 1.15 2012/05/20 11:19:19 ryoon Exp $"/>
-<config param="rcsdate" value="$Date: 2012/05/20 11:19:19 $"/>
+<!-- Based on English version: -->
+<!-- NetBSD: pgp.xml,v 1.15 2012/05/20 11:19:19 ryoon Exp -->
+<config param="rcsdate" value="$Date: 2010/11/21 16:45:26 $"/>
 <head>
-<title>PGP Key Management Guide for NetBSD developers</title>
+<title>NetBSD開発者のためのPGP鍵管理ガイド</title>
 </head>
 
 <sect1 id="pgp-management">
 
 <sect2 id="scope">
-  <title>Scope</title>
+  <title>範囲</title>
   <para>
-    The topic of this guide is PGP key management. It assumes that
-    you understand the concept of asymmetric cryptography (using
-    a private and a public key), that you know how to create and
-    use PGP keys, and that you know how to integrate PGP support
-    into your favourite e-mail client. It assumes that you understand
-    the concept of signing, and encrypting, a digital message.
+このガイドの話題はPGP鍵の管理です。
+あなたが、非対称暗号(秘密鍵と公開鍵を使う)を理解していること、
+PGP鍵を作る方法と使う方法を知っていること、
+お気に入りの電子メールクライアントにPGPサポートを組み込む方法を知っていること
+を前提とします。
+あなたが、デジタルメッセージの署名と暗号化の概念を理解していることを前提とします。
   </para>
   <para>
-    More information about using PGP keys can be found at:
+PGP鍵を使うための情報は、以下で得ることができます。
   </para>
   <itemizedlist>
     <listitem>
@@ -40,119 +42,120 @@
 </sect2>
 
 <sect2 id="audience">
-  <title>Intended Audience</title>
+  <title>予想される読者</title>
   <para>
-    NetBSD developers and applicants for NetBSD Project membership.
+NetBSD開発者と、NetBSD Projectのメンバーへの応募者
   </para>
 </sect2>
 
 <sect2 id="rationale">
-  <title>Rationale: Why we need PGP enabled developers</title>
+  <title>根拠: なぜPGPを使える開発者が必要なのか</title>
   <para>
-    The NetBSD project needs to be able to establish the authenticity of
-    requests and other communications originating from project members around
-    the world. The simplest way to do this is to establish a PGP web-of-trust
-    amongst its members.
+The NetBSD Projectは、世界中のプロジェクトメンバーからの
+要求やその他のコミュニケーションの出自を明らかにできる必要があります。
+これを実行する最も単純な方法は、メンバー間でPGPの信頼の輪を構築することです。
   </para>
   <para>
-    Typical examples activities requiring this web of trust are:
+信頼の輪を必要とする典型的な活動の例を示します。
   </para>
   <itemizedlist>
     <listitem>
       <para>
-        the ability to sign messages to admins, e.g. for mails
-        pertaining to the change of account details
+例えばアカウントの詳細の変更に関連する管理者宛ての電子メールに署名できること
       </para>
     </listitem>
     <listitem>
       <para>
-      the ability to sign someone else's key (to build a project
-      wide web-of-trust, see below), and to be able to sign an applicants
-      key
+(プロジェクト全体の信頼の輪を構築するために)他の誰かの鍵に署名できること、
+そして応募者の鍵に署名できること
       </para>
     </listitem>
     <listitem>
       <para>
-      the ability to receive encrypted e-mails, e.g. in communications
-      about security issues not to be disclosed to the outside
+外部に公開されないセキュリティーの問題についてのコミュニケーションを例とする
+暗号化された電子メールを受信できること
       </para>
     </listitem>
   </itemizedlist>
   <para>
-    The most popular program for creating, managing, and using PGP keys is
-    probably gpg (GNU Privacy Guard), readily available as
-    <filename role="pkg">security/gnupg</filename> from pkgsrc. 
-    Examples given in this document
-    use gnupg (rather than the alternative, pgp).
+PGP鍵を作り、管理し、使う、最も一般的なプログラムは、
+おそらくgpg (GNU Privacy Guard)であり、
+pkgsrcの<filename role="pkg">security/gnupg</filename>から利用できます。
+この文書中の例は、(pgpではなく)gnupgを使います。
   </para>
 </sect2>
 
 <sect2 id="approach">
-  <title>Web-of-trust approach</title>
+  <title>信頼の輪アプローチ</title>
   <para>
-    Everyone can create an arbitrary number of keys: any key with any identity;
-    it may not be her/his real identity. He or she may upload these keys to any
-    key server. This implies that a person could pretend to be the key owner
-    (who is given as the user-id) although she/he isn't.
+誰でも任意の数の鍵を作ることができ、
+どの鍵も任意の識別情報を持たせることができます。
+持ち主の識別情報は本当のものでないかもしれません。
+持ち主は、これらの鍵を任意の鍵サーバーにアップロードすることができます。
+このことは、ある人物が本人でなくても(ユーザーIDとして与えられる)鍵の所有者の
+ふりをすることができることを意味します。
   </para>
   <para>
-    There are two fundamentally different concepts to address the problem of
-    how one can establish that a certain PGP key belongs to a specific person:
+特定のPGP鍵が特定の人物の所有物であることに確証を持つための概念には
+二つの根本的に異なるものがあります。
   </para>
   <itemizedlist>
     <listitem>
       <para>
-        Certification Authority (CA), usually under control of a government,
-        verifies the identity of a person and testifies that a certain key
-        belongs to a person (or organization). This service usually costs money.
+一般的には政府の管理下にある認証局(CA)が
+特定の人物の識別情報を確認し、
+特定の鍵が特定の人物(や組織)の所有物であることを証明する方法があります。
+このサービスには一般的にはお金がかかります。
       </para>
      </listitem>
     <listitem>
       <para>
-        Web-of-trust: whenever two PGP key holders meet, they verify
-        their identity and sign each other's keys (see below about the
-        significance of signing someone's key). Although not controlled
-        by a government, if a key is signed by many persons you know you
-        can be pretty sure about its authenticity. Crucial to the 
-        web-of-trust approach is that many key holders participate.
+信頼の輪: 二人のPGP鍵の所有者が会ったとき、彼らが識別情報を確認し、
+お互いの鍵に署名をする方法(後で他の誰かの鍵に署名することの重大さを
+説明します)。
+政府によって管理はされませんが、あなたの知っている多くの人に署名されていれば、
+その信頼性に確証を持つことができます。
+信頼の輪アプローチで重要なのは、多くの鍵の所有者が参加することです。
       </para>
      </listitem>
     </itemizedlist>
     <para>
-      In a web-of-trust approach, if A has signed the key of B and B has signed
-      the Key of C, then A can be confident about the authenticity of C. For
-      this to work, A has to trust B not to make irresponsible signatures.
-      The path from A to C is referred to as "chain-of-trust".
+信頼の輪アプローチでは、AがBの鍵に署名し、BがCの鍵に署名したならば、
+AはCの信頼性について確証を持つことができます。
+これが成り立つには、AはBを「Bはいつも責任ある署名をする」と
+信頼している必要があります
+AからCへの経路は「信頼の鎖」と呼ばれます。
     </para>
 </sect2>
 
 <sect2 id="significance">
-  <title>What is the significance of signing someone's key?</title>
+  <title>他の誰かの鍵に署名することの重大さとは?</title>
   <para>
-    Often one encounters statements like: "I do not approve of Foo's actions,
-    therefore I will not sign his key." or "If Foo signs his threat mail with
-    a key that carries my signature that means that I will be held legally
-    liable."  These and similar statements are false.
+しばしば以下に述べられているのを聞くことがあります。
+「Fooの行動が気に食わないから彼の鍵には署名しない」とか
+「Fooが強迫メールに私の署名した鍵で署名したら、法的な責任を取ることになる」
+これらや似たような発言は、正しくありません。
   </para>
   <para>
-    What it means when you sign someone's PGP key with your signature is:
-    "I have verified that PGP key x belongs to person y." Not more, not less.
+誰かの鍵に自分の鍵で署名するということは、
+「PGP鍵xは人物yの所有物であることを確認した」ということであり、
+それ以上でもそれ以下でもありません。
   </para>
   <para>
-    There's no reason not to sign someone's key, provided you have carefully
-    verified his identity.
+注意深く本人であることを調査した人に対して、その人の鍵に署名しない
+理由はありません。
   </para>
 </sect2>
 
 <sect2 id="keygen-recommendations">
-  <title>Recommendations for key generation</title>
+  <title>鍵生成でのお薦め</title>
   <para>
-    First of all, to ensure maximum security over time, it is advisable to
-    choose long key lengths. The key size limitation of a maximum of 1024 bits
-    in the current DSA standard may limit the security of DSA. For maximum
-    security it is therefore advisable to use 2048-bit RSA keys for both,
-    encrypting and signing.
-    keys).
+最初に、長い期間に渡って最高のセキュリティーを保つには、
+長い鍵長を選ぶのが良いです。
+現在のDSA標準での最大1024ビットの鍵長の制限は、DSAのセキュリティーを
+制限することになります。
+最大のセキュリティーを確保するために、2048ビットのRSA鍵を暗号化と署名に
+使うのが賢明です。
   </para>
   <note><title/>
     <programlisting>
@@ -209,165 +212,184 @@ sub   2048R/6F64A1B1 2012-05-20
     </programlisting>
     </note>
     <para>
-      ... and you're done!
+以上で完了です。
     </para>
     <para>
-      Another question is whether a key should initially have an expiration
-      date, or not. As the expiration date can set or changed later on (unlike
-      PGP 2.x keys), this question is mostly a matter of personal choice. A
-      good reason to put an expiration date on a key is that people sometimes
-      forget their passphrase or lose the secret key.  With an expiration date,
-      there is a drop-dead date after which the key is not going to be used.
+ほかの質問としては、最初に満了日を設定すべきか否かがあるでしょう。
+満了日は(PGP 2.xの鍵と違って)後で変更することができます。
+この質問は個人の選択にまかせる問題です。
+鍵に満了日を設定する理由として、人はときどきパスフレーズを忘れたり、
+秘密鍵を紛失するというものがあります。
+満了日を設定すると、鍵が急に使えなくなる日が存在することになります。
     </para>
     <para>
-      After key creation, uids for all e-mail addresses you use should be added
-      to your key. Don't forget to add a @NetBSD.org uid! Consider making your
-      @NetBSD.org uid the primary uid.
+鍵を作った後、あなたの使っている全ての電子メールアドレスをUIDとしてあなたの鍵に
+追加すべきです。
+@NetBSD.org UIDを第一のUIDにすることを検討してください。
     </para>
 </sect2>
 
 <sect2 id="manage-recommendations">
-  <title>Recommendations for managing your private PGP key(s)</title>
+  <title>あなたの秘密鍵を管理するお薦めの方法</title>
   <para>
-    As soon as you have created a PGP key pair, you may want to create a
-    blank revocation certificate, so that you will be able to revoke your
-    key in the event that it is compromised, or that you lose the private
-    key (disk crash) or forget the passphrase. Be sure to store the revocation
-    certificate in a safe place, preferably separate from the private key.
-    Printing it out and keeping it in a safe is a good idea.
+PGP鍵ペアを作ったらすぐに、ブランクな無効鍵を作っておくのが良いでしょう。
+そうすることで、セキュリティー上の危険があった場合や、秘密鍵を失なった場合
+(ディスクがクラッシュした)や、パスフレーズを忘れた場合に、あなたの鍵を
+無効化することができます。
+無効鍵は安全な場所に保管しておいてください。
+秘密鍵とは別に保管するのが望ましいです。
+印刷して安全に保管しておくのは、良い考えです。
   </para>
   <para>
-    Always keep your private PGP keys on a machine to which only you have
-    administrative access, or better yet, store your private key only on
-    a removable USB stick (the tiniest ones sold are sufficient). Remove
-    the USB stick whenever you are not using the key. 
+常に、あなたにPGP秘密鍵はあなただけが管理権限を持つマシンにだけ保管する
+ようにしてください。あるいは、秘密鍵を取り外し可能なUSBスティック
+(市販されているもののなかで最もちっぽけなので良い)に
+保管するようにしてください。
+そして、鍵を使わない時にはUSBスティックを取り外すようにしてください。
   </para>
   <para>
-    Protect your private PGP keys with strong passphrases. 
+あなたのPGP秘密鍵を強いパスフレーズで守るようにしてください。
   </para>
   <para>
-    Regularly backup your keys.
+定期的に鍵のバックアップを取るようにしてください。
   </para>
 </sect2>
 
 <sect2 id="distribution-recommendations">
-  <title>Recommendations for the distribution of your public PGP key</title>
+  <title>あなたのPGP公開鍵の配布についてのお薦め</title>
   <para>
-    In a public/private key model, it is essential that the private key is
-    guarded securely, while the public key is distributed as widely as possible.
-    Anyone wanting to send you an encrypted message, or wanting to verify your
-    signature needs your public key.
+公開鍵秘密鍵モデルでは、秘密鍵は安全に守られている必要がありますが、
+公開鍵はできるだけ広く配布されるものです。
+あなたに暗号化されたメッセージを送りたい誰かや、あなたの署名を確認したい誰か
+は、あなたの公開鍵を必要としています。
   </para>
   <para>
-    Therefore you should:
+よって、あなたは以下のことをすべきです。
   </para>
   <itemizedlist>
     <listitem>
-      <para>submit your public key to public key servers</para>
+      <para>
+あなたの公開鍵を公開鍵サーバーに登録する
+</para>
     </listitem>
     <listitem>
-      <para>commit your key to localsrc/security/publickeys/developers</para>
+      <para>
+あなたの鍵をlocalsrc/security/publickeys/developersにコミットする
+</para>
     </listitem>
   </itemizedlist>
   <para>
-    The canonical key servers these days are www.pgp.net, pgp.mit.edu, and
-    www.keyserver.net. The default keyserver can be specified in
-    ~/.gnupg/gpg.conf with:
+標準的な鍵サーバーは、www.pgp.net、pgp.mit.edu、www.keyserver.netです。
+デフォルトの鍵サーバーは、~/.gnupg/gpg.confに以下のように指定できます。
   </para>
   <note><title/>
       keyserver pgp.mit.edu
   </note>
   <para>
-    localsrc/security/publickeys/developers/README describes how to commit your
-    public PGP key to NetBSD's local source repository. Having the public PGP
-    keys of all developers in this directory makes it very easy to import all
-    keys (with all signatures) with just one command.
+localsrc/security/publickeys/developers/READMEには、どのようにあなたのPGP公開鍵をNetBSDローカルソースリポジトリーにコミットするかが説明されています。
+全ての開発者のPGP公開鍵をこのディレクトリーに収めておくことで、
+全ての鍵(全ての署名付き)をただ一つのコマンドでインポートすることができます。
   </para>
 </sect2>
 
 <sect2 id="sign-recommendations">
-  <title>Recommended procedure for signing keys</title>
+  <title>鍵に署名するお薦めの方法</title>
   <para>
-    <emphasis type="strong">Important:</emphasis> Do not sign a key without
-    checking the components of the key and without checking the authenticity.
-    Make sure the key belongs to the person who pretends to be the key owner.
-    Keep in mind that not you, but others will rely on your signature!
+<emphasis type="strong">重要:</emphasis>
+鍵の構成要素を確認することなく、信頼性を確認することなく、
+鍵に署名しないでください。
+鍵の所有者であると主張する人物の所有する鍵であることを確認してください。
+あなただけではなく他人もあなたの署名を信頼することを忘れないでください!
   </para>
   <para>
-    Here is the recommended step-by-step procedure:
+お薦めの逐一の手順は以下のようです。
   </para>
   <orderedlist>
     <listitem id="signsteps-bcard-prep">
       <para>
-        Prepare a "business card" type of document with the following
-        information on your PGP key: 
+あなたのPGP鍵に関する以下の情報を記した「名刺」型の文書を用意してください。
       </para>
       <itemizedlist>
-        <listitem><para>Key length</para></listitem>
-        <listitem><para>Key type</para></listitem>
-        <listitem><para>Key Id</para></listitem>
-        <listitem><para>Creation date</para></listitem>
-        <listitem><para>Expiration date, if any</para></listitem>
-        <listitem><para>all uids</para></listitem>
-        <listitem><para>Public key fingerprint</para></listitem>
+        <listitem><para>
+鍵長
+</para></listitem>
+        <listitem><para>
+鍵のタイプ
+</para></listitem>
+        <listitem><para>
+鍵のID
+</para></listitem>
+        <listitem><para>
+作成日
+</para></listitem>
+        <listitem><para>
+満了日(もし設定していれば)
+</para></listitem>
+        <listitem><para>
+全てのUID
+</para></listitem>
+        <listitem><para>
+公開鍵の指紋
+</para></listitem>
       </itemizedlist>
       <para>
-        The output of "gpg --fingerprint" for your key provides exactly what is
-        needed.  (You may want to redirect the output of "gpg --fingerprint"
-        into a file, duplicate the entries multiple times, and print it with
-        "a2ps -2 --borders no -B ..." cut out the individual stripes
-        and staple them.)
+あなたの鍵の「gpg --fingerprint」の出力が、必要とされるものそのものです
+(「gpg --fingerprint」の出力をファイルにリダイレクトし、それを複数回
+複製して、「a2ps -2 --borders no -B ...」で印刷し、短冊状に切って、ホチキスで
+とめておくのが良いでしょう)。
       </para>
     </listitem>
     <listitem id="signsteps-bcard-carry">
       <para>
-        Carry this PGP "business card" and a solid photo ID (passport) with
-        you when you're going to meet another developer (or any PGP key holder).
+このPGP「名刺」と信頼できる写真付きの身分証明書(パスポート)を、
+ほかの開発者(やPGP鍵所有者)と会う時には持って行くようにしてください。
       </para>
     </listitem>
     <listitem id="signsteps-bcard-exchange">
       <para>
-        When you meet another developer in person, give him one of your PGP
-        "business cards" and hand him over your passport for inspection.
-        Likewise, obtain his PGP "business card" and his passport.
-        Verify his identity by checking his passport and compare the name
-        on his PGP "business card" with the name mentioned in his passport.
+ほかの開発者に実際に会ったとき、その人にあなたのPGP「名刺」を渡し、
+あなたのパスポートを調べてもらうために手渡してください。
+同じように、その人のPGP「名刺」をもらい、その人のパスポートを調べてください。
+その人の識別情報を、パスポートで確認し、パスポートに記載の
+名前とPGP「名刺」の名前を比較してください。
       </para>
       <para>
-        Be extremely pedantic with checking the person's identity, doing
-        this correctly is what signing PGP keys is all about. 
+識別情報を確認するときには、極端にいろいろと話しをするように
+してください。本人確認を正しくすることが、PGP鍵にサインすることの全てです。
       </para>
       <para>
-        It may happen that the person's name on a PGP key uid does not exactly
-        correspond to the name in his passport. Common examples are the use of
-        "Bill" instead of "William" or "Dick" instead of "Richard" as first
-        names. If you're in doubt whether you should confirm the identity of a
-        person with your signature, don't do it. Instead, ask the other party to
-        add a new uid with his name, exactly as in the photo ID, to his key, and
-        sign that uid.
+その人のPGP鍵UIDの名前が正確にはパスポートの名前と一致しない場合が
+あるかもしれません。
+例としては、ファーストネームとして「William」の代わりに「Bill」が使われて
+いたり、「Richard」の代わりに「Dick」が使われていたりといった具合です。
+あなたが、あなたの鍵でその人の識別情報を正しいと追認すべきか
+迷った場合には、署名してはいけません。
+署名しないのでなければ、写真付き身分証明書にあるのと同じ名前のUIDを追加する
+ように要求し、そのUIDに署名するようにしてください。
       </para>
       <para>
-        If everything matches, make a note on his PGP "business card" that
-        the identity check was successful (with date). This does seem an odd
-        thing to do when you meet a single developer, but is really the only
-        way to reliably keep track of things at key signing parties and
-        therefore is considered good practice.
+全てが一致したならば、PGP「名刺」に本人であることの確認が完了した
+ことを(日付と一緒に)記入してください。
+一人の開発者と会った時には、これは奇妙なことに思えるかもしれません。
+しかし、この方法は、
+鍵署名パーティーで何をしたか信頼性をもって追跡できる唯一の方法であり、
+良い習慣であるとされています。
       </para>
     </listitem>
     <listitem id="signsteps-pkey-import">
       <para> 
-        When back at your computer, import the other party's public key
-        (either from a public key server, or from localsrc). With gnupg, this
-        is simply done with:
+コンピューターの前に戻ったら、他の人たちの公開鍵をインポートしてください
+(公開鍵サーバーからでもlocalsrcからでも可)。
+gnupgでは、これは以下のように簡単にできます。
       </para>
       <note><title/><programlisting>
 % gpg --import moe_pgp_key.asc
       </programlisting></note>
       <para>
-        Importing the same key multiple times does not cause problems.
+同じ鍵を複数回インポートしても問題は生じません。
       </para>
       <para>
-        Importing from a public key server is done with:
+公開鍵サーバーからインポートするには、以下のようにしてください。
       </para>
       <note><title/><programlisting>
 % gpg --recv-key &lt;keyid&gt;
@@ -375,50 +397,56 @@ sub   2048R/6F64A1B1 2012-05-20
     </listitem>
     <listitem id="signsteps-pkey-verify-contents">
       <para>
-        Verify that at least the following key components of the freshly
-        imported PGP key correspond to the information on his PGP "business
-        card":
+少なくとも以下の新しくインポートした鍵の構成要素を、もらったPGP「名刺」の
+情報と照合してください。
       </para>
       <itemizedlist>
-        <listitem><para>Key type</para></listitem>
-        <listitem><para>Key length</para></listitem>
-        <listitem><para>Key ID</para></listitem>
-        <listitem><para>Key fingerprint</para></listitem>
+        <listitem><para>
+鍵のタイプ
+</para></listitem>
+        <listitem><para>
+鍵長
+</para></listitem>
+        <listitem><para>
+鍵のID
+</para></listitem>
+        <listitem><para>
+鍵の指紋
+</para></listitem>
       </itemizedlist>
       <para>
-        It is possible to generate keys for any given Key ID, and it is (due to
-        a design flaw) even possible to create PGP keys for every fingerprint!
-        These keys will, however, have odd key lengths.
+任意の鍵のIDを持つ鍵を作成可能であり、
+(設計の弱みにより)どんな指紋を持ったPGP鍵も作ることが可能です。
+しかし、これらの鍵は、奇妙な鍵長を持つことになります。
       </para>
       <para>
-        It is currently thought impossible to generate a key for a given
-        arbitrary tuple of (key length, key ID, key fingerprint).
+現在のところ、任意の鍵長、鍵のID、鍵の指紋の組み合わせを持つ鍵を作成
+することは不可能と考えられています。
       </para>
       <para>
-        If all components described above on the PGP key correspond to their
-        counterparts on the PGP "business card" you can be sure that the public
-        PGP key really belongs to the person that gave you the PGP "business
-        card".
+PGP鍵の全ての構成要素が、PGP「名刺」のそれと一致しらならば、
+その公開鍵は本当にPGP「名刺」をくれた人物の所有物であると確信して良いです。
       </para>
     </listitem>
     <listitem id="signsteps-pkey-verify-email">
       <para>
-        The remaining task prior to signing is to determine whether the other
-        party has control over the e-mails given in all uids. To check this,
-        generate a random number and send this number, encrypted with his key,
-        to the other party. The task of the other party is to encrypt this
-        random number and send it back, this time encrypted with your public
-        key (the requirement for the encrypted return channel is to spoil any
-        crypto-analysis attacks).  It is important for the other party
-        to sign the message he sends back, so that you can verify
-        his identify in step <xref linkend="signsteps-pkey-verify-signature"/>.
+署名する前の残りの仕事は、相手が提示された全てのUIDを管理下に置いているか
+を確認することです。
+これを確認するためには、乱数を発生させ、
+相手の鍵で暗号化してそれを送れば良いです。
+相手のやるべき事は、この乱数を暗号化し、送り返すことです。
+このときは、あなたの公開鍵で暗号化してもらいます
+(暗号化して返信してもらうのは、暗号解読攻撃を防止するためです)。
+相手に送り返すメッセージに署名してもらうことが大切です。
+そうすれば、<xref linkend="signsteps-pkey-verify-signature"/>ステップで
+相手の識別情報を確認することができます。
       </para>
       <para>
-        If you're checking multiple uids for one PGP key, keep track of which
-        random number you send to which e-mail address.
+複数のUIDを持つPGP鍵を確認するならば、どの乱数をどの電子メールアドレスに
+送ったかをメモしておくようにしてください。
       </para>
       <para>
-        Here is an example of this step using gnupg:
+gnupgを使ったこのステップの例を示します。
       </para>
       <note><title/><programlisting>
 % cat &gt;&gt; moe@doe.org
@@ -435,12 +463,12 @@ Joe
     </listitem>
     <listitem id="signsteps-pkey-verify-signature">
       <para> 
-        Once you've received his reply, decrypt it and check his signature.
-        If that is successful, that concludes the necessary tests and you can
-        signs his public key.
+相手からの返信を受け取ったら、復号して署名を確認します。
+これに成功したら、必要な試験は終了です。
+相手の公開鍵に署名することができます。
       </para>
       <para>
-        Using GPG, signing a key is done like this:
+GPGを使って、鍵に署名するのは以下のようです。
       </para>
       <note><title/><programlisting>
 % gpg --edit-key &lt;Key ID&gt;
@@ -449,23 +477,23 @@ sign
     </listitem>
     <listitem id="signsteps-pkey-update">
       <para> 
-        The last step of the procedure is to export the freshly signed PGP key
-        and to send it to the owner.
+この手順の最後のステップは、署名したばかりのPGP鍵をエクスポートし、
+所有者に送ることです。
       </para>
       <para>
-        Note: You should not directly send someone else's PGP key to a public
-        key server, unless you received it from that key server in the first
-        place. Although you signed it, and although it is called a "public" key,
-        it is up to the key holder to decide how he wants to distribute his key.
-        Instead, send the signed key to the key holder and let him deal with
-        distributing the key.
+注意: あなたがPGP鍵をそもそも鍵サーバーから入手したのではない限り、
+他人のPGP鍵を直接、公開鍵サーバーに送るべきではありません。
+あなたが署名し、「公開」鍵と呼ばれてはいますが、
+どのように自分自身の鍵を配布したいかを決めるのは、鍵の所有者の役割です。
+公開鍵サーバーに送るのではなく、署名した鍵は鍵の所有者に送り、
+所有者が鍵を配布するようにします。
       </para>
       <note><title/><programlisting>
 % gpg --armor --export &lt;Key ID&gt;
       </programlisting></note>
       <para>
-        or, if you use mutt, you can take advantage of mutt's "mail-key"
-        function:
+あるいは、muttを使っているのであれば、muttの「mail-key」機能を使うこと
+ができます。
       </para>
       <note><title/><programlisting>
 % mutt
@@ -477,41 +505,43 @@ Please enter the key ID: 4461CF46
 ...
       </programlisting></note>
       <para>
-        Finally, you may want to update the public keys on your key ring with
-        new signatures. This can be done using the command
+最後に、あなたの鍵束にある公開鍵を新しい署名のあるものにアップデートしたい
+と思うかもしれません。これは、以下のコマンドで実行できます。
       </para>
       <note><title/><programlisting>
 % gpg --refresh-keys [--keyserver ...]
       </programlisting></note>
       <para>
-        which retrieves and merges in any extra signatures that have been
-        published on the keyserver since you received the key.
+これによって、あなたが鍵を受けとってから鍵サーバー上で公開された追加の署名を
+取得しマージすることができます。
       </para>
     </listitem>
   </orderedlist>
 </sect2>
       
 <sect2 id="applicants">
-  <title>Key signing procedure for applicants</title>
+  <title>応募者の鍵署名手順</title>
   <para>
-    The Executive Committee for Membership requires that membership applicants
-    send e-mails pertaining to their account creation signed with a PGP key
-    which bears the signature of a current NetBSD developer. This requirement
-    entails that the applicant must have met a current NetBSD developer prior
-    to his account creation. At that time, his @NetBSD.org uid can not yet be
-    signed. It is, of course, worthwhile that his @NetBSD.org uid be signed as
-    soon as his account has been created, without requiring a new meeting. This
-    can easily be achieved:
+Executive Committee for Membershipは、メンバー資格を得ようとする者に、
+現在NetBSD開発者である者に署名されたPGP鍵で署名された
+アカウント作成に関連する電子メールを送ることを要求しています。
+これは必然的に、アカウントの作成の前には、
+応募者は現在NetBSD開発者である者に会わなくてはならないということを
+意味しています。
+その時、@NetBSD.orgのUIDは署名されていないことになります。
+もちろん、応募者の@NetBSD.orgのUIDに、アカウントが作成され次第すぐに、
+再度会うことなく署名することには価値があります。
+これは、簡単にできます。
   </para>
   <para>
-    The key signing procedure for the applicant is performed as
-    described above.  Of course, initially only his non-NetBSD uids
-    are signed. After his @NetBSD.org account has been created,
-    steps <xref linkend="signsteps-pkey-verify-email"/> to <xref
-    linkend="signsteps-pkey-update"/> of the procedure are carried
-    out for his @NetBSD.org uid. There is no need for an additional
-    meeting with the applicant, as the correspondence of key and
-    person have been checked previously.
+応募者の鍵に署名する手順は、上に示した通りです。
+もちろん、最初はNetBSDでないUIDだけが署名されています。
+応募者の@NetBSD.orgアカウントが作成されたら、
+<xref linkend="signsteps-pkey-verify-email"/>から
+<xref linkend="signsteps-pkey-update"/>までのステップの手順を
+@NetBSD.orgのUIDも実行してください。
+再度、応募者と会う必要はありません。すでに以前に人物と鍵の関係性は
+確認済みです。
   </para>
 </sect2>
 
