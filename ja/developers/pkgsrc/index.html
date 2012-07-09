@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Website XSL Stylesheet V2.6.0">
+<link rel="home" href="../../../." title="Welcome to The NetBSD Project: Of course it runs NetBSD.">
+<link rel="up" href="../../../ja/developers/." title="NetBSD 開発者ドキュメンテーション">
+<link rel="previous" href="../../../ja/developers/pgp.html" title="NetBSD開発者のためのPGP鍵管理ガイド">
+<link rel="next" href="../../../ja/developers/PR.html" title="問題報告の解決">
+<link rel="first" href="../../../ja/developers/cvs-repos/." title="CVS リポジトリー問題">
+<link rel="last" href="../../../ja/developers/translate.html" title="htdocs を翻訳する">
+<link rel="stylesheet" href="../../../global.css" type="text/css">
+  
+  <title>NetBSD pkgsrc開発者情報</title>
+</head>
+<body class="website"><div class="webpage">
+<a name="ja-developers-pkgsrc-index"></a><div id="top"><a href="#mainContent" class="doNotDisplay doNotPrint">本文へ飛ぶ。</a></div>
+<div id="header">
+<div class="topNavigation">
+<span>» </span><a href="../../../docs/guide/en/">
+	  ガイド</a> |
+	<a href="http://man.NetBSD.org/">マニュアルページ</a> |
+	<a href="../../../ja/mailinglists/">
+	  メーリングリスト</a>と
+	<a href="http://mail-index.NetBSD.org/">記事</a> |
+	<a href="http://cvsweb.NetBSD.org/">CVS リポジトリー</a> |
+	バグの<a href="http://www.NetBSD.org/cgi-bin/sendpr.cgi?gndb=netbsd">報告</a>
+	と
+	<a href="../../../ja/support/query-pr.html">
+	 照会</a> |
+	<a href="../../../ja/docs/software/packages.html">
+	  ソフトウェアパッケージ
+	</a>
+</div>
+<div class="centralHeader">
+<a href="../../../ja/"><img alt='NetBSD プロジェクト "Of course it runs NetBSD"' width="506" height="90" src="../../../images/NetBSD-headerlogo.png"></a><div class="headerTools"><div id="headerSearch">
+<div id="header-cse-search-form" style="width: 24%;">Google custom search</div>
+<script src="http://www.google.com/jsapi" type="text/javascript"></script><script type="text/javascript"> 
+		  google.load('search', '1', {language : 'ja'});
+		  google.setOnLoadCallback(function() {
+		  var header_customSearchControl = new google.search.CustomSearchControl(
+		  '016685087845965994609:5539h4dkepg');
+
+		  header_customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+		  var header_options = new google.search.DrawOptions();
+		  header_options.enableSearchboxOnly("http://google.com/cse?cx=016685087845965994609:5539h4dkepg");
+		  header_customSearchControl.draw('header-cse-search-form', header_options);
+		  }, true);
+		</script><link rel="stylesheet" href="http://www.google.com/cse/style/look/default.css" type="text/css">
+</div></div>
+</div>
+<div class="navBar">
+<span class="doNotDisplay">
+	  案内:
+	</span><a href="../../../ja/">
+	  ホーム</a> | 
+	<a href="../../../ja/about/">
+	  概要</a> | 
+	<a href="../../../ja/gallery/">
+	  展示室</a> | 
+	<a href="../../../ja/releases/">
+	  ダウンロード</a> | 
+	<a href="../../../ja/docs/">
+	  ドキュメンテーション</a> | 
+	<a href="../../../ja/support/">
+	  サポート</a> | 
+	<a href="../../../ja/community/">
+	  コミュニティー</a> | 
+	<a href="../../../ja/ports/">
+	  機種</a>
+</div>
+</div>
+<div id="content"><div class="fullWidth"><div class="rowOfBoxes">
+<h1>NetBSD pkgsrc開発者情報</h1>
+<h3 class="title"><a name="oberview">概要</a></h3>
+<ul>
+<li><a href="#introduction">はじめに</a></li>
+<li><a href="#status">状況</a></li>
+</ul>
+<h3 class="title"><a name="freeze">pkgsrcフリーズガイドライン</a></h3>
+<ul>
+<li><a href="#goals">ゴール</a></li>
+<li><a href="#rules">ルール</a></li>
+<li><a href="#branch-todo">ブランチする時にすべきこと</a></li>
+</ul>
+<h3 class="title"><a name="importing-or-updating">パッケージをアップデートまたはインポートする</a></h3>
+<ul>
+<li><a href="#import">新しいパッケージのインポート方法と、パッケージのアップデート方法</a></li>
+<li><a href="#pullup">ブランチにアップデートをプルアップする</a></li>
+</ul>
+<h3 class="title"><a name="bulk-builds">バルクビルド</a></h3>
+<ul>
+<li><a href="#bulkhowto">バルクビルドをセットアップする</a></li>
+<li><a href="#bulklogs">現在入手可能なバルクビルドの結果</a></li>
+<li><a href="#bulk-packages">ftp.NetBSD.orgへバイナリーパッケージを提供する(バルクパッケージ)</a></li>
+</ul>
+<h3 class="title"><a name="weekly-pkgsrc-checks">毎週のpkgsrc確認</a></h3>
+<ul><li><a href="#weeklypkgsrc">毎週のpkgsrcスクリプト</a></li></ul>
+<h3 class="title"><a name="misc">その他</a></h3>
+<ul>
+<li><a href="#todo">TODOリストの扱い</a></li>
+<li><a href="#pkg-bug-handler">The pkg-bug-handlerグループ</a></li>
+</ul>
+<hr>
+<h3 class="title">概要</h3>
+      <h4 class="title">
+<a name="introduction"></a>はじめに (<a href="#oberview">top</a>)
+  </h4>
+
+      <p>
+このページは様々なpkgsrcに関連する情報への糸口を集めています。
+このページの情報は、pkgsrc開発者にとって最も役立つものになるでしょう。
+</p>
+    
+      <h4 class="title">
+<a name="status"></a>状況 (<a href="#oberview">top</a>)
+  </h4>
+
+
+      <p>NetBSDパッケージコレクションは、現在
+	<span class="bold"><strong>フリーズされていません</strong></span>。
+最新の安定ブランチはpkgsrc-2012Q2です。</p>
+    <hr>
+<h3 class="title">pkgsrcフリーズガイドライン</h3>
+      <h4 class="title">
+<a name="goals"></a>ゴール (<a href="#freeze">top</a>)
+  </h4>
+
+      <p>
+pkgsrcフリーズの第一のゴールは、次のpkgsrcの安定ブランチを作ることです。
+フリーズ中のpkgsrc HEADへのコミットは、openな<a class="ulink" href="http://gnats.NetBSD.org/summary/category/pkg.html" target="_top">pkgsrcに関連するPR</a>の数を減らしたり、
+バルクビルドで壊れているパッケージを修正することに限られます。
+</p>
+    
+      <h4 class="title">
+<a name="rules"></a>ルール (<a href="#freeze">top</a>)
+  </h4>
+      
+      <div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem">
+基盤の変更や新しいパッケージの追加はコミットできません。
+これには、些細でない<code class="filename">buildlink3.mk</code>ファイルの
+変更を含みます。
+</li>
+<li class="listitem">
+パッケージのアップデートは、リーフパッケージか、
+セキュリティー上の問題のあるパッケージのみ許されます。
+リーフパッケージでないパッケージについては、
+<a class="ulink" href="mailto:packages@NetBSD.org" target="_top">pkgsrc開発者</a>メーリングリスト
+で確認し、pkgsrc-pmcに承認を受けてください。
+</li>
+<li class="listitem">
+<a class="ulink" href="mailto:packages@NetBSD.org" target="_top">pkgsrc開発者</a>メーリングリスト
+への承認リクエストは、以下の質問に答えたものでなくてはなりません。
+
+	  <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+来たるブランチにとって、このパッケージをアップデートすることが重要なのはなぜか?
+</li>
+<li class="listitem">
+現在のバージョンとアップデートされたバージョンの間の、予想される変更は何か?
+</li>
+</ul></div>
+	</li>
+<li class="listitem">
+コミットは、移植性の問題やビルドの問題を修正するか、
+openなPRを扱うものだけであるべきです。
+</li>
+<li class="listitem">
+コミットメッセージは、なぜコミットがフリーズ期間中にされたのか、
+必要であれば、誰の承認を得たのかを明確に記載すべきです。
+例えば、
+	  
+	  <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem"><span class="quote">“<span class="quote">Updated during the freeze to fix security issue
+	      noted at http://...; approved by ...</span>”</span></li>
+<li class="listitem"><span class="quote">“<span class="quote">Updated during the freeze to fix problem noted
+	      n pkg/NNNNN; approved by ...</span>”</span></li>
+<li class="listitem"><span class="quote">“<span class="quote">Fix build on Darwin due to issues with
+	      <code class="filename">namesrv8_compat.h</code></span>”</span></li>
+</ul></div>
+	</li>
+<li class="listitem">
+pkgsrcの<span class="quote">“<span class="quote">regress</span>”</span>と<span class="quote">“<span class="quote">doc</span>”</span>カテゴリーは
+フリーズの影響を受けません。
+</li>
+</ol></div>
+    
+      <h4 class="title">
+<a name="branch-todo"></a>ブランチする時にすべきこと (<a href="#freeze">top</a>)
+  </h4>
+
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+アナウンスを<code class="email">&lt;<a class="email" href="mailto:netbsd-announce@NetBSD.org">netbsd-announce@NetBSD.org</a>&gt;</code>に送ってください。
+</li>
+<li class="listitem">
+アナウンスを<code class="email">&lt;<a class="email" href="mailto:www@NetBSD.org">www@NetBSD.org</a>&gt;</code>に送るか、
+自分でウェブサイトのアナウンスを作ってください
+(<a class="ulink" href="../htdocs.html#adding-news-items" target="_top">このリンク</a>を
+参照してください)。
+</li>
+<li class="listitem">
+	  <code class="filename">htdocs/share/xml/misc.ent</code>をアップデートし、
+	  <code class="filename">htdocs/docs/software/packages.html</code>を再生成し、
+コミットします</li>
+<li class="listitem">
+	  <code class="filename">htdocs/developers/pkgsrc/index.xml</code>を
+アップデートし、
+	  <code class="filename">index.xml</code>をコミットし、
+	  <code class="filename">index.html</code>を再生成し、
+コミットします。</li>
+</ul></div>
+    <hr>
+<h3 class="title">パッケージをアップデートまたはインポートする</h3>
+      <h4 class="title">
+<a name="import"></a>新しいパッケージのインポート方法と、パッケージのアップデート方法 (<a href="#importing-or-updating">top</a>)
+  </h4>
+      
+      <p>
+これは、
+ <a class="ulink" href="../../docs/pkgsrc/submit.html#committing-importing" target="_top">pkgsrc Guide</a>
+に詳細に説明されています。
+</p>
+    
+      <h4 class="title">
+<a name="pullup"></a>ブランチにアップデートをプルアップする (<a href="#importing-or-updating">top</a>)
+  </h4>
+
+      <p>
+重大がバグ修正、セキュリティーアップデート、ビルドの修正は、
+最新の安定ブランチにプルアップすることができます。
+<span class="quote">“<span class="quote">cvs commit</span>”</span>のメールをpkgsrc-changesメーリングリスト
+から<a class="ulink" href="mailto:pullup-pkgsrc@NetBSD.org" target="_top">プルアップ</a>アドレス
+に転送してください。
+</p>
+
+      <p>
+pkgsrcプルアップチケットのサマリーは、<span class="quote">“<span class="quote">index-pkgsrc.html</span>”</span>を
+http://releng.NetBSD.org/ に足したURLで見ることができます
+(自動的な電子メールアドレスの収集を避けるために直接リンクしていません)
+</p>
+    <hr>
+<h3 class="title">バルクビルド</h3>
+      <h4 class="title">
+<a name="bulkhowto"></a>バルクビルドをセットアップする (<a href="#bulk-builds">top</a>)
+  </h4>
+
+      <p>
+<a class="ulink" href="../../docs/pkgsrc/" target="_top">pkgsrc guide</a>の
+<a class="ulink" href="../../docs/pkgsrc/bulk.html" target="_top">バルクビルドの章</a>に
+どのようにバルクビルドをセットアップするのかが説明されています。
+</p>
+    
+      <h4 class="title">
+<a name="bulklogs"></a>現在入手可能なバルクビルドの結果 (<a href="#bulk-builds">top</a>)
+  </h4>
+
+      <p>
+様々なバルクビルドの結果は、
+<a class="ulink" href="../../mailinglists/#pkgsrc-bulk" target="_top">pkgsrc-bulk</a>
+メーリングリストに投稿されます。
+</p>
+    
+      <h4 class="title">
+<a name="bulk-packages"></a>ftp.NetBSD.orgへバイナリーパッケージを提供する(バルクパッケージ) (<a href="#bulk-builds">top</a>)
+  </h4>
+
+      <p>
+私たちは、できるだけ多くのarch/osrev用の
+バイナリーパッケージを提供するために、協力しあわなくてはいけません。
+</p>
+      
+      <p>
+インストール時の衝突を防ぐため、バイナリーパッケージは一貫した
+条件で生成されるようにしなくてはなりません。
+これを実現する最も実用的な方法は、バルクビルドシステムを使い、
+各ビルドのごとに、完全なセットのパッケージをアップロードすることです。
+</p>
+      
+      <p>
+バイナリーパッケージの提供に協力したい開発者(全員が誘われています)は、
+<code class="email">&lt;<a class="email" href="mailto:pkgsrc-bulk@NetBSD.org">pkgsrc-bulk@NetBSD.org</a>&gt;</code>メーリングリストを購読し、
+入手可能なarch/osrevを確認するためにするために
+<code class="filename">localsrc/admin/bulk-packages</code>を見るべきです。
+</p>
+
+      <div class="sect4" title="バルクパッケージの約束">
+<div class="titlepage"><div><div><h5 class="title">
+<a name="conventions"></a>バルクパッケージの約束</h5></div></div></div>
+	
+
+	<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+あるarch/osrevを引き継ぐときには、ビルドビルドを一から開始するか、
+あらかじめビルドプロセスの準備をしておくために、
+ftp.NetBSD.orgから現在のバイナリーパッケージ一式をダウンロード
+してください(遅いアーキテクチャーには最も有効です)。
+</li>
+<li class="listitem">
+パッケージをアップロードする時には、
+rsyncで完全なセットのバルクビルドパッケージをアップロードし、
+ftp.NetBSD.orgから、そのarch/osrevの他のパッケージを削除してください。
+</li>
+<li class="listitem">
+ビルドができなくなったら、<code class="filename">localsrc/admin/bulk-packages</code>
+から項目を削除し、pkgsrc-bulkに知らせてください。
+</li>
+<li class="listitem">
+どの開発者でも、アップデートされた/新しい/セキュリティーの問題の修正された
+パッケージをftp.NetBSD.orgにアップロードすることができますが、
+すでにそのarch/osrevに存在するパッケージに対してビルドされたものでなくては、
+なりません。
+</li>
+<li class="listitem">
+マシンは、最新のマイナーリリースまたは、リリースブランチ(おすすめ)を
+実行しているべきです。
+</li>
+</ul></div>
+	
+	<div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<h3 class="title">Note</h3>
+<p>
+これは、新しいバージョンのバイナリーパッケージがユーザーがすでに
+インストールしている環境にインストールできなかったり、
+他のすでにインストールされているパッケージをアップロードしなくては
+いけなくなるような問題を防ぐためです。
+</p>
+	  
+	<p>
+現在のそれに対するオプションは、
+タグの打たれたバイナリーパッケージをフリーズするか、
+複数のバイナリーパッケージをarch/osrevごとに持つということです。
+前者は、バイナリーパッケージの有用性を下げますし、
+後者は、私たちが<span class="emphasis"><em>一つ</em></span>の一貫したツリーをarch/osrevごとに
+持つことができるようになるまで考慮しなくてかまいません。
+</p>
+</div>
+      </div>
+    <hr>
+<h3 class="title">毎週のpkgsrc確認</h3>
+      <h4 class="title">
+<a name="weeklypkgsrc"></a>毎週のpkgsrcスクリプト (<a href="#weekly-pkgsrc-checks">top</a>)
+  </h4>
+
+      <p>
+<a class="ulink" href="mailto:dmcmahill@NetBSD.org" target="_top">Dan McMahill</a>が
+様々なpkgsrcの一貫性を確認するために週に一回実行させるスクリプトを
+メンテナンスしています。現在確認している項目は、以下のようです。
+</p>
+      
+      <div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+<code class="code">DEPENDS</code> —
+全ての<code class="code">{BUILD_}DEPENDS</code>が正しいバージョンに設定されているかを
+確認します。
+</li>
+<li class="listitem">
+<code class="filename">distinfo</code> —
+配布物のチェックサムとサイズと、全てのパッチのチェックサムを確認します。
+</li>
+<li class="listitem">
+カテゴリーのMakefile —
+全てのパッケージがカテゴリーのMakefileに記載されているか確認します。
+</li>
+<li class="listitem">
+制限されたバイナリーパッケージ —
+全ての制限されたバイナリーパッケージを警告します。
+</li>
+<li class="listitem">
+脆弱性のあるパッケージ —
+全ての脆弱性のあるパッケージを確認します。
+</li>
+</ul></div>
+
+      <p>
+これらの確認の結果は、NetBSD pkgsrc開発者に電子メールで送られます。
+</p>
+    <hr>
+<h3 class="title">その他</h3>
+      <h4 class="title">
+<a name="todo"></a>TODOリストの扱い (<a href="#misc">top</a>)
+  </h4>
+
+      <p>
+<a class="ulink" href="ftp://ftp.NetBSD.org/pub/pkgsrc/current/pkgsrc/doc/TODO" target="_top">TODO</a>リストがpkgsrc docディレクトリーに存在します。
+自由に追加したり削除したりしてください(もちろん問題を解決したらです)。
+</p>
+    
+      <h4 class="title">
+<a name="pkg-bug-handler"></a>The pkg-bug-handlerグループ (<a href="#misc">top</a>)
+  </h4>
+
+      <p>
+日々報告されるpkgsrcに関連する多数の問題に対処するために、
+<span class="quote">“<span class="quote">pkg-bug-handler</span>”</span>グループが作られました。
+詳細は、<a class="ulink" href="pkg-bug-handler.html" target="_top">このページ</a>を
+参照してください。
+</p>
+    <hr>
+<em><a href="../">NetBSD開発者ドキュメンテーション</a></em> に戻る</div></div></div>
+<div class="navfoot"></div>
+<div id="footer"><center>
+<span class="footfeed"><a href="http://www.NetBSD.org/cgi-bin/feedback.cgi">
+	  連絡</a> |
+      </span><span class="footcopy"><a href="../../../ja/about/disclaimer.html">
+      免責事項</a> |
+
+      <span class="copyright">Copyright © 1994-2012 The NetBSD Foundation, Inc. </span>ALL RIGHTS RESERVED.<br>NetBSD<sup>®</sup> は The NetBSD
+	Foundation, Inc. の登録商標です。</span>
+</center></div>
+</div></body>
+</html>
