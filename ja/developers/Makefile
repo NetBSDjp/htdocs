@@ -4,7 +4,7 @@
 
 SUBDIR+=	cvs-repos
 SUBDIR+=	features
-# SUBDIR+=	pkgsrc
+SUBDIR+=	pkgsrc
 SUBDIR+=	releng
 
 XMLDOCS+=	index
